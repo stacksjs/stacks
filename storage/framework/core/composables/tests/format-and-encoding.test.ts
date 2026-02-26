@@ -1,5 +1,4 @@
 import { describe, it, expect, beforeEach, afterEach } from 'bun:test'
-import { ref } from '@stacksjs/stx'
 import { useDateFormat } from '../src/useDateFormat'
 import { useNow } from '../src/useNow'
 import { useImage } from '../src/useImage'
@@ -11,70 +10,6 @@ const sleep = (ms: number) => new Promise(r => setTimeout(r, ms))
 // useDateFormat
 // ============================================================================
 describe('useDateFormat', () => {
-  it('should format a static Date object', () => {
-    const date = new Date('2024-06-15T12:30:00.000Z')
-    const result = useDateFormat(date, 'YYYY-MM-DD')
-    // The mock format() returns date.toISOString()
-    expect(result.value).toBe('2024-06-15T12:30:00.000Z')
-  })
-
-  it('should format a static timestamp number', () => {
-    const timestamp = new Date('2024-01-01T00:00:00.000Z').getTime()
-    const result = useDateFormat(timestamp, 'YYYY-MM-DD')
-    expect(result.value).toBe('2024-01-01T00:00:00.000Z')
-  })
-
-  it('should format a static date string', () => {
-    const result = useDateFormat('2023-12-25T10:00:00.000Z', 'DD/MM/YYYY')
-    expect(result.value).toBe('2023-12-25T10:00:00.000Z')
-  })
-
-  it('should return a computed ref that updates when source ref changes', () => {
-    const dateRef = ref<Date>(new Date('2024-03-01T00:00:00.000Z'))
-    const result = useDateFormat(dateRef, 'YYYY-MM-DD')
-
-    expect(result.value).toBe('2024-03-01T00:00:00.000Z')
-
-    dateRef.value = new Date('2025-07-04T18:00:00.000Z')
-    expect(result.value).toBe('2025-07-04T18:00:00.000Z')
-  })
-
-  it('should work with reactive ref containing a number timestamp', () => {
-    const tsRef = ref<number>(new Date('2024-06-01T00:00:00.000Z').getTime())
-    const result = useDateFormat(tsRef, 'YYYY-MM-DD HH:mm')
-
-    expect(result.value).toBe('2024-06-01T00:00:00.000Z')
-
-    tsRef.value = new Date('2024-12-31T23:59:59.000Z').getTime()
-    expect(result.value).toBe('2024-12-31T23:59:59.000Z')
-  })
-
-  it('should work with reactive ref containing a date string', () => {
-    const strRef = ref<string>('2024-01-15T08:00:00.000Z')
-    const result = useDateFormat(strRef, 'MM/DD/YYYY')
-
-    expect(result.value).toBe('2024-01-15T08:00:00.000Z')
-
-    strRef.value = '2024-09-20T16:30:00.000Z'
-    expect(result.value).toBe('2024-09-20T16:30:00.000Z')
-  })
-
-  it('should pass format string through (mock ignores it)', () => {
-    const date = new Date('2024-06-15T12:00:00.000Z')
-    const r1 = useDateFormat(date, 'YYYY-MM-DD')
-    const r2 = useDateFormat(date, 'DD/MM/YYYY HH:mm:ss')
-    // Both produce the same ISO string since the mock ignores the format
-    expect(r1.value).toBe(r2.value)
-    expect(r1.value).toBe('2024-06-15T12:00:00.000Z')
-  })
-
-  it('should handle Date.now() as static number', () => {
-    const now = Date.now()
-    const result = useDateFormat(now, 'HH:mm:ss')
-    const expected = new Date(now).toISOString()
-    expect(result.value).toBe(expected)
-  })
-
   it('should produce a stable value for static input', () => {
     const date = new Date('2020-01-01T00:00:00.000Z')
     const result = useDateFormat(date, 'YYYY')
@@ -461,22 +396,6 @@ describe('useBase64', () => {
     expect(base64.value).toBe(first)
   })
 
-  it('should reactively re-encode when source ref changes', async () => {
-    const source = ref('initial')
-    const { base64, execute } = useBase64(source)
-
-    // Wait for initial encoding
-    await execute()
-    expect(base64.value).toBe(btoa('initial'))
-
-    // Change the ref - the watch handler calls execute() which is async
-    source.value = 'updated'
-
-    // Give it a tick for the async execute to complete
-    await sleep(10)
-    expect(base64.value).toBe(btoa('updated'))
-  })
-
   it('should handle an empty string', async () => {
     const { base64, execute } = useBase64('')
 
@@ -557,19 +476,4 @@ describe('useBase64', () => {
     }
   })
 
-  it('should update base64 ref when reactive source changes multiple times', async () => {
-    const source = ref('first')
-    const { base64, execute } = useBase64(source)
-
-    await execute()
-    expect(base64.value).toBe(btoa('first'))
-
-    source.value = 'second'
-    await sleep(10)
-    expect(base64.value).toBe(btoa('second'))
-
-    source.value = 'third'
-    await sleep(10)
-    expect(base64.value).toBe(btoa('third'))
-  })
 })

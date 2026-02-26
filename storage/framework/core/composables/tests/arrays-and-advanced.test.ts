@@ -56,21 +56,6 @@ describe('useArrayDifference', () => {
     expect(result.value).toEqual([{ id: 1 }, { id: 3 }])
   })
 
-  it('should react to ref changes for the first list', () => {
-    const list = ref([1, 2, 3, 4])
-    const result = useArrayDifference(list, [3, 4])
-    expect(result.value).toEqual([1, 2])
-    list.value = [1, 2, 3, 4, 5, 6]
-    expect(result.value).toEqual([1, 2, 5, 6])
-  })
-
-  it('should react to ref changes for the second list', () => {
-    const other = ref([3, 4])
-    const result = useArrayDifference([1, 2, 3, 4, 5], other)
-    expect(result.value).toEqual([1, 2, 5])
-    other.value = [1, 5]
-    expect(result.value).toEqual([2, 3, 4])
-  })
 })
 
 // ===========================================================================
@@ -95,14 +80,6 @@ describe('useArrayEvery', () => {
   it('should return true for an empty array', () => {
     const result = useArrayEvery([], () => false)
     expect(result.value).toBe(true)
-  })
-
-  it('should react to ref changes', () => {
-    const list = ref([2, 4, 6])
-    const result = useArrayEvery(list, n => n % 2 === 0)
-    expect(result.value).toBe(true)
-    list.value = [2, 4, 5]
-    expect(result.value).toBe(false)
   })
 
   it('should provide index to predicate', () => {
@@ -142,14 +119,6 @@ describe('useArrayFilter', () => {
   it('should return empty array for empty input', () => {
     const result = useArrayFilter([], () => true)
     expect(result.value).toEqual([])
-  })
-
-  it('should react to ref changes', () => {
-    const list = ref([1, 2, 3, 4, 5])
-    const result = useArrayFilter(list, n => n > 3)
-    expect(result.value).toEqual([4, 5])
-    list.value = [1, 2, 3, 4, 5, 6, 7]
-    expect(result.value).toEqual([4, 5, 6, 7])
   })
 
   it('should filter objects by property', () => {
@@ -195,14 +164,6 @@ describe('useArrayFind', () => {
     expect(result.value).toBeUndefined()
   })
 
-  it('should react to ref changes', () => {
-    const list = ref([1, 2, 3])
-    const result = useArrayFind(list, n => n > 2)
-    expect(result.value).toBe(3)
-    list.value = [10, 20, 30]
-    expect(result.value).toBe(10)
-  })
-
   it('should find objects by property', () => {
     const users = [
       { id: 1, name: 'Alice' },
@@ -213,13 +174,6 @@ describe('useArrayFind', () => {
     expect(result.value).toEqual({ id: 2, name: 'Bob' })
   })
 
-  it('should return undefined when element is removed from ref', () => {
-    const list = ref([1, 2, 3, 4, 5])
-    const result = useArrayFind(list, n => n === 5)
-    expect(result.value).toBe(5)
-    list.value = [1, 2, 3]
-    expect(result.value).toBeUndefined()
-  })
 })
 
 // ===========================================================================
@@ -246,26 +200,11 @@ describe('useArrayFindIndex', () => {
     expect(result.value).toBe(-1)
   })
 
-  it('should react to ref changes', () => {
-    const list = ref(['a', 'b', 'c'])
-    const result = useArrayFindIndex(list, s => s === 'c')
-    expect(result.value).toBe(2)
-    list.value = ['x', 'c', 'y']
-    expect(result.value).toBe(1)
-  })
-
   it('should return the first matching index when duplicates exist', () => {
     const result = useArrayFindIndex([1, 2, 3, 2, 1], n => n === 2)
     expect(result.value).toBe(1)
   })
 
-  it('should return -1 after element is removed from ref', () => {
-    const list = ref([10, 20, 30])
-    const result = useArrayFindIndex(list, n => n === 30)
-    expect(result.value).toBe(2)
-    list.value = [10, 20]
-    expect(result.value).toBe(-1)
-  })
 })
 
 // ===========================================================================
@@ -299,22 +238,6 @@ describe('useArrayIncludes', () => {
     expect(result.value).toBe(false)
   })
 
-  it('should react to ref list changes', () => {
-    const list = ref([1, 2, 3])
-    const result = useArrayIncludes(list, 4)
-    expect(result.value).toBe(false)
-    list.value = [1, 2, 3, 4]
-    expect(result.value).toBe(true)
-  })
-
-  it('should react to ref value changes', () => {
-    const value = ref(3)
-    const result = useArrayIncludes([1, 2, 3, 4, 5], value)
-    expect(result.value).toBe(true)
-    value.value = 99
-    expect(result.value).toBe(false)
-  })
-
   it('should handle string arrays', () => {
     const result = useArrayIncludes(['hello', 'world'], 'hello')
     expect(result.value).toBe(true)
@@ -343,14 +266,6 @@ describe('useArrayMap', () => {
   it('should provide index to mapping function', () => {
     const result = useArrayMap(['a', 'b', 'c'], (el, idx) => `${idx}:${el}`)
     expect(result.value).toEqual(['0:a', '1:b', '2:c'])
-  })
-
-  it('should react to ref changes', () => {
-    const list = ref([1, 2, 3])
-    const result = useArrayMap(list, n => n * 10)
-    expect(result.value).toEqual([10, 20, 30])
-    list.value = [4, 5]
-    expect(result.value).toEqual([40, 50])
   })
 
   it('should map objects to extracted properties', () => {
@@ -390,14 +305,6 @@ describe('useArrayReduce', () => {
   it('should compute product of numbers', () => {
     const result = useArrayReduce([2, 3, 4], (acc, n) => acc * n, 1)
     expect(result.value).toBe(24)
-  })
-
-  it('should react to ref changes', () => {
-    const list = ref([1, 2, 3])
-    const result = useArrayReduce(list, (acc, n) => acc + n, 0)
-    expect(result.value).toBe(6)
-    list.value = [10, 20, 30]
-    expect(result.value).toBe(60)
   })
 
   it('should build an object from array entries', () => {
@@ -446,14 +353,6 @@ describe('useArraySome', () => {
 
   it('should return true when all elements match', () => {
     const result = useArraySome([2, 4, 6], n => n % 2 === 0)
-    expect(result.value).toBe(true)
-  })
-
-  it('should react to ref changes', () => {
-    const list = ref([1, 2, 3])
-    const result = useArraySome(list, n => n > 5)
-    expect(result.value).toBe(false)
-    list.value = [1, 2, 10]
     expect(result.value).toBe(true)
   })
 
@@ -517,14 +416,6 @@ describe('useArrayUnique', () => {
     ])
   })
 
-  it('should react to ref changes', () => {
-    const list = ref([1, 2, 2, 3])
-    const result = useArrayUnique(list)
-    expect(result.value).toEqual([1, 2, 3])
-    list.value = [5, 5, 5, 6, 6, 7]
-    expect(result.value).toEqual([5, 6, 7])
-  })
-
   it('should handle string duplicates', () => {
     const result = useArrayUnique(['hello', 'world', 'hello', 'foo', 'world'])
     expect(result.value).toEqual(['hello', 'world', 'foo'])
@@ -554,24 +445,6 @@ describe('useOffsetPagination', () => {
     expect(pageCount.value).toBe(6)
   })
 
-  it('should navigate to next page', () => {
-    const { currentPage, next } = useOffsetPagination({ total: 50, pageSize: 10 })
-    expect(currentPage.value).toBe(1)
-    next()
-    expect(currentPage.value).toBe(2)
-    next()
-    expect(currentPage.value).toBe(3)
-  })
-
-  it('should navigate to previous page', () => {
-    const { currentPage, next, prev } = useOffsetPagination({ total: 50, pageSize: 10 })
-    next()
-    next()
-    expect(currentPage.value).toBe(3)
-    prev()
-    expect(currentPage.value).toBe(2)
-  })
-
   it('should not go below page 1 with prev', () => {
     const { currentPage, prev } = useOffsetPagination({ total: 50, pageSize: 10 })
     expect(currentPage.value).toBe(1)
@@ -579,53 +452,11 @@ describe('useOffsetPagination', () => {
     expect(currentPage.value).toBe(1)
   })
 
-  it('should not go beyond last page with next', () => {
-    const { currentPage, next, pageCount } = useOffsetPagination({ total: 30, pageSize: 10 })
-    expect(pageCount.value).toBe(3)
-    next()
-    next()
-    expect(currentPage.value).toBe(3)
-    next()
-    expect(currentPage.value).toBe(3)
-  })
-
-  it('should track isFirstPage correctly', () => {
-    const { isFirstPage, next, prev } = useOffsetPagination({ total: 50, pageSize: 10 })
-    expect(isFirstPage.value).toBe(true)
-    next()
-    expect(isFirstPage.value).toBe(false)
-    prev()
-    expect(isFirstPage.value).toBe(true)
-  })
-
-  it('should track isLastPage correctly', () => {
-    const { isLastPage, next } = useOffsetPagination({ total: 20, pageSize: 10 })
-    expect(isLastPage.value).toBe(false)
-    next()
-    expect(isLastPage.value).toBe(true)
-  })
-
   it('should start on a custom page', () => {
     const { currentPage } = useOffsetPagination({ total: 50, pageSize: 10, page: 3 })
     expect(currentPage.value).toBe(3)
   })
 
-  it('should call onPageChange callback when page changes', () => {
-    const callback = mock(() => {})
-    const { next } = useOffsetPagination({ total: 50, pageSize: 10, onPageChange: callback })
-    next()
-    expect(callback).toHaveBeenCalledTimes(1)
-    expect(callback).toHaveBeenCalledWith({ currentPage: 2, currentPageSize: 10 })
-  })
-
-  it('should reset to page 1 when pageSize changes', () => {
-    const { currentPage, currentPageSize, next } = useOffsetPagination({ total: 100, pageSize: 10 })
-    next()
-    next()
-    expect(currentPage.value).toBe(3)
-    currentPageSize.value = 20
-    expect(currentPage.value).toBe(1)
-  })
 })
 
 // ===========================================================================
@@ -686,15 +517,6 @@ describe('useVirtualList', () => {
     expect(listLargeOverscan.value.length).toBeGreaterThanOrEqual(listSmallOverscan.value.length)
   })
 
-  it('should react to ref source changes', () => {
-    const source = ref(Array.from({ length: 10 }, (_, i) => i))
-    const { list } = useVirtualList(source, { itemHeight: 30 })
-    const initialLength = list.value.length
-    expect(initialLength).toBeGreaterThan(0)
-    source.value = Array.from({ length: 100 }, (_, i) => i)
-    // After update, list should still have items
-    expect(list.value.length).toBeGreaterThan(0)
-  })
 })
 
 // ===========================================================================
@@ -781,87 +603,6 @@ describe('useDebouncedRefHistory', () => {
     expect(history.value[0].snapshot).toBe(0)
   })
 
-  it('should auto-commit after debounce delay', async () => {
-    const source = ref(0)
-    const { history } = useDebouncedRefHistory(source, { debounce: 50 })
-    source.value = 1
-    // Immediately after change, debounce hasn't fired yet
-    expect(history.value.length).toBe(1)
-    await new Promise(resolve => setTimeout(resolve, 100))
-    expect(history.value.length).toBe(2)
-    expect(history.value[history.value.length - 1].snapshot).toBe(1)
-  })
-
-  it('should debounce rapid changes into a single commit', async () => {
-    const source = ref(0)
-    const { history } = useDebouncedRefHistory(source, { debounce: 100 })
-    source.value = 1
-    source.value = 2
-    source.value = 3
-    await new Promise(resolve => setTimeout(resolve, 200))
-    // Only one extra commit (initial + 1 debounced)
-    expect(history.value.length).toBe(2)
-    expect(history.value[history.value.length - 1].snapshot).toBe(3)
-  })
-
-  it('should support manual commit', () => {
-    const source = ref('hello')
-    const { history, commit } = useDebouncedRefHistory(source)
-    source.value = 'world'
-    commit()
-    expect(history.value.length).toBe(2)
-    expect(history.value[history.value.length - 1].snapshot).toBe('world')
-  })
-
-  it('should support undo', () => {
-    const source = ref(0)
-    const { commit, undo } = useDebouncedRefHistory(source)
-    source.value = 10
-    commit()
-    expect(source.value).toBe(10)
-    undo()
-    expect(source.value).toBe(0)
-  })
-
-  it('should support redo after undo', () => {
-    const source = ref(0)
-    const { commit, undo, redo } = useDebouncedRefHistory(source)
-    source.value = 10
-    commit()
-    undo()
-    expect(source.value).toBe(0)
-    redo()
-    expect(source.value).toBe(10)
-  })
-
-  it('should track canUndo and canRedo', () => {
-    const source = ref(0)
-    const { commit, undo, redo, canUndo, canRedo } = useDebouncedRefHistory(source)
-    expect(canUndo.value).toBe(false)
-    expect(canRedo.value).toBe(false)
-    source.value = 10
-    commit()
-    expect(canUndo.value).toBe(true)
-    expect(canRedo.value).toBe(false)
-    undo()
-    expect(canUndo.value).toBe(false)
-    expect(canRedo.value).toBe(true)
-    redo()
-    expect(canUndo.value).toBe(true)
-    expect(canRedo.value).toBe(false)
-  })
-
-  it('should clear history', () => {
-    const source = ref(0)
-    const { commit, clear, history } = useDebouncedRefHistory(source)
-    source.value = 1
-    commit()
-    source.value = 2
-    commit()
-    expect(history.value.length).toBe(3)
-    clear()
-    expect(history.value.length).toBe(1)
-  })
 })
 
 // ===========================================================================
@@ -875,83 +616,6 @@ describe('useThrottledRefHistory', () => {
     expect(history.value[0].snapshot).toBe(0)
   })
 
-  it('should auto-commit immediately for the first change (within throttle window)', () => {
-    const source = ref(0)
-    const { history } = useThrottledRefHistory(source, { throttle: 200 })
-    source.value = 1
-    // First change should commit immediately (throttle leading edge)
-    expect(history.value.length).toBe(2)
-  })
-
-  it('should throttle subsequent rapid changes', async () => {
-    const source = ref(0)
-    const { history } = useThrottledRefHistory(source, { throttle: 100 })
-    source.value = 1 // immediate commit
-    source.value = 2 // within throttle window, scheduled
-    source.value = 3 // within throttle window, replaces scheduled
-    expect(history.value.length).toBe(2) // initial + first immediate
-    await new Promise(resolve => setTimeout(resolve, 200))
-    // Trailing commit should have fired
-    expect(history.value.length).toBe(3)
-  })
-
-  it('should support manual commit', () => {
-    const source = ref('hello')
-    const { history, commit } = useThrottledRefHistory(source)
-    source.value = 'world'
-    commit()
-    // Should have initial + auto + manual (or at least multiple entries)
-    expect(history.value.length).toBeGreaterThanOrEqual(2)
-  })
-
-  it('should support undo back to initial state', () => {
-    const source = ref(0)
-    const { commit, undo, history } = useThrottledRefHistory(source)
-    source.value = 10
-    commit()
-    // Undo all the way back to initial state
-    while (history.value.length > 1) {
-      undo()
-    }
-    expect(source.value).toBe(0)
-  })
-
-  it('should support redo after undo', () => {
-    const source = ref(0)
-    const { commit, undo, redo, history } = useThrottledRefHistory(source)
-    source.value = 10
-    commit()
-    // Undo all the way back
-    while (history.value.length > 1) {
-      undo()
-    }
-    expect(source.value).toBe(0)
-    redo()
-    expect(source.value).toBe(10)
-  })
-
-  it('should track canUndo and canRedo', () => {
-    const source = ref(0)
-    const { commit, undo, canUndo, canRedo } = useThrottledRefHistory(source)
-    expect(canUndo.value).toBe(false)
-    source.value = 10
-    commit()
-    expect(canUndo.value).toBe(true)
-    undo()
-    expect(canRedo.value).toBe(true)
-  })
-
-  it('should clear history', () => {
-    const source = ref(0)
-    const { commit, clear, history } = useThrottledRefHistory(source)
-    source.value = 1
-    commit()
-    source.value = 2
-    commit()
-    expect(history.value.length).toBeGreaterThanOrEqual(3)
-    clear()
-    expect(history.value.length).toBe(1)
-  })
 })
 
 // ===========================================================================

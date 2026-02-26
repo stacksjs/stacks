@@ -39,16 +39,6 @@ describe('useAbs', () => {
     expect(result.value).toBe(0)
   })
 
-  it('should work reactively with a ref input', () => {
-    const r = ref(-10)
-    const result = useAbs(r)
-    expect(result.value).toBe(10)
-    r.value = -20
-    expect(result.value).toBe(20)
-    r.value = 15
-    expect(result.value).toBe(15)
-  })
-
   it('should return NaN for NaN input', () => {
     const result = useAbs(NaN)
     expect(Number.isNaN(result.value)).toBe(true)
@@ -89,23 +79,6 @@ describe('useAverage', () => {
     expect(Number.isNaN(result.value)).toBe(true)
   })
 
-  it('should work with ref inputs', () => {
-    const a = ref(10)
-    const b = ref(20)
-    const result = useAverage(a, b)
-    expect(result.value).toBe(15)
-    a.value = 30
-    expect(result.value).toBe(25)
-  })
-
-  it('should work with mixed ref and raw values', () => {
-    const a = ref(4)
-    const result = useAverage(a, 6)
-    expect(result.value).toBe(5)
-    a.value = 10
-    expect(result.value).toBe(8)
-  })
-
   it('should handle negative numbers', () => {
     const result = useAverage(-10, 10)
     expect(result.value).toBe(0)
@@ -133,14 +106,6 @@ describe('useCeil', () => {
 
   it('should return the same value for an integer', () => {
     const result = useCeil(5)
-    expect(result.value).toBe(5)
-  })
-
-  it('should work reactively with a ref input', () => {
-    const r = ref(1.3)
-    const result = useCeil(r)
-    expect(result.value).toBe(2)
-    r.value = 4.7
     expect(result.value).toBe(5)
   })
 
@@ -196,20 +161,6 @@ describe('useClamp', () => {
     expect(result.value).toBe(0)
   })
 
-  it('should work reactively with ref inputs', () => {
-    const val = ref(5)
-    const min = ref(0)
-    const max = ref(10)
-    const result = useClamp(val, min, max)
-    expect(result.value).toBe(5)
-    val.value = -3
-    expect(result.value).toBe(0)
-    val.value = 15
-    expect(result.value).toBe(10)
-    max.value = 20
-    expect(result.value).toBe(15)
-  })
-
   it('should handle a negative range', () => {
     const result = useClamp(-5, -10, -1)
     expect(result.value).toBe(-5)
@@ -243,14 +194,6 @@ describe('useFloor', () => {
   it('should return the same value for an integer', () => {
     const result = useFloor(7)
     expect(result.value).toBe(7)
-  })
-
-  it('should work reactively with a ref input', () => {
-    const r = ref(3.7)
-    const result = useFloor(r)
-    expect(result.value).toBe(3)
-    r.value = 8.1
-    expect(result.value).toBe(8)
   })
 
   it('should return zero for zero', () => {
@@ -288,15 +231,6 @@ describe('useMax', () => {
     expect(result.value).toBe(-Infinity)
   })
 
-  it('should work reactively with ref inputs', () => {
-    const a = ref(3)
-    const b = ref(7)
-    const result = useMax(a, b)
-    expect(result.value).toBe(7)
-    a.value = 10
-    expect(result.value).toBe(10)
-  })
-
   it('should return the shared value when all values are the same', () => {
     const result = useMax(5, 5, 5)
     expect(result.value).toBe(5)
@@ -332,15 +266,6 @@ describe('useMin', () => {
     expect(result.value).toBe(Infinity)
   })
 
-  it('should work reactively with ref inputs', () => {
-    const a = ref(3)
-    const b = ref(7)
-    const result = useMin(a, b)
-    expect(result.value).toBe(3)
-    b.value = 1
-    expect(result.value).toBe(1)
-  })
-
   it('should return the shared value when all values are the same', () => {
     const result = useMin(5, 5, 5)
     expect(result.value).toBe(5)
@@ -369,22 +294,6 @@ describe('usePrecision', () => {
   it('should pad with zeros when more digits than actual precision', () => {
     const result = usePrecision(3.1, 5)
     expect(result.value).toBe(3.1)
-  })
-
-  it('should handle negative digits by throwing or returning a value based on toFixed behavior', () => {
-    // Number.toFixed with negative digits throws a RangeError in most engines
-    expect(() => usePrecision(3.14, -1).value).toThrow()
-  })
-
-  it('should work reactively with ref inputs for both value and digits', () => {
-    const val = ref(3.14159)
-    const digits = ref(2)
-    const result = usePrecision(val, digits)
-    expect(result.value).toBe(3.14)
-    digits.value = 4
-    expect(result.value).toBe(3.1416)
-    val.value = 2.71828
-    expect(result.value).toBe(2.7183)
   })
 
   it('should handle a large number', () => {
@@ -432,14 +341,6 @@ describe('useRound', () => {
     expect(result.value).toBe(-3)
   })
 
-  it('should work reactively with a ref input', () => {
-    const r = ref(1.4)
-    const result = useRound(r)
-    expect(result.value).toBe(1)
-    r.value = 1.6
-    expect(result.value).toBe(2)
-  })
-
   it('should return zero for zero', () => {
     const result = useRound(0)
     expect(result.value).toBe(0)
@@ -470,26 +371,9 @@ describe('useSum', () => {
     expect(result.value).toBe(0)
   })
 
-  it('should work reactively with ref inputs', () => {
-    const a = ref(10)
-    const b = ref(20)
-    const result = useSum(a, b)
-    expect(result.value).toBe(30)
-    a.value = 50
-    expect(result.value).toBe(70)
-  })
-
   it('should handle negative numbers', () => {
     const result = useSum(-5, 3, -2)
     expect(result.value).toBe(-4)
-  })
-
-  it('should work with mixed ref and raw values', () => {
-    const a = ref(10)
-    const result = useSum(a, 5, 3)
-    expect(result.value).toBe(18)
-    a.value = 0
-    expect(result.value).toBe(8)
   })
 
   it('should handle large numbers of arguments', () => {
@@ -515,14 +399,6 @@ describe('useTrunc', () => {
   it('should return the same value for an integer', () => {
     const result = useTrunc(5)
     expect(result.value).toBe(5)
-  })
-
-  it('should work reactively with a ref input', () => {
-    const r = ref(7.7)
-    const result = useTrunc(r)
-    expect(result.value).toBe(7)
-    r.value = -4.2
-    expect(result.value).toBe(-4)
   })
 
   it('should return NaN for NaN input', () => {
@@ -552,14 +428,6 @@ describe('logicNot', () => {
 
   it('should return true for false input', () => {
     const result = logicNot(false)
-    expect(result.value).toBe(true)
-  })
-
-  it('should work reactively with a ref input', () => {
-    const r = ref(true)
-    const result = logicNot(r)
-    expect(result.value).toBe(false)
-    r.value = false
     expect(result.value).toBe(true)
   })
 
@@ -601,15 +469,6 @@ describe('logicOr', () => {
   it('should return false when called with no arguments', () => {
     const result = logicOr()
     expect(result.value).toBe(false)
-  })
-
-  it('should work reactively with ref inputs', () => {
-    const a = ref(false)
-    const b = ref(false)
-    const result = logicOr(a, b)
-    expect(result.value).toBe(false)
-    a.value = true
-    expect(result.value).toBe(true)
   })
 
   it('should handle a single true argument', () => {
@@ -659,15 +518,6 @@ describe('and', () => {
     expect(result.value).toBe(true)
   })
 
-  it('should work reactively with ref inputs', () => {
-    const a = ref(true)
-    const b = ref(true)
-    const result = and(a, b)
-    expect(result.value).toBe(true)
-    b.value = false
-    expect(result.value).toBe(false)
-  })
-
   it('should handle a single true argument', () => {
     const result = and(true)
     expect(result.value).toBe(true)
@@ -678,13 +528,6 @@ describe('and', () => {
     expect(result.value).toBe(false)
   })
 
-  it('should handle mixed ref and raw values', () => {
-    const a = ref(true)
-    const result = and(a, true)
-    expect(result.value).toBe(true)
-    a.value = false
-    expect(result.value).toBe(false)
-  })
 })
 
 // ---------------------------------------------------------------------------

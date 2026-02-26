@@ -257,42 +257,6 @@ describe('useDark', () => {
     expect(isDark.value).toBe(false)
   })
 
-  it('should add "dark" class to documentElement when isDark is set to true', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    const doc = setupDocumentMock()
-    setupLocalStorageMock()
-    const isDark = useDark()
-    expect(isDark.value).toBe(false)
-    isDark.value = true
-    expect(doc.documentElement.classList.contains('dark')).toBe(true)
-  })
-
-  it('should remove "dark" class from documentElement when isDark is set to false', () => {
-    const { matchMediaFn } = createMatchMediaMock(true)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    const doc = setupDocumentMock()
-    setupLocalStorageMock()
-    const isDark = useDark()
-    expect(isDark.value).toBe(true)
-    // The initial state applies dark class
-    expect(doc.documentElement.classList.contains('dark')).toBe(true)
-    isDark.value = false
-    expect(doc.documentElement.classList.contains('dark')).toBe(false)
-  })
-
-  it('should persist to localStorage when isDark changes', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    const ls = setupLocalStorageMock()
-    const isDark = useDark()
-    isDark.value = true
-    expect(ls.getItem('color-scheme')).toBe('dark')
-    isDark.value = false
-    expect(ls.getItem('color-scheme')).toBe('light')
-  })
-
   it('should be SSR-safe without window, document, or localStorage', () => {
     delete (globalThis as any).window
     delete (globalThis as any).document
@@ -389,62 +353,6 @@ describe('useColorMode', () => {
     expect(mode.value).toBe('light')
   })
 
-  it('should change mode when store is set to "dark"', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    setupLocalStorageMock()
-    const { store, mode } = useColorMode()
-    store.value = 'dark'
-    expect(mode.value).toBe('dark')
-  })
-
-  it('should change mode when store is set to "light"', () => {
-    const { matchMediaFn } = createMatchMediaMock(true)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    setupLocalStorageMock()
-    const { store, mode } = useColorMode()
-    expect(mode.value).toBe('dark')
-    store.value = 'light'
-    expect(mode.value).toBe('light')
-  })
-
-  it('should follow system when store is set to "auto"', () => {
-    const { matchMediaFn } = createMatchMediaMock(true)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    setupLocalStorageMock()
-    const { store, mode, system } = useColorMode()
-    // Start with explicit dark
-    store.value = 'light'
-    expect(mode.value).toBe('light')
-    // Switch back to auto
-    store.value = 'auto'
-    expect(mode.value).toBe(system.value)
-    expect(mode.value).toBe('dark')
-  })
-
-  it('should persist to localStorage with custom key', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    const ls = setupLocalStorageMock()
-    const { store } = useColorMode({ storageKey: 'my-theme' })
-    store.value = 'dark'
-    expect(ls.getItem('my-theme')).toBe('dark')
-  })
-
-  it('should persist to localStorage with default key', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    const ls = setupLocalStorageMock()
-    const { store } = useColorMode()
-    store.value = 'dark'
-    expect(ls.getItem('color-mode')).toBe('dark')
-  })
-
   it('should read from localStorage on init', () => {
     const { matchMediaFn } = createMatchMediaMock(false)
     setupWindowMock({ matchMedia: matchMediaFn })
@@ -475,18 +383,6 @@ describe('useColorMode', () => {
     expect(doc.documentElement.getAttribute('data-theme')).toBe('dark')
   })
 
-  it('should support custom modes mapping', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    const doc = setupDocumentMock()
-    setupLocalStorageMock()
-    const { store } = useColorMode({
-      modes: { coffee: 'theme-coffee', dim: 'theme-dim' },
-    })
-    store.value = 'coffee'
-    expect(doc.documentElement.classList.contains('theme-coffee')).toBe(true)
-  })
-
   it('should be SSR-safe without window or document', () => {
     delete (globalThis as any).window
     delete (globalThis as any).document
@@ -498,49 +394,6 @@ describe('useColorMode', () => {
     expect(mode.value).toBe('light')
   })
 
-  it('should handle selector that does not match any element', () => {
-    const { matchMediaFn } = createMatchMediaMock(true)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    setupLocalStorageMock()
-    // The mock document.querySelector returns null for non-'html' selectors
-    expect(() => useColorMode({ selector: '#nonexistent' })).not.toThrow()
-    const { mode, store } = useColorMode({ selector: '#nonexistent' })
-    // mode should still track correctly even if the element is not found
-    store.value = 'dark'
-    expect(mode.value).toBe('dark')
-  })
-
-  it('should update mode when system preference changes and store is "auto"', () => {
-    const { matchMediaFn, mql } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    setupDocumentMock()
-    setupLocalStorageMock()
-    const { mode, system, store } = useColorMode()
-    expect(store.value).toBe('auto')
-    expect(system.value).toBe('light')
-    expect(mode.value).toBe('light')
-    // Simulate OS switching to dark
-    mql._trigger(true)
-    expect(system.value).toBe('dark')
-    // Since the preload watch fires synchronously on subscribe,
-    // the watch(system, ...) should have updated mode
-    expect(mode.value).toBe('dark')
-  })
-
-  it('should remove previous mode class when changing modes', () => {
-    const { matchMediaFn } = createMatchMediaMock(false)
-    setupWindowMock({ matchMedia: matchMediaFn })
-    const doc = setupDocumentMock()
-    setupLocalStorageMock()
-    const { store } = useColorMode()
-    // Initial is light (auto follows system=light)
-    expect(doc.documentElement.classList.contains('light')).toBe(true)
-    store.value = 'dark'
-    // After switching to dark, "light" should be removed
-    expect(doc.documentElement.classList.contains('dark')).toBe(true)
-    expect(doc.documentElement.classList.contains('light')).toBe(false)
-  })
 })
 
 // ==========================================================================

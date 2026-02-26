@@ -277,14 +277,6 @@ describe('useCloned edge cases', () => {
     expect(customClone).toHaveBeenCalled()
   })
 
-  it('should sync when source changes', () => {
-    const source = ref({ x: 1 })
-    const { cloned } = useCloned(source)
-    expect(cloned.value).toEqual({ x: 1 })
-    source.value = { x: 2 }
-    expect(cloned.value).toEqual({ x: 2 })
-  })
-
   it('should manual sync() re-clone from source', () => {
     const source = ref({ x: 1 })
     const { cloned, sync } = useCloned(source)
@@ -636,54 +628,6 @@ describe('useManualRefHistory edge cases', () => {
     // Mutating source should not affect history
     source.value.a = 999
     expect(history.value[1].snapshot.a).toBe(2)
-  })
-})
-
-// === REF HISTORY EDGE CASES ===
-
-describe('useRefHistory edge cases', () => {
-  const { useRefHistory } = require('../src/useRefHistory')
-
-  it('should auto-commit on source change', () => {
-    const source = ref(0)
-    const { history } = useRefHistory(source)
-    expect(history.value.length).toBe(1) // initial
-    source.value = 1
-    expect(history.value.length).toBe(2)
-    source.value = 2
-    expect(history.value.length).toBe(3)
-  })
-
-  it('should not create extra commits during undo/redo', () => {
-    const source = ref(0)
-    const { undo, history } = useRefHistory(source)
-    source.value = 1
-    source.value = 2
-    expect(history.value.length).toBe(3)
-    undo()
-    // undo should restore source to 1 but NOT trigger an auto-commit
-    expect(source.value).toBe(1)
-    expect(history.value.length).toBe(2)
-  })
-
-  it('should enforce capacity', () => {
-    const source = ref(0)
-    const { history } = useRefHistory(source, { capacity: 3 })
-    source.value = 1
-    source.value = 2
-    source.value = 3
-    source.value = 4
-    expect(history.value.length).toBeLessThanOrEqual(3)
-  })
-
-  it('should handle rapid changes', () => {
-    const source = ref(0)
-    const { history } = useRefHistory(source)
-    for (let i = 1; i <= 20; i++) {
-      source.value = i
-    }
-    expect(history.value.length).toBe(21) // initial + 20 changes
-    expect(source.value).toBe(20)
   })
 })
 

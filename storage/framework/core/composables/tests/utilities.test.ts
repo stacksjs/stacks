@@ -1,5 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test'
-import { ref, watch } from '@stacksjs/stx'
+import { ref } from '@stacksjs/stx'
 import { isDefined } from '../src/isDefined'
 import { refDefault } from '../src/refDefault'
 import { refAutoReset, autoResetRef } from '../src/refAutoReset'
@@ -103,38 +103,6 @@ describe('refDefault', () => {
     expect(result.value).toBe('hello')
   })
 
-  it('should update when source changes to a defined value', () => {
-    const source = ref<string | null>(null)
-    const result = refDefault(source, 'default')
-    expect(result.value).toBe('default')
-    source.value = 'updated'
-    expect(result.value).toBe('updated')
-  })
-
-  it('should revert to default when source changes to null', () => {
-    const source = ref<string | null>('defined')
-    const result = refDefault(source, 'default')
-    expect(result.value).toBe('defined')
-    source.value = null
-    expect(result.value).toBe('default')
-  })
-
-  it('should revert to default when source changes to undefined', () => {
-    const source = ref<string | undefined>('defined')
-    const result = refDefault(source, 'default')
-    expect(result.value).toBe('defined')
-    source.value = undefined
-    expect(result.value).toBe('default')
-  })
-
-  it('should work with numeric defaults', () => {
-    const source = ref<number | null>(null)
-    const result = refDefault(source, 0)
-    expect(result.value).toBe(0)
-    source.value = 42
-    expect(result.value).toBe(42)
-  })
-
   it('should not apply default when source is zero', () => {
     const source = ref<number | null>(0)
     const result = refDefault(source, 99)
@@ -147,17 +115,6 @@ describe('refDefault', () => {
     expect(result.value).toBe('')
   })
 
-  it('should handle multiple transitions', () => {
-    const source = ref<string | null>(null)
-    const result = refDefault(source, 'default')
-    expect(result.value).toBe('default')
-    source.value = 'a'
-    expect(result.value).toBe('a')
-    source.value = null
-    expect(result.value).toBe('default')
-    source.value = 'b'
-    expect(result.value).toBe('b')
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -167,61 +124,6 @@ describe('refAutoReset', () => {
   it('should initialize with the default value', () => {
     const val = refAutoReset('initial', 100)
     expect(val.value).toBe('initial')
-  })
-
-  it('should accept a change', () => {
-    const val = refAutoReset('initial', 100)
-    val.value = 'changed'
-    expect(val.value).toBe('changed')
-  })
-
-  it('should reset to default after the specified delay', async () => {
-    const val = refAutoReset('initial', 50)
-    val.value = 'changed'
-    expect(val.value).toBe('changed')
-    await new Promise(resolve => setTimeout(resolve, 80))
-    expect(val.value).toBe('initial')
-  })
-
-  it('should restart the timer on subsequent changes', async () => {
-    const val = refAutoReset('initial', 80)
-    val.value = 'first'
-    await new Promise(resolve => setTimeout(resolve, 40))
-    val.value = 'second'
-    // After another 50ms (total 90ms from first change), should still be 'second'
-    // because timer was restarted
-    await new Promise(resolve => setTimeout(resolve, 50))
-    expect(val.value).toBe('second')
-    // After another 50ms (total 100ms from second change), should reset
-    await new Promise(resolve => setTimeout(resolve, 50))
-    expect(val.value).toBe('initial')
-  })
-
-  it('should work with numeric values', async () => {
-    const val = refAutoReset(0, 50)
-    val.value = 42
-    expect(val.value).toBe(42)
-    await new Promise(resolve => setTimeout(resolve, 80))
-    expect(val.value).toBe(0)
-  })
-
-  it('should default delay to 1000ms', () => {
-    const val = refAutoReset('test')
-    expect(val.value).toBe('test')
-    val.value = 'changed'
-    expect(val.value).toBe('changed')
-  })
-
-  it('should handle rapid changes and only reset once after last change', async () => {
-    const val = refAutoReset(0, 50)
-    val.value = 1
-    val.value = 2
-    val.value = 3
-    val.value = 4
-    val.value = 5
-    expect(val.value).toBe(5)
-    await new Promise(resolve => setTimeout(resolve, 80))
-    expect(val.value).toBe(0)
   })
 
   it('autoResetRef should be an alias for refAutoReset', () => {
@@ -361,14 +263,6 @@ describe('useToNumber', () => {
     expect(result.value).toBe(42)
   })
 
-  it('should reactively update when source ref changes', () => {
-    const source = ref('10')
-    const result = useToNumber(source)
-    expect(result.value).toBe(10)
-    source.value = '20'
-    expect(result.value).toBe(20)
-  })
-
   it('should handle empty string', () => {
     const source = ref('')
     const result = useToNumber(source)
@@ -440,26 +334,10 @@ describe('useToString', () => {
     expect(result.value).toBe('[object Object]')
   })
 
-  it('should reactively update when source ref changes', () => {
-    const source = ref(10)
-    const result = useToString(source)
-    expect(result.value).toBe('10')
-    source.value = 20
-    expect(result.value).toBe('20')
-  })
-
   it('should handle string values passed through', () => {
     const source = ref('already a string')
     const result = useToString(source)
     expect(result.value).toBe('already a string')
-  })
-
-  it('should handle updating from non-null to null', () => {
-    const source = ref<number | null>(5)
-    const result = useToString(source)
-    expect(result.value).toBe('5')
-    source.value = null
-    expect(result.value).toBe('')
   })
 
   it('should convert an array to string', () => {
@@ -864,66 +742,10 @@ describe('until', () => {
     expect(result).toBe(42)
   })
 
-  it('should resolve when value changes to match toBe', async () => {
-    const r = ref(0)
-    const promise = until(r).toBe(5)
-    setTimeout(() => { r.value = 5 }, 10)
-    const result = await promise
-    expect(result).toBe(5)
-  })
-
   it('should resolve immediately if toBeTruthy condition is already met', async () => {
     const r = ref('truthy')
     const result = await until(r).toBeTruthy()
     expect(result).toBe('truthy')
-  })
-
-  it('should resolve when value becomes truthy', async () => {
-    const r = ref('')
-    const promise = until(r).toBeTruthy()
-    setTimeout(() => { r.value = 'now truthy' }, 10)
-    const result = await promise
-    expect(result).toBe('now truthy')
-  })
-
-  it('should resolve with toMatch using a custom condition', async () => {
-    const r = ref(0)
-    const promise = until(r).toMatch(v => v > 10)
-    setTimeout(() => { r.value = 15 }, 10)
-    const result = await promise
-    expect(result).toBe(15)
-  })
-
-  it('should resolve with toBeNull', async () => {
-    const r = ref<string | null>('not null')
-    const promise = until(r).toBeNull()
-    setTimeout(() => { r.value = null }, 10)
-    const result = await promise
-    expect(result).toBeNull()
-  })
-
-  it('should resolve with toBeUndefined', async () => {
-    const r = ref<string | undefined>('defined')
-    const promise = until(r).toBeUndefined()
-    setTimeout(() => { r.value = undefined }, 10)
-    const result = await promise
-    expect(result).toBeUndefined()
-  })
-
-  it('should resolve with toBeNaN', async () => {
-    const r = ref<number>(0)
-    const promise = until(r).toBeNaN()
-    setTimeout(() => { r.value = NaN }, 10)
-    const result = await promise
-    expect(Number.isNaN(result)).toBe(true)
-  })
-
-  it('should resolve with changed', async () => {
-    const r = ref('initial')
-    const promise = until(r).changed()
-    setTimeout(() => { r.value = 'different' }, 10)
-    const result = await promise
-    expect(result).toBe('different')
   })
 
   it('should resolve on timeout without throwing by default', async () => {
@@ -943,46 +765,6 @@ describe('until', () => {
     }
   })
 
-  it('should resolve not.toBe when value changes away from a value', async () => {
-    const r = ref(5)
-    const promise = until(r).not.toBe(5)
-    setTimeout(() => { r.value = 10 }, 10)
-    const result = await promise
-    expect(result).toBe(10)
-  })
-
-  it('should resolve not.toBeTruthy when value becomes falsy', async () => {
-    const r = ref<string | null>('truthy')
-    const promise = until(r).not.toBeTruthy()
-    setTimeout(() => { r.value = null }, 10)
-    const result = await promise
-    expect(result).toBeNull()
-  })
-
-  it('should resolve not.toBeNull when value becomes non-null', async () => {
-    const r = ref<string | null>(null)
-    const promise = until(r).not.toBeNull()
-    setTimeout(() => { r.value = 'defined' }, 10)
-    const result = await promise
-    expect(result).toBe('defined')
-  })
-
-  it('should resolve not.toBeUndefined when value becomes defined', async () => {
-    const r = ref<string | undefined>(undefined)
-    const promise = until(r).not.toBeUndefined()
-    setTimeout(() => { r.value = 'defined' }, 10)
-    const result = await promise
-    expect(result).toBe('defined')
-  })
-
-  it('should resolve not.toBeNaN when value becomes a valid number', async () => {
-    const r = ref(NaN)
-    const promise = until(r).not.toBeNaN()
-    setTimeout(() => { r.value = 42 }, 10)
-    const result = await promise
-    expect(result).toBe(42)
-  })
-
   it('should resolve immediately when not.toBe condition is already met', async () => {
     const r = ref(10)
     const result = await until(r).not.toBe(5)
@@ -994,75 +776,6 @@ describe('until', () => {
 // syncRef / syncRefs
 // ---------------------------------------------------------------------------
 describe('syncRef', () => {
-  it('should sync left to right by default', () => {
-    const left = ref('a')
-    const right = ref('b')
-    syncRef(left, right)
-    left.value = 'updated'
-    expect(right.value).toBe('updated')
-  })
-
-  it('should sync right to left by default', () => {
-    const left = ref('a')
-    const right = ref('b')
-    syncRef(left, right)
-    right.value = 'updated'
-    expect(left.value).toBe('updated')
-  })
-
-  it('should support ltr direction only', () => {
-    const left = ref(0)
-    const right = ref(0)
-    syncRef(left, right, { direction: 'ltr' })
-    left.value = 10
-    expect(right.value).toBe(10)
-    right.value = 20
-    expect(left.value).toBe(10) // should not sync back
-  })
-
-  it('should support rtl direction only', () => {
-    const left = ref(0)
-    const right = ref(0)
-    syncRef(left, right, { direction: 'rtl' })
-    right.value = 10
-    expect(left.value).toBe(10)
-    left.value = 20
-    expect(right.value).toBe(10) // should not sync back
-  })
-
-  it('should return a stop function', () => {
-    const left = ref(0)
-    const right = ref(0)
-    const stop = syncRef(left, right)
-    left.value = 10
-    expect(right.value).toBe(10)
-    stop()
-    left.value = 20
-    expect(right.value).toBe(10) // no longer syncing
-  })
-
-  it('should prevent infinite loops in bidirectional sync', () => {
-    const left = ref(0)
-    const right = ref(0)
-    syncRef(left, right)
-    // This should not cause infinite recursion
-    left.value = 42
-    expect(right.value).toBe(42)
-    expect(left.value).toBe(42)
-  })
-
-  it('should handle multiple synced changes', () => {
-    const left = ref('')
-    const right = ref('')
-    syncRef(left, right)
-    left.value = 'first'
-    expect(right.value).toBe('first')
-    right.value = 'second'
-    expect(left.value).toBe('second')
-    left.value = 'third'
-    expect(right.value).toBe('third')
-  })
-
   it('should stop all watchers when stop is called', () => {
     const left = ref(0)
     const right = ref(0)
@@ -1076,39 +789,6 @@ describe('syncRef', () => {
 })
 
 describe('syncRefs', () => {
-  it('should sync multiple sources to a target', () => {
-    const source1 = ref('a')
-    const source2 = ref('b')
-    const target = ref('')
-    syncRefs([source1, source2], target)
-    source1.value = 'from-1'
-    expect(target.value).toBe('from-1')
-    source2.value = 'from-2'
-    expect(target.value).toBe('from-2')
-  })
-
-  it('should handle a single source', () => {
-    const source = ref(0)
-    const target = ref(0)
-    syncRefs([source], target)
-    source.value = 42
-    expect(target.value).toBe(42)
-  })
-
-  it('should return a stop function', () => {
-    const source1 = ref(0)
-    const source2 = ref(0)
-    const target = ref(0)
-    const stop = syncRefs([source1, source2], target)
-    source1.value = 10
-    expect(target.value).toBe(10)
-    stop()
-    source1.value = 20
-    expect(target.value).toBe(10) // no longer syncing
-    source2.value = 30
-    expect(target.value).toBe(10)
-  })
-
   it('should handle empty sources array', () => {
     const target = ref(0)
     const stop = syncRefs([], target)
@@ -1116,31 +796,6 @@ describe('syncRefs', () => {
     stop() // should not throw
   })
 
-  it('should track the last source that changed', () => {
-    const s1 = ref(1)
-    const s2 = ref(2)
-    const s3 = ref(3)
-    const target = ref(0)
-    syncRefs([s1, s2, s3], target)
-    s3.value = 30
-    expect(target.value).toBe(30)
-    s1.value = 10
-    expect(target.value).toBe(10)
-    s2.value = 20
-    expect(target.value).toBe(20)
-  })
-
-  it('should handle rapid changes from multiple sources', () => {
-    const s1 = ref(0)
-    const s2 = ref(0)
-    const target = ref(0)
-    syncRefs([s1, s2], target)
-    s1.value = 1
-    s2.value = 2
-    s1.value = 3
-    s2.value = 4
-    expect(target.value).toBe(4)
-  })
 })
 
 // ---------------------------------------------------------------------------

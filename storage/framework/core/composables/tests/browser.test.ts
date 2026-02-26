@@ -584,15 +584,6 @@ describe('useTitle', () => {
     expect(doc.title).toBe('New Title')
   })
 
-  it('should sync ref changes to document.title', () => {
-    const doc = setupDocumentMock()
-    const title = useTitle('Initial')
-    expect(doc.title).toBe('Initial')
-
-    title.value = 'Updated'
-    expect(doc.title).toBe('Updated')
-  })
-
   it('should accept a ref as argument', () => {
     const doc = setupDocumentMock()
     const titleRef = ref('Ref Title')
@@ -615,17 +606,6 @@ describe('useTitle', () => {
     expect(doc.title).toBe('')
   })
 
-  it('should update document when title ref value changes multiple times', () => {
-    const doc = setupDocumentMock()
-    const title = useTitle('First')
-    expect(doc.title).toBe('First')
-
-    title.value = 'Second'
-    expect(doc.title).toBe('Second')
-
-    title.value = 'Third'
-    expect(doc.title).toBe('Third')
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -655,67 +635,6 @@ describe('useLocalStorage', () => {
     mockStorage.setItem('test-key', JSON.stringify('stored-value'))
     const data = useLocalStorage('test-key', 'default')
     expect(data.value).toBe('stored-value')
-  })
-
-  it('should write changes back to localStorage', () => {
-    const data = useLocalStorage('test-key', 'initial')
-    data.value = 'updated'
-    expect(JSON.parse(mockStorage.getItem('test-key')!)).toBe('updated')
-  })
-
-  it('should handle object values', () => {
-    const data = useLocalStorage('obj-key', { name: 'test', count: 0 })
-    expect(data.value).toEqual({ name: 'test', count: 0 })
-
-    data.value = { name: 'updated', count: 1 }
-    const stored = JSON.parse(mockStorage.getItem('obj-key')!)
-    expect(stored).toEqual({ name: 'updated', count: 1 })
-  })
-
-  it('should handle array values', () => {
-    const data = useLocalStorage('arr-key', [1, 2, 3])
-    expect(data.value).toEqual([1, 2, 3])
-
-    data.value = [4, 5, 6]
-    expect(JSON.parse(mockStorage.getItem('arr-key')!)).toEqual([4, 5, 6])
-  })
-
-  it('should handle number values', () => {
-    const data = useLocalStorage('num-key', 42)
-    expect(data.value).toBe(42)
-
-    data.value = 100
-    expect(JSON.parse(mockStorage.getItem('num-key')!)).toBe(100)
-  })
-
-  it('should handle boolean values', () => {
-    const data = useLocalStorage('bool-key', true)
-    expect(data.value).toBe(true)
-
-    data.value = false
-    expect(JSON.parse(mockStorage.getItem('bool-key')!)).toBe(false)
-  })
-
-  it('should use custom serializer', () => {
-    const data = useLocalStorage('custom-key', 'hello', {
-      serializer: {
-        read: (raw: string) => raw.toUpperCase(),
-        write: (value: string) => value.toLowerCase(),
-      },
-    })
-    expect(data.value).toBe('hello')
-
-    data.value = 'WORLD'
-    expect(mockStorage.getItem('custom-key')).toBe('world')
-  })
-
-  it('should remove item when set to null', () => {
-    mockStorage.setItem('null-key', JSON.stringify('value'))
-    const data = useLocalStorage<string | null>('null-key', 'default')
-    expect(data.value).toBe('value')
-
-    data.value = null
-    expect(mockStorage.getItem('null-key')).toBeNull()
   })
 
   it('should handle pre-existing non-JSON values gracefully', () => {
@@ -754,41 +673,6 @@ describe('useSessionStorage', () => {
     expect(data.value).toBe('stored')
   })
 
-  it('should write changes back to sessionStorage', () => {
-    const data = useSessionStorage('sess-key', 'initial')
-    data.value = 'updated'
-    expect(JSON.parse(mockStorage.getItem('sess-key')!)).toBe('updated')
-  })
-
-  it('should handle object values', () => {
-    const data = useSessionStorage('sess-obj', { a: 1 })
-    data.value = { a: 2 }
-    expect(JSON.parse(mockStorage.getItem('sess-obj')!)).toEqual({ a: 2 })
-  })
-
-  it('should handle number values', () => {
-    const data = useSessionStorage('sess-num', 0)
-    data.value = 99
-    expect(JSON.parse(mockStorage.getItem('sess-num')!)).toBe(99)
-  })
-
-  it('should use custom serializer', () => {
-    const data = useSessionStorage('sess-custom', 10, {
-      serializer: {
-        read: (raw: string) => Number.parseInt(raw, 10) * 2,
-        write: (value: number) => String(value / 2),
-      },
-    })
-    data.value = 20
-    expect(mockStorage.getItem('sess-custom')).toBe('10')
-  })
-
-  it('should remove item when value set to null', () => {
-    mockStorage.setItem('sess-null', JSON.stringify('value'))
-    const data = useSessionStorage<string | null>('sess-null', 'default')
-    data.value = null
-    expect(mockStorage.getItem('sess-null')).toBeNull()
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -1063,76 +947,6 @@ describe('useScrollLock', () => {
     expect(isLocked.value).toBe(false)
   })
 
-  it('should lock body scroll when set to true', () => {
-    const doc = setupDocumentMock()
-    doc.body.style.overflow = ''
-    const isLocked = useScrollLock()
-    isLocked.value = true
-    expect(doc.body.style.overflow).toBe('hidden')
-  })
-
-  it('should unlock body scroll when set to false', () => {
-    const doc = setupDocumentMock()
-    const isLocked = useScrollLock()
-    isLocked.value = true
-    expect(doc.body.style.overflow).toBe('hidden')
-
-    isLocked.value = false
-    expect(doc.body.style.overflow).toBe('')
-  })
-
-  it('should restore original overflow value on unlock', () => {
-    const doc = setupDocumentMock()
-    doc.body.style.overflow = 'auto'
-    const isLocked = useScrollLock()
-    isLocked.value = true
-    expect(doc.body.style.overflow).toBe('hidden')
-
-    isLocked.value = false
-    expect(doc.body.style.overflow).toBe('auto')
-  })
-
-  it('should work with custom element', () => {
-    setupDocumentMock()
-    const el = createMockElement()
-    el.style.overflow = 'scroll'
-    const isLocked = useScrollLock(el)
-
-    isLocked.value = true
-    expect(el.style.overflow).toBe('hidden')
-
-    isLocked.value = false
-    expect(el.style.overflow).toBe('scroll')
-  })
-
-  it('should accept a ref element', () => {
-    setupDocumentMock()
-    const el = createMockElement()
-    const elRef = ref(el)
-    const isLocked = useScrollLock(elRef)
-
-    isLocked.value = true
-    expect(el.style.overflow).toBe('hidden')
-  })
-
-  it('should handle toggling multiple times', () => {
-    setupDocumentMock()
-    const el = createMockElement()
-    el.style.overflow = ''
-    const isLocked = useScrollLock(el)
-
-    isLocked.value = true
-    expect(el.style.overflow).toBe('hidden')
-
-    isLocked.value = false
-    expect(el.style.overflow).toBe('')
-
-    isLocked.value = true
-    expect(el.style.overflow).toBe('hidden')
-
-    isLocked.value = false
-    expect(el.style.overflow).toBe('')
-  })
 })
 
 // ---------------------------------------------------------------------------

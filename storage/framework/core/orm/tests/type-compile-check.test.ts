@@ -586,9 +586,9 @@ describe('stacks-router uses StacksActionPath type', () => {
     expect(content).toContain("import type { StacksActionPath } from './action-paths'")
   })
 
-  test('StacksHandler uses StacksActionPath (not string)', () => {
+  test('StacksHandler uses string | RouteHandlerFn', () => {
     const content = readFileSync(routerFile, 'utf-8')
-    expect(content).toContain('type StacksHandler = ActionHandler | StacksActionPath')
+    expect(content).toContain('type StacksHandler = string | RouteHandlerFn')
   })
 
   test('does NOT use StringHandler = string', () => {

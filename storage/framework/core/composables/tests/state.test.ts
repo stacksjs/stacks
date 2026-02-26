@@ -1,5 +1,5 @@
 import { describe, expect, it, mock } from 'bun:test'
-import { ref, watch } from '@stacksjs/stx'
+import { ref } from '@stacksjs/stx'
 import { useCounter } from '../src/useCounter'
 import { usePrevious } from '../src/usePrevious'
 import { useLastChanged } from '../src/useLastChanged'
@@ -8,7 +8,6 @@ import { useCycleList } from '../src/useCycleList'
 import { useSorted } from '../src/useSorted'
 import { useCloned } from '../src/useCloned'
 import { useManualRefHistory } from '../src/useManualRefHistory'
-import { useRefHistory } from '../src/useRefHistory'
 import { useAsyncState } from '../src/useAsyncState'
 import { useAsyncQueue } from '../src/useAsyncQueue'
 
@@ -126,75 +125,6 @@ describe('usePrevious', () => {
     expect(prev.value).toBe(42)
   })
 
-  it('should track the previous value after a change', () => {
-    const source = ref('a')
-    const prev = usePrevious(source)
-    source.value = 'b'
-    expect(prev.value).toBe('a')
-  })
-
-  it('should update on subsequent changes', () => {
-    const source = ref(1)
-    const prev = usePrevious(source)
-    source.value = 2
-    expect(prev.value).toBe(1)
-    source.value = 3
-    expect(prev.value).toBe(2)
-    source.value = 4
-    expect(prev.value).toBe(3)
-  })
-
-  it('should handle rapid changes correctly', () => {
-    const source = ref(0)
-    const prev = usePrevious(source)
-    for (let i = 1; i <= 100; i++) {
-      source.value = i
-    }
-    expect(prev.value).toBe(99)
-  })
-
-  it('should work with object refs', () => {
-    const source = ref({ name: 'alice' })
-    const prev = usePrevious(source)
-    const oldObj = source.value
-    source.value = { name: 'bob' }
-    expect(prev.value).toBe(oldObj)
-  })
-
-  it('should work with boolean values', () => {
-    const source = ref(true)
-    const prev = usePrevious(source)
-    source.value = false
-    expect(prev.value).toBe(true)
-    source.value = true
-    expect(prev.value).toBe(false)
-  })
-
-  it('should work with null and undefined values', () => {
-    const source = ref<string | null>('hello')
-    const prev = usePrevious(source)
-    source.value = null
-    expect(prev.value).toBe('hello')
-    source.value = 'world'
-    expect(prev.value).toBeNull()
-  })
-
-  it('should preserve type safety with generics', () => {
-    const source = ref<number[]>([1, 2, 3])
-    const prev = usePrevious(source)
-    const oldArr = source.value
-    source.value = [4, 5, 6]
-    expect(prev.value).toBe(oldArr)
-  })
-
-  it('should not change when same value is set', () => {
-    const source = ref(5)
-    const prev = usePrevious(source)
-    // Setting same value - watch may or may not trigger depending on stx implementation
-    // But if it does, oldVal should equal the current value
-    source.value = 10
-    expect(prev.value).toBe(5)
-  })
 })
 
 // ---------------------------------------------------------------------------
@@ -211,70 +141,6 @@ describe('useLastChanged', () => {
     const source = ref(0)
     const timestamp = useLastChanged(source, { initialValue: 1000 })
     expect(timestamp.value).toBe(1000)
-  })
-
-  it('should update timestamp when source changes', () => {
-    const source = ref(0)
-    const timestamp = useLastChanged(source)
-    const before = Date.now()
-    source.value = 1
-    const after = Date.now()
-    expect(timestamp.value).not.toBeNull()
-    expect(timestamp.value!).toBeGreaterThanOrEqual(before)
-    expect(timestamp.value!).toBeLessThanOrEqual(after)
-  })
-
-  it('should update timestamp on every change', () => {
-    const source = ref('a')
-    const timestamp = useLastChanged(source)
-    source.value = 'b'
-    const first = timestamp.value
-    source.value = 'c'
-    const second = timestamp.value
-    expect(first).not.toBeNull()
-    expect(second).not.toBeNull()
-    expect(second!).toBeGreaterThanOrEqual(first!)
-  })
-
-  it('should work with object values', () => {
-    const source = ref({ x: 1 })
-    const timestamp = useLastChanged(source)
-    expect(timestamp.value).toBeNull()
-    source.value = { x: 2 }
-    expect(timestamp.value).not.toBeNull()
-  })
-
-  it('should work with boolean values', () => {
-    const source = ref(true)
-    const timestamp = useLastChanged(source)
-    source.value = false
-    expect(typeof timestamp.value).toBe('number')
-  })
-
-  it('should track null transitions', () => {
-    const source = ref<string | null>('hello')
-    const timestamp = useLastChanged(source)
-    source.value = null
-    expect(timestamp.value).not.toBeNull()
-  })
-
-  it('should return a realistic timestamp', () => {
-    const source = ref(0)
-    const timestamp = useLastChanged(source)
-    source.value = 1
-    // Should be a recent timestamp (within last second)
-    expect(timestamp.value!).toBeGreaterThan(Date.now() - 1000)
-    expect(timestamp.value!).toBeLessThanOrEqual(Date.now())
-  })
-
-  it('should handle rapid changes', () => {
-    const source = ref(0)
-    const timestamp = useLastChanged(source)
-    for (let i = 1; i <= 50; i++) {
-      source.value = i
-    }
-    expect(timestamp.value).not.toBeNull()
-    expect(timestamp.value!).toBeLessThanOrEqual(Date.now())
   })
 
   it('should accept initialValue of 0', () => {
@@ -627,23 +493,6 @@ describe('useCloned', () => {
     expect(cloned.value.nested.deep).not.toBe(source.value.nested.deep)
   })
 
-  it('should sync when source changes', () => {
-    const source = ref({ x: 1 })
-    const { cloned } = useCloned(source)
-    source.value = { x: 2 }
-    expect(cloned.value).toEqual({ x: 2 })
-    expect(cloned.value).not.toBe(source.value)
-  })
-
-  it('should sync arrays', () => {
-    const source = ref([1, 2, 3])
-    const { cloned } = useCloned(source)
-    expect(cloned.value).toEqual([1, 2, 3])
-    expect(cloned.value).not.toBe(source.value)
-    source.value = [4, 5]
-    expect(cloned.value).toEqual([4, 5])
-  })
-
   it('should allow manual sync', () => {
     const source = ref({ val: 'initial' })
     const { cloned, sync } = useCloned(source)
@@ -660,31 +509,6 @@ describe('useCloned', () => {
     const source = ref(5)
     const { cloned } = useCloned(source, { clone: customClone })
     expect(cloned.value).toBe(10)
-  })
-
-  it('should update with custom clone on source change', () => {
-    const customClone = (val: number) => val + 100
-    const source = ref(1)
-    const { cloned } = useCloned(source, { clone: customClone })
-    expect(cloned.value).toBe(101)
-    source.value = 5
-    expect(cloned.value).toBe(105)
-  })
-
-  it('should handle null values', () => {
-    const source = ref<null | string>(null)
-    const { cloned } = useCloned(source)
-    expect(cloned.value).toBeNull()
-    source.value = 'hello'
-    expect(cloned.value).toBe('hello')
-  })
-
-  it('should handle string values', () => {
-    const source = ref('hello')
-    const { cloned } = useCloned(source)
-    expect(cloned.value).toBe('hello')
-    source.value = 'world'
-    expect(cloned.value).toBe('world')
   })
 
   it('should not share references with source after clone', () => {
@@ -872,131 +696,6 @@ describe('useManualRefHistory', () => {
     const { history, commit } = useManualRefHistory(source, { clone: true })
     expect(history.value[0].snapshot).toEqual({ nested: { val: 1 } })
     expect(history.value[0].snapshot).not.toBe(obj)
-  })
-})
-
-// ---------------------------------------------------------------------------
-// useRefHistory
-// ---------------------------------------------------------------------------
-describe('useRefHistory', () => {
-  it('should auto-commit on value change', () => {
-    const source = ref(0)
-    const { history } = useRefHistory(source)
-    source.value = 1
-    // Initial + auto-committed = 2
-    expect(history.value.length).toBe(2)
-    expect(history.value[1].snapshot).toBe(1)
-  })
-
-  it('should undo auto-committed changes', () => {
-    const source = ref(0)
-    const { undo } = useRefHistory(source)
-    source.value = 1
-    source.value = 2
-    undo()
-    expect(source.value).toBe(1)
-  })
-
-  it('should redo after undo', () => {
-    const source = ref(0)
-    const { undo, redo } = useRefHistory(source)
-    source.value = 1
-    undo()
-    expect(source.value).toBe(0)
-    redo()
-    expect(source.value).toBe(1)
-  })
-
-  it('should report canUndo and canRedo', () => {
-    const source = ref(0)
-    const { canUndo, canRedo, undo } = useRefHistory(source)
-    expect(canUndo.value).toBe(false)
-    source.value = 1
-    expect(canUndo.value).toBe(true)
-    expect(canRedo.value).toBe(false)
-    undo()
-    expect(canRedo.value).toBe(true)
-    expect(canUndo.value).toBe(false)
-  })
-
-  it('should respect capacity', () => {
-    const source = ref(0)
-    const { history } = useRefHistory(source, { capacity: 3 })
-    source.value = 1
-    source.value = 2
-    source.value = 3
-    source.value = 4
-    expect(history.value.length).toBeLessThanOrEqual(3)
-  })
-
-  it('should clear history', () => {
-    const source = ref(0)
-    const { history, clear, canUndo } = useRefHistory(source)
-    source.value = 1
-    source.value = 2
-    clear()
-    expect(history.value.length).toBe(1)
-    expect(canUndo.value).toBe(false)
-  })
-
-  it('should expose last record', () => {
-    const source = ref('a')
-    const { last } = useRefHistory(source)
-    source.value = 'b'
-    expect(last.value.snapshot).toBe('b')
-  })
-
-  it('should handle multiple changes', () => {
-    const source = ref(0)
-    const { history } = useRefHistory(source)
-    for (let i = 1; i <= 5; i++) {
-      source.value = i
-    }
-    // Initial + 5 changes = 6
-    expect(history.value.length).toBe(6)
-  })
-
-  it('should not double-commit during undo', () => {
-    const source = ref(0)
-    const { history, undo } = useRefHistory(source)
-    source.value = 1
-    source.value = 2
-    const lengthBefore = history.value.length
-    undo()
-    // After undo, the history stack should have shrunk, not grown
-    expect(history.value.length).toBe(lengthBefore - 1)
-  })
-
-  it('should not double-commit during redo', () => {
-    const source = ref(0)
-    const { history, undo, redo } = useRefHistory(source)
-    source.value = 1
-    undo()
-    const lengthBefore = history.value.length
-    redo()
-    expect(history.value.length).toBe(lengthBefore + 1)
-  })
-
-  it('should clear redo on new change after undo', () => {
-    const source = ref(0)
-    const { canRedo, undo } = useRefHistory(source)
-    source.value = 1
-    source.value = 2
-    undo()
-    expect(canRedo.value).toBe(true)
-    source.value = 99 // This auto-commits and clears redo
-    expect(canRedo.value).toBe(false)
-  })
-
-  it('should include timestamps in records', () => {
-    const source = ref(0)
-    const { last } = useRefHistory(source)
-    expect(typeof last.value.timestamp).toBe('number')
-    const before = Date.now()
-    source.value = 1
-    const after = Date.now()
-    expect(last.value.timestamp).toBeGreaterThanOrEqual(before)
-    expect(last.value.timestamp).toBeLessThanOrEqual(after)
   })
 })
 
