@@ -92,7 +92,7 @@ export class SendGridDriver extends BaseEmailDriver {
       }
 
       const response = await this.sendWithRetry(sendgridPayload)
-      return this.handleSuccess(message, response.headers?.['x-message-id'])
+      return this.handleSuccess(message, response.headers?.get('x-message-id') ?? undefined)
     }
     catch (error) {
       return this.handleError(error, message)

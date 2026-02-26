@@ -42,7 +42,7 @@ export function useMin(...args: MaybeRef<number>[]): Ref<number> {
 }
 
 export function usePrecision(value: MaybeRef<number>, digits: MaybeRef<number> = 0): Ref<number> {
-  return computed((): number => Number((unref(value) as number).toFixed(unref(digits) as number)))
+  return computed((): number => Number((unref(value) as number).toFixed(Math.max(0, Math.min(100, unref(digits) as number)))))
 }
 
 export function useRound(value: MaybeRef<number>): Ref<number> {

@@ -1,1 +1,2 @@
-ALTER TABLE "payments" ADD CONSTRAINT "payments_transaction_id_fk" FOREIGN KEY ("transaction_id") REFERENCES "transactions"("id");
+-- SQLite does not support ALTER TABLE ADD CONSTRAINT for foreign keys
+SELECT 1;

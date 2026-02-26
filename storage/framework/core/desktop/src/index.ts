@@ -1,33 +1,40 @@
-import { app, core, dpi, event, image, menu, mocks, path, tray, webview, webviewWindow, window } from '@tauri-apps/api'
-
 export interface Desktop {
-  app: typeof app
-  core: typeof core
-  dpi: typeof dpi
-  event: typeof event
-  image: typeof image
-  menu: typeof menu
-  mocks: typeof mocks
-  path: typeof path
-  tray: typeof tray
-  webview: typeof webview
-  webviewWindow: typeof webviewWindow
-  window: typeof window
+  app: unknown
+  core: unknown
+  dpi: unknown
+  event: unknown
+  image: unknown
+  menu: unknown
+  mocks: unknown
+  path: unknown
+  tray: unknown
+  webview: unknown
+  webviewWindow: unknown
+  window: unknown
 }
 
-export const desktop: Desktop = {
-  app,
-  core,
-  dpi,
-  event,
-  image,
-  menu,
-  mocks,
-  path,
-  tray,
-  webview,
-  webviewWindow,
-  window,
+let _desktop: Desktop | undefined
+
+export async function getDesktop(): Promise<Desktop> {
+  if (_desktop) return _desktop
+
+  const tauri = await import('@tauri-apps/api')
+  _desktop = {
+    app: tauri.app,
+    core: tauri.core,
+    dpi: tauri.dpi,
+    event: tauri.event,
+    image: tauri.image,
+    menu: tauri.menu,
+    mocks: tauri.mocks,
+    path: tauri.path,
+    tray: tauri.tray,
+    webview: tauri.webview,
+    webviewWindow: tauri.webviewWindow,
+    window: tauri.window,
+  }
+
+  return _desktop
 }
 
 export interface OpenDevWindowOptions {

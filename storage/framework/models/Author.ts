@@ -36,7 +36,7 @@ export default defineModel({
     useApi: {
       uri: 'authors',
 
-      routes: ['index', 'store', 'show', 'update', 'destroy'],
+      routes: ['index', 'store', 'show'],
     },
 
     observe: true,
@@ -72,36 +72,6 @@ export default defineModel({
       },
 
       factory: faker => faker.internet.email(),
-    },
-
-    bio: {
-      required: false,
-      order: 3,
-      fillable: true,
-      validation: {
-        rule: schema.string().max(2000),
-      },
-      factory: faker => faker.lorem.paragraph(),
-    },
-
-    avatar: {
-      required: false,
-      order: 4,
-      fillable: true,
-      validation: {
-        rule: schema.string().url(),
-      },
-      factory: faker => faker.image.avatar(),
-    },
-
-    socialLinks: {
-      required: false,
-      order: 5,
-      fillable: true,
-      validation: {
-        rule: schema.string().max(1000),
-      },
-      factory: () => JSON.stringify({ twitter: '', github: '' }),
     },
   },
   dashboard: {
