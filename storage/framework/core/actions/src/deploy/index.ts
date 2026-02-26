@@ -242,6 +242,8 @@ if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
         else if (key === 'AWS_SECRET_ACCESS_KEY' && value) process.env.AWS_SECRET_ACCESS_KEY = value
         else if (key === 'AWS_REGION' && value && !process.env.AWS_REGION) process.env.AWS_REGION = value
         else if (key === 'AWS_ACCOUNT_ID' && value && !process.env.AWS_ACCOUNT_ID) process.env.AWS_ACCOUNT_ID = value
+        // Also load MAIL_PASSWORD_* for SMTP proxy deployment
+        else if (key.startsWith('MAIL_PASSWORD_') && value && !process.env[key]) process.env[key] = value
       }
       if (isVerbose) log.debug(`Loaded AWS credentials from ${envPath}`)
       break // Stop after loading the first existing file
@@ -807,6 +809,263 @@ fi`,
     } catch (serverDeployError: any) {
       serverDeploySpinner.fail(`API server deployment failed: ${serverDeployError.message}`)
       if (isVerbose) log.debug(`Server deploy error: ${serverDeployError.stack}`)
+    }
+
+    // Deploy SMTP proxy to EC2 (if email server is enabled)
+    const emailConfig = config.email
+    if (emailConfig?.server?.enabled) {
+      const smtpSpinner = spinner('Deploying SMTP proxy to EC2...')
+      smtpSpinner.start()
+
+      try {
+        const { S3Client, AWSClient } = await import('@stacksjs/ts-cloud') as any
+        const { readFileSync: readSmtpFile, existsSync: smtpFileExists } = await import('node:fs')
+        const { resolve: resolvePath, join: joinPath } = await import('node:path')
+        const { execSync } = await import('node:child_process')
+
+        const s3 = new S3Client(region)
+        const awsClient = new AWSClient()
+
+        const stackName = `${projectName}-cloud`
+
+        // Find the EC2 instance and bucket
+        let smtpInstanceId: string | undefined
+        let smtpBucketName: string | undefined
+        try {
+          const { AWSCloudFormationClient: CfnClient } = await import('@stacksjs/ts-cloud') as any
+          const cfn = new CfnClient(region)
+          const cfnOutputs = await cfn.getStackOutputs(stackName)
+          for (const [key, value] of Object.entries(cfnOutputs)) {
+            if ((key as string).endsWith('InstanceId') && typeof value === 'string') {
+              smtpInstanceId = value as string
+            }
+            if ((key as string) === 'FrontendBucketName' && typeof value === 'string') {
+              smtpBucketName = value as string
+            }
+          }
+        } catch {
+          // Stack outputs not available
+        }
+
+        if (smtpInstanceId && smtpBucketName) {
+          // Bundle the SMTP server into a single file
+          const smtpServerSrc = resolvePath(p.projectPath('storage/framework/core/cloud/src/imap/smtp-server.ts'))
+          const bundleOutDir = joinPath(p.projectPath(), '.stacks/tmp/smtp-bundle')
+          execSync(`bun build ${smtpServerSrc} --target=bun --outdir=${bundleOutDir}`, { stdio: 'pipe' })
+
+          const bundlePath = joinPath(bundleOutDir, 'smtp-server.js')
+          if (smtpFileExists(bundlePath)) {
+            const smtpBundle = readSmtpFile(bundlePath)
+
+            // Generate the SMTP proxy entry point
+            const domain = emailConfig.domain || 'stacksjs.com'
+            const mailboxes = emailConfig.mailboxes || ['chris', 'blake', 'glenn']
+            const usersEntries = (mailboxes as string[]).map((name: string) => {
+              const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
+              return `  "${name}": { password: process.env["${envKey}"] || "", email: "${name}@${domain}" }`
+            }).join(',\n')
+
+            const entryPoint = `import { SmtpServer } from "./smtp-server.js";
+import * as fs from "fs";
+
+const domain = "${domain}";
+const users = {
+${usersEntries}
+};
+
+// TLS configuration (Let's Encrypt certs) — SmtpServer expects file paths
+const certDir = \`/etc/letsencrypt/live/mail.\${domain}\`;
+let tlsConfig = undefined;
+if (fs.existsSync(\`\${certDir}/privkey.pem\`)) {
+  tlsConfig = {
+    key: \`\${certDir}/privkey.pem\`,
+    cert: \`\${certDir}/fullchain.pem\`,
+  };
+  console.log("TLS certificates loaded from", certDir);
+} else {
+  console.log("No TLS certificates found at", certDir, "- running without TLS");
+}
+
+const server = new SmtpServer({
+  port: 587,
+  tlsPort: 465,
+  host: "0.0.0.0",
+  domain,
+  users,
+  tls: tlsConfig,
+  sentBucket: "${projectName}-production-email",
+  sentPrefix: "sent/",
+});
+
+await server.start();
+console.log(\`SMTP proxy running on port 587 (STARTTLS) and 465 (TLS) for \${domain}\`);
+`
+
+            // Upload both files to S3
+            await s3.putObject({
+              bucket: smtpBucketName,
+              key: '_deploy/smtp-server.js',
+              body: smtpBundle,
+              contentType: 'application/javascript',
+            })
+            await s3.putObject({
+              bucket: smtpBucketName,
+              key: '_deploy/smtp-entry.ts',
+              body: Buffer.from(entryPoint),
+              contentType: 'application/typescript',
+            })
+            if (isVerbose) log.debug('  Uploaded SMTP proxy bundle to S3')
+
+            // Generate env vars for mail passwords
+            const envLines = (mailboxes as string[]).map((name: string) => {
+              const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
+              const password = process.env[envKey] || ''
+              return `Environment=${envKey}=${password}`
+            }).join('\n')
+
+            // Deploy via SSM
+            const smtpSsmCommand = [
+              'mkdir -p /var/www/smtp',
+              `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-server.js /var/www/smtp/smtp-server.js`,
+              `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-entry.ts /var/www/smtp/smtp-entry.ts`,
+              // Install certbot and get cert for mail.domain
+              `if ! command -v certbot &> /dev/null; then
+  dnf install -y certbot || yum install -y certbot || apt-get install -y certbot || true
+fi`,
+              `if [ ! -d /etc/letsencrypt/live/mail.${emailConfig.domain || 'stacksjs.com'} ]; then
+  certbot certonly --standalone --non-interactive --agree-tos --email admin@${emailConfig.domain || 'stacksjs.com'} -d mail.${emailConfig.domain || 'stacksjs.com'} --http-01-port 80 || echo "Certbot failed - will run without TLS"
+fi`,
+              // Create systemd service
+              `cat > /etc/systemd/system/stacks-smtp.service << 'SERVICEFILE'
+[Unit]
+Description=Stacks SMTP Proxy Server
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=/var/www/smtp
+ExecStart=/root/.bun/bin/bun smtp-entry.ts
+Restart=on-failure
+RestartSec=5
+Environment=NODE_ENV=production
+Environment=AWS_REGION=${region}
+${envLines}
+
+[Install]
+WantedBy=multi-user.target
+SERVICEFILE`,
+              'systemctl daemon-reload',
+              'systemctl enable stacks-smtp',
+              'systemctl restart stacks-smtp',
+              // Set up certbot auto-renewal
+              `if command -v certbot &> /dev/null; then
+  cat > /etc/systemd/system/certbot-mail-renewal.timer << 'TIMERCFG'
+[Unit]
+Description=Certbot mail cert renewal
+
+[Timer]
+OnCalendar=*-*-* 00,12:00:00
+RandomizedDelaySec=3600
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+TIMERCFG
+  cat > /etc/systemd/system/certbot-mail-renewal.service << 'SVCCFG'
+[Unit]
+Description=Certbot mail cert renewal
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl restart stacks-smtp"
+SVCCFG
+  systemctl daemon-reload
+  systemctl enable certbot-mail-renewal.timer
+  systemctl start certbot-mail-renewal.timer
+fi`,
+              'echo "SMTP proxy deployed and started"',
+            ].join(' && ')
+
+            const ssmResult = await awsClient.request({
+              service: 'ssm',
+              region,
+              method: 'POST',
+              path: '/',
+              headers: {
+                'Content-Type': 'application/x-amz-json-1.1',
+                'X-Amz-Target': 'AmazonSSM.SendCommand',
+              },
+              body: JSON.stringify({
+                InstanceIds: [smtpInstanceId],
+                DocumentName: 'AWS-RunShellScript',
+                Parameters: {
+                  commands: [smtpSsmCommand],
+                },
+                TimeoutSeconds: 180,
+              }),
+            })
+
+            const cmdId = ssmResult?.Command?.CommandId
+            if (cmdId) {
+              let ssmAttempts = 0
+              while (ssmAttempts < 60) {
+                await new Promise(resolve => setTimeout(resolve, 3000))
+                try {
+                  const invocation = await awsClient.request({
+                    service: 'ssm',
+                    region,
+                    method: 'POST',
+                    path: '/',
+                    headers: {
+                      'Content-Type': 'application/x-amz-json-1.1',
+                      'X-Amz-Target': 'AmazonSSM.GetCommandInvocation',
+                    },
+                    body: JSON.stringify({
+                      CommandId: cmdId,
+                      InstanceId: smtpInstanceId,
+                    }),
+                  })
+
+                  const status = invocation?.Status
+                  if (status === 'Success') {
+                    smtpSpinner.succeed('SMTP proxy deployed to EC2')
+                    break
+                  } else if (status === 'Failed' || status === 'Cancelled' || status === 'TimedOut') {
+                    const errOutput = invocation?.StandardErrorContent || 'Unknown error'
+                    smtpSpinner.fail(`SMTP proxy deploy failed: ${errOutput}`)
+                    break
+                  }
+                } catch {
+                  // Not ready yet
+                }
+                ssmAttempts++
+              }
+              if (ssmAttempts >= 60) {
+                smtpSpinner.fail('SMTP proxy deploy timed out')
+              }
+            } else {
+              smtpSpinner.fail('Failed to send SSM command for SMTP proxy')
+            }
+
+            // Clean up S3 artifacts
+            try {
+              await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-server.js' })
+              await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-entry.ts' })
+            } catch {
+              // Non-critical
+            }
+          } else {
+            smtpSpinner.stop()
+            if (isVerbose) log.debug('SMTP server bundle not found, skipping')
+          }
+        } else {
+          smtpSpinner.stop()
+          if (isVerbose) log.debug('No EC2 instance or bucket found, skipping SMTP deploy')
+        }
+      } catch (smtpDeployError: any) {
+        smtpSpinner.fail(`SMTP proxy deployment failed: ${smtpDeployError.message}`)
+        if (isVerbose) log.debug(`SMTP deploy error: ${smtpDeployError.stack}`)
+      }
     }
   }
 

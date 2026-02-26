@@ -707,7 +707,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     const stackName = `${appName}-cloud`
 
     // Use ts-cloud's CloudFormation client
-    const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
+    const { AWSCloudFormationClient: CloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
     const cfnClient = new CloudFormationClient(
@@ -1966,7 +1966,39 @@ SYSTEMD
 # Get TLS certificate
 certbot certonly --standalone -d ${mailSubdomain}.${emailDomain} --non-interactive --agree-tos --email admin@${emailDomain} || true
 
+# Link certs for the mail server
+if [ -d "/etc/letsencrypt/live/${mailSubdomain}.${emailDomain}" ]; then
+  mkdir -p /etc/smtp-server
+  ln -sf /etc/letsencrypt/live/${mailSubdomain}.${emailDomain}/fullchain.pem /etc/smtp-server/smtp-server.crt
+  ln -sf /etc/letsencrypt/live/${mailSubdomain}.${emailDomain}/privkey.pem /etc/smtp-server/smtp-server.key
+fi
+
+# Set up certbot auto-renewal
+cat > /etc/systemd/system/certbot-renewal.service << 'CERTSVC'
+[Unit]
+Description=Certbot certificate renewal
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl restart mail-server"
+CERTSVC
+
+cat > /etc/systemd/system/certbot-renewal.timer << 'CERTTIMER'
+[Unit]
+Description=Run certbot renewal twice daily
+
+[Timer]
+OnCalendar=*-*-* 00,12:00:00
+RandomizedDelaySec=3600
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+CERTTIMER
+
 systemctl daemon-reload
+systemctl enable certbot-renewal.timer
+systemctl start certbot-renewal.timer
 systemctl enable mail-server
 systemctl start mail-server
 
@@ -2005,7 +2037,7 @@ aws s3 cp s3://${emailBucketName}/mail-server/smtp-server ./smtp-server --region
   echo "Pre-built binary not found, building from source..."
   # Download source from S3 or clone from GitHub
   aws s3 cp s3://${emailBucketName}/mail-server/source.tar.gz ./source.tar.gz --region ${region} && tar -xzf source.tar.gz || {
-    git clone https://github.com/stacksjs/mail.git .
+    git clone https://github.com/mail-os/mail.git .
   }
   chown -R smtp-server:smtp-server /opt/smtp-server
   sudo -u smtp-server zig build -Doptimize=ReleaseFast
@@ -2111,8 +2143,34 @@ SYSTEMD
 systemctl enable fail2ban
 systemctl start fail2ban
 
-# Enable and start SMTP server
+# Set up certbot auto-renewal with post-hook to reload SMTP server
+cat > /etc/systemd/system/certbot-renewal.service << 'CERTSVC'
+[Unit]
+Description=Certbot certificate renewal
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl reload smtp-server || systemctl restart smtp-server"
+CERTSVC
+
+cat > /etc/systemd/system/certbot-renewal.timer << 'CERTTIMER'
+[Unit]
+Description=Run certbot renewal twice daily
+
+[Timer]
+OnCalendar=*-*-* 00,12:00:00
+RandomizedDelaySec=3600
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+CERTTIMER
+
 systemctl daemon-reload
+systemctl enable certbot-renewal.timer
+systemctl start certbot-renewal.timer
+
+# Enable and start SMTP server
 systemctl enable smtp-server
 systemctl start smtp-server
 

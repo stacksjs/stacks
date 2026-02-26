@@ -1,7 +1,8 @@
 import { log, runCommand } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
 import { CLI } from '@stacksjs/clapp'
-import { createHash, randomBytes } from 'crypto'
+import { createHash, createHmac, randomBytes } from 'crypto'
+import { readFileSync, existsSync } from 'node:fs'
 
 export function mailCommands(buddy: CLI): void {
   buddy
@@ -235,4 +236,334 @@ export function mailCommands(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
     })
+
+  buddy
+    .command('mail:credentials [email]', 'Show SMTP credentials for email access')
+    .action(async (emailAddress?: string) => {
+      loadEnvFiles()
+
+      const domain = process.env.APP_DOMAIN || process.env.MAIL_DOMAIN || 'stacksjs.com'
+      const mailHost = `mail.${domain}`
+      const email = emailAddress || `chris@${domain}`
+      const username = email.includes('@') ? email.split('@')[0] : email
+      const envKey = `MAIL_PASSWORD_${username.toUpperCase()}`
+      const password = process.env[envKey]
+
+      console.log('')
+      console.log('==========================================================')
+      console.log(`  EMAIL CREDENTIALS — ${email}`)
+      console.log('==========================================================')
+      console.log('')
+      console.log(`  Email:       ${email}`)
+      console.log(`  Host:        ${mailHost}`)
+      console.log(`  Port:        587`)
+      console.log(`  Security:    STARTTLS`)
+      console.log(`  Username:    ${username}`)
+
+      if (password) {
+        console.log(`  Password:    ${password}`)
+      } else {
+        console.log(`  Password:    (not set — add ${envKey} to .env.production)`)
+      }
+
+      console.log('')
+      console.log('==========================================================')
+      console.log('')
+
+      process.exit(ExitCode.Success)
+    })
+
+  buddy
+    .command('mail:logs', 'Show mail server logs from production')
+    .option('-n, --lines <count>', 'Number of log lines to show', { default: '50' })
+    .option('-f, --follow', 'Follow log output (poll every 5s)')
+    .option('--filter <pattern>', 'Filter logs by pattern (e.g. AUTH, LOGIN, error)')
+    .action(async (options: { lines?: string; follow?: boolean; filter?: string }) => {
+      loadEnvFiles()
+
+      const region = process.env.AWS_REGION || 'us-east-1'
+      const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+
+      try {
+        const { EC2Client, SSMClient } = await import('@stacksjs/ts-cloud')
+        const ec2 = new EC2Client(region)
+        const ssm = new SSMClient(region)
+
+        // Find the production server instance
+        log.info('Finding production server...')
+        const data = await ec2.describeInstances({
+          Filters: [
+            { Name: 'tag:Name', Values: [`${appName}-app-production-server`] },
+            { Name: 'instance-state-name', Values: ['running'] },
+          ],
+        })
+
+        const instanceId = data.Reservations?.[0]?.Instances?.[0]?.InstanceId
+        if (!instanceId) {
+          log.error('No running production server found.')
+          log.info(`Looked for instances tagged: ${appName}-app-production-server`)
+          process.exit(ExitCode.FatalError)
+        }
+
+        log.info(`Found instance: ${instanceId}`)
+
+        const lines = options.lines || '50'
+        const filterCmd = options.filter
+          ? ` | grep -iE '${options.filter}'`
+          : ''
+
+        const fetchLogs = async () => {
+          const cmd = `journalctl -u stacks-mail --no-pager -n ${lines} --since "10 minutes ago" 2>&1${filterCmd}`
+          const result = await ssm.runShellCommand(instanceId, [cmd], {
+            timeoutSeconds: 30,
+            maxWaitMs: 30000,
+            pollIntervalMs: 2000,
+          })
+
+          if (!result.success) {
+            log.error(`Failed to fetch logs: ${result.error || 'Unknown error'}`)
+            return false
+          }
+
+          if (result.output) {
+            // Clear and print
+            const logLines = result.output.trim().split('\n')
+            for (const line of logLines) {
+              // Color code different log levels
+              if (line.includes('error') || line.includes('Error') || line.includes('AUTH failed')) {
+                console.log(`  \x1b[31m${line}\x1b[0m`)
+              } else if (line.includes('warning') || line.includes('Warning')) {
+                console.log(`  \x1b[33m${line}\x1b[0m`)
+              } else if (line.includes('AUTH success') || line.includes('LOGIN completed') || line.includes('authenticated')) {
+                console.log(`  \x1b[32m${line}\x1b[0m`)
+              } else {
+                console.log(`  ${line}`)
+              }
+            }
+          } else {
+            console.log('  No log entries found.')
+          }
+
+          return true
+        }
+
+        console.log('')
+        console.log('==========================================================')
+        console.log('  MAIL SERVER LOGS')
+        console.log('==========================================================')
+        console.log('')
+
+        await fetchLogs()
+
+        if (options.follow) {
+          console.log('')
+          log.info('Following logs (Ctrl+C to stop)...')
+          const poll = setInterval(async () => {
+            console.log('')
+            await fetchLogs()
+          }, 5000)
+
+          await new Promise<void>((resolve) => {
+            process.on('SIGINT', () => {
+              clearInterval(poll)
+              resolve()
+            })
+          })
+        }
+
+        console.log('')
+        process.exit(ExitCode.Success)
+      } catch (error: any) {
+        log.error(`Failed to fetch logs: ${error.message}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('mail:status', 'Show mail server status')
+    .action(async () => {
+      loadEnvFiles()
+
+      const region = process.env.AWS_REGION || 'us-east-1'
+      const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+
+      try {
+        const { EC2Client, SSMClient } = await import('@stacksjs/ts-cloud')
+        const ec2 = new EC2Client(region)
+        const ssm = new SSMClient(region)
+
+        const data = await ec2.describeInstances({
+          Filters: [
+            { Name: 'tag:Name', Values: [`${appName}-app-production-server`] },
+            { Name: 'instance-state-name', Values: ['running'] },
+          ],
+        })
+
+        const instanceId = data.Reservations?.[0]?.Instances?.[0]?.InstanceId
+        if (!instanceId) {
+          log.error('No running production server found.')
+          process.exit(ExitCode.FatalError)
+        }
+
+        const result = await ssm.runShellCommand(instanceId, [
+          'echo === Service ===',
+          'systemctl status stacks-mail --no-pager 2>&1 | head -15',
+          'echo === Ports ===',
+          'ss -tlnp 2>&1 | grep -E "(587|465|993|143)" || echo "No mail ports listening"',
+          'echo === Memory ===',
+          'ps aux | grep -E "(bun|mail)" | grep -v grep | awk \'{print $6/1024 "MB", $11}\'',
+        ], {
+          timeoutSeconds: 30,
+          maxWaitMs: 30000,
+          pollIntervalMs: 2000,
+        })
+
+        console.log('')
+        console.log('==========================================================')
+        console.log('  MAIL SERVER STATUS')
+        console.log('==========================================================')
+        console.log('')
+
+        if (result.success && result.output) {
+          for (const line of result.output.trim().split('\n')) {
+            console.log(`  ${line}`)
+          }
+        } else {
+          log.error(`Failed: ${result.error}`)
+        }
+
+        console.log('')
+        process.exit(ExitCode.Success)
+      } catch (error: any) {
+        log.error(`Failed to get status: ${error.message}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('mail:server', 'Start SMTP relay server')
+    .option('--port <port>', 'SMTP port', { default: '587' })
+    .action(async (options: { port: string }) => {
+      loadEnvFiles()
+
+      const domain = process.env.APP_DOMAIN || process.env.MAIL_DOMAIN || 'stacksjs.com'
+      const port = parseInt(options.port)
+      const mailboxes = ['chris', 'blake', 'glenn']
+
+      // Build users map from env vars
+      const users: Record<string, { password: string; email: string }> = {}
+      const generated: string[] = []
+
+      for (const name of mailboxes) {
+        const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
+        let password = process.env[envKey]
+
+        if (!password) {
+          password = randomBytes(16).toString('base64url')
+          generated.push(`${envKey}=${password}`)
+        }
+
+        users[name] = { password, email: `${name}@${domain}` }
+      }
+
+      if (generated.length > 0) {
+        console.log('')
+        log.warn('Generated missing passwords. Add these to .env.production:')
+        for (const line of generated) {
+          console.log(`  ${line}`)
+        }
+      }
+
+      console.log('')
+      console.log('==========================================================')
+      console.log('  SMTP RELAY SERVER')
+      console.log('==========================================================')
+      console.log('')
+      console.log(`  Host:        mail.${domain}`)
+      console.log(`  Port:        ${port}`)
+      console.log(`  Domain:      ${domain}`)
+      console.log('')
+      console.log('  Mailboxes:')
+      for (const [name, user] of Object.entries(users)) {
+        console.log(`    ${name} (${user.email})`)
+      }
+      console.log('')
+      console.log('  Relaying through AWS SES')
+      console.log('==========================================================')
+      console.log('')
+
+      try {
+        const { SmtpServer } = await import('../../../cloud/src/imap/smtp-server')
+        const server = new SmtpServer({
+          port,
+          host: '0.0.0.0',
+          domain,
+          users,
+          sentBucket: `stacks-production-email`,
+          sentPrefix: 'sent/',
+        })
+
+        await server.start()
+
+        // Keep the process alive until SIGINT
+        await new Promise<void>((resolve) => {
+          process.on('SIGINT', async () => {
+            console.log('\nShutting down SMTP server...')
+            await server.stop()
+            resolve()
+          })
+        })
+
+        process.exit(0)
+      } catch (error: any) {
+        log.error(`Failed to start SMTP server: ${error.message}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+}
+
+/**
+ * Load .env.production and ~/.aws/credentials into process.env
+ */
+function loadEnvFiles(): void {
+  const envPath = '.env.production'
+  if (existsSync(envPath)) {
+    const content = readFileSync(envPath, 'utf-8')
+    for (const line of content.split('\n')) {
+      const eq = line.indexOf('=')
+      if (eq > 0 && !line.startsWith('#')) {
+        const key = line.slice(0, eq).trim()
+        const value = line.slice(eq + 1).trim()
+        if (!process.env[key]) {
+          process.env[key] = value
+        }
+      }
+    }
+  }
+
+  // Load AWS credentials from ~/.aws/credentials if not in env
+  if (!process.env.AWS_ACCESS_KEY_ID || !process.env.AWS_SECRET_ACCESS_KEY) {
+    const home = process.env.HOME || process.env.USERPROFILE || ''
+    const awsCredsPath = `${home}/.aws/credentials`
+    if (existsSync(awsCredsPath)) {
+      const credsContent = readFileSync(awsCredsPath, 'utf-8')
+      const profile = process.env.AWS_PROFILE || 'default'
+      const lines = credsContent.split('\n')
+      let inProfile = false
+      for (const line of lines) {
+        const trimmed = line.trim()
+        if (trimmed.startsWith('[')) {
+          inProfile = trimmed === `[${profile}]`
+          continue
+        }
+        if (inProfile && trimmed.includes('=')) {
+          const eq = trimmed.indexOf('=')
+          const key = trimmed.slice(0, eq).trim()
+          const value = trimmed.slice(eq + 1).trim()
+          if (key === 'aws_access_key_id') process.env.AWS_ACCESS_KEY_ID = value
+          if (key === 'aws_secret_access_key') process.env.AWS_SECRET_ACCESS_KEY = value
+        }
+      }
+    }
+  }
 }

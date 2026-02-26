@@ -1,1 +1,2 @@
-CREATE UNIQUE INDEX IF NOT EXISTS "subscribers_subscribers_email_unique" ON "subscribers" ("email");
+-- Skipped: unique constraints already exist from table creation
+SELECT 1;

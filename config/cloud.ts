@@ -331,6 +331,11 @@ export const tsCloud: TsCloudConfig = {
         encryption: true,
         versioning: true,
       },
+      'email': {
+        public: false,
+        encryption: true,
+        versioning: false,
+      },
     },
 
     /**
@@ -445,11 +450,14 @@ export const tsCloud: TsCloudConfig = {
      * Note: 'email' is not a valid property on InfrastructureConfig.
      * Uncomment and move to a supported config section when the type supports it.
      */
-    // email: {
-    //   domain: 'stacksjs.com',
-    //   configurationSet: true,
-    //   enableDkim: true,
-    // },
+    email: {
+      domain: 'stacksjs.com',
+      configurationSet: true,
+      enableDkim: true,
+      server: {
+        enabled: true,
+      },
+    },
 
     /**
      * Search Configuration (OpenSearch)

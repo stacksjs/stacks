@@ -1,1 +1,2 @@
-CREATE UNIQUE INDEX IF NOT EXISTS "gift_cards_gift_cards_code_unique" ON "gift_cards" ("code");
+-- Skipped: unique constraints already exist from table creation
+SELECT 1;

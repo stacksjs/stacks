@@ -6,6 +6,8 @@
  */
 
 import type { Result } from '@stacksjs/error-handling'
+import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
 // Defensive log wrapper to handle cases where log methods might not be initialized
@@ -79,6 +81,62 @@ function configureQueryBuilder(): void {
 }
 
 /**
+ * SQLite compatibility preprocessing for migrations.
+ *
+ * SQLite does not support:
+ * - ALTER TABLE ADD CONSTRAINT (foreign keys must be defined at table creation)
+ * - Creating duplicate unique indexes on columns that already have UNIQUE constraints
+ *   from inline table definitions (the index name differs but the constraint conflicts)
+ *
+ * This function rewrites incompatible migration files to no-ops.
+ */
+function preprocessSqliteMigrations(): void {
+  const migrationsDir = join(process.cwd(), 'database', 'migrations')
+  let files: string[]
+  try {
+    files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
+  }
+  catch {
+    return // directory doesn't exist yet
+  }
+
+  const addConstraintPattern = /^\s*ALTER\s+TABLE\s+.+\s+ADD\s+CONSTRAINT\s+/i
+  // Match CREATE UNIQUE INDEX — these are redundant in SQLite when the table
+  // already defines the UNIQUE constraint inline during CREATE TABLE.
+  // Regular CREATE INDEX is fine and should NOT be skipped.
+  const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+/i
+
+  for (const file of files) {
+    const filePath = join(migrationsDir, file)
+    const content = readFileSync(filePath, 'utf-8')
+    const statements = content
+      .split(';')
+      .map(s => s.trim())
+      .filter(s => s.length > 0 && !s.startsWith('--'))
+
+    if (statements.length === 0) continue
+
+    // Skip files that only contain ALTER TABLE ADD CONSTRAINT
+    const allAddConstraint = statements.every(s => addConstraintPattern.test(s))
+    if (allAddConstraint) {
+      log.info(`Skipping SQLite-incompatible migration: ${file}`)
+      writeFileSync(filePath, '-- Skipped: SQLite does not support ALTER TABLE ADD CONSTRAINT\nSELECT 1;\n')
+      continue
+    }
+
+    // CREATE UNIQUE INDEX fails in SQLite when the column already has
+    // a UNIQUE constraint from table creation. IF NOT EXISTS only checks
+    // by index name, not by column — so a second unique index with a
+    // different name triggers SQLITE_CONSTRAINT_UNIQUE.
+    const allCreateUniqueIndex = statements.every(s => createUniqueIndexPattern.test(s))
+    if (allCreateUniqueIndex) {
+      log.info(`Skipping redundant unique index migration for SQLite: ${file}`)
+      writeFileSync(filePath, '-- Skipped: unique constraints already exist from table creation\nSELECT 1;\n')
+    }
+  }
+}
+
+/**
  * Run database migrations
  */
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
@@ -87,6 +145,11 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
 
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
+
+    // Preprocess migrations for SQLite compatibility
+    if (getDialect() === 'sqlite') {
+      preprocessSqliteMigrations()
+    }
 
     const modelsDir = path.userModelsPath()
 

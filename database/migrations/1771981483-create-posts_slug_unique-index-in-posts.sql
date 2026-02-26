@@ -1,1 +1,2 @@
-CREATE UNIQUE INDEX IF NOT EXISTS "posts_posts_slug_unique" ON "posts" ("slug");
+-- Skipped: unique constraints already exist from table creation
+SELECT 1;
