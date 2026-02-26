@@ -42,6 +42,8 @@ export async function localTunnel(options?: TunnelOptions | { port: number }): P
     ...('server' in opts && opts.server ? { server: opts.server } : {}),
     ...('subdomain' in opts && opts.subdomain ? { subdomain: opts.subdomain } : {}),
     ...('verbose' in opts && opts.verbose !== undefined ? { verbose: opts.verbose } : {}),
+    ...('timeout' in opts && opts.timeout ? { timeout: opts.timeout } : {}),
+    ...('maxReconnectAttempts' in opts && opts.maxReconnectAttempts ? { maxReconnectAttempts: opts.maxReconnectAttempts } : {}),
     ...('onConnect' in opts && opts.onConnect ? { onConnect: opts.onConnect } : {}),
     ...('onRequest' in opts && opts.onRequest ? { onRequest: opts.onRequest } : {}),
     ...('onResponse' in opts && opts.onResponse ? { onResponse: opts.onResponse as any } : {}),
