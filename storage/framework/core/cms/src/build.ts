@@ -146,7 +146,7 @@ function renderMarkdownish(text: string): string {
   return result.join('\n').replace(/<\/ul>\n<ul>/g, '\n')
 }
 
-function generateLayout(config: BlogConfig, title: string, content: string, options?: { isPost?: boolean }): string {
+function generateLayout(config: BlogConfig, title: string, content: string, _options?: { isPost?: boolean }): string {
   const pageTitle = title === config.title ? config.title : `${escapeHtml(title)} | ${escapeHtml(config.title)}`
 
   return `<!DOCTYPE html>
@@ -499,7 +499,7 @@ ${items}
 </rss>`
 }
 
-function generateSitemap(posts: PostRow[], config: BlogConfig, domain: string): string {
+function generateSitemap(posts: PostRow[], _config: BlogConfig, domain: string): string {
   const urls = posts.map((post) => {
     const slug = getSlug(post)
     const lastmod = post.updated_at || post.published_at || ''

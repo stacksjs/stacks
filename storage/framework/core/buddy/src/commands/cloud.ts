@@ -263,9 +263,9 @@ export function cloud(buddy: CLI): void {
         const distributionId = await getCloudFrontDistributionId()
 
         try {
-          const result = await cloudfront.invalidateAll(distributionId)
-          log.success(`Invalidation created: ${result.Id}`)
-          log.info(`Status: ${result.Status}`)
+          const invalidationId = await cloudfront.invalidateAll(distributionId)
+          log.success(`Invalidation created: ${invalidationId}`)
+          log.info(`Status: pending`)
         }
         catch (err: any) {
           log.error(`Failed to invalidate CloudFront cache: ${err.message}`)

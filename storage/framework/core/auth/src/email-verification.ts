@@ -28,7 +28,7 @@ export interface EmailVerificationResult {
  */
 function generateVerificationToken(userId: number): { token: string, hash: string } {
   const nonce = randomBytes(32).toString('hex')
-  const appKey = config.app.key || (config.security as any)?.appKey || 'stacks-default-key'
+  const appKey = config.app.key || 'stacks-default-key'
   const payload = `${userId}:${nonce}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
   return { token: nonce, hash }
@@ -38,7 +38,7 @@ function generateVerificationToken(userId: number): { token: string, hash: strin
  * Verify a token matches the stored hash
  */
 function verifyToken(userId: number, token: string, storedHash: string): boolean {
-  const appKey = config.app.key || (config.security as any)?.appKey || 'stacks-default-key'
+  const appKey = config.app.key || 'stacks-default-key'
   const payload = `${userId}:${token}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
   const a = Buffer.from(hash)
@@ -52,7 +52,15 @@ function verifyToken(userId: number, token: string, storedHash: string): boolean
  * Get verification expiry minutes from config (default: 60)
  */
 function getExpiryMinutes(): number {
-  return (config.auth as any)?.emailVerification?.expire ?? 60
+  const authConfig = (config.auth ?? {}) as Record<string, unknown>
+  const emailVerification = authConfig.emailVerification
+  if (emailVerification != null && typeof emailVerification === 'object') {
+    const ev = emailVerification as Record<string, unknown>
+    if (typeof ev.expire === 'number') {
+      return ev.expire
+    }
+  }
+  return 60
 }
 
 /**

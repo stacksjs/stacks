@@ -17,7 +17,8 @@ import { createErrorResponse, createMiddlewareErrorResponse } from './error-hand
 
 import type { StacksActionPath } from './action-paths'
 
-type StacksHandler = ActionHandler | StacksActionPath
+type RouteHandlerFn = (_req: EnhancedRequest) => Response | Promise<Response>
+type StacksHandler = string | RouteHandlerFn
 
 interface StacksRouterConfig {
   verbose?: boolean
@@ -211,7 +212,7 @@ function parseMiddlewareName(middleware: string): { name: string, params?: strin
 /**
  * Create a wrapped handler with middleware support
  */
-function createMiddlewareHandler(routeKey: string, handler: StacksHandler): ActionHandler {
+function createMiddlewareHandler(routeKey: string, handler: StacksHandler): RouteHandlerFn {
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true)
 
@@ -309,7 +310,7 @@ async function fileExists(path: string): Promise<boolean> {
  * Resolve a string handler to an actual handler function
  * Supports user overrides: checks user's app/ first, then falls back to defaults
  */
-async function resolveStringHandler(handlerPath: string): Promise<ActionHandler> {
+async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn> {
   let modulePath = handlerPath
 
   // Remove trailing .ts if present
@@ -744,7 +745,7 @@ function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
   return req
 }
 
-function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler {
+function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerFn {
   if (typeof handler === 'string') {
     const handlerPath = handler // capture for error messages
     return async (req: EnhancedRequest) => {
@@ -773,6 +774,7 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): ActionHandler
       }
     }
   }
+  // handler is a callable function (RouteHandler or TypedRouteHandler)
   return handler
 }
 

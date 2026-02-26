@@ -6,6 +6,11 @@ import process from 'node:process'
 import { db, sql } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
 
+/** Type-safe helper to brand a plain string as an AuthToken */
+function toAuthToken(value: string): AuthToken {
+  return value as AuthToken
+}
+
 export class TokenManager {
   static async createAccessToken(user: { id: number }): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
@@ -27,7 +32,7 @@ export class TokenManager {
     if (!result?.insertId)
       throw new HttpError(500, 'Failed to create access token')
 
-    return token as any
+    return toAuthToken(token)
   }
 
   static async validateToken(token: string): Promise<boolean> {
@@ -94,7 +99,7 @@ export class TokenManager {
       .where('id', '=', accessToken.id)
       .execute()
 
-    return newToken as any
+    return toAuthToken(newToken)
   }
 
   static async revokeToken(token: string): Promise<void> {

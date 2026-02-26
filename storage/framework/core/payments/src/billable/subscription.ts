@@ -1,8 +1,8 @@
-
-type SubscriptionsTable = ModelRow<typeof Subscription>
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
+
+type SubscriptionsTable = Record<string, unknown>
 
 import { manageCustomer, managePrice, stripe } from '..'
 
@@ -62,7 +62,7 @@ export const manageSubscription: SubscriptionManager = (() => {
     user: UserModel,
     type: string,
     lookupKey: string,
-    params: Partial<Stripe.SubscriptionUpdateParams> = {},
+    _params: Partial<Stripe.SubscriptionUpdateParams> = {},
   ): Promise<Stripe.Response<Stripe.Subscription>> {
     const newPrice = await managePrice.retrieveByLookupKey(lookupKey)
 
@@ -91,7 +91,6 @@ export const manageSubscription: SubscriptionManager = (() => {
     await stripe.subscriptionItems.update(subscriptionItemId, {
       price: newPrice.id,
       quantity: 1,
-      ...params,
     })
 
     const updatedSubscription = await stripe.subscriptions.retrieve(subscriptionId)

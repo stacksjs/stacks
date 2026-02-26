@@ -12,34 +12,40 @@ import { env } from '@stacksjs/env'
  * - 'server': Uses ts-broadcasting (high-performance Bun WebSocket server)
  * - 'serverless': Uses API Gateway WebSocket + Lambda + DynamoDB
  */
+
+// Helper variables for union literal types
+const realtimeMode = String(env.REALTIME_MODE || 'server')
+const broadcastDriver = String(env.BROADCAST_DRIVER || 'bun')
+const broadcastScheme = String(env.BROADCAST_SCHEME || 'ws')
+
 export default {
   enabled: true,
 
   // Deployment mode: 'server' (ts-broadcasting) or 'serverless' (API Gateway)
-  mode: env.REALTIME_MODE || 'server',
+  mode: realtimeMode as 'serverless' | 'server',
 
   // Legacy driver option (for backward compatibility)
-  driver: env.BROADCAST_DRIVER || 'bun',
+  driver: broadcastDriver as 'socket' | 'pusher' | 'bun' | 'reverb' | 'ably',
 
   // Server mode configuration (ts-broadcasting)
   server: {
-    host: env.BROADCAST_HOST || '0.0.0.0',
-    port: env.BROADCAST_PORT || 6001,
-    scheme: env.BROADCAST_SCHEME || 'ws',
+    host: String(env.BROADCAST_HOST || '0.0.0.0'),
+    port: Number(env.BROADCAST_PORT || 6001),
+    scheme: broadcastScheme as 'ws' | 'wss',
     driver: 'bun',
 
     // Redis adapter for horizontal scaling
     redis: {
-      enabled: env.BROADCAST_REDIS_ENABLED || false,
-      host: env.REDIS_HOST || 'localhost',
-      port: env.REDIS_PORT || 6379,
-      password: env.REDIS_PASSWORD,
-      prefix: env.BROADCAST_REDIS_PREFIX || 'stacks:realtime:',
+      enabled: Boolean(env.BROADCAST_REDIS_ENABLED || false),
+      host: String(env.REDIS_HOST || 'localhost'),
+      port: Number(env.REDIS_PORT || 6379),
+      password: String(env.REDIS_PASSWORD || ''),
+      prefix: String(env.BROADCAST_REDIS_PREFIX || 'stacks:realtime:'),
     },
 
     // Rate limiting
     rateLimit: {
-      enabled: env.BROADCAST_RATE_LIMIT_ENABLED || true,
+      enabled: Boolean(env.BROADCAST_RATE_LIMIT_ENABLED ?? true),
       maxConnectionsPerIp: 100,
       maxMessagesPerSecond: 50,
       maxPayloadSize: 65536,
@@ -70,7 +76,7 @@ export default {
 
     // Metrics endpoint
     metrics: {
-      enabled: env.BROADCAST_METRICS_ENABLED || false,
+      enabled: Boolean(env.BROADCAST_METRICS_ENABLED || false),
       port: 9090,
       path: '/metrics',
     },
@@ -80,7 +86,7 @@ export default {
   serverless: {
     connectionTimeout: 3600,
     idleTimeout: 600,
-    stageName: env.APP_ENV || 'production',
+    stageName: String(env.APP_ENV || 'production'),
     memorySize: 256,
     timeout: 30,
   },
@@ -98,30 +104,30 @@ export default {
 
   // Application credentials (for Pusher-compatible servers)
   app: {
-    id: env.BROADCAST_APP_ID || 'stacks',
-    key: env.BROADCAST_APP_KEY || '',
-    secret: env.BROADCAST_APP_SECRET || '',
+    id: String(env.BROADCAST_APP_ID || 'stacks'),
+    key: String(env.BROADCAST_APP_KEY || ''),
+    secret: String(env.BROADCAST_APP_SECRET || ''),
   },
 
   // Legacy socket configuration
   socket: {
-    port: env.BROADCAST_PORT || 6001,
-    host: env.BROADCAST_HOST || 'localhost',
+    port: Number(env.BROADCAST_PORT || 6001),
+    host: String(env.BROADCAST_HOST || 'localhost'),
     cors: {
-      origin: env.BROADCAST_CORS_ORIGIN || env.APP_URL || 'http://localhost:3000',
+      origin: String(env.BROADCAST_CORS_ORIGIN || env.APP_URL || 'http://localhost:3000'),
       methods: ['GET', 'POST'],
     },
   },
 
   // Legacy Pusher configuration
   pusher: {
-    appId: env.PUSHER_APP_ID || '',
-    key: env.PUSHER_APP_KEY || '',
-    secret: env.PUSHER_APP_SECRET || '',
-    cluster: env.PUSHER_APP_CLUSTER || 'mt1',
-    useTLS: env.PUSHER_APP_USE_TLS || true,
+    appId: String(env.PUSHER_APP_ID || ''),
+    key: String(env.PUSHER_APP_KEY || ''),
+    secret: String(env.PUSHER_APP_SECRET || ''),
+    cluster: String(env.PUSHER_APP_CLUSTER || 'mt1'),
+    useTLS: Boolean(env.PUSHER_APP_USE_TLS ?? true),
   },
 
   // Debug mode
-  debug: env.BROADCAST_DEBUG || false,
+  debug: Boolean(env.BROADCAST_DEBUG || false),
 } satisfies RealtimeConfig

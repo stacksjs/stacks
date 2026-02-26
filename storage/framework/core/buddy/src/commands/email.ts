@@ -256,14 +256,14 @@ export function email(buddy: CLI): void {
       loadAwsCredentials()
 
       try {
-        const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
-        const cf = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const cf = new AWSCloudFormationClient(process.env.AWS_REGION || 'us-east-1')
 
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
         const stackName = `${appName}-cloud`
 
         const result = await withTimeout(cf.listStackResources(stackName))
-        const emailResources = (result as any).StackResourceSummaries?.filter(
+        const emailResources = result.StackResourceSummaries?.filter(
           (r: any) => r.LogicalResourceId.includes('Email') || r.LogicalResourceId.includes('Inbound') || r.LogicalResourceId.includes('Outbound')
         ) || []
 
@@ -282,7 +282,7 @@ export function email(buddy: CLI): void {
 
         // Get outputs
         const stacks = await withTimeout(cf.describeStacks({ stackName }))
-        const outputs = (stacks as any).Stacks?.[0]?.Outputs || []
+        const outputs = stacks.Stacks?.[0]?.Outputs || []
         const emailOutputs = outputs.filter((o: any) => o.OutputKey?.includes('Email'))
 
         if (emailOutputs.length > 0) {

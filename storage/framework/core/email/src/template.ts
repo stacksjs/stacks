@@ -195,7 +195,8 @@ export async function template(
   // Use STX engine for .stx templates
   if (resolved.type === 'stx') {
     try {
-      const { renderEmail } = await import('stx')
+      // @ts-ignore - renderEmail may not be exported yet from stx
+      const { renderEmail } = await import('@stacksjs/stx')
       const result = await renderEmail(resolved.path, allVariables)
       return result
     }

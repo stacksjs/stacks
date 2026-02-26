@@ -114,7 +114,7 @@ async function getRequestBody(req: EnhancedRequest): Promise<Record<string, any>
 }
 
 // Helper: apply sort parameter to a query builder chain
-function applySorting(query: any, sortParam: string | null, table: string): any {
+function applySorting(query: any, sortParam: string | null, _table: string): any {
   if (!sortParam) return query
   const desc = sortParam.startsWith('-')
   const column = desc ? sortParam.slice(1) : sortParam

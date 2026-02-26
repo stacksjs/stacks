@@ -91,12 +91,12 @@ export const DatabaseNotificationDriver = {
   async unreadCount(userId: number): Promise<number> {
     const result = await db
       .selectFrom('notifications' as any)
-      .select(db.fn.countAll().as('count'))
+      .selectAll()
       .where('user_id' as any, '=', userId)
       .where('read_at' as any, 'is', null)
-      .executeTakeFirst()
+      .execute()
 
-    return Number((result as any)?.count) || 0
+    return (result as any[])?.length || 0
   },
 
   async deleteNotification(id: number): Promise<void> {

@@ -168,8 +168,8 @@ export class SMTPDriver extends BaseEmailDriver {
 
       const originalResolve = resolve
       const originalReject = reject
-      resolve = (value: string) => { clearTimeout(timeout); originalResolve(value) }
-      reject = (reason?: any) => { clearTimeout(timeout); originalReject(reason) }
+      resolve = (value: string | PromiseLike<string>) => { clearTimeout(timeout); originalResolve(value) }
+      reject = (reason?: unknown) => { clearTimeout(timeout); originalReject(reason) }
 
       let socket: net.Socket | tls.TLSSocket
       let buffer = ''

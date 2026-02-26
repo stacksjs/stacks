@@ -128,8 +128,8 @@ export function mailCommands(buddy: CLI): void {
         let apiUrl = options.api
 
         if (!apiUrl) {
-          const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
-          const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
+          const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+          const cfn = new AWSCloudFormationClient(process.env.AWS_REGION || 'us-east-1')
           const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
           const stackName = `${appName}-cloud`
 
@@ -195,8 +195,8 @@ export function mailCommands(buddy: CLI): void {
     .command('mail:test', 'Test mail API connection')
     .action(async () => {
       try {
-        const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
-        const cfn = new CloudFormationClient(process.env.AWS_REGION || 'us-east-1')
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const cfn = new AWSCloudFormationClient(process.env.AWS_REGION || 'us-east-1')
         const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
         const stackName = `${appName}-cloud`
 

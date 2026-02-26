@@ -7,7 +7,7 @@ import type { CommandError, DeployOptions, Subprocess } from '@stacksjs/types'
 import type {
   CreateHostedZoneResult,
   HostedZone,
-} from '@stacksjs/ts-cloud'
+} from '@stacksjs/ts-cloud/aws'
 import { runAction } from '@stacksjs/actions'
 import { config } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
@@ -94,9 +94,9 @@ export async function deleteHostedZone(domainName: string): Promise<Result<strin
   const route53 = new Route53Client()
 
   const result = await deleteRecordsForZone(route53, domainName)
-  if (result.isErr()) return result as unknown as Result<string, Error>
+  if (result.isErr) return err(handleError(`Failed to delete records for zone: ${domainName}`))
 
-  const hostedZone = result.value
+  const hostedZone = result.unwrap()
 
   // Delete the hosted zone itself
   await route53.deleteHostedZone({ Id: hostedZone.Id })
@@ -112,7 +112,7 @@ export async function deleteHostedZoneRecords(domainName: string): Promise<Resul
   const route53 = new Route53Client()
 
   const result = await deleteRecordsForZone(route53, domainName)
-  if (result.isErr()) return result as unknown as Result<string, Error>
+  if (result.isErr) return err(handleError(`Failed to delete records for zone: ${domainName}`))
 
   log.info(`Deleted DNS records for domain: ${domainName}`)
 

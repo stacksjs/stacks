@@ -1,4 +1,4 @@
-import type { Err, Ok } from '@stacksjs/error-handling'
+import type { Result } from '@stacksjs/error-handling'
 import { saas } from '@stacksjs/config'
 import { err, ok } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
@@ -13,7 +13,7 @@ interface PriceParams {
     interval: 'day' | 'month' | 'week' | 'year'
   }
 }
-export async function createStripeProduct(): Promise<Ok<string, never> | Err<string, any>> {
+export async function createStripeProduct(): Promise<Result<string, Error>> {
   const plans = saas.plans
   try {
     if (plans !== undefined && plans.length) {
@@ -45,11 +45,12 @@ export async function createStripeProduct(): Promise<Ok<string, never> | Err<str
       }
     }
 
-    return ok('Migrations generated') as any
+    return ok('Migrations generated')
   }
-  catch (error: any) {
-    log.error(error)
+  catch (error) {
+    const e = error instanceof Error ? error : new Error(String(error))
+    log.error(e)
 
-    return err(error)
+    return err(e)
   }
 }

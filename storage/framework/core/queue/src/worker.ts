@@ -175,7 +175,7 @@ async function fetchPendingJobs(queueName: string, limit: number, _driver: strin
       .updateTable('jobs')
       .set({ reserved_at: now, attempts: ((job as any).attempts || 0) + 1 })
       .where('id', '=', (job as any).id)
-      .whereNull('reserved_at')
+      .where('reserved_at', 'is', null)
       .executeTakeFirst()
 
     const updated = Number((result as any)?.numUpdatedRows ?? 0)

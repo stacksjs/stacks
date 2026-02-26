@@ -96,16 +96,14 @@ export class S3StorageAdapter implements StorageAdapter {
       throw new Error(`Failed to read file: ${path}`)
     }
 
-    // getObject returns a raw response, read it as text then convert to buffer
-    const text = typeof response === 'string' ? response : await response.text?.() || ''
-    return Buffer.from(text)
+    // getObject returns a string
+    return Buffer.from(response)
   }
 
   async readToString(path: string): Promise<string> {
     const key = this.prefixPath(path)
     const response = await this.client.getObject(this.bucket, key)
-    if (typeof response === 'string') return response
-    return await response.text?.() || ''
+    return response
   }
 
   async readToBuffer(path: string): Promise<Buffer> {
@@ -128,7 +126,7 @@ export class S3StorageAdapter implements StorageAdapter {
     const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
 
     const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
-    const keys = objects.map((obj: any) => obj.Key || obj.key)
+    const keys = objects.map(obj => obj.Key)
 
     if (keys.length === 0) {
       return
@@ -153,8 +151,8 @@ export class S3StorageAdapter implements StorageAdapter {
     await this.client.copyObject({
       sourceBucket: this.bucket,
       sourceKey: fromKey,
-      bucket: this.bucket,
-      key: toKey,
+      destinationBucket: this.bucket,
+      destinationKey: toKey,
     })
   }
 
@@ -189,7 +187,7 @@ export class S3StorageAdapter implements StorageAdapter {
       const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
       for (const obj of objects) {
         yield {
-          path: this.stripPrefix(obj.Key || obj.key),
+          path: this.stripPrefix(obj.Key),
           type: 'file',
         }
       }
@@ -206,7 +204,7 @@ export class S3StorageAdapter implements StorageAdapter {
 
         for (const obj of result.objects || []) {
           yield {
-            path: this.stripPrefix(obj.Key || obj.key),
+            path: this.stripPrefix(obj.Key),
             type: 'file',
           }
         }

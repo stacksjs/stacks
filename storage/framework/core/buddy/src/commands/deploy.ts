@@ -719,14 +719,16 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     let needsEmailUpdate = false
 
     try {
-      const result = await cfnClient.describeStacks({ stackName })
+      const stack = await cfnClient.describeStack(stackName)
 
-      if (result.Stacks && result.Stacks.length > 0) {
+      if (stack) {
         stackExists = true
         log.success('Cloud stack exists')
 
         // Check if email infrastructure is already deployed and matches config
-        const resources = await cfnClient.listStackResources(stackName)
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const awsCfnClient = new AWSCloudFormationClient(process.env.AWS_REGION || 'us-east-1')
+        const resources = await awsCfnClient.listStackResources(stackName)
         const hasEmailBucket = resources.StackResourceSummaries?.some(
           (r: any) => r.LogicalResourceId === 'EmailBucket'
         )
@@ -750,7 +752,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         )
 
         // Get current email domain from stack outputs to check if it needs updating
-        const currentEmailDomain = result.Stacks[0]?.Outputs?.find(
+        const currentEmailDomain = stack.Outputs?.find(
           (o: any) => o.OutputKey === 'EmailDomain'
         )?.OutputValue
 
@@ -778,7 +780,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         }
 
         // Always update if mail server mode changed or instance needs replacement
-        const currentMode = (result.Stacks[0]?.Outputs || []).find(
+        const currentMode = (stack.Outputs || []).find(
           (o: any) => o.OutputKey === 'MailServerMode'
         )?.OutputValue
         const configuredMode = emailConfig?.server?.mode || 'serverless'
@@ -2315,21 +2317,21 @@ echo "Mail server setup complete at $(date)"
       if (stackExists && needsEmailUpdate) {
         // Update existing stack with email infrastructure
         log.info('Updating stack with email infrastructure...')
-        const result = await cfnClient.updateStack({
+        const stackId = await cfnClient.updateStack({
           stackName,
           templateBody: JSON.stringify(template),
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: [
-            { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
-            { Key: 'ManagedBy', Value: 'Stacks' },
-          ],
+          tags: {
+            Environment: process.env.APP_ENV || 'production',
+            ManagedBy: 'Stacks',
+          },
         })
 
-        log.info(`Stack update initiated: ${result.StackId}`)
+        log.info(`Stack update initiated: ${stackId}`)
         log.info('Waiting for stack update to complete...')
 
         // Wait for stack update to complete
-        await cfnClient.waitForStack(stackName, 'stack-update-complete')
+        await cfnClient.waitForStack(stackName, ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'])
 
         log.success('Cloud infrastructure updated with email server!')
 
@@ -2384,7 +2386,7 @@ echo "Mail server setup complete at $(date)"
       }
       else {
         // Create new stack
-        const result = await cfnClient.createStack({
+        const stackId = await cfnClient.createStack({
           stackName,
           templateBody: JSON.stringify(template),
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
@@ -2394,11 +2396,11 @@ echo "Mail server setup complete at $(date)"
           },
         })
 
-        log.info(`Stack creation initiated: ${result.StackId}`)
+        log.info(`Stack creation initiated: ${stackId}`)
         log.info('Waiting for stack creation to complete...')
 
         // Wait for stack creation to complete
-        await cfnClient.waitForStack(stackName, 'stack-create-complete')
+        await cfnClient.waitForStack(stackName, ['CREATE_COMPLETE', 'ROLLBACK_COMPLETE'])
 
         log.success('Cloud infrastructure created successfully')
 

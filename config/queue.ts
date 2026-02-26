@@ -20,9 +20,14 @@ import { env } from '@stacksjs/env'
  * Because Stacks is fully-typed, you may hover any of the options below and the
  * definitions will be provided.
  */
+
+// Helper to extract the queue driver with correct union type
+const queueDriver = String(env.QUEUE_DRIVER || 'sync')
+const failedDriver = String(env.QUEUE_FAILED_DRIVER || 'database')
+
 export default {
   // Default queue driver: 'sync' | 'database' | 'redis' | 'sqs' | 'memory'
-  default: env.QUEUE_DRIVER || 'sync',
+  default: queueDriver as 'sync' | 'database' | 'redis' | 'sqs' | 'memory',
 
   connections: {
     // Sync driver - executes jobs immediately (good for development)
@@ -43,18 +48,18 @@ export default {
       driver: 'redis',
       // Redis connection settings
       redis: {
-        url: env.REDIS_URL,
-        host: env.REDIS_HOST || 'localhost',
-        port: env.REDIS_PORT || 6379,
-        password: env.REDIS_PASSWORD,
-        db: env.REDIS_DB || 0,
+        url: String(env.REDIS_URL || ''),
+        host: String(env.REDIS_HOST || 'localhost'),
+        port: Number(env.REDIS_PORT || 6379),
+        password: String(env.REDIS_PASSWORD || ''),
+        db: Number(env.REDIS_DB || 0),
       },
       // Key prefix for all queue keys
-      prefix: env.QUEUE_PREFIX || 'stacks:queue',
+      prefix: String(env.QUEUE_PREFIX || 'stacks:queue'),
       // Worker concurrency (number of jobs processed simultaneously)
-      concurrency: env.QUEUE_CONCURRENCY || 5,
+      concurrency: Number(env.QUEUE_CONCURRENCY || 5),
       // Log level for queue operations
-      logLevel: env.QUEUE_LOG_LEVEL || 'info',
+      logLevel: String(env.QUEUE_LOG_LEVEL || 'info') as 'debug' | 'info' | 'warn' | 'error' | 'silent',
       // Enable distributed locking for job processing
       distributedLock: true,
       // Stalled job check interval (ms)
@@ -63,25 +68,25 @@ export default {
       maxStalledJobRetries: 3,
       // Rate limiting configuration
       limiter: env.QUEUE_RATE_LIMIT_ENABLED ? {
-        max: env.QUEUE_RATE_LIMIT_MAX || 100,
-        duration: env.QUEUE_RATE_LIMIT_DURATION || 1000,
+        max: Number(env.QUEUE_RATE_LIMIT_MAX || 100),
+        duration: Number(env.QUEUE_RATE_LIMIT_DURATION || 1000),
       } : undefined,
       // Metrics collection
       metrics: {
-        enabled: env.QUEUE_METRICS_ENABLED || false,
+        enabled: Boolean(env.QUEUE_METRICS_ENABLED || false),
         collectInterval: 10000,
       },
       // Dead letter queue for failed jobs
       defaultDeadLetterOptions: {
-        enabled: env.QUEUE_DLQ_ENABLED || true,
-        maxRetries: env.QUEUE_DLQ_MAX_RETRIES || 3,
+        enabled: Boolean(env.QUEUE_DLQ_ENABLED ?? true),
+        maxRetries: Number(env.QUEUE_DLQ_MAX_RETRIES || 3),
         queueSuffix: '-dead-letter',
       },
       // Horizontal scaling (for multi-instance deployments)
       horizontalScaling: env.QUEUE_HORIZONTAL_SCALING_ENABLED ? {
         enabled: true,
-        maxWorkersPerInstance: env.QUEUE_MAX_WORKERS || 10,
-        jobsPerWorker: env.QUEUE_JOBS_PER_WORKER || 10,
+        maxWorkersPerInstance: Number(env.QUEUE_MAX_WORKERS || 10),
+        jobsPerWorker: Number(env.QUEUE_JOBS_PER_WORKER || 10),
         leaderElection: {
           heartbeatInterval: 5000,
           leaderTimeout: 15000,
@@ -102,12 +107,12 @@ export default {
     // SQS driver - AWS Simple Queue Service
     sqs: {
       driver: 'sqs',
-      key: env.AWS_ACCESS_KEY_ID || '',
-      secret: env.AWS_SECRET_ACCESS_KEY || '',
-      prefix: env.SQS_PREFIX || '',
-      suffix: env.SQS_SUFFIX || '',
+      key: String(env.AWS_ACCESS_KEY_ID || ''),
+      secret: String(env.AWS_SECRET_ACCESS_KEY || ''),
+      prefix: String(env.SQS_PREFIX || ''),
+      suffix: String(env.SQS_SUFFIX || ''),
       queue: 'default',
-      region: env.AWS_REGION || 'us-east-1',
+      region: String(env.AWS_REGION || 'us-east-1'),
     },
 
     // Memory driver - in-memory queue (for testing)
@@ -119,7 +124,7 @@ export default {
 
   // Failed jobs configuration
   failed: {
-    driver: env.QUEUE_FAILED_DRIVER || 'database',
+    driver: failedDriver as 'database' | 'redis',
     table: 'failed_jobs',
     prefix: 'stacks:failed',
   },
@@ -132,7 +137,7 @@ export default {
 
   // Worker configuration
   worker: {
-    concurrency: env.QUEUE_WORKER_CONCURRENCY || 5,
+    concurrency: Number(env.QUEUE_WORKER_CONCURRENCY || 5),
     shutdownTimeout: 30000,
   },
 } satisfies QueueConfig

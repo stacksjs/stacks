@@ -281,7 +281,7 @@ export class Database {
     return new Database({
       driver,
       connection,
-      verbose: stacksEnv.APP_ENV !== 'production',
+      verbose: stacksEnv.APP_ENV !== 'prod',
     })
   }
 }

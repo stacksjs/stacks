@@ -597,16 +597,16 @@ export class Auth {
       .selectAll()
       .execute()
 
-    return tokens.map((token: any) => ({
-      id: token.id,
-      userId: token.user_id,
-      clientId: token.oauth_client_id,
-      name: token.name || 'auth-token',
-      scopes: parseScopes(token.scopes),
-      abilities: parseScopes(token.scopes),
-      expiresAt: token.expires_at ? new Date(token.expires_at) : null,
-      createdAt: token.created_at ? new Date(token.created_at) : new Date(),
-      updatedAt: token.updated_at ? new Date(token.updated_at) : new Date(),
+    return tokens.map((token: Record<string, unknown>) => ({
+      id: Number(token.id),
+      userId: Number(token.user_id),
+      clientId: Number(token.oauth_client_id),
+      name: String(token.name || 'auth-token'),
+      scopes: parseScopes(String(token.scopes ?? '')),
+      abilities: parseScopes(String(token.scopes ?? '')),
+      expiresAt: token.expires_at ? new Date(String(token.expires_at)) : null,
+      createdAt: token.created_at ? new Date(String(token.created_at)) : new Date(),
+      updatedAt: token.updated_at ? new Date(String(token.updated_at)) : new Date(),
       revoked: !!token.revoked,
     }))
   }

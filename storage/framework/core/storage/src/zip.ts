@@ -3,8 +3,8 @@ import type { CommandError, Subprocess } from '@stacksjs/types'
 import type { ZlibCompressionOptions } from 'bun'
 import { runCommand } from '@stacksjs/cli'
 
-function shellEscape(arg: string): string {
-  return `'${arg.replace(/'/g, "'\\''")}'`
+function shellEscape(_arg: string): string {
+  return `'${_arg.replace(/'/g, "'\\''")}'`
 }
 
 interface ZipOptions {

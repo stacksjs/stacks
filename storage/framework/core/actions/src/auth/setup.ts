@@ -9,7 +9,7 @@ import { sqlHelpers } from '@stacksjs/database'
 
 const dbDriver = env.DB_CONNECTION || 'sqlite'
 const sql = sqlHelpers(dbDriver)
-const { isPostgres, isMysql, now, boolTrue, boolFalse } = sql
+const { isPostgres, isMysql, now, boolTrue, boolFalse: _boolFalse } = sql
 
 log.info('Setting up authentication...')
 log.info(`Database driver: ${dbDriver}`)

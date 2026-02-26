@@ -1624,49 +1624,59 @@ function getShortResourceType(resourceType: string): string {
 /**
  * Create CDK-style progress callback
  * @param filter - Optional filter: 'delete' to only show DELETE events, 'create' for CREATE, 'update' for UPDATE/CREATE
+ *
+ * Compatible with ts-cloud-core StackEvent: { EventId, StackName, LogicalResourceId, PhysicalResourceId?, ResourceType, Timestamp, ResourceStatus, ResourceStatusReason? }
  */
 function createProgressCallback(filter?: 'delete' | 'create' | 'update'): (event: {
-  resourceId: string
-  resourceType: string
-  status: string
-  reason?: string
-  timestamp: string
+  LogicalResourceId: string
+  ResourceType: string
+  ResourceStatus: string
+  ResourceStatusReason?: string
+  Timestamp: string
+  EventId: string
+  StackName: string
+  PhysicalResourceId?: string
 }) => void {
   const maxIdLength = 35
   const maxTypeLength = 30
   const seenEvents = new Set<string>()
 
   return (event) => {
+    const eventStatus = event.ResourceStatus
+    const eventResourceId = event.LogicalResourceId
+    const eventResourceType = event.ResourceType
+    const eventReason = event.ResourceStatusReason
+
     // Filter events based on type if specified
-    if (filter === 'delete' && !event.status.includes('DELETE')) {
+    if (filter === 'delete' && !eventStatus.includes('DELETE')) {
       return
     }
-    if (filter === 'create' && !event.status.includes('CREATE')) {
+    if (filter === 'create' && !eventStatus.includes('CREATE')) {
       return
     }
     // For updates, show both UPDATE and CREATE events (new resources may be created during update)
-    if (filter === 'update' && !event.status.includes('UPDATE') && !event.status.includes('CREATE')) {
+    if (filter === 'update' && !eventStatus.includes('UPDATE') && !eventStatus.includes('CREATE')) {
       return
     }
 
     // Deduplicate events (same resource + status)
-    const eventKey = `${event.resourceId}:${event.status}`
+    const eventKey = `${eventResourceId}:${eventStatus}`
     if (seenEvents.has(eventKey)) {
       return
     }
     seenEvents.add(eventKey)
 
-    const resourceId = event.resourceId.padEnd(maxIdLength).substring(0, maxIdLength)
-    const resourceType = getShortResourceType(event.resourceType).padEnd(maxTypeLength).substring(0, maxTypeLength)
-    const status = formatResourceStatus(event.status)
+    const resourceId = eventResourceId.padEnd(maxIdLength).substring(0, maxIdLength)
+    const resourceType = getShortResourceType(eventResourceType).padEnd(maxTypeLength).substring(0, maxTypeLength)
+    const status = formatResourceStatus(eventStatus)
 
     // Format: ResourceId | ResourceType | Status
     const line = `  ${resourceId} ${resourceType} ${status}`
     console.log(line)
 
     // Show reason for failures
-    if (event.reason && (event.status.includes('FAILED') || event.status.includes('ROLLBACK'))) {
-      console.log(`    └─ ${event.reason}`)
+    if (eventReason && (eventStatus.includes('FAILED') || eventStatus.includes('ROLLBACK'))) {
+      console.log(`    └─ ${eventReason}`)
     }
   }
 }
@@ -1742,7 +1752,10 @@ async function setupDnsAndSsl(options: {
         // 6. Get ALB and Target Group ARN from stack
         const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
         const cf = new CloudFormationClient(region)
-        const resources = await cf.listStackResources(stackName)
+        // Use AWSCloudFormationClient for listStackResources (not available on ts-cloud-core CloudFormationClient)
+        const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+        const awsCf = new AWSCloudFormationClient(region)
+        const resources = await awsCf.listStackResources(stackName)
         const albArn = resources.StackResourceSummaries.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')?.PhysicalResourceId
         // Support both serverless (ECSTargetGroup) and server (WebTargetGroup) modes
         const tgArn = resources.StackResourceSummaries.find((r: any) => r.LogicalResourceId === 'ECSTargetGroup')?.PhysicalResourceId
@@ -2018,7 +2031,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           region,
           method: 'HEAD',
           path: `/${templateBucket}`,
-          host: `s3.${region}.amazonaws.com`,
+          bucket: templateBucket,
         })
       } catch {
         // Bucket doesn't exist, create it
@@ -2030,7 +2043,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           region,
           method: 'PUT',
           path: `/${templateBucket}`,
-          host: `s3.${region}.amazonaws.com`,
+          bucket: templateBucket,
           body: createBody || undefined,
         })
       }
@@ -2048,44 +2061,47 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
     }
 
     // Helper to get the right template parameter for CF API calls
-    const templateParam = templateUrl
+    const _templateParam = templateUrl
       ? { templateUrl }
       : { templateBody }
 
     // Check if stack exists
     let stackExists = false
-    let isUpdate = false
+    let _isUpdate = false
     try {
-      const describeResult = await cf.describeStacks({ stackName })
-      if (describeResult.Stacks && describeResult.Stacks.length > 0) {
-        const stack = describeResult.Stacks[0]
+      const stack = await cf.describeStack(stackName)
+      if (stack && stack.StackStatus) {
         if (verbose) console.log(`Current status: ${formatResourceStatus(stack.StackStatus)}`)
         stackExists = true
-        isUpdate = true
+        _isUpdate = true
 
         // If an operation is already in progress, wait for it to finish first
         if (stack.StackStatus.endsWith('_IN_PROGRESS')) {
           console.log(`Stack is busy (${stack.StackStatus}). Waiting for current operation to finish...`)
-          const inProgressType = stack.StackStatus.startsWith('DELETE')
-            ? 'stack-delete-complete'
+          const inProgressStates = stack.StackStatus.startsWith('DELETE')
+            ? ['DELETE_COMPLETE']
             : stack.StackStatus.startsWith('CREATE')
-              ? 'stack-create-complete'
-              : 'stack-update-complete'
+              ? ['CREATE_COMPLETE']
+              : ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE']
           try {
-            await cf.waitForStackWithProgress(stackName, inProgressType as any, createProgressCallback())
+            await cf.waitForStack(stackName, inProgressStates, createProgressCallback())
           } catch {
             // If wait fails, re-check status below
           }
           // Re-check stack state after waiting
-          const refreshResult = await cf.describeStacks({ stackName })
-          if (!refreshResult.Stacks || refreshResult.Stacks.length === 0) {
+          try {
+            const refreshedStack = await cf.describeStack(stackName)
+            if (!refreshedStack || !refreshedStack.StackStatus) {
+              stackExists = false
+              _isUpdate = false
+            } else {
+              if (verbose) console.log(`Stack settled to: ${formatResourceStatus(refreshedStack.StackStatus)}`)
+              // Re-evaluate with the settled status (fall through to checks below)
+              stack.StackStatus = refreshedStack.StackStatus
+            }
+          } catch {
             stackExists = false
-            isUpdate = false
-          } else {
-            const refreshedStatus = refreshResult.Stacks[0].StackStatus
-            if (verbose) console.log(`Stack settled to: ${formatResourceStatus(refreshedStatus)}`)
-            // Re-evaluate with the settled status (fall through to checks below)
-            stack.StackStatus = refreshedStatus
+            _isUpdate = false
           }
         }
 
@@ -2093,12 +2109,12 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         // rolled back successfully -- it is safe to run another update.
         if (stack.StackStatus === 'UPDATE_ROLLBACK_COMPLETE') {
           console.log('Stack rolled back from a previous update. Re-deploying...')
-          // stackExists stays true, isUpdate stays true -- will run updateStack below
+          // stackExists stays true, _isUpdate stays true -- will run updateStack below
         }
         // DELETE_COMPLETE means the stack was fully deleted; treat as non-existent.
         else if (stack.StackStatus === 'DELETE_COMPLETE') {
           stackExists = false
-          isUpdate = false
+          _isUpdate = false
         }
         // ROLLBACK_COMPLETE / CREATE_FAILED / ROLLBACK_FAILED mean the initial
         // creation failed. The only option is to delete and recreate.
@@ -2109,7 +2125,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         ) {
           console.log(`Stack is in ${stack.StackStatus} state. Deleting before recreating...`)
           await cf.deleteStack(stackName)
-          await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback('delete'))
+          await cf.waitForStack(stackName, ['DELETE_COMPLETE'], createProgressCallback('delete'))
 
           // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
           console.log('Cleaning up retained resources...')
@@ -2154,7 +2170,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           }
 
           stackExists = false
-          isUpdate = false
+          _isUpdate = false
         }
       }
     }
@@ -2168,9 +2184,13 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       console.log('Updating stack...')
       console.log('')
       try {
+        // ts-cloud-core uses templateURL (not templateUrl)
+        const updateParam = templateUrl
+          ? { templateURL: templateUrl }
+          : { templateBody }
         await cf.updateStack({
           stackName,
-          ...templateParam,
+          ...updateParam,
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
           tags: {
             Environment: environment,
@@ -2184,7 +2204,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           console.log(`  ${'Resource'.padEnd(35)} ${'Type'.padEnd(30)} Status`)
           console.log('  ' + '─'.repeat(85))
 
-          await cf.waitForStackWithProgress(stackName, 'stack-update-complete', createProgressCallback('update'))
+          await cf.waitForStack(stackName, ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'], createProgressCallback('update'))
           console.log('')
         }
       }
@@ -2248,9 +2268,13 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       // Create new stack
       console.log('Creating stack...')
       console.log('')
-      const result = await cf.createStack({
+      // ts-cloud-core uses templateURL (not templateUrl)
+      const createParam = templateUrl
+        ? { templateURL: templateUrl }
+        : { templateBody }
+      const stackId = await cf.createStack({
         stackName,
-        ...templateParam,
+        ...createParam,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
         tags: {
           Environment: environment,
@@ -2260,14 +2284,14 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         onFailure: 'ROLLBACK',
         timeoutInMinutes: 30,
       })
-      if (verbose) console.log(`Stack ID: ${result.StackId}`)
+      if (verbose) console.log(`Stack ID: ${stackId}`)
 
       if (waitForCompletion) {
         // Print header for resource status table
         console.log(`  ${'Resource'.padEnd(35)} ${'Type'.padEnd(30)} Status`)
         console.log('  ' + '─'.repeat(85))
 
-        await cf.waitForStackWithProgress(stackName, 'stack-create-complete', createProgressCallback('create'))
+        await cf.waitForStack(stackName, ['CREATE_COMPLETE', 'ROLLBACK_COMPLETE'], createProgressCallback('create'))
         console.log('')
       }
     }
@@ -2278,13 +2302,16 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
     const sslDomains = sslConfig.domains || [siteDomain, `www.${siteDomain}`]
 
     // Get stack outputs
-    const outputResult = await cf.describeStacks({ stackName })
-    if (outputResult.Stacks && outputResult.Stacks.length > 0) {
-      const stack = outputResult.Stacks[0]
-
-      // Try to get outputs
-      try {
-        const outputs = await cf.getStackOutputs(stackName)
+    try {
+      const stack = await cf.describeStack(stackName)
+      if (stack && stack.StackStatus) {
+        // Parse outputs from stack description
+        const outputs: Record<string, string> = {}
+        for (const output of stack.Outputs || []) {
+          if (output.OutputKey && output.OutputValue) {
+            outputs[output.OutputKey] = output.OutputValue
+          }
+        }
 
         console.log('═══════════════════════════════════════════════════════════════════════════════════════')
         console.log('')
@@ -2327,9 +2354,9 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           console.log('')
         }
       }
-      catch {
-        // Outputs might not be available yet
-      }
+    }
+    catch {
+      // Outputs might not be available yet
     }
   }
   catch (error: any) {
@@ -2358,8 +2385,8 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
 
     // Get bucket name from stack outputs
     const stackName = `${projectName}-cloud`
-    const outputs = await cf.getStackOutputs(stackName)
-    const bucketName = outputs.AssetsBucketName
+    const stack = await cf.describeStack(stackName)
+    const bucketName = stack.Outputs?.find((o: { OutputKey: string }) => o.OutputKey === 'AssetsBucketName')?.OutputValue
 
     if (!bucketName) {
       throw new Error('Assets bucket not found in stack outputs')
@@ -2397,17 +2424,25 @@ export async function getDeploymentStatus(_options: { environment: string, regio
   const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
   const cf = new CloudFormationClient(region)
 
-  const result = await cf.describeStacks({ stackName })
-  if (!result.Stacks || result.Stacks.length === 0) {
+  try {
+    const stack = await cf.describeStack(stackName)
+    if (!stack || !stack.StackStatus) {
+      return { status: 'NOT_FOUND', outputs: {} }
+    }
+
+    const outputs: Record<string, string> = {}
+    for (const output of stack.Outputs || []) {
+      if (output.OutputKey && output.OutputValue) {
+        outputs[output.OutputKey] = output.OutputValue
+      }
+    }
+
+    return {
+      status: stack.StackStatus,
+      outputs,
+    }
+  } catch {
     return { status: 'NOT_FOUND', outputs: {} }
-  }
-
-  const stack = result.Stacks[0]
-  const outputs = await cf.getStackOutputs(stackName)
-
-  return {
-    status: stack.StackStatus,
-    outputs,
   }
 }
 
@@ -2437,29 +2472,33 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     // Check if stack exists
     let stackExists = false
     try {
-      const describeResult = await cf.describeStacks({ stackName })
-      if (describeResult.Stacks && describeResult.Stacks.length > 0) {
-        const stack = describeResult.Stacks[0]
+      const stack = await cf.describeStack(stackName)
+      if (stack && stack.StackStatus) {
         console.log(`Current status: ${formatResourceStatus(stack.StackStatus)}`)
         stackExists = true
 
         // If an operation is in progress, wait for it to complete first
         if (stack.StackStatus.endsWith('_IN_PROGRESS')) {
           console.log(`Waiting for current operation (${stack.StackStatus}) to finish...`)
-          const waitType = stack.StackStatus.startsWith('DELETE')
-            ? 'stack-delete-complete'
+          const waitStates = stack.StackStatus.startsWith('DELETE')
+            ? ['DELETE_COMPLETE']
             : stack.StackStatus.startsWith('CREATE')
-              ? 'stack-create-complete'
-              : 'stack-update-complete'
+              ? ['CREATE_COMPLETE']
+              : ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE']
           try {
-            await cf.waitForStackWithProgress(stackName, waitType as any, createProgressCallback())
+            await cf.waitForStack(stackName, waitStates, createProgressCallback())
           } catch {
             // Ignore -- we re-check below
           }
           // Re-check after waiting
-          const refreshResult = await cf.describeStacks({ stackName })
-          if (!refreshResult.Stacks || refreshResult.Stacks.length === 0
-            || refreshResult.Stacks[0].StackStatus === 'DELETE_COMPLETE') {
+          try {
+            const refreshedStack = await cf.describeStack(stackName)
+            if (!refreshedStack || !refreshedStack.StackStatus
+              || refreshedStack.StackStatus === 'DELETE_COMPLETE') {
+              console.log('Stack was already deleted during the in-progress operation.')
+              return
+            }
+          } catch {
             console.log('Stack was already deleted during the in-progress operation.')
             return
           }
@@ -2485,8 +2524,10 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     try {
       const client = new AWSClient()
 
-      // Get ALB from stack resources
-      const resourcesResult = await cf.listStackResources(stackName)
+      // Get ALB from stack resources using AWSCloudFormationClient
+      const { AWSCloudFormationClient: AwsCfn } = await import('@stacksjs/ts-cloud')
+      const awsCfn = new AwsCfn(region)
+      const resourcesResult = await awsCfn.listStackResources(stackName)
       const resources = resourcesResult.StackResourceSummaries || []
 
       const albResource = resources.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')
@@ -2558,7 +2599,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     console.log('  ' + '─'.repeat(85))
 
     // Wait for deletion with progress callback - only show DELETE events
-    await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback('delete'))
+    await cf.waitForStack(stackName, ['DELETE_COMPLETE'], createProgressCallback('delete'))
 
     // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
     try {
@@ -2629,11 +2670,11 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
       console.log('Some resources could not be deleted automatically')
       console.log('Identifying resources to retain...')
 
-      const { CloudFormationClient } = await import('@stacksjs/ts-cloud')
-      const cf = new CloudFormationClient(region)
+      const { AWSCloudFormationClient: AwsCfnRetry } = await import('@stacksjs/ts-cloud')
+      const awsCfnRetry = new AwsCfnRetry(region)
 
       try {
-        const resourcesResult = await cf.listStackResources(stackName)
+        const resourcesResult = await awsCfnRetry.listStackResources(stackName)
         const resources = resourcesResult.StackResourceSummaries || []
         const failedResources = resources
           .filter((r: any) => r.ResourceStatus === 'DELETE_FAILED')
@@ -2646,8 +2687,10 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
 
           // Retry with retained resources
           console.log('Retrying deletion with retained resources...')
-          await cf.deleteStack(stackName, undefined, failedResources)
-          await cf.waitForStackWithProgress(stackName, 'stack-delete-complete', createProgressCallback('delete'))
+          await awsCfnRetry.deleteStack(stackName, undefined, failedResources)
+          const { CloudFormationClient: CfRetry } = await import('@stacksjs/ts-cloud')
+          const cfRetry = new CfRetry(region)
+          await cfRetry.waitForStack(stackName, ['DELETE_COMPLETE'], createProgressCallback('delete'))
 
           console.log('')
           console.log('✓ Stack removed (with retained resources)')

@@ -81,14 +81,16 @@ async function traverseDirectory(
 async function getSignalsRuntime(): Promise<string> {
   try {
     const { generateSignalsRuntime } = await import(
+      // @ts-ignore - dynamic import from dev path, may not exist at runtime
       /* @vite-ignore */ '/Users/chrisbreuer/Code/Tools/stx/packages/stx/src/signals.ts'
     )
     return `<script>\n${generateSignalsRuntime()}\n</script>`
-  } catch (e) {
+  } catch (_e) {
     if (isVerbose) log.debug('Failed to import signals runtime from stx, using fallback path')
     try {
       // Fallback: try from node_modules
       const { generateSignalsRuntime } = await import(
+        // @ts-ignore - dynamic import, module may not be installed
         /* @vite-ignore */ '@stacksjs/stx/signals'
       )
       return `<script>\n${generateSignalsRuntime()}\n</script>`
@@ -815,15 +817,21 @@ fi`,
   try {
     const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
     const { existsSync, readdirSync, statSync, readFileSync, copyFileSync, mkdirSync, rmSync, writeFileSync } = await import('node:fs')
-    const { join, extname } = await import('node:path')
+    const { join } = await import('node:path')
 
     const s3 = new S3Client(region)
     const cf = new CloudFormationClient(region)
 
     // Get bucket name from stack outputs
     const stackName = `${projectName}-cloud`
-    const outputs = await cf.getStackOutputs(stackName)
-    const bucketName = outputs.FrontendBucketName
+    const stack = await cf.describeStack(stackName)
+    const stackOutputs: Record<string, string> = {}
+    for (const output of stack?.Outputs || []) {
+      if (output.OutputKey && output.OutputValue) {
+        stackOutputs[output.OutputKey] = output.OutputValue
+      }
+    }
+    const bucketName = stackOutputs.FrontendBucketName
 
     if (!bucketName) {
       frontendSpinner.stop()
@@ -887,12 +895,12 @@ fi`,
           for (const item of collection) {
             let itemHtml = template
             // Replace {{ item.prop }}
-            itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\s*${itemVar}\\.(\\w+)\\s*\\}\\}`, 'g'), (__, prop) => {
+            itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\s*${itemVar}\\.(\\w+)\\s*\\}\\}`, 'g'), (_match: string, prop: string) => {
               const val = item[prop]
               return val !== undefined && val !== null ? String(val) : ''
             })
             // Replace {!! item.prop !!} (raw/unescaped HTML)
-            itemHtml = itemHtml.replace(new RegExp(`\\{!!\\s*${itemVar}\\.(\\w+)\\s*!!\\}`, 'g'), (__, prop) => {
+            itemHtml = itemHtml.replace(new RegExp(`\\{!!\\s*${itemVar}\\.(\\w+)\\s*!!\\}`, 'g'), (_match: string, prop: string) => {
               const val = item[prop]
               return val !== undefined && val !== null ? String(val) : ''
             })
@@ -949,7 +957,7 @@ fi`,
       }
 
       // Upload files to S3
-      const uploadDir = async (dir: string, prefix = '') => {
+      const uploadDir = async (dir: string, _prefix = '') => {
         await traverseDirectory(dir, async (filePath, key) => {
           const content = readFileSync(filePath)
           const contentType = getMimeType(filePath)
@@ -964,7 +972,7 @@ fi`,
       await uploadDir(buildDir)
 
       // Invalidate CloudFront cache if distribution exists
-      const distributionId = outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
+      const distributionId = stackOutputs.publicCloudFrontDistributionId || stackOutputs.CloudFrontDistributionId
       if (distributionId) {
         if (isVerbose) log.debug('  Invalidating CloudFront cache...')
         const { AWSClient } = await import('@stacksjs/ts-cloud') as any
@@ -1007,23 +1015,28 @@ fi`,
 
     try {
       const { S3Client, CloudFormationClient } = await import('@stacksjs/ts-cloud') as any
-      const { readdirSync, statSync, readFileSync } = await import('node:fs')
-      const { join, extname } = await import('node:path')
+      const { readFileSync } = await import('node:fs')
 
       const s3 = new S3Client(region)
       const cf = new CloudFormationClient(region)
 
       // Get docs bucket name from stack outputs
       const stackName = `${projectName}-cloud`
-      const outputs = await cf.getStackOutputs(stackName)
-      const docsBucketName = outputs.DocsBucketName
+      const docsStack = await cf.describeStack(stackName)
+      const docsOutputs: Record<string, string> = {}
+      for (const output of docsStack?.Outputs || []) {
+        if (output.OutputKey && output.OutputValue) {
+          docsOutputs[output.OutputKey] = output.OutputValue
+        }
+      }
+      const docsBucketName = docsOutputs.DocsBucketName
 
       if (!docsBucketName) {
         docsDeploySpinner.stop()
         console.log('⚠ Docs bucket not found in stack outputs (infrastructure may not be updated yet)')
       } else {
         // Upload docs files to S3 (files go to root since CloudFront routes /docs/* to this bucket)
-        const uploadDocsDir = async (dir: string, prefix = '') => {
+        const uploadDocsDir = async (dir: string, _prefix = '') => {
           await traverseDirectory(dir, async (filePath, key) => {
             const content = readFileSync(filePath)
             const contentType = getMimeType(filePath)
@@ -1039,7 +1052,7 @@ fi`,
 
         // Invalidate CloudFront cache for docs
         // Use the dedicated docs distribution if available, otherwise fall back to shared one
-        const docsDistributionId = outputs.docsCloudFrontDistributionId || outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
+        const docsDistributionId = docsOutputs.docsCloudFrontDistributionId || docsOutputs.publicCloudFrontDistributionId || docsOutputs.CloudFrontDistributionId
         if (docsDistributionId) {
           if (isVerbose) log.debug('  Invalidating CloudFront cache for docs...')
           const { AWSClient } = await import('@stacksjs/ts-cloud') as any
