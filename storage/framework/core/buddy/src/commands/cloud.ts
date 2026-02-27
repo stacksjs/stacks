@@ -258,8 +258,8 @@ export function cloud(buddy: CLI): void {
         log.info('Invalidating the CloudFront cache...')
 
         // Use ts-cloud CloudFront client instead of AWS SDK
-        const { CloudFrontClient } = await import('@stacksjs/ts-cloud')
-        const cloudfront = new CloudFrontClient()
+        const { AWSCloudFrontClient } = await import('@stacksjs/ts-cloud')
+        const cloudfront = new AWSCloudFrontClient()
         const distributionId = await getCloudFrontDistributionId()
 
         try {

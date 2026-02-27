@@ -1750,9 +1750,6 @@ async function setupDnsAndSsl(options: {
         console.log('✓ Certificate issued!')
 
         // 6. Get ALB and Target Group ARN from stack
-        const { AWSCloudFormationClient: CloudFormationClient } = await import('@stacksjs/ts-cloud')
-        const cf = new CloudFormationClient(region)
-        // Use AWSCloudFormationClient for listStackResources (not available on ts-cloud-core CloudFormationClient)
         const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
         const awsCf = new AWSCloudFormationClient(region)
         const resources = await awsCf.listStackResources(stackName)
@@ -1999,8 +1996,8 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
   if (verbose) console.log(`Deploying ${stackName} to ${region}...`)
 
   try {
-    const { AWSCloudFormationClient: CloudFormationClient } = await import('@stacksjs/ts-cloud')
-    const cf = new CloudFormationClient(region)
+    const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+    const cf = new AWSCloudFormationClient(region)
 
     // Check deployment mode from cloud config
     const cloudConfig = await getCloudConfig()
@@ -2069,7 +2066,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
     let stackExists = false
     let _isUpdate = false
     try {
-      const stack = await cf.describeStack(stackName)
+      const stack = (await cf.describeStacks({ stackName })).Stacks?.[0]
       if (stack && stack.StackStatus) {
         if (verbose) console.log(`Current status: ${formatResourceStatus(stack.StackStatus)}`)
         stackExists = true
@@ -2078,19 +2075,19 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         // If an operation is already in progress, wait for it to finish first
         if (stack.StackStatus.endsWith('_IN_PROGRESS')) {
           console.log(`Stack is busy (${stack.StackStatus}). Waiting for current operation to finish...`)
-          const inProgressStates = stack.StackStatus.startsWith('DELETE')
-            ? ['DELETE_COMPLETE']
+          const waitType = stack.StackStatus.startsWith('DELETE')
+            ? 'stack-delete-complete' as const
             : stack.StackStatus.startsWith('CREATE')
-              ? ['CREATE_COMPLETE']
-              : ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE']
+              ? 'stack-create-complete' as const
+              : 'stack-update-complete' as const
           try {
-            await cf.waitForStack(stackName, inProgressStates, createProgressCallback())
+            await cf.waitForStack(stackName, waitType)
           } catch {
             // If wait fails, re-check status below
           }
           // Re-check stack state after waiting
           try {
-            const refreshedStack = await cf.describeStack(stackName)
+            const refreshedStack = (await cf.describeStacks({ stackName })).Stacks?.[0]
             if (!refreshedStack || !refreshedStack.StackStatus) {
               stackExists = false
               _isUpdate = false
@@ -2125,7 +2122,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         ) {
           console.log(`Stack is in ${stack.StackStatus} state. Deleting before recreating...`)
           await cf.deleteStack(stackName)
-          await cf.waitForStack(stackName, ['DELETE_COMPLETE'], createProgressCallback('delete'))
+          await cf.waitForStack(stackName, 'stack-delete-complete')
 
           // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
           console.log('Cleaning up retained resources...')
@@ -2179,16 +2176,6 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       stackExists = false
     }
 
-    // Clean up orphaned resources before create/update
-    // Previous failed deploys may leave DNS records or SES identities that block CloudFormation
-    await cleanupOrphanedRoute53Records(templateBody, cf, stackName, region)
-    await cleanupOrphanedSesIdentities(templateBody, cf, stackName, region)
-    await cleanupOrphanedDkimRecords(templateBody, region)
-    await cleanupMailCnameForARecord(templateBody, region)
-
-    // Clean up SES suppression list for email addresses
-    await cleanupSesSuppressionList(cloudConfig, region)
-
     if (stackExists) {
       // Update existing stack
       console.log('Updating stack...')
@@ -2214,7 +2201,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           console.log(`  ${'Resource'.padEnd(35)} ${'Type'.padEnd(30)} Status`)
           console.log('  ' + '─'.repeat(85))
 
-          await cf.waitForStack(stackName, ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'], createProgressCallback('update'))
+          await cf.waitForStack(stackName, 'stack-update-complete')
           console.log('')
         }
       }
@@ -2301,7 +2288,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         console.log(`  ${'Resource'.padEnd(35)} ${'Type'.padEnd(30)} Status`)
         console.log('  ' + '─'.repeat(85))
 
-        await cf.waitForStack(stackName, ['CREATE_COMPLETE', 'ROLLBACK_COMPLETE'], createProgressCallback('create'))
+        await cf.waitForStack(stackName, 'stack-create-complete')
         console.log('')
       }
     }
@@ -2313,7 +2300,7 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
 
     // Get stack outputs
     try {
-      const stack = await cf.describeStack(stackName)
+      const stack = (await cf.describeStacks({ stackName })).Stacks?.[0]
       if (stack && stack.StackStatus) {
         // Parse outputs from stack description
         const outputs: Record<string, string> = {}
@@ -2388,15 +2375,15 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
 
   try {
     const { S3Client } = await import('@stacksjs/ts-cloud')
-    const { AWSCloudFormationClient: CloudFormationClient } = await import('@stacksjs/ts-cloud')
+    const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     const s3 = new S3Client(region)
-    const cf = new CloudFormationClient(region)
+    const cf = new AWSCloudFormationClient(region)
 
     // Get bucket name from stack outputs
     const stackName = `${projectName}-cloud`
-    const stack = await cf.describeStack(stackName)
-    const bucketName = stack.Outputs?.find((o: { OutputKey: string }) => o.OutputKey === 'AssetsBucketName')?.OutputValue
+    const stack = (await cf.describeStacks({ stackName })).Stacks?.[0]
+    const bucketName = stack?.Outputs?.find((o: { OutputKey: string }) => o.OutputKey === 'AssetsBucketName')?.OutputValue
 
     if (!bucketName) {
       throw new Error('Assets bucket not found in stack outputs')
@@ -2431,11 +2418,11 @@ export async function getDeploymentStatus(_options: { environment: string, regio
   const projectName = projectConfig.name
   const stackName = `${projectName}-cloud`
 
-  const { AWSCloudFormationClient: CloudFormationClient } = await import('@stacksjs/ts-cloud')
-  const cf = new CloudFormationClient(region)
+  const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+  const cf = new AWSCloudFormationClient(region)
 
   try {
-    const stack = await cf.describeStack(stackName)
+    const stack = (await cf.describeStacks({ stackName })).Stacks?.[0]
     if (!stack || !stack.StackStatus) {
       return { status: 'NOT_FOUND', outputs: {} }
     }
@@ -2476,13 +2463,13 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
   console.log('')
 
   try {
-    const { AWSCloudFormationClient: CloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud')
-    const cf = new CloudFormationClient(region)
+    const { AWSCloudFormationClient, AWSClient } = await import('@stacksjs/ts-cloud')
+    const cf = new AWSCloudFormationClient(region)
 
     // Check if stack exists
     let stackExists = false
     try {
-      const stack = await cf.describeStack(stackName)
+      const stack = (await cf.describeStacks({ stackName })).Stacks?.[0]
       if (stack && stack.StackStatus) {
         console.log(`Current status: ${formatResourceStatus(stack.StackStatus)}`)
         stackExists = true
@@ -2490,19 +2477,19 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
         // If an operation is in progress, wait for it to complete first
         if (stack.StackStatus.endsWith('_IN_PROGRESS')) {
           console.log(`Waiting for current operation (${stack.StackStatus}) to finish...`)
-          const waitStates = stack.StackStatus.startsWith('DELETE')
-            ? ['DELETE_COMPLETE']
+          const waitType = stack.StackStatus.startsWith('DELETE')
+            ? 'stack-delete-complete' as const
             : stack.StackStatus.startsWith('CREATE')
-              ? ['CREATE_COMPLETE']
-              : ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE']
+              ? 'stack-create-complete' as const
+              : 'stack-update-complete' as const
           try {
-            await cf.waitForStack(stackName, waitStates, createProgressCallback())
+            await cf.waitForStack(stackName, waitType)
           } catch {
             // Ignore -- we re-check below
           }
           // Re-check after waiting
           try {
-            const refreshedStack = await cf.describeStack(stackName)
+            const refreshedStack = (await cf.describeStacks({ stackName })).Stacks?.[0]
             if (!refreshedStack || !refreshedStack.StackStatus
               || refreshedStack.StackStatus === 'DELETE_COMPLETE') {
               console.log('Stack was already deleted during the in-progress operation.')
@@ -2609,7 +2596,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     console.log('  ' + '─'.repeat(85))
 
     // Wait for deletion with progress callback - only show DELETE events
-    await cf.waitForStack(stackName, ['DELETE_COMPLETE'], createProgressCallback('delete'))
+    await cf.waitForStack(stackName, 'stack-delete-complete')
 
     // Clean up any retained resources (S3 buckets with DeletionPolicy: Retain)
     try {
@@ -2698,9 +2685,9 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
           // Retry with retained resources
           console.log('Retrying deletion with retained resources...')
           await awsCfnRetry.deleteStack(stackName, undefined, failedResources)
-          const { CloudFormationClient: CfRetry } = await import('@stacksjs/ts-cloud')
+          const { AWSCloudFormationClient: CfRetry } = await import('@stacksjs/ts-cloud')
           const cfRetry = new CfRetry(region)
-          await cfRetry.waitForStack(stackName, ['DELETE_COMPLETE'], createProgressCallback('delete'))
+          await cfRetry.waitForStack(stackName, 'stack-delete-complete')
 
           console.log('')
           console.log('✓ Stack removed (with retained resources)')
@@ -2723,433 +2710,5 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
 
     console.error(`Stack deletion failed: ${error.message}`)
     throw error
-  }
-}
-
-/**
- * Clean up orphaned Route53 records that block CloudFormation deployments.
- *
- * Previous failed deploys may create Route53 records that CloudFormation
- * rolled back without deleting. When re-deploying, CF tries to create them
- * again and fails with "already exists". This function finds and removes
- * such orphaned records before the deploy.
- */
-async function cleanupOrphanedRoute53Records(
-  templateBody: string,
-  cf: any,
-  stackName: string,
-  region: string,
-): Promise<void> {
-  try {
-    const template = JSON.parse(templateBody)
-    const resources = template.Resources || {}
-
-    // Find all Route53 RecordSet resources in the template
-    const route53Records: Array<{
-      logicalId: string
-      name: string
-      type: string
-      hostedZoneId: string
-    }> = []
-
-    for (const [logicalId, resource] of Object.entries(resources)) {
-      const res = resource as any
-      if (res.Type !== 'AWS::Route53::RecordSet') continue
-
-      const props = res.Properties
-      if (!props?.Name || !props?.Type || !props?.HostedZoneId) continue
-
-      // Skip records with intrinsic function references (like DKIM records
-      // that use Fn::GetAtt for the Name - those are dynamic)
-      if (typeof props.Name !== 'string') continue
-      if (typeof props.HostedZoneId !== 'string') continue
-
-      route53Records.push({
-        logicalId,
-        name: props.Name.endsWith('.') ? props.Name : `${props.Name}.`,
-        type: props.Type,
-        hostedZoneId: props.HostedZoneId,
-      })
-    }
-
-    if (route53Records.length === 0) return
-
-    // Get resources currently managed by the stack
-    const managedResources = new Set<string>()
-    try {
-      const stackResources = await cf.listStackResources(stackName)
-      const summaries = (stackResources as any).StackResourceSummaries || []
-      for (const r of summaries) {
-        managedResources.add(r.LogicalResourceId)
-      }
-    }
-    catch {
-      // Stack might not exist yet - all records would be orphaned
-    }
-
-    // Check each record: if it exists in Route53 but ISN'T managed by the stack, delete it
-    const { Route53Client } = await import('@stacksjs/ts-cloud')
-    const route53 = new Route53Client(region)
-
-    for (const record of route53Records) {
-      // If the stack already manages this resource, skip it
-      if (managedResources.has(record.logicalId)) continue
-
-      try {
-        const existing = await route53.listResourceRecordSets({
-          HostedZoneId: record.hostedZoneId,
-          StartRecordName: record.name,
-          StartRecordType: record.type,
-          MaxItems: '1',
-        })
-
-        const recordSets = existing.ResourceRecordSets || []
-        const match = recordSets.find(
-          (rs: any) => rs.Name === record.name && rs.Type === record.type,
-        )
-
-        if (match) {
-          console.log(`  Removing orphaned ${record.type} record: ${record.name}`)
-          await route53.changeResourceRecordSets({
-            HostedZoneId: record.hostedZoneId,
-            ChangeBatch: {
-              Comment: 'Remove orphaned record for CloudFormation re-creation',
-              Changes: [{
-                Action: 'DELETE',
-                ResourceRecordSet: match,
-              }],
-            },
-          })
-        }
-      }
-      catch (error: any) {
-        console.log(`  Warning: Could not check/clean record ${record.name}: ${error.message}`)
-      }
-    }
-  }
-  catch {
-    // Template parsing failed or other non-fatal error - proceed with deploy
-  }
-}
-
-/**
- * Clean up SES suppression list for configured email recipients.
- *
- * Email addresses may get added to the suppression list due to bounces
- * during initial setup (e.g., before MX records are properly configured).
- * This removes them so email delivery works after infrastructure is deployed.
- */
-async function cleanupSesSuppressionList(
-  cloudConfig: any,
-  region: string,
-): Promise<void> {
-  try {
-    const emailConfig = cloudConfig?.infrastructure?.email
-    if (!emailConfig) return
-
-    const domain = emailConfig.domain || cloudConfig?.infrastructure?.dns?.domain
-    if (!domain) return
-
-    // Check common mailbox addresses for suppression
-    const mailboxes = emailConfig.mailboxes || []
-    const commonAddresses = [
-      `chris@${domain}`,
-      `blake@${domain}`,
-      `glenn@${domain}`,
-      `admin@${domain}`,
-      `noreply@${domain}`,
-      `test@${domain}`,
-      ...mailboxes,
-    ]
-
-    // Deduplicate
-    const addresses = [...new Set(commonAddresses)]
-
-    const { SESClient } = await import('@stacksjs/ts-cloud')
-    const ses = new SESClient(region)
-
-    for (const address of addresses) {
-      try {
-        const suppressed = await ses.getSuppressedDestination(address)
-        if (suppressed) {
-          console.log(`  Removing ${address} from SES suppression list (was: ${suppressed.Reason})`)
-          await ses.deleteSuppressedDestination(address)
-        }
-      }
-      catch {
-        // Non-fatal - address might not be suppressed
-      }
-    }
-  }
-  catch {
-    // Non-fatal - suppression list cleanup is best-effort
-  }
-}
-
-/**
- * Clean up SES Email Identities that exist outside CloudFormation.
- *
- * If an SES identity was created manually or by a previous failed deploy,
- * CloudFormation can't create it and fails with "already exists". This
- * function deletes such orphaned identities so CF can manage them.
- */
-async function cleanupOrphanedSesIdentities(
-  templateBody: string,
-  cf: any,
-  stackName: string,
-  region: string,
-): Promise<void> {
-  try {
-    const template = JSON.parse(templateBody)
-    const resources = template.Resources || {}
-
-    // Find all SES EmailIdentity resources in the template
-    const sesIdentities: Array<{
-      logicalId: string
-      identity: string
-    }> = []
-
-    for (const [logicalId, resource] of Object.entries(resources)) {
-      const res = resource as any
-      if (res.Type !== 'AWS::SES::EmailIdentity') continue
-      const identity = res.Properties?.EmailIdentity
-      if (!identity || typeof identity !== 'string') continue
-      sesIdentities.push({ logicalId, identity })
-    }
-
-    if (sesIdentities.length === 0) return
-
-    // Get resources currently managed by the stack
-    const managedResources = new Set<string>()
-    try {
-      const stackResources = await cf.listStackResources(stackName)
-      const summaries = (stackResources as any).StackResourceSummaries || []
-      for (const r of summaries) {
-        managedResources.add(r.LogicalResourceId)
-      }
-    }
-    catch {
-      // Stack might not exist or method not available
-    }
-
-    const { SESClient } = await import('@stacksjs/ts-cloud')
-    const ses = new SESClient(region)
-
-    for (const item of sesIdentities) {
-      if (managedResources.has(item.logicalId)) continue
-
-      try {
-        // Check if identity exists in SES
-        const result = await ses.listEmailIdentities()
-        const identityList = result?.EmailIdentities || result || []
-        const exists = (Array.isArray(identityList) ? identityList : []).some((id: any) =>
-          (id.IdentityName || id) === item.identity,
-        )
-
-        if (exists) {
-          // Get DKIM tokens before deleting (to clean up CNAME records)
-          let dkimTokens: string[] = []
-          try {
-            const identityDetails = await ses.getEmailIdentity(item.identity)
-            dkimTokens = identityDetails?.DkimAttributes?.Tokens || []
-          }
-          catch {
-            // Fall back to checking DNS directly
-          }
-
-          console.log(`  Removing orphaned SES identity: ${item.identity}`)
-          await ses.deleteEmailIdentity(item.identity)
-
-          // Clean up DKIM CNAME records if we have tokens and a hosted zone ID
-          if (dkimTokens.length > 0) {
-            // Find hosted zone ID from template
-            let hostedZoneId = ''
-            for (const [, res] of Object.entries(resources)) {
-              const r = res as any
-              if (r.Type === 'AWS::Route53::RecordSet' && typeof r.Properties?.HostedZoneId === 'string') {
-                hostedZoneId = r.Properties.HostedZoneId
-                break
-              }
-            }
-
-            if (hostedZoneId) {
-              const { Route53Client } = await import('@stacksjs/ts-cloud')
-              const route53 = new Route53Client(region)
-
-              for (const token of dkimTokens) {
-                const dkimName = `${token}._domainkey.${item.identity}.`
-                try {
-                  const existing = await route53.listResourceRecordSets({
-                    HostedZoneId: hostedZoneId,
-                    StartRecordName: dkimName,
-                    StartRecordType: 'CNAME',
-                    MaxItems: '1',
-                  })
-
-                  const match = (existing.ResourceRecordSets || []).find(
-                    (rs: any) => rs.Name === dkimName && rs.Type === 'CNAME',
-                  )
-
-                  if (match) {
-                    console.log(`  Removing orphaned DKIM record: ${dkimName}`)
-                    await route53.changeResourceRecordSets({
-                      HostedZoneId: hostedZoneId,
-                      ChangeBatch: {
-                        Comment: 'Remove orphaned DKIM record for CloudFormation re-creation',
-                        Changes: [{ Action: 'DELETE', ResourceRecordSet: match }],
-                      },
-                    })
-                  }
-                }
-                catch (dkimError: any) {
-                  console.log(`  Warning: Could not clean DKIM record ${dkimName}: ${dkimError.message}`)
-                }
-              }
-            }
-          }
-        }
-      }
-      catch (error: any) {
-        console.log(`  Warning: Could not check/clean SES identity ${item.identity}: ${error.message}`)
-      }
-    }
-  }
-  catch {
-    // Non-fatal
-  }
-}
-
-/**
- * Clean up orphaned DKIM CNAME records that exist from previous SES identity setups.
- *
- * When an SES EmailIdentity is created, DKIM CNAME records are added to Route53.
- * If the identity is later deleted (by CF rollback) but the CNAME records remain,
- * the next deploy fails when CF tries to recreate them.
- */
-async function cleanupOrphanedDkimRecords(
-  templateBody: string,
-  region: string,
-): Promise<void> {
-  try {
-    const template = JSON.parse(templateBody)
-    const resources = template.Resources || {}
-
-    // Find SES EmailIdentity resources and their associated hosted zone IDs
-    const domains: Array<{ domain: string; hostedZoneId: string }> = []
-
-    for (const [, resource] of Object.entries(resources)) {
-      const res = resource as any
-      if (res.Type === 'AWS::SES::EmailIdentity') {
-        const identity = res.Properties?.EmailIdentity
-        if (!identity || typeof identity !== 'string') continue
-
-        // Find the hosted zone ID from other Route53 records in the template
-        let hostedZoneId = ''
-        for (const [, r2] of Object.entries(resources)) {
-          const r = r2 as any
-          if (r.Type === 'AWS::Route53::RecordSet' && typeof r.Properties?.HostedZoneId === 'string') {
-            hostedZoneId = r.Properties.HostedZoneId
-            break
-          }
-        }
-
-        if (hostedZoneId) {
-          domains.push({ domain: identity, hostedZoneId })
-        }
-      }
-    }
-
-    if (domains.length === 0) return
-
-    const { Route53Client } = await import('@stacksjs/ts-cloud')
-    const route53 = new Route53Client(region)
-
-    for (const { domain, hostedZoneId } of domains) {
-      try {
-        // List all CNAME records matching _domainkey.{domain}
-        const allRecords = await route53.listResourceRecordSets({
-          HostedZoneId: hostedZoneId,
-        })
-
-        const dkimRecords = (allRecords.ResourceRecordSets || []).filter(
-          (rs: any) => rs.Type === 'CNAME' && rs.Name?.includes(`._domainkey.${domain}`),
-        )
-
-        for (const record of dkimRecords) {
-          console.log(`  Removing orphaned DKIM record: ${record.Name}`)
-          await route53.changeResourceRecordSets({
-            HostedZoneId: hostedZoneId,
-            ChangeBatch: {
-              Comment: 'Remove orphaned DKIM record for CloudFormation re-creation',
-              Changes: [{ Action: 'DELETE', ResourceRecordSet: record }],
-            },
-          })
-        }
-      }
-      catch (error: any) {
-        console.log(`  Warning: Could not clean DKIM records for ${domain}: ${error.message}`)
-      }
-    }
-  }
-  catch {
-    // Non-fatal
-  }
-}
-
-/**
- * Clean up mail.{domain} CNAME record when the template has an A record for the same name.
- * Route53 doesn't allow a CNAME to coexist with other record types for the same name.
- * This handles the transition from CNAME (pointing to SES) to A record (pointing to EC2 EIP).
- */
-async function cleanupMailCnameForARecord(
-  templateBody: string,
-  region: string,
-): Promise<void> {
-  try {
-    const template = JSON.parse(templateBody)
-    const resources = template.Resources || {}
-
-    // Find A records for mail.{domain} in the template
-    for (const [, resource] of Object.entries(resources)) {
-      const res = resource as any
-      if (res.Type !== 'AWS::Route53::RecordSet') continue
-      const name = res.Properties?.Name
-      const type = res.Properties?.Type
-      const hostedZoneId = res.Properties?.HostedZoneId
-
-      if (!name || type !== 'A' || !hostedZoneId) continue
-      if (typeof name !== 'string' || !name.startsWith('mail.')) continue
-
-      const recordName = name.endsWith('.') ? name : `${name}.`
-
-      // Check if a CNAME exists for this name
-      const { Route53Client } = await import('@stacksjs/ts-cloud')
-      const route53 = new Route53Client(region)
-
-      const existing = await route53.listResourceRecordSets({
-        HostedZoneId: typeof hostedZoneId === 'string' ? hostedZoneId : undefined,
-        StartRecordName: recordName,
-        StartRecordType: 'CNAME',
-        MaxItems: '1',
-      })
-
-      const cnameRecord = (existing.ResourceRecordSets || []).find(
-        (rs: any) => rs.Name === recordName && rs.Type === 'CNAME',
-      )
-
-      if (cnameRecord && typeof hostedZoneId === 'string') {
-        console.log(`  Removing CNAME for ${recordName} (will be replaced with A record)`)
-        await route53.changeResourceRecordSets({
-          HostedZoneId: hostedZoneId,
-          ChangeBatch: {
-            Comment: 'Remove CNAME to allow A record creation for mail server',
-            Changes: [{ Action: 'DELETE', ResourceRecordSet: cnameRecord }],
-          },
-        })
-      }
-    }
-  }
-  catch {
-    // Non-fatal
   }
 }

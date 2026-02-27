@@ -426,69 +426,6 @@ export function deploy(buddy: CLI): void {
       await outro('Project deployed.', { startTime, useSeconds: true })
     })
 
-  buddy
-    .command('deploy:tunnel', 'Deploy a custom tunnel server to AWS EC2')
-    .option('--domain <domain>', 'Domain for the tunnel server (required, must not be localtunnel.dev)')
-    .option('--region <region>', 'AWS region', { default: 'us-east-1' })
-    .option('--enable-ssl', 'Enable SSL via Let\'s Encrypt + Porkbun DNS')
-    .option('--instance-type <type>', 'EC2 instance type', { default: 't3.micro' })
-    .option('--prefix <prefix>', 'Resource name prefix', { default: 'localtunnel' })
-    .option('--verbose', 'Enable verbose output', { default: false })
-    .action(async (options: {
-      domain?: string
-      region?: string
-      enableSsl?: boolean
-      instanceType?: string
-      prefix?: string
-      verbose?: boolean
-    }) => {
-      if (!options.domain) {
-        log.error('--domain is required for tunnel server deployment')
-        log.info('Example: buddy deploy:tunnel --domain tunnel.mycompany.com --enable-ssl')
-        process.exit(ExitCode.InvalidArgument)
-      }
-
-      if (options.domain === 'localtunnel.dev') {
-        log.error('Cannot deploy to localtunnel.dev — it is the shared Stacks tunnel service')
-        log.info('Use a custom domain instead, e.g.: buddy deploy:tunnel --domain tunnel.mycompany.com')
-        process.exit(ExitCode.InvalidArgument)
-      }
-
-      console.log()
-      log.info(`Deploying tunnel server to ${options.domain}...`)
-      console.log(`  Region:        ${options.region}`)
-      console.log(`  Instance Type: ${options.instanceType}`)
-      console.log(`  SSL:           ${options.enableSsl ? 'enabled' : 'disabled'}`)
-      console.log()
-
-      try {
-        const { deployTunnelServer } = await import('@stacksjs/tunnel')
-        const result = await deployTunnelServer({
-          domain: options.domain,
-          region: options.region,
-          instanceType: options.instanceType,
-          prefix: options.prefix,
-          enableSsl: options.enableSsl,
-          verbose: options.verbose,
-        })
-
-        console.log()
-        log.success('Tunnel server deployed!')
-        console.log(`  Server URL:    ${result.serverUrl}`)
-        console.log(`  Public IP:     ${result.publicIp}`)
-        console.log(`  Instance ID:   ${result.instanceId}`)
-        console.log()
-        log.info(`Connect with: buddy share --server ${options.domain}`)
-      }
-      catch (error: any) {
-        log.error(`Tunnel deployment failed: ${error.message}`)
-        if (options.verbose) {
-          console.error(error.stack)
-        }
-        process.exit(ExitCode.FatalError)
-      }
-    })
-
   buddy.on('deploy:*', () => {
     log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
@@ -770,10 +707,10 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     const stackName = `${appName}-cloud`
 
     // Use ts-cloud's CloudFormation client
-    const { AWSCloudFormationClient: CloudFormationClient } = await import('@stacksjs/ts-cloud')
+    const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     // Don't pass AWS_PROFILE when we have static credentials to avoid conflicts
-    const cfnClient = new CloudFormationClient(
+    const cfnClient = new AWSCloudFormationClient(
       process.env.AWS_REGION || 'us-east-1'
     )
 
@@ -782,7 +719,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     let needsEmailUpdate = false
 
     try {
-      const stack = await cfnClient.describeStack(stackName)
+      const stack = (await cfnClient.describeStacks({ stackName })).Stacks?.[0]
 
       if (stack) {
         stackExists = true
@@ -2029,39 +1966,7 @@ SYSTEMD
 # Get TLS certificate
 certbot certonly --standalone -d ${mailSubdomain}.${emailDomain} --non-interactive --agree-tos --email admin@${emailDomain} || true
 
-# Link certs for the mail server
-if [ -d "/etc/letsencrypt/live/${mailSubdomain}.${emailDomain}" ]; then
-  mkdir -p /etc/smtp-server
-  ln -sf /etc/letsencrypt/live/${mailSubdomain}.${emailDomain}/fullchain.pem /etc/smtp-server/smtp-server.crt
-  ln -sf /etc/letsencrypt/live/${mailSubdomain}.${emailDomain}/privkey.pem /etc/smtp-server/smtp-server.key
-fi
-
-# Set up certbot auto-renewal
-cat > /etc/systemd/system/certbot-renewal.service << 'CERTSVC'
-[Unit]
-Description=Certbot certificate renewal
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl restart mail-server"
-CERTSVC
-
-cat > /etc/systemd/system/certbot-renewal.timer << 'CERTTIMER'
-[Unit]
-Description=Run certbot renewal twice daily
-
-[Timer]
-OnCalendar=*-*-* 00,12:00:00
-RandomizedDelaySec=3600
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-CERTTIMER
-
 systemctl daemon-reload
-systemctl enable certbot-renewal.timer
-systemctl start certbot-renewal.timer
 systemctl enable mail-server
 systemctl start mail-server
 
@@ -2100,7 +2005,7 @@ aws s3 cp s3://${emailBucketName}/mail-server/smtp-server ./smtp-server --region
   echo "Pre-built binary not found, building from source..."
   # Download source from S3 or clone from GitHub
   aws s3 cp s3://${emailBucketName}/mail-server/source.tar.gz ./source.tar.gz --region ${region} && tar -xzf source.tar.gz || {
-    git clone https://github.com/mail-os/mail.git .
+    git clone https://github.com/stacksjs/mail.git .
   }
   chown -R smtp-server:smtp-server /opt/smtp-server
   sudo -u smtp-server zig build -Doptimize=ReleaseFast
@@ -2206,34 +2111,8 @@ SYSTEMD
 systemctl enable fail2ban
 systemctl start fail2ban
 
-# Set up certbot auto-renewal with post-hook to reload SMTP server
-cat > /etc/systemd/system/certbot-renewal.service << 'CERTSVC'
-[Unit]
-Description=Certbot certificate renewal
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl reload smtp-server || systemctl restart smtp-server"
-CERTSVC
-
-cat > /etc/systemd/system/certbot-renewal.timer << 'CERTTIMER'
-[Unit]
-Description=Run certbot renewal twice daily
-
-[Timer]
-OnCalendar=*-*-* 00,12:00:00
-RandomizedDelaySec=3600
-Persistent=true
-
-[Install]
-WantedBy=timers.target
-CERTTIMER
-
-systemctl daemon-reload
-systemctl enable certbot-renewal.timer
-systemctl start certbot-renewal.timer
-
 # Enable and start SMTP server
+systemctl daemon-reload
 systemctl enable smtp-server
 systemctl start smtp-server
 
@@ -2442,17 +2321,17 @@ echo "Mail server setup complete at $(date)"
           stackName,
           templateBody: JSON.stringify(template),
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: {
-            Environment: process.env.APP_ENV || 'production',
-            ManagedBy: 'Stacks',
-          },
+          tags: [
+            { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
         })
 
         log.info(`Stack update initiated: ${stackId}`)
         log.info('Waiting for stack update to complete...')
 
         // Wait for stack update to complete
-        await cfnClient.waitForStack(stackName, ['UPDATE_COMPLETE', 'UPDATE_ROLLBACK_COMPLETE'])
+        await cfnClient.waitForStack(stackName, 'stack-update-complete')
 
         log.success('Cloud infrastructure updated with email server!')
 
@@ -2511,17 +2390,17 @@ echo "Mail server setup complete at $(date)"
           stackName,
           templateBody: JSON.stringify(template),
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: {
-            Environment: process.env.APP_ENV || 'production',
-            ManagedBy: 'Stacks',
-          },
+          tags: [
+            { Key: 'Environment', Value: process.env.APP_ENV || 'production' },
+            { Key: 'ManagedBy', Value: 'Stacks' },
+          ],
         })
 
         log.info(`Stack creation initiated: ${stackId}`)
         log.info('Waiting for stack creation to complete...')
 
         // Wait for stack creation to complete
-        await cfnClient.waitForStack(stackName, ['CREATE_COMPLETE', 'ROLLBACK_COMPLETE'])
+        await cfnClient.waitForStack(stackName, 'stack-create-complete')
 
         log.success('Cloud infrastructure created successfully')
 
