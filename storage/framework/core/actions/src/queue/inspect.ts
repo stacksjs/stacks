@@ -89,7 +89,7 @@ try {
 
     if (job.payload) {
       try {
-        const payload: QueuePayload = JSON.parse(job.payload)
+        const payload = JSON.parse(job.payload) as QueuePayload
         console.log(`│ Name:       ${payload.name.padEnd(52)} │`)
         console.log(`│ Path:       ${payload.path.padEnd(52)} │`)
         console.log(`│ Max Tries:  ${String(payload.maxTries).padEnd(52)} │`)
@@ -169,7 +169,7 @@ try {
 
     if (job.payload) {
       try {
-        const payload: QueuePayload = JSON.parse(job.payload)
+        const payload = JSON.parse(job.payload) as QueuePayload
         console.log(`│ Name:       ${payload.name.padEnd(52)} │`)
         console.log(`│ Path:       ${payload.path.padEnd(52)} │`)
         console.log(`│ Max Tries:  ${String(payload.maxTries).padEnd(52)} │`)
@@ -188,7 +188,7 @@ try {
         // Show job configuration if available
         if (payload.classPayload) {
           try {
-            const classConfig = JSON.parse(payload.classPayload)
+            const classConfig = JSON.parse(payload.classPayload) as Record<string, any>
             console.log('├────────────────────────────────────────────────────────────────┤')
             console.log('│ Job Configuration:                                             │')
             console.log('├────────────────────────────────────────────────────────────────┤')

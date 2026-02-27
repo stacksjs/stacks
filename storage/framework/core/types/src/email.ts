@@ -212,17 +212,11 @@ export interface EmailServerConfig {
 
   /**
    * Server mode:
-   * - 'serverless': Lightweight TypeScript/Bun server (default, ~$3/month)
-   * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc.
-   * @default 'serverless'
+   * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc. (default)
+   * - 'serverless': Lightweight TypeScript/Bun server (~$3/month)
+   * @default 'server'
    */
   mode?: 'serverless' | 'server'
-
-  /**
-   * Path to the Zig mail server repository (only used when mode is 'server')
-   * @default process.env.MAIL_SERVER_PATH
-   */
-  serverPath?: string
 
   storage?: {
     bucket?: string

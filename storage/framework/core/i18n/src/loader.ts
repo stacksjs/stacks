@@ -174,7 +174,7 @@ export async function loadFile(filePath: string): Promise<TranslationMessages> {
 
   switch (ext) {
     case '.json':
-      return JSON.parse(content)
+      return JSON.parse(content) as TranslationMessages
 
     case '.yaml':
     case '.yml':

@@ -769,7 +769,7 @@ export class S3Client {
     }
 
     const text = await response.text()
-    return JSON.parse(text)
+    return JSON.parse(text) as any
   }
 
   /**
@@ -851,7 +851,7 @@ export class S3Client {
    */
   async getObjectJson<T = any>(bucket: string, key: string): Promise<T> {
     const content = await this.getObject(bucket, key)
-    return JSON.parse(content)
+    return JSON.parse(content) as T
   }
 
   /**
@@ -1155,10 +1155,10 @@ export class S3Client {
         method: 'GET',
         path: `/${bucket}`,
         queryParams: { tagging: '' },
-      })
+      }) as any
       const tagSet = result?.Tagging?.TagSet?.Tag
       if (!tagSet) return []
-      return Array.isArray(tagSet) ? tagSet : [tagSet]
+      return (Array.isArray(tagSet) ? tagSet : [tagSet]) as { Key: string, Value: string }[]
     } catch (e: any) {
       if (e.statusCode === 404) {
         return []
@@ -1213,10 +1213,10 @@ export class S3Client {
         method: 'GET',
         path: `/${bucket}/${key}`,
         queryParams: { tagging: '' },
-      })
+      }) as any
       const tagSet = result?.Tagging?.TagSet?.Tag
       if (!tagSet) return []
-      return Array.isArray(tagSet) ? tagSet : [tagSet]
+      return (Array.isArray(tagSet) ? tagSet : [tagSet]) as { Key: string, Value: string }[]
     } catch (e: any) {
       if (e.statusCode === 404) {
         return []

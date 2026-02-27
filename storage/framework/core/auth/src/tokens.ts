@@ -860,7 +860,7 @@ export function parseScopes(scopes: string | string[] | null | undefined): Token
   if (Array.isArray(scopes)) return scopes as TokenScopes
   try {
     const parsed = JSON.parse(scopes)
-    return Array.isArray(parsed) ? parsed : []
+    return Array.isArray(parsed) ? parsed as TokenScopes : []
   }
   catch {
     return []

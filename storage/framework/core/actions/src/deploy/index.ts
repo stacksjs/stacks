@@ -811,26 +811,31 @@ fi`,
       if (isVerbose) log.debug(`Server deploy error: ${serverDeployError.stack}`)
     }
 
-    // Deploy SMTP proxy to EC2 (if email server is enabled)
+    // Deploy mail server to EC2 (if email server is enabled)
     const emailConfig = config.email
     if (emailConfig?.server?.enabled) {
-      const smtpSpinner = spinner('Deploying SMTP proxy to EC2...')
+      const mailServerMode = emailConfig?.server?.mode || 'server'
+      const smtpSpinner = spinner(`Deploying mail server (${mailServerMode} mode) to EC2...`)
       smtpSpinner.start()
 
       try {
-        const { S3Client, AWSClient } = await import('@stacksjs/ts-cloud') as any
+        const { S3Client, AWSClient, EC2Client } = await import('@stacksjs/ts-cloud') as any
         const { readFileSync: readSmtpFile, existsSync: smtpFileExists } = await import('node:fs')
         const { resolve: resolvePath, join: joinPath } = await import('node:path')
         const { execSync } = await import('node:child_process')
+        const { homedir } = await import('node:os')
 
         const s3 = new S3Client(region)
         const awsClient = new AWSClient()
+        const ec2 = new EC2Client(region)
 
         const stackName = `${projectName}-cloud`
 
-        // Find the EC2 instance and bucket
+        // Find the EC2 instance, bucket, and security group
         let smtpInstanceId: string | undefined
         let smtpBucketName: string | undefined
+        let emailBucketName: string | undefined
+        let securityGroupId: string | undefined
         try {
           const { AWSCloudFormationClient: CfnClient } = await import('@stacksjs/ts-cloud') as any
           const cfn = new CfnClient(region)
@@ -842,105 +847,292 @@ fi`,
             if ((key as string) === 'FrontendBucketName' && typeof value === 'string') {
               smtpBucketName = value as string
             }
+            if ((key as string) === 'emailBucketName' && typeof value === 'string') {
+              emailBucketName = value as string
+            }
           }
         } catch {
           // Stack outputs not available
         }
 
+        if (!emailBucketName) {
+          emailBucketName = `${projectName}-production-s3-email`
+        }
+
         if (smtpInstanceId && smtpBucketName) {
-          // Bundle the SMTP server into a single file
-          const smtpServerSrc = resolvePath(p.projectPath('storage/framework/core/cloud/src/imap/smtp-server.ts'))
-          const bundleOutDir = joinPath(p.projectPath(), '.stacks/tmp/smtp-bundle')
-          execSync(`bun build ${smtpServerSrc} --target=bun --outdir=${bundleOutDir}`, { stdio: 'pipe' })
+          // Get the security group for the instance to open mail ports
+          try {
+            const instanceData = await ec2.describeInstances({
+              Filters: [{ Name: 'instance-id', Values: [smtpInstanceId] }],
+            })
+            const sgs = instanceData?.Reservations?.[0]?.Instances?.[0]?.SecurityGroups
+            if (sgs?.[0]?.GroupId) {
+              securityGroupId = sgs[0].GroupId
+            }
+          } catch {
+            if (isVerbose) log.debug('Could not get security group for instance')
+          }
 
-          const bundlePath = joinPath(bundleOutDir, 'smtp-server.js')
-          if (smtpFileExists(bundlePath)) {
-            const smtpBundle = readSmtpFile(bundlePath)
+          // Open mail ports on the security group
+          if (securityGroupId) {
+            const mailPorts = [25, 465, 587, 143, 993, 110, 995]
+            for (const port of mailPorts) {
+              try {
+                await ec2.authorizeSecurityGroupIngress({
+                  GroupId: securityGroupId,
+                  IpPermissions: [{
+                    IpProtocol: 'tcp',
+                    FromPort: port,
+                    ToPort: port,
+                    IpRanges: [{ CidrIp: '0.0.0.0/0', Description: `Mail port ${port}` }],
+                  }],
+                })
+                if (isVerbose) log.debug(`  Opened port ${port} on security group ${securityGroupId}`)
+              } catch (e: any) {
+                // Ignore if rule already exists
+                if (!e.message?.includes('already exists')) {
+                  if (isVerbose) log.debug(`  Port ${port}: ${e.message}`)
+                }
+              }
+            }
+          }
 
-            // Generate the SMTP proxy entry point
-            const domain = emailConfig.domain || 'stacksjs.com'
-            const mailboxes = emailConfig.mailboxes || ['chris', 'blake', 'glenn']
-            const usersEntries = (mailboxes as string[]).map((name: string) => {
-              const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
-              return `  "${name}": { password: process.env["${envKey}"] || "", email: "${name}@${domain}" }`
-            }).join(',\n')
+          const domain = emailConfig.domain || 'stacksjs.com'
+          const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
 
-            const entryPoint = `import { SmtpServer } from "./smtp-server.js";
+          if (mailServerMode === 'server') {
+            // Server mode: Deploy the Zig binary
+            if (isVerbose) log.debug('Deploying Zig mail server binary...')
+
+            // Find the Linux binary from ts-smtp-server or well-known paths
+            let linuxBinaryPath: string | null = null
+            try {
+              // @ts-ignore - ts-smtp-server may not be installed
+              const { getLinuxBinaryPath } = await import('ts-smtp-server')
+              linuxBinaryPath = getLinuxBinaryPath('x86_64')
+            } catch {
+              // ts-smtp-server not linked, check well-known paths
+              const wellKnownPaths = [
+                joinPath(homedir(), 'Code', 'Libraries', 'mail', 'packages', 'ts-smtp-server', 'bin', 'smtp-server-x86_64-linux'),
+                joinPath(homedir(), 'Code', 'Libraries', 'mail', 'zig-out', 'bin', 'smtp-server'),
+                joinPath(homedir(), 'Code', 'mail', 'zig-out', 'bin', 'smtp-server'),
+              ]
+              for (const p of wellKnownPaths) {
+                if (smtpFileExists(p)) {
+                  linuxBinaryPath = p
+                  break
+                }
+              }
+            }
+
+            if (linuxBinaryPath && smtpFileExists(linuxBinaryPath)) {
+              // Verify it's an ELF binary
+              const header = readSmtpFile(linuxBinaryPath).slice(0, 4)
+              const isElf = header[0] === 0x7f && header[1] === 0x45 && header[2] === 0x4c && header[3] === 0x46
+              if (!isElf) {
+                smtpSpinner.fail('Linux binary is not a valid ELF file. Run: cd ~/Code/Libraries/mail && zig build -Dtarget=x86_64-linux-gnu -Doptimize=ReleaseFast')
+                throw new Error('Linux binary is not a valid ELF file')
+              }
+
+              // Upload binary to S3
+              const binaryContent = readSmtpFile(linuxBinaryPath)
+              await s3.putObject({
+                bucket: emailBucketName,
+                key: 'mail-server/smtp-server',
+                body: binaryContent,
+                contentType: 'application/octet-stream',
+              })
+              if (isVerbose) log.debug(`  Uploaded Zig binary (${(binaryContent.length / 1024 / 1024).toFixed(1)}MB) to S3`)
+
+              // Deploy Zig binary via SSM
+              const zigSsmCommand = [
+                // Create user and directories
+                'useradd -r -s /bin/false -d /opt/smtp-server -m smtp-server 2>/dev/null || true',
+                'mkdir -p /opt/smtp-server /var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server /var/lib/smtp-server/backups',
+                // Download binary from S3
+                `aws s3 cp s3://${emailBucketName}/mail-server/smtp-server /opt/smtp-server/smtp-server --region ${region}`,
+                'chmod +x /opt/smtp-server/smtp-server',
+                // Verify binary
+                'file /opt/smtp-server/smtp-server | grep -q ELF || { echo "Binary is not ELF"; exit 1; }',
+                // Install certbot and get cert
+                'if ! command -v certbot &> /dev/null; then dnf install -y certbot || yum install -y certbot || apt-get install -y certbot || true; fi',
+                `if [ ! -d /etc/letsencrypt/live/${mailSubdomain}.${domain} ]; then certbot certonly --standalone --non-interactive --agree-tos --email admin@${domain} -d ${mailSubdomain}.${domain} --http-01-port 80 || { echo "Certbot failed, generating self-signed cert"; openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/smtp-server/smtp-server.key -out /etc/smtp-server/smtp-server.crt -subj "/CN=${mailSubdomain}.${domain}"; }; fi`,
+                // Link Let's Encrypt certs
+                `if [ -d /etc/letsencrypt/live/${mailSubdomain}.${domain} ]; then ln -sf /etc/letsencrypt/live/${mailSubdomain}.${domain}/fullchain.pem /etc/smtp-server/smtp-server.crt; ln -sf /etc/letsencrypt/live/${mailSubdomain}.${domain}/privkey.pem /etc/smtp-server/smtp-server.key; fi`,
+                'chmod 600 /etc/smtp-server/smtp-server.key 2>/dev/null || true',
+                'chown -R smtp-server:smtp-server /opt/smtp-server /var/lib/smtp-server /var/log/smtp-server /var/spool/mail',
+                'chown smtp-server:smtp-server /etc/smtp-server/smtp-server.* 2>/dev/null || true',
+                // Create environment configuration
+                `cat > /etc/smtp-server/smtp-server.env << 'ENVEOF'
+SMTP_PROFILE=production
+SMTP_HOST=0.0.0.0
+SMTP_PORT=25
+SMTP_HOSTNAME=${mailSubdomain}.${domain}
+SMTP_ENABLE_TLS=true
+SMTP_TLS_CERT=/etc/smtp-server/smtp-server.crt
+SMTP_TLS_KEY=/etc/smtp-server/smtp-server.key
+SMTP_ENABLE_AUTH=true
+SMTP_DB_PATH=/var/lib/smtp-server/smtp.db
+AWS_S3_BUCKET=${emailBucketName}
+AWS_REGION=${region}
+SMTP_ENABLE_JSON_LOGGING=true
+SMTP_LOG_LEVEL=info
+SMTP_MAILBOX_PATH=/var/spool/mail
+SMTP_BACKUP_PATH=/var/lib/smtp-server/backups
+SMTP_MAX_CONNECTIONS=1000
+SMTP_MAX_MESSAGE_SIZE=52428800
+SMTP_MAX_RECIPIENTS=100
+SMTP_RATE_LIMIT_PER_IP=100
+SMTP_RATE_LIMIT_PER_USER=200
+ENVEOF`,
+                'chmod 600 /etc/smtp-server/smtp-server.env',
+                'chown smtp-server:smtp-server /etc/smtp-server/smtp-server.env',
+                // Create systemd service
+                `cat > /etc/systemd/system/smtp-server.service << 'SVCEOF'
+[Unit]
+Description=Stacks Mail Server (Zig)
+After=network.target
+
+[Service]
+Type=simple
+User=smtp-server
+Group=smtp-server
+WorkingDirectory=/opt/smtp-server
+EnvironmentFile=/etc/smtp-server/smtp-server.env
+ExecStart=/opt/smtp-server/smtp-server
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=smtp-server
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+
+[Install]
+WantedBy=multi-user.target
+SVCEOF`,
+                'systemctl daemon-reload',
+                'systemctl enable smtp-server',
+                'systemctl restart smtp-server',
+                // Set up cert renewal
+                `echo '0 3 * * * root certbot renew --quiet --deploy-hook "systemctl restart smtp-server" >> /var/log/certbot-renew.log 2>&1' > /etc/cron.d/certbot-renew`,
+                'chmod 644 /etc/cron.d/certbot-renew',
+                // Verify
+                'sleep 3',
+                'systemctl is-active smtp-server && echo "Mail server is running" || echo "Mail server failed to start"',
+                'ss -tlnp | grep -E "(25|465|587)" || echo "Warning: mail ports not listening yet"',
+              ].join(' && ')
+
+              const ssmResult = await awsClient.request({
+                service: 'ssm',
+                region,
+                method: 'POST',
+                path: '/',
+                headers: {
+                  'Content-Type': 'application/x-amz-json-1.1',
+                  'X-Amz-Target': 'AmazonSSM.SendCommand',
+                },
+                body: JSON.stringify({
+                  InstanceIds: [smtpInstanceId],
+                  DocumentName: 'AWS-RunShellScript',
+                  Parameters: { commands: [zigSsmCommand] },
+                  TimeoutSeconds: 300,
+                }),
+              })
+
+              const cmdId = ssmResult?.Command?.CommandId
+              if (cmdId) {
+                let ssmAttempts = 0
+                while (ssmAttempts < 100) {
+                  await new Promise(resolve => setTimeout(resolve, 3000))
+                  try {
+                    const invocation = await awsClient.request({
+                      service: 'ssm',
+                      region,
+                      method: 'POST',
+                      path: '/',
+                      headers: {
+                        'Content-Type': 'application/x-amz-json-1.1',
+                        'X-Amz-Target': 'AmazonSSM.GetCommandInvocation',
+                      },
+                      body: JSON.stringify({ CommandId: cmdId, InstanceId: smtpInstanceId }),
+                    })
+
+                    const status = invocation?.Status
+                    if (status === 'Success') {
+                      smtpSpinner.succeed('Zig mail server deployed to EC2')
+                      if (isVerbose && invocation?.StandardOutputContent) {
+                        console.log(invocation.StandardOutputContent)
+                      }
+                      break
+                    } else if (status === 'Failed' || status === 'Cancelled' || status === 'TimedOut') {
+                      const errOutput = invocation?.StandardErrorContent || invocation?.StandardOutputContent || 'Unknown error'
+                      smtpSpinner.fail(`Zig mail server deploy failed: ${errOutput.slice(0, 500)}`)
+                      break
+                    }
+                  } catch {
+                    // Not ready yet
+                  }
+                  ssmAttempts++
+                }
+                if (ssmAttempts >= 100) {
+                  smtpSpinner.fail('Zig mail server deploy timed out')
+                }
+              } else {
+                smtpSpinner.fail('Failed to send SSM command for mail server')
+              }
+            } else {
+              smtpSpinner.fail('No Linux x86_64 binary found. Run: cd ~/Code/Libraries/mail && zig build -Dtarget=x86_64-linux-gnu -Doptimize=ReleaseFast')
+            }
+          } else {
+            // Serverless mode: Deploy the TypeScript SMTP proxy (existing behavior)
+            const smtpServerSrc = resolvePath(p.projectPath('storage/framework/core/cloud/src/imap/smtp-server.ts'))
+            const bundleOutDir = joinPath(p.projectPath(), '.stacks/tmp/smtp-bundle')
+            execSync(`bun build ${smtpServerSrc} --target=bun --outdir=${bundleOutDir}`, { stdio: 'pipe' })
+
+            const bundlePath = joinPath(bundleOutDir, 'smtp-server.js')
+            if (smtpFileExists(bundlePath)) {
+              const smtpBundle = readSmtpFile(bundlePath)
+              const mailboxes = emailConfig.mailboxes || ['chris', 'blake', 'glenn']
+              const usersEntries = (mailboxes as string[]).map((name: string) => {
+                const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
+                return `  "${name}": { password: process.env["${envKey}"] || "", email: "${name}@${domain}" }`
+              }).join(',\n')
+
+              const entryPoint = `import { SmtpServer } from "./smtp-server.js";
 import * as fs from "fs";
-
 const domain = "${domain}";
-const users = {
-${usersEntries}
-};
-
-// TLS configuration (Let's Encrypt certs) — SmtpServer expects file paths
+const users = { ${usersEntries} };
 const certDir = \`/etc/letsencrypt/live/mail.\${domain}\`;
 let tlsConfig = undefined;
 if (fs.existsSync(\`\${certDir}/privkey.pem\`)) {
-  tlsConfig = {
-    key: \`\${certDir}/privkey.pem\`,
-    cert: \`\${certDir}/fullchain.pem\`,
-  };
-  console.log("TLS certificates loaded from", certDir);
-} else {
-  console.log("No TLS certificates found at", certDir, "- running without TLS");
+  tlsConfig = { key: \`\${certDir}/privkey.pem\`, cert: \`\${certDir}/fullchain.pem\` };
 }
-
-const server = new SmtpServer({
-  port: 587,
-  tlsPort: 465,
-  host: "0.0.0.0",
-  domain,
-  users,
-  tls: tlsConfig,
-  sentBucket: "${projectName}-production-email",
-  sentPrefix: "sent/",
-});
-
+const server = new SmtpServer({ port: 587, tlsPort: 465, host: "0.0.0.0", domain, users, tls: tlsConfig, sentBucket: "${projectName}-production-email", sentPrefix: "sent/" });
 await server.start();
-console.log(\`SMTP proxy running on port 587 (STARTTLS) and 465 (TLS) for \${domain}\`);
 `
+              await s3.putObject({ bucket: smtpBucketName, key: '_deploy/smtp-server.js', body: smtpBundle, contentType: 'application/javascript' })
+              await s3.putObject({ bucket: smtpBucketName, key: '_deploy/smtp-entry.ts', body: Buffer.from(entryPoint), contentType: 'application/typescript' })
 
-            // Upload both files to S3
-            await s3.putObject({
-              bucket: smtpBucketName,
-              key: '_deploy/smtp-server.js',
-              body: smtpBundle,
-              contentType: 'application/javascript',
-            })
-            await s3.putObject({
-              bucket: smtpBucketName,
-              key: '_deploy/smtp-entry.ts',
-              body: Buffer.from(entryPoint),
-              contentType: 'application/typescript',
-            })
-            if (isVerbose) log.debug('  Uploaded SMTP proxy bundle to S3')
+              const envLines = (mailboxes as string[]).map((name: string) => {
+                const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
+                return `Environment=${envKey}=${process.env[envKey] || ''}`
+              }).join('\n')
 
-            // Generate env vars for mail passwords
-            const envLines = (mailboxes as string[]).map((name: string) => {
-              const envKey = `MAIL_PASSWORD_${name.toUpperCase()}`
-              const password = process.env[envKey] || ''
-              return `Environment=${envKey}=${password}`
-            }).join('\n')
-
-            // Deploy via SSM
-            const smtpSsmCommand = [
-              'mkdir -p /var/www/smtp',
-              `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-server.js /var/www/smtp/smtp-server.js`,
-              `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-entry.ts /var/www/smtp/smtp-entry.ts`,
-              // Install certbot and get cert for mail.domain
-              `if ! command -v certbot &> /dev/null; then
-  dnf install -y certbot || yum install -y certbot || apt-get install -y certbot || true
-fi`,
-              `if [ ! -d /etc/letsencrypt/live/mail.${emailConfig.domain || 'stacksjs.com'} ]; then
-  certbot certonly --standalone --non-interactive --agree-tos --email admin@${emailConfig.domain || 'stacksjs.com'} -d mail.${emailConfig.domain || 'stacksjs.com'} --http-01-port 80 || echo "Certbot failed - will run without TLS"
-fi`,
-              // Create systemd service
-              `cat > /etc/systemd/system/stacks-smtp.service << 'SERVICEFILE'
+              const smtpSsmCommand = [
+                'mkdir -p /var/www/smtp',
+                `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-server.js /var/www/smtp/smtp-server.js`,
+                `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-entry.ts /var/www/smtp/smtp-entry.ts`,
+                `if ! command -v certbot &> /dev/null; then dnf install -y certbot || yum install -y certbot || apt-get install -y certbot || true; fi`,
+                `if [ ! -d /etc/letsencrypt/live/mail.${domain} ]; then certbot certonly --standalone --non-interactive --agree-tos --email admin@${domain} -d mail.${domain} --http-01-port 80 || echo "Certbot failed"; fi`,
+                `cat > /etc/systemd/system/stacks-smtp.service << 'SERVICEFILE'
 [Unit]
 Description=Stacks SMTP Proxy Server
 After=network.target
-
 [Service]
 Type=simple
 WorkingDirectory=/var/www/smtp
@@ -950,121 +1142,58 @@ RestartSec=5
 Environment=NODE_ENV=production
 Environment=AWS_REGION=${region}
 ${envLines}
-
 [Install]
 WantedBy=multi-user.target
 SERVICEFILE`,
-              'systemctl daemon-reload',
-              'systemctl enable stacks-smtp',
-              'systemctl restart stacks-smtp',
-              // Set up certbot auto-renewal
-              `if command -v certbot &> /dev/null; then
-  cat > /etc/systemd/system/certbot-mail-renewal.timer << 'TIMERCFG'
-[Unit]
-Description=Certbot mail cert renewal
+                'systemctl daemon-reload',
+                'systemctl enable stacks-smtp',
+                'systemctl restart stacks-smtp',
+              ].join(' && ')
 
-[Timer]
-OnCalendar=*-*-* 00,12:00:00
-RandomizedDelaySec=3600
-Persistent=true
+              const ssmResult = await awsClient.request({
+                service: 'ssm', region, method: 'POST', path: '/',
+                headers: { 'Content-Type': 'application/x-amz-json-1.1', 'X-Amz-Target': 'AmazonSSM.SendCommand' },
+                body: JSON.stringify({ InstanceIds: [smtpInstanceId], DocumentName: 'AWS-RunShellScript', Parameters: { commands: [smtpSsmCommand] }, TimeoutSeconds: 180 }),
+              })
 
-[Install]
-WantedBy=timers.target
-TIMERCFG
-  cat > /etc/systemd/system/certbot-mail-renewal.service << 'SVCCFG'
-[Unit]
-Description=Certbot mail cert renewal
-
-[Service]
-Type=oneshot
-ExecStart=/usr/bin/certbot renew --quiet --deploy-hook "systemctl restart stacks-smtp"
-SVCCFG
-  systemctl daemon-reload
-  systemctl enable certbot-mail-renewal.timer
-  systemctl start certbot-mail-renewal.timer
-fi`,
-              'echo "SMTP proxy deployed and started"',
-            ].join(' && ')
-
-            const ssmResult = await awsClient.request({
-              service: 'ssm',
-              region,
-              method: 'POST',
-              path: '/',
-              headers: {
-                'Content-Type': 'application/x-amz-json-1.1',
-                'X-Amz-Target': 'AmazonSSM.SendCommand',
-              },
-              body: JSON.stringify({
-                InstanceIds: [smtpInstanceId],
-                DocumentName: 'AWS-RunShellScript',
-                Parameters: {
-                  commands: [smtpSsmCommand],
-                },
-                TimeoutSeconds: 180,
-              }),
-            })
-
-            const cmdId = ssmResult?.Command?.CommandId
-            if (cmdId) {
-              let ssmAttempts = 0
-              while (ssmAttempts < 60) {
-                await new Promise(resolve => setTimeout(resolve, 3000))
-                try {
-                  const invocation = await awsClient.request({
-                    service: 'ssm',
-                    region,
-                    method: 'POST',
-                    path: '/',
-                    headers: {
-                      'Content-Type': 'application/x-amz-json-1.1',
-                      'X-Amz-Target': 'AmazonSSM.GetCommandInvocation',
-                    },
-                    body: JSON.stringify({
-                      CommandId: cmdId,
-                      InstanceId: smtpInstanceId,
-                    }),
-                  })
-
-                  const status = invocation?.Status
-                  if (status === 'Success') {
-                    smtpSpinner.succeed('SMTP proxy deployed to EC2')
-                    break
-                  } else if (status === 'Failed' || status === 'Cancelled' || status === 'TimedOut') {
-                    const errOutput = invocation?.StandardErrorContent || 'Unknown error'
-                    smtpSpinner.fail(`SMTP proxy deploy failed: ${errOutput}`)
-                    break
-                  }
-                } catch {
-                  // Not ready yet
+              const cmdId = ssmResult?.Command?.CommandId
+              if (cmdId) {
+                let ssmAttempts = 0
+                while (ssmAttempts < 60) {
+                  await new Promise(resolve => setTimeout(resolve, 3000))
+                  try {
+                    const invocation = await awsClient.request({
+                      service: 'ssm', region, method: 'POST', path: '/',
+                      headers: { 'Content-Type': 'application/x-amz-json-1.1', 'X-Amz-Target': 'AmazonSSM.GetCommandInvocation' },
+                      body: JSON.stringify({ CommandId: cmdId, InstanceId: smtpInstanceId }),
+                    })
+                    const status = invocation?.Status
+                    if (status === 'Success') { smtpSpinner.succeed('SMTP proxy deployed to EC2'); break }
+                    else if (status === 'Failed' || status === 'Cancelled' || status === 'TimedOut') { smtpSpinner.fail(`SMTP proxy deploy failed: ${invocation?.StandardErrorContent || 'Unknown'}`); break }
+                  } catch { /* not ready */ }
+                  ssmAttempts++
                 }
-                ssmAttempts++
+                if (ssmAttempts >= 60) smtpSpinner.fail('SMTP proxy deploy timed out')
+              } else {
+                smtpSpinner.fail('Failed to send SSM command for SMTP proxy')
               }
-              if (ssmAttempts >= 60) {
-                smtpSpinner.fail('SMTP proxy deploy timed out')
-              }
-            } else {
-              smtpSpinner.fail('Failed to send SSM command for SMTP proxy')
-            }
 
-            // Clean up S3 artifacts
-            try {
-              await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-server.js' })
-              await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-entry.ts' })
-            } catch {
-              // Non-critical
+              try {
+                await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-server.js' })
+                await s3.deleteObject({ bucket: smtpBucketName, key: '_deploy/smtp-entry.ts' })
+              } catch { /* non-critical */ }
+            } else {
+              smtpSpinner.stop()
+              if (isVerbose) log.debug('SMTP server bundle not found, skipping')
             }
-          } else {
-            smtpSpinner.stop()
-            if (isVerbose) log.debug('SMTP server bundle not found, skipping')
           }
         } else {
           smtpSpinner.stop()
-          if (isVerbose) log.debug('No EC2 instance or bucket found, skipping SMTP deploy')
+          if (isVerbose) log.debug('No EC2 instance or bucket found, skipping mail server deploy')
         }
       } catch (smtpDeployError: any) {
-        smtpSpinner.fail(`SMTP proxy deployment failed: ${smtpDeployError.message}`)
-        if (isVerbose) log.debug(`SMTP deploy error: ${smtpDeployError.stack}`)
+        smtpSpinner.fail(`Mail server deployment failed: ${smtpDeployError.message}`)
+        if (isVerbose) log.debug(`Mail server deploy error: ${smtpDeployError.stack}`)
       }
     }
   }
@@ -1155,12 +1284,12 @@ fi`,
             let itemHtml = template
             // Replace {{ item.prop }}
             itemHtml = itemHtml.replace(new RegExp(`\\{\\{\\s*${itemVar}\\.(\\w+)\\s*\\}\\}`, 'g'), (_match: string, prop: string) => {
-              const val = item[prop]
+              const val = (item as Record<string, any>)[prop]
               return val !== undefined && val !== null ? String(val) : ''
             })
             // Replace {!! item.prop !!} (raw/unescaped HTML)
             itemHtml = itemHtml.replace(new RegExp(`\\{!!\\s*${itemVar}\\.(\\w+)\\s*!!\\}`, 'g'), (_match: string, prop: string) => {
-              const val = item[prop]
+              const val = (item as Record<string, any>)[prop]
               return val !== undefined && val !== null ? String(val) : ''
             })
             rendered += itemHtml
@@ -1626,7 +1755,7 @@ fi`,
     if (tunnelConfig?.enabled) {
       const tunnelDomain = tunnelConfig.domain || ''
 
-      if (!tunnelDomain || tunnelDomain === 'localtunnel.dev') {
+      if (!tunnelDomain || tunnelDomain === 'localtunnel.dev' || tunnelDomain === 'api.localtunnel.dev') {
         console.log('ℹ Tunnel: Using shared localtunnel.dev (no custom tunnel deployment needed)')
       }
       else {

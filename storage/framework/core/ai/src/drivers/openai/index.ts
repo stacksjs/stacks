@@ -128,7 +128,7 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
             if (data === '[DONE]') continue
 
             try {
-              const parsed = JSON.parse(data)
+              const parsed = JSON.parse(data) as any
               const content = parsed.choices[0]?.delta?.content
               if (content) yield content
             }
@@ -281,7 +281,7 @@ export async function* streamChat(
         if (data === '[DONE]') continue
 
         try {
-          const parsed = JSON.parse(data)
+          const parsed = JSON.parse(data) as any
           const content = parsed.choices[0]?.delta?.content
           if (content) yield content
         }
@@ -407,7 +407,7 @@ export async function transcribe(
     throw new Error(`OpenAI Whisper API error: ${error}`)
   }
 
-  return response.json()
+  return response.json() as any
 }
 
 /**

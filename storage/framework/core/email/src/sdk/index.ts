@@ -182,7 +182,7 @@ export class EmailSDK {
         return []
       }
 
-      let inbox: InboxEmail[] = JSON.parse(result)
+      let inbox: InboxEmail[] = JSON.parse(result) as InboxEmail[]
 
       // Apply pagination
       const offset = options?.offset || 0
@@ -228,7 +228,7 @@ export class EmailSDK {
       let metadata: Record<string, unknown> = {}
       if (metaResult) {
         try {
-          metadata = JSON.parse(metaResult)
+          metadata = JSON.parse(metaResult) as Record<string, unknown>
         }
         catch (parseError: any) {
           console.debug(`[email-sdk] Failed to parse email metadata: ${parseError.message}`)

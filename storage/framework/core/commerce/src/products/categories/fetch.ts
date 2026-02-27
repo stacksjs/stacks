@@ -238,7 +238,7 @@ export async function fetchCategoryTree(): Promise<any[]> {
   const allCategories = await fetchAll()
 
   // Create a map for quick access
-  const categoryMap = new Map()
+  const categoryMap = new Map<any, any>()
   allCategories.forEach((category: any) => {
     categoryMap.set(category.id, {
       ...category,

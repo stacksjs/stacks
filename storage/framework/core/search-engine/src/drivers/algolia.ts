@@ -137,7 +137,7 @@ async function request<T>(
   })
 
   if (!response.ok) {
-    const error = await response.json().catch(() => ({ message: response.statusText }))
+    const error = await response.json().catch(() => ({ message: response.statusText })) as any
     throw new Error(`Algolia API error: ${error.message || response.statusText}`)
   }
 

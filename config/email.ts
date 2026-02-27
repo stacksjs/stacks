@@ -42,16 +42,10 @@ export default {
 
     /**
      * Server mode:
-     * - 'serverless': Lightweight TypeScript/Bun server (default, ~$3/month)
-     * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc.
+     * - 'server': Full-featured Zig mail server with IMAP, POP3, CalDAV, etc. (default)
+     * - 'serverless': Lightweight TypeScript/Bun server (~$3/month)
      */
-    mode: (env.MAIL_SERVER_MODE || 'serverless') as 'serverless' | 'server',
-
-    /**
-     * Path to the Zig mail server repository (only used when mode is 'server')
-     * @default '/Users/chrisbreuer/Code/mail' or process.env.MAIL_SERVER_PATH
-     */
-    serverPath: env.MAIL_SERVER_PATH || '/Users/chrisbreuer/Code/mail',
+    mode: (env.MAIL_SERVER_MODE || 'server') as 'serverless' | 'server',
 
     storage: {
       retentionDays: 90,

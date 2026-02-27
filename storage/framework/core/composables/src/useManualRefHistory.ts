@@ -27,7 +27,7 @@ function cloneValue<T>(val: T, shouldClone: boolean): T {
   if (typeof structuredClone === 'function') {
     return structuredClone(val)
   }
-  return JSON.parse(JSON.stringify(val))
+  return JSON.parse(JSON.stringify(val)) as T
 }
 
 /**

@@ -283,7 +283,7 @@ export function cloud(buddy: CLI): void {
 
           const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
           const generator = new InfrastructureGenerator({
-            config: cloudConfig,
+            config: cloudConfig as any,
             environment,
           })
 
@@ -703,7 +703,7 @@ export function cloud(buddy: CLI): void {
 
         const environment = (process.env.APP_ENV || process.env.NODE_ENV || 'production') as 'production' | 'staging' | 'development'
         const generator = new InfrastructureGenerator({
-          config: cloudConfig,
+          config: cloudConfig as any,
           environment,
         })
 

@@ -37,9 +37,9 @@ export function useElementSize(
       const observer = new ResizeObserver((entries) => {
         for (const entry of entries) {
           if (entry.contentBoxSize) {
-            const boxSize = Array.isArray(entry.contentBoxSize)
+            const boxSize = (Array.isArray(entry.contentBoxSize)
               ? entry.contentBoxSize[0]
-              : entry.contentBoxSize
+              : entry.contentBoxSize) as ResizeObserverSize
             width.value = boxSize.inlineSize
             height.value = boxSize.blockSize
           }

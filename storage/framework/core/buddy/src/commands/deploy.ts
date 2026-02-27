@@ -113,7 +113,7 @@ function loadAwsCredentialsFromFile(): { accessKeyId?: string, secretAccessKey?:
 /**
  * Set up email DNS records (DKIM CNAMEs and MX record) after SES identity is created
  */
-async function setupEmailDnsRecords(emailDomain: string, region: string, logger: typeof log): Promise<void> {
+async function setupEmailDnsRecords(emailDomain: string, region: string, logger: typeof log, options?: { mode?: 'server' | 'serverless', mailSubdomain?: string }): Promise<void> {
   logger.info('Setting up email DNS records...')
 
   try {
@@ -179,6 +179,13 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
     }
 
     // Add MX record for receiving emails
+    // In 'server' mode, MX points to the mail server itself
+    // In 'serverless' mode, MX points to SES inbound
+    const mailSubdomain = options?.mailSubdomain || 'mail'
+    const mxTarget = options?.mode === 'server'
+      ? `10 ${mailSubdomain}.${emailDomain}`
+      : `10 inbound-smtp.${region}.amazonaws.com`
+
     try {
       await route53.changeResourceRecordSets({
         HostedZoneId: hostedZoneId,
@@ -189,12 +196,12 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
               Name: emailDomain,
               Type: 'MX',
               TTL: 300,
-              ResourceRecords: [{ Value: `10 inbound-smtp.${region}.amazonaws.com` }],
+              ResourceRecords: [{ Value: mxTarget }],
             },
           }],
         },
       })
-      logger.success('Added MX record for receiving emails')
+      logger.success(`Added MX record: ${mxTarget}`)
     } catch (e: any) {
       logger.warn(`Failed to add MX record: ${e.message}`)
     }
@@ -336,6 +343,145 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
     }
   } catch (error: any) {
     logger.warn(`Failed to create mail users: ${error.message}`)
+  }
+}
+
+/**
+ * Upload mail server binary/source to S3
+ * For 'server' mode: uploads the Linux x86_64 binary from ts-smtp-server package
+ * For 'serverless' mode: uploads the TypeScript server code
+ */
+async function uploadMailServerToS3(bucketName: string, region: string, mode: string): Promise<void> {
+  try {
+    const { S3Client: S3 } = await import('@stacksjs/ts-cloud')
+    const s3Client = new S3(region)
+
+    if (mode === 'serverless') {
+      // Upload TypeScript/Bun server code
+      const serverTsPath = p.frameworkPath('core/mail-server/server.ts')
+      if (existsSync(serverTsPath)) {
+        const serverCode = readFileSync(serverTsPath, 'utf-8')
+        await s3Client.putObject({
+          bucket: bucketName,
+          key: 'mail-server/server.ts',
+          body: serverCode,
+          contentType: 'text/typescript',
+        })
+        log.success('Uploaded serverless mail server code to S3')
+      }
+
+      const pkgPath = p.frameworkPath('core/mail-server/package.json')
+      if (existsSync(pkgPath)) {
+        const pkgJson = readFileSync(pkgPath, 'utf-8')
+        await s3Client.putObject({
+          bucket: bucketName,
+          key: 'mail-server/package.json',
+          body: pkgJson,
+          contentType: 'application/json',
+        })
+      }
+      return
+    }
+
+    // Server mode: try to find and upload the Linux x86_64 binary from ts-smtp-server
+    let binaryUploaded = false
+
+    try {
+      // Try to import from ts-smtp-server package (installed via bun link)
+      // @ts-ignore - ts-smtp-server may not be installed
+      const { getLinuxBinaryPath, getSourcePath } = await import('ts-smtp-server')
+
+      const linuxBinaryPath = getLinuxBinaryPath('x86_64')
+      if (linuxBinaryPath && existsSync(linuxBinaryPath)) {
+        log.info(`Uploading Linux binary from ts-smtp-server: ${linuxBinaryPath}`)
+        const binaryContent = readFileSync(linuxBinaryPath)
+        await s3Client.putObject({
+          bucket: bucketName,
+          key: 'mail-server/smtp-server',
+          body: binaryContent,
+          contentType: 'application/octet-stream',
+        })
+        log.success('Uploaded Linux x86_64 mail server binary to S3')
+        binaryUploaded = true
+      }
+
+      // Also upload source tarball as fallback
+      const sourcePath = getSourcePath()
+      if (existsSync(sourcePath)) {
+        log.info('Uploading source tarball as fallback...')
+        const { execSync } = await import('child_process')
+        const tarballPath = '/tmp/mail-server-source.tar.gz'
+        execSync(`tar -czf ${tarballPath} -C "${sourcePath}" --exclude='.git' --exclude='zig-out' --exclude='zig-cache' --exclude='.zig-cache' .`, { stdio: 'inherit' })
+        const tarballContent = readFileSync(tarballPath)
+        await s3Client.putObject({
+          bucket: bucketName,
+          key: 'mail-server/source.tar.gz',
+          body: tarballContent,
+          contentType: 'application/gzip',
+        })
+        log.success('Uploaded source tarball to S3')
+      }
+    }
+    catch {
+      // ts-smtp-server not linked — fall back to well-known paths
+      log.debug('ts-smtp-server package not found, trying well-known paths...')
+
+      const wellKnownPaths = [
+        join(homedir(), 'Code', 'Libraries', 'mail'),
+        join(homedir(), 'Code', 'mail'),
+      ]
+
+      for (const zigPath of wellKnownPaths) {
+        if (!existsSync(zigPath))
+          continue
+
+        log.info(`Found mail server source at ${zigPath}`)
+
+        // Look for pre-built Linux binary in the package bin/ or zig-out/
+        const binaryPaths = [
+          join(zigPath, 'packages', 'ts-smtp-server', 'bin', 'smtp-server-x86_64-linux'),
+          join(zigPath, 'zig-out', 'bin', 'x86_64-linux', 'smtp-server-x86_64-linux'),
+        ]
+
+        for (const binaryPath of binaryPaths) {
+          if (existsSync(binaryPath)) {
+            log.info(`Uploading Linux binary from ${binaryPath}`)
+            const binaryContent = readFileSync(binaryPath)
+            await s3Client.putObject({
+              bucket: bucketName,
+              key: 'mail-server/smtp-server',
+              body: binaryContent,
+              contentType: 'application/octet-stream',
+            })
+            log.success('Uploaded Linux x86_64 mail server binary to S3')
+            binaryUploaded = true
+            break
+          }
+        }
+
+        // Upload source tarball
+        const { execSync } = await import('child_process')
+        const tarballPath = '/tmp/mail-server-source.tar.gz'
+        execSync(`tar -czf ${tarballPath} -C "${zigPath}" --exclude='.git' --exclude='zig-out' --exclude='zig-cache' --exclude='.zig-cache' .`, { stdio: 'inherit' })
+        const tarballContent = readFileSync(tarballPath)
+        await s3Client.putObject({
+          bucket: bucketName,
+          key: 'mail-server/source.tar.gz',
+          body: tarballContent,
+          contentType: 'application/gzip',
+        })
+        log.success('Uploaded source tarball to S3')
+        break
+      }
+    }
+
+    if (!binaryUploaded) {
+      log.warn('No pre-built Linux binary found. The server will build from source on first boot (this takes longer).')
+      log.info('To pre-build: cd ~/Code/Libraries/mail/packages/ts-smtp-server && bun run build:linux-x64')
+    }
+  }
+  catch (uploadErr: any) {
+    log.debug(`Could not upload mail server to S3 (bucket may not exist yet): ${uploadErr.message}`)
   }
 }
 
@@ -1609,8 +1755,7 @@ exports.handler = async (event) => {
 
       // Get mail server config from email config
       const mailServerConfig = emailConfig?.server?.instance || {}
-      const mailServerMode = emailConfig?.server?.mode || 'serverless'
-      const mailServerPath = emailConfig?.server?.serverPath || '/Users/chrisbreuer/Code/mail'
+      const mailServerMode = emailConfig?.server?.mode || 'server'
       // For 'server' mode, use x86_64 instance (Zig compilation), for 'serverless' use ARM
       const instanceType = mailServerConfig.type || (mailServerMode === 'server' ? 't3.small' : 't4g.nano')
       const _useSpot = mailServerConfig.spot || false
@@ -1984,9 +2129,9 @@ echo "Starting mail server setup (server mode - Zig) at $(date)"
 dnf update -y
 dnf install -y git wget curl htop vim openssl sqlite certbot awscli python3 python3-pip fail2ban
 
-# Install Zig (0.13.0 stable for compatibility)
+# Install Zig (0.15.1 - matches build.zig.zon requirement)
 echo "Installing Zig..."
-ZIG_VERSION="0.13.0"
+ZIG_VERSION="0.15.1"
 cd /tmp
 wget https://ziglang.org/download/\${ZIG_VERSION}/zig-linux-x86_64-\${ZIG_VERSION}.tar.xz
 tar -xf zig-linux-x86_64-\${ZIG_VERSION}.tar.xz
@@ -1997,18 +2142,25 @@ zig version
 # Create smtp-server user
 useradd -r -s /bin/bash -d /opt/smtp-server -m smtp-server || true
 
-# Clone SMTP server repository from S3 or GitHub
+# Set up SMTP server directory
 mkdir -p /opt/smtp-server && cd /opt/smtp-server
 
-# Try to download pre-built binary from S3 first
-aws s3 cp s3://${emailBucketName}/mail-server/smtp-server ./smtp-server --region ${region} && chmod +x ./smtp-server || {
-  echo "Pre-built binary not found, building from source..."
+# Try to download pre-built Linux binary from S3 first
+aws s3 cp s3://${emailBucketName}/mail-server/smtp-server ./smtp-server --region ${region} && chmod +x ./smtp-server && {
+  # Verify it's actually a Linux ELF binary
+  file ./smtp-server | grep -q "ELF" || {
+    echo "Downloaded binary is not a Linux ELF binary, building from source..."
+    rm -f ./smtp-server
+    false
+  }
+} || {
+  echo "Pre-built binary not found or invalid, building from source..."
   # Download source from S3 or clone from GitHub
   aws s3 cp s3://${emailBucketName}/mail-server/source.tar.gz ./source.tar.gz --region ${region} && tar -xzf source.tar.gz || {
     git clone https://github.com/stacksjs/mail.git .
   }
   chown -R smtp-server:smtp-server /opt/smtp-server
-  sudo -u smtp-server zig build -Doptimize=ReleaseFast
+  zig build -Doptimize=ReleaseFast
   cp zig-out/bin/smtp-server ./smtp-server
 }
 
@@ -2016,22 +2168,29 @@ aws s3 cp s3://${emailBucketName}/mail-server/smtp-server ./smtp-server --region
 mkdir -p /var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server /var/lib/smtp-server/backups
 chown -R smtp-server:smtp-server /var/lib/smtp-server /var/log/smtp-server /var/spool/mail
 
-# Generate TLS certificates
+# Generate TLS certificates via Let's Encrypt (preferred) or self-signed fallback
 certbot certonly --standalone -d ${mailSubdomain}.${emailDomain} --non-interactive --agree-tos --email admin@${emailDomain} || {
-  echo "Generating self-signed certificates..."
+  echo "Let's Encrypt failed, generating self-signed certificates..."
   openssl req -x509 -nodes -days 365 -newkey rsa:2048 \\
     -keyout /etc/smtp-server/smtp-server.key \\
     -out /etc/smtp-server/smtp-server.crt \\
     -subj "/C=US/ST=State/L=City/O=Organization/CN=${mailSubdomain}.${emailDomain}"
 }
-chmod 600 /etc/smtp-server/smtp-server.key 2>/dev/null || true
-chown smtp-server:smtp-server /etc/smtp-server/smtp-server.* 2>/dev/null || true
 
 # Link Let's Encrypt certs if available
 if [ -d "/etc/letsencrypt/live/${mailSubdomain}.${emailDomain}" ]; then
   ln -sf /etc/letsencrypt/live/${mailSubdomain}.${emailDomain}/fullchain.pem /etc/smtp-server/smtp-server.crt
   ln -sf /etc/letsencrypt/live/${mailSubdomain}.${emailDomain}/privkey.pem /etc/smtp-server/smtp-server.key
 fi
+
+chmod 600 /etc/smtp-server/smtp-server.key 2>/dev/null || true
+chown smtp-server:smtp-server /etc/smtp-server/smtp-server.* 2>/dev/null || true
+
+# Set up certbot auto-renewal cron
+cat > /etc/cron.d/certbot-renew << 'CRON'
+0 3 * * * root certbot renew --quiet --deploy-hook "systemctl restart smtp-server" >> /var/log/certbot-renew.log 2>&1
+CRON
+chmod 644 /etc/cron.d/certbot-renew
 
 # Create environment configuration
 cat > /etc/smtp-server/smtp-server.env << EOF
@@ -2098,7 +2257,7 @@ NoNewPrivileges=true
 PrivateTmp=true
 ProtectSystem=strict
 ProtectHome=true
-ReadWritePaths=/var/lib/smtp-server /var/log/smtp-server /var/spool/mail
+ReadWritePaths=/var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server
 
 # Allow binding to privileged ports
 AmbientCapabilities=CAP_NET_BIND_SERVICE
@@ -2107,7 +2266,7 @@ AmbientCapabilities=CAP_NET_BIND_SERVICE
 WantedBy=multi-user.target
 SYSTEMD
 
-# Configure fail2ban
+# Configure fail2ban for SMTP
 systemctl enable fail2ban
 systemctl start fail2ban
 
@@ -2116,9 +2275,13 @@ systemctl daemon-reload
 systemctl enable smtp-server
 systemctl start smtp-server
 
-# Wait and check status
+# Wait and verify the server is running
 sleep 5
-systemctl status smtp-server
+systemctl status smtp-server || true
+
+# Health check - verify ports are listening
+echo "Checking listening ports..."
+ss -tlnp | grep -E "(${smtpPort}|${smtpsPort}|${submissionPort})" || echo "Warning: mail ports not yet listening"
 
 echo "Mail server setup complete at $(date)"
 `
@@ -2243,74 +2406,8 @@ echo "Mail server setup complete at $(date)"
 
       log.success(`Email infrastructure added to template (mode: ${mailServerMode})`)
 
-      // Upload mail server code to S3 (if bucket exists)
-      try {
-        const { S3Client: S3 } = await import('@stacksjs/ts-cloud')
-        const s3Client = new S3(region)
-
-        if (mailServerMode === 'serverless') {
-          // Upload TypeScript/Bun server code
-          const serverTsPath = p.frameworkPath('core/mail-server/server.ts')
-          if (existsSync(serverTsPath)) {
-            const serverCode = readFileSync(serverTsPath, 'utf-8')
-            await s3Client.putObject({
-              bucket: emailBucketName,
-              key: 'mail-server/server.ts',
-              body: serverCode,
-              contentType: 'text/typescript',
-            })
-            log.success('Uploaded serverless mail server code to S3')
-          }
-
-          // Upload package.json
-          const pkgPath = p.frameworkPath('core/mail-server/package.json')
-          if (existsSync(pkgPath)) {
-            const pkgJson = readFileSync(pkgPath, 'utf-8')
-            await s3Client.putObject({
-              bucket: emailBucketName,
-              key: 'mail-server/package.json',
-              body: pkgJson,
-              contentType: 'application/json',
-            })
-          }
-        } else {
-          // Server mode: Upload Zig mail server source as tarball
-          const zigMailServerPath = mailServerPath
-          if (existsSync(zigMailServerPath)) {
-            log.info(`Packaging Zig mail server from ${zigMailServerPath}...`)
-            // Create a tarball of the source code
-            const { execSync } = await import('child_process')
-            const tarballPath = '/tmp/mail-server-source.tar.gz'
-            execSync(`tar -czf ${tarballPath} -C ${zigMailServerPath} --exclude='.git' --exclude='zig-out' --exclude='zig-cache' --exclude='.zig-cache' .`, { stdio: 'inherit' })
-
-            const tarballContent = readFileSync(tarballPath)
-            await s3Client.putObject({
-              bucket: emailBucketName,
-              key: 'mail-server/source.tar.gz',
-              body: tarballContent,
-              contentType: 'application/gzip',
-            })
-            log.success('Uploaded Zig mail server source to S3')
-
-            // Also try to upload pre-built binary if it exists
-            const binaryPath = `${zigMailServerPath}/zig-out/bin/smtp-server`
-            if (existsSync(binaryPath)) {
-              const binaryContent = readFileSync(binaryPath)
-              await s3Client.putObject({
-                bucket: emailBucketName,
-                key: 'mail-server/smtp-server',
-                body: binaryContent,
-                contentType: 'application/octet-stream',
-              })
-              log.success('Uploaded pre-built Zig mail server binary to S3')
-            }
-          } else {
-            log.warn(`Zig mail server path not found: ${zigMailServerPath}`)
-          }
-        }
-      } catch (uploadErr: any) {
-        log.debug(`Could not upload mail server to S3 (bucket may not exist yet): ${uploadErr.message}`)
-      }
+      // Upload mail server code/binary to S3 (if bucket exists)
+      await uploadMailServerToS3(emailBucketName, region, mailServerMode)
     }
 
     try {
@@ -2337,49 +2434,15 @@ echo "Mail server setup complete at $(date)"
 
         // Set up email DNS records after stack update
         if (enableEmailServer) {
-          await setupEmailDnsRecords(emailDomain, region, log)
+          const serverMode = emailConfig?.server?.mode || 'server'
+          const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
+          await setupEmailDnsRecords(emailDomain, region, log, { mode: serverMode, mailSubdomain })
 
           // Create default mail user if configured
           await createDefaultMailUser(appName, emailDomain, region, log)
 
-          // Upload mail server code to S3 now that bucket exists
-          try {
-            const { S3Client: S3 } = await import('@stacksjs/ts-cloud')
-            const s3Client = new S3(region)
-            const serverMode = emailConfig?.server?.mode || 'serverless'
-
-            if (serverMode === 'serverless') {
-              const serverTsPath = p.frameworkPath('core/mail-server/server.ts')
-              if (existsSync(serverTsPath)) {
-                const serverCode = readFileSync(serverTsPath, 'utf-8')
-                await s3Client.putObject({
-                  bucket: emailBucketName,
-                  key: 'mail-server/server.ts',
-                  body: serverCode,
-                  contentType: 'text/typescript',
-                })
-                log.success('Mail server code uploaded to S3')
-              }
-            } else {
-              // Server mode: package and upload Zig source
-              const zigPath = emailConfig?.server?.serverPath || '/Users/chrisbreuer/Code/mail'
-              if (existsSync(zigPath)) {
-                const { execSync } = await import('child_process')
-                const tarballPath = '/tmp/mail-server-source.tar.gz'
-                execSync(`tar -czf ${tarballPath} -C ${zigPath} --exclude='.git' --exclude='zig-out' --exclude='zig-cache' --exclude='.zig-cache' .`, { stdio: 'inherit' })
-                const tarballContent = readFileSync(tarballPath)
-                await s3Client.putObject({
-                  bucket: emailBucketName,
-                  key: 'mail-server/source.tar.gz',
-                  body: tarballContent,
-                  contentType: 'application/gzip',
-                })
-                log.success('Zig mail server source uploaded to S3')
-              }
-            }
-          } catch (e: any) {
-            log.debug(`S3 upload after stack update: ${e.message}`)
-          }
+          // Upload mail server code/binary to S3 now that bucket exists
+          await uploadMailServerToS3(emailBucketName, region, serverMode)
         }
 
         return true
@@ -2406,7 +2469,12 @@ echo "Mail server setup complete at $(date)"
 
         // Set up email DNS records after stack creation
         if (enableEmailServer) {
-          await setupEmailDnsRecords(emailDomain, region, log)
+          const serverMode = emailConfig?.server?.mode || 'server'
+          const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
+          await setupEmailDnsRecords(emailDomain, region, log, { mode: serverMode, mailSubdomain })
+
+          // Upload mail server code/binary to S3 now that bucket exists
+          await uploadMailServerToS3(emailBucketName, region, serverMode)
         }
 
         return true

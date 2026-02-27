@@ -251,12 +251,12 @@ export class SMTPDriver extends BaseEmailDriver {
                 log.debug('[SMTP] TLS connection established')
                 res(tlsSocket)
               })
-              tlsSocket.on('error', (err) => {
+              tlsSocket.on('error', (err: any) => {
                 log.error('[SMTP] TLS socket error:', err)
                 rej(err)
               })
               tlsSocket.on('data', handleData)
-              tlsSocket.on('close', (hadError) => {
+              tlsSocket.on('close', (hadError: any) => {
                 log.debug(`[SMTP] TLS socket closed (hadError: ${hadError})`)
                 while (commandQueue.length > 0) {
                   const pending = commandQueue.shift()

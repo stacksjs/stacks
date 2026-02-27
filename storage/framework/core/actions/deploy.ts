@@ -123,7 +123,7 @@ async function generateTemplate(options: {
   const { InfrastructureGenerator } = await import('@stacksjs/ts-cloud')
 
   const generator = new InfrastructureGenerator({
-    config: cloudConfig,
+    config: cloudConfig as any,
     environment: environment as 'production' | 'staging' | 'development',
   })
 
@@ -2189,11 +2189,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           stackName,
           ...updateParam,
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: {
-            Environment: environment,
-            Project: projectName,
-            ManagedBy: 'stacks',
-          },
+          tags: [
+            { Key: 'Environment', Value: environment },
+            { Key: 'Project', Value: projectName },
+            { Key: 'ManagedBy', Value: 'stacks' },
+          ],
         })
 
         if (waitForCompletion) {
@@ -2273,11 +2273,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         stackName,
         ...createParam,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-        tags: {
-          Environment: environment,
-          Project: projectName,
-          ManagedBy: 'stacks',
-        },
+        tags: [
+          { Key: 'Environment', Value: environment },
+          { Key: 'Project', Value: projectName },
+          { Key: 'ManagedBy', Value: 'stacks' },
+        ],
         onFailure: 'ROLLBACK',
         timeoutInMinutes: 30,
       })

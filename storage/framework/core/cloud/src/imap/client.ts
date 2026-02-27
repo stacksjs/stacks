@@ -578,7 +578,7 @@ export class AWSClient {
 
     // Try to parse JSON error
     try {
-      const json = JSON.parse(responseText)
+      const json = JSON.parse(responseText) as { __type?: string; code?: string; message?: string; Message?: string }
       if (json.__type || json.code) {
         error.code = json.__type || json.code
         error.message = `AWS Error [${error.code}]: ${json.message || json.Message || 'Unknown error'}`

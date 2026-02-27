@@ -415,7 +415,7 @@ export async function pullModel(
       if (!line.trim()) continue
 
       try {
-        const data = JSON.parse(line)
+        const data = JSON.parse(line) as { status?: string; completed?: number; total?: number }
         if (onProgress) {
           onProgress(data.status, data.completed, data.total)
         }
@@ -473,7 +473,7 @@ export async function showModel(_name: string): Promise<{
     throw new Error(`Ollama API error: ${error}`)
   }
 
-  return response.json()
+  return response.json() as any
 }
 
 /**

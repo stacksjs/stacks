@@ -588,7 +588,7 @@ Be concise but thorough. If the user asks about coding or their project specific
               if (data === '[DONE]') continue
 
               try {
-                const event = JSON.parse(data)
+                const event = JSON.parse(data) as { type?: string; delta?: { text?: string } }
                 if (event.type === 'content_block_delta' && event.delta?.text) {
                   const text = event.delta.text
                   fullResponse += text

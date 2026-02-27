@@ -379,7 +379,7 @@ export function email(buddy: CLI): void {
         try {
           const inboxData = await withTimeout(s3.getObject(bucketName, inboxKey))
           if (inboxData) {
-            inboxEmails = JSON.parse(inboxData)
+            inboxEmails = JSON.parse(inboxData) as any[]
             source = 'mailboxes'
           }
         } catch (e) {
@@ -595,7 +595,7 @@ export function email(buddy: CLI): void {
           let existing: any[] = []
           try {
             const existingData = await s3.getObject(bucketName, inboxJsonKey)
-            if (existingData) existing = JSON.parse(existingData)
+            if (existingData) existing = JSON.parse(existingData) as any[]
           } catch (e) {
             // No existing inbox
           }

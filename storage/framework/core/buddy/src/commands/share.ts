@@ -113,7 +113,7 @@ export function share(buddy: CLI): void {
   buddy
     .command('share [type]', 'Share your local development server via a public tunnel')
     .option('-p, --port <port>', 'Local port to share')
-    .option('--server <url>', 'Tunnel server URL', { default: 'localtunnel.dev' })
+    .option('--server <url>', 'Tunnel server URL', { default: 'api.localtunnel.dev' })
     .option('--subdomain <name>', 'Request a specific subdomain')
     .option('--verbose', 'Enable verbose output', { default: false })
     .action(async (type: string | undefined, options: ShareOptions) => {
@@ -142,7 +142,7 @@ export function share(buddy: CLI): void {
         process.exit(ExitCode.InvalidArgument)
       }
 
-      const server = options.server || 'localtunnel.dev'
+      const server = options.server || 'api.localtunnel.dev'
       const tunnels: TunnelInfo[] = []
       const companions = companionServices[serviceType] || []
       const s = spinner()

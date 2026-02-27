@@ -289,19 +289,19 @@ export function mailCommands(buddy: CLI): void {
         const ec2 = new EC2Client(region)
         const ssm = new SSMClient(region)
 
-        // Find the production server instance
-        log.info('Finding production server...')
+        // Find the mail server instance
+        log.info('Finding mail server...')
         const data = await ec2.describeInstances({
           Filters: [
-            { Name: 'tag:Name', Values: [`${appName}-app-production-server`] },
+            { Name: 'tag:Name', Values: [`${appName}-mail-server`] },
             { Name: 'instance-state-name', Values: ['running'] },
           ],
         })
 
         const instanceId = data.Reservations?.[0]?.Instances?.[0]?.InstanceId
         if (!instanceId) {
-          log.error('No running production server found.')
-          log.info(`Looked for instances tagged: ${appName}-app-production-server`)
+          log.error('No running mail server found.')
+          log.info(`Looked for instances tagged: ${appName}-mail-server`)
           process.exit(ExitCode.FatalError)
         }
 
@@ -312,8 +312,9 @@ export function mailCommands(buddy: CLI): void {
           ? ` | grep -iE '${options.filter}'`
           : ''
 
+        // Check both service names (smtp-server for Zig mode, mail-server for serverless)
         const fetchLogs = async () => {
-          const cmd = `journalctl -u stacks-mail --no-pager -n ${lines} --since "10 minutes ago" 2>&1${filterCmd}`
+          const cmd = `journalctl -u smtp-server -u mail-server --no-pager -n ${lines} --since "10 minutes ago" 2>&1${filterCmd}`
           const result = await ssm.runShellCommand(instanceId, [cmd], {
             timeoutSeconds: 30,
             maxWaitMs: 30000,
@@ -394,24 +395,25 @@ export function mailCommands(buddy: CLI): void {
 
         const data = await ec2.describeInstances({
           Filters: [
-            { Name: 'tag:Name', Values: [`${appName}-app-production-server`] },
+            { Name: 'tag:Name', Values: [`${appName}-mail-server`] },
             { Name: 'instance-state-name', Values: ['running'] },
           ],
         })
 
         const instanceId = data.Reservations?.[0]?.Instances?.[0]?.InstanceId
         if (!instanceId) {
-          log.error('No running production server found.')
+          log.error('No running mail server found.')
+          log.info(`Looked for instances tagged: ${appName}-mail-server`)
           process.exit(ExitCode.FatalError)
         }
 
         const result = await ssm.runShellCommand(instanceId, [
           'echo === Service ===',
-          'systemctl status stacks-mail --no-pager 2>&1 | head -15',
+          '(systemctl status smtp-server --no-pager 2>&1 || systemctl status mail-server --no-pager 2>&1) | head -15',
           'echo === Ports ===',
-          'ss -tlnp 2>&1 | grep -E "(587|465|993|143)" || echo "No mail ports listening"',
+          'ss -tlnp 2>&1 | grep -E "(25|587|465|993|143|110|995)" || echo "No mail ports listening"',
           'echo === Memory ===',
-          'ps aux | grep -E "(bun|mail)" | grep -v grep | awk \'{print $6/1024 "MB", $11}\'',
+          'ps aux | grep -E "(smtp-server|bun|mail)" | grep -v grep | awk \'{print $6/1024 "MB", $11}\'',
         ], {
           timeoutSeconds: 30,
           maxWaitMs: 30000,

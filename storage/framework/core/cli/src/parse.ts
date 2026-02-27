@@ -163,7 +163,7 @@ export function parseOptions(options?: CliOptions): CliOptions {
 export function buddyOptions(options?: string[] | Record<string, any>): string {
   if (Array.isArray(options)) {
     options = Array.from(new Set(options)) as string[]
-    if (Array.isArray(options) && options[0] && !options[0].startsWith('-'))
+    if (Array.isArray(options) && options[0] && !(options[0] as string).startsWith('-'))
       options.shift()
     return options.join(' ')
   }

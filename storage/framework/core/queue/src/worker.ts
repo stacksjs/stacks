@@ -233,7 +233,7 @@ async function processJob(job: any, _driver: string): Promise<void> {
     log.info(`[Queue] Job ${jobId} failed: ${errorMessage}`)
 
     // Get max attempts from job payload options, default to 1 (no retries)
-    const payload = JSON.parse(job.payload || '{}')
+    const payload = JSON.parse(job.payload || '{}') as Record<string, any>
     const maxAttempts = payload.options?.tries || 1
     const currentAttempts = (job.attempts || 0) + 1
 

@@ -4,7 +4,7 @@ import { startLocalTunnel } from 'localtunnels'
 export interface TunnelOptions {
   /** Local port to expose through the tunnel */
   port: number
-  /** Tunnel server URL (default: localtunnel.dev) */
+  /** Tunnel server URL (default: api.localtunnel.dev) */
   server?: string
   /** Request a specific subdomain */
   subdomain?: string

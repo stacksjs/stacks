@@ -14,7 +14,7 @@ function defaultClone<T>(val: T): T {
   if (typeof structuredClone === 'function') {
     return structuredClone(val)
   }
-  return JSON.parse(JSON.stringify(val))
+  return JSON.parse(JSON.stringify(val)) as T
 }
 
 /**
