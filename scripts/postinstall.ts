@@ -16,6 +16,19 @@ if (!existsSync(bqbSrc)) {
 }
 writeFileSync(join(bqbSrc, 'index.ts'), 'export * from "../dist/index.js"\n')
 
+// Fix localtunnels: create src/ stubs for "bun" export condition (src/ not shipped in npm package)
+const ltSrc = join(root, 'node_modules/localtunnels/src')
+if (!existsSync(ltSrc)) {
+  mkdirSync(ltSrc, { recursive: true })
+}
+writeFileSync(join(ltSrc, 'index.ts'), 'export * from "../dist/src/index.js"\n')
+
+const ltCloudSrc = join(root, 'node_modules/localtunnels/src/cloud')
+if (!existsSync(ltCloudSrc)) {
+  mkdirSync(ltCloudSrc, { recursive: true })
+}
+writeFileSync(join(ltCloudSrc, 'index.ts'), 'export * from "../../dist/src/cloud/index.js"\n')
+
 // Fix broken .d.ts files in ts-mocker and bun-router that have parse errors
 const brokenDtsFiles = [
   'node_modules/ts-mocker/dist/locale-loader.d.ts',
