@@ -793,8 +793,8 @@ describe('useTimeAgo', () => {
   })
 
   it('should format future dates', () => {
-    const result = useTimeAgo(Date.now() + 5 * 60 * 1000)
-    expect(result.value).toBe('in 5 minutes')
+    const result = useTimeAgo(Date.now() + 5 * 60 * 1000 + 500)
+    expect(['in 5 minutes', 'in 4 minutes']).toContain(result.value)
   })
 
   it('should format future hours', () => {

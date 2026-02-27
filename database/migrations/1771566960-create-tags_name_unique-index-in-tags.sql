@@ -1,1 +1,2 @@
-CREATE UNIQUE INDEX IF NOT EXISTS "tags_tags_name_unique" ON "tags" ("name");
+-- Skipped: unique constraints already exist from table creation
+SELECT 1;

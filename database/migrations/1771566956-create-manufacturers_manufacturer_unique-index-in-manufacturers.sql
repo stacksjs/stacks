@@ -1,1 +1,2 @@
-CREATE UNIQUE INDEX IF NOT EXISTS "manufacturers_manufacturers_manufacturer_unique" ON "manufacturers" ("manufacturer");
+-- Skipped: unique constraints already exist from table creation
+SELECT 1;

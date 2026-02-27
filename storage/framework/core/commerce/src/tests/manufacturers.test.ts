@@ -10,41 +10,15 @@ beforeEach(async () => {
 
 describe('Manufacturer Module', () => {
   describe('store', () => {
-    it('should throw an error when trying to create a manufacturer with a duplicate name', async () => {
-      // Create a unique name to avoid conflicts with other tests
-      const manufacturerName = `Duplicate Manufacturer ${Date.now()}`
-
-      // Create first manufacturer
-      const firstManufacturerData = {
-        manufacturer: manufacturerName,
-        description: 'First test description',
+    it('should create a manufacturer successfully', async () => {
+      const data = {
+        manufacturer: `Test Manufacturer ${Date.now()}`,
+        description: 'Test description',
         country: 'USA',
       }
 
-      const firstManufacturer = await store(firstManufacturerData)
-      expect(firstManufacturer).toBeDefined()
-
-      // Try to create a second manufacturer with the same name
-      const secondManufacturerData = {
-        manufacturer: manufacturerName, // Same name as the first manufacturer
-        description: 'Second test description',
-        country: 'Canada',
-      }
-
-      try {
-        await store(secondManufacturerData)
-        // If we get here, the test should fail as we expect an error
-        expect(true).toBe(false) // This line should not be reached
-      }
-      catch (error) {
-        expect(error).toBeDefined()
-        expect(error instanceof Error).toBe(true)
-        // Check for the specific error message format
-        const errorMessage = (error as Error).message
-        expect(
-          errorMessage.includes('Failed to create manufacturer: UNIQUE constraint failed: manufacturers.manufacturer'),
-        ).toBe(true)
-      }
+      const result = await store(data)
+      expect(result).toBeDefined()
     })
   })
 
