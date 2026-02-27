@@ -7,7 +7,8 @@ import {
   runDocsDevServer,
   runFrontendDevServer,
 } from '@stacksjs/actions'
-import { bold, cyan, dim, green, intro, log, outro } from '@stacksjs/cli'
+import { bold, cyan, dim, green, intro, log, outro, spinner } from '@stacksjs/cli'
+import { ports as configPorts } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 
 interface ShareOptions {
@@ -20,7 +21,49 @@ interface ShareOptions {
 interface TunnelInfo {
   url: string
   subdomain: string
-  close: () => void
+  close: () => Promise<void>
+}
+
+// Suppress all stdout/stderr noise from dev servers during startup
+const originalStdoutWrite = process.stdout.write.bind(process.stdout)
+const originalStderrWrite = process.stderr.write.bind(process.stderr)
+const originalConsoleLog = console.log
+const originalConsoleError = console.error
+const originalConsoleWarn = console.warn
+const originalConsoleInfo = console.info
+let _muted = false
+let _verboseBuffer: string[] = []
+
+function muteOutput(): void {
+  _muted = true
+  _verboseBuffer = []
+
+  const filter = (fn: typeof process.stdout.write): typeof process.stdout.write => {
+    return function (chunk: any, ...args: any[]) {
+      if (_muted) {
+        _verboseBuffer.push(String(chunk))
+        return true
+      }
+      return fn(chunk, ...args)
+    } as typeof process.stdout.write
+  }
+
+  process.stdout.write = filter(originalStdoutWrite)
+  process.stderr.write = filter(originalStderrWrite)
+  console.log = (...args: any[]) => { if (!_muted) originalConsoleLog(...args) }
+  console.error = (...args: any[]) => { if (!_muted) originalConsoleError(...args) }
+  console.warn = (...args: any[]) => { if (!_muted) originalConsoleWarn(...args) }
+  console.info = (...args: any[]) => { if (!_muted) originalConsoleInfo(...args) }
+}
+
+function unmuteOutput(): void {
+  _muted = false
+  process.stdout.write = originalStdoutWrite
+  process.stderr.write = originalStderrWrite
+  console.log = originalConsoleLog
+  console.error = originalConsoleError
+  console.warn = originalConsoleWarn
+  console.info = originalConsoleInfo
 }
 
 async function waitForPort(port: number, host = 'localhost', timeoutMs = 30_000): Promise<void> {
@@ -28,7 +71,7 @@ async function waitForPort(port: number, host = 'localhost', timeoutMs = 30_000)
   while (Date.now() - start < timeoutMs) {
     try {
       const res = await fetch(`http://${host}:${port}`, { signal: AbortSignal.timeout(1000) })
-      await res.arrayBuffer() // consume body
+      await res.arrayBuffer()
       return
     }
     catch {
@@ -48,44 +91,46 @@ const devServerRunners: Record<string, (opts: any) => Promise<any>> = {
   docs: runDocsDevServer,
 }
 
-// Services that are always started alongside the primary service
-const companionServices: Record<string, { port: number, suffix: string, runner: (opts: any) => Promise<any> }[]> = {
+interface CompanionDef {
+  port: number
+  suffix: string
+  label: string
+  runner: (opts: any) => Promise<any>
+}
+
+const companionServices: Record<string, CompanionDef[]> = {
   frontend: [
-    { port: Number(process.env.PORT_API) || 3001, suffix: 'api', runner: runApiDevServer },
-    { port: Number(process.env.PORT_DOCS) || 3006, suffix: 'docs', runner: runDocsDevServer },
+    { port: configPorts?.api || 3008, suffix: 'api', label: 'API', runner: runApiDevServer },
+    { port: configPorts?.docs || 3006, suffix: 'docs', label: 'Docs', runner: runDocsDevServer },
   ],
 }
 
-export function share(buddy: CLI): void {
-  const descriptions = {
-    share: 'Share your local development server via a public tunnel',
-    port: 'Local port to share (overrides default for the given type)',
-    server: 'Tunnel server URL (default: localtunnel.dev)',
-    subdomain: 'Request a specific subdomain',
-    verbose: 'Enable verbose output',
-  }
+function capitalize(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
+export function share(buddy: CLI): void {
   buddy
-    .command('share [type]', descriptions.share)
-    .option('-p, --port <port>', descriptions.port)
-    .option('--server <url>', descriptions.server, { default: 'localtunnel.dev' })
-    .option('--subdomain <name>', descriptions.subdomain)
-    .option('--verbose', descriptions.verbose, { default: false })
+    .command('share [type]', 'Share your local development server via a public tunnel')
+    .option('-p, --port <port>', 'Local port to share')
+    .option('--server <url>', 'Tunnel server URL', { default: 'localtunnel.dev' })
+    .option('--subdomain <name>', 'Request a specific subdomain')
+    .option('--verbose', 'Enable verbose output', { default: false })
     .action(async (type: string | undefined, options: ShareOptions) => {
       const perf = await intro('buddy share')
 
       const serviceType = type || 'frontend'
       const defaultPorts: Record<string, number> = {
-        frontend: Number(process.env.PORT) || 3000,
-        api: Number(process.env.PORT_API) || 3001,
-        backend: Number(process.env.PORT_API) || 3001,
-        admin: Number(process.env.PORT_ADMIN) || 3002,
-        dashboard: Number(process.env.PORT_ADMIN) || 3002,
-        library: Number(process.env.PORT_LIBRARY) || 3003,
-        desktop: Number(process.env.PORT_DESKTOP) || 3004,
-        email: Number(process.env.PORT_EMAIL) || 3005,
-        docs: Number(process.env.PORT_DOCS) || 3006,
-        inspect: Number(process.env.PORT_INSPECT) || 3007,
+        frontend: configPorts?.frontend || 3000,
+        api: configPorts?.api || 3008,
+        backend: configPorts?.backend || 3001,
+        admin: configPorts?.admin || 3002,
+        dashboard: configPorts?.admin || 3002,
+        library: configPorts?.library || 3003,
+        desktop: configPorts?.desktop || 3004,
+        email: configPorts?.email || 3005,
+        docs: configPorts?.docs || 3006,
+        inspect: configPorts?.inspect || 3007,
       }
 
       const port = options.port
@@ -99,159 +144,156 @@ export function share(buddy: CLI): void {
 
       const server = options.server || 'localtunnel.dev'
       const tunnels: TunnelInfo[] = []
-
-      console.log()
+      const companions = companionServices[serviceType] || []
+      const s = spinner()
 
       try {
         const { localTunnel } = await import('@stacksjs/tunnel')
 
-        // Start the primary dev server
+        // --- Phase 1: Start dev servers (mute their noisy output) ---
+        console.log()
+
         const runner = devServerRunners[serviceType]
         if (runner) {
-          console.log(`  ${green('➜')}  ${bold('Starting')}:  ${cyan(serviceType)} ${dim(`dev server on port ${port}`)}`)
-          runner({ verbose: options.verbose ?? false } as any).catch((err: any) => {
-            if (options.verbose)
-              console.log(`  ${dim(`Dev server error: ${err.message}`)}`)
-          })
+          s.start(`Starting ${serviceType} dev server...`)
+          muteOutput()
+          runner({ verbose: options.verbose ?? false } as any).catch(() => {})
           await waitForPort(port)
+          unmuteOutput()
+          s.succeed(`${bold(capitalize(serviceType))} ready ${dim(`on :${port}`)}`)
         }
 
-        // Start companion services (api, docs, etc.)
-        const companions = companionServices[serviceType] || []
-        for (const companion of companions) {
-          console.log(`  ${green('➜')}  ${bold('Starting')}:  ${cyan(companion.suffix)} ${dim(`dev server on port ${companion.port}`)}`)
-          companion.runner({ verbose: options.verbose ?? false } as any).catch((err: any) => {
-            if (options.verbose)
-              console.log(`  ${dim(`${companion.suffix} dev server error: ${err.message}`)}`)
-          })
+        // Start companion servers in parallel
+        const startedCompanions: CompanionDef[] = []
+
+        if (companions.length > 0) {
+          s.start(`Starting companion services...`)
+          muteOutput()
+
+          // Fire all runners
+          for (const companion of companions) {
+            companion.runner({ verbose: options.verbose ?? false } as any).catch(() => {})
+          }
+
+          // Wait for each, track which started (60s timeout — API can be slow to boot)
+          const results = await Promise.allSettled(
+            companions.map(c => waitForPort(c.port, 'localhost', 60_000)),
+          )
+
+          unmuteOutput()
+
+          for (let i = 0; i < companions.length; i++) {
+            if (results[i].status === 'fulfilled') {
+              startedCompanions.push(companions[i])
+              s.succeed(`${bold(companions[i].label)} ready ${dim(`on :${companions[i].port}`)}`)
+            }
+            else {
+              s.fail(`${companions[i].label} failed to start ${dim(`on :${companions[i].port}`)}`)
+            }
+          }
         }
 
-        // Wait for companion servers in parallel
-        await Promise.all(companions.map(c => waitForPort(c.port).catch(() => {
-          if (options.verbose)
-            console.log(`  ${dim(`Warning: ${c.suffix} server on port ${c.port} did not start`)}`)
-        })))
+        // --- Phase 2: Create tunnels ---
+        console.log()
+        s.start('Creating tunnel...')
 
-        console.log(`  ${dim('➜')}  ${dim(`Connecting to ${server}...`)}`)
-
-        // Create the primary tunnel
         const primaryTunnel = await localTunnel({
           port,
           server,
           subdomain: options.subdomain,
           verbose: options.verbose,
-          onConnect: (info) => {
-            if (options.verbose)
-              console.log(`  ${dim(`Connected: ${info.url}`)}`)
-          },
           onRequest: (req) => {
             if (options.verbose)
-              console.log(`  ${dim('→')} ${req.method} ${req.url}`)
-          },
-          onResponse: (res) => {
-            if (options.verbose)
-              console.log(`  ${dim('←')} ${res.status} ${dim(`(${res.size} bytes, ${res.duration}ms)`)}`)
-          },
-          onError: (error) => {
-            if (options.verbose)
-              console.log(`  ${dim('✗')} ${error.message}`)
+              console.log(`  ${dim(`${req.method} ${req.url}`)}`)
           },
           onReconnecting: (info) => {
-            console.log(`  ${dim('↻')} Reconnecting... (attempt ${info.attempt})`)
+            s.start(`Reconnecting... (attempt ${info.attempt})`)
           },
         })
         tunnels.push(primaryTunnel)
 
-        // Create companion tunnels with suffixed subdomains
+        // Create companion tunnels only for services that actually started
         const baseSubdomain = primaryTunnel.subdomain
-        for (const companion of companions) {
+        for (const companion of startedCompanions) {
           try {
             const companionTunnel = await localTunnel({
               port: companion.port,
               server,
               subdomain: `${baseSubdomain}-${companion.suffix}`,
               verbose: options.verbose,
-              onError: (error) => {
-                if (options.verbose)
-                  console.log(`  ${dim(`✗ ${companion.suffix}: ${error.message}`)}`)
-              },
               onReconnecting: (info) => {
-                console.log(`  ${dim(`↻ ${companion.suffix}: reconnecting... (attempt ${info.attempt})`)}`)
+                s.start(`${companion.label}: reconnecting... (attempt ${info.attempt})`)
               },
             })
             tunnels.push(companionTunnel)
           }
-          catch (err: any) {
-            if (options.verbose)
-              console.log(`  ${dim(`Warning: could not create tunnel for ${companion.suffix}: ${err.message}`)}`)
+          catch {
+            // non-fatal
           }
         }
 
-        // Print all tunnel URLs
-        console.log()
-        console.log(`  ${green('➜')}  ${bold('Frontend')}:  ${cyan(primaryTunnel.url)}`)
-        for (let i = 0; i < companions.length; i++) {
-          const companion = companions[i]
-          const tunnel = tunnels[i + 1] // +1 because primary is at index 0
-          if (tunnel) {
-            const label = companion.suffix.charAt(0).toUpperCase() + companion.suffix.slice(1)
-            console.log(`  ${green('➜')}  ${bold(`${label}`)}:${' '.repeat(Math.max(1, 10 - label.length))}${cyan(tunnel.url)}`)
-          }
-        }
+        s.succeed(`Connected ${dim(`to ${server}`)}`)
 
-        console.log()
-        console.log(`  ${dim('Forwarding:')}`)
-        console.log(`  ${dim(`  ${primaryTunnel.url} → http://localhost:${port}`)}`)
-        for (let i = 0; i < companions.length; i++) {
-          const companion = companions[i]
-          const tunnel = tunnels[i + 1]
+        // --- Phase 3: Print summary ---
+        const entries: Array<{ label: string, url: string, local: string }> = [
+          { label: capitalize(serviceType), url: primaryTunnel.url, local: `localhost:${port}` },
+        ]
+
+        for (const companion of startedCompanions) {
+          const tunnel = tunnels.find(t => t.subdomain === `${baseSubdomain}-${companion.suffix}`)
           if (tunnel)
-            console.log(`  ${dim(`  ${tunnel.url} → http://localhost:${companion.port}`)}`)
+            entries.push({ label: companion.label, url: tunnel.url, local: `localhost:${companion.port}` })
+        }
+
+        const maxLabel = Math.max(...entries.map(e => e.label.length))
+
+        console.log()
+        for (const entry of entries) {
+          const padding = ' '.repeat(maxLabel - entry.label.length + 1)
+          console.log(`  ${green('➜')}  ${bold(entry.label)}${padding} ${cyan(entry.url)}`)
         }
 
         console.log()
-        console.log(`  ${dim('Press Ctrl+C to stop sharing')}`)
-        console.log()
-
-        if (options.verbose) {
-          console.log(`  ${dim('Verbose mode — showing all requests')}`)
-          console.log()
+        for (const entry of entries) {
+          const padding = ' '.repeat(maxLabel - entry.label.length + 1)
+          console.log(`     ${dim(entry.label)}${dim(padding)}${dim(entry.url)} ${dim('→')} ${dim(entry.local)}`)
         }
 
-        const cleanup = () => {
+        console.log()
+        console.log(`  ${dim('press Ctrl+C to stop')}`)
+        console.log()
+
+        // --- Cleanup ---
+        const cleanup = async () => {
           console.log()
-          log.info('Closing tunnels...')
-          for (const t of tunnels) t.close()
-          // Kill child processes (dev servers)
-          try { process.kill(0, 'SIGKILL') }
-          catch { /* ignore */ }
+          s.start('Closing tunnels...')
+          await Promise.all(tunnels.map(t => t.close()))
+          s.succeed('Tunnels closed')
           outro('Stopped sharing', { startTime: perf, useSeconds: true })
           process.exit(ExitCode.Success)
         }
 
-        process.on('SIGINT', cleanup)
-        process.on('SIGTERM', cleanup)
+        process.on('SIGINT', () => cleanup())
+        process.on('SIGTERM', () => cleanup())
 
-        // Keep the process running
         await new Promise(() => {})
       }
       catch (error: any) {
+        unmuteOutput()
+        s.fail(error.message)
+
         if (error.message?.includes('timeout') || error.message?.includes('ECONNREFUSED')) {
           log.error(`Could not reach tunnel server at ${server}`)
-          log.info('Check that the server is running and accessible.')
-          log.info(`You can verify with: curl -sk https://${server}/status`)
+          log.info(`Verify with: curl -sk https://${server}/status`)
         }
         else {
           log.error(`Failed to create tunnel: ${error.message}`)
         }
 
-        if (options.verbose) {
+        if (options.verbose)
           log.error(error.stack)
-        }
 
-        // Clean up any tunnels that were created before the error
         for (const t of tunnels) t.close()
-
         await outro('Share failed', { startTime: perf, useSeconds: true })
         process.exit(ExitCode.FatalError)
       }

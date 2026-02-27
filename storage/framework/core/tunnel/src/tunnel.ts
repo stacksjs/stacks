@@ -30,7 +30,7 @@ export interface LocalTunnel {
   url: string
   subdomain: string
   client: TunnelClient
-  close: () => void
+  close: () => Promise<void>
 }
 
 export async function localTunnel(options?: TunnelOptions | { port: number }): Promise<LocalTunnel> {
@@ -57,6 +57,6 @@ export async function localTunnel(options?: TunnelOptions | { port: number }): P
     url: client.getTunnelUrl(),
     subdomain: client.getSubdomain(),
     client,
-    close: () => client.disconnect(),
+    close: () => client.disconnect() as Promise<void>,
   }
 }
