@@ -55,6 +55,6 @@
     "@stacksjs/bun-queue": "^0.0.1"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.6"
   }
 }

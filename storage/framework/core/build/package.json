@@ -50,11 +50,11 @@
   "dependencies": {
     "@babel/generator": "^7.29.1",
     "@babel/traverse": "^7.29.0",
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.6"
   },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.6",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*"
   }
