@@ -19,7 +19,7 @@ export interface TunnelOptions {
   /** Called on each proxied request */
   onRequest?: (req: { method: string, url: string }) => void
   /** Called on each proxied response */
-  onResponse?: (res: { status: number, size: number, duration: number }) => void
+  onResponse?: (res: { status: number, size: number, duration?: number }) => void
   /** Called on error */
   onError?: (error: Error) => void
   /** Called when reconnecting */
@@ -34,21 +34,21 @@ export interface LocalTunnel {
 }
 
 export async function localTunnel(options?: TunnelOptions | { port: number }): Promise<LocalTunnel> {
-  const opts = options || { port: 3000 }
+  const opts: TunnelOptions = options || { port: 3000 }
   const port = opts.port || 3000
 
   const tunnelOpts: Parameters<typeof startLocalTunnel>[0] = {
     port,
-    ...('server' in opts && opts.server ? { server: opts.server } : {}),
-    ...('subdomain' in opts && opts.subdomain ? { subdomain: opts.subdomain } : {}),
-    ...('verbose' in opts && opts.verbose !== undefined ? { verbose: opts.verbose } : {}),
-    ...('timeout' in opts && opts.timeout ? { timeout: opts.timeout } : {}),
-    ...('maxReconnectAttempts' in opts && opts.maxReconnectAttempts ? { maxReconnectAttempts: opts.maxReconnectAttempts } : {}),
-    ...('onConnect' in opts && opts.onConnect ? { onConnect: opts.onConnect } : {}),
-    ...('onRequest' in opts && opts.onRequest ? { onRequest: opts.onRequest } : {}),
-    ...('onResponse' in opts && opts.onResponse ? { onResponse: opts.onResponse as any } : {}),
-    ...('onError' in opts && opts.onError ? { onError: opts.onError } : {}),
-    ...('onReconnecting' in opts && opts.onReconnecting ? { onReconnecting: opts.onReconnecting } : {}),
+    ...(opts.server ? { server: opts.server } : {}),
+    ...(opts.subdomain ? { subdomain: opts.subdomain } : {}),
+    ...(opts.verbose !== undefined ? { verbose: opts.verbose } : {}),
+    ...(opts.timeout ? { timeout: opts.timeout } : {}),
+    ...(opts.maxReconnectAttempts ? { maxReconnectAttempts: opts.maxReconnectAttempts } : {}),
+    ...(opts.onConnect ? { onConnect: opts.onConnect } : {}),
+    ...(opts.onRequest ? { onRequest: opts.onRequest } : {}),
+    ...(opts.onResponse ? { onResponse: opts.onResponse } : {}),
+    ...(opts.onError ? { onError: opts.onError } : {}),
+    ...(opts.onReconnecting ? { onReconnecting: opts.onReconnecting } : {}),
   }
 
   const client = await startLocalTunnel(tunnelOpts)

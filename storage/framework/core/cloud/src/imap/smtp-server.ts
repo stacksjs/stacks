@@ -274,7 +274,7 @@ export class SmtpServer {
 
     this.send(session, '220 Ready to start TLS')
 
-    const tlsOptions: tls.TlsOptions = {
+    const tlsOptions = {
       key: fs.readFileSync(this.config.tls.key),
       cert: fs.readFileSync(this.config.tls.cert),
       isServer: true,

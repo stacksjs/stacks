@@ -370,7 +370,7 @@ export class S3Client {
           ...requestHeaders,
           'Authorization': authorizationHeader,
         },
-        body: options.body,
+        body: typeof options.body === 'string' ? options.body : new Uint8Array(options.body),
       })
 
       if (!response.ok) {
@@ -1823,7 +1823,7 @@ export class S3Client {
         ...requestHeaders,
         'Authorization': authHeader,
       },
-      body,
+      body: new Uint8Array(body),
     })
 
     if (!response.ok) {

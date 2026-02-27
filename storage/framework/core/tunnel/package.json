@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "localtunnels": "link:localtunnels"
+    "localtunnels": "^0.2.7"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"
