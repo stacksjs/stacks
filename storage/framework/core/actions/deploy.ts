@@ -1751,8 +1751,8 @@ async function setupDnsAndSsl(options: {
 
         // 6. Get ALB and Target Group ARN from stack
         const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
-        const awsCf = new AWSCloudFormationClient(region)
-        const resources = await awsCf.listStackResources(stackName)
+        const cf = new AWSCloudFormationClient(region)
+        const resources = await cf.listStackResources(stackName)
         const albArn = resources.StackResourceSummaries.find((r: any) => r.LogicalResourceId === 'ApplicationLoadBalancer')?.PhysicalResourceId
         // Support both serverless (ECSTargetGroup) and server (WebTargetGroup) modes
         const tgArn = resources.StackResourceSummaries.find((r: any) => r.LogicalResourceId === 'ECSTargetGroup')?.PhysicalResourceId
@@ -2189,11 +2189,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           stackName,
           ...updateParam,
           capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-          tags: [
-            { Key: 'Environment', Value: environment },
-            { Key: 'Project', Value: projectName },
-            { Key: 'ManagedBy', Value: 'stacks' },
-          ],
+          tags: {
+            Environment: environment,
+            Project: projectName,
+            ManagedBy: 'stacks',
+          },
         })
 
         if (waitForCompletion) {
@@ -2273,11 +2273,11 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
         stackName,
         ...createParam,
         capabilities: ['CAPABILITY_IAM', 'CAPABILITY_NAMED_IAM'],
-        tags: [
-          { Key: 'Environment', Value: environment },
-          { Key: 'Project', Value: projectName },
-          { Key: 'ManagedBy', Value: 'stacks' },
-        ],
+        tags: {
+          Environment: environment,
+          Project: projectName,
+          ManagedBy: 'stacks',
+        },
         onFailure: 'ROLLBACK',
         timeoutInMinutes: 30,
       })
@@ -2374,8 +2374,7 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
   log.info(`Deploying frontend from ${buildDir} to ${environment} in ${region}...`)
 
   try {
-    const { S3Client } = await import('@stacksjs/ts-cloud')
-    const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
+    const { S3Client, AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
 
     const s3 = new S3Client(region)
     const cf = new AWSCloudFormationClient(region)
