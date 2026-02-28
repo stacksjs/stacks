@@ -946,31 +946,29 @@ fi`,
 
               // Deploy Zig binary via SSM
               const zigSsmCommand = [
-                // Create user and directories
-                'useradd -r -s /bin/false -d /opt/smtp-server -m smtp-server 2>/dev/null || true',
+                // Stop any previous mail server services
+                'systemctl stop stacks-mail 2>/dev/null || true',
+                'systemctl disable stacks-mail 2>/dev/null || true',
+                'systemctl stop stacks-smtp 2>/dev/null || true',
+                'systemctl disable stacks-smtp 2>/dev/null || true',
+                'systemctl stop smtp-server 2>/dev/null || true',
+                // Create directories
                 'mkdir -p /opt/smtp-server /var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server /var/lib/smtp-server/backups',
                 // Download binary from S3
                 `aws s3 cp s3://${emailBucketName}/mail-server/smtp-server /opt/smtp-server/smtp-server --region ${region}`,
                 'chmod +x /opt/smtp-server/smtp-server',
                 // Verify binary
                 'file /opt/smtp-server/smtp-server | grep -q ELF || { echo "Binary is not ELF"; exit 1; }',
-                // Install certbot and get cert
-                'if ! command -v certbot &> /dev/null; then dnf install -y certbot || yum install -y certbot || apt-get install -y certbot || true; fi',
-                `if [ ! -d /etc/letsencrypt/live/${mailSubdomain}.${domain} ]; then certbot certonly --standalone --non-interactive --agree-tos --email admin@${domain} -d ${mailSubdomain}.${domain} --http-01-port 80 || { echo "Certbot failed, generating self-signed cert"; openssl req -x509 -nodes -days 365 -newkey rsa:2048 -keyout /etc/smtp-server/smtp-server.key -out /etc/smtp-server/smtp-server.crt -subj "/CN=${mailSubdomain}.${domain}"; }; fi`,
-                // Link Let's Encrypt certs
-                `if [ -d /etc/letsencrypt/live/${mailSubdomain}.${domain} ]; then ln -sf /etc/letsencrypt/live/${mailSubdomain}.${domain}/fullchain.pem /etc/smtp-server/smtp-server.crt; ln -sf /etc/letsencrypt/live/${mailSubdomain}.${domain}/privkey.pem /etc/smtp-server/smtp-server.key; fi`,
-                'chmod 600 /etc/smtp-server/smtp-server.key 2>/dev/null || true',
-                'chown -R smtp-server:smtp-server /opt/smtp-server /var/lib/smtp-server /var/log/smtp-server /var/spool/mail',
-                'chown smtp-server:smtp-server /etc/smtp-server/smtp-server.* 2>/dev/null || true',
                 // Create environment configuration
+                // Note: TLS is disabled for now due to Zig TLS PEM parsing issue.
+                // SMTP_IO_MODE=epoll is required (io_uring causes issues under systemd).
+                // STARTTLS will be offered once the Zig TLS cert loading is fixed upstream.
                 `cat > /etc/smtp-server/smtp-server.env << 'ENVEOF'
 SMTP_PROFILE=production
 SMTP_HOST=0.0.0.0
 SMTP_PORT=25
 SMTP_HOSTNAME=${mailSubdomain}.${domain}
-SMTP_ENABLE_TLS=true
-SMTP_TLS_CERT=/etc/smtp-server/smtp-server.crt
-SMTP_TLS_KEY=/etc/smtp-server/smtp-server.key
+SMTP_ENABLE_TLS=false
 SMTP_ENABLE_AUTH=true
 SMTP_DB_PATH=/var/lib/smtp-server/smtp.db
 AWS_S3_BUCKET=${emailBucketName}
@@ -984,10 +982,10 @@ SMTP_MAX_MESSAGE_SIZE=52428800
 SMTP_MAX_RECIPIENTS=100
 SMTP_RATE_LIMIT_PER_IP=100
 SMTP_RATE_LIMIT_PER_USER=200
+SMTP_IO_MODE=epoll
 ENVEOF`,
                 'chmod 600 /etc/smtp-server/smtp-server.env',
-                'chown smtp-server:smtp-server /etc/smtp-server/smtp-server.env',
-                // Create systemd service
+                // Create systemd service (no sandboxing - Zig binary needs unrestricted access)
                 `cat > /etc/systemd/system/smtp-server.service << 'SVCEOF'
 [Unit]
 Description=Stacks Mail Server (Zig)
@@ -995,8 +993,6 @@ After=network.target
 
 [Service]
 Type=simple
-User=smtp-server
-Group=smtp-server
 WorkingDirectory=/opt/smtp-server
 EnvironmentFile=/etc/smtp-server/smtp-server.env
 ExecStart=/opt/smtp-server/smtp-server
@@ -1005,12 +1001,6 @@ RestartSec=10
 StandardOutput=journal
 StandardError=journal
 SyslogIdentifier=smtp-server
-NoNewPrivileges=true
-PrivateTmp=true
-ProtectSystem=strict
-ProtectHome=true
-ReadWritePaths=/var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server
-AmbientCapabilities=CAP_NET_BIND_SERVICE
 
 [Install]
 WantedBy=multi-user.target
@@ -1018,13 +1008,10 @@ SVCEOF`,
                 'systemctl daemon-reload',
                 'systemctl enable smtp-server',
                 'systemctl restart smtp-server',
-                // Set up cert renewal
-                `echo '0 3 * * * root certbot renew --quiet --deploy-hook "systemctl restart smtp-server" >> /var/log/certbot-renew.log 2>&1' > /etc/cron.d/certbot-renew`,
-                'chmod 644 /etc/cron.d/certbot-renew',
                 // Verify
                 'sleep 3',
                 'systemctl is-active smtp-server && echo "Mail server is running" || echo "Mail server failed to start"',
-                'ss -tlnp | grep -E "(25|465|587)" || echo "Warning: mail ports not listening yet"',
+                'ss -tlnp | grep -E "(25|143)" || echo "Warning: mail ports not listening yet"',
               ].join(' && ')
 
               const ssmResult = await awsClient.request({

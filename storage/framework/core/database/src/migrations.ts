@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@stacksjs/error-handling'
-import { readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
@@ -105,6 +105,21 @@ function preprocessSqliteMigrations(): void {
   // already defines the UNIQUE constraint inline during CREATE TABLE.
   // Regular CREATE INDEX is fine and should NOT be skipped.
   const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+/i
+  // Match ALTER TABLE ... DROP COLUMN — SQLite fails if the column doesn't exist
+  const dropColumnPattern = /^\s*ALTER\s+TABLE\s+["']?(\w+)["']?\s+DROP\s+COLUMN\s+["']?(\w+)["']?\s*$/i
+
+  // Open SQLite DB to check column existence for DROP COLUMN migrations
+  const sqliteDbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
+  let sqliteDb: import('bun:sqlite').Database | null = null
+  if (existsSync(sqliteDbPath)) {
+    try {
+      const { Database } = require('bun:sqlite')
+      sqliteDb = new Database(sqliteDbPath, { readonly: true })
+    }
+    catch {
+      // If we can't open the DB, we'll skip DROP COLUMN checks
+    }
+  }
 
   for (const file of files) {
     const filePath = join(migrationsDir, file)
@@ -132,7 +147,73 @@ function preprocessSqliteMigrations(): void {
     if (allCreateUniqueIndex) {
       log.info(`Skipping redundant unique index migration for SQLite: ${file}`)
       writeFileSync(filePath, '-- Skipped: unique constraints already exist from table creation\nSELECT 1;\n')
+      continue
     }
+
+    // DROP COLUMN fails in SQLite if the column doesn't exist (e.g., on fresh DB
+    // where the CREATE TABLE already reflects the current model without the column).
+    // Filter out DROP COLUMN statements for non-existent columns. Keep all other
+    // statements unchanged.
+    const hasDropColumn = statements.some(s => dropColumnPattern.test(s))
+    if (hasDropColumn) {
+      let modified = false
+      const filteredStatements: string[] = []
+
+      for (const stmt of statements) {
+        const dropColMatch = stmt.match(dropColumnPattern)
+        if (dropColMatch) {
+          const tableName = dropColMatch[1]
+          const columnName = dropColMatch[2]
+
+          if (!sqliteDb) {
+            // No database file — fresh install. The CREATE TABLE migration will
+            // create the table from the current model (without the dropped column),
+            // so this DROP COLUMN is unnecessary.
+            log.info(`Skipping DROP COLUMN "${columnName}" — no database exists yet: ${file}`)
+            modified = true
+            continue
+          }
+
+          try {
+            const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${tableName}")`).all() as Array<{ name: string }>
+            if (columns.length === 0) {
+              // Table doesn't exist yet — column will be absent from CREATE TABLE
+              log.info(`Skipping DROP COLUMN "${columnName}" — table "${tableName}" does not exist yet: ${file}`)
+              modified = true
+              continue
+            }
+            const columnExists = columns.some((col: { name: string }) => col.name === columnName)
+            if (!columnExists) {
+              log.info(`Skipping DROP COLUMN "${columnName}" from "${tableName}" — column does not exist: ${file}`)
+              modified = true
+              continue
+            }
+          }
+          catch {
+            // Table doesn't exist — skip the DROP COLUMN
+            log.info(`Skipping DROP COLUMN "${columnName}" — table "${tableName}" not found: ${file}`)
+            modified = true
+            continue
+          }
+        }
+        filteredStatements.push(stmt)
+      }
+
+      if (modified) {
+        if (filteredStatements.length === 0) {
+          writeFileSync(filePath, '-- Skipped: columns already absent from table\nSELECT 1;\n')
+        }
+        else {
+          writeFileSync(filePath, `${filteredStatements.join(';\n')};\n`)
+        }
+        continue
+      }
+    }
+  }
+
+  if (sqliteDb) {
+    try { (sqliteDb as any).close() }
+    catch { /* ignore */ }
   }
 }
 
