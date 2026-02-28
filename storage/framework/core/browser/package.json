@@ -47,14 +47,14 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^8.7.0",
-    "bun-query-builder": "^0.1.12",
+    "@stripe/stripe-js": "^8.8.0",
+    "bun-query-builder": "^0.1.13",
     "ofetch": "^1.5.1",
     "perfect-debounce": "^2.1.0",
     "pretty-bytes": "^7.1.0"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.6",
     "@stacksjs/utils": "workspace:*"
   }
 }
