@@ -63,7 +63,7 @@
   "devDependencies": {
     "@stacksjs/collections": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.6",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/logging": "workspace:*",
     "@stacksjs/path": "workspace:*",

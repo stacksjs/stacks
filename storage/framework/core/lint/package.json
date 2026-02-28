@@ -50,7 +50,7 @@
     "prepublishOnly": "bun run build"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.6",
     "@stacksjs/gitlint": "^0.1.5",
     "bun-git-hooks": "^0.3.1"
   }
