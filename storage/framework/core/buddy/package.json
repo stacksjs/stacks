@@ -129,10 +129,10 @@
     "@stacksjs/utils": "^0.70.23",
     "@stacksjs/validation": "^0.70.23",
     "@stacksjs/ts-cloud": "^0.1.11",
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.6"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.6"
   },
   "web-types": "./web-types.json"
 }
