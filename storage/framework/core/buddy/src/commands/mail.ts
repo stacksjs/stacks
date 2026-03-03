@@ -3,6 +3,7 @@ import { ExitCode } from '@stacksjs/types'
 import { CLI } from '@stacksjs/clapp'
 import { createHash, createHmac, randomBytes } from 'crypto'
 import { readFileSync, existsSync } from 'node:fs'
+import { execSync } from 'node:child_process'
 
 export function mailCommands(buddy: CLI): void {
   buddy
@@ -443,6 +444,123 @@ export function mailCommands(buddy: CLI): void {
     })
 
   buddy
+    .command('mail:port25:request', 'Request port 25 unblock for direct SMTP delivery')
+    .option('--provider <provider>', 'Cloud provider: aws or hetzner', { default: 'aws' })
+    .option('--instance-id <id>', 'AWS EC2 instance ID (auto-detected if not provided)')
+    .option('--server-id <id>', 'Hetzner server ID (auto-detected if not provided)')
+    .option('--elastic-ip <ip>', 'AWS Elastic IP address')
+    .option('--rdns <hostname>', 'Reverse DNS hostname (e.g. mail.stacksjs.com)')
+    .option('--use-case <text>', 'Description of email use case')
+    .action(async (options: {
+      provider: string
+      instanceId?: string
+      serverId?: string
+      elasticIp?: string
+      rdns?: string
+      useCase?: string
+    }) => {
+      loadEnvFiles()
+
+      const domain = process.env.APP_DOMAIN || process.env.MAIL_DOMAIN || 'stacksjs.com'
+      const provider = options.provider.toLowerCase()
+
+      if (provider === 'aws') {
+        await requestAwsPort25(options, domain)
+      } else if (provider === 'hetzner') {
+        await requestHetznerPort25(options, domain)
+      } else {
+        log.error(`Unknown provider: ${provider}. Use 'aws' or 'hetzner'.`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
+    .command('mail:port25:status', 'Check outbound port 25 status on the mail server')
+    .option('--provider <provider>', 'Cloud provider: aws or hetzner', { default: 'aws' })
+    .action(async (options: { provider: string }) => {
+      loadEnvFiles()
+
+      const region = process.env.AWS_REGION || 'us-east-1'
+      const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+
+      if (options.provider === 'hetzner') {
+        // For Hetzner, SSH directly
+        const hetznerToken = process.env.HETZNER_API_TOKEN
+        if (!hetznerToken) {
+          log.error('HETZNER_API_TOKEN not set')
+          process.exit(ExitCode.FatalError)
+        }
+
+        try {
+          // Find server IP
+          const res = await fetch('https://api.hetzner.cloud/v1/servers?label_selector=service=mail', {
+            headers: { Authorization: `Bearer ${hetznerToken}` },
+          })
+          const data = await res.json() as any
+          const server = data.servers?.[0]
+          const ip = server?.public_net?.ipv4?.ip
+
+          if (!ip) {
+            // Try listing all servers
+            const allRes = await fetch('https://api.hetzner.cloud/v1/servers', {
+              headers: { Authorization: `Bearer ${hetznerToken}` },
+            })
+            const allData = await allRes.json() as any
+            const mailServer = allData.servers?.find((s: any) => s.name?.includes('mail'))
+            if (mailServer) {
+              const serverIp = mailServer.public_net?.ipv4?.ip
+              log.info(`Found Hetzner server: ${mailServer.name} (${serverIp})`)
+              const result = execSync(`ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@${serverIp} "timeout 5 bash -c 'echo QUIT > /dev/tcp/gmail-smtp-in.l.google.com/25' 2>&1 && echo PORT_25_OPEN || echo PORT_25_BLOCKED"`, { encoding: 'utf-8' })
+              printPort25Status(result.trim(), 'Hetzner', serverIp)
+            } else {
+              log.error('No mail server found on Hetzner')
+            }
+          } else {
+            const result = execSync(`ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 root@${ip} "timeout 5 bash -c 'echo QUIT > /dev/tcp/gmail-smtp-in.l.google.com/25' 2>&1 && echo PORT_25_OPEN || echo PORT_25_BLOCKED"`, { encoding: 'utf-8' })
+            printPort25Status(result.trim(), 'Hetzner', ip)
+          }
+        } catch (error: any) {
+          log.error(`Failed: ${error.message}`)
+        }
+        process.exit(ExitCode.Success)
+      }
+
+      // AWS: use SSM to test
+      try {
+        const { EC2Client, SSMClient } = await import('@stacksjs/ts-cloud')
+        const ec2 = new EC2Client(region)
+        const ssm = new SSMClient(region)
+
+        const data = await ec2.describeInstances({
+          Filters: [
+            { Name: 'tag:Name', Values: [`${appName}-mail-server`] },
+            { Name: 'instance-state-name', Values: ['running'] },
+          ],
+        })
+
+        const instance = data.Reservations?.[0]?.Instances?.[0]
+        const instanceId = instance?.InstanceId
+        if (!instanceId) {
+          log.error('No running mail server found.')
+          process.exit(ExitCode.FatalError)
+        }
+
+        const publicIp = instance?.PublicIpAddress || 'unknown'
+        log.info(`Testing port 25 on ${instanceId} (${publicIp})...`)
+
+        const result = await ssm.runShellCommand(instanceId, [
+          'timeout 5 bash -c "echo QUIT > /dev/tcp/gmail-smtp-in.l.google.com/25" 2>&1 && echo PORT_25_OPEN || echo PORT_25_BLOCKED',
+        ], { timeoutSeconds: 15, maxWaitMs: 20000, pollIntervalMs: 2000 })
+
+        printPort25Status(result.output?.trim() || 'PORT_25_BLOCKED', 'AWS', publicIp)
+        process.exit(ExitCode.Success)
+      } catch (error: any) {
+        log.error(`Failed: ${error.message}`)
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
+  buddy
     .command('mail:server', 'Start SMTP relay server')
     .option('--port <port>', 'SMTP port', { default: '587' })
     .action(async (options: { port: string }) => {
@@ -568,4 +686,293 @@ function loadEnvFiles(): void {
       }
     }
   }
+}
+
+function printPort25Status(result: string, provider: string, ip: string): void {
+  console.log('')
+  console.log('==========================================================')
+  console.log('  PORT 25 STATUS')
+  console.log('==========================================================')
+  console.log('')
+  console.log(`  Provider:  ${provider}`)
+  console.log(`  Server IP: ${ip}`)
+
+  if (result.includes('PORT_25_OPEN')) {
+    console.log(`  Port 25:   \x1b[32mOPEN\x1b[0m`)
+    console.log('')
+    console.log('  Direct SMTP delivery is available!')
+    console.log('  Set SMTP_DELIVERY_METHOD=direct in your server env.')
+  } else {
+    console.log(`  Port 25:   \x1b[31mBLOCKED\x1b[0m`)
+    console.log('')
+    console.log(`  Run: buddy mail:port25:request --provider ${provider.toLowerCase()}`)
+  }
+
+  console.log('')
+  console.log('==========================================================')
+  console.log('')
+}
+
+/**
+ * Request AWS to remove EC2 port 25 restriction.
+ *
+ * AWS requires this via their web form or Support API (Business plan+).
+ * We try the Support API first, then fall back to opening the web form.
+ */
+async function requestAwsPort25(
+  options: { instanceId?: string; elasticIp?: string; rdns?: string; useCase?: string },
+  domain: string,
+): Promise<void> {
+  const region = process.env.AWS_REGION || 'us-east-1'
+  const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
+
+  // Auto-detect instance ID and Elastic IP if not provided
+  let instanceId = options.instanceId
+  let elasticIp = options.elasticIp
+
+  if (!instanceId || !elasticIp) {
+    try {
+      const { EC2Client } = await import('@stacksjs/ts-cloud')
+      const ec2 = new EC2Client(region)
+      const data = await ec2.describeInstances({
+        Filters: [
+          { Name: 'tag:Name', Values: [`${appName}-mail-server`] },
+          { Name: 'instance-state-name', Values: ['running'] },
+        ],
+      })
+
+      const instance = data.Reservations?.[0]?.Instances?.[0]
+      if (instance) {
+        instanceId = instanceId || instance.InstanceId
+        elasticIp = elasticIp || instance.PublicIpAddress
+      }
+    } catch {
+      // Continue without auto-detection
+    }
+  }
+
+  const rdns = options.rdns || `mail.${domain}`
+  const useCase = options.useCase || [
+    `We run a self-hosted mail server (mail.${domain}) for our organization.`,
+    'We send transactional emails (account notifications, password resets) and',
+    'occasional team communication. Expected volume: <1000 emails/day.',
+    'We have SPF, DKIM, and DMARC configured. We need outbound port 25',
+    'to deliver email directly to recipient mail servers via MX records.',
+  ].join(' ')
+
+  console.log('')
+  console.log('==========================================================')
+  console.log('  AWS PORT 25 UNBLOCK REQUEST')
+  console.log('==========================================================')
+  console.log('')
+  console.log(`  Instance:    ${instanceId || '(not detected)'}`)
+  console.log(`  Elastic IP:  ${elasticIp || '(not detected)'}`)
+  console.log(`  Reverse DNS: ${rdns}`)
+  console.log(`  Region:      ${region}`)
+  console.log('')
+
+  // Try Support API first (requires Business/Enterprise support plan)
+  try {
+    const result = execSync(
+      `aws support create-case \
+        --subject "Request to remove email sending limitations" \
+        --communication-body "${useCase}\n\nElastic IP: ${elasticIp || 'N/A'}\nInstance ID: ${instanceId || 'N/A'}\nReverse DNS: ${rdns}\nRegion: ${region}" \
+        --service-code "amazon-ec2" \
+        --category-code "port-25-throttle" \
+        --severity-code "normal" \
+        --cc-email-addresses "" \
+        --language "en" \
+        --region us-east-1 2>&1`,
+      { encoding: 'utf-8' },
+    )
+
+    if (result.includes('caseId')) {
+      const caseId = JSON.parse(result).caseId
+      log.success(`Support case created: ${caseId}`)
+      console.log('')
+      console.log('  AWS will process this within 24-48 hours.')
+      console.log('  Check status: aws support describe-cases --region us-east-1')
+      console.log('')
+      process.exit(ExitCode.Success)
+    }
+  } catch {
+    // Support API not available (no Business plan) — fall back to web form
+  }
+
+  // Also set up Reverse DNS via the EC2 API (this is separate and always available)
+  if (elasticIp) {
+    log.info('Setting up reverse DNS (rDNS) for Elastic IP...')
+    try {
+      // First, get the allocation ID for the Elastic IP
+      const allocResult = execSync(
+        `aws ec2 describe-addresses --public-ips ${elasticIp} --region ${region} --query 'Addresses[0].AllocationId' --output text 2>&1`,
+        { encoding: 'utf-8' },
+      ).trim()
+
+      if (allocResult && !allocResult.includes('error')) {
+        // Request rDNS update
+        execSync(
+          `aws ec2 modify-address-attribute --allocation-id ${allocResult} --domain-name ${rdns} --region ${region} 2>&1`,
+          { encoding: 'utf-8' },
+        )
+        log.success(`Reverse DNS requested: ${elasticIp} -> ${rdns}`)
+        console.log('  (rDNS propagation may take a few minutes)')
+      }
+    } catch (error: any) {
+      log.warn(`rDNS setup failed: ${error.message}`)
+      console.log('  You may need to set this up manually in the AWS console.')
+    }
+  }
+
+  // Fall back to web form
+  console.log('')
+  console.log('  The Support API requires a Business or Enterprise support plan.')
+  console.log('  Opening the AWS web form instead...')
+  console.log('')
+  console.log('  Fill in these details:')
+  console.log('  ──────────────────────────────────────────────────────')
+  console.log(`  Email address:    admin@${domain}`)
+  console.log(`  Use case:         Sending outbound email from self-hosted mail server`)
+  console.log(`  Elastic IP:       ${elasticIp || '(enter your Elastic IP)'}`)
+  console.log(`  rDNS:             ${rdns}`)
+  console.log(`  Region:           ${region}`)
+  console.log('  ──────────────────────────────────────────────────────')
+  console.log('')
+
+  const formUrl = 'https://console.aws.amazon.com/support/contacts#/rdns-limits'
+  try {
+    execSync(`open "${formUrl}" 2>/dev/null || xdg-open "${formUrl}" 2>/dev/null || echo ""`, { encoding: 'utf-8' })
+    log.info(`Opened: ${formUrl}`)
+  } catch {
+    console.log(`  Open this URL in your browser:`)
+    console.log(`  ${formUrl}`)
+  }
+
+  console.log('')
+  console.log('  After AWS approves (24-48 hours), verify with:')
+  console.log('    buddy mail:port25:status')
+  console.log('')
+
+  process.exit(ExitCode.Success)
+}
+
+/**
+ * Request Hetzner to unblock port 25.
+ *
+ * Uses Hetzner Robot API to create a support request.
+ */
+async function requestHetznerPort25(
+  options: { serverId?: string; rdns?: string; useCase?: string },
+  domain: string,
+): Promise<void> {
+  const hetznerToken = process.env.HETZNER_API_TOKEN
+  if (!hetznerToken) {
+    log.error('HETZNER_API_TOKEN not set. Add it to .env or set it as an environment variable.')
+    process.exit(ExitCode.FatalError)
+  }
+
+  // Auto-detect server
+  let serverId = options.serverId
+  let serverIp = ''
+  let serverName = ''
+
+  try {
+    const res = await fetch('https://api.hetzner.cloud/v1/servers', {
+      headers: { Authorization: `Bearer ${hetznerToken}` },
+    })
+    const data = await res.json() as any
+    const mailServer = data.servers?.find((s: any) => s.name?.includes('mail'))
+      || data.servers?.[0]
+
+    if (mailServer) {
+      serverId = serverId || String(mailServer.id)
+      serverIp = mailServer.public_net?.ipv4?.ip || ''
+      serverName = mailServer.name || ''
+    }
+  } catch {
+    // Continue without auto-detection
+  }
+
+  const rdns = options.rdns || `mail.${domain}`
+  const useCase = options.useCase || [
+    `Self-hosted mail server for ${domain}.`,
+    'Transactional + team email, <1000 emails/day.',
+    'SPF/DKIM/DMARC configured.',
+  ].join(' ')
+
+  console.log('')
+  console.log('==========================================================')
+  console.log('  HETZNER PORT 25 UNBLOCK REQUEST')
+  console.log('==========================================================')
+  console.log('')
+  console.log(`  Server:     ${serverName} (ID: ${serverId || 'unknown'})`)
+  console.log(`  Server IP:  ${serverIp || '(not detected)'}`)
+  console.log(`  rDNS:       ${rdns}`)
+  console.log('')
+
+  // Step 1: Set reverse DNS on the server IP
+  if (serverId && serverIp) {
+    log.info('Setting reverse DNS...')
+    try {
+      const rdnsRes = await fetch(
+        `https://api.hetzner.cloud/v1/servers/${serverId}/actions/change_dns_ptr`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${hetznerToken}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ ip: serverIp, dns_ptr: rdns }),
+        },
+      )
+      const rdnsData = await rdnsRes.json() as any
+
+      if (rdnsData.action?.status === 'running' || rdnsData.action?.status === 'success') {
+        log.success(`Reverse DNS set: ${serverIp} -> ${rdns}`)
+      } else {
+        log.warn(`rDNS response: ${JSON.stringify(rdnsData.error || rdnsData)}`)
+      }
+    } catch (error: any) {
+      log.warn(`rDNS failed: ${error.message}`)
+    }
+  }
+
+  // Step 2: Hetzner doesn't have a public API for port 25 unblock requests.
+  // The user needs to submit via the Hetzner Cloud Console or Robot.
+  console.log('')
+  console.log('  To request port 25 unblock from Hetzner:')
+  console.log('  ──────────────────────────────────────────────────────')
+  console.log('  1. Log in to https://console.hetzner.cloud')
+  console.log(`  2. Select project containing server "${serverName}"`)
+  console.log('  3. Go to Support (left sidebar) -> New support request')
+  console.log('  4. Use this template:')
+  console.log('')
+  console.log('     Subject: Request to unblock outbound port 25 (SMTP)')
+  console.log('')
+  console.log('     Body:')
+  console.log('     ─────')
+  console.log(`     Server: ${serverName} (ID: ${serverId}, IP: ${serverIp})`)
+  console.log(`     Use case: ${useCase}`)
+  console.log(`     Reverse DNS: ${serverIp} -> ${rdns}`)
+  console.log('     We comply with all anti-spam regulations (CAN-SPAM, GDPR).')
+  console.log('     Please unblock outbound ports 25 and 465 for this server.')
+  console.log('     ─────')
+  console.log('')
+  console.log('  ──────────────────────────────────────────────────────')
+
+  // Try to open the console
+  const consoleUrl = 'https://console.hetzner.cloud'
+  try {
+    execSync(`open "${consoleUrl}" 2>/dev/null || xdg-open "${consoleUrl}" 2>/dev/null || echo ""`, { encoding: 'utf-8' })
+    log.info(`Opened: ${consoleUrl}`)
+  } catch {
+    console.log(`  Open: ${consoleUrl}`)
+  }
+
+  console.log('')
+  console.log('  After Hetzner approves, verify with:')
+  console.log('    buddy mail:port25:status --provider hetzner')
+  console.log('')
+
+  process.exit(ExitCode.Success)
 }
