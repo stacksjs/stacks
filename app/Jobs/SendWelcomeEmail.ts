@@ -17,9 +17,7 @@ export default new Job({
 })
 
 /**
- * Usage examples:
- *
- * import SendWelcomeEmail from '~/app/Jobs/SendWelcomeEmail'
+ * Usage examples (no imports needed — jobs are auto-imported):
  *
  * // Dispatch to queue
  * await SendWelcomeEmail.dispatch({ email: 'user@example.com', name: 'Chris' })
@@ -33,9 +31,7 @@ export default new Job({
  * // Execute immediately (bypass queue)
  * await SendWelcomeEmail.dispatchNow({ email: user.email, name: user.name })
  *
- * // Using the job() helper (by name)
- * import { job } from '@stacksjs/queue'
- *
+ * // Using the job() helper (by name, also auto-imported)
  * await job('SendWelcomeEmail', { email: 'user@example.com', name: 'Chris' })
  *   .onQueue('emails')
  *   .tries(5)

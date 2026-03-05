@@ -171,6 +171,36 @@ async function loadAutoImports() {
       // Directory may not exist
     }
   }
+
+  // 4. Load all Job instances from app/Jobs into globalThis
+  // This enables using SendWelcomeEmail.dispatch() without imports
+  const jobsDir = path.userJobsPath()
+  const loadedJobs = new Set<string>()
+
+  try {
+    for await (const file of glob.scan({
+      cwd: jobsDir,
+      absolute: true,
+      onlyFiles: true,
+    })) {
+      if (file.endsWith('.d.ts') || file.endsWith('/index.ts')) continue
+
+      const jobName = file.split('/').pop()?.replace('.ts', '') || ''
+      if (!jobName || loadedJobs.has(jobName) || protectedGlobals.has(jobName)) continue
+
+      try {
+        const module = await import(file)
+        if (module.default) {
+          (globalThis as any)[jobName] = module.default
+          loadedJobs.add(jobName)
+        }
+      } catch {
+        // Job may have unresolved dependencies during bootstrap
+      }
+    }
+  } catch {
+    // Directory may not exist
+  }
 }
 
 // Load auto-imports for server/API contexts (serve, any server process)
