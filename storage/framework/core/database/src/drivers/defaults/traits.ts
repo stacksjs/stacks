@@ -53,7 +53,7 @@ export async function createPasskeyMigration(): Promise<void> {
   const migrationFileName = `${timestamp}-create-passkeys-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -87,7 +87,7 @@ export async function createPostgresPasskeyMigration(): Promise<void> {
   const migrationFileName = `${timestamp}-create-passkeys-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -138,7 +138,7 @@ export async function createTaggableTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-tags-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
@@ -193,7 +193,7 @@ export async function createPostgresTagsTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-tags-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
@@ -255,7 +255,7 @@ export async function createCategorizableTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-categorizables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -313,7 +313,7 @@ export async function createPostgresCategorizableTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-categorizables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -365,7 +365,7 @@ export async function createCommentablesTable(options: {
   const migrationFileName = `${timestamp}-create-comments-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -399,7 +399,7 @@ export async function createPostgresCommentsTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-comments-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -451,7 +451,7 @@ export async function createCommentUpvoteMigration(): Promise<void> {
   const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -478,7 +478,7 @@ export async function createPostgresCommentUpvoteMigration(): Promise<void> {
   const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -530,7 +530,7 @@ export async function createCommentablesPivotTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-commentables-pivot-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -585,7 +585,7 @@ export async function createPostgresCommentablesPivotTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-commentables-pivot-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -637,7 +637,7 @@ export async function createTaggablesTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-taggables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -692,7 +692,7 @@ export async function createPostgresTaggablesTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-taggables-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -752,7 +752,7 @@ export async function createQueryLogsTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-query-logs-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -813,7 +813,7 @@ export async function createPostgresQueryLogsTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-query-logs-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }

@@ -40,7 +40,7 @@ export async function createPasswordResetsTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-password-resets-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -79,7 +79,7 @@ export async function createPostgresPasswordResetsTable(): Promise<void> {
   const migrationFileName = `${timestamp}-create-password-resets-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }

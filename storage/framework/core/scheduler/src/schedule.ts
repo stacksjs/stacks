@@ -306,6 +306,9 @@ export class Schedule implements UntimedSchedule {
           detached: true,
           stdio: 'ignore',
         })
+        child.on('error', (error) => {
+          log.error(`Background task ${taskName} failed to spawn: ${error.message}`)
+        })
         child.unref()
         log.info(`Task ${taskName} spawned in background (pid: ${child.pid})`)
       }

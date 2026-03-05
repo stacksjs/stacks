@@ -302,10 +302,13 @@ export async function deleteIamUsers(): Promise<Result<string, string>> {
     return iam.deleteUser({ UserName: userName })
   })
 
-  await Promise.all(promises).catch((error: Error) => {
+  try {
+    await Promise.all(promises)
+  }
+  catch (error) {
     console.error(error)
     return err(handleError('Error deleting Stacks IAM users'))
-  })
+  }
 
   return ok(`Stacks IAM users deleted for team ${teamName}`)
 }
@@ -341,9 +344,12 @@ export async function deleteStacksBuckets(): Promise<Result<string, string | Err
           await Promise.all(
             objects.objects.map((object: unknown) => {
               const o = object as Record<string, unknown>
-              return s3.deleteObject(bucketName, (o.Key as string) || '').catch((error: unknown) => handleError(error as Error))
+              return s3.deleteObject(bucketName, (o.Key as string) || '')
             }),
-          )
+          ).catch((error: unknown) => {
+            log.error(`Failed to delete objects from bucket ${bucketName}:`, error)
+            throw error
+          })
         }
 
         // Check if there are more objects

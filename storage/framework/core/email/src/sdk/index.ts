@@ -75,7 +75,9 @@ export class EmailSDK {
   constructor(options?: { bucket?: string; region?: string; domain?: string }) {
     this.bucket = options?.bucket || `${process.env.APP_NAME?.toLowerCase() || 'stacks'}-emails`
     this.region = options?.region || process.env.AWS_REGION || 'us-east-1'
-    this.domain = options?.domain || emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
+    const fromAddress = emailConfig?.from?.address
+    const parsedDomain = fromAddress?.includes('@') ? fromAddress.split('@')[1] : undefined
+    this.domain = options?.domain || parsedDomain || 'stacksjs.com'
   }
 
   /**

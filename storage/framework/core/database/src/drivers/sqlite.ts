@@ -309,7 +309,7 @@ async function createTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -343,7 +343,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    Bun.write(migrationFilePath, migrationContent)
+    await Bun.write(migrationFilePath, migrationContent)
 
     log.success(`Created pivot migration: ${migrationFileName}`)
   }
@@ -460,7 +460,7 @@ async function createAlterTableMigration(modelPath: string) {
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   if (hasChanged) {
-    Bun.write(migrationFilePath, migrationContent)
+    await Bun.write(migrationFilePath, migrationContent)
     log.success(`Created migration: ${italic(migrationFileName)}`)
   }
 }

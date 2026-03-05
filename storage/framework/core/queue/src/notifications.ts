@@ -299,7 +299,7 @@ export class FailedJobNotifier {
     }
 
     try {
-      await fetch(config.webhookUrl, {
+      const response = await fetch(config.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -309,6 +309,10 @@ export class FailedJobNotifier {
           blocks,
         }),
       })
+
+      if (!response.ok) {
+        log.error(`Slack notification failed with status ${response.status}`)
+      }
     }
     catch (error) {
       log.error('Failed to send Slack notification:', error)
@@ -334,7 +338,7 @@ export class FailedJobNotifier {
     }))
 
     try {
-      await fetch(config.webhookUrl, {
+      const response = await fetch(config.webhookUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -344,6 +348,10 @@ export class FailedJobNotifier {
           embeds,
         }),
       })
+
+      if (!response.ok) {
+        log.error(`Discord notification failed with status ${response.status}`)
+      }
     }
     catch (error) {
       log.error('Failed to send Discord notification:', error)
@@ -384,11 +392,15 @@ export class FailedJobNotifier {
     }
 
     try {
-      await fetch(config.url, {
+      const response = await fetch(config.url, {
         method: 'POST',
         headers,
         body: JSON.stringify(payload),
       })
+
+      if (!response.ok) {
+        log.error(`Webhook notification failed with status ${response.status}`)
+      }
     }
     catch (error) {
       log.error('Failed to send webhook notification:', error)

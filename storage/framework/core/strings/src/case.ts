@@ -258,7 +258,10 @@ function capitalCaseTransformFactory(
   lower: (input: string) => string,
   upper: (input: string) => string,
 ) {
-  return (word: string) => `${upper(word[0])}${lower(word.slice(1))}`
+  return (word: string) => {
+    if (!word) return word
+    return `${upper(word[0])}${lower(word.slice(1))}`
+  }
 }
 
 function pascalCaseTransformFactory(
@@ -266,6 +269,7 @@ function pascalCaseTransformFactory(
   upper: (input: string) => string,
 ) {
   return (word: string, index: number) => {
+    if (!word) return word
     const char0 = word[0]
     const initial
       = index > 0 && char0 >= '0' && char0 <= '9' ? `_${char0}` : upper(char0)

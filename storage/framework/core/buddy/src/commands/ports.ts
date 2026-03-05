@@ -170,7 +170,13 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
   validJsonString = validJsonString.replace(/,(\s*\})/g, '$1')
 
   // Now we can parse it into an object
-  const ports = JSON.parse(validJsonString) as Ports
+  let ports: Ports
+  try {
+    ports = JSON.parse(validJsonString) as Ports
+  }
+  catch {
+    throw new Error(`Failed to parse ports configuration: ${validJsonString.slice(0, 200)}`)
+  }
 
   log.debug(`Ports for ${projectPath}`, ports)
 

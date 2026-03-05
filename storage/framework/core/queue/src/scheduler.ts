@@ -276,9 +276,13 @@ export async function startScheduler(config: Partial<SchedulerConfig> = {}): Pro
   process.on('SIGTERM', () => stopScheduler())
 
   // Start checking
+  let isChecking = false
   schedulerState.checkInterval = setInterval(() => {
-    if (!schedulerState.isShuttingDown) {
+    if (!schedulerState.isShuttingDown && !isChecking) {
+      isChecking = true
       checkScheduledJobs()
+        .catch(err => log.error('Scheduler check failed:', err))
+        .finally(() => { isChecking = false })
     }
   }, schedulerState.config.checkInterval)
 

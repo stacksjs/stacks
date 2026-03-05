@@ -22,9 +22,10 @@ export async function outro(options: {
   }
   else if (options.result.success !== undefined && !options.result.success) {
     // Bun.build format
+    const firstLog = options.result.logs?.[0] || 'Unknown build error'
     // eslint-disable-next-line no-console
-    console.log(options.result.logs[0])
-    throw new Error(`Build failed: ${options.result.logs[0]}`)
+    console.log(firstLog)
+    throw new Error(`Build failed: ${firstLog}`)
   }
 
   // loop over all the files in the dist directory and log them and their size

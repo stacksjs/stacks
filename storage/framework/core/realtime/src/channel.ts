@@ -25,7 +25,7 @@ export class Channel {
       ? this.channelName
       : `private-${this.channelName}`
 
-    server.broadcast(fullChannelName, event, data)
+    await server.broadcast(fullChannelName, event, data)
   }
 
   /**
@@ -37,7 +37,7 @@ export class Channel {
       throw new Error('Broadcast server not initialized')
     }
 
-    server.broadcast(this.channelName, event, data)
+    await server.broadcast(this.channelName, event, data)
   }
 
   /**
@@ -53,7 +53,7 @@ export class Channel {
       ? this.channelName
       : `presence-${this.channelName}`
 
-    server.broadcast(fullChannelName, event, data)
+    await server.broadcast(fullChannelName, event, data)
   }
 
   /**

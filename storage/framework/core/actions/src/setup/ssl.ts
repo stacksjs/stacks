@@ -162,7 +162,8 @@ export function isCertificateTrusted(domain: string): boolean {
   try {
     // Get certificate fingerprint
     const fingerprint = execSync(`openssl x509 -noout -fingerprint -sha256 -in "${certPath}"`, { encoding: 'utf-8' })
-    const fingerprintValue = fingerprint.split('=')[1]?.trim() || ''
+    const eqIdx = fingerprint.indexOf('=')
+    const fingerprintValue = eqIdx >= 0 ? fingerprint.slice(eqIdx + 1).trim() : ''
 
     if (!fingerprintValue)
       return false

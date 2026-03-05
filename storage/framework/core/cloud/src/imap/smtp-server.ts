@@ -183,8 +183,11 @@ export class SmtpServer {
    * Handle an SMTP command
    */
   private async handleCommand(session: SmtpSession, line: string): Promise<void> {
-    const command = line.split(' ')[0].toUpperCase()
-    const args = line.slice(command.length).trim()
+    const trimmedLine = line.trim()
+    if (!trimmedLine) return
+
+    const command = trimmedLine.split(' ')[0].toUpperCase()
+    const args = trimmedLine.slice(command.length).trim()
 
     console.log(`SMTP CMD [${session.username || 'anon'}]: ${command} ${args.includes('AUTH') ? '***' : args}`)
 

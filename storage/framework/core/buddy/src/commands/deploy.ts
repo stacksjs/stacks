@@ -902,7 +902,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
           (o: any) => o.OutputKey === 'EmailDomain'
         )?.OutputValue
 
-        const configuredDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
+        const configuredDomain = (emailConfig?.from?.address?.includes('@') ? emailConfig.from.address.split('@')[1] : undefined) || 'stacksjs.com'
 
         if (!hasEmailBucket && emailConfig?.server?.scan !== undefined) {
           log.info('Email infrastructure not found in stack, will update...')
@@ -967,7 +967,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     log.info('Creating/updating cloud infrastructure. This may take a few moments...')
 
     // Get email configuration
-    const emailDomain = emailConfig?.from?.address?.split('@')[1] || 'stacksjs.com'
+    const emailDomain = (emailConfig?.from?.address?.includes('@') ? emailConfig.from.address.split('@')[1] : undefined) || 'stacksjs.com'
     const emailBucketName = `${appName}-emails`
     const region = process.env.AWS_REGION || 'us-east-1'
     const enableEmailServer = emailConfig?.server?.scan !== undefined
@@ -1535,8 +1535,13 @@ async function getAuthUser(event) {
   if (!auth) return null;
   if (auth.startsWith('Basic ') || auth.startsWith('Bearer ')) {
     try {
-      const creds = Buffer.from(auth.split(' ')[1], 'base64').toString('utf-8');
-      const [email, password] = creds.split(':');
+      const authParts = auth.split(' ')
+      if (!authParts[1]) return null;
+      const creds = Buffer.from(authParts[1], 'base64').toString('utf-8');
+      const colonIdx = creds.indexOf(':');
+      if (colonIdx < 0) return null;
+      const email = creds.slice(0, colonIdx);
+      const password = creds.slice(colonIdx + 1);
       if (email && password && await authenticate(email, password)) return email;
     } catch (e) {
       log.debug('Operation failed: ' + (e instanceof Error ? e.message : String(e)))
@@ -1596,7 +1601,8 @@ exports.handler = async (event) => {
 
   // Auth endpoint
   if (path === '/auth' && method === 'POST') {
-    const body = JSON.parse(event.body || '{}');
+    let body: any;
+    try { body = JSON.parse(event.body || '{}'); } catch { return response(400, { error: 'Invalid JSON body' }); }
     if (!body.email || !body.password) return response(400, { error: 'Email and password required' });
     const valid = await authenticate(body.email, body.password);
     if (!valid) return response(401, { error: 'Invalid credentials' });
@@ -1649,7 +1655,8 @@ exports.handler = async (event) => {
 
     // Send message
     if (path === '/messages' && method === 'POST') {
-      const body = JSON.parse(event.body || '{}');
+      let body: any;
+      try { body = JSON.parse(event.body || '{}'); } catch { return response(400, { error: 'Invalid JSON body' }); }
       if (!body.to || !body.subject) return response(400, { error: 'To and subject required' });
       const result = await ses.send(new SendEmailCommand({
         FromEmailAddress: userEmail,

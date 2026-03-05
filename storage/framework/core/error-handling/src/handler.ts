@@ -134,9 +134,7 @@ export async function writeToLogFile(message: string, options?: WriteOptions): P
   const logFile = options?.logFile ?? defaultLogPath
   const dirPath = dirname(logFile)
 
-  if (!fs.existsSync(dirPath)) {
-    await fs.promises.mkdir(dirPath, { recursive: true })
-  }
+  await fs.promises.mkdir(dirPath, { recursive: true })
 
   // Write to the log file
   await fs.promises.appendFile(logFile, formattedMessage)
@@ -177,7 +175,7 @@ export function handleError(
     logMessage += `\nContext: ${JSON.stringify(contextData, null, 2)}`
   }
 
-  writeToLogFile(logMessage)
+  writeToLogFile(logMessage).catch(() => {})
 
   // Create a new Error with the combined message
   const error = new Error(errorMessage)

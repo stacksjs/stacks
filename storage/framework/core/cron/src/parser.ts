@@ -54,7 +54,7 @@ function parseField(field: string, min: number, max: number, names?: Record<stri
 
     if (stepMatch) {
       range = stepMatch[1]
-      step = Number.parseInt(stepMatch[2])
+      step = Number.parseInt(stepMatch[2], 10)
       if (step <= 0) throw new Error(`Invalid step: ${step}`)
     }
     else {
@@ -66,14 +66,14 @@ function parseField(field: string, min: number, max: number, names?: Record<stri
     }
     else if (range.includes('-')) {
       const [startStr, endStr] = range.split('-')
-      const start = Number.parseInt(startStr)
-      const end = Number.parseInt(endStr)
+      const start = Number.parseInt(startStr, 10)
+      const end = Number.parseInt(endStr, 10)
       if (Number.isNaN(start) || Number.isNaN(end)) throw new Error(`Invalid range: ${range}`)
       if (start < min || end > max) throw new Error(`Range out of bounds: ${range} (${min}-${max})`)
       for (let i = start; i <= end; i += step) values.add(i)
     }
     else {
-      const num = Number.parseInt(range)
+      const num = Number.parseInt(range, 10)
       if (Number.isNaN(num)) throw new Error(`Invalid cron value: ${range}`)
       if (num < min || num > max) throw new Error(`Value out of range: ${num} (${min}-${max})`)
       values.add(num)

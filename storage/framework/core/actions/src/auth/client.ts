@@ -8,7 +8,10 @@ import { log } from '@stacksjs/logging'
 const args = process.argv.slice(2)
 const getArg = (name: string): string | undefined => {
   const idx = args.findIndex(a => a.startsWith(`--${name}=`) || a.startsWith(`-${name.charAt(0)}=`))
-  if (idx !== -1) return args[idx].split('=')[1]
+  if (idx !== -1) {
+    const eqIdx = args[idx].indexOf('=')
+    return eqIdx >= 0 ? args[idx].slice(eqIdx + 1) : undefined
+  }
 
   const flagIdx = args.findIndex(a => a === `--${name}` || a === `-${name.charAt(0)}`)
   if (flagIdx !== -1 && args[flagIdx + 1] && !args[flagIdx + 1].startsWith('-')) {

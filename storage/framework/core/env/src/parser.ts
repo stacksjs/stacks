@@ -142,7 +142,7 @@ function expandCommands(value: string): string {
       const parts = command.trim().split(/\s+/)
       const executable = parts[0]
 
-      if (!ALLOWED_ENV_COMMANDS.has(executable)) {
+      if (!executable || !ALLOWED_ENV_COMMANDS.has(executable)) {
         console.warn(`[env] Blocked command substitution for disallowed command: ${executable}`)
         return ''
       }
@@ -155,9 +155,11 @@ function expandCommands(value: string): string {
       if (result.exitCode === 0) {
         return new TextDecoder().decode(result.stdout).trim()
       }
+
+      console.warn(`[env] Command substitution failed (exit code ${result.exitCode}): ${executable}`)
     }
-    catch {
-      // Command execution failed, return empty string
+    catch (error) {
+      console.warn(`[env] Command substitution error: ${error instanceof Error ? error.message : String(error)}`)
     }
 
     return ''

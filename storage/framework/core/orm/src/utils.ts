@@ -415,9 +415,6 @@ export function getHiddenAttributes(attributes: AttributesElements | undefined):
     return []
 
   return Object.keys(attributes).filter((key) => {
-    if (attributes === undefined)
-      return false
-
     return attributes[key]?.hidden === true
   })
 }
@@ -430,9 +427,6 @@ export function getGuardedAttributes(model: Model): string[] {
 
   return Object.keys(attributes)
     .filter((key) => {
-      if (attributes === undefined)
-        return false
-
       return attributes[key]?.guarded === true
     })
     .map((attribute: any) => snakeCase(attribute))

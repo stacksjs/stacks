@@ -268,8 +268,14 @@ async function processJob(job: any): Promise<void> {
     })
 
     // Get max attempts from job payload options, default to 1 (no retries)
-    const payload = JSON.parse(job.payload || '{}') as Record<string, any>
-    const maxAttempts = payload.options?.tries || 1
+    let maxAttempts = 1
+    try {
+      const payload = JSON.parse(job.payload || '{}') as Record<string, any>
+      maxAttempts = payload.options?.tries || 1
+    }
+    catch {
+      // Malformed payload — use default max attempts
+    }
     const currentAttempts = (job.attempts || 0) + 1
 
     if (currentAttempts >= maxAttempts) {

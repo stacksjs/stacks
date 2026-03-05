@@ -296,8 +296,7 @@ async function createTableMigration(modelPath: string) {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  // Assuming fs.writeFileSync is available or use an equivalent method
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -334,7 +333,7 @@ export async function createPostgresForeignKeyMigrations(modelPath: string): Pro
   const migrationFileName = `${timestamp}-add-foreign-keys-to-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
 }
@@ -428,7 +427,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     const migrationFileName = `${timestamp}-create-${pivotTable.table}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    Bun.write(migrationFilePath, migrationContent)
+    await Bun.write(migrationFilePath, migrationContent)
 
     // Mark this pivot table as processed
     processedPivotTables.add(pivotTable.table)
@@ -522,7 +521,7 @@ async function createAlterTableMigration(modelPath: string) {
     const migrationFileName = `${timestamp}-alter-${tableName}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    Bun.write(migrationFilePath, migrationContent)
+    await Bun.write(migrationFilePath, migrationContent)
     log.success(`Created alter migration: ${italic(migrationFileName)}`)
   }
 }

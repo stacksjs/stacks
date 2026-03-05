@@ -2322,8 +2322,14 @@ export class ImapServer {
 
     const date = quote(msg.date.toUTCString())
     const subject = quote(msg.subject)
-    const from = msg.from ? `((NIL NIL "${msg.from.split('@')[0]}" "${msg.from.split('@')[1] || ''}"))` : 'NIL'
-    const to = msg.to ? `((NIL NIL "${msg.to.split('@')[0]}" "${msg.to.split('@')[1] || ''}"))` : 'NIL'
+    const parseAddr = (addr: string) => {
+      const atIdx = addr.indexOf('@')
+      const local = atIdx >= 0 ? addr.slice(0, atIdx) : addr
+      const domain = atIdx >= 0 ? addr.slice(atIdx + 1) : ''
+      return `((NIL NIL "${local.replace(/"/g, '\\"')}" "${domain.replace(/"/g, '\\"')}"))`
+    }
+    const from = msg.from ? parseAddr(msg.from) : 'NIL'
+    const to = msg.to ? parseAddr(msg.to) : 'NIL'
 
     return `(${date} ${subject} ${from} ${from} ${from} ${to} NIL NIL NIL NIL)`
   }

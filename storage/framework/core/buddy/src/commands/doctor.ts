@@ -21,7 +21,7 @@ export function doctor(buddy: CLI): void {
       // Check Bun version
       const bunVersion = process.versions.bun
       if (bunVersion) {
-        const bunMajor = Number.parseInt(bunVersion.split('.')[0])
+        const bunMajor = Number.parseInt(bunVersion.split('.')[0] || '0', 10)
         if (bunMajor >= 1) {
           checks.push({
             name: 'Bun Runtime',
@@ -48,7 +48,7 @@ export function doctor(buddy: CLI): void {
       // Check Node version (optional but nice to have)
       const nodeVersion = process.versions.node
       if (nodeVersion) {
-        const nodeMajor = Number.parseInt(nodeVersion.split('.')[0])
+        const nodeMajor = Number.parseInt(nodeVersion.split('.')[0] || '0', 10)
         if (nodeMajor >= 18) {
           checks.push({
             name: 'Node.js',

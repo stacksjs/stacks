@@ -365,7 +365,11 @@ try {
 
       // Decode base64 token (format: AWS:password)
       const decoded = Buffer.from(token.authorizationToken, 'base64').toString('utf-8')
-      const password = decoded.split(':')[1]
+      const colonIndex = decoded.indexOf(':')
+      if (colonIndex === -1) {
+        throw new Error('ECR authorization token has unexpected format (missing colon separator)')
+      }
+      const password = decoded.slice(colonIndex + 1)
 
       // Login to Docker using stdin for password (secure)
       const loginResult = Bun.spawnSync([

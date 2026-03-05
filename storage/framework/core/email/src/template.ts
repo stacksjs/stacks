@@ -58,7 +58,8 @@ function replaceVariables(html: string, variables: TemplateVariables): string {
 
   for (const [key, value] of Object.entries(variables)) {
     // Replace {{ variable }} syntax (with optional whitespace)
-    const regex = new RegExp(`\\{\\{\\s*${key}\\s*\\}\\}`, 'g')
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g')
     result = result.replace(regex, String(value ?? ''))
   }
 

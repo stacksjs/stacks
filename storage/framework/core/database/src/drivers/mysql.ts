@@ -117,15 +117,15 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
 }
 
 export async function generateMysqlTraitMigrations(): Promise<void> {
-  Promise.all([
-    await createCategorizableTable(),
-    await createCommentablesTable(),
-    await createTaggableTable(),
-    await createTaggablesTable(),
-    await createPasswordResetsTable(),
-    await createPasskeyMigration(),
-    await createQueryLogsTable(),
-    await createCommentUpvoteMigration(),
+  await Promise.all([
+    createCategorizableTable(),
+    createCommentablesTable(),
+    createTaggableTable(),
+    createTaggablesTable(),
+    createPasswordResetsTable(),
+    createPasskeyMigration(),
+    createQueryLogsTable(),
+    createCommentUpvoteMigration(),
   ])
 }
 
@@ -161,7 +161,7 @@ export async function createMysqlForeignKeyMigrations(modelPath: string): Promis
   const migrationFileName = `${timestamp}-add-foreign-keys-to-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created foreign key migration: ${italic(migrationFileName)}`)
 }
@@ -323,7 +323,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   // eslint-disable-next-line no-console
   console.log(migrationFilePath)
 
-  Bun.write(migrationFilePath, migrationContent)
+  await Bun.write(migrationFilePath, migrationContent)
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 }
@@ -365,7 +365,7 @@ async function createPivotTableMigration(model: Model, modelPath: string): Promi
 
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    Bun.write(migrationFilePath, migrationContent)
+    await Bun.write(migrationFilePath, migrationContent)
 
     // Mark this pivot table as processed
     processedPivotTables.add(pivotTable.table)
@@ -424,7 +424,7 @@ export async function createAlterTableMigration(modelPath: string): Promise<void
     const migrationFileName = `${timestamp}-alter-${tableName}-table.ts`
     const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-    Bun.write(migrationFilePath, migrationContent)
+    await Bun.write(migrationFilePath, migrationContent)
     log.success(`Created alter migration: ${italic(migrationFileName)}`)
   }
 }
