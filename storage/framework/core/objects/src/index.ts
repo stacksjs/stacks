@@ -82,7 +82,7 @@ export function deepMerge<T extends object = object, S extends object = T>(
   if (!sources.length)
     return target as any
 
-  const source = sources.shift()
+  const [source, ...remaining] = sources
   if (source === undefined)
     return target as any
 
@@ -105,7 +105,7 @@ export function deepMerge<T extends object = object, S extends object = T>(
     })
   }
 
-  return deepMerge(target, ...sources)
+  return deepMerge(target, ...remaining)
 }
 
 function isMergeableObject(item: any): item is object {

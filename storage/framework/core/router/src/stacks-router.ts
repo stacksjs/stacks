@@ -340,6 +340,11 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
 
     try {
       const controller = await import(fullPath)
+
+      if (!controller.default || typeof controller.default !== 'function') {
+        throw new Error(`Controller ${controllerPath} does not export a default class`)
+      }
+
       // eslint-disable-next-line new-cap
       const instance = new controller.default()
 
@@ -454,7 +459,14 @@ async function validateActionInput(req: EnhancedRequest, validations: ActionVali
 
   for (const [field, validation] of Object.entries(validations)) {
     const value = input[field]
-    const result = validation.rule.validate(value)
+    let result: { valid: boolean, errors?: Array<{ message: string }> }
+
+    try {
+      result = validation.rule.validate(value)
+    }
+    catch {
+      result = { valid: false, errors: [{ message: `${field} validation failed` }] }
+    }
 
     if (!result.valid) {
       const fieldErrors: string[] = []
@@ -1024,19 +1036,19 @@ export interface StacksRouterInstance {
 // Create and export a default router instance
 export const route = createStacksRouter()
 
-// Track if routes have been loaded
-let routesLoaded = false
+// Promise-based route loading to prevent race conditions under concurrency
+let routesLoadPromise: Promise<void> | null = null
 
 /**
  * Handle a server request through the router
  * This is the main entry point for the Stacks server
  */
 export async function serverResponse(request: Request, _body?: string): Promise<Response> {
-  // Load routes on first request if not already loaded
-  if (!routesLoaded) {
-    await route.importRoutes()
-    routesLoaded = true
+  // Load routes on first request — use a shared promise to prevent double-loading
+  if (!routesLoadPromise) {
+    routesLoadPromise = route.importRoutes()
   }
+  await routesLoadPromise
 
   return route.handleRequest(request)
 }

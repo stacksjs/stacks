@@ -42,10 +42,16 @@ interface QueryLogRecord {
   optimization_suggestions?: string
 }
 
+// Re-entrancy guard to prevent infinite recursion (logQuery → storeQueryLog → INSERT → logQuery)
+let isLogging = false
+
 /**
  * Process an executed query and store it in the database
  */
 export async function logQuery(event: LogEvent): Promise<void> {
+  // Prevent infinite recursion: skip logging our own query_logs INSERT
+  if (isLogging) return
+
   try {
     // Extract basic information from the event
     const { query, durationMs, error, bindings } = extractQueryInfo(event)
@@ -73,8 +79,14 @@ export async function logQuery(event: LogEvent): Promise<void> {
       await enhanceWithQueryAnalysis(logRecord)
     }
 
-    // Store the query log in the database
-    await storeQueryLog(logRecord)
+    // Store the query log in the database (with re-entrancy guard)
+    isLogging = true
+    try {
+      await storeQueryLog(logRecord)
+    }
+    finally {
+      isLogging = false
+    }
 
     // Log slow or failed queries to the application log
     if (status !== 'completed') {

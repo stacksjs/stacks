@@ -175,7 +175,9 @@ function preprocessSqliteMigrations(): void {
           }
 
           try {
-            const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${tableName}")`).all() as Array<{ name: string }>
+            // Sanitize table name to prevent SQL injection (only allow alphanumeric and underscores)
+            const safeTableName = tableName.replace(/[^a-zA-Z0-9_]/g, '')
+            const columns = (sqliteDb as any).prepare(`PRAGMA table_info("${safeTableName}")`).all() as Array<{ name: string }>
             if (columns.length === 0) {
               // Table doesn't exist yet — column will be absent from CREATE TABLE
               log.info(`Skipping DROP COLUMN "${columnName}" — table "${tableName}" does not exist yet: ${file}`)

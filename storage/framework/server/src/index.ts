@@ -15,16 +15,18 @@ process.on('SIGINT', () => {
 if (process.env.QUEUE_WORKER) {
   if (!process.env.JOB) throw new Error('Missing JOB environment variable')
 
-  const jobModule = await import(`./app/Jobs/${process.env.JOB?.replace(/\.ts$/, '')}`) // removes a potential .ts extension
+  // Sanitize job name to prevent path traversal
+  const jobName = process.env.JOB.replace(/\.ts$/, '').replace(/[^a-zA-Z0-9_-]/g, '')
+  const jobModule = await import(`./app/Jobs/${jobName}`)
 
-  log.info('Running job...', process.env.JOB)
+  log.info('Running job...', jobName)
 
   if (typeof jobModule.default.handle === 'function') {
-    retry(await jobModule.default.handle(), {
-      backoffFactor: Number(process.env.JOB_BACKOFF_FACTOR),
-      retries: Number(process.env.JOB_RETRIES),
-      initialDelay: Number(process.env.JOB_INITIAL_DELAY),
-      jitter: Boolean(process.env.JOB_JITTER),
+    await retry(() => jobModule.default.handle(), {
+      backoffFactor: Number(process.env.JOB_BACKOFF_FACTOR) || 2,
+      retries: Number(process.env.JOB_RETRIES) || 3,
+      initialDelay: Number(process.env.JOB_INITIAL_DELAY) || 1000,
+      jitter: process.env.JOB_JITTER === 'true',
     })
   } else {
     throw new TypeError('`handle()` function is undefined')
@@ -35,32 +37,31 @@ if (process.env.QUEUE_WORKER) {
 
 const development = process.env.APP_ENV?.toLowerCase() !== 'production' && process.env.APP_ENV?.toLowerCase() !== 'prod'
 
+const port = Number(process.env.PORT) || 3000
+
 const server = Bun.serve({
-  port: 3000,
+  port,
   development,
 
   async fetch(request: Request, server: Server<any>): Promise<Response | undefined> {
     if (server.upgrade(request)) {
-      console.log('WebSocket upgraded')
       return
     }
 
-    const reqBody = await request.text()
-
-    return serverResponse(request, reqBody)
+    return serverResponse(request)
   },
 
   websocket: {
-    async open(ws: ServerWebSocket): Promise<void> {
-      console.log('WebSocket opened')
+    open(_ws: ServerWebSocket): void {
+      // WebSocket connection opened
     },
 
-    async message(ws: ServerWebSocket, message: string): Promise<void> {
-      console.log('WebSocket message', message)
+    message(_ws: ServerWebSocket, _message: string): void {
+      // WebSocket message received
     },
 
-    async close(ws: ServerWebSocket, code: number, reason?: string): Promise<void> {
-      console.log('WebSocket closed', { code, reason })
+    close(_ws: ServerWebSocket, _code: number, _reason?: string): void {
+      // WebSocket connection closed
     },
   },
 })

@@ -150,17 +150,17 @@ export class Auth {
 
     const email = credentials[username]
 
-    let hashCheck = false
-    const user = await User.where('email', '=', email).first()
-
-    const authPass = credentials[password] || ''
-
-    if (user?.password) {
-      hashCheck = await verifyHash(authPass, user.password)
-    }
-
+    // Validate email first to avoid unnecessary work and prevent timing leaks
     if (!email)
       return false
+
+    const user = await User.where('email', '=', email).first()
+    const authPass = credentials[password] || ''
+
+    // Always run hash verification to prevent timing-based user enumeration
+    // If user doesn't exist, verify against a dummy hash
+    const hashToVerify = user?.password || '$2b$12$invalidhashplaceholdervalue000000000000000000000'
+    const hashCheck = await verifyHash(authPass, hashToVerify)
 
     if (hashCheck && user) {
       RateLimiter.resetAttempts(email)

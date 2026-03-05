@@ -395,7 +395,7 @@ export function createValidationErrorResponse(
       status: 422,
       details: { errors },
     }),
-    { status: 422, headers: JSON_HEADERS },
+    { status: 422, headers: getJsonHeaders() },
   )
 }
 
