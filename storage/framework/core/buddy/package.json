@@ -116,7 +116,7 @@
     "@stacksjs/payments": "^0.70.23",
     "@stacksjs/realtime": "^0.70.23",
     "@stacksjs/router": "^0.70.23",
-    "@stacksjs/rpx": "^0.11.0",
+    "@stacksjs/rpx": "^0.11.2",
     "@stacksjs/search-engine": "^0.70.23",
     "@stacksjs/security": "^0.70.23",
     "@stacksjs/server": "^0.70.23",
@@ -129,10 +129,10 @@
     "@stacksjs/utils": "^0.70.23",
     "@stacksjs/validation": "^0.70.23",
     "@stacksjs/ts-cloud": "^0.1.11",
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.6"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.6"
   },
   "web-types": "./web-types.json"
 }
