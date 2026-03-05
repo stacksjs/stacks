@@ -102,7 +102,7 @@ jobs:
             fi
           elif [ "${{ github.event_name }}" = "schedule" ]; then
             # Determine based on cron schedule
-            if [ "${{ github.event.schedule }}" = "*/20 * * * *" ]; then
+            if [ "${{ github.event.schedule }}" = "5,25,45 * * * *" ]; then
               echo "run_check=true" >> $GITHUB_OUTPUT
             elif [ "${{ github.event.schedule }}" = "0 */2 * * *" ]; then
               echo "run_update=true" >> $GITHUB_OUTPUT
