@@ -97,6 +97,16 @@ export function userJobsPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the user-defined `Controllers` directory.
+ *
+ * @param path - The relative path to the file or directory within the `Controllers` directory.
+ * @returns The absolute path to the specified file or directory within the user-defined `Controllers` directory.
+ */
+export function userControllersPath(path?: string): string {
+  return appPath(`Controllers/${path || ''}`)
+}
+
+/**
  * Returns the path to the user-defined `Listeners` directory.
  *
  * @param path - The relative path to the file or directory within the `Listeners` directory.
