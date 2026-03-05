@@ -307,7 +307,7 @@ export class QueueMetrics {
     failed: 0,
     processing: 0,
   }
-  private durations: number[] = []
+  private completions: Array<{ timestamp: number; duration: number }> = []
   private errors: Array<{ error: Error; timestamp: number }> = []
   private unsubscribe: (() => void)[] = []
 
@@ -327,18 +327,17 @@ export class QueueMetrics {
       }),
       events.on('job:completed', (payload) => {
         this.jobCounts.completed++
-        this.jobCounts.processing--
-        if (payload.duration) {
-          this.durations.push(payload.duration)
-          // Keep only last 1000 durations
-          if (this.durations.length > 1000) {
-            this.durations.shift()
-          }
+        this.jobCounts.processing = Math.max(0, this.jobCounts.processing - 1)
+        const duration = payload.duration || 0
+        this.completions.push({ timestamp: Date.now(), duration })
+        // Keep only last 1000 completions
+        if (this.completions.length > 1000) {
+          this.completions.shift()
         }
       }),
       events.on('job:failed', (payload) => {
         this.jobCounts.failed++
-        this.jobCounts.processing--
+        this.jobCounts.processing = Math.max(0, this.jobCounts.processing - 1)
         if (payload.error) {
           this.errors.push({ error: payload.error, timestamp: Date.now() })
           // Keep only last 100 errors
@@ -351,30 +350,38 @@ export class QueueMetrics {
   }
 
   /**
+   * Get throughput (completed jobs per minute) over the last minute
+   */
+  getThroughputPerMinute(): number {
+    const oneMinuteAgo = Date.now() - 60000
+    const recentCount = this.completions.filter(c => c.timestamp >= oneMinuteAgo).length
+    return recentCount
+  }
+
+  /**
+   * Get average processing time (ms) over the last minute
+   */
+  getAverageProcessingTime(): number {
+    const oneMinuteAgo = Date.now() - 60000
+    const recent = this.completions.filter(c => c.timestamp >= oneMinuteAgo)
+    if (recent.length === 0) return 0
+    return recent.reduce((sum, c) => sum + c.duration, 0) / recent.length
+  }
+
+  /**
    * Get current metrics
    */
   getMetrics(): {
-    counts: { added: number, completed: number, failed: number, processing: number }
+    counts: { added: number; completed: number; failed: number; processing: number }
     averageDuration: number
     recentErrors: Array<{ error: Error; timestamp: number }>
-    throughput: number
+    throughputPerMinute: number
   } {
-    const averageDuration = this.durations.length > 0
-      ? this.durations.reduce((a, b) => a + b, 0) / this.durations.length
-      : 0
-
-    // Calculate throughput (jobs per second over last minute)
-    const _oneMinuteAgo = Date.now() - 60000
-    const recentCompleted = this.durations.filter((_, i) => {
-      // This is a rough approximation
-      return i >= this.durations.length - 60
-    }).length
-
     return {
       counts: { ...this.jobCounts },
-      averageDuration,
+      averageDuration: this.getAverageProcessingTime(),
       recentErrors: [...this.errors],
-      throughput: recentCompleted / 60,
+      throughputPerMinute: this.getThroughputPerMinute(),
     }
   }
 
@@ -383,7 +390,7 @@ export class QueueMetrics {
    */
   reset(): void {
     this.jobCounts = { added: 0, completed: 0, failed: 0, processing: 0 }
-    this.durations = []
+    this.completions = []
     this.errors = []
   }
 
@@ -394,4 +401,102 @@ export class QueueMetrics {
     this.unsubscribe.forEach(fn => fn())
     this.unsubscribe = []
   }
+}
+
+// Global metrics singleton
+let globalMetrics: QueueMetrics | null = null
+
+/**
+ * Get or create the global QueueMetrics instance
+ */
+export function getGlobalMetrics(): QueueMetrics {
+  if (!globalMetrics) {
+    globalMetrics = new QueueMetrics()
+  }
+  return globalMetrics
+}
+
+/**
+ * Worker status tracker
+ *
+ * Tracks registered workers and their activity for health checks.
+ */
+export interface TrackedWorker {
+  id: string
+  status: 'active' | 'idle' | 'stopped'
+  queue: string
+  processedCount: number
+  failedCount: number
+  lastActivityAt: string
+  startedAt: string
+}
+
+class WorkerTracker {
+  private workers = new Map<string, TrackedWorker>()
+
+  register(id: string, queue: string): void {
+    this.workers.set(id, {
+      id,
+      status: 'idle',
+      queue,
+      processedCount: 0,
+      failedCount: 0,
+      lastActivityAt: new Date().toISOString(),
+      startedAt: new Date().toISOString(),
+    })
+  }
+
+  markActive(id: string): void {
+    const w = this.workers.get(id)
+    if (w) {
+      w.status = 'active'
+      w.lastActivityAt = new Date().toISOString()
+    }
+  }
+
+  markIdle(id: string): void {
+    const w = this.workers.get(id)
+    if (w) {
+      w.status = 'idle'
+      w.lastActivityAt = new Date().toISOString()
+    }
+  }
+
+  recordCompletion(id: string): void {
+    const w = this.workers.get(id)
+    if (w) {
+      w.processedCount++
+      w.lastActivityAt = new Date().toISOString()
+    }
+  }
+
+  recordFailure(id: string): void {
+    const w = this.workers.get(id)
+    if (w) {
+      w.failedCount++
+      w.lastActivityAt = new Date().toISOString()
+    }
+  }
+
+  unregister(id: string): void {
+    const w = this.workers.get(id)
+    if (w) {
+      w.status = 'stopped'
+    }
+  }
+
+  getAll(): TrackedWorker[] {
+    return Array.from(this.workers.values())
+  }
+
+  clear(): void {
+    this.workers.clear()
+  }
+}
+
+// Global worker tracker singleton
+const workerTracker = new WorkerTracker()
+
+export function getWorkerTracker(): WorkerTracker {
+  return workerTracker
 }

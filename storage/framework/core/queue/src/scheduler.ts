@@ -86,7 +86,13 @@ function shouldRunNow(cronExpression: string, lastRun: Date | null): boolean {
   }
 
   // Parse cron expression (minute hour day month dayOfWeek)
-  const parts = cronExpression.trim().split(/\s+/)
+  // Also supports 6-part format (second minute hour day month dayOfWeek) by stripping seconds
+  let parts = cronExpression.trim().split(/\s+/)
+
+  if (parts.length === 6) {
+    // 6-part cron with seconds field — strip seconds, use minute-level granularity
+    parts = parts.slice(1)
+  }
 
   if (parts.length < 5) {
     log.warn(`Invalid cron expression: ${cronExpression}`)
@@ -169,12 +175,19 @@ function parseScheduleString(schedule: string): string | null {
   if (everyMatch) {
     const interval = everyMatch[1].toLowerCase()
     const everyMap: Record<string, string> = {
+      second: '* * * * *', // sub-minute not supported, run every minute
+      fiveseconds: '* * * * *',
+      tenseconds: '* * * * *',
+      thirtyseconds: '* * * * *',
       minute: '* * * * *',
       fiveminutes: '*/5 * * * *',
       tenminutes: '*/10 * * * *',
       fifteenminutes: '*/15 * * * *',
       thirtyminutes: '*/30 * * * *',
       hour: '0 * * * *',
+      twohours: '0 */2 * * *',
+      sixhours: '0 */6 * * *',
+      twelvehours: '0 */12 * * *',
       day: '0 0 * * *',
       week: '0 0 * * 0',
       month: '0 0 1 * *',
@@ -182,8 +195,9 @@ function parseScheduleString(schedule: string): string | null {
     return everyMap[interval] || null
   }
 
-  // Assume it's already a cron expression
-  if (schedule.split(/\s+/).length >= 5) {
+  // Assume it's already a cron expression (5 or 6 parts)
+  const partCount = schedule.split(/\s+/).length
+  if (partCount >= 5 && partCount <= 6) {
     return schedule
   }
 

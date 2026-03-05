@@ -48,7 +48,9 @@ export {
 // =============================================================================
 export {
   emitQueueEvent,
+  getGlobalMetrics,
   getQueueEvents,
+  getWorkerTracker,
   onQueueEvent,
   OnQueueEvent,
   QueueEvents,
@@ -57,6 +59,7 @@ export {
   type QueueEventHandler,
   type QueueEventPayload,
   type QueueEventType,
+  type TrackedWorker,
 } from './events'
 
 // =============================================================================
@@ -114,3 +117,12 @@ export {
   startProcessor,
   stopProcessor,
 } from './worker'
+
+// =============================================================================
+// Redis queue driver
+// =============================================================================
+export {
+  RedisQueue,
+  StacksQueueManager,
+  type BunJob,
+} from './drivers/redis'

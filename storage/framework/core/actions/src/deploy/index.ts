@@ -1199,13 +1199,7 @@ SERVICEFILE`,
 
     // Get bucket name from stack outputs
     const stackName = `${projectName}-cloud`
-    const stack = await cf.describeStack(stackName)
-    const stackOutputs: Record<string, string> = {}
-    for (const output of stack?.Outputs || []) {
-      if (output.OutputKey && output.OutputValue) {
-        stackOutputs[output.OutputKey] = output.OutputValue
-      }
-    }
+    const stackOutputs = await cf.getStackOutputs(stackName)
     const bucketName = stackOutputs.FrontendBucketName
 
     if (!bucketName) {
@@ -1397,13 +1391,7 @@ SERVICEFILE`,
 
       // Get docs bucket name from stack outputs
       const stackName = `${projectName}-cloud`
-      const docsStack = await cf.describeStack(stackName)
-      const docsOutputs: Record<string, string> = {}
-      for (const output of docsStack?.Outputs || []) {
-        if (output.OutputKey && output.OutputValue) {
-          docsOutputs[output.OutputKey] = output.OutputValue
-        }
-      }
+      const docsOutputs = await cf.getStackOutputs(stackName)
       const docsBucketName = docsOutputs.DocsBucketName
 
       if (!docsBucketName) {
@@ -1772,6 +1760,116 @@ SERVICEFILE`,
   }
   catch {
     // Tunnel config not available — skip silently
+  }
+
+  // ============================================
+  // DNS record reconciliation
+  // Ensures Route53 A/AAAA records point to CloudFront distributions
+  // This fixes drift where CloudFormation thinks records exist but they were deleted
+  // ============================================
+  const dnsSpinner = spinner('Reconciling DNS records...')
+  dnsSpinner.start()
+
+  try {
+    const { Route53Client, CloudFormationClient: DnsCfClient } = await import('@stacksjs/ts-cloud') as any
+
+    const dnsCf = new DnsCfClient(region)
+    const dnsStackName = `${projectName}-cloud`
+    const dnsOutputs = await dnsCf.getStackOutputs(dnsStackName)
+
+    // Load cloud config for DNS settings
+    const dnsCloudConfig = await import(p.projectPath('config/cloud'))
+    const hostedZoneId = dnsCloudConfig?.tsCloud?.infrastructure?.dns?.hostedZoneId
+    const siteDomain = dnsCloudConfig?.tsCloud?.infrastructure?.dns?.domain || 'stacksjs.com'
+
+    if (hostedZoneId) {
+      const route53 = new Route53Client(region)
+
+      // CloudFront hosted zone ID (always Z2FDTNDATAQYW2 for all CloudFront distributions)
+      const cfHostedZoneId = 'Z2FDTNDATAQYW2'
+
+      // Map domains to their CloudFront distributions
+      const domainMappings: Array<{ domain: string, cfDomain: string | undefined }> = [
+        { domain: siteDomain, cfDomain: dnsOutputs.publicCloudFrontDomain },
+        { domain: `www.${siteDomain}`, cfDomain: dnsOutputs.publicCloudFrontDomain },
+        { domain: `docs.${siteDomain}`, cfDomain: dnsOutputs.docsCloudFrontDomain },
+        { domain: `blog.${siteDomain}`, cfDomain: dnsOutputs.blogCloudFrontDomain },
+      ]
+
+      let recordsCreated = 0
+      for (const { domain, cfDomain } of domainMappings) {
+        if (!cfDomain) continue
+
+        // Check if A record exists
+        try {
+          const existing = await route53.listResourceRecordSets({
+            HostedZoneId: hostedZoneId,
+            StartRecordName: domain,
+            StartRecordType: 'A',
+            MaxItems: '1',
+          })
+
+          const records = existing?.ResourceRecordSets || []
+          const hasARecord = records.some((r: any) =>
+            r.Name === `${domain}.` && r.Type === 'A'
+          )
+
+          if (!hasARecord) {
+            // Create A record (alias to CloudFront)
+            await route53.changeResourceRecordSets({
+              HostedZoneId: hostedZoneId,
+              ChangeBatch: {
+                Changes: [
+                  {
+                    Action: 'UPSERT',
+                    ResourceRecordSet: {
+                      Name: domain,
+                      Type: 'A',
+                      AliasTarget: {
+                        HostedZoneId: cfHostedZoneId,
+                        DNSName: cfDomain,
+                        EvaluateTargetHealth: false,
+                      },
+                    },
+                  },
+                  {
+                    Action: 'UPSERT',
+                    ResourceRecordSet: {
+                      Name: domain,
+                      Type: 'AAAA',
+                      AliasTarget: {
+                        HostedZoneId: cfHostedZoneId,
+                        DNSName: cfDomain,
+                        EvaluateTargetHealth: false,
+                      },
+                    },
+                  },
+                ],
+              },
+            })
+            recordsCreated++
+            if (isVerbose) log.debug(`  Created DNS records: ${domain} -> ${cfDomain}`)
+          } else {
+            if (isVerbose) log.debug(`  DNS record exists: ${domain}`)
+          }
+        } catch (dnsErr: any) {
+          if (isVerbose) log.debug(`  DNS check/create failed for ${domain}: ${dnsErr.message}`)
+        }
+      }
+
+      if (recordsCreated > 0) {
+        dnsSpinner.succeed(`DNS records reconciled (${recordsCreated} created)`)
+      } else {
+        dnsSpinner.succeed('DNS records verified')
+      }
+    } else {
+      dnsSpinner.stop()
+      if (isVerbose) log.debug('No hosted zone ID configured, skipping DNS reconciliation')
+    }
+  } catch (dnsError: any) {
+    dnsSpinner.stop()
+    console.log(`⚠ DNS reconciliation skipped: ${dnsError.message}`)
+    if (isVerbose) log.debug(`DNS error: ${dnsError.stack}`)
   }
 
   console.log('')

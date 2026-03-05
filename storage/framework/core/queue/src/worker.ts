@@ -2,7 +2,7 @@
  * Queue Worker Functions
  *
  * Functions for managing queue workers and processing jobs.
- * Uses the configured database driver to store and process jobs.
+ * Supports both database and Redis (bun-queue) drivers.
  */
 
 import type { Result } from '@stacksjs/error-handling'
@@ -25,12 +25,13 @@ import { env as envVars } from '@stacksjs/env'
 // Worker state
 let activeJobCount = 0
 let workerRunning = false
+let workerId = ''
 
 /**
- * Get the database driver from environment
+ * Get the queue driver from environment
  */
-function getDriver(): string {
-  return envVars.DB_CONNECTION || 'sqlite'
+function getQueueDriver(): string {
+  return envVars.QUEUE_DRIVER || 'sync'
 }
 
 /**
@@ -45,9 +46,21 @@ export async function startProcessor(
     log.info('Starting queue processor...')
 
     workerRunning = true
+    workerId = `worker-${process.pid}-${Date.now()}`
     const concurrency = options.concurrency || 1
+    const queueDriver = getQueueDriver()
 
-    // If no queue specified, get all unique queues from the database
+    const { getWorkerTracker, getGlobalMetrics } = await import('./events')
+    getGlobalMetrics() // ensure metrics are listening
+    getWorkerTracker().register(workerId, queueName || 'default')
+
+    if (queueDriver === 'redis') {
+      log.info('Using Redis queue driver (bun-queue)')
+      await processJobsFromRedis(queueName || 'default', concurrency)
+      return ok(undefined)
+    }
+
+    // Database driver (default)
     let queues: string[]
     if (queueName) {
       queues = [queueName]
@@ -60,8 +73,6 @@ export async function startProcessor(
     }
 
     log.info(`Processing queues: ${queues.join(', ')}`)
-
-    // Use database-backed job processing
     await processJobsFromDatabase(queues, concurrency)
 
     return ok(undefined)
@@ -94,7 +105,6 @@ async function getAllQueues(): Promise<string[]> {
 async function processJobsFromDatabase(initialQueues: string[], concurrency: number): Promise<void> {
   log.info(`Listening for jobs...`)
 
-  const driver = getDriver()
   let queues = initialQueues
   let lastQueueRefresh = Date.now()
   const queueRefreshInterval = 10000 // Refresh queue list every 10 seconds
@@ -119,7 +129,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
       for (const queueName of queues) {
         let jobs: any[] = []
         try {
-          jobs = await fetchPendingJobs(queueName, concurrency, driver)
+          jobs = await fetchPendingJobs(queueName, concurrency)
         }
         catch {
           // Ignore fetch errors, will retry next cycle
@@ -129,7 +139,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
         for (const job of jobs) {
           try {
             log.info(`Processing job ${job.id} from queue "${queueName}"`)
-            await processJob(job, driver)
+            await processJob(job)
           }
           catch {
             // processJob should never throw, but just in case
@@ -151,7 +161,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
 /**
  * Fetch pending jobs from the database
  */
-async function fetchPendingJobs(queueName: string, limit: number, _driver: string): Promise<any[]> {
+async function fetchPendingJobs(queueName: string, limit: number): Promise<any[]> {
   const now = Math.floor(Date.now() / 1000)
   const { db } = await import('@stacksjs/database')
   const claimed: any[] = []
@@ -191,23 +201,25 @@ async function fetchPendingJobs(queueName: string, limit: number, _driver: strin
 /**
  * Process a single job from the database
  */
-async function processJob(job: any, _driver: string): Promise<void> {
+async function processJob(job: any): Promise<void> {
   const jobId = job.id
+  const queueName = job.queue || 'default'
   activeJobCount++
+  const startTime = Date.now()
+
+  const { emitQueueEvent, getWorkerTracker } = await import('./events')
+  const tracker = getWorkerTracker()
+  tracker.markActive(workerId)
+
+  await emitQueueEvent('job:processing', {
+    jobId: String(jobId),
+    queueName,
+    jobName: JSON.parse(job.payload || '{}').jobName,
+  })
 
   let jobError: Error | null = null
 
-  // Step 1: Reserve the job
-  try {
-    await reserveJob(jobId, job.attempts || 0)
-  }
-  catch (e) {
-    log.error(`Failed to reserve job ${jobId}`)
-    activeJobCount--
-    return
-  }
-
-  // Step 2: Execute the job
+  // Execute the job
   try {
     const payload = JSON.parse(job.payload || '{}')
     await executeJobPayload(payload)
@@ -216,12 +228,18 @@ async function processJob(job: any, _driver: string): Promise<void> {
     jobError = e instanceof Error ? e : new Error(String(e))
   }
 
-  // Step 3: Handle success or failure
+  // Handle success or failure
   if (!jobError) {
     // Success - delete the job
     try {
       await deleteJob(jobId)
       log.info(`[Queue] Job ${jobId} completed`)
+      tracker.recordCompletion(workerId)
+      await emitQueueEvent('job:completed', {
+        jobId: String(jobId),
+        queueName,
+        duration: Date.now() - startTime,
+      })
     }
     catch {
       log.info(`[Queue] Failed to delete completed job ${jobId}`)
@@ -231,6 +249,15 @@ async function processJob(job: any, _driver: string): Promise<void> {
     // Failure - retry or move to failed_jobs
     const errorMessage = jobError.message
     log.info(`[Queue] Job ${jobId} failed: ${errorMessage}`)
+
+    tracker.recordFailure(workerId)
+    await emitQueueEvent('job:failed', {
+      jobId: String(jobId),
+      queueName,
+      error: jobError,
+      duration: Date.now() - startTime,
+      attemptsMade: (job.attempts || 0) + 1,
+    })
 
     // Get max attempts from job payload options, default to 1 (no retries)
     const payload = JSON.parse(job.payload || '{}') as Record<string, any>
@@ -254,10 +281,21 @@ async function processJob(job: any, _driver: string): Promise<void> {
       }
     }
     else {
-      // Release for retry
-      log.info(`[Queue] Job ${jobId} will be retried (attempt ${currentAttempts}/${maxAttempts})`)
+      // Release for retry with backoff
+      const backoffDelays = payload.options?.backoff
+      let retryDelay = 30 // default 30 seconds
+      if (Array.isArray(backoffDelays) && backoffDelays.length > 0) {
+        // Use the appropriate backoff delay for this attempt (0-indexed)
+        const backoffIndex = Math.min(currentAttempts - 1, backoffDelays.length - 1)
+        retryDelay = backoffDelays[backoffIndex]
+      }
+      else if (typeof backoffDelays === 'number' && backoffDelays > 0) {
+        retryDelay = backoffDelays
+      }
+
+      log.info(`[Queue] Job ${jobId} will be retried in ${retryDelay}s (attempt ${currentAttempts}/${maxAttempts})`)
       try {
-        await releaseJob(jobId)
+        await releaseJob(jobId, retryDelay)
         log.info(`[Queue] Job ${jobId} released for retry`)
       }
       catch {
@@ -267,14 +305,7 @@ async function processJob(job: any, _driver: string): Promise<void> {
   }
 
   activeJobCount--
-}
-
-/**
- * Reserve a job (mark it as being processed)
- */
-async function reserveJob(_jobId: number, _attempts: number): Promise<void> {
-  // Job reservation is now handled atomically in fetchPendingJobs
-  // This function is kept for backward compatibility but is a no-op
+  tracker.markIdle(workerId)
 }
 
 /**
@@ -288,8 +319,8 @@ async function deleteJob(jobId: number): Promise<void> {
 /**
  * Release a job for retry
  */
-async function releaseJob(jobId: number): Promise<void> {
-  const retryAt = Math.floor(Date.now() / 1000) + 30 // Retry in 30 seconds
+async function releaseJob(jobId: number, delaySeconds: number = 30): Promise<void> {
+  const retryAt = Math.floor(Date.now() / 1000) + delaySeconds
   log.debug(`Releasing job ${jobId} for retry at ${retryAt}`)
 
   try {
@@ -352,10 +383,88 @@ async function executeJobPayload(payload: any): Promise<void> {
 }
 
 /**
+ * Process jobs from Redis using bun-queue's worker
+ */
+async function processJobsFromRedis(queueName: string, concurrency: number): Promise<void> {
+  const { RedisQueue } = await import('./drivers/redis')
+  const { queue: queueConfig } = await import('@stacksjs/config')
+  const redisConfig = (queueConfig as any)?.connections?.redis
+
+  if (!redisConfig) {
+    throw new Error('Redis queue connection is not configured. Check config/queue.ts')
+  }
+
+  const queue = new RedisQueue(queueName, redisConfig as any)
+
+  const { emitQueueEvent, getWorkerTracker } = await import('./events')
+  const tracker = getWorkerTracker()
+
+  queue.process(concurrency, async (bunJob: any) => {
+    activeJobCount++
+    tracker.markActive(workerId)
+    const startTime = Date.now()
+
+    await emitQueueEvent('job:processing', {
+      jobId: String(bunJob.id),
+      queueName,
+    })
+
+    try {
+      const data = bunJob.data
+      if (data?.jobName) {
+        const { runJob } = await import('./job')
+        await runJob(data.jobName, { payload: data.payload })
+      }
+      else if (data?.job && data.job.startsWith?.('App\\Jobs\\')) {
+        const jobName = data.job.replace('App\\Jobs\\', '')
+        const { runJob } = await import('./job')
+        await runJob(jobName, { payload: data.data })
+      }
+
+      tracker.recordCompletion(workerId)
+      await emitQueueEvent('job:completed', {
+        jobId: String(bunJob.id),
+        queueName,
+        duration: Date.now() - startTime,
+      })
+      log.info(`[Queue] Redis job ${bunJob.id} completed`)
+    }
+    catch (e) {
+      tracker.recordFailure(workerId)
+      await emitQueueEvent('job:failed', {
+        jobId: String(bunJob.id),
+        queueName,
+        error: e instanceof Error ? e : new Error(String(e)),
+        duration: Date.now() - startTime,
+      })
+      log.error(`[Queue] Redis job ${bunJob.id} failed: ${e}`)
+      throw e // Let bun-queue handle retries
+    }
+    finally {
+      activeJobCount--
+      tracker.markIdle(workerId)
+    }
+  })
+
+  log.info(`Listening for Redis jobs on queue "${queueName}" with concurrency ${concurrency}...`)
+
+  // Keep the worker alive
+  while (workerRunning) {
+    await sleep(1000)
+  }
+
+  await queue.close()
+}
+
+/**
  * Stop the queue processor
  */
 export async function stopProcessor(): Promise<void> {
   workerRunning = false
+  if (workerId) {
+    const { getWorkerTracker } = await import('./events')
+    getWorkerTracker().unregister(workerId)
+  }
   log.info('Queue processor stopped')
 }
 

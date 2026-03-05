@@ -1,16 +1,15 @@
 import type { QueueOption } from '@stacksjs/types'
-import { path } from '@stacksjs/path'
 
 export async function storeJob(name: string, options: QueueOption): Promise<void> {
-  const importedJob = (await import(path.appPath(`Jobs/${name}.ts`))).default
-
   const payloadJson = JSON.stringify({
-    path: `app/Jobs/${name}.ts`,
-    name,
-    timeout: null,
-    timeoutAt: null,
-    params: options.payload || {},
-    classPayload: JSON.stringify(importedJob),
+    jobName: name,
+    payload: options.payload || {},
+    options: {
+      queue: options.queue,
+      tries: options.maxTries,
+      timeout: options.timeout,
+      backoff: options.backoff,
+    },
   })
 
   const { db } = await import('@stacksjs/database')
@@ -18,7 +17,7 @@ export async function storeJob(name: string, options: QueueOption): Promise<void
   await db
     .insertInto('jobs')
     .values({
-      queue: options.queue,
+      queue: options.queue || 'default',
       payload: payloadJson,
       attempts: 0,
       available_at: generateUnixTimestamp(options.delay || 0),

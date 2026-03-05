@@ -5,6 +5,7 @@
  */
 
 import { log } from '@stacksjs/logging'
+import { getGlobalMetrics, getWorkerTracker } from './events'
 
 /**
  * Health status
@@ -75,64 +76,26 @@ export interface HealthAlert {
  * Health check configuration
  */
 export interface HealthCheckConfig {
-  /**
-   * Maximum pending jobs before degraded status
-   */
   maxPendingWarning?: number
-
-  /**
-   * Maximum pending jobs before unhealthy status
-   */
   maxPendingCritical?: number
-
-  /**
-   * Maximum failed jobs before degraded status
-   */
   maxFailedWarning?: number
-
-  /**
-   * Maximum failed jobs before unhealthy status
-   */
   maxFailedCritical?: number
-
-  /**
-   * Maximum job age in seconds before warning
-   */
   maxJobAgeWarning?: number
-
-  /**
-   * Maximum job age in seconds before critical
-   */
   maxJobAgeCritical?: number
-
-  /**
-   * Maximum error rate (0-1) before warning
-   */
   maxErrorRateWarning?: number
-
-  /**
-   * Maximum error rate (0-1) before critical
-   */
   maxErrorRateCritical?: number
-
-  /**
-   * Queues to include in health check
-   */
   queues?: string[]
 }
 
-/**
- * Default health check configuration
- */
 const defaultConfig: HealthCheckConfig = {
   maxPendingWarning: 1000,
   maxPendingCritical: 5000,
   maxFailedWarning: 10,
   maxFailedCritical: 100,
-  maxJobAgeWarning: 3600, // 1 hour
-  maxJobAgeCritical: 86400, // 24 hours
-  maxErrorRateWarning: 0.1, // 10%
-  maxErrorRateCritical: 0.5, // 50%
+  maxJobAgeWarning: 3600,
+  maxJobAgeCritical: 86400,
+  maxErrorRateWarning: 0.1,
+  maxErrorRateCritical: 0.5,
 }
 
 /**
@@ -145,13 +108,12 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
   const nowTimestamp = Math.floor(now.getTime() / 1000)
 
   try {
-    // Get all jobs and failed jobs from database
     const { db } = await import('@stacksjs/database')
     const jobs = await db.selectFrom('jobs').selectAll().execute() as any[]
     const failedJobs = await db.selectFrom('failed_jobs').selectAll().execute() as any[]
 
     // Group jobs by queue
-    const queueMap = new Map<string, { pending: number, processing: number, delayed: number, oldestAge?: number }>()
+    const queueMap = new Map<string, { pending: number; processing: number; delayed: number; oldestAge?: number }>()
 
     for (const job of jobs) {
       const queueName = job.queue || 'default'
@@ -171,7 +133,6 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
       else {
         stats.pending++
 
-        // Track oldest job age
         if (job.created_at) {
           const createdAt = typeof job.created_at === 'number'
             ? job.created_at
@@ -196,7 +157,6 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
     const queueStatuses: QueueStatus[] = []
     const allQueues = new Set([...queueMap.keys(), ...failedByQueue.keys()])
 
-    // Filter queues if specified
     const queuesToCheck = cfg.queues
       ? [...allQueues].filter(q => cfg.queues!.includes(q))
       : [...allQueues]
@@ -215,10 +175,8 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
       totalDelayed += stats.delayed
       totalFailed += failed
 
-      // Determine queue status
       let status: HealthStatus = 'healthy'
 
-      // Check pending jobs
       if (stats.pending >= cfg.maxPendingCritical!) {
         status = 'unhealthy'
         alerts.push({
@@ -229,7 +187,7 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
         })
       }
       else if (stats.pending >= cfg.maxPendingWarning!) {
-        status = status === 'healthy' ? 'degraded' : status
+        status = 'degraded'
         alerts.push({
           level: 'warning',
           message: `Queue "${queueName}" has ${stats.pending} pending jobs (threshold: ${cfg.maxPendingWarning})`,
@@ -238,7 +196,6 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
         })
       }
 
-      // Check failed jobs
       if (failed >= cfg.maxFailedCritical!) {
         status = 'unhealthy'
         alerts.push({
@@ -249,7 +206,7 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
         })
       }
       else if (failed >= cfg.maxFailedWarning!) {
-        status = status === 'healthy' ? 'degraded' : status
+        if (status === 'healthy') status = 'degraded'
         alerts.push({
           level: 'warning',
           message: `Queue "${queueName}" has ${failed} failed jobs (threshold: ${cfg.maxFailedWarning})`,
@@ -258,7 +215,6 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
         })
       }
 
-      // Check oldest job age
       if (stats.oldestAge) {
         if (stats.oldestAge >= cfg.maxJobAgeCritical!) {
           status = 'unhealthy'
@@ -270,7 +226,7 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
           })
         }
         else if (stats.oldestAge >= cfg.maxJobAgeWarning!) {
-          status = status === 'healthy' ? 'degraded' : status
+          if (status === 'healthy') status = 'degraded'
           alerts.push({
             level: 'warning',
             message: `Queue "${queueName}" has a job waiting for ${Math.floor(stats.oldestAge / 60)} minutes`,
@@ -291,7 +247,13 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
       })
     }
 
-    // Calculate overall metrics
+    // Get real metrics from the global QueueMetrics instance
+    const metrics = getGlobalMetrics()
+    const metricsData = metrics.getMetrics()
+    const throughputPerMinute = metricsData.throughputPerMinute
+    const averageProcessingTime = metricsData.averageDuration
+
+    // Calculate error rate from database counts
     const totalJobs = totalPending + totalProcessing + totalDelayed + totalFailed
     const errorRate = totalJobs > 0 ? totalFailed / totalJobs : 0
 
@@ -304,7 +266,6 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
       overallStatus = 'degraded'
     }
 
-    // Check overall error rate
     if (errorRate >= cfg.maxErrorRateCritical!) {
       overallStatus = 'unhealthy'
       alerts.push({
@@ -314,7 +275,7 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
       })
     }
     else if (errorRate >= cfg.maxErrorRateWarning!) {
-      overallStatus = overallStatus === 'healthy' ? 'degraded' : overallStatus
+      if (overallStatus === 'healthy') overallStatus = 'degraded'
       alerts.push({
         level: 'warning',
         message: `Overall error rate is ${(errorRate * 100).toFixed(1)}% (threshold: ${cfg.maxErrorRateWarning! * 100}%)`,
@@ -322,18 +283,29 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
       })
     }
 
+    // Get real worker statuses from the tracker
+    const trackedWorkers = getWorkerTracker().getAll()
+    const workerStatuses: WorkerStatus[] = trackedWorkers.map(w => ({
+      id: w.id,
+      status: w.status,
+      queue: w.queue,
+      processedCount: w.processedCount,
+      failedCount: w.failedCount,
+      lastActivityAt: w.lastActivityAt,
+    }))
+
     return {
       status: overallStatus,
       timestamp: now.toISOString(),
       queues: queueStatuses,
-      workers: [], // TODO: Implement worker status tracking
+      workers: workerStatuses,
       metrics: {
         totalPending,
         totalProcessing,
         totalDelayed,
         totalFailed,
-        throughputPerMinute: 0, // TODO: Calculate from metrics
-        averageProcessingTime: 0, // TODO: Calculate from metrics
+        throughputPerMinute,
+        averageProcessingTime,
         errorRate,
       },
       alerts,
@@ -342,11 +314,22 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
   catch (error) {
     log.error('Failed to perform queue health check:', error)
 
+    // Still return worker data even if DB is down
+    const trackedWorkers = getWorkerTracker().getAll()
+    const workerStatuses: WorkerStatus[] = trackedWorkers.map(w => ({
+      id: w.id,
+      status: w.status,
+      queue: w.queue,
+      processedCount: w.processedCount,
+      failedCount: w.failedCount,
+      lastActivityAt: w.lastActivityAt,
+    }))
+
     return {
       status: 'unhealthy',
       timestamp: now.toISOString(),
       queues: [],
-      workers: [],
+      workers: workerStatuses,
       metrics: {
         totalPending: 0,
         totalProcessing: 0,

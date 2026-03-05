@@ -4,7 +4,6 @@
  * Sends notifications when jobs fail via various channels.
  */
 
-import type { JobOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 
 /**
@@ -136,8 +135,8 @@ export class FailedJobNotifier {
       this.pendingBatch.push(job)
 
       if (!this.batchTimeout) {
-        this.batchTimeout = setTimeout(() => {
-          this.flushBatch()
+        this.batchTimeout = setTimeout(async () => {
+          await this.flushBatch()
         }, this.config.batchInterval || 60000)
       }
 

@@ -6,9 +6,6 @@
  */
 
 import { appPath } from '@stacksjs/path'
-import process from 'node:process'
-
-// Environment variables
 import { env as envVars } from '@stacksjs/env'
 
 function getQueueDriver(): string {
@@ -96,20 +93,44 @@ class JobBuilder {
    * Dispatch the job to the queue
    */
   async dispatch(): Promise<void> {
+    // Check if queue is faked (testing mode)
+    const { isFaked, getFakeQueue } = await import('./testing')
+    if (isFaked()) {
+      getFakeQueue()?.dispatch(this.name, this.payload, this.options as any)
+      return
+    }
+
     const driver = getQueueDriver()
 
     if (driver === 'database') {
-      // Queue to database
       await this.dispatchToDatabase()
     }
+    else if (driver === 'redis') {
+      await this.dispatchToRedis()
+    }
     else if (driver === 'sync') {
-      // Run immediately (sync driver)
       await runJob(this.name, { payload: this.payload, context: this.options.context })
     }
     else {
-      // Default to sync for unsupported drivers
-      console.warn(`[JobBuilder] Unsupported queue driver: ${driver}, falling back to sync`)
       await runJob(this.name, { payload: this.payload, context: this.options.context })
+    }
+  }
+
+  /**
+   * Dispatch only if the condition is true
+   */
+  async dispatchIf(condition: boolean): Promise<void> {
+    if (condition) {
+      await this.dispatch()
+    }
+  }
+
+  /**
+   * Dispatch unless the condition is true
+   */
+  async dispatchUnless(condition: boolean): Promise<void> {
+    if (!condition) {
+      await this.dispatch()
     }
   }
 
@@ -126,24 +147,47 @@ class JobBuilder {
       options: this.options,
     }
 
-    const payload = JSON.stringify(payloadObj)
-    const queue = this.options.queue || 'default'
-    const createdAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
-
-    // Use the configured database driver
     const { db } = await import('@stacksjs/database')
 
     await db
       .insertInto('jobs')
       .values({
-        queue,
-        payload,
+        queue: this.options.queue || 'default',
+        payload: JSON.stringify(payloadObj),
         attempts: 0,
         reserved_at: null,
         available_at: availableAt,
-        created_at: createdAt,
+        created_at: new Date().toISOString().slice(0, 19).replace('T', ' '),
       })
       .execute()
+  }
+
+  /**
+   * Dispatch the job to Redis via bun-queue
+   */
+  private async dispatchToRedis(): Promise<void> {
+    const { RedisQueue } = await import('./drivers/redis')
+    const { queue: queueConfig } = await import('@stacksjs/config')
+    const redisConfig = (queueConfig as any)?.connections?.redis
+
+    if (!redisConfig) {
+      throw new Error('Redis queue connection is not configured. Check config/queue.ts')
+    }
+
+    const queue = new RedisQueue(this.options.queue || 'default', redisConfig as any)
+
+    await queue.add(
+      {
+        jobName: this.name,
+        payload: this.payload,
+      } as any,
+      {
+        delay: this.options.delay,
+        maxTries: this.options.tries,
+        timeout: this.options.timeout,
+        backoff: this.options.backoff,
+      },
+    )
   }
 
   /**
