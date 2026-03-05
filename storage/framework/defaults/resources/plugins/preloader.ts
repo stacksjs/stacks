@@ -50,7 +50,7 @@ if (!skipPreloader) {
 // This allows using Action, response, Activity, etc. without ANY imports
 async function loadAutoImports() {
   const { Glob } = await import('bun')
-  const { path } = await import('@stacksjs/path')
+  const path = await import('@stacksjs/path')
 
   // CRITICAL: Never overwrite these built-in globals
   const protectedGlobals = new Set([

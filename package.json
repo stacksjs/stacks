@@ -56,8 +56,7 @@
     "test:coverage": "./buddy test:coverage",
     "test:types": "./buddy test:types",
     "bud": "./buddy",
-    "stx": "./buddy",
-    "postinstall": "bun scripts/postinstall.ts"
+    "stx": "./buddy"
   },
   "dependencies": {
     "@stacksjs/ts-cloud": "0.1.11",

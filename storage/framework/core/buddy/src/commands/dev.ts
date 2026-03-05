@@ -60,35 +60,50 @@ export function dev(buddy: CLI): void {
       // if (result.isErr)
       //   log.warn('While checking if port 443 is open, we noticed it may be in use')
 
-      switch (server) {
-        case 'frontend':
-          await runFrontendDevServer(options)
-          break
-        case 'api':
-          await runApiDevServer(options)
-          break
-        case 'components':
-          await runComponentsDevServer(options)
-          break
-        case 'dashboard':
-          await runDashboardDevServer(options)
-          break
-        case 'desktop':
-          await runDesktopDevServer(options)
-          break
-        case 'system-tray':
-          await runSystemTrayDevServer(options)
-          break
-        // case 'email':
-        //   await runEmailDevServer(options)
-        //   break
-        case 'docs':
-          await runDocsDevServer(options)
-          break
-        default:
-      }
+      // Determine the target server from positional arg or flags
+      const target = server
+        || (options.frontend ? 'frontend' : undefined)
+        || (options.api ? 'api' : undefined)
+        || (options.components ? 'components' : undefined)
+        || ((options as any).dashboard ? 'dashboard' : undefined)
+        || (options.desktop ? 'desktop' : undefined)
+        || ((options as any).systemTray || (options as any)['system-tray'] ? 'system-tray' : undefined)
+        || (options.docs ? 'docs' : undefined)
 
-      if (wantsInteractive(options)) {
+      if (target) {
+        // Run only the requested server (pass verbose to prevent output suppression)
+        const serverOptions = { ...options, verbose: true }
+        switch (target) {
+          case 'frontend':
+            await runFrontendDevServer(serverOptions)
+            break
+          case 'api':
+            await runApiDevServer(serverOptions)
+            break
+          case 'components':
+            await runComponentsDevServer(serverOptions)
+            break
+          case 'dashboard':
+            await runDashboardDevServer(serverOptions)
+            break
+          case 'desktop':
+            await runDesktopDevServer(serverOptions)
+            break
+          case 'system-tray':
+            await runSystemTrayDevServer(serverOptions)
+            break
+          // case 'email':
+          //   await runEmailDevServer(serverOptions)
+          //   break
+          case 'docs':
+            await runDocsDevServer(serverOptions)
+            break
+          default:
+            log.error(`Unknown server: ${target}`)
+            process.exit(ExitCode.InvalidArgument)
+        }
+      }
+      else if (wantsInteractive(options)) {
         const answer = await (prompts as any)({
           type: 'select',
           name: 'value',
@@ -127,19 +142,9 @@ export function dev(buddy: CLI): void {
         }
       }
       else {
-        if (options.components)
-          await runComponentsDevServer(options)
-        else if ((options as any).dashboard)
-          await runDashboardDevServer(options)
-        else if (options.docs)
-          await runDocsDevServer(options)
-        else if (options.api)
-          await runApiDevServer(options)
-        // else if (options.email)
-        //   await runEmailDevServer(options)
+        // No specific server requested - start everything
+        await startDevelopmentServer(options, perf)
       }
-
-      await startDevelopmentServer(options, perf)
 
       outro('Exited', { startTime: perf, useSeconds: true })
       process.exit(ExitCode.Success)

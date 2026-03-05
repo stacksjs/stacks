@@ -114,13 +114,13 @@ async function discoverModels(): Promise<Array<{ name: string, icon: string, id:
 // Get discovered models
 const discoveredModels = await discoverModels()
 
-if (verbose) log.info('Starting Stacks Dashboard...')
+log.info('Starting Stacks Dashboard...')
 if (verbose) log.info(`Dashboard path: ${dashboardPath}`)
 
 // Start STX dev server for the dashboard
 const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
 
-if (verbose) log.info(`Starting STX dev server on http://localhost:${dashboardPort}...`)
+log.info(`Starting dashboard dev server on http://localhost:${dashboardPort}...`)
 
 let serverStarted = false
 
@@ -147,7 +147,7 @@ try {
   // Give the server a moment to start
   await new Promise(resolve => setTimeout(resolve, 500))
   serverStarted = true
-  if (verbose) log.success(`STX dev server running on http://localhost:${dashboardPort}`)
+  log.success(`Dashboard dev server running on http://localhost:${dashboardPort}`)
 }
 catch (err: any) {
   if (verbose) log.warn(`STX server warning: ${err.message || err}`)
@@ -180,11 +180,9 @@ for (const craftPath of craftPaths) {
 }
 
 if (!craftBinary) {
-  if (verbose) {
-    log.warn('Craft binary not found. Running STX server only.')
-    log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
-    log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
-  }
+  log.info('Craft binary not found. Running web server only.')
+  log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
+  if (verbose) log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
 
   // Keep the process running since we're serving via STX
   await new Promise(() => {}) // Block forever
