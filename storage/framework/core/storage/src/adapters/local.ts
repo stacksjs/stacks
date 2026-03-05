@@ -31,7 +31,12 @@ export class LocalStorageAdapter implements StorageAdapter {
   }
 
   private resolvePath(path: string): string {
-    return join(this.root, path)
+    const resolved = join(this.root, path)
+    // Prevent path traversal outside root directory
+    if (!resolved.startsWith(this.root)) {
+      throw new Error(`Path traversal detected: '${path}' resolves outside storage root`)
+    }
+    return resolved
   }
 
   async write(path: string, contents: FileContents): Promise<void> {
@@ -169,8 +174,11 @@ export class LocalStorageAdapter implements StorageAdapter {
         }
       }
     }
-    catch (error) {
-      // Skip directories that can't be read
+    catch (error: any) {
+      // Only skip permission errors — propagate other failures
+      if (error?.code !== 'EACCES' && error?.code !== 'EPERM') {
+        throw error
+      }
     }
 
     return entries

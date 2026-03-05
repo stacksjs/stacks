@@ -85,7 +85,11 @@ export const manageCustomer: ManageCustomer = (() => {
     }
 
     try {
-      const deletedCustomer = await stripe.customers.del(user.stripe_id || '')
+      if (!user.stripe_id) {
+        throw new Error('User has no Stripe ID')
+      }
+
+      const deletedCustomer = await stripe.customers.del(user.stripe_id)
 
       // Update the user model to remove the Stripe ID
       await user.update({ stripe_id: '' })
@@ -106,7 +110,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
 
     try {
-      const customer = await stripe.customers.retrieve(user.stripe_id || '')
+      const customer = await stripe.customers.retrieve(user.stripe_id!)
       if ((customer as Stripe.DeletedCustomer).deleted) {
         throw new Error('Customer was deleted')
       }
@@ -127,7 +131,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
 
     try {
-      const customer = await stripe.customers.retrieve(user.stripe_id || '')
+      const customer = await stripe.customers.retrieve(user.stripe_id!)
 
       if ((customer as Stripe.DeletedCustomer).deleted) {
         throw new Error('Customer was deleted in Stripe')
@@ -149,7 +153,7 @@ export const manageCustomer: ManageCustomer = (() => {
     }
 
     try {
-      const customer = await stripe.customers.retrieve(user.stripe_id || '')
+      const customer = await stripe.customers.retrieve(user.stripe_id!)
       if ((customer as Stripe.DeletedCustomer).deleted) {
         return await createStripeCustomer(user, options)
       }

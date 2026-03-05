@@ -106,16 +106,26 @@ export default function mitt<Events extends Record<EventType, unknown>>(
 
       if (handlers) {
         ;(handlers as EventHandlerList<Events[keyof Events]>).slice().forEach((handler) => {
-          if (evt !== undefined)
-            handler(evt)
+          try {
+            if (evt !== undefined)
+              handler(evt)
+          }
+          catch (err) {
+            console.error(`[Events] Handler error for '${String(type)}':`, err)
+          }
         })
       }
       handlers = (all as EventHandlerMap<Events>).get('*')
 
       if (handlers) {
         ;(handlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
-          if (evt !== undefined)
-            handler(type, evt)
+          try {
+            if (evt !== undefined)
+              handler(type, evt)
+          }
+          catch (err) {
+            console.error(`[Events] Wildcard handler error for '${String(type)}':`, err)
+          }
         })
       }
     },

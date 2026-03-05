@@ -8,6 +8,8 @@
  * ```
  */
 export function average(arr: number[]): number {
+  if (arr.length === 0)
+    throw new Error('Cannot compute average of an empty array')
   return sum(arr) / arr.length
 }
 
@@ -64,7 +66,24 @@ export function median(arr: number[]): number {
  * ```
  */
 export function mode(arr: number[]): number {
-  return arr.sort((a, b) => arr.filter(v => v === a).length - arr.filter(v => v === b).length).pop() as number
+  if (arr.length === 0)
+    throw new Error('Cannot compute mode of an empty array')
+
+  const counts = new Map<number, number>()
+  for (const v of arr) {
+    counts.set(v, (counts.get(v) || 0) + 1)
+  }
+
+  let maxCount = 0
+  let result = arr[0] as number
+  for (const [value, count] of counts) {
+    if (count > maxCount) {
+      maxCount = count
+      result = value
+    }
+  }
+
+  return result
 }
 
 /**
@@ -104,6 +123,8 @@ export function product(array: readonly number[]): number {
  * ```
  */
 export function min(array: readonly number[]): number {
+  if (array.length === 0)
+    throw new Error('Cannot compute min of an empty array')
   return Math.min(...array)
 }
 
@@ -118,6 +139,8 @@ export function min(array: readonly number[]): number {
  * ```
  */
 export function max(array: readonly number[]): number {
+  if (array.length === 0)
+    throw new Error('Cannot compute max of an empty array')
   return Math.max(...array)
 }
 

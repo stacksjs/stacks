@@ -62,6 +62,15 @@ export const request = new Proxy({} as EnhancedRequest, {
       if (prop === 'tokenCan' || prop === 'tokenCant') {
         return async () => false
       }
+      if (prop === 'headers') {
+        return new Headers()
+      }
+      if (prop === 'url') {
+        return ''
+      }
+      if (prop === 'method') {
+        return 'GET'
+      }
       return undefined
     }
 

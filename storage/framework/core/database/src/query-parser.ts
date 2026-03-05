@@ -112,8 +112,8 @@ function normalizeQuery(sql: string): string {
   try {
     let normalizedSql = sql
 
-    // Replace numeric literals with ?
-    normalizedSql = normalizedSql.replace(/\b\d+\b/g, '?')
+    // Replace numeric literals with ? (but not in column/table names like user_id)
+    normalizedSql = normalizedSql.replace(/(?<![a-zA-Z_])\b\d+\b(?![a-zA-Z_])/g, '?')
 
     // Replace string literals with ?
     normalizedSql = normalizedSql.replace(/'([^']|'')*'/g, '?')

@@ -8,20 +8,12 @@ export interface PriceManager {
 
 export const managePrice: PriceManager = (() => {
   async function retrieveByLookupKey(lookupKey: string): Promise<Stripe.Price | undefined> {
-    try {
-      const prices = await stripe.prices.list({ lookup_keys: [lookupKey] })
+    const prices = await stripe.prices.list({ lookup_keys: [lookupKey] })
 
-      if (!prices.data.length)
-        return undefined
-
-      const price = prices.data[0]
-
-      return price
-    }
-    catch (error) {
-      console.error('Error retrieving price from Stripe:', error)
+    if (!prices.data.length)
       return undefined
-    }
+
+    return prices.data[0]
   }
 
   async function createOrGet(

@@ -13,8 +13,12 @@ export const manageCheckout: Checkout = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
+    if (!user.stripe_id) {
+      throw new Error('User has no Stripe ID')
+    }
+
     const defaultParams: Partial<Stripe.Checkout.SessionCreateParams> = {
-      customer: user.stripe_id || '',
+      customer: user.stripe_id,
       mode: 'payment',
       success_url: params.success_url,
       cancel_url: params.cancel_url,

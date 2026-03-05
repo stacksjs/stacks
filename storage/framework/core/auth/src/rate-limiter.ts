@@ -42,20 +42,24 @@ export class RateLimiter {
       return false
     }
 
-    if (userAttempts.lockedUntil > now)
+    // Currently locked out
+    if (userAttempts.lockedUntil > 0)
       return true
-
-    if (userAttempts.attempts >= MAX_ATTEMPTS) {
-      attemptStore.set(email, { attempts: 0, lockedUntil: now + LOCKOUT_DURATION })
-      return true
-    }
 
     return false
   }
 
   static recordFailedAttempt(email: string): void {
+    const now = Date.now()
     const userAttempts = attemptStore.get(email) || { attempts: 0, lockedUntil: 0 }
     userAttempts.attempts++
+
+    // Lock out after reaching max attempts
+    if (userAttempts.attempts >= MAX_ATTEMPTS) {
+      userAttempts.lockedUntil = now + LOCKOUT_DURATION
+      userAttempts.attempts = 0
+    }
+
     attemptStore.set(email, userAttempts)
   }
 

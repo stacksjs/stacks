@@ -13,8 +13,12 @@ export const manageInvoice: ManageInvoice = (() => {
       throw new Error('Customer does not exist in Stripe')
     }
 
+    if (!user.stripe_id) {
+      throw new Error('User has no Stripe ID')
+    }
+
     const invoices = await stripe.invoices.list({
-      customer: user?.stripe_id || '',
+      customer: user.stripe_id,
       expand: ['data.payment_intent.payment_method'],
     })
 

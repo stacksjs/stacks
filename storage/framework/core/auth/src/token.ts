@@ -117,7 +117,10 @@ export class TokenManager {
    * Contains user ID, timestamps, and random signature for security
    */
   static generateJWT(userId: number): string {
-    const appKey = process.env.APP_KEY || 'stacks-default-key'
+    const appKey = process.env.APP_KEY
+    if (!appKey) {
+      throw new Error('APP_KEY is not set. JWT tokens cannot be generated without a secure application key.')
+    }
 
     const header = {
       alg: 'HS256',

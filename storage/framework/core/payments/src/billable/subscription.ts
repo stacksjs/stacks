@@ -74,7 +74,10 @@ export const manageSubscription: SubscriptionManager = (() => {
     if (!activeSubscription)
       throw new Error('No active subscription for user!')
 
-    const subscriptionId = activeSubscription.subscription?.provider_id || ''
+    const subscriptionId = activeSubscription.subscription?.provider_id
+    if (!subscriptionId) {
+      throw new Error('Active subscription has no provider ID')
+    }
 
     const subscription = await stripe.subscriptions.retrieve(subscriptionId)
 
@@ -95,7 +98,11 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const updatedSubscription = await stripe.subscriptions.retrieve(subscriptionId)
 
-    await updateSubscription(activeSubscription.subscription?.id as number, type, updatedSubscription)
+    if (!activeSubscription.subscription?.id) {
+      throw new Error('Active subscription has no database ID')
+    }
+
+    await updateSubscription(activeSubscription.subscription.id, type, updatedSubscription)
 
     return updatedSubscription
   }

@@ -103,6 +103,11 @@ export class S3StorageAdapter implements StorageAdapter {
   async readToString(path: string): Promise<string> {
     const key = this.prefixPath(path)
     const response = await this.client.getObject(this.bucket, key)
+
+    if (!response) {
+      throw new Error(`Failed to read file: ${path}`)
+    }
+
     return response
   }
 

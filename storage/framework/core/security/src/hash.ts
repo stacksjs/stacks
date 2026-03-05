@@ -159,7 +159,7 @@ export function needsRehash(hash: string, options?: HashMakeOptions): boolean {
   // Check parameters for argon2
   if (currentAlgorithm.startsWith('argon2')) {
     const configuredMemory = options?.memory || config.argon2?.memory || 65536
-    const configuredTime = options?.time || config.argon2?.time || 1
+    const configuredTime = options?.time || config.argon2?.time || 2
 
     if (hashInfo.options.memory !== configuredMemory || hashInfo.options.rounds !== configuredTime) {
       return true

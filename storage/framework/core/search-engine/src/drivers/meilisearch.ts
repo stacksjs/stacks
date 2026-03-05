@@ -12,7 +12,6 @@ function client(): Meilisearch {
     const apiKey = searchEngine.meilisearch?.apiKey || ''
 
     if (!host) {
-      log.error('Please specify a search engine host.')
       throw new Error('Meilisearch host is not configured. Please specify a search engine host.')
     }
 
@@ -22,14 +21,23 @@ function client(): Meilisearch {
   return _client
 }
 
+/**
+ * Reset the cached client (useful for reconfiguration or testing)
+ */
+function resetClient(): void {
+  _client = null
+}
+
 async function search(index: string, params: any): Promise<SearchResponse<Record<string, any>>> {
-  const offsetVal = ((params.page - 1) * params.perPage) || 0
+  const page = Number(params.page) || 1
+  const perPage = Number(params.perPage) || 20
+  const offsetVal = (page - 1) * perPage
   const filter = convertToFilter(params.filter)
   const sort = convertToMeilisearchSorting(params.sort)
 
   return await client()
     .index(index)
-    .search(params.query, { limit: params.perPage, filter, sort, offset: offsetVal })
+    .search(params.query, { limit: perPage, filter, sort, offset: offsetVal })
 }
 
 async function addDocument(indexName: string, params: any): Promise<EnqueuedTask> {
@@ -225,13 +233,16 @@ async function resetDictionary(index: string): Promise<EnqueuedTask> {
 }
 
 function convertToFilter(jsonData: any): string[] {
+  if (!jsonData) return []
+
   const filters: string[] = []
 
   for (const key in jsonData) {
     if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
       const value = jsonData[key]
-      const filter = `${key}='${value}'`
-      filters.push(filter)
+      // Escape single quotes in values to prevent filter injection
+      const escaped = String(value).replace(/'/g, "\\'")
+      filters.push(`${key}='${escaped}'`)
     }
   }
 
@@ -239,21 +250,24 @@ function convertToFilter(jsonData: any): string[] {
 }
 
 function convertToMeilisearchSorting(jsonData: any): string[] {
-  const filters: string[] = []
+  if (!jsonData) return []
+
+  const sortRules: string[] = []
 
   for (const key in jsonData) {
     if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
-      const value = jsonData[key]
-      const filter = `${key}='${value}'`
-      filters.push(filter)
+      const value = String(jsonData[key]).toLowerCase()
+      const direction = value === 'desc' ? 'desc' : 'asc'
+      sortRules.push(`${key}:${direction}`)
     }
   }
 
-  return filters
+  return sortRules
 }
 
 const meilisearch: SearchEngineDriver = {
   client,
+  resetClient,
   search,
 
   getIndex,

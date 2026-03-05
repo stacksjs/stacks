@@ -761,13 +761,13 @@ export class Auth {
       return false
 
     const user = await User.where('email', '=', email).first()
-    if (!user?.password)
-      return false
-
     const authPass = credentials[password] || ''
-    const hashCheck = await verifyHash(authPass, user.password)
 
-    if (hashCheck) {
+    // Always run hash verification to prevent timing-based user enumeration
+    const hashToVerify = user?.password || '$2b$12$invalidhashplaceholdervalue000000000000000000000'
+    const hashCheck = await verifyHash(authPass, hashToVerify)
+
+    if (hashCheck && user) {
       this.authUser = user
       return true
     }

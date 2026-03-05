@@ -116,21 +116,16 @@ export async function execSync(command: string | string[], options?: CliOptions)
 
 function exitHandler(
   type: 'spawn' | 'spawnSync',
-  subprocess: Subprocess,
+  _subprocess: Subprocess,
   exitCode: number | null,
   signalCode: number | null,
   error?: Error,
 ) {
-  log.debug(`exitHandler: ${type}`)
-  log.debug('subprocess', subprocess)
-  log.debug('exitCode', exitCode)
-  log.debug('signalCode', signalCode)
+  log.debug(`exitHandler: ${type}, exitCode: ${exitCode}, signalCode: ${signalCode}`)
 
   if (error) {
-    log.error(error)
-    throw error
+    // Log but don't throw — onExit callbacks can't propagate exceptions.
+    // The caller checks proc.exited for the exit code instead.
+    log.debug('Process error:', error.message)
   }
-
-  if (exitCode !== ExitCode.Success && exitCode)
-    throw new Error(`Command exited with code ${exitCode}`)
 }
