@@ -6,7 +6,7 @@
 export {}
 
 /* prettier-ignore */
-declare module 'vue' {
+declare module '@stacksjs/stx' {
   export interface GlobalComponents {
     ActivePlan: typeof import('./../defaults/components/Dashboard/Billing/ActivePlan.vue')['default']
     ActivityFeed: typeof import('./../defaults/components/Dashboard/Deployments/ActivityFeed.vue')['default']

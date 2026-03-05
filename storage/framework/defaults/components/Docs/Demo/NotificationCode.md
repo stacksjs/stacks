@@ -1,6 +1,6 @@
 ```vue
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 import { Notification, notification } from '@stacksjs/notification'
 
 type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'

@@ -1,6 +1,6 @@
 ```vue
 <script setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from '@stacksjs/stx'
 import { Stepper } from '@stacksjs/stepper'
 
 const currentStep = ref(0)

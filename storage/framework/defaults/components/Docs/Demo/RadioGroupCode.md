@@ -1,6 +1,6 @@
 ```vue
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 import { RadioGroup, RadioGroupLabel, RadioGroupOption, RadioGroupDescription } from '@stacksjs/radio-group'
 
 const plans = [

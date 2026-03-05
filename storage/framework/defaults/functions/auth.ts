@@ -1,7 +1,7 @@
-import type { Ref } from 'vue'
+import type { Ref } from '@stacksjs/stx'
 import type { AuthUser, ErrorResponse, LoginError, LoginResponse, MeResponse, RegisterError, RegisterResponse, UserData } from '../types/dashboard'
 import { useStorage } from '@stacksjs/browser'
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 const token = useStorage('token', '')
 const user = useStorage<UserData | null>('user', null, undefined, {

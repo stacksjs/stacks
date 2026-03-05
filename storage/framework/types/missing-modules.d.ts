@@ -16,59 +16,13 @@ declare module 'ts-broadcasting' {
   export type ServerConfig = any
 }
 
-// ============================================================================
-// UI (not installed — optional Vue UI components)
-// ============================================================================
-
-declare module '@headlessui/vue' {
-  import type { Component } from 'vue'
-  export const Dialog: Component
-  export const DialogPanel: Component
-  export const DialogTitle: Component
-  export const DialogDescription: Component
-  export const Menu: Component
-  export const MenuButton: Component
-  export const MenuItems: Component
-  export const MenuItem: Component
-  export const Transition: Component
-  export const TransitionChild: Component
-  export const TransitionRoot: Component
-  export const Listbox: Component
-  export const ListboxButton: Component
-  export const ListboxOptions: Component
-  export const ListboxOption: Component
-  export const Switch: Component
-  export const SwitchGroup: Component
-  export const SwitchLabel: Component
-  export const Tab: Component
-  export const TabGroup: Component
-  export const TabList: Component
-  export const TabPanel: Component
-  export const TabPanels: Component
-  export const Disclosure: Component
-  export const DisclosureButton: Component
-  export const DisclosurePanel: Component
-  export const Popover: Component
-  export const PopoverButton: Component
-  export const PopoverPanel: Component
-  export const RadioGroup: Component
-  export const RadioGroupLabel: Component
-  export const RadioGroupOption: Component
-  export const RadioGroupDescription: Component
-  export const Combobox: Component
-  export const ComboboxInput: Component
-  export const ComboboxButton: Component
-  export const ComboboxOptions: Component
-  export const ComboboxOption: Component
-}
-
-declare module 'headwind' {
-  export type HeadwindOptions = any
+declare module 'crosswind' {
+  export type CrosswindOptions = any
   const content: any
   export default content
 }
 
-declare module '@stacksjs/headwind' {
+declare module '@cwcss/crosswind' {
   const content: any
   export default content
 }

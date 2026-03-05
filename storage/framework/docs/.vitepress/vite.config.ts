@@ -31,8 +31,7 @@ export default defineConfig({
     alias,
 
     dedupe: [
-      'vue',
-      '@vue/runtime-core',
+      '@stacksjs/stx',
     ],
   },
 

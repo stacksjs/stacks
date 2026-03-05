@@ -3,4 +3,4 @@ export {
   ComboboxInput,
   ComboboxOption,
   ComboboxOptions,
-} from '@headlessui/vue'
+} from '@stacksjs/stx'

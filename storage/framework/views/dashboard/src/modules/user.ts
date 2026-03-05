@@ -1,4 +1,4 @@
-import type { App } from 'vue'
+import type { App } from '@stacksjs/stx'
 import type { Router } from 'vue-router'
 import { useAuth } from '../../../../defaults/functions/auth'
 

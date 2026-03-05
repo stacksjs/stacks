@@ -24,7 +24,7 @@ import {
   ListboxButton,
   ListboxOptions,
   ListboxOption,
-} from '@headlessui/vue'
+} from '@stacksjs/stx'
 
 ChartJS.register(
   CategoryScale,

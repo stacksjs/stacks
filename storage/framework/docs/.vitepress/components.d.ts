@@ -6,7 +6,7 @@
 export {}
 
 /* prettier-ignore */
-declare module 'vue' {
+declare module '@stacksjs/stx' {
   export interface GlobalComponents {
     ComboboxDemo: typeof import('./../../defaults/components/Docs/Demo/ComboboxDemo.vue')['default']
     DialogDemo: typeof import('./../../defaults/components/Docs/Demo/DialogDemo.vue')['default']

@@ -4,8 +4,8 @@ definePageMeta({
   layout: 'default'
 })
 
-const { ref, computed, onMounted } = await import('vue')
-const { useHead } = await import('@vueuse/head')
+const { ref, computed, onMounted } = await import('@stacksjs/stx')
+const { useHead } = await import('@stacksjs/stx')
 const { useRouter } = await import('vue-router')
 const { Line, Bar, Doughnut } = await import('vue-chartjs')
 const {

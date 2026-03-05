@@ -1,4 +1,4 @@
-import { createApp } from 'vue'
+import { createApp } from '@stacksjs/stx'
 // import Previewer from 'virtual:vue-component-preview'
 import Demo from '../../../../../resources/components/Playground.stx'
 

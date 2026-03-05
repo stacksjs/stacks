@@ -1,6 +1,6 @@
 ```vue
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 import {
   Listbox,
   ListboxButton,

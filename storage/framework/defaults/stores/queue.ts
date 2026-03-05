@@ -1,5 +1,5 @@
-import type { Ref } from 'vue'
-import { ref } from 'vue'
+import type { Ref } from '@stacksjs/stx'
+import { ref } from '@stacksjs/stx'
 
 interface Queue {
   id?: number

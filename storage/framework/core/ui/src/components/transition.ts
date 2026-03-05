@@ -1,1 +1,1 @@
-export { TransitionChild, TransitionRoot } from '@headlessui/vue'
+export { TransitionChild, TransitionRoot } from '@stacksjs/stx'

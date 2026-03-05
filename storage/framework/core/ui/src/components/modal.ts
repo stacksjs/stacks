@@ -3,4 +3,4 @@ export {
   DialogDescription,
   DialogPanel,
   DialogTitle,
-} from '@headlessui/vue'
+} from '@stacksjs/stx'

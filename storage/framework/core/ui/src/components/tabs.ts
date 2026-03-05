@@ -1,1 +1,1 @@
-export { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@headlessui/vue'
+export { Tab, TabGroup, TabList, TabPanel, TabPanels } from '@stacksjs/stx'

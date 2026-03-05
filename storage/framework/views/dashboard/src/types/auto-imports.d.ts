@@ -6,18 +6,18 @@
 // biome-ignore lint: disable
 export {}
 declare global {
-  const EffectScope: typeof import('vue').EffectScope
+  const EffectScope: typeof import('@stacksjs/stx').EffectScope
   const asyncComputed: typeof import('@vueuse/core').asyncComputed
   const authGuard: typeof import('../../../../defaults/functions/auth').authGuard
   const autoResetRef: typeof import('@vueuse/core').autoResetRef
-  const computed: typeof import('vue').computed
+  const computed: typeof import('@stacksjs/stx').computed
   const computedAsync: typeof import('@vueuse/core').computedAsync
   const computedEager: typeof import('@vueuse/core').computedEager
   const computedInject: typeof import('@vueuse/core').computedInject
   const computedWithControl: typeof import('@vueuse/core').computedWithControl
   const controlledComputed: typeof import('@vueuse/core').controlledComputed
   const controlledRef: typeof import('@vueuse/core').controlledRef
-  const createApp: typeof import('vue').createApp
+  const createApp: typeof import('@stacksjs/stx').createApp
   const createEventHook: typeof import('@vueuse/core').createEventHook
   const createGlobalState: typeof import('@vueuse/core').createGlobalState
   const createInjectionState: typeof import('@vueuse/core').createInjectionState
@@ -28,97 +28,97 @@ declare global {
   const createSharedComposable: typeof import('@vueuse/core').createSharedComposable
   const createTemplatePromise: typeof import('@vueuse/core').createTemplatePromise
   const createUnrefFn: typeof import('@vueuse/core').createUnrefFn
-  const customRef: typeof import('vue').customRef
+  const customRef: typeof import('@stacksjs/stx').customRef
   const debouncedRef: typeof import('@vueuse/core').debouncedRef
   const debouncedWatch: typeof import('@vueuse/core').debouncedWatch
-  const defineAsyncComponent: typeof import('vue').defineAsyncComponent
-  const defineComponent: typeof import('vue').defineComponent
+  const defineAsyncComponent: typeof import('@stacksjs/stx').defineAsyncComponent
+  const defineComponent: typeof import('@stacksjs/stx').defineComponent
   const defineStore: typeof import('pinia').defineStore
   const del: typeof import('../../../../defaults/functions/api').del
   const eagerComputed: typeof import('@vueuse/core').eagerComputed
-  const effectScope: typeof import('vue').effectScope
+  const effectScope: typeof import('@stacksjs/stx').effectScope
   const extendRef: typeof import('@vueuse/core').extendRef
   const get: typeof import('../../../../defaults/functions/api').get
-  const getCurrentInstance: typeof import('vue').getCurrentInstance
-  const getCurrentScope: typeof import('vue').getCurrentScope
-  const getCurrentWatcher: typeof import('vue').getCurrentWatcher
-  const h: typeof import('vue').h
+  const getCurrentInstance: typeof import('@stacksjs/stx').getCurrentInstance
+  const getCurrentScope: typeof import('@stacksjs/stx').getCurrentScope
+  const getCurrentWatcher: typeof import('@stacksjs/stx').getCurrentWatcher
+  const h: typeof import('@stacksjs/stx').h
   const ignorableWatch: typeof import('@vueuse/core').ignorableWatch
-  const inject: typeof import('vue').inject
+  const inject: typeof import('@stacksjs/stx').inject
   const injectLocal: typeof import('@vueuse/core').injectLocal
   const isCraftNative: typeof import('../../../../defaults/functions/craft').isCraftNative
   const isDefined: typeof import('@vueuse/core').isDefined
-  const isProxy: typeof import('vue').isProxy
-  const isReactive: typeof import('vue').isReactive
-  const isReadonly: typeof import('vue').isReadonly
-  const isRef: typeof import('vue').isRef
-  const isShallow: typeof import('vue').isShallow
+  const isProxy: typeof import('@stacksjs/stx').isProxy
+  const isReactive: typeof import('@stacksjs/stx').isReactive
+  const isReadonly: typeof import('@stacksjs/stx').isReadonly
+  const isRef: typeof import('@stacksjs/stx').isRef
+  const isShallow: typeof import('@stacksjs/stx').isShallow
   const makeDestructurable: typeof import('@vueuse/core').makeDestructurable
-  const markRaw: typeof import('vue').markRaw
-  const nextTick: typeof import('vue').nextTick
-  const onActivated: typeof import('vue').onActivated
-  const onBeforeMount: typeof import('vue').onBeforeMount
+  const markRaw: typeof import('@stacksjs/stx').markRaw
+  const nextTick: typeof import('@stacksjs/stx').nextTick
+  const onActivated: typeof import('@stacksjs/stx').onActivated
+  const onBeforeMount: typeof import('@stacksjs/stx').onBeforeMount
   const onBeforeRouteLeave: typeof import('vue-router').onBeforeRouteLeave
   const onBeforeRouteUpdate: typeof import('vue-router').onBeforeRouteUpdate
-  const onBeforeUnmount: typeof import('vue').onBeforeUnmount
-  const onBeforeUpdate: typeof import('vue').onBeforeUpdate
+  const onBeforeUnmount: typeof import('@stacksjs/stx').onBeforeUnmount
+  const onBeforeUpdate: typeof import('@stacksjs/stx').onBeforeUpdate
   const onClickOutside: typeof import('@vueuse/core').onClickOutside
-  const onDeactivated: typeof import('vue').onDeactivated
+  const onDeactivated: typeof import('@stacksjs/stx').onDeactivated
   const onElementRemoval: typeof import('@vueuse/core').onElementRemoval
-  const onErrorCaptured: typeof import('vue').onErrorCaptured
+  const onErrorCaptured: typeof import('@stacksjs/stx').onErrorCaptured
   const onKeyStroke: typeof import('@vueuse/core').onKeyStroke
   const onLongPress: typeof import('@vueuse/core').onLongPress
-  const onMounted: typeof import('vue').onMounted
-  const onRenderTracked: typeof import('vue').onRenderTracked
-  const onRenderTriggered: typeof import('vue').onRenderTriggered
-  const onScopeDispose: typeof import('vue').onScopeDispose
-  const onServerPrefetch: typeof import('vue').onServerPrefetch
+  const onMounted: typeof import('@stacksjs/stx').onMounted
+  const onRenderTracked: typeof import('@stacksjs/stx').onRenderTracked
+  const onRenderTriggered: typeof import('@stacksjs/stx').onRenderTriggered
+  const onScopeDispose: typeof import('@stacksjs/stx').onScopeDispose
+  const onServerPrefetch: typeof import('@stacksjs/stx').onServerPrefetch
   const onStartTyping: typeof import('@vueuse/core').onStartTyping
-  const onUnmounted: typeof import('vue').onUnmounted
-  const onUpdated: typeof import('vue').onUpdated
-  const onWatcherCleanup: typeof import('vue').onWatcherCleanup
+  const onUnmounted: typeof import('@stacksjs/stx').onUnmounted
+  const onUpdated: typeof import('@stacksjs/stx').onUpdated
+  const onWatcherCleanup: typeof import('@stacksjs/stx').onWatcherCleanup
   const patch: typeof import('../../../../defaults/functions/api').patch
   const pausableWatch: typeof import('@vueuse/core').pausableWatch
   const post: typeof import('../../../../defaults/functions/api').post
-  const provide: typeof import('vue').provide
+  const provide: typeof import('@stacksjs/stx').provide
   const provideLocal: typeof import('@vueuse/core').provideLocal
   const put: typeof import('../../../../defaults/functions/api').put
   const reactify: typeof import('@vueuse/core').reactify
   const reactifyObject: typeof import('@vueuse/core').reactifyObject
-  const reactive: typeof import('vue').reactive
+  const reactive: typeof import('@stacksjs/stx').reactive
   const reactiveComputed: typeof import('@vueuse/core').reactiveComputed
   const reactiveOmit: typeof import('@vueuse/core').reactiveOmit
   const reactivePick: typeof import('@vueuse/core').reactivePick
-  const readonly: typeof import('vue').readonly
-  const ref: typeof import('vue').ref
+  const readonly: typeof import('@stacksjs/stx').readonly
+  const ref: typeof import('@stacksjs/stx').ref
   const refAutoReset: typeof import('@vueuse/core').refAutoReset
   const refDebounced: typeof import('@vueuse/core').refDebounced
   const refDefault: typeof import('@vueuse/core').refDefault
   const refThrottled: typeof import('@vueuse/core').refThrottled
   const refWithControl: typeof import('@vueuse/core').refWithControl
-  const resolveComponent: typeof import('vue').resolveComponent
+  const resolveComponent: typeof import('@stacksjs/stx').resolveComponent
   const resolveRef: typeof import('@vueuse/core').resolveRef
-  const shallowReactive: typeof import('vue').shallowReactive
-  const shallowReadonly: typeof import('vue').shallowReadonly
-  const shallowRef: typeof import('vue').shallowRef
+  const shallowReactive: typeof import('@stacksjs/stx').shallowReactive
+  const shallowReadonly: typeof import('@stacksjs/stx').shallowReadonly
+  const shallowRef: typeof import('@stacksjs/stx').shallowRef
   const storeToRefs: typeof import('pinia').storeToRefs
   const syncRef: typeof import('@vueuse/core').syncRef
   const syncRefs: typeof import('@vueuse/core').syncRefs
   const templateRef: typeof import('@vueuse/core').templateRef
   const throttledRef: typeof import('@vueuse/core').throttledRef
   const throttledWatch: typeof import('@vueuse/core').throttledWatch
-  const toRaw: typeof import('vue').toRaw
+  const toRaw: typeof import('@stacksjs/stx').toRaw
   const toReactive: typeof import('@vueuse/core').toReactive
-  const toRef: typeof import('vue').toRef
-  const toRefs: typeof import('vue').toRefs
-  const toValue: typeof import('vue').toValue
-  const triggerRef: typeof import('vue').triggerRef
+  const toRef: typeof import('@stacksjs/stx').toRef
+  const toRefs: typeof import('@stacksjs/stx').toRefs
+  const toValue: typeof import('@stacksjs/stx').toValue
+  const triggerRef: typeof import('@stacksjs/stx').triggerRef
   const tryOnBeforeMount: typeof import('@vueuse/core').tryOnBeforeMount
   const tryOnBeforeUnmount: typeof import('@vueuse/core').tryOnBeforeUnmount
   const tryOnMounted: typeof import('@vueuse/core').tryOnMounted
   const tryOnScopeDispose: typeof import('@vueuse/core').tryOnScopeDispose
   const tryOnUnmounted: typeof import('@vueuse/core').tryOnUnmounted
-  const unref: typeof import('vue').unref
+  const unref: typeof import('@stacksjs/stx').unref
   const unrefElement: typeof import('@vueuse/core').unrefElement
   const until: typeof import('@vueuse/core').until
   const useActiveElement: typeof import('@vueuse/core').useActiveElement
@@ -139,7 +139,7 @@ declare global {
   const useArrayUnique: typeof import('@vueuse/core').useArrayUnique
   const useAsyncQueue: typeof import('@vueuse/core').useAsyncQueue
   const useAsyncState: typeof import('@vueuse/core').useAsyncState
-  const useAttrs: typeof import('vue').useAttrs
+  const useAttrs: typeof import('@stacksjs/stx').useAttrs
   const useAuth: typeof import('../../../../defaults/functions/auth').useAuth
   const useBase64: typeof import('@vueuse/core').useBase64
   const useBattery: typeof import('@vueuse/core').useBattery
@@ -156,9 +156,9 @@ declare global {
   const useCountdown: typeof import('@vueuse/core').useCountdown
   const useCounter: typeof import('@vueuse/core').useCounter
   const useCraft: typeof import('../../../../defaults/functions/craft').useCraft
-  const useCssModule: typeof import('vue').useCssModule
+  const useCssModule: typeof import('@stacksjs/stx').useCssModule
   const useCssVar: typeof import('@vueuse/core').useCssVar
-  const useCssVars: typeof import('vue').useCssVars
+  const useCssVars: typeof import('@stacksjs/stx').useCssVars
   const useCurrentElement: typeof import('@vueuse/core').useCurrentElement
   const useCycleList: typeof import('@vueuse/core').useCycleList
   const useDark: typeof import('@vueuse/core').useDark
@@ -194,8 +194,8 @@ declare global {
   const useFullscreen: typeof import('@vueuse/core').useFullscreen
   const useGamepad: typeof import('@vueuse/core').useGamepad
   const useGeolocation: typeof import('@vueuse/core').useGeolocation
-  const useHead: typeof import('@vueuse/head').useHead
-  const useId: typeof import('vue').useId
+  const useHead: typeof import('@stacksjs/stx').useHead
+  const useId: typeof import('@stacksjs/stx').useId
   const useIdle: typeof import('@vueuse/core').useIdle
   const useImage: typeof import('@vueuse/core').useImage
   const useInfiniteScroll: typeof import('@vueuse/core').useInfiniteScroll
@@ -211,7 +211,7 @@ declare global {
   const useMediaQuery: typeof import('@vueuse/core').useMediaQuery
   const useMemoize: typeof import('@vueuse/core').useMemoize
   const useMemory: typeof import('@vueuse/core').useMemory
-  const useModel: typeof import('vue').useModel
+  const useModel: typeof import('@stacksjs/stx').useModel
   const useMounted: typeof import('@vueuse/core').useMounted
   const useMouse: typeof import('@vueuse/core').useMouse
   const useMouseInElement: typeof import('@vueuse/core').useMouseInElement
@@ -249,10 +249,10 @@ declare global {
   const useScriptTag: typeof import('@vueuse/core').useScriptTag
   const useScroll: typeof import('@vueuse/core').useScroll
   const useScrollLock: typeof import('@vueuse/core').useScrollLock
-  const useSeoMeta: typeof import('@vueuse/head').useSeoMeta
+  const useSeoMeta: typeof import('@stacksjs/stx').useSeoMeta
   const useSessionStorage: typeof import('@vueuse/core').useSessionStorage
   const useShare: typeof import('@vueuse/core').useShare
-  const useSlots: typeof import('vue').useSlots
+  const useSlots: typeof import('@stacksjs/stx').useSlots
   const useSorted: typeof import('@vueuse/core').useSorted
   const useSpeechRecognition: typeof import('@vueuse/core').useSpeechRecognition
   const useSpeechSynthesis: typeof import('@vueuse/core').useSpeechSynthesis
@@ -262,7 +262,7 @@ declare global {
   const useStyleTag: typeof import('@vueuse/core').useStyleTag
   const useSupported: typeof import('@vueuse/core').useSupported
   const useSwipe: typeof import('@vueuse/core').useSwipe
-  const useTemplateRef: typeof import('vue').useTemplateRef
+  const useTemplateRef: typeof import('@stacksjs/stx').useTemplateRef
   const useTemplateRefsList: typeof import('@vueuse/core').useTemplateRefsList
   const useTextDirection: typeof import('@vueuse/core').useTextDirection
   const useTextSelection: typeof import('@vueuse/core').useTextSelection
@@ -296,18 +296,18 @@ declare global {
   const useWindowFocus: typeof import('@vueuse/core').useWindowFocus
   const useWindowScroll: typeof import('@vueuse/core').useWindowScroll
   const useWindowSize: typeof import('@vueuse/core').useWindowSize
-  const watch: typeof import('vue').watch
+  const watch: typeof import('@stacksjs/stx').watch
   const watchArray: typeof import('@vueuse/core').watchArray
   const watchAtMost: typeof import('@vueuse/core').watchAtMost
   const watchDebounced: typeof import('@vueuse/core').watchDebounced
   const watchDeep: typeof import('@vueuse/core').watchDeep
-  const watchEffect: typeof import('vue').watchEffect
+  const watchEffect: typeof import('@stacksjs/stx').watchEffect
   const watchIgnorable: typeof import('@vueuse/core').watchIgnorable
   const watchImmediate: typeof import('@vueuse/core').watchImmediate
   const watchOnce: typeof import('@vueuse/core').watchOnce
   const watchPausable: typeof import('@vueuse/core').watchPausable
-  const watchPostEffect: typeof import('vue').watchPostEffect
-  const watchSyncEffect: typeof import('vue').watchSyncEffect
+  const watchPostEffect: typeof import('@stacksjs/stx').watchPostEffect
+  const watchSyncEffect: typeof import('@stacksjs/stx').watchSyncEffect
   const watchThrottled: typeof import('@vueuse/core').watchThrottled
   const watchTriggerable: typeof import('@vueuse/core').watchTriggerable
   const watchWithFilter: typeof import('@vueuse/core').watchWithFilter
@@ -316,8 +316,8 @@ declare global {
 // for type re-export
 declare global {
   // @ts-ignore
-  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from 'vue'
-  import('vue')
+  export type { Component, Slot, Slots, ComponentPublicInstance, ComputedRef, DirectiveBinding, ExtractDefaultPropTypes, ExtractPropTypes, ExtractPublicPropTypes, InjectionKey, PropType, Ref, ShallowRef, MaybeRef, MaybeRefOrGetter, VNode, WritableComputedRef } from '@stacksjs/stx'
+  import('@stacksjs/stx')
   // @ts-ignore
   export type { ApiResponse, ApiError } from '../../../../defaults/functions/api'
   import('../../../../defaults/functions/api')
@@ -326,23 +326,23 @@ declare global {
   import('../../../../defaults/functions/auth')
 }
 
-// for vue template auto import
-import { UnwrapRef } from 'vue'
-declare module 'vue' {
+// for stx template auto import
+import { UnwrapRef } from '@stacksjs/stx'
+declare module '@stacksjs/stx' {
   interface GlobalComponents {}
   interface ComponentCustomProperties {
-    readonly EffectScope: UnwrapRef<typeof import('vue')['EffectScope']>
+    readonly EffectScope: UnwrapRef<typeof import('@stacksjs/stx')['EffectScope']>
     readonly asyncComputed: UnwrapRef<typeof import('@vueuse/core')['asyncComputed']>
     readonly authGuard: UnwrapRef<typeof import('../../../../defaults/functions/auth')['authGuard']>
     readonly autoResetRef: UnwrapRef<typeof import('@vueuse/core')['autoResetRef']>
-    readonly computed: UnwrapRef<typeof import('vue')['computed']>
+    readonly computed: UnwrapRef<typeof import('@stacksjs/stx')['computed']>
     readonly computedAsync: UnwrapRef<typeof import('@vueuse/core')['computedAsync']>
     readonly computedEager: UnwrapRef<typeof import('@vueuse/core')['computedEager']>
     readonly computedInject: UnwrapRef<typeof import('@vueuse/core')['computedInject']>
     readonly computedWithControl: UnwrapRef<typeof import('@vueuse/core')['computedWithControl']>
     readonly controlledComputed: UnwrapRef<typeof import('@vueuse/core')['controlledComputed']>
     readonly controlledRef: UnwrapRef<typeof import('@vueuse/core')['controlledRef']>
-    readonly createApp: UnwrapRef<typeof import('vue')['createApp']>
+    readonly createApp: UnwrapRef<typeof import('@stacksjs/stx')['createApp']>
     readonly createEventHook: UnwrapRef<typeof import('@vueuse/core')['createEventHook']>
     readonly createGlobalState: UnwrapRef<typeof import('@vueuse/core')['createGlobalState']>
     readonly createInjectionState: UnwrapRef<typeof import('@vueuse/core')['createInjectionState']>
@@ -353,97 +353,97 @@ declare module 'vue' {
     readonly createSharedComposable: UnwrapRef<typeof import('@vueuse/core')['createSharedComposable']>
     readonly createTemplatePromise: UnwrapRef<typeof import('@vueuse/core')['createTemplatePromise']>
     readonly createUnrefFn: UnwrapRef<typeof import('@vueuse/core')['createUnrefFn']>
-    readonly customRef: UnwrapRef<typeof import('vue')['customRef']>
+    readonly customRef: UnwrapRef<typeof import('@stacksjs/stx')['customRef']>
     readonly debouncedRef: UnwrapRef<typeof import('@vueuse/core')['debouncedRef']>
     readonly debouncedWatch: UnwrapRef<typeof import('@vueuse/core')['debouncedWatch']>
-    readonly defineAsyncComponent: UnwrapRef<typeof import('vue')['defineAsyncComponent']>
-    readonly defineComponent: UnwrapRef<typeof import('vue')['defineComponent']>
+    readonly defineAsyncComponent: UnwrapRef<typeof import('@stacksjs/stx')['defineAsyncComponent']>
+    readonly defineComponent: UnwrapRef<typeof import('@stacksjs/stx')['defineComponent']>
     readonly defineStore: UnwrapRef<typeof import('pinia')['defineStore']>
     readonly del: UnwrapRef<typeof import('../../../../defaults/functions/api')['del']>
     readonly eagerComputed: UnwrapRef<typeof import('@vueuse/core')['eagerComputed']>
-    readonly effectScope: UnwrapRef<typeof import('vue')['effectScope']>
+    readonly effectScope: UnwrapRef<typeof import('@stacksjs/stx')['effectScope']>
     readonly extendRef: UnwrapRef<typeof import('@vueuse/core')['extendRef']>
     readonly get: UnwrapRef<typeof import('../../../../defaults/functions/api')['get']>
-    readonly getCurrentInstance: UnwrapRef<typeof import('vue')['getCurrentInstance']>
-    readonly getCurrentScope: UnwrapRef<typeof import('vue')['getCurrentScope']>
-    readonly getCurrentWatcher: UnwrapRef<typeof import('vue')['getCurrentWatcher']>
-    readonly h: UnwrapRef<typeof import('vue')['h']>
+    readonly getCurrentInstance: UnwrapRef<typeof import('@stacksjs/stx')['getCurrentInstance']>
+    readonly getCurrentScope: UnwrapRef<typeof import('@stacksjs/stx')['getCurrentScope']>
+    readonly getCurrentWatcher: UnwrapRef<typeof import('@stacksjs/stx')['getCurrentWatcher']>
+    readonly h: UnwrapRef<typeof import('@stacksjs/stx')['h']>
     readonly ignorableWatch: UnwrapRef<typeof import('@vueuse/core')['ignorableWatch']>
-    readonly inject: UnwrapRef<typeof import('vue')['inject']>
+    readonly inject: UnwrapRef<typeof import('@stacksjs/stx')['inject']>
     readonly injectLocal: UnwrapRef<typeof import('@vueuse/core')['injectLocal']>
     readonly isCraftNative: UnwrapRef<typeof import('../../../../defaults/functions/craft')['isCraftNative']>
     readonly isDefined: UnwrapRef<typeof import('@vueuse/core')['isDefined']>
-    readonly isProxy: UnwrapRef<typeof import('vue')['isProxy']>
-    readonly isReactive: UnwrapRef<typeof import('vue')['isReactive']>
-    readonly isReadonly: UnwrapRef<typeof import('vue')['isReadonly']>
-    readonly isRef: UnwrapRef<typeof import('vue')['isRef']>
-    readonly isShallow: UnwrapRef<typeof import('vue')['isShallow']>
+    readonly isProxy: UnwrapRef<typeof import('@stacksjs/stx')['isProxy']>
+    readonly isReactive: UnwrapRef<typeof import('@stacksjs/stx')['isReactive']>
+    readonly isReadonly: UnwrapRef<typeof import('@stacksjs/stx')['isReadonly']>
+    readonly isRef: UnwrapRef<typeof import('@stacksjs/stx')['isRef']>
+    readonly isShallow: UnwrapRef<typeof import('@stacksjs/stx')['isShallow']>
     readonly makeDestructurable: UnwrapRef<typeof import('@vueuse/core')['makeDestructurable']>
-    readonly markRaw: UnwrapRef<typeof import('vue')['markRaw']>
-    readonly nextTick: UnwrapRef<typeof import('vue')['nextTick']>
-    readonly onActivated: UnwrapRef<typeof import('vue')['onActivated']>
-    readonly onBeforeMount: UnwrapRef<typeof import('vue')['onBeforeMount']>
+    readonly markRaw: UnwrapRef<typeof import('@stacksjs/stx')['markRaw']>
+    readonly nextTick: UnwrapRef<typeof import('@stacksjs/stx')['nextTick']>
+    readonly onActivated: UnwrapRef<typeof import('@stacksjs/stx')['onActivated']>
+    readonly onBeforeMount: UnwrapRef<typeof import('@stacksjs/stx')['onBeforeMount']>
     readonly onBeforeRouteLeave: UnwrapRef<typeof import('vue-router')['onBeforeRouteLeave']>
     readonly onBeforeRouteUpdate: UnwrapRef<typeof import('vue-router')['onBeforeRouteUpdate']>
-    readonly onBeforeUnmount: UnwrapRef<typeof import('vue')['onBeforeUnmount']>
-    readonly onBeforeUpdate: UnwrapRef<typeof import('vue')['onBeforeUpdate']>
+    readonly onBeforeUnmount: UnwrapRef<typeof import('@stacksjs/stx')['onBeforeUnmount']>
+    readonly onBeforeUpdate: UnwrapRef<typeof import('@stacksjs/stx')['onBeforeUpdate']>
     readonly onClickOutside: UnwrapRef<typeof import('@vueuse/core')['onClickOutside']>
-    readonly onDeactivated: UnwrapRef<typeof import('vue')['onDeactivated']>
+    readonly onDeactivated: UnwrapRef<typeof import('@stacksjs/stx')['onDeactivated']>
     readonly onElementRemoval: UnwrapRef<typeof import('@vueuse/core')['onElementRemoval']>
-    readonly onErrorCaptured: UnwrapRef<typeof import('vue')['onErrorCaptured']>
+    readonly onErrorCaptured: UnwrapRef<typeof import('@stacksjs/stx')['onErrorCaptured']>
     readonly onKeyStroke: UnwrapRef<typeof import('@vueuse/core')['onKeyStroke']>
     readonly onLongPress: UnwrapRef<typeof import('@vueuse/core')['onLongPress']>
-    readonly onMounted: UnwrapRef<typeof import('vue')['onMounted']>
-    readonly onRenderTracked: UnwrapRef<typeof import('vue')['onRenderTracked']>
-    readonly onRenderTriggered: UnwrapRef<typeof import('vue')['onRenderTriggered']>
-    readonly onScopeDispose: UnwrapRef<typeof import('vue')['onScopeDispose']>
-    readonly onServerPrefetch: UnwrapRef<typeof import('vue')['onServerPrefetch']>
+    readonly onMounted: UnwrapRef<typeof import('@stacksjs/stx')['onMounted']>
+    readonly onRenderTracked: UnwrapRef<typeof import('@stacksjs/stx')['onRenderTracked']>
+    readonly onRenderTriggered: UnwrapRef<typeof import('@stacksjs/stx')['onRenderTriggered']>
+    readonly onScopeDispose: UnwrapRef<typeof import('@stacksjs/stx')['onScopeDispose']>
+    readonly onServerPrefetch: UnwrapRef<typeof import('@stacksjs/stx')['onServerPrefetch']>
     readonly onStartTyping: UnwrapRef<typeof import('@vueuse/core')['onStartTyping']>
-    readonly onUnmounted: UnwrapRef<typeof import('vue')['onUnmounted']>
-    readonly onUpdated: UnwrapRef<typeof import('vue')['onUpdated']>
-    readonly onWatcherCleanup: UnwrapRef<typeof import('vue')['onWatcherCleanup']>
+    readonly onUnmounted: UnwrapRef<typeof import('@stacksjs/stx')['onUnmounted']>
+    readonly onUpdated: UnwrapRef<typeof import('@stacksjs/stx')['onUpdated']>
+    readonly onWatcherCleanup: UnwrapRef<typeof import('@stacksjs/stx')['onWatcherCleanup']>
     readonly patch: UnwrapRef<typeof import('../../../../defaults/functions/api')['patch']>
     readonly pausableWatch: UnwrapRef<typeof import('@vueuse/core')['pausableWatch']>
     readonly post: UnwrapRef<typeof import('../../../../defaults/functions/api')['post']>
-    readonly provide: UnwrapRef<typeof import('vue')['provide']>
+    readonly provide: UnwrapRef<typeof import('@stacksjs/stx')['provide']>
     readonly provideLocal: UnwrapRef<typeof import('@vueuse/core')['provideLocal']>
     readonly put: UnwrapRef<typeof import('../../../../defaults/functions/api')['put']>
     readonly reactify: UnwrapRef<typeof import('@vueuse/core')['reactify']>
     readonly reactifyObject: UnwrapRef<typeof import('@vueuse/core')['reactifyObject']>
-    readonly reactive: UnwrapRef<typeof import('vue')['reactive']>
+    readonly reactive: UnwrapRef<typeof import('@stacksjs/stx')['reactive']>
     readonly reactiveComputed: UnwrapRef<typeof import('@vueuse/core')['reactiveComputed']>
     readonly reactiveOmit: UnwrapRef<typeof import('@vueuse/core')['reactiveOmit']>
     readonly reactivePick: UnwrapRef<typeof import('@vueuse/core')['reactivePick']>
-    readonly readonly: UnwrapRef<typeof import('vue')['readonly']>
-    readonly ref: UnwrapRef<typeof import('vue')['ref']>
+    readonly readonly: UnwrapRef<typeof import('@stacksjs/stx')['readonly']>
+    readonly ref: UnwrapRef<typeof import('@stacksjs/stx')['ref']>
     readonly refAutoReset: UnwrapRef<typeof import('@vueuse/core')['refAutoReset']>
     readonly refDebounced: UnwrapRef<typeof import('@vueuse/core')['refDebounced']>
     readonly refDefault: UnwrapRef<typeof import('@vueuse/core')['refDefault']>
     readonly refThrottled: UnwrapRef<typeof import('@vueuse/core')['refThrottled']>
     readonly refWithControl: UnwrapRef<typeof import('@vueuse/core')['refWithControl']>
-    readonly resolveComponent: UnwrapRef<typeof import('vue')['resolveComponent']>
+    readonly resolveComponent: UnwrapRef<typeof import('@stacksjs/stx')['resolveComponent']>
     readonly resolveRef: UnwrapRef<typeof import('@vueuse/core')['resolveRef']>
-    readonly shallowReactive: UnwrapRef<typeof import('vue')['shallowReactive']>
-    readonly shallowReadonly: UnwrapRef<typeof import('vue')['shallowReadonly']>
-    readonly shallowRef: UnwrapRef<typeof import('vue')['shallowRef']>
+    readonly shallowReactive: UnwrapRef<typeof import('@stacksjs/stx')['shallowReactive']>
+    readonly shallowReadonly: UnwrapRef<typeof import('@stacksjs/stx')['shallowReadonly']>
+    readonly shallowRef: UnwrapRef<typeof import('@stacksjs/stx')['shallowRef']>
     readonly storeToRefs: UnwrapRef<typeof import('pinia')['storeToRefs']>
     readonly syncRef: UnwrapRef<typeof import('@vueuse/core')['syncRef']>
     readonly syncRefs: UnwrapRef<typeof import('@vueuse/core')['syncRefs']>
     readonly templateRef: UnwrapRef<typeof import('@vueuse/core')['templateRef']>
     readonly throttledRef: UnwrapRef<typeof import('@vueuse/core')['throttledRef']>
     readonly throttledWatch: UnwrapRef<typeof import('@vueuse/core')['throttledWatch']>
-    readonly toRaw: UnwrapRef<typeof import('vue')['toRaw']>
+    readonly toRaw: UnwrapRef<typeof import('@stacksjs/stx')['toRaw']>
     readonly toReactive: UnwrapRef<typeof import('@vueuse/core')['toReactive']>
-    readonly toRef: UnwrapRef<typeof import('vue')['toRef']>
-    readonly toRefs: UnwrapRef<typeof import('vue')['toRefs']>
-    readonly toValue: UnwrapRef<typeof import('vue')['toValue']>
-    readonly triggerRef: UnwrapRef<typeof import('vue')['triggerRef']>
+    readonly toRef: UnwrapRef<typeof import('@stacksjs/stx')['toRef']>
+    readonly toRefs: UnwrapRef<typeof import('@stacksjs/stx')['toRefs']>
+    readonly toValue: UnwrapRef<typeof import('@stacksjs/stx')['toValue']>
+    readonly triggerRef: UnwrapRef<typeof import('@stacksjs/stx')['triggerRef']>
     readonly tryOnBeforeMount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeMount']>
     readonly tryOnBeforeUnmount: UnwrapRef<typeof import('@vueuse/core')['tryOnBeforeUnmount']>
     readonly tryOnMounted: UnwrapRef<typeof import('@vueuse/core')['tryOnMounted']>
     readonly tryOnScopeDispose: UnwrapRef<typeof import('@vueuse/core')['tryOnScopeDispose']>
     readonly tryOnUnmounted: UnwrapRef<typeof import('@vueuse/core')['tryOnUnmounted']>
-    readonly unref: UnwrapRef<typeof import('vue')['unref']>
+    readonly unref: UnwrapRef<typeof import('@stacksjs/stx')['unref']>
     readonly unrefElement: UnwrapRef<typeof import('@vueuse/core')['unrefElement']>
     readonly until: UnwrapRef<typeof import('@vueuse/core')['until']>
     readonly useActiveElement: UnwrapRef<typeof import('@vueuse/core')['useActiveElement']>
@@ -464,7 +464,7 @@ declare module 'vue' {
     readonly useArrayUnique: UnwrapRef<typeof import('@vueuse/core')['useArrayUnique']>
     readonly useAsyncQueue: UnwrapRef<typeof import('@vueuse/core')['useAsyncQueue']>
     readonly useAsyncState: UnwrapRef<typeof import('@vueuse/core')['useAsyncState']>
-    readonly useAttrs: UnwrapRef<typeof import('vue')['useAttrs']>
+    readonly useAttrs: UnwrapRef<typeof import('@stacksjs/stx')['useAttrs']>
     readonly useAuth: UnwrapRef<typeof import('../../../../defaults/functions/auth')['useAuth']>
     readonly useBase64: UnwrapRef<typeof import('@vueuse/core')['useBase64']>
     readonly useBattery: UnwrapRef<typeof import('@vueuse/core')['useBattery']>
@@ -481,9 +481,9 @@ declare module 'vue' {
     readonly useCountdown: UnwrapRef<typeof import('@vueuse/core')['useCountdown']>
     readonly useCounter: UnwrapRef<typeof import('@vueuse/core')['useCounter']>
     readonly useCraft: UnwrapRef<typeof import('../../../../defaults/functions/craft')['useCraft']>
-    readonly useCssModule: UnwrapRef<typeof import('vue')['useCssModule']>
+    readonly useCssModule: UnwrapRef<typeof import('@stacksjs/stx')['useCssModule']>
     readonly useCssVar: UnwrapRef<typeof import('@vueuse/core')['useCssVar']>
-    readonly useCssVars: UnwrapRef<typeof import('vue')['useCssVars']>
+    readonly useCssVars: UnwrapRef<typeof import('@stacksjs/stx')['useCssVars']>
     readonly useCurrentElement: UnwrapRef<typeof import('@vueuse/core')['useCurrentElement']>
     readonly useCycleList: UnwrapRef<typeof import('@vueuse/core')['useCycleList']>
     readonly useDark: UnwrapRef<typeof import('@vueuse/core')['useDark']>
@@ -518,8 +518,8 @@ declare module 'vue' {
     readonly useFullscreen: UnwrapRef<typeof import('@vueuse/core')['useFullscreen']>
     readonly useGamepad: UnwrapRef<typeof import('@vueuse/core')['useGamepad']>
     readonly useGeolocation: UnwrapRef<typeof import('@vueuse/core')['useGeolocation']>
-    readonly useHead: UnwrapRef<typeof import('@vueuse/head')['useHead']>
-    readonly useId: UnwrapRef<typeof import('vue')['useId']>
+    readonly useHead: UnwrapRef<typeof import('@stacksjs/stx')['useHead']>
+    readonly useId: UnwrapRef<typeof import('@stacksjs/stx')['useId']>
     readonly useIdle: UnwrapRef<typeof import('@vueuse/core')['useIdle']>
     readonly useImage: UnwrapRef<typeof import('@vueuse/core')['useImage']>
     readonly useInfiniteScroll: UnwrapRef<typeof import('@vueuse/core')['useInfiniteScroll']>
@@ -535,7 +535,7 @@ declare module 'vue' {
     readonly useMediaQuery: UnwrapRef<typeof import('@vueuse/core')['useMediaQuery']>
     readonly useMemoize: UnwrapRef<typeof import('@vueuse/core')['useMemoize']>
     readonly useMemory: UnwrapRef<typeof import('@vueuse/core')['useMemory']>
-    readonly useModel: UnwrapRef<typeof import('vue')['useModel']>
+    readonly useModel: UnwrapRef<typeof import('@stacksjs/stx')['useModel']>
     readonly useMounted: UnwrapRef<typeof import('@vueuse/core')['useMounted']>
     readonly useMouse: UnwrapRef<typeof import('@vueuse/core')['useMouse']>
     readonly useMouseInElement: UnwrapRef<typeof import('@vueuse/core')['useMouseInElement']>
@@ -573,10 +573,10 @@ declare module 'vue' {
     readonly useScriptTag: UnwrapRef<typeof import('@vueuse/core')['useScriptTag']>
     readonly useScroll: UnwrapRef<typeof import('@vueuse/core')['useScroll']>
     readonly useScrollLock: UnwrapRef<typeof import('@vueuse/core')['useScrollLock']>
-    readonly useSeoMeta: UnwrapRef<typeof import('@vueuse/head')['useSeoMeta']>
+    readonly useSeoMeta: UnwrapRef<typeof import('@stacksjs/stx')['useSeoMeta']>
     readonly useSessionStorage: UnwrapRef<typeof import('@vueuse/core')['useSessionStorage']>
     readonly useShare: UnwrapRef<typeof import('@vueuse/core')['useShare']>
-    readonly useSlots: UnwrapRef<typeof import('vue')['useSlots']>
+    readonly useSlots: UnwrapRef<typeof import('@stacksjs/stx')['useSlots']>
     readonly useSorted: UnwrapRef<typeof import('@vueuse/core')['useSorted']>
     readonly useSpeechRecognition: UnwrapRef<typeof import('@vueuse/core')['useSpeechRecognition']>
     readonly useSpeechSynthesis: UnwrapRef<typeof import('@vueuse/core')['useSpeechSynthesis']>
@@ -586,7 +586,7 @@ declare module 'vue' {
     readonly useStyleTag: UnwrapRef<typeof import('@vueuse/core')['useStyleTag']>
     readonly useSupported: UnwrapRef<typeof import('@vueuse/core')['useSupported']>
     readonly useSwipe: UnwrapRef<typeof import('@vueuse/core')['useSwipe']>
-    readonly useTemplateRef: UnwrapRef<typeof import('vue')['useTemplateRef']>
+    readonly useTemplateRef: UnwrapRef<typeof import('@stacksjs/stx')['useTemplateRef']>
     readonly useTemplateRefsList: UnwrapRef<typeof import('@vueuse/core')['useTemplateRefsList']>
     readonly useTextDirection: UnwrapRef<typeof import('@vueuse/core')['useTextDirection']>
     readonly useTextSelection: UnwrapRef<typeof import('@vueuse/core')['useTextSelection']>
@@ -620,18 +620,18 @@ declare module 'vue' {
     readonly useWindowFocus: UnwrapRef<typeof import('@vueuse/core')['useWindowFocus']>
     readonly useWindowScroll: UnwrapRef<typeof import('@vueuse/core')['useWindowScroll']>
     readonly useWindowSize: UnwrapRef<typeof import('@vueuse/core')['useWindowSize']>
-    readonly watch: UnwrapRef<typeof import('vue')['watch']>
+    readonly watch: UnwrapRef<typeof import('@stacksjs/stx')['watch']>
     readonly watchArray: UnwrapRef<typeof import('@vueuse/core')['watchArray']>
     readonly watchAtMost: UnwrapRef<typeof import('@vueuse/core')['watchAtMost']>
     readonly watchDebounced: UnwrapRef<typeof import('@vueuse/core')['watchDebounced']>
     readonly watchDeep: UnwrapRef<typeof import('@vueuse/core')['watchDeep']>
-    readonly watchEffect: UnwrapRef<typeof import('vue')['watchEffect']>
+    readonly watchEffect: UnwrapRef<typeof import('@stacksjs/stx')['watchEffect']>
     readonly watchIgnorable: UnwrapRef<typeof import('@vueuse/core')['watchIgnorable']>
     readonly watchImmediate: UnwrapRef<typeof import('@vueuse/core')['watchImmediate']>
     readonly watchOnce: UnwrapRef<typeof import('@vueuse/core')['watchOnce']>
     readonly watchPausable: UnwrapRef<typeof import('@vueuse/core')['watchPausable']>
-    readonly watchPostEffect: UnwrapRef<typeof import('vue')['watchPostEffect']>
-    readonly watchSyncEffect: UnwrapRef<typeof import('vue')['watchSyncEffect']>
+    readonly watchPostEffect: UnwrapRef<typeof import('@stacksjs/stx')['watchPostEffect']>
+    readonly watchSyncEffect: UnwrapRef<typeof import('@stacksjs/stx')['watchSyncEffect']>
     readonly watchThrottled: UnwrapRef<typeof import('@vueuse/core')['watchThrottled']>
     readonly watchTriggerable: UnwrapRef<typeof import('@vueuse/core')['watchTriggerable']>
     readonly watchWithFilter: UnwrapRef<typeof import('@vueuse/core')['watchWithFilter']>

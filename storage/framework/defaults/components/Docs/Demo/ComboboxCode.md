@@ -1,6 +1,6 @@
 ```vue
 <script lang="ts" setup>
-import { ref, computed } from 'vue'
+import { ref, computed } from '@stacksjs/stx'
 import {
   Combobox,
   ComboboxButton,

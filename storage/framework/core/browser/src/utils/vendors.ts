@@ -11,15 +11,14 @@ export {
 } from '@stacksjs/composables'
 
 export type {
-  HeadObject,
-  HeadObjectPlain,
-} from '@vueuse/head'
+  HeadConfig as HeadObject,
+  HeadConfig as HeadObjectPlain,
+} from '@stacksjs/stx'
 
 export {
-  createHead,
-  Head,
-  HeadVuePlugin,
-  renderHeadToString,
-} from '@vueuse/head'
+  useHead as createHead,
+  useHead as Head,
+  renderHead as renderHeadToString,
+} from '@stacksjs/stx'
 
 export { default as readableSize } from 'pretty-bytes'

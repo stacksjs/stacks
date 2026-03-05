@@ -1,1 +1,1 @@
-export { Switch } from '@headlessui/vue'
+export { Switch } from '@stacksjs/stx'

@@ -4,7 +4,7 @@
  * Provides data fetching for the main dashboard overview.
  */
 
-import { ref } from 'vue'
+import { ref } from '@stacksjs/stx'
 
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
