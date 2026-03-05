@@ -171,7 +171,7 @@ export class Communication {
     // Determine which channels to use
     let channels = options.channels
     if (user.preferences?.channels) {
-      channels = channels.filter(c => user.preferences!.channels!.includes(c))
+      channels = channels.filter(c => user.preferences?.channels?.includes(c) ?? true)
     }
 
     // Check quiet hours

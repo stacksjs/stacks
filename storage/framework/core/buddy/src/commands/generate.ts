@@ -134,9 +134,9 @@ export function generate(buddy: CLI): void {
     .command('generate:pantry-config', descriptions.pantry)
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((options: GeneratorOptions) => {
+    .action(async (options: GeneratorOptions) => {
       log.debug('Running `buddy generate:pantry-config` ...', options)
-      generatePantryConfig()
+      await generatePantryConfig()
     })
 
   buddy
@@ -150,7 +150,7 @@ export function generate(buddy: CLI): void {
 
       await generateOpenApiSpec()
 
-      outro('Generated OpenAPI specification', {
+      await outro('Generated OpenAPI specification', {
         startTime: perf,
         useSeconds: true,
       })

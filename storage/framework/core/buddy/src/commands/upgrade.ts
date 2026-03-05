@@ -56,7 +56,7 @@ export function upgrade(buddy: CLI): void {
 
         let answersValue = answers.value
 
-        if (answersValue !== null)
+        if (answersValue === null || answersValue === undefined)
           process.exit(ExitCode.InvalidArgument)
 
         if (isString(answersValue))
@@ -77,11 +77,11 @@ export function upgrade(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Upgrade complete.', { startTime: perf, useSeconds: true })
-      process.exit()
+      process.exit(ExitCode.Success)
     })
 
   buddy
@@ -122,7 +122,7 @@ export function upgrade(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         ) // FIXME: should not have to cast
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)
@@ -153,7 +153,7 @@ export function upgrade(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         ) // FIXME: should not have to cast
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)
@@ -166,7 +166,7 @@ export function upgrade(buddy: CLI): void {
     .action(async (options: UpgradeOptions) => {
       if (process.getuid && process.getuid() !== 0) {
         log.warn('To upgrade the binary, you need to run this command with sudo, or as root.')
-        process.exit(0) // Exit with an error code
+        process.exit(ExitCode.FatalError)
       }
 
       log.debug('Running `buddy upgrade:binary` ...', options)
@@ -180,7 +180,7 @@ export function upgrade(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         ) // FIXME: should not have to cast
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)

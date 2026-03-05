@@ -36,7 +36,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)
@@ -59,7 +59,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Listed all failed jobs', {
@@ -87,7 +87,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const message = options.all ? 'Retried all failed jobs' : `Retried failed job ${id}`
@@ -116,7 +116,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const queueName = options.queue || 'default'
@@ -144,7 +144,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Queue status displayed', {
@@ -172,7 +172,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Flushed all failed jobs', {
@@ -198,7 +198,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Jobs table migration created', {
@@ -221,7 +221,7 @@ export function queue(buddy: CLI): void {
 
       if (result.isErr) {
         log.error('While running the queue:monitor command, there was an issue', result.error)
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)
@@ -244,7 +244,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Job inspection complete', {
@@ -265,7 +265,7 @@ export function queue(buddy: CLI): void {
 
       if (result.isErr) {
         log.error('While running the queue:schedule command, there was an issue', result.error)
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)
@@ -287,7 +287,7 @@ export function queue(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Listed all scheduled jobs', {

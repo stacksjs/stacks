@@ -1,5 +1,5 @@
 import type { Ref } from '@stacksjs/stx'
-import { ref, watch } from '@stacksjs/stx'
+import { onUnmounted, ref, watch } from '@stacksjs/stx'
 
 interface UseStorageSerializer<T> {
   read: (raw: string) => T
@@ -73,7 +73,7 @@ export function useStorage<T>(
 
   // Listen for storage events from other tabs
   if (typeof window !== 'undefined') {
-    window.addEventListener('storage', (e) => {
+    const onStorageChange = (e: StorageEvent) => {
       if (e.key !== key || e.storageArea !== store) return
       if (e.newValue === null) {
         data.value = defaultValue
@@ -86,7 +86,10 @@ export function useStorage<T>(
           data.value = defaultValue
         }
       }
-    })
+    }
+
+    window.addEventListener('storage', onStorageChange)
+    onUnmounted(() => window.removeEventListener('storage', onStorageChange))
   }
 
   return data

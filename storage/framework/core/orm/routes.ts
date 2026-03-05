@@ -157,7 +157,8 @@ for (const [modelName, model] of Object.entries(models)) {
         let total: number | undefined
         try {
           const countResult = await (db as any).selectFrom(table).count().executeTakeFirst()
-          total = countResult?.count ?? countResult?.['count(*)']
+          const rawCount = countResult?.count ?? countResult?.['count(*)']
+          total = typeof rawCount === 'number' ? rawCount : Number(rawCount)
         } catch {
           // count() may not be supported by all query builder versions
         }
@@ -167,7 +168,7 @@ for (const [modelName, model] of Object.entries(models)) {
           meta: {
             page,
             per_page: perPage,
-            ...(total !== undefined ? { total, last_page: Math.ceil(total / perPage) } : {}),
+            ...(total !== undefined && !Number.isNaN(total) ? { total, last_page: Math.ceil(total / perPage) } : {}),
           },
         })
       }

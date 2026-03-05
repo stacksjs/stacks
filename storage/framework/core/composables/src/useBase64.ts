@@ -66,12 +66,12 @@ export function useBase64(
   }
 
   // Run initially
-  execute()
+  execute().catch(() => {})
 
   // Watch if source is a ref
   if (isRef(source)) {
     watch(source as Ref<any>, () => {
-      execute()
+      execute().catch(() => {})
     })
   }
 

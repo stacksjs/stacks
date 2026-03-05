@@ -28,7 +28,7 @@ export function schedule(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       process.exit(ExitCode.Success)

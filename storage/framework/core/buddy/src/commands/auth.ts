@@ -32,7 +32,7 @@ export function auth(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Authentication setup completed successfully.', {
@@ -59,7 +59,7 @@ export function auth(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Personal access client token created successfully.', {
@@ -90,7 +90,7 @@ export function auth(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('OAuth client created successfully.', {
@@ -120,7 +120,7 @@ export function auth(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Token pruning completed successfully.', {

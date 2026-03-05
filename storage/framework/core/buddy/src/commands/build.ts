@@ -143,7 +143,7 @@ export function build(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: BuildOptions) => {
-      log.debug('Running `buddy `build:functions` ...', options)
+      log.debug('Running `buddy build:functions` ...', options)
       await runAction(Action.BuildFunctionLib, options)
     })
 
@@ -203,7 +203,7 @@ export function build(buddy: CLI): void {
 
       if (result.isErr) {
         log.error('Failed to build the Stacks core.', result.error)
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Core packages built successfully', {
@@ -229,7 +229,7 @@ export function build(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       console.log('')
@@ -250,7 +250,7 @@ export function build(buddy: CLI): void {
 
       if (result.isErr) {
         log.error('Failed to build Stacks.', result.error)
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Stacks built successfully', { startTime, useSeconds: true })

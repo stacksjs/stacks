@@ -3,6 +3,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import { ExitCode } from '@stacksjs/types'
 
 export function key(buddy: CLI): void {
   const descriptions = {
@@ -23,7 +24,7 @@ export function key(buddy: CLI): void {
 
       if (result.isErr) {
         log.error('Failed to set random application key.', result.error)
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Random application key set.')

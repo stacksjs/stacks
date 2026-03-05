@@ -85,7 +85,7 @@ export function migrate(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       // Run auth table migrations if --auth flag is provided
@@ -141,7 +141,7 @@ export function migrate(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       // Run auth table migrations if --auth flag is provided
@@ -214,7 +214,7 @@ export function migrate(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const APP_URL = process.env.APP_URL || 'undefined'

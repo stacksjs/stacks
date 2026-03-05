@@ -1,5 +1,5 @@
 import type { Ref } from '@stacksjs/stx'
-import { ref } from '@stacksjs/stx'
+import { onUnmounted, ref } from '@stacksjs/stx'
 import { defaultWindow } from './_shared'
 
 export interface UseUrlSearchParamsOptions<T extends Record<string, string> = Record<string, string>> {
@@ -104,14 +104,21 @@ export function useUrlSearchParams<T extends Record<string, string> = Record<str
 
   // Listen for popstate to update params
   if (win) {
-    win.addEventListener('popstate', () => {
+    const onPopState = () => {
       params.value = readParams()
-    })
+    }
 
-    win.addEventListener('hashchange', () => {
+    const onHashChange = () => {
       if (mode === 'hash') {
         params.value = readParams()
       }
+    }
+
+    win.addEventListener('popstate', onPopState)
+    win.addEventListener('hashchange', onHashChange)
+    onUnmounted(() => {
+      win.removeEventListener('popstate', onPopState)
+      win.removeEventListener('hashchange', onHashChange)
     })
   }
 

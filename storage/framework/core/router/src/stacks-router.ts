@@ -962,6 +962,10 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           currentPrefix = previousPrefix
           currentGroupMiddleware = previousMiddleware
           return stacksRouter
+        }).catch((err) => {
+          currentPrefix = previousPrefix
+          currentGroupMiddleware = previousMiddleware
+          throw err
         })
       }
 

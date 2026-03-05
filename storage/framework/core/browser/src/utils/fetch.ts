@@ -65,12 +65,20 @@ async function patch(url: string, params?: Params, headers?: Headers): Promise<F
 
   loading = true
 
-  return await ofetch(url, {
-    method: 'PATCH',
-    baseURL,
-    params,
-    headers,
-  })
+  try {
+    const result = await ofetch(url, {
+      method: 'PATCH',
+      baseURL,
+      params,
+      headers,
+    })
+    loading = false
+    return result
+  }
+  catch (err) {
+    loading = false
+    throw err
+  }
 }
 
 async function put(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
@@ -81,12 +89,20 @@ async function put(url: string, params?: Params, headers?: Headers): Promise<Fet
 
   loading = true
 
-  return await ofetch(url, {
-    method: 'PUT',
-    baseURL,
-    params,
-    headers,
-  })
+  try {
+    const result = await ofetch(url, {
+      method: 'PUT',
+      baseURL,
+      params,
+      headers,
+    })
+    loading = false
+    return result
+  }
+  catch (err) {
+    loading = false
+    throw err
+  }
 }
 
 async function destroy(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
@@ -97,12 +113,20 @@ async function destroy(url: string, params?: Params, headers?: Headers): Promise
 
   loading = true
 
-  return await ofetch(url, {
-    method: 'DELETE',
-    baseURL,
-    params,
-    headers,
-  })
+  try {
+    const result = await ofetch(url, {
+      method: 'DELETE',
+      baseURL,
+      params,
+      headers,
+    })
+    loading = false
+    return result
+  }
+  catch (err) {
+    loading = false
+    throw err
+  }
 }
 
 function setToken(authToken: string): void {

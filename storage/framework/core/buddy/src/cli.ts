@@ -68,7 +68,7 @@ async function main() {
 
         if (result.isErr) {
           log.error('Failed to set random application key.', result.error)
-          process.exit()
+          process.exit(1)
         }
       }
     }

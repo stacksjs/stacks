@@ -348,7 +348,8 @@ export async function sendTemplate(
 
   let body = template.body
   for (const [key, value] of Object.entries(variables)) {
-    body = body.replace(new RegExp(`\\{${key}\\}`, 'g'), value)
+    const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    body = body.replace(new RegExp(`\\{${escapedKey}\\}`, 'g'), value)
   }
 
   return send({ to, body })

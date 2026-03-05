@@ -24,7 +24,7 @@ export function route(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Successfully listed routes`)

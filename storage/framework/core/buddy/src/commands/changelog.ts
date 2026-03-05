@@ -3,6 +3,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
+import { ExitCode } from '@stacksjs/types'
 
 export function changelog(buddy: CLI): void {
   const descriptions = {
@@ -33,7 +34,7 @@ export function changelog(buddy: CLI): void {
           { ...options, startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Generated CHANGELOG.md', {

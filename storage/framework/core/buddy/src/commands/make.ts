@@ -77,7 +77,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       if (make) {
@@ -185,7 +185,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await makeAction(options)
@@ -222,7 +222,7 @@ export function make(buddy: CLI): void {
       if (!name) {
         log.error('You need to specify a command name.')
         log.info('Example: buddy make:command SendEmails')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const result = await makeCommand(options)
@@ -232,7 +232,7 @@ export function make(buddy: CLI): void {
           startTime: perf,
           useSeconds: true,
         })
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Created your ${italic(name)} command.`, {
@@ -255,7 +255,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await makeComponent(options)
@@ -277,7 +277,7 @@ export function make(buddy: CLI): void {
         log.info('Example: `buddy make:database my-cool-database`')
         log.info('Or: `buddy make:database --name=my-cool-database`')
         log.info('Read more about the documentation here: https://stacksjs.com/docs/make/database')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       makeDatabase(options)
@@ -296,7 +296,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       // makeFactory(options)
@@ -326,7 +326,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await makeLanguage(options)
@@ -345,7 +345,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a migration name')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       // log.info(path)
@@ -364,7 +364,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a model name')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await createModel(options)
@@ -388,7 +388,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const result = await createNotification(options)
@@ -398,7 +398,7 @@ export function make(buddy: CLI): void {
           startTime: perf,
           useSeconds: true,
         })
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Created your ${italic(name)} notification.`, {
@@ -428,7 +428,7 @@ export function make(buddy: CLI): void {
       if (!name) {
         log.error('You need to specify a policy name.')
         log.info('Example: buddy make:policy PostPolicy')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const result = await makePolicy(options as any)
@@ -438,7 +438,7 @@ export function make(buddy: CLI): void {
           startTime: perf,
           useSeconds: true,
         })
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Created your ${italic(name)} policy.`, {
@@ -469,7 +469,7 @@ export function make(buddy: CLI): void {
       if (!name) {
         log.error('You need to specify a resource name.')
         log.info('Example: buddy make:resource UserResource')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const result = await makeResource(options as any)
@@ -479,7 +479,7 @@ export function make(buddy: CLI): void {
           startTime: perf,
           useSeconds: true,
         })
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Created your ${italic(name)} resource.`, {
@@ -512,7 +512,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       makeStack(options)
@@ -532,7 +532,7 @@ export function make(buddy: CLI): void {
 
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await makePage(options)
@@ -558,7 +558,7 @@ export function make(buddy: CLI): void {
       if (!name) {
         log.error('You need to specify a job name.')
         log.info('Example: buddy make:job SendWelcomeEmail')
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       const result = await makeJob(options)
@@ -568,7 +568,7 @@ export function make(buddy: CLI): void {
           startTime: perf,
           useSeconds: true,
         })
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Created your ${italic(name)} job.`, {

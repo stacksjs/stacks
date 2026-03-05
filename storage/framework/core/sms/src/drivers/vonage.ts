@@ -95,6 +95,10 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
       body: body.toString(),
     })
 
+    if (!response.ok) {
+      throw new Error(`Vonage SMS API error: ${response.status}`)
+    }
+
     const data = await response.json() as VonageSmsResponse
 
     if (data.messages && data.messages.length > 0) {
@@ -213,6 +217,10 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
       headers,
     })
 
+    if (!response.ok) {
+      throw new Error(`Vonage message status API error: ${response.status}`)
+    }
+
     const data = await response.json() as VonageMessageStatusResponse
 
     return {
@@ -243,6 +251,10 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
         body: body.toString(),
       })
 
+      if (!response.ok) {
+        throw new Error(`Vonage number insight API error: ${response.status}`)
+      }
+
       const data = await response.json() as VonageNumberInsightResponse
 
       if (data.status !== 0) {
@@ -267,6 +279,10 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
     const response = await fetch(
       `${API_BASE}/account/get-balance?api_key=${this.config.apiKey}&api_secret=${this.config.apiSecret}`,
     )
+
+    if (!response.ok) {
+      throw new Error(`Vonage balance API error: ${response.status}`)
+    }
 
     const data = await response.json() as VonageBalanceResponse
 

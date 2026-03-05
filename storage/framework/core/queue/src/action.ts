@@ -128,7 +128,7 @@ export class Job {
 
     // Sync: wait then execute
     await new Promise(resolve => setTimeout(resolve, delaySeconds * 1000))
-    return this.dispatchNow(payload)
+    return await this.dispatchNow(payload)
   }
 
   /**

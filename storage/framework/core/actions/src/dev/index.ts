@@ -11,7 +11,7 @@ export async function runFrontendDevServer(options: DevOptions): Promise<void> {
 }
 
 export async function runBackendDevServer(options: DevOptions): Promise<void> {
-  runApiDevServer(options)
+  await runApiDevServer(options)
 }
 
 export async function runApiDevServer(options: DevOptions): Promise<void> {
