@@ -117,7 +117,7 @@ export class RedisQueue<T = any> {
       priority: options?.priority,
       timeout: options?.timeout ? options.timeout * 1000 : undefined,
       backoff: Array.isArray(options?.backoff)
-        ? { type: 'fixed', delay: options.backoff[0] || 1000 }
+        ? { type: 'fixed', delay: (options.backoff[0] || 1) * 1000 }
         : options?.backoff,
     }
 
@@ -391,9 +391,8 @@ export class RedisJob<T = any> implements Dispatchable {
   }
 
   async dispatchNow(): Promise<void> {
-    // For immediate execution, we add and process immediately
-    const job = await this.queue.add(this.data, { ...this.options, immediate: true })
-    // The job will be processed by the worker
+    // For immediate execution, add with immediate flag — worker processes it
+    await this.queue.add(this.data, { ...this.options, immediate: true })
   }
 
   delay(seconds: number): this {

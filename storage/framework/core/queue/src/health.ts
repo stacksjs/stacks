@@ -355,7 +355,7 @@ export function createHealthCheckHandler(config: HealthCheckConfig = {}): (req: 
   return async (_req: Request) => {
     const result = await checkQueueHealth(config)
 
-    const statusCode = result.status === 'healthy' ? 200 : result.status === 'degraded' ? 200 : 503
+    const statusCode = result.status === 'healthy' ? 200 : result.status === 'degraded' ? 207 : 503
 
     return new Response(JSON.stringify(result, null, 2), {
       status: statusCode,

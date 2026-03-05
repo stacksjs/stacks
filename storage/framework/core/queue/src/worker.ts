@@ -211,10 +211,18 @@ async function processJob(job: any): Promise<void> {
   const tracker = getWorkerTracker()
   tracker.markActive(workerId)
 
+  let parsedJobName: string | undefined
+  try {
+    parsedJobName = JSON.parse(job.payload || '{}').jobName
+  }
+  catch {
+    // Malformed payload — will be caught during execution
+  }
+
   await emitQueueEvent('job:processing', {
     jobId: String(jobId),
     queueName,
-    jobName: JSON.parse(job.payload || '{}').jobName,
+    jobName: parsedJobName,
   })
 
   let jobError: Error | null = null

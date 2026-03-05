@@ -427,7 +427,7 @@ export class FailedJobNotifier {
   /**
    * Cleanup resources
    */
-  cleanup(): void {
+  async cleanup(): Promise<void> {
     if (this.batchTimeout) {
       clearTimeout(this.batchTimeout)
       this.batchTimeout = null
@@ -435,7 +435,7 @@ export class FailedJobNotifier {
 
     // Flush any remaining batch
     if (this.pendingBatch.length > 0) {
-      this.flushBatch()
+      await this.flushBatch()
     }
   }
 }
