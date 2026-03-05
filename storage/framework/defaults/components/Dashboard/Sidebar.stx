@@ -149,13 +149,13 @@ const sectionContent = {
   }
 }
 
-function getSidebarClass() {
-  return isSidebarCollapsed ? 'lg:w-20' : 'lg:w-64'
+function getSidebarWidth() {
+  return isSidebarCollapsed ? 64 : 240
 }
 </script>
 <div>
   <!-- Static sidebar for desktop -->
-  <div class="hidden lg:fixed lg:inset-y-0 lg:flex lg:flex-col transition-all duration-300 ease-in-out {{ getSidebarClass() }}">
+  <div class="hidden lg:fixed lg:flex lg:flex-col transition-all duration-300 ease-in-out" style="top: 0; bottom: 0; width: {{ getSidebarWidth() }}px;">
     <div class="flex grow flex-col gap-y-3 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-600 dark:bg-blue-gray-900 transition-all duration-300 {{ isSidebarCollapsed ? 'items-center px-2 pb-4' : 'px-6 pb-4' }}">
 
       <div class="pt-4 h-10 flex shrink-0 items-center justify-between rounded-lg">
@@ -232,7 +232,7 @@ function getSidebarClass() {
 
               <!-- Section items -->
               @if(sections[sectionKey] && !isSidebarCollapsed)
-                <div class="section-content mt-1 -mx-2 space-y-0.5 w-full">
+                <ul class="section-content mt-1 -mx-2 space-y-0.5 w-full">
                   @foreach(sectionContent[sectionKey].items as item)
                     <li class="w-full">
                       <a href="{{ item.to }}" class="group sidebar-links w-full">
@@ -247,12 +247,12 @@ function getSidebarClass() {
                       </a>
                     </li>
                   @endforeach
-                </div>
+                </ul>
               @endif
 
               <!-- Collapsed sidebar items -->
               @if(sections[sectionKey] && isSidebarCollapsed)
-                <div class="w-full flex flex-col items-center space-y-0.5">
+                <ul class="w-full flex flex-col items-center space-y-0.5">
                   @foreach(sectionContent[sectionKey].items as item)
                     <li class="flex justify-center w-full">
                       <a href="{{ item.to }}" class="group sidebar-links justify-center" title="{{ item.text }}">
@@ -266,7 +266,7 @@ function getSidebarClass() {
                       </a>
                     </li>
                   @endforeach
-                </div>
+                </ul>
               @endif
             </li>
           @endforeach
