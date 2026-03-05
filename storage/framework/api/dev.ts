@@ -188,7 +188,7 @@ handleEvents()
 
 process.on('SIGINT', () => {
   log.info(`Exited using Ctrl-C`)
-  process.exit()
+  process.exit(0)
 })
 
 // @ts-expect-error - somehow type is not recognized

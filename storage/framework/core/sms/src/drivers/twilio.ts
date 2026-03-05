@@ -142,6 +142,10 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
       },
     )
 
+    if (!response.ok) {
+      throw new Error(`Twilio message status API error: ${response.status}`)
+    }
+
     const data = await response.json() as TwilioMessageResponse
 
     return {
@@ -197,6 +201,10 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
         },
       },
     )
+
+    if (!response.ok) {
+      throw new Error(`Twilio balance API error: ${response.status}`)
+    }
 
     const data = await response.json() as TwilioBalanceResponse
 

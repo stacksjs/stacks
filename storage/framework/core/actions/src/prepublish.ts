@@ -2,6 +2,7 @@ import process from 'node:process'
 import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { runtimePath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 
 log.info('Running prepublish command...')
@@ -14,7 +15,7 @@ const result = await runNpmScript(NpmScript.BuildStacks, {
 
 if (result.isErr) {
   log.error(new Error('There was an error while prepublishing your stack'), result.error)
-  process.exit()
+  process.exit(ExitCode.FatalError)
 }
 
 log.success('Prepublishing completed')

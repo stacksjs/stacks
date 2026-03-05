@@ -459,15 +459,17 @@ export async function deleteStacksFunctions(): Promise<Result<string, string>> {
     return lambda.deleteFunction((f.FunctionName as string) || '')
   })
 
-  await Promise.all(promises).catch((error: Error) => {
-    if (error.message.includes('it is a replicated function')) {
+  try {
+    await Promise.all(promises)
+  }
+  catch (error) {
+    const e = error as Error
+    if (e.message.includes('it is a replicated function')) {
       log.info('Function is replicated, skipping...')
-
       return ok('CloudFront is still deleting the some functions. Try again later.')
     }
-
-    return err(handleError('Error deleting stacks functions', error))
-  })
+    return err(handleError('Error deleting stacks functions', e))
+  }
 
   return ok('Stacks functions deleted')
 }
@@ -531,9 +533,12 @@ export async function deleteParameterStore(): Promise<Result<string, string>> {
     return ssm.deleteParameter({ Name: (p.Name as string) || '' })
   })
 
-  await Promise.all(promises).catch((error: Error) => {
-    return err(handleError('Error deleting parameter store', error))
-  })
+  try {
+    await Promise.all(promises)
+  }
+  catch (error) {
+    return err(handleError('Error deleting parameter store', error as Error))
+  }
 
   return ok('Parameter store deleted')
 }

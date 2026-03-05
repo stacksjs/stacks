@@ -9,7 +9,7 @@ import type { Server, ServerWebSocket } from 'bun'
 
 process.on('SIGINT', () => {
   console.log('Exited using Ctrl-C')
-  process.exit()
+  process.exit(0)
 })
 
 if (process.env.QUEUE_WORKER) {

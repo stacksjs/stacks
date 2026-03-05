@@ -45,6 +45,10 @@ export const usePaymentStore = defineStore('payment', () => {
       },
     })
 
+    if (!response.ok) {
+      throw new Error(`Failed to fetch setup intent: ${response.status}`)
+    }
+
     const client: any = await response.json()
     const clientSecret = client.client_secret
 
@@ -65,6 +69,10 @@ export const usePaymentStore = defineStore('payment', () => {
       body: JSON.stringify(body),
     })
 
+    if (!response.ok) {
+      throw new Error(`Failed to create payment intent: ${response.status}`)
+    }
+
     const client: any = await response.json()
     const clientSecret = client.client_secret
 
@@ -84,6 +92,10 @@ export const usePaymentStore = defineStore('payment', () => {
       },
       body: JSON.stringify(body),
     })
+
+    if (!response.ok) {
+      throw new Error(`Failed to store transaction: ${response.status}`)
+    }
 
     const client: any = await response.json()
     const clientSecret = client.client_secret

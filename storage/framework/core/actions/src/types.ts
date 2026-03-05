@@ -2,6 +2,7 @@ import type { TypesOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
+import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 
 export async function invoke(options?: TypesOptions): Promise<void> {
@@ -9,7 +10,7 @@ export async function invoke(options?: TypesOptions): Promise<void> {
 
   if (results.isErr) {
     log.error('There was an error fixing your types.', results.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   log.success('Types are set')

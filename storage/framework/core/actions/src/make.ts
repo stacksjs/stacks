@@ -2,6 +2,7 @@ import type { MakeOptions } from '@stacksjs/types'
 import type { TemplateKey } from './templates'
 import process from 'node:process'
 import { italic, runCommand } from '@stacksjs/cli'
+import { ExitCode } from '@stacksjs/types'
 import { localUrl } from '@stacksjs/config'
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
@@ -70,7 +71,7 @@ export async function makeAction(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your action', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -83,7 +84,7 @@ export async function makeComponent(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your component', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -106,12 +107,12 @@ export function makeDatabase(options: MakeOptions): void {
   }
   catch (error) {
     log.error('There was an error creating your database', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
 export function createDatabase(options: MakeOptions): void {
-  console.log('createDatabase options', options) // wip
+  log.debug('createDatabase options', options)
 }
 
 export function factory(options: MakeOptions): void {
@@ -123,12 +124,12 @@ export function factory(options: MakeOptions): void {
   }
   catch (error) {
     log.error('There was an error creating your factory', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
 export function createFactory(options: MakeOptions): void {
-  console.log('options', options) // wip
+  log.debug('createFactory options', options)
 }
 
 export async function makeNotification(options: MakeOptions): Promise<void> {
@@ -140,7 +141,7 @@ export async function makeNotification(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your notification', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -153,7 +154,7 @@ export async function makePage(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your page', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -171,7 +172,7 @@ export async function makeFunction(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your function', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -189,7 +190,7 @@ export async function makeLanguage(options: MakeOptions): Promise<void> {
   }
   catch (error) {
     log.error('There was an error creating your language.', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 
@@ -210,7 +211,7 @@ export function makeStack(options: MakeOptions): void {
   }
   catch (error) {
     log.error('There was an error creating your stack', error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 }
 

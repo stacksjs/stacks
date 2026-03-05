@@ -236,17 +236,21 @@ export default class QueryController extends Controller {
       if (!query)
         throw new Error('Query not found')
 
-      // Parse JSON fields
+      // Parse JSON fields (safely — data may be corrupted)
+      const safeParse = (val: string | null | undefined, fallback: any = []) => {
+        if (!val) return fallback
+        try { return JSON.parse(val) }
+        catch { return fallback }
+      }
+
       return {
         ...query,
-        bindings: query.bindings ? JSON.parse(query.bindings) : null,
-        tags: query.tags ? JSON.parse(query.tags) : [],
-        affected_tables: query.affected_tables ? JSON.parse(query.affected_tables) : [],
-        indexes_used: query.indexes_used ? JSON.parse(query.indexes_used) : [],
-        missing_indexes: query.missing_indexes ? JSON.parse(query.missing_indexes) : [],
-        optimization_suggestions: query.optimization_suggestions
-          ? JSON.parse(query.optimization_suggestions)
-          : [],
+        bindings: safeParse(query.bindings, null),
+        tags: safeParse(query.tags),
+        affected_tables: safeParse(query.affected_tables),
+        indexes_used: safeParse(query.indexes_used),
+        missing_indexes: safeParse(query.missing_indexes),
+        optimization_suggestions: safeParse(query.optimization_suggestions),
       }
     }
     catch (error: any) {

@@ -81,7 +81,7 @@ export function generateEntryPointData(type: LibraryType): string {
           'There are no functions defined to be built. Please check your config/library.ts file for potential adjustments',
         ),
       )
-      process.exit()
+      process.exit(ExitCode.FatalError)
     }
 
     for (const fx of library.functions.files) {
@@ -101,7 +101,7 @@ export function generateEntryPointData(type: LibraryType): string {
           'There are no components defined to be built. Please check your config/library.ts file for potential adjustments',
         ),
       )
-      process.exit()
+      process.exit(ExitCode.FatalError)
     }
 
     arr = determineResetPreset()
@@ -128,7 +128,7 @@ export function generateEntryPointData(type: LibraryType): string {
         'There are no components defined to be built. Please check your config/library.ts file for potential adjustments',
       ),
     )
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   for (const component of library.webComponents.tags.map(tag => tag.name)) {

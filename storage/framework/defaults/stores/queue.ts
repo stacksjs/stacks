@@ -26,6 +26,11 @@ export const useQueueStore = defineStore('queue', () => {
       },
     })
 
+    if (!response.ok) {
+      console.error(`Failed to fetch queues: ${response.status}`)
+      return
+    }
+
     const res = await response.json() as Queue[]
 
     queues.value = res

@@ -149,7 +149,7 @@ export function useAuth(): AuthComposable {
         await fetch(`${baseUrl}/logout`, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${token.value}`,
             Accept: 'application/json',
           },
         })

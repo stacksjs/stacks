@@ -26,7 +26,13 @@ export default new Action({
       return response.notFound('Passkey not found')
 
     const pubkeyString = userPasskey.cred_public_key
-    const jsonParse = JSON.parse(pubkeyString) as Record<string, number>
+    let jsonParse: Record<string, number>
+    try {
+      jsonParse = JSON.parse(pubkeyString) as Record<string, number>
+    }
+    catch {
+      return response.serverError('Invalid public key format')
+    }
     const publicKey = new Uint8Array(Object.values(jsonParse)).buffer
 
     // Convert challenge string to Uint8Array

@@ -4,6 +4,7 @@ import { runCommand } from '@stacksjs/cli'
 import { Action, NpmScript } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
 import { frameworkPath, projectPath } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
 import { runNpmScript } from '@stacksjs/utils'
 import { runAction } from '../helpers'
 import { generateVsCodeCustomData as genVsCodeCustomData } from '../helpers/vscode-custom-data'
@@ -43,7 +44,7 @@ export async function generateLibEntries(options: GeneratorOptions): Promise<voi
 
   if (result.isErr) {
     log.error('There was an error generating your library entry points', result.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   log.success('Library entry points generated successfully')
@@ -54,7 +55,7 @@ export async function generateWebTypes(options?: GeneratorOptions): Promise<void
 
   if (result.isErr) {
     log.error('There was an error generating the web-types.json file.', result.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   log.success('Successfully generated the web-types.json file')
@@ -65,7 +66,7 @@ export async function generateVsCodeCustomData(): Promise<void> {
 
   if (result.isErr) {
     log.error('There was an error generating the custom-elements.json file.', result.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
@@ -78,7 +79,7 @@ export async function generateIdeHelpers(options?: GeneratorOptions): Promise<vo
 
   if (result.isErr) {
     log.error('There was an error generating IDE helpers.', result.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
@@ -90,7 +91,7 @@ export async function generateComponentMeta(): Promise<void> {
 
   if (result.isErr) {
     log.error('There was an error generating your component meta information.', result.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   await runAction(Action.LintFix, { verbose: true, cwd: projectPath() }) // because the generated json file needs to be linted
@@ -105,7 +106,7 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
 
   if (result.isErr) {
     log.error('There was an error generating your types.', result.error)
-    process.exit()
+    process.exit(ExitCode.FatalError)
   }
 
   log.success('Types were generated successfully')
