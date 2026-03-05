@@ -28,7 +28,7 @@ export function tinker(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error || undefined,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro('Tinker mode exited.', { startTime: perf, useSeconds: true })

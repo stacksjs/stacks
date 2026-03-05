@@ -73,8 +73,6 @@ export function make(buddy: CLI): void {
 
       const name = buddy.args[0]
 
-      console.log(buddy.args)
-
       if (!name) {
         log.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)

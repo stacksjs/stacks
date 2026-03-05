@@ -47,14 +47,26 @@ export function useNetwork(): UseNetworkReturn {
   updateNetworkInfo()
 
   if (typeof window !== 'undefined') {
-    window.addEventListener('online', () => {
+    const onOnline = () => {
       isOnline.value = true
       onlineAt.value = Date.now()
-    })
-    window.addEventListener('offline', () => {
+    }
+    const onOffline = () => {
       isOnline.value = false
       offlineAt.value = Date.now()
-    })
+    }
+    window.addEventListener('online', onOnline)
+    window.addEventListener('offline', onOffline)
+
+    try {
+      onUnmounted(() => {
+        window.removeEventListener('online', onOnline)
+        window.removeEventListener('offline', onOffline)
+      })
+    }
+    catch {
+      // Not in a component context
+    }
 
     if (isSupported.value) {
       const conn = (navigator as any).connection

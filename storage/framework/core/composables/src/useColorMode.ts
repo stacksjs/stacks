@@ -1,5 +1,5 @@
 import type { Ref } from '@stacksjs/stx'
-import { ref, watch } from '@stacksjs/stx'
+import { onUnmounted, ref, watch } from '@stacksjs/stx'
 
 export type ColorMode = 'dark' | 'light' | 'auto' | (string & {})
 
@@ -39,9 +39,19 @@ export function useColorMode(options: UseColorModeOptions = {}): UseColorModeRet
   if (typeof window !== 'undefined' && window.matchMedia) {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     system.value = mq.matches ? 'dark' : 'light'
-    mq.addEventListener('change', (e) => {
+    const onChange = (e: MediaQueryListEvent) => {
       system.value = e.matches ? 'dark' : 'light'
-    })
+    }
+    mq.addEventListener('change', onChange)
+
+    try {
+      onUnmounted(() => {
+        mq.removeEventListener('change', onChange)
+      })
+    }
+    catch {
+      // Not in a component context
+    }
   }
 
   // Restore from storage

@@ -174,7 +174,12 @@ export async function loadFile(filePath: string): Promise<TranslationMessages> {
 
   switch (ext) {
     case '.json':
-      return JSON.parse(content) as TranslationMessages
+      try {
+        return JSON.parse(content) as TranslationMessages
+      }
+      catch {
+        throw new Error(`Invalid JSON in translation file: ${filePath}`)
+      }
 
     case '.yaml':
     case '.yml':

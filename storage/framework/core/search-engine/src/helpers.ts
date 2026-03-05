@@ -13,8 +13,14 @@ export function isString(val: unknown): val is string {
 export function determineState(): SearchEngineStore {
   const ls = localStorage.getItem('search-engine')
 
-  if (isString(ls))
-    return JSON.parse(ls) as SearchEngineStore
+  if (isString(ls)) {
+    try {
+      return JSON.parse(ls) as SearchEngineStore
+    }
+    catch {
+      // corrupted localStorage data, fall through to defaults
+    }
+  }
 
   return {
     // default state

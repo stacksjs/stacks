@@ -1,5 +1,5 @@
 import type { Ref } from '@stacksjs/stx'
-import { ref, watch } from '@stacksjs/stx'
+import { onUnmounted, ref, watch } from '@stacksjs/stx'
 
 /**
  * Reactive preferred color scheme detection.
@@ -11,9 +11,19 @@ export function usePreferredDark(): Ref<boolean> {
   if (typeof window !== 'undefined' && window.matchMedia) {
     const mq = window.matchMedia('(prefers-color-scheme: dark)')
     matches.value = mq.matches
-    mq.addEventListener('change', (e) => {
+    const onChange = (e: MediaQueryListEvent) => {
       matches.value = e.matches
-    })
+    }
+    mq.addEventListener('change', onChange)
+
+    try {
+      onUnmounted(() => {
+        mq.removeEventListener('change', onChange)
+      })
+    }
+    catch {
+      // Not in a component context
+    }
   }
 
   return matches

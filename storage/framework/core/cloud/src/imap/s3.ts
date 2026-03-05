@@ -203,7 +203,7 @@ export class S3Client {
           allObjects.push({
             Key: obj.Key,
             LastModified: obj.LastModified || '',
-            Size: Number.parseInt(obj.Size || '0'),
+            Size: Number.parseInt(obj.Size || '0', 10),
             ETag: obj.ETag,
           })
         }
@@ -247,7 +247,7 @@ export class S3Client {
         objects.push({
           Key: item.Key || '',
           LastModified: item.LastModified || '',
-          Size: Number.parseInt(item.Size || '0'),
+          Size: Number.parseInt(item.Size || '0', 10),
           ETag: item.ETag,
         })
         // Respect maxKeys

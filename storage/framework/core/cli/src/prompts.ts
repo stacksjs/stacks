@@ -128,7 +128,7 @@ async function select(options: SelectOptions): Promise<any> {
   })
 
   const answer = await readLine('Select (number): ')
-  const index = Number.parseInt(answer.trim()) - 1
+  const index = Number.parseInt(answer.trim(), 10) - 1
   if (index >= 0 && index < options.choices.length) {
     return options.choices[index].value
   }
@@ -148,7 +148,7 @@ async function multiselect(options: SelectOptions): Promise<any[]> {
   })
 
   const answer = await readLine('Select (e.g., 1,3,4): ')
-  const indices = answer.split(',').map(s => Number.parseInt(s.trim()) - 1)
+  const indices = answer.split(',').map(s => Number.parseInt(s.trim(), 10) - 1)
   const selected = indices
     .filter(i => i >= 0 && i < options.choices.length)
     .map(i => options.choices[i].value)

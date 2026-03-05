@@ -28,7 +28,7 @@ export function saas(buddy: CLI): void {
           { startTime: perf, useSeconds: true },
           result.error,
         )
-        process.exit()
+        process.exit(ExitCode.FatalError)
       }
 
       await outro(`Stripe products created successfully`, {

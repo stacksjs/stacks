@@ -134,7 +134,7 @@ export function share(buddy: CLI): void {
       }
 
       const port = options.port
-        ? Number.parseInt(options.port)
+        ? Number.parseInt(options.port, 10)
         : defaultPorts[serviceType] || 3000
 
       if (Number.isNaN(port) || port < 1 || port > 65535) {
