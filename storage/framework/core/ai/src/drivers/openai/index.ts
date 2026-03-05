@@ -77,6 +77,9 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
       }
 
       const data = (await response.json()) as OpenAIAPIResponse
+      if (!data.choices || data.choices.length === 0) {
+        throw new Error('OpenAI API returned empty choices')
+      }
       return data.choices[0].message.content
     },
 
@@ -135,6 +138,21 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
             catch {
               // Skip invalid JSON
             }
+          }
+        }
+      }
+
+      // Process any remaining data in the buffer
+      if (buffer.startsWith('data: ')) {
+        const data = buffer.slice(6)
+        if (data !== '[DONE]') {
+          try {
+            const parsed = JSON.parse(data) as any
+            const content = parsed.choices[0]?.delta?.content
+            if (content) yield content
+          }
+          catch {
+            // Skip invalid JSON
           }
         }
       }
@@ -210,6 +228,10 @@ export async function chat(
   }
 
   const data = (await response.json()) as any
+
+  if (!data.choices || data.choices.length === 0) {
+    throw new Error('OpenAI API returned empty choices')
+  }
 
   return {
     content: data.choices[0].message.content,

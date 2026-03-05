@@ -3,20 +3,16 @@ import type { StorageAdapter } from '../types'
 import { S3Client } from '@stacksjs/ts-cloud'
 import { createS3Storage } from '../adapters/s3'
 
-let _adapter: StorageAdapter | null = null
-let _configLoaded = false
+let _adapterPromise: Promise<StorageAdapter> | null = null
 
-async function loadConfig() {
-  if (_configLoaded) return
-  _configLoaded = true
-
+async function loadConfig(): Promise<StorageAdapter> {
   try {
     const { filesystems } = await import('@stacksjs/config')
     const s3Config = filesystems.s3
 
     const client = new S3Client(s3Config?.region || 'us-east-1')
 
-    _adapter = createS3Storage(client, {
+    return createS3Storage(client, {
       bucket: s3Config?.bucket || 'stacks',
       prefix: s3Config?.prefix || 'stx',
       region: s3Config?.region || 'us-east-1',
@@ -28,7 +24,7 @@ async function loadConfig() {
 
     const client = new S3Client(env.AWS_REGION || 'us-east-1')
 
-    _adapter = createS3Storage(client, {
+    return createS3Storage(client, {
       bucket: env.AWS_S3_BUCKET || 'stacks',
       prefix: env.AWS_S3_PREFIX || 'stx',
       region: env.AWS_REGION || 'us-east-1',
@@ -37,8 +33,10 @@ async function loadConfig() {
 }
 
 async function getAdapter(): Promise<StorageAdapter> {
-  await loadConfig()
-  return _adapter!
+  if (!_adapterPromise) {
+    _adapterPromise = loadConfig()
+  }
+  return _adapterPromise
 }
 
 export async function getAwsStorage(): Promise<StorageAdapter> {

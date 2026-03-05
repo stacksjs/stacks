@@ -23,7 +23,14 @@ export const response = {
    */
   json: <T>(data: T, options: JsonResponseOptions = {}): Response => {
     const { status = 200, headers = {}, pretty = false } = options
-    const body = pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+    let body: string
+    try {
+      body = pretty ? JSON.stringify(data, null, 2) : JSON.stringify(data)
+    }
+    catch {
+      // Handle circular references or non-serializable data
+      body = JSON.stringify({ error: 'Response data could not be serialized' })
+    }
 
     return new Response(body, {
       status,

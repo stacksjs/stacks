@@ -73,6 +73,9 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
       }
 
       const data = (await response.json()) as ClaudeAPIResponse
+      if (!data.content || data.content.length === 0) {
+        throw new Error('Claude API returned empty content')
+      }
       return data.content[0].text
     },
 
@@ -133,6 +136,22 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
           }
         }
       }
+
+      // Process any remaining data in the buffer
+      if (buffer.startsWith('data: ')) {
+        const data = buffer.slice(6)
+        if (data !== '[DONE]') {
+          try {
+            const event = JSON.parse(data) as ClaudeStreamEvent
+            if (event.type === 'content_block_delta' && event.delta?.text) {
+              yield event.delta.text
+            }
+          }
+          catch {
+            // Skip invalid JSON
+          }
+        }
+      }
     },
   }
 }
@@ -178,6 +197,10 @@ export async function chat(
   }
 
   const data = (await response.json()) as any
+
+  if (!data.content || data.content.length === 0) {
+    throw new Error('Claude API returned empty content')
+  }
 
   return {
     content: data.content[0].text,

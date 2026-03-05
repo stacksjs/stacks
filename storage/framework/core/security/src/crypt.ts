@@ -2,6 +2,10 @@ import { config } from '@stacksjs/config'
 import { decrypt as cryptoDecrypt, encrypt as cryptoEncrypt } from 'ts-security-crypto'
 
 async function encrypt(message: string, customPassphrase?: string): Promise<string> {
+  if (!message && message !== '') {
+    throw new Error('encrypt() requires a string message')
+  }
+
   const passphrase = customPassphrase || config.app.key
 
   if (!passphrase)
@@ -12,6 +16,10 @@ async function encrypt(message: string, customPassphrase?: string): Promise<stri
 }
 
 async function decrypt(encrypted: string, customPassphrase?: string): Promise<string> {
+  if (!encrypted) {
+    throw new Error('decrypt() requires a non-empty encrypted string')
+  }
+
   const passphrase = customPassphrase || config.app.key
 
   if (!passphrase)

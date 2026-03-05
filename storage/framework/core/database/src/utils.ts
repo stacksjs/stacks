@@ -154,12 +154,9 @@ function updateQueryBuilderConfig(): void {
   })
 }
 
-// Initialize config immediately at module load time
+// Initialize config immediately at module load time with env defaults
 // This ensures bun-query-builder is configured before any queries run
 updateQueryBuilderConfig()
-
-// Config is initialized lazily when first accessed via getDb()
-// Do NOT call updateQueryBuilderConfig() at module level to avoid circular deps
 
 /**
  * Lazy query builder instance - only created when first accessed.
@@ -168,40 +165,37 @@ updateQueryBuilderConfig()
  */
 let _dbInstance: ReturnType<typeof createQueryBuilder> | null = null
 
-let _configInitialized = false
 let _configInitPromise: Promise<void> | null = null
 
-async function ensureConfigLoaded(): Promise<void> {
-  if (_configInitialized) return
-  if (_configInitPromise) return _configInitPromise
-
-  _configInitPromise = (async () => {
-    try {
-      const { config } = await import('@stacksjs/config')
-      if (config) {
-        initializeDbConfig(config)
+function ensureConfigLoaded(): Promise<void> {
+  if (!_configInitPromise) {
+    _configInitPromise = (async () => {
+      try {
+        const { config } = await import('@stacksjs/config')
+        if (config) {
+          initializeDbConfig(config)
+          // Reset instance so next access uses updated config
+          _dbInstance = null
+        }
       }
-    }
-    catch {
-      // Config not available, use defaults from env vars
-    }
-    _configInitialized = true
-  })()
+      catch {
+        // Config not available, use defaults from env vars
+      }
+    })()
+  }
 
   return _configInitPromise
 }
 
 function getDb(): ReturnType<typeof createQueryBuilder> {
   if (!_dbInstance) {
-    // Ensure query builder config is updated before creating instance
     updateQueryBuilderConfig()
-
     _dbInstance = createQueryBuilder()
   }
   return _dbInstance
 }
 
-// Initialize config asynchronously in the background
+// Start config loading in the background
 ensureConfigLoaded()
 
 // The bun-query-builder types `unsafe()` as returning `Promise<any>`, but at

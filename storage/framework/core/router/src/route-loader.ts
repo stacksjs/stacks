@@ -37,7 +37,10 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
       }
     }
     catch (error) {
-      console.error(`[Routes] Failed to load route file '${config.path}':`, error)
+      // Surface route loading errors clearly — silent failures make debugging very hard
+      const message = error instanceof Error ? error.message : String(error)
+      console.error(`[Routes] Failed to load route file '${config.path}': ${message}`)
+      throw new Error(`Route loading failed for '${config.path}': ${message}`)
     }
   }
 }

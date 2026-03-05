@@ -93,8 +93,8 @@ export class UploadedFile {
    * @returns The stored path
    */
   async storeAs(path: string, name: string, disk: string = 'local'): Promise<string> {
-    if (name.includes('..')) {
-      throw new Error('Invalid filename: path traversal detected')
+    if (name.includes('..') || name.includes('/') || name.includes('\\')) {
+      throw new Error('Invalid filename: path traversal or directory separator detected')
     }
     const sanitizedName = basename(name)
     const fullPath = path ? join(path, sanitizedName) : sanitizedName

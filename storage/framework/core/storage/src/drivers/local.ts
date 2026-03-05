@@ -4,28 +4,26 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { createLocalStorage } from '../adapters/local'
 
-let _adapter: StorageAdapter | null = null
-let _configLoaded = false
+let _adapterPromise: Promise<StorageAdapter> | null = null
 
-async function loadConfig() {
-  if (_configLoaded) return
-  _configLoaded = true
-
+async function loadConfig(): Promise<StorageAdapter> {
   try {
     const { filesystems } = await import('@stacksjs/config')
     const rootDirectory = resolve(filesystems.root || process.cwd())
-    _adapter = createLocalStorage({ root: rootDirectory })
+    return createLocalStorage({ root: rootDirectory })
   }
   catch {
     // Config not available, use defaults
     const rootDirectory = resolve(process.cwd())
-    _adapter = createLocalStorage({ root: rootDirectory })
+    return createLocalStorage({ root: rootDirectory })
   }
 }
 
 async function getAdapter(): Promise<StorageAdapter> {
-  await loadConfig()
-  return _adapter!
+  if (!_adapterPromise) {
+    _adapterPromise = loadConfig()
+  }
+  return _adapterPromise
 }
 
 export async function getLocalStorage(): Promise<StorageAdapter> {
