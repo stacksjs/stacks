@@ -9,8 +9,10 @@ const handler: ProxyHandler<StacksEnv> = {
   get: (target: StacksEnv, key: string) => {
     const value = target[key]
 
-    // if value is a string but only contains numbers, and the key is not AWS_ACCOUNT_ID, return it as a number
-    if (typeof value === 'string' && /^\d+$/.test(value) && key !== 'AWS_ACCOUNT_ID')
+    // Only coerce to number for keys that are clearly numeric settings (PORT, etc.)
+    // Don't coerce IDs, codes, or values with leading zeros as they lose information
+    const NUMERIC_SUFFIXES = ['_PORT', '_TIMEOUT', '_TTL', '_SIZE', '_LIMIT', '_MAX', '_MIN', '_INTERVAL', '_RETRIES', '_CONCURRENCY', '_WORKERS', '_CONNECTIONS']
+    if (typeof value === 'string' && /^\d+$/.test(value) && !value.startsWith('0') && NUMERIC_SUFFIXES.some(s => key.endsWith(s)))
       return Number(value)
 
     // if value is a string but only contains boolean values, return it as a boolean
@@ -37,11 +39,15 @@ export function writeEnv(key: EnvKey, value: string, options?: { path: string })
   // Find the line with the variable we want to update
   const index = lines.findIndex(line => line.startsWith(`${key}=`))
 
+  // Quote value if it contains spaces, quotes, or special characters
+  const needsQuoting = /[\s"'#$\\]/.test(value)
+  const quotedValue = needsQuoting ? `"${value.replace(/"/g, '\\"')}"` : value
+
   // If the variable exists, update it
   if (index !== -1)
-    lines[index] = `${key}=${value}`
+    lines[index] = `${key}=${quotedValue}`
   // Otherwise, add a new line
-  else lines.push(`${key}=${value}`)
+  else lines.push(`${key}=${quotedValue}`)
 
   // Join the lines back into a string and write it to the .env file
   fs.writeFileSync(envPath, lines.join('\n'))

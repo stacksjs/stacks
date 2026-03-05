@@ -18,11 +18,11 @@ type ErrorMessage = string
 
 export class ErrorHandler {
   static isTestEnvironment = false
-  static shouldExitProcess = true
+  static shouldExitProcess = false
 
   static handle(err: Error | ErrorMessage | unknown, options?: LogErrorOptions): Error {
     if (!this.isTestEnvironment)
-      this.shouldExitProcess = options?.shouldExit !== false
+      this.shouldExitProcess = options?.shouldExit === true
     if (options?.silent !== true)
       this.writeErrorToConsole(err)
 

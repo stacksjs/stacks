@@ -13,7 +13,7 @@ import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { Router } from '@stacksjs/bun-router'
 import { runWithRequest } from './request-context'
-import { createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
+import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 
 import type { StacksActionPath } from './action-paths'
 
@@ -190,6 +190,14 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
 }
 
 /**
+ * Clear the middleware cache (useful for hot-reload in development)
+ */
+export function clearMiddlewareCache(): void {
+  middlewareCache.clear()
+  middlewareAliases = null
+}
+
+/**
  * Registry for route middleware - maps route paths to middleware names
  */
 const routeMiddlewareRegistry = new Map<string, string[]>()
@@ -259,7 +267,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
 
       // Call the actual handler with the enhanced request
-      return wrappedBase(enhancedReq)
+      const response = await wrappedBase(enhancedReq)
+
+      // Clear tracked queries after each request to prevent accumulation
+      clearTrackedQueries()
+
+      return response
     })
   }
 }

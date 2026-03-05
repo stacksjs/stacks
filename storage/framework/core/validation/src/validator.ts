@@ -32,7 +32,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   const modelPath = modelFiles.find(file => file.endsWith(`${modelFile}.ts`))
 
   if (!modelPath)
-    throw new HttpError(500, `Model ${modelFile} not found`)
+    throw new HttpError(404, `Model ${modelFile} not found`)
 
   const model = (await import(modelPath)).default as Model
   const attributes = model.attributes

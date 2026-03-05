@@ -40,15 +40,22 @@ function buildErrorJson(opts: {
   return JSON.stringify(body)
 }
 
-const JSON_HEADERS: Record<string, string> = {
-  'Content-Type': 'application/json',
-  'Access-Control-Allow-Origin': '*',
+function getJsonHeaders(): Record<string, string> {
+  const isDev = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
+  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+  if (isDev) {
+    headers['Access-Control-Allow-Origin'] = '*'
+  }
+  return headers
 }
 
-const JSON_HEADERS_FULL: Record<string, string> = {
-  ...JSON_HEADERS,
-  'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, PATCH, OPTIONS',
-  'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+function getJsonHeadersFull(): Record<string, string> {
+  const headers = getJsonHeaders()
+  if (headers['Access-Control-Allow-Origin']) {
+    headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
+    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+  }
+  return headers
 }
 
 // Circular buffer for tracked queries (avoids O(n) shift on every insert)
@@ -233,7 +240,7 @@ export async function createErrorResponse(
           message: 'An unexpected error occurred.',
           status,
         }),
-        { status, headers: JSON_HEADERS },
+        { status, headers: getJsonHeaders() },
       )
     }
     return new Response(renderProductionErrorPage(status), {
@@ -302,7 +309,7 @@ export async function createErrorResponse(
             queries: getRecentQueries().slice(-10),
           },
         }),
-        { status, headers: JSON_HEADERS_FULL },
+        { status, headers: getJsonHeadersFull() },
       )
     }
 
@@ -319,13 +326,14 @@ export async function createErrorResponse(
   catch (renderError) {
     // Fallback to simple error page if rendering fails
     console.error('[Error Handler] Failed to render error page:', renderError)
+    const escapeHtml = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
     return new Response(`
       <html>
         <head><title>Error</title></head>
         <body>
           <h1>Error</h1>
-          <p>${error.message}</p>
-          <pre>${error.stack}</pre>
+          <p>${escapeHtml(error.message)}</p>
+          <pre>${escapeHtml(error.stack || '')}</pre>
         </body>
       </html>
     `, {
@@ -353,7 +361,7 @@ export async function createMiddlewareErrorResponse(
         message: error.message,
         status,
       }),
-      { status, headers: JSON_HEADERS },
+      { status, headers: getJsonHeaders() },
     )
   }
 
@@ -369,7 +377,7 @@ export async function createMiddlewareErrorResponse(
       message: 'An unexpected error occurred.',
       status,
     }),
-    { status, headers: JSON_HEADERS },
+    { status, headers: getJsonHeaders() },
   )
 }
 

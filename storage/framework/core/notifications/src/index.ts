@@ -1,6 +1,5 @@
 import { log } from '@stacksjs/cli'
 import { notification as _notification } from '@stacksjs/config'
-import { err } from '@stacksjs/error-handling'
 import { chat, email, sms } from './drivers'
 import { DatabaseNotificationDriver } from './drivers/database'
 
@@ -41,7 +40,7 @@ export function useNotification(typeParam = 'email', driverParam = 'mailtrap'): 
     case 'database':
       return useDatabase()
     default:
-      return err(`Type ${type} not supported`)
+      throw new Error(`Notification type "${type}" is not supported`)
   }
 }
 

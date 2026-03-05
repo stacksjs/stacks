@@ -103,7 +103,12 @@ export const log: Log = {
 
     const logger = await getLogger()
     await logger.error(errorMessage)
-    handleError(err, options)
+
+    // Only call handleError if explicitly requested (e.g., fatal errors)
+    // Default behavior: log the error without killing the process
+    if (options?.shouldExit) {
+      handleError(err, options)
+    }
   },
 
   debug: async (...args: any[]) => {
@@ -132,26 +137,30 @@ export const log: Log = {
   },
 
   time: (label: string) => {
-    // For time, we need to return a promise that resolves to the time function
-    return (async () => {
+    const start = performance.now()
+    return async (metadata?: Record<string, any>) => {
+      const duration = performance.now() - start
       const logger = await getLogger()
-      return logger.time(label)
-    })() as any
+      const meta = metadata ? ` ${JSON.stringify(metadata)}` : ''
+      await logger.info(`${label}: ${duration.toFixed(2)}ms${meta}`)
+    }
   },
 }
 
 // Export convenience functions
-export function dump(...args: any[]): void {
-  args.forEach(arg => log.debug(arg))
+export async function dump(...args: any[]): Promise<void> {
+  for (const arg of args) {
+    await log.debug(arg)
+  }
 }
 
-export function dd(...args: any[]): void {
-  log.info(args)
+export async function dd(...args: any[]): Promise<void> {
+  await log.info(args)
   process.exit(ExitCode.FatalError)
 }
 
-export function echo(...args: any[]): void {
-  log.debug(...args)
+export async function echo(...args: any[]): Promise<void> {
+  await log.debug(...args)
 }
 
 // Export logger getter for debugging

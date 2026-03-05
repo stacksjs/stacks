@@ -47,6 +47,29 @@ export class Email {
     this.onSuccess = options.onSuccess
   }
 
+  private async renderTemplate(): Promise<string> {
+    if (!this.template) return ''
+
+    try {
+      // Try to load the template file from resources/views/emails
+      const { path: p } = await import('@stacksjs/path')
+      const templatePath = p.resourcesPath(`views/emails/${this.template}.html`)
+      const file = Bun.file(templatePath)
+      if (await file.exists()) {
+        return await file.text()
+      }
+    }
+    catch {
+      // Template file not found, fall back to template as raw HTML
+    }
+
+    // If template looks like HTML, use it directly; otherwise wrap it
+    if (this.template.includes('<')) {
+      return this.template
+    }
+    return `<p>${this.template}</p>`
+  }
+
   async send(to?: string): Promise<EmailHandlerResult> {
     const recipient = to || this.to
     if (!recipient) {
@@ -62,7 +85,7 @@ export class Email {
           address: config.email.from?.address || 'no-reply@stacksjs.com',
         },
         subject: this.subject,
-        html: `<p>Email: ${this.template}</p>`, // Placeholder - should render template
+        html: await this.renderTemplate(),
       })
 
       if (this.onSuccess) {
@@ -118,13 +141,13 @@ class Mail {
     })
   }
 
-  // Optional method to switch drivers on the fly
-  public use(driver: string): this {
+  // Create a new Mail instance with a different driver (doesn't mutate the singleton)
+  public use(driver: string): Mail {
     if (!this.drivers.has(driver)) {
       throw new Error(`Email driver '${driver}' is not available`)
     }
-    this.defaultDriver = driver
-    return this
+    const instance = new Mail({ defaultDriver: driver })
+    return instance
   }
 }
 
