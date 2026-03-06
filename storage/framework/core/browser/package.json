@@ -47,7 +47,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stripe/stripe-js": "^8.7.0",
+    "@stripe/stripe-js": "^8.9.0",
     "bun-query-builder": "^0.1.12",
     "ofetch": "^1.5.1",
     "perfect-debounce": "^2.1.0",
