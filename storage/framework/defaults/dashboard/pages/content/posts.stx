@@ -61,6 +61,7 @@ var draftCount = posts.filter(function(p) { return p.status === 'draft' }).lengt
 var scheduledCount = posts.filter(function(p) { return p.status === 'scheduled' }).length
 </script>
 
+<div ref="pageRoot">
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
@@ -292,36 +293,40 @@ var scheduledCount = posts.filter(function(p) { return p.status === 'scheduled' 
     <span id="toastMessage">Post saved successfully!</span>
   </div>
 </div>
+</div>
 
 <script client>
+var _root = useRef('pageRoot')
 const API_BASE = 'http://localhost:3000/cms'
 let deletePostId = null
 
-const postModal = document.getElementById('postModal')
-const deleteModal = document.getElementById('deleteModal')
-const postForm = document.getElementById('postForm')
-const editor = document.getElementById('editor')
-const contentInput = document.getElementById('content')
+let postModal, deleteModal, postForm, editor, contentInput
 
 function openNewPostModal() {
-  document.getElementById('modalTitle').textContent = 'New Post'
-  document.getElementById('postId').value = ''
+  var el = _root.current
+  if (!el) return
+  el.querySelector('#modalTitle').textContent = 'New Post'
+  el.querySelector('#postId').value = ''
   postForm.reset()
   editor.innerHTML = ''
   postModal.style.display = 'flex'
 }
 
 function openEditPostModal(id) {
-  document.getElementById('modalTitle').textContent = 'Edit Post'
-  document.getElementById('postId').value = id
+  var el = _root.current
+  if (!el) return
+  el.querySelector('#modalTitle').textContent = 'Edit Post'
+  el.querySelector('#postId').value = id
 
   fetch(`${API_BASE}/posts/${id}`)
     .then(r => r.json())
     .then(post => {
-      document.getElementById('title').value = post.title || ''
-      document.getElementById('excerpt').value = post.excerpt || ''
-      document.getElementById('poster').value = post.poster || ''
-      document.getElementById('status').value = post.status || 'draft'
+      var el2 = _root.current
+      if (!el2) return
+      el2.querySelector('#title').value = post.title || ''
+      el2.querySelector('#excerpt').value = post.excerpt || ''
+      el2.querySelector('#poster').value = post.poster || ''
+      el2.querySelector('#status').value = post.status || 'draft'
       editor.innerHTML = post.content || ''
       postModal.style.display = 'flex'
     })
@@ -334,11 +339,13 @@ function closeModal() {
 }
 
 function showToast(message) {
-  const toast = document.getElementById('toast')
-  document.getElementById('toastMessage').textContent = message
+  var el = _root.current
+  if (!el) return
+  const toast = el.querySelector('#toast')
+  el.querySelector('#toastMessage').textContent = message
   toast.style.transform = 'translateY(0)'
   toast.style.opacity = '1'
-  setTimeout(() => {
+  useTimeout(() => {
     toast.style.transform = 'translateY(100%)'
     toast.style.opacity = '0'
   }, 3000)
@@ -369,7 +376,7 @@ function savePost(status) {
     .then(() => {
       showToast(id ? 'Post updated!' : 'Post created!')
       closeModal()
-      setTimeout(() => location.reload(), 1000)
+      useTimeout(() => location.reload(), 1000)
     })
     .catch(() => showToast('Failed to save post'))
 }
@@ -381,16 +388,18 @@ function deletePost() {
     .then(() => {
       showToast('Post deleted!')
       closeModal()
-      setTimeout(() => location.reload(), 1000)
+      useTimeout(() => location.reload(), 1000)
     })
     .catch(() => showToast('Failed to delete post'))
 }
 
 function filterPosts(status) {
-  document.querySelectorAll('.post-row').forEach(row => {
+  var el = _root.current
+  if (!el) return
+  el.querySelectorAll('.post-row').forEach(row => {
     row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
   })
-  document.querySelectorAll('.filter-tab').forEach(tab => {
+  el.querySelectorAll('.filter-tab').forEach(tab => {
     const isActive = tab.dataset.filter === status
     tab.classList.toggle('text-white', isActive)
     tab.classList.toggle('bg-blue-600', isActive)
@@ -398,46 +407,58 @@ function filterPosts(status) {
   })
 }
 
-// Editor toolbar
-document.querySelectorAll('.editor-btn').forEach(btn => {
-  btn.onclick = function() {
-    const cmd = this.dataset.command
-    if (cmd === 'createLink') {
-      const url = prompt('Enter URL:')
-      if (url) document.execCommand(cmd, false, url)
-    } else if (cmd === 'insertImage') {
-      const url = prompt('Enter image URL:')
-      if (url) document.execCommand(cmd, false, url)
-    } else {
-      document.execCommand(cmd, false, null)
+onMount(function() {
+  var el = _root.current
+  if (!el) return
+
+  postModal = el.querySelector('#postModal')
+  deleteModal = el.querySelector('#deleteModal')
+  postForm = el.querySelector('#postForm')
+  editor = el.querySelector('#editor')
+  contentInput = el.querySelector('#content')
+
+  // Editor toolbar
+  el.querySelectorAll('.editor-btn').forEach(btn => {
+    btn.onclick = function() {
+      const cmd = this.dataset.command
+      if (cmd === 'createLink') {
+        const url = prompt('Enter URL:')
+        if (url) document.execCommand(cmd, false, url)
+      } else if (cmd === 'insertImage') {
+        const url = prompt('Enter image URL:')
+        if (url) document.execCommand(cmd, false, url)
+      } else {
+        document.execCommand(cmd, false, null)
+      }
+      editor.focus()
     }
-    editor.focus()
-  }
+  })
+
+  // Event bindings
+  el.querySelector('#newPostBtn').onclick = openNewPostModal
+  var emptyBtn = el.querySelector('#emptyStateNewPost')
+  if (emptyBtn) emptyBtn.addEventListener('click', openNewPostModal)
+  el.querySelector('#closeModal').onclick = closeModal
+  el.querySelector('#cancelBtn').onclick = closeModal
+  el.querySelector('#cancelDeleteBtn').onclick = closeModal
+  el.querySelector('#saveDraftBtn').onclick = () => savePost('draft')
+  el.querySelector('#confirmDeleteBtn').onclick = deletePost
+
+  postForm.onsubmit = e => { e.preventDefault(); savePost('published') }
+
+  el.querySelectorAll('.edit-post-btn').forEach(btn => {
+    btn.onclick = function() { openEditPostModal(this.dataset.id) }
+  })
+
+  el.querySelectorAll('.delete-post-btn').forEach(btn => {
+    btn.onclick = function() { deletePostId = this.dataset.id; deleteModal.style.display = 'flex' }
+  })
+
+  el.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.onclick = function() { filterPosts(this.dataset.filter) }
+  })
+
+  postModal.onclick = e => { if (e.target === postModal) closeModal() }
+  deleteModal.onclick = e => { if (e.target === deleteModal) closeModal() }
 })
-
-// Event bindings
-document.getElementById('newPostBtn').onclick = openNewPostModal
-document.getElementById('emptyStateNewPost')?.addEventListener('click', openNewPostModal)
-document.getElementById('closeModal').onclick = closeModal
-document.getElementById('cancelBtn').onclick = closeModal
-document.getElementById('cancelDeleteBtn').onclick = closeModal
-document.getElementById('saveDraftBtn').onclick = () => savePost('draft')
-document.getElementById('confirmDeleteBtn').onclick = deletePost
-
-postForm.onsubmit = e => { e.preventDefault(); savePost('published') }
-
-document.querySelectorAll('.edit-post-btn').forEach(btn => {
-  btn.onclick = function() { openEditPostModal(this.dataset.id) }
-})
-
-document.querySelectorAll('.delete-post-btn').forEach(btn => {
-  btn.onclick = function() { deletePostId = this.dataset.id; deleteModal.style.display = 'flex' }
-})
-
-document.querySelectorAll('.filter-tab').forEach(tab => {
-  tab.onclick = function() { filterPosts(this.dataset.filter) }
-})
-
-postModal.onclick = e => { if (e.target === postModal) closeModal() }
-deleteModal.onclick = e => { if (e.target === deleteModal) closeModal() }
 </script>

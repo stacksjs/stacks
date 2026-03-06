@@ -62,6 +62,7 @@ function isSelectField(col) {
 }
 </script>
 <!-- Native-styled Modal Dialog -->
+<div ref="pageRoot">
 <dialog
   id="{{ modalId }}"
   class="modal-dialog backdrop:bg-black/50 backdrop:backdrop-blur-sm rounded-xl shadow-2xl border-0 p-0 w-full max-w-lg bg-white dark:bg-neutral-900"
@@ -195,10 +196,14 @@ function isSelectField(col) {
     </div>
   </form>
 </dialog>
+</div>
 <script client>
-(function() {
+var _root = useRef('pageRoot')
+onMount(function() {
+  var el = _root.current;
+  if (!el) return;
   // Initialize all create record modals
-  document.querySelectorAll('.modal-dialog').forEach(dialog => {
+  el.querySelectorAll('.modal-dialog').forEach(dialog => {
     const form = dialog.querySelector('.modal-form');
     const closeButtons = dialog.querySelectorAll('.modal-close-btn');
     const submitBtn = dialog.querySelector('.modal-submit-btn');
@@ -273,7 +278,7 @@ function isSelectField(col) {
           form.reset();
 
           // Reload the page to show the new record
-          window.location.reload();
+          location.reload();
         } else {
           const errorData = await response.json().catch(() => ({}));
           throw new Error(errorData.message || 'Failed to create record');
@@ -300,7 +305,7 @@ function isSelectField(col) {
       }
     });
   });
-})();
+});
 </script>
 
 <style>

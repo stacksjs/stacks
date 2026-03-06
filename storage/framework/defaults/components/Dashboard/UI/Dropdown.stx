@@ -14,7 +14,7 @@ const widthClasses = {
 
 const alignClass = align === 'right' ? 'right-0' : 'left-0'
 </script>
-<div class="relative inline-block text-left" data-dropdown="{{ id }}">
+<div ref="pageRoot" class="relative inline-block text-left" data-dropdown="{{ id }}">
     <!-- Trigger -->
     <div data-dropdown-trigger>
       {{ triggerSlot }}
@@ -29,8 +29,11 @@ const alignClass = align === 'right' ? 'right-0' : 'left-0'
     </div>
   </div>
 <script client>
-(function() {
-  const dropdown = document.querySelector('[data-dropdown="{{ id }}"]')
+var _root = useRef('pageRoot')
+onMount(function() {
+  var el = _root.current;
+  if (!el) return;
+  const dropdown = el
   if (!dropdown) return
 
   const trigger = dropdown.querySelector('[data-dropdown-trigger]')
@@ -50,16 +53,16 @@ const alignClass = align === 'right' ? 'right-0' : 'left-0'
 
   trigger?.addEventListener('click', toggle)
 
-  document.addEventListener('click', function(e) {
+  document.body.addEventListener('click', function(e) {
     if (isOpen && !dropdown.contains(e.target)) {
       close()
     }
-  }
+  })
 
-  document.addEventListener('keydown', function(e) {
+  document.body.addEventListener('keydown', function(e) {
     if (e.key === 'Escape' && isOpen) {
       close()
     }
-  }
-})()
+  })
+})
 </script>

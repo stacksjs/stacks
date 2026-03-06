@@ -38,6 +38,7 @@ try {
 }
 </script>
 
+<div ref="pageRoot">
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
@@ -184,30 +185,32 @@ try {
     <span id="toastMessage">Category saved!</span>
   </div>
 </div>
+</div>
 
 <script client>
+var _root = useRef('pageRoot')
 const API_BASE = 'http://localhost:3000/cms'
 let deleteCategoryId = null
 
-const categoryModal = document.getElementById('categoryModal')
-const deleteModal = document.getElementById('deleteModal')
-const categoryForm = document.getElementById('categoryForm')
-const nameField = document.getElementById('name')
-const slugField = document.getElementById('slug')
+let categoryModal, deleteModal, categoryForm, nameField, slugField
 
 function openNewCategoryModal() {
-  document.getElementById('modalTitle').textContent = 'New Category'
-  document.getElementById('categoryId').value = ''
+  var el = _root.current
+  if (!el) return
+  el.querySelector('#modalTitle').textContent = 'New Category'
+  el.querySelector('#categoryId').value = ''
   categoryForm.reset()
   categoryModal.style.display = 'flex'
 }
 
 function openEditCategoryModal(id, name, slug, description) {
-  document.getElementById('modalTitle').textContent = 'Edit Category'
-  document.getElementById('categoryId').value = id
+  var el = _root.current
+  if (!el) return
+  el.querySelector('#modalTitle').textContent = 'Edit Category'
+  el.querySelector('#categoryId').value = id
   nameField.value = name
   slugField.value = slug
-  document.getElementById('description').value = description
+  el.querySelector('#description').value = description
   categoryModal.style.display = 'flex'
 }
 
@@ -217,11 +220,13 @@ function closeModal() {
 }
 
 function showToast(message) {
-  const toast = document.getElementById('toast')
-  document.getElementById('toastMessage').textContent = message
+  var el = _root.current
+  if (!el) return
+  const toast = el.querySelector('#toast')
+  el.querySelector('#toastMessage').textContent = message
   toast.style.transform = 'translateY(0)'
   toast.style.opacity = '1'
-  setTimeout(() => {
+  useTimeout(() => {
     toast.style.transform = 'translateY(100%)'
     toast.style.opacity = '0'
   }, 3000)
@@ -243,7 +248,7 @@ function saveCategory(e) {
     .then(() => {
       showToast(id ? 'Category updated!' : 'Category created!')
       closeModal()
-      setTimeout(() => location.reload(), 1000)
+      useTimeout(() => location.reload(), 1000)
     })
     .catch(() => showToast('Failed to save category'))
 }
@@ -255,39 +260,51 @@ function deleteCategory() {
     .then(() => {
       showToast('Category deleted!')
       closeModal()
-      setTimeout(() => location.reload(), 1000)
+      useTimeout(() => location.reload(), 1000)
     })
     .catch(() => showToast('Failed to delete category'))
 }
 
-// Auto-generate slug
-nameField.oninput = function() {
-  if (!slugField.value || slugField.dataset.auto === 'true') {
-    slugField.value = this.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
-    slugField.dataset.auto = 'true'
+onMount(function() {
+  var el = _root.current
+  if (!el) return
+
+  categoryModal = el.querySelector('#categoryModal')
+  deleteModal = el.querySelector('#deleteModal')
+  categoryForm = el.querySelector('#categoryForm')
+  nameField = el.querySelector('#name')
+  slugField = el.querySelector('#slug')
+
+  // Auto-generate slug
+  nameField.oninput = function() {
+    if (!slugField.value || slugField.dataset.auto === 'true') {
+      slugField.value = this.value.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+      slugField.dataset.auto = 'true'
+    }
   }
-}
-slugField.oninput = function() { this.dataset.auto = 'false' }
+  slugField.oninput = function() { this.dataset.auto = 'false' }
 
-// Event bindings
-document.getElementById('newCategoryBtn').onclick = openNewCategoryModal
-document.getElementById('emptyStateNewCategory')?.addEventListener('click', openNewCategoryModal)
-document.getElementById('closeModal').onclick = closeModal
-document.getElementById('cancelBtn').onclick = closeModal
-document.getElementById('cancelDeleteBtn').onclick = closeModal
-document.getElementById('confirmDeleteBtn').onclick = deleteCategory
-categoryForm.onsubmit = saveCategory
+  // Event bindings
+  el.querySelector('#newCategoryBtn').onclick = openNewCategoryModal
+  var emptyBtn = el.querySelector('#emptyStateNewCategory')
+  if (emptyBtn) emptyBtn.addEventListener('click', openNewCategoryModal)
+  el.querySelector('#closeModal').onclick = closeModal
+  el.querySelector('#cancelBtn').onclick = closeModal
+  el.querySelector('#cancelDeleteBtn').onclick = closeModal
+  el.querySelector('#confirmDeleteBtn').onclick = deleteCategory
+  categoryForm.onsubmit = saveCategory
 
-document.querySelectorAll('.edit-category-btn').forEach(btn => {
-  btn.onclick = function() {
-    openEditCategoryModal(this.dataset.id, this.dataset.name, this.dataset.slug, this.dataset.description)
-  }
+  el.querySelectorAll('.edit-category-btn').forEach(btn => {
+    btn.onclick = function() {
+      openEditCategoryModal(this.dataset.id, this.dataset.name, this.dataset.slug, this.dataset.description)
+    }
+  })
+
+  el.querySelectorAll('.delete-category-btn').forEach(btn => {
+    btn.onclick = function() { deleteCategoryId = this.dataset.id; deleteModal.style.display = 'flex' }
+  })
+
+  categoryModal.onclick = e => { if (e.target === categoryModal) closeModal() }
+  deleteModal.onclick = e => { if (e.target === deleteModal) closeModal() }
 })
-
-document.querySelectorAll('.delete-category-btn').forEach(btn => {
-  btn.onclick = function() { deleteCategoryId = this.dataset.id; deleteModal.style.display = 'flex' }
-})
-
-categoryModal.onclick = e => { if (e.target === categoryModal) closeModal() }
-deleteModal.onclick = e => { if (e.target === deleteModal) closeModal() }
 </script>

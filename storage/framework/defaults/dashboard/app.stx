@@ -208,107 +208,109 @@ const windowConfig = {
 let currentPage = 'home'
 </script>
 
-<script client>
-// Client-side SPA navigation handling
-window.craft = window.craft || {};
+<script>
+// SPA navigation - plain <script> for reliable DOM access (not <script client>)
+(function() {
+  window.craft = window.craft || {};
 
-// Map sidebar href to page content ID
-var specialMappings = {
-  'notifications/dashboard': 'notifications',
-  'analytics/events': 'analytics-goals',
-  'analytics/commerce/web': 'analytics-commerce',
-  'analytics/commerce/sales': 'analytics-sales',
-  'management/permissions': 'permissions',
-  'settings/ai': 'settings'
-};
+  var specialMappings = {
+    'notifications/dashboard': 'notifications',
+    'analytics/events': 'analytics-goals',
+    'analytics/commerce/web': 'analytics-commerce',
+    'analytics/commerce/sales': 'analytics-sales',
+    'management/permissions': 'permissions',
+    'settings/ai': 'settings'
+  };
 
-function hrefToPageId(href) {
-  if (href === '/') return 'home';
-  var path = href.replace(/^\//, '');
-
-  // Check special cases first
-  if (specialMappings[path]) return specialMappings[path];
-
-  // Try full path converted to dashes (e.g. content/dashboard -> content-dashboard)
-  var fullId = path.replace(/\//g, '-');
-  if (document.querySelector('[data-page-content="' + fullId + '"]')) return fullId;
-
-  // Fall back to last segment (e.g. content/files -> files)
-  var segments = path.split('/');
-  var lastSegment = segments[segments.length - 1];
-  if (document.querySelector('[data-page-content="' + lastSegment + '"]')) return lastSegment;
-
-  // Default to full path with dashes
-  return fullId;
-}
-
-function navigateToPage(pageId) {
-  // Hide all pages
-  var pages = document.querySelectorAll('[data-page-content]');
-  for (var i = 0; i < pages.length; i++) {
-    pages[i].style.display = 'none';
+  function getApp() {
+    return document.getElementById('app');
   }
 
-  // Show target page
-  var target = document.querySelector('[data-page-content="' + pageId + '"]');
-  if (target) {
-    target.style.display = 'block';
-    document.getElementById('app').dataset.page = pageId;
-    // Scroll to top of content
-    window.scrollTo(0, 0);
+  function hrefToPageId(href) {
+    if (href === '/') return 'home';
+    var path = href.replace(/^\//, '');
+    if (specialMappings[path]) return specialMappings[path];
+
+    var fullId = path.replace(/\//g, '-');
+    var appEl = getApp();
+    if (appEl) {
+      if (appEl.querySelector('[data-page-content="' + fullId + '"]')) return fullId;
+      var segments = path.split('/');
+      var lastSegment = segments[segments.length - 1];
+      if (appEl.querySelector('[data-page-content="' + lastSegment + '"]')) return lastSegment;
+    }
+    return fullId;
   }
 
-  // Update active link styling
-  var links = document.querySelectorAll('.sidebar-link');
-  for (var j = 0; j < links.length; j++) {
-    links[j].classList.remove('router-link-active', 'router-link-exact-active');
-  }
-  var activeLink = document.querySelector('a[data-page="' + pageId + '"]');
-  if (activeLink) {
-    activeLink.classList.add('router-link-active', 'router-link-exact-active');
-  }
-}
+  function navigateToPage(pageId) {
+    var appEl = getApp();
+    if (!appEl) return;
 
-// Handle Craft native sidebar selection
-window.craft._sidebarSelectHandler = function(event) {
-  navigateToPage(event.itemId);
-};
+    var pages = appEl.querySelectorAll('[data-page-content]');
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].style.display = 'none';
+    }
 
-// Intercept all link clicks for SPA navigation
-document.addEventListener('click', function(e) {
-  var link = e.target.closest ? e.target.closest('a[href]') : null;
-  if (!link) return;
-  if (link.hasAttribute('data-mpa')) return; // let browser navigate to MPA page
+    var target = appEl.querySelector('[data-page-content="' + pageId + '"]');
+    if (target) {
+      target.style.display = 'block';
+      appEl.dataset.page = pageId;
+      target.scrollIntoView({ behavior: 'instant', block: 'start' });
+    }
 
-  var href = link.getAttribute('href');
-  if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0) return;
-
-  // Only intercept internal navigation links
-  var pageId = hrefToPageId(href);
-  var target = document.querySelector('[data-page-content="' + pageId + '"]');
-  if (target) {
-    e.preventDefault();
-    navigateToPage(pageId);
-  }
-});
-
-// Initialize on load - tag sidebar links with data-page attributes
-document.addEventListener('DOMContentLoaded', function() {
-  var links = document.querySelectorAll('a[href]');
-  for (var i = 0; i < links.length; i++) {
-    var href = links[i].getAttribute('href');
-    if (href && href.indexOf('http') !== 0) {
-      links[i].setAttribute('data-page', hrefToPageId(href));
+    // Update active link styling
+    var links = document.querySelectorAll('.sidebar-link');
+    for (var j = 0; j < links.length; j++) {
+      links[j].classList.remove('router-link-active', 'router-link-exact-active');
+    }
+    var activeLink = document.querySelector('a[data-page="' + pageId + '"]');
+    if (activeLink) {
+      activeLink.classList.add('router-link-active', 'router-link-exact-active');
     }
   }
 
-  // Hash-based deep linking
-  var hash = window.location.hash.replace('#', '');
-  if (hash) navigateToPage(hash);
-});
+  // Handle Craft native sidebar selection
+  window.craft._sidebarSelectHandler = function(event) {
+    navigateToPage(event.itemId);
+  };
+
+  // Intercept all link clicks for SPA navigation (document-level, works before body exists)
+  document.addEventListener('click', function(e) {
+    var link = e.target.closest ? e.target.closest('a[href]') : null;
+    if (!link) return;
+    if (link.hasAttribute('data-mpa')) return;
+
+    var href = link.getAttribute('href');
+    if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0) return;
+
+    var pageId = hrefToPageId(href);
+    var appEl = getApp();
+    if (appEl) {
+      var target = appEl.querySelector('[data-page-content="' + pageId + '"]');
+      if (target) {
+        e.preventDefault();
+        navigateToPage(pageId);
+      }
+    }
+  });
+
+  // Tag sidebar links with data-page attributes and handle deep linking
+  document.addEventListener('DOMContentLoaded', function() {
+    var links = document.querySelectorAll('a[href]');
+    for (var i = 0; i < links.length; i++) {
+      var href = links[i].getAttribute('href');
+      if (href && href.indexOf('http') !== 0) {
+        links[i].setAttribute('data-page', hrefToPageId(href));
+      }
+    }
+
+    var hash = location.hash.replace('#', '');
+    if (hash) navigateToPage(hash);
+  });
+})();
 </script>
 <DashboardLayout>
-  <div id="app" data-page="home">
+  <div id="app" ref="app" data-page="home">
     <!-- Home Dashboard -->
     <div data-page-content="home" style="display: block;">
       @include('pages/index')

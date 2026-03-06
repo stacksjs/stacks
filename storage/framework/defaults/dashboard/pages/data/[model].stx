@@ -77,7 +77,7 @@ var hiddenColumns = ['uuid', 'password', 'remember_token', 'content', 'descripti
 columns = columns.filter(function(col) { return hiddenColumns.indexOf(col.name) < 0 })
 </script>
 <DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">
-  <div class="p-6">
+  <div ref="pageRoot" class="p-6">
     <div class="mb-4">
       <a href="/app#data-dashboard" class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
@@ -245,12 +245,15 @@ columns = columns.filter(function(col) { return hiddenColumns.indexOf(col.name) 
   </div>
 </DashboardLayout>
 <script client>
-document.addEventListener('DOMContentLoaded', function() {
-  var searchInput = document.getElementById('modelSearch');
+var _root = useRef('pageRoot')
+onMount(function() {
+  var el = _root.current;
+  if (!el) return;
+  var searchInput = el.querySelector('#modelSearch');
   if (searchInput) {
     searchInput.addEventListener('input', function() {
       var query = this.value.toLowerCase();
-      var rows = document.querySelectorAll('#modelTableBody tr');
+      var rows = el.querySelectorAll('#modelTableBody tr');
       for (var i = 0; i < rows.length; i++) {
         var text = rows[i].textContent.toLowerCase();
         rows[i].style.display = text.indexOf(query) >= 0 ? '' : 'none';

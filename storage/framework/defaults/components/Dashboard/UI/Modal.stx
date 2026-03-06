@@ -14,7 +14,7 @@ const sizeClasses = {
 }
 </script>
 @if(isOpen)
-  <div class="fixed inset-0 z-50 overflow-y-auto">
+  <div ref="pageRoot" class="fixed inset-0 z-50 overflow-y-auto">
     <!-- Overlay -->
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
 
@@ -58,9 +58,14 @@ const sizeClasses = {
   </div>
   @endif
 <script client>
-document.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(el => {
-  el.addEventListener('click', () => {
-    el.closest('.fixed.inset-0')?.remove();
+var _root = useRef('pageRoot')
+onMount(function() {
+  var el = _root.current;
+  if (!el) return;
+  el.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(item => {
+    item.addEventListener('click', () => {
+      item.closest('.fixed.inset-0')?.remove();
+    });
   });
 });
 </script>

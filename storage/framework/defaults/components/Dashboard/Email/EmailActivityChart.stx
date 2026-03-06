@@ -52,7 +52,7 @@
     },
   }
 </script>
-<div class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 p-4">
+<div ref="pageRoot" class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 p-4">
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Email Activity</h3>
     </div>
@@ -68,8 +68,11 @@
   </div>
 <script client>
   // Client-side chart initialization
-  document.addEventListener('DOMContentLoaded', function() {
-    const canvas = document.getElementById('emailActivityChart');
+  var _root = useRef('pageRoot')
+  onMount(function() {
+    var el = _root.current;
+    if (!el) return;
+    const canvas = el.querySelector('#emailActivityChart');
     if (canvas && typeof Chart !== 'undefined') {
       const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`);
       const data = {
@@ -98,7 +101,7 @@
           },
         ],
       };
-      new Chart(canvas, { type: 'line', data, options: window.chartOptions || {} });
+      new Chart(canvas, { type: 'line', data, options: {} });
     }
   });
 </script>

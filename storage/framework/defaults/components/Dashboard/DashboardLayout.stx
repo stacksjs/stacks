@@ -13,31 +13,20 @@ function getProp(name, defaultValue) {
   return props[name] !== undefined ? props[name] : defaultValue
 }
 
-// Detect if Craft is rendering a native sidebar
-// When Craft uses --native-sidebar, it sets this flag
-const hasNativeSidebar = typeof window !== 'undefined' && (
-  window.__craftNativeSidebar === true ||
-  window.craft?.hasNativeSidebar?.() ||
-  // Also check if we're in a Craft webview (sidebar is handled natively)
-  (window.webkit?.messageHandlers?.craft && document.body?.dataset?.nativeSidebar === 'true')
-)
-
 // Sidebar width calculation (matches Sidebar width)
 function getSidebarWidth() {
-  if (hasNativeSidebar || getProp('isMobile', false)) return 0
+  if (getProp('isMobile', false)) return 0
   return getProp('isSidebarCollapsed', false) ? 64 : 240
 }
 
 function getMainContentStyle() {
-  // No padding needed when native sidebar handles layout
-  if (hasNativeSidebar) return ''
   if (!getProp('showSidebar', true) || getProp('isMobile', false)) return ''
   return `padding-left: ${getSidebarWidth()}px`
 }
 
 // Determine if we should show the web sidebar
 function shouldShowWebSidebar() {
-  return getProp('showSidebar', true) && !hasNativeSidebar
+  return getProp('showSidebar', true)
 }
 </script>
 <!-- macOS-inspired layout with subtle background -->

@@ -47,6 +47,7 @@ try {
 }
 </script>
 
+<div ref="pageRoot">
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
@@ -267,13 +268,14 @@ try {
     <span id="toastMessage">Action completed!</span>
   </div>
 </div>
+</div>
 
 <script client>
+var _root = useRef('pageRoot')
 const API_BASE = 'http://localhost:3000/cms'
 let deleteCommentId = null
 
-const viewModal = document.getElementById('viewModal')
-const deleteModal = document.getElementById('deleteModal')
+let viewModal, deleteModal
 
 function closeModals() {
   viewModal.style.display = 'none'
@@ -281,11 +283,13 @@ function closeModals() {
 }
 
 function showToast(message) {
-  const toast = document.getElementById('toast')
-  document.getElementById('toastMessage').textContent = message
+  var el = _root.current
+  if (!el) return
+  const toast = el.querySelector('#toast')
+  el.querySelector('#toastMessage').textContent = message
   toast.style.transform = 'translateY(0)'
   toast.style.opacity = '1'
-  setTimeout(() => {
+  useTimeout(() => {
     toast.style.transform = 'translateY(100%)'
     toast.style.opacity = '0'
   }, 3000)
@@ -300,7 +304,7 @@ function updateStatus(id, status) {
     .then(r => r.json())
     .then(() => {
       showToast(`Comment ${status}!`)
-      setTimeout(() => location.reload(), 1000)
+      useTimeout(() => location.reload(), 1000)
     })
     .catch(() => showToast('Failed to update comment'))
 }
@@ -312,16 +316,18 @@ function deleteComment() {
     .then(() => {
       showToast('Comment deleted!')
       closeModals()
-      setTimeout(() => location.reload(), 1000)
+      useTimeout(() => location.reload(), 1000)
     })
     .catch(() => showToast('Failed to delete comment'))
 }
 
 function filterComments(status) {
-  document.querySelectorAll('.comment-row').forEach(row => {
+  var el = _root.current
+  if (!el) return
+  el.querySelectorAll('.comment-row').forEach(row => {
     row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
   })
-  document.querySelectorAll('.filter-tab').forEach(tab => {
+  el.querySelectorAll('.filter-tab').forEach(tab => {
     const isActive = tab.dataset.filter === status
     tab.classList.toggle('text-white', isActive)
     tab.classList.toggle('bg-blue-600', isActive)
@@ -329,39 +335,47 @@ function filterComments(status) {
   })
 }
 
-// Event bindings
-document.getElementById('closeViewModal').onclick = closeModals
-document.getElementById('cancelDeleteBtn').onclick = closeModals
-document.getElementById('confirmDeleteBtn').onclick = deleteComment
+onMount(function() {
+  var el = _root.current
+  if (!el) return
 
-document.querySelectorAll('.filter-tab').forEach(tab => {
-  tab.onclick = function() { filterComments(this.dataset.filter) }
+  viewModal = el.querySelector('#viewModal')
+  deleteModal = el.querySelector('#deleteModal')
+
+  // Event bindings
+  el.querySelector('#closeViewModal').onclick = closeModals
+  el.querySelector('#cancelDeleteBtn').onclick = closeModals
+  el.querySelector('#confirmDeleteBtn').onclick = deleteComment
+
+  el.querySelectorAll('.filter-tab').forEach(tab => {
+    tab.onclick = function() { filterComments(this.dataset.filter) }
+  })
+
+  el.querySelectorAll('.approve-btn').forEach(btn => {
+    btn.onclick = function() { updateStatus(this.dataset.id, 'approved') }
+  })
+
+  el.querySelectorAll('.spam-btn').forEach(btn => {
+    btn.onclick = function() { updateStatus(this.dataset.id, 'spam') }
+  })
+
+  el.querySelectorAll('.view-btn').forEach(btn => {
+    btn.onclick = function() {
+      el.querySelector('#viewAuthor').textContent = this.dataset.author
+      el.querySelector('#viewEmail').textContent = this.dataset.email
+      el.querySelector('#viewContent').textContent = this.dataset.content
+      el.querySelector('#viewPost').textContent = this.dataset.post
+      el.querySelector('#viewDate').textContent = this.dataset.date
+      el.querySelector('#viewIp').textContent = this.dataset.ip || 'Not recorded'
+      viewModal.style.display = 'flex'
+    }
+  })
+
+  el.querySelectorAll('.delete-btn').forEach(btn => {
+    btn.onclick = function() { deleteCommentId = this.dataset.id; deleteModal.style.display = 'flex' }
+  })
+
+  viewModal.onclick = e => { if (e.target === viewModal) closeModals() }
+  deleteModal.onclick = e => { if (e.target === deleteModal) closeModals() }
 })
-
-document.querySelectorAll('.approve-btn').forEach(btn => {
-  btn.onclick = function() { updateStatus(this.dataset.id, 'approved') }
-})
-
-document.querySelectorAll('.spam-btn').forEach(btn => {
-  btn.onclick = function() { updateStatus(this.dataset.id, 'spam') }
-})
-
-document.querySelectorAll('.view-btn').forEach(btn => {
-  btn.onclick = function() {
-    document.getElementById('viewAuthor').textContent = this.dataset.author
-    document.getElementById('viewEmail').textContent = this.dataset.email
-    document.getElementById('viewContent').textContent = this.dataset.content
-    document.getElementById('viewPost').textContent = this.dataset.post
-    document.getElementById('viewDate').textContent = this.dataset.date
-    document.getElementById('viewIp').textContent = this.dataset.ip || 'Not recorded'
-    viewModal.style.display = 'flex'
-  }
-})
-
-document.querySelectorAll('.delete-btn').forEach(btn => {
-  btn.onclick = function() { deleteCommentId = this.dataset.id; deleteModal.style.display = 'flex' }
-})
-
-viewModal.onclick = e => { if (e.target === viewModal) closeModals() }
-deleteModal.onclick = e => { if (e.target === deleteModal) closeModals() }
 </script>
