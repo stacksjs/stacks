@@ -259,7 +259,7 @@ function navigateToPage(pageId) {
   }
 
   // Update active link styling
-  var links = document.querySelectorAll('.sidebar-links');
+  var links = document.querySelectorAll('.sidebar-link');
   for (var j = 0; j < links.length; j++) {
     links[j].classList.remove('router-link-active', 'router-link-exact-active');
   }

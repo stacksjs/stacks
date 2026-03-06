@@ -1,43 +1,11 @@
 <script server>
 /**
  * Sidebar Component
- * Navigation sidebar with collapsible sections and team switching.
+ * Clean, modern navigation sidebar inspired by Tailwind UI.
  */
 
 // State
 const isSidebarCollapsed = props.isSidebarCollapsed || false
-const isDragging = props.isDragging || false
-const showTeamSwitcher = props.showTeamSwitcher || false
-
-// Section expansion state
-const sections = props.sections || {
-  library: true,
-  content: true,
-  app: true,
-  data: true,
-  commerce: true,
-  marketing: true,
-  management: true,
-  analytics: true
-}
-
-// Expanded items state
-const expandedItems = props.expandedItems || {
-  '/cloud': false,
-  '#queue': false,
-  '#queries': false,
-  '#commerce': false,
-  '#commerce-products': false,
-  '#commerce-analytics': false,
-  '#social-posts': false,
-  '#analytics': false,
-  '#analytics-web': false,
-  '#waitlist': false,
-  '#notifications': false
-}
-
-// Section order
-const sectionOrder = ['library', 'content', 'app', 'data', 'commerce', 'marketing', 'analytics', 'management']
 
 // Teams data
 const teams = [
@@ -47,17 +15,13 @@ const teams = [
     email: 'chris@stacksjs.com',
     type: 'Personal',
     logo: '/images/logos/logo.svg'
-  },
-  {
-    id: 2,
-    name: 'Jetbrains',
-    email: 'support@jetbrains.com',
-    type: 'Professional',
-    logo: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSJMFMsdKNyFFDlff2bj1WT06bM8n-bFcnBLw&s'
   }
 ]
 
 const currentTeam = props.currentTeam || teams[0]
+
+// Section order
+const sectionOrder = ['library', 'content', 'app', 'data', 'commerce', 'marketing', 'analytics', 'management']
 
 // Section content mapping
 const sectionContent = {
@@ -113,9 +77,9 @@ const sectionContent = {
     items: [
       { to: '/data/dashboard', icon: 'i-hugeicons-dashboard-speed-01', text: 'Dashboard' },
       { to: '/data/activity', icon: 'i-hugeicons-activity-01', text: 'Activity' },
-      { to: '/data/users', letter: 'U', text: 'Users' },
-      { to: '/data/teams', letter: 'T', text: 'Teams' },
-      { to: '/data/subscribers', letter: 'S', text: 'Subscribers' }
+      { to: '/data/users', icon: 'i-hugeicons-user-multiple', text: 'Users' },
+      { to: '/data/teams', icon: 'i-hugeicons-user-group', text: 'Teams' },
+      { to: '/data/subscribers', icon: 'i-hugeicons-mail-open-02', text: 'Subscribers' }
     ]
   },
   marketing: {
@@ -153,182 +117,240 @@ function getSidebarWidth() {
   return isSidebarCollapsed ? 64 : 240
 }
 </script>
-<div>
-  <!-- Static sidebar for desktop -->
-  <div class="hidden lg:fixed lg:flex lg:flex-col transition-all duration-300 ease-in-out" style="top: 0; bottom: 0; width: {{ getSidebarWidth() }}px;">
-    <div class="flex grow flex-col gap-y-3 overflow-y-auto border-r border-gray-200 bg-white dark:border-gray-600 dark:bg-blue-gray-900 transition-all duration-300 {{ isSidebarCollapsed ? 'items-center px-2 pb-4' : 'px-6 pb-4' }}">
+<div class="sidebar-root">
+  <div class="hidden lg:fixed lg:flex lg:flex-col" style="top: 0; bottom: 0; width: {{ getSidebarWidth() }}px;">
+    <div class="sidebar-inner">
 
-      <div class="pt-4 h-10 flex shrink-0 items-center justify-between rounded-lg">
-        @if(!isSidebarCollapsed)
-          <a href="/">
-            <img class="h-10 w-auto rounded-lg cursor-pointer" src="{{ currentTeam.logo }}" alt="{{ currentTeam.name }} Logo">
-          </a>
-        @endif
-
-        <div class="flex items-center space-x-2">
-          <!-- Sidebar Toggle Button -->
-          <button
-            type="button"
-            class="p-1.5 text-gray-400 hover:text-gray-500 focus:outline-none rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-800 flex items-center justify-center"
-            data-action="toggle-sidebar"
-          >
-            <div class="i-hugeicons-layout-01 h-5 w-5 cursor-pointer text-gray-400 transition-all duration-300 ease-in-out hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100 {{ isSidebarCollapsed ? 'transform rotate-180' : '' }}"></div>
-          </button>
-
-          <!-- Team Switcher -->
-          @if(!isSidebarCollapsed)
-            <div class="relative">
-              <button
-                type="button"
-                class="block p-2 text-gray-400 hover:text-gray-500 focus:outline-none"
-                data-action="toggle-team-switcher"
-              >
-                <div class="i-hugeicons-more-horizontal-circle-01 h-6 w-6 cursor-pointer text-gray-400 transition duration-150 ease-in-out hover:text-gray-900 dark:text-gray-200 dark:hover:text-gray-100"></div>
-              </button>
-            </div>
-          @endif
-        </div>
+      <!-- Logo -->
+      <div class="sidebar-logo">
+        <a href="/" class="sidebar-logo-link">
+          <img class="sidebar-logo-img" src="{{ currentTeam.logo }}" alt="{{ currentTeam.name }}">
+        </a>
       </div>
 
-      <nav class="flex flex-1 flex-col w-full">
-        <ul role="list" class="flex flex-1 flex-col gap-y-4">
-          <!-- Dashboard section -->
-          <li>
-            <ul role="list" class="mt-1 -mx-2 space-y-1 {{ isSidebarCollapsed ? 'mx-0 flex flex-col items-center' : '' }}">
-              <li>
-                <a href="/" class="group sidebar-links {{ isSidebarCollapsed ? 'justify-center' : '' }}">
-                  <div class="i-hugeicons-home-05 h-5 w-5 text-gray-400 transition duration-150 ease-in-out dark:text-gray-200 group-hover:text-gray-700 mt-0.5"></div>
-                  @if(!isSidebarCollapsed)
-                    <span>Home</span>
-                  @endif
-                </a>
-              </li>
+      <!-- Navigation -->
+      <nav class="sidebar-nav">
+        <!-- Home link -->
+        <a href="/" class="sidebar-link sidebar-link-home">
+          <div class="i-hugeicons-home-05 sidebar-icon"></div>
+          <span>Home</span>
+        </a>
+
+        <!-- Sections -->
+        @foreach(sectionOrder as sectionKey)
+          <div class="sidebar-section">
+            <div class="sidebar-section-label">{{ sectionKey }}</div>
+            <ul class="sidebar-section-list">
+              @foreach(sectionContent[sectionKey].items as item)
+                <li>
+                  <a href="{{ item.to }}" class="sidebar-link">
+                    <div class="{{ item.icon }} sidebar-icon"></div>
+                    <span>{{ item.text }}</span>
+                  </a>
+                </li>
+              @endforeach
             </ul>
-          </li>
-
-          <!-- Draggable sections -->
-          @foreach(sectionOrder as sectionKey)
-            <li class="w-full">
-              <!-- Section header -->
-              <div
-                class="flex items-center justify-between cursor-pointer py-1.5 mb-1 {{ isSidebarCollapsed ? 'justify-center' : '' }}"
-                data-action="toggle-section"
-                data-section="{{ sectionKey }}"
-              >
-                @if(!isSidebarCollapsed)
-                  <h2 class="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                    {{ sectionKey }}
-                  </h2>
-                @endif
-                <div class="flex items-center justify-center {{ isSidebarCollapsed ? 'w-full' : '' }}">
-                  <button
-                    type="button"
-                    class="flex h-6 w-6 items-center justify-center rounded-md text-gray-400 hover:text-gray-500 focus:outline-none"
-                  >
-                    <div class="i-hugeicons-arrow-right-01 h-5 w-5 transition-transform duration-200 mt-0.5 {{ sections[sectionKey] ? 'transform rotate-90' : '' }} {{ isSidebarCollapsed ? 'mx-auto' : '' }}"></div>
-                  </button>
-                </div>
-              </div>
-
-              <!-- Section items -->
-              @if(sections[sectionKey] && !isSidebarCollapsed)
-                <ul class="section-content mt-1 -mx-2 space-y-0.5 w-full">
-                  @foreach(sectionContent[sectionKey].items as item)
-                    <li class="w-full">
-                      <a href="{{ item.to }}" class="group sidebar-links w-full">
-                        @if(item.icon)
-                          <div class="{{ item.icon }} h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700 text-gray-400 dark:text-gray-200"></div>
-                        @elseif(item.letter)
-                          <div class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
-                            {{ item.letter }}
-                          </div>
-                        @endif
-                        <span class="flex-1">{{ item.text }}</span>
-                      </a>
-                    </li>
-                  @endforeach
-                </ul>
-              @endif
-
-              <!-- Collapsed sidebar items -->
-              @if(sections[sectionKey] && isSidebarCollapsed)
-                <ul class="w-full flex flex-col items-center space-y-0.5">
-                  @foreach(sectionContent[sectionKey].items as item)
-                    <li class="flex justify-center w-full">
-                      <a href="{{ item.to }}" class="group sidebar-links justify-center" title="{{ item.text }}">
-                        @if(item.icon)
-                          <div class="{{ item.icon }} h-5 w-5 transition duration-150 ease-in-out group-hover:text-gray-700 text-gray-400 dark:text-gray-200"></div>
-                        @elseif(item.letter)
-                          <div class="flex h-5 w-5 items-center justify-center rounded-md border border-blue-600 bg-white text-[10px] font-medium text-blue-600 dark:border-blue-500 dark:bg-blue-gray-800 dark:text-blue-400">
-                            {{ item.letter }}
-                          </div>
-                        @endif
-                      </a>
-                    </li>
-                  @endforeach
-                </ul>
-              @endif
-            </li>
-          @endforeach
-
-          <!-- Bottom section -->
-          <li class="mt-auto pb-4">
-            <div class="{{ isSidebarCollapsed ? 'flex flex-col items-center justify-center space-y-6' : 'flex items-center space-x-4' }}">
-              <a href="/buddy" class="sidebar-bottom-link" title="AI Buddy">
-                <div class="i-hugeicons-ai-chat-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"></div>
-              </a>
-
-              <a href="/environment" class="sidebar-bottom-link" title="Environment">
-                <div class="i-hugeicons-key-01 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"></div>
-              </a>
-
-              <a href="/access-tokens" class="sidebar-bottom-link" title="Access Tokens">
-                <div class="i-hugeicons-shield-key h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"></div>
-              </a>
-
-              <a href="/settings/ai" class="sidebar-bottom-link" title="Settings">
-                <div class="i-hugeicons-settings-02 h-5 w-5 text-gray-400 transition-all duration-150 ease-in-out dark:text-gray-200 group-hover:text-blue-600"></div>
-              </a>
-            </div>
-          </li>
-        </ul>
+          </div>
+        @endforeach
       </nav>
+
+      <!-- Bottom links -->
+      <div class="sidebar-bottom">
+        <a href="/settings/ai" class="sidebar-link">
+          <div class="i-hugeicons-settings-02 sidebar-icon"></div>
+          <span>Settings</span>
+        </a>
+      </div>
     </div>
   </div>
 </div>
 <style scoped>
-/* Add transition for sidebar collapse */
-.sidebar-links {
-  @apply flex items-center gap-x-2 p-1 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-md;
-  transition: all 0.3s ease;
-  cursor: pointer;
-}
-
-/* Active state styling */
-.router-link-active {
-  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 rounded-md;
-}
-
-.router-link-exact-active {
-  @apply bg-gray-100 text-blue-600 dark:bg-blue-gray-800 dark:text-blue-400 font-medium rounded-md;
-}
-
-.router-link-active div[class^="i-hugeicons"],
-.router-link-exact-active div[class^="i-hugeicons"] {
-  @apply text-blue-600 dark:text-blue-400;
-}
-
-/* Section content */
-.section-content {
-  overflow: visible;
-  width: 100%;
+.sidebar-root {
   position: relative;
 }
 
-/* Bottom links styling */
-.sidebar-bottom-link {
-  @apply flex items-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-md;
-  transition: all 0.2s ease;
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+  border-right: 1px solid #f0f0f0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0;
+}
+
+/* Logo area */
+.sidebar-logo {
+  padding: 20px 20px 12px;
+  flex-shrink: 0;
+}
+
+.sidebar-logo-link {
+  display: block;
+  text-decoration: none;
+}
+
+.sidebar-logo-img {
+  height: 32px;
+  width: auto;
+  border-radius: 6px;
+}
+
+/* Navigation container */
+.sidebar-nav {
+  flex: 1;
+  padding: 0 12px;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* Links */
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 7px 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #374151;
+  text-decoration: none;
   cursor: pointer;
+  transition: background-color 0.15s ease, color 0.15s ease;
+  line-height: 1.4;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sidebar-link:hover {
+  background-color: #f9fafb;
+  color: #111827;
+}
+
+.sidebar-link-home {
+  margin-bottom: 4px;
+}
+
+/* Icons */
+.sidebar-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #9ca3af;
+  transition: color 0.15s ease;
+}
+
+.sidebar-link:hover .sidebar-icon {
+  color: #6b7280;
+}
+
+/* Active link states */
+.sidebar-link.router-link-active,
+.sidebar-link.router-link-exact-active {
+  background-color: #eef2ff;
+  color: #4f46e5;
+}
+
+.sidebar-link.router-link-active .sidebar-icon,
+.sidebar-link.router-link-exact-active .sidebar-icon {
+  color: #4f46e5;
+}
+
+/* Section */
+.sidebar-section {
+  margin-bottom: 4px;
+}
+
+.sidebar-section-label {
+  padding: 16px 10px 4px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #9ca3af;
+  user-select: none;
+}
+
+.sidebar-section-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-section-list li {
+  margin: 0;
+  padding: 0;
+}
+
+/* Bottom section */
+.sidebar-bottom {
+  flex-shrink: 0;
+  padding: 12px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: auto;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  .sidebar-inner {
+    background: #111827;
+    border-right-color: #1f2937;
+  }
+
+  .sidebar-link {
+    color: #d1d5db;
+  }
+
+  .sidebar-link:hover {
+    background-color: #1f2937;
+    color: #f9fafb;
+  }
+
+  .sidebar-link:hover .sidebar-icon {
+    color: #d1d5db;
+  }
+
+  .sidebar-link.router-link-active,
+  .sidebar-link.router-link-exact-active {
+    background-color: rgba(79, 70, 229, 0.15);
+    color: #818cf8;
+  }
+
+  .sidebar-link.router-link-active .sidebar-icon,
+  .sidebar-link.router-link-exact-active .sidebar-icon {
+    color: #818cf8;
+  }
+
+  .sidebar-icon {
+    color: #6b7280;
+  }
+
+  .sidebar-section-label {
+    color: #6b7280;
+  }
+
+  .sidebar-bottom {
+    border-top-color: #1f2937;
+  }
+}
+
+/* Scrollbar styling */
+.sidebar-nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb {
+  background: #e5e7eb;
+  border-radius: 4px;
+}
+
+.sidebar-nav::-webkit-scrollbar-thumb:hover {
+  background: #d1d5db;
 }
 </style>
