@@ -2,20 +2,6 @@
 defineOptions({
   name: 'HomePage',
 }
-
-// https://github.com/vueuse/head
-// you can use this to manipulate the document head in any components,
-// they will be rendered correctly in the html results with vite-ssg
-// const user = useUserStore()
-// let name = user.savedName
-
-// const router = useRouter()
-// function go() {
-//   if (name)
-//     router.push(`/hello-world/${encodeURIComponent(name)}`)
-// }
-
-// const { t } = useI18n()
 </script>
 
 <!-- <Header /> -->

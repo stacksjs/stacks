@@ -15,8 +15,6 @@
     "@stacksjs/alias": "workspace:*",
     "@stacksjs/config": "workspace:*",
     "@stacksjs/server": "workspace:*",
-    "@stacksjs/composables": "workspace:*",
-    "@vueuse/head": "^2.0.0"
-  },
-  "devDependencies": {}
+    "@stacksjs/composables": "workspace:*"
+  }
 }
