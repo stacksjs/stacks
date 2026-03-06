@@ -300,6 +300,37 @@ document.addEventListener('DOMContentLoaded', function() {
       links[i].setAttribute('data-page', hrefToPageId(href));
     }
   }
+
+  // Collapsible sidebar sections
+  var collapsed = {};
+  try {
+    var stored = localStorage.getItem('sidebar-collapsed');
+    if (stored) collapsed = JSON.parse(stored);
+  } catch (e) {}
+
+  var sections = document.querySelectorAll('.sidebar-section[data-section]');
+  for (var s = 0; s < sections.length; s++) {
+    var key = sections[s].getAttribute('data-section');
+    if (collapsed[key]) {
+      sections[s].classList.add('collapsed');
+    }
+  }
+
+  var labels = document.querySelectorAll('.sidebar-section-label');
+  for (var l = 0; l < labels.length; l++) {
+    labels[l].addEventListener('click', function() {
+      var section = this.closest('.sidebar-section');
+      var sectionKey = section.getAttribute('data-section');
+      section.classList.toggle('collapsed');
+      try {
+        var current = {};
+        var st = localStorage.getItem('sidebar-collapsed');
+        if (st) current = JSON.parse(st);
+        current[sectionKey] = section.classList.contains('collapsed');
+        localStorage.setItem('sidebar-collapsed', JSON.stringify(current));
+      } catch (e) {}
+    });
+  }
 });
 </script>
 <DashboardLayout>
