@@ -2,7 +2,7 @@
   "name": "@stacksjs/repl",
   "type": "module",
   "version": "0.70.23",
-  "description": "A Stacks optimized TS & Vue REPL.",
+  "description": "A Stacks optimized TypeScript REPL.",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
@@ -21,10 +21,9 @@
   "keywords": [
     "ts",
     "repl",
-    "tsx",
-    "vue",
-    "sfc",
-    "functions",
+    "stx",
+    "tinker",
+    "interactive",
     "stacks"
   ],
   "exports": {

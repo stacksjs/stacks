@@ -17,7 +17,7 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "scripts": {
-    "build:reset": "rm -rf node_modules bun.lock && bun install && ./buddy generate:model-files && ./buddy generate:model-files/buddy generate:model-files/buddy lint:fix && cd storage/framework && bun run build && cd ../../",
+    "build:reset": "rm -rf node_modules pantry.lock && pantry install && ./buddy generate:model-files && ./buddy lint:fix && cd storage/framework && bun run build && cd ../../",
     "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "./buddy",
     "setup": "./storage/framework/scripts/setup.sh",
@@ -58,10 +58,11 @@
     "bud": "./buddy",
     "stx": "./buddy"
   },
+  "system": {
+    "bun": "^1.3.0",
+    "sqlite": "^3.47.2"
+  },
   "dependencies": {
-    "@stacksjs/ts-cloud": "0.1.11",
-    "@stacksjs/ts-cloud-types": "0.1.9",
-    "bun-query-builder": "^0.1.12",
     "stacks": "workspace:*"
   },
   "workspaces": [

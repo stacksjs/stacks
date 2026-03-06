@@ -24,7 +24,8 @@
       "Models/*": ["../../../app/Models/*"],
       "Notifications/*": ["../../../app/Notifications/*"],
       "~/*": ["../../../*"],
-      "@/*": ["../../../resources/*"]
+      "@/*": ["../../../resources/*"],
+      "*": ["../../../pantry/*"]
     },
     "resolveJsonModule": true,
     "types": [
@@ -69,6 +70,8 @@
   "exclude": [
     "../../../dist",
     "../../../dist/**",
+    "../../../pantry",
+    "../../../pantry/**",
     "../../../node_modules",
     "../../../node_modules/**",
     "../**/cdk.out",

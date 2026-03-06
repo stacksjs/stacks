@@ -48,6 +48,9 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/ts-cloud": "^0.1.11"
+  },
   "devDependencies": {
     "@stacksjs/cli": "workspace:*",
     "@stacksjs/config": "workspace:*",

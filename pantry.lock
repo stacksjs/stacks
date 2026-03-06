@@ -1,6 +1,472 @@
 {
-  "version": "1.0",
+  "version": "1.0.0",
+  "lockfileVersion": 1,
+  "generatedAt": "1772761123",
   "packages": {
-
+    "typescript@^5.9.3": {
+      "name": "typescript",
+      "version": "^5.9.3",
+      "source": "npm"
+    },
+    "@stacksjs/ts-validation@^0.4.9": {
+      "name": "@stacksjs/ts-validation",
+      "version": "^0.4.9",
+      "source": "npm"
+    },
+    "@stacksjs/cli@^0.70.23": {
+      "name": "@stacksjs/cli",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/ui@^0.70.23": {
+      "name": "@stacksjs/ui",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "ofetch@^1.5.1": {
+      "name": "ofetch",
+      "version": "^1.5.1",
+      "source": "npm"
+    },
+    "chart.js@^4.5.1": {
+      "name": "chart.js",
+      "version": "^4.5.1",
+      "source": "npm"
+    },
+    "@stacksjs/httx@^0.1.7": {
+      "name": "@stacksjs/httx",
+      "version": "^0.1.7",
+      "source": "npm"
+    },
+    "@stacksjs/orm@^0.70.23": {
+      "name": "@stacksjs/orm",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "ts-slug@^0.1.0": {
+      "name": "ts-slug",
+      "version": "^0.1.0",
+      "source": "npm"
+    },
+    "@stacksjs/security@^0.70.23": {
+      "name": "@stacksjs/security",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stripe/stripe-js@^8.7.0": {
+      "name": "@stripe/stripe-js",
+      "version": "^8.7.0",
+      "source": "npm"
+    },
+    "@stacksjs/actions@^0.70.23": {
+      "name": "@stacksjs/actions",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/tlsx@^0.13.0": {
+      "name": "@stacksjs/tlsx",
+      "version": "^0.13.0",
+      "source": "npm"
+    },
+    "@stacksjs/clapp@^0.2.0": {
+      "name": "@stacksjs/clapp",
+      "version": "^0.2.0",
+      "source": "npm"
+    },
+    "@stacksjs/payments@^0.70.23": {
+      "name": "@stacksjs/payments",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/path@^0.70.23": {
+      "name": "@stacksjs/path",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "ts-rate-limiter@^0.4.0": {
+      "name": "ts-rate-limiter",
+      "version": "^0.4.0",
+      "source": "npm"
+    },
+    "meilisearch@^0.48.0": {
+      "name": "meilisearch",
+      "version": "^0.48.0",
+      "source": "npm"
+    },
+    "ts-pantry@^0.8.3": {
+      "name": "ts-pantry",
+      "version": "^0.8.3",
+      "source": "npm"
+    },
+    "@stacksjs/strings@^0.70.23": {
+      "name": "@stacksjs/strings",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "unified-network@^0.6.4": {
+      "name": "unified-network",
+      "version": "^0.6.4",
+      "source": "npm"
+    },
+    "@stacksjs/database@^0.70.23": {
+      "name": "@stacksjs/database",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/desktop@^0.70.23": {
+      "name": "@stacksjs/desktop",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "better-dx@^0.2.5": {
+      "name": "better-dx",
+      "version": "^0.2.5",
+      "source": "npm"
+    },
+    "@stacksjs/server@^0.70.23": {
+      "name": "@stacksjs/server",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/ts-cloud-types@^0.1.9": {
+      "name": "@stacksjs/ts-cloud-types",
+      "version": "^0.1.9",
+      "source": "npm"
+    },
+    "ts-spreadsheets@^0.2.0": {
+      "name": "ts-spreadsheets",
+      "version": "^0.2.0",
+      "source": "npm"
+    },
+    "@stacksjs/rpx@^0.11.0": {
+      "name": "@stacksjs/rpx",
+      "version": "^0.11.0",
+      "source": "npm"
+    },
+    "ts-mocker@^0.1.6": {
+      "name": "ts-mocker",
+      "version": "^0.1.6",
+      "source": "npm"
+    },
+    "sqlite.org@^3.47.2": {
+      "name": "sqlite.org",
+      "version": "^3.47.2",
+      "source": "pantry"
+    },
+    "@stacksjs/env@^0.70.23": {
+      "name": "@stacksjs/env",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "ts-collect@^0.4.0": {
+      "name": "ts-collect",
+      "version": "^0.4.0",
+      "source": "npm"
+    },
+    "@stacksjs/bun-queue@^0.0.1": {
+      "name": "@stacksjs/bun-queue",
+      "version": "^0.0.1",
+      "source": "npm"
+    },
+    "@vueuse/head@^2.0.0": {
+      "name": "@vueuse/head",
+      "version": "^2.0.0",
+      "source": "npm"
+    },
+    "@stacksjs/email@^0.70.23": {
+      "name": "@stacksjs/email",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/storage@^0.70.23": {
+      "name": "@stacksjs/storage",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/gitlint@^0.1.5": {
+      "name": "@stacksjs/gitlint",
+      "version": "^0.1.5",
+      "source": "npm"
+    },
+    "@stacksjs/stx@^0.2.0": {
+      "name": "@stacksjs/stx",
+      "version": "^0.2.0",
+      "source": "npm"
+    },
+    "@stacksjs/collections@^0.70.23": {
+      "name": "@stacksjs/collections",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/dns@^0.70.23": {
+      "name": "@stacksjs/dns",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/health@^0.70.23": {
+      "name": "@stacksjs/health",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/logging@^0.70.23": {
+      "name": "@stacksjs/logging",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/tunnel@^0.70.23": {
+      "name": "@stacksjs/tunnel",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/buddy@^0.70.23": {
+      "name": "@stacksjs/buddy",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/ts-auth@^0.4.1": {
+      "name": "@stacksjs/ts-auth",
+      "version": "^0.4.1",
+      "source": "npm"
+    },
+    "@stacksjs/types@^0.70.23": {
+      "name": "@stacksjs/types",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/notifications@^0.70.23": {
+      "name": "@stacksjs/notifications",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/lint@^0.70.23": {
+      "name": "@stacksjs/lint",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/objects@^0.70.23": {
+      "name": "@stacksjs/objects",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/git@^0.70.23": {
+      "name": "@stacksjs/git",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/ts-cache@^0.1.3": {
+      "name": "@stacksjs/ts-cache",
+      "version": "^0.1.3",
+      "source": "npm"
+    },
+    "d3@^7.9.0": {
+      "name": "d3",
+      "version": "^7.9.0",
+      "source": "npm"
+    },
+    "bun-query-builder@^0.1.12": {
+      "name": "bun-query-builder",
+      "version": "^0.1.12",
+      "source": "npm"
+    },
+    "@stacksjs/search-engine@^0.70.23": {
+      "name": "@stacksjs/search-engine",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "localtunnels@^0.2.7": {
+      "name": "localtunnels",
+      "version": "^0.2.7",
+      "source": "npm"
+    },
+    "@stacksjs/testing@^0.70.23": {
+      "name": "@stacksjs/testing",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/cloud@^0.70.23": {
+      "name": "@stacksjs/cloud",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/validation@^0.70.23": {
+      "name": "@stacksjs/validation",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "magic-regexp@^0.10.0": {
+      "name": "magic-regexp",
+      "version": "^0.10.0",
+      "source": "npm"
+    },
+    "@cwcss/crosswind@^0.1.6": {
+      "name": "@cwcss/crosswind",
+      "version": "^0.1.6",
+      "source": "npm"
+    },
+    "@types/bun@^1.3.9": {
+      "name": "@types/bun",
+      "version": "^1.3.9",
+      "source": "npm"
+    },
+    "perfect-debounce@^2.1.0": {
+      "name": "perfect-debounce",
+      "version": "^2.1.0",
+      "source": "npm"
+    },
+    "@stacksjs/gitit@^0.2.2": {
+      "name": "@stacksjs/gitit",
+      "version": "^0.2.2",
+      "source": "npm"
+    },
+    "@stacksjs/error-handling@^0.70.23": {
+      "name": "@stacksjs/error-handling",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "ts-error-handling@^0.1.1": {
+      "name": "ts-error-handling",
+      "version": "^0.1.1",
+      "source": "npm"
+    },
+    "@stacksjs/cache@^0.70.23": {
+      "name": "@stacksjs/cache",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "bun.sh@^1.3.0": {
+      "name": "bun.sh",
+      "version": "^1.3.0",
+      "source": "pantry"
+    },
+    "@stacksjs/enums@^0.70.23": {
+      "name": "@stacksjs/enums",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "pretty-bytes@^7.1.0": {
+      "name": "pretty-bytes",
+      "version": "^7.1.0",
+      "source": "npm"
+    },
+    "bun-git-hooks@^0.3.1": {
+      "name": "bun-git-hooks",
+      "version": "^0.3.1",
+      "source": "npm"
+    },
+    "@stacksjs/events@^0.70.23": {
+      "name": "@stacksjs/events",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/bunpress@^0.1.1": {
+      "name": "@stacksjs/bunpress",
+      "version": "^0.1.1",
+      "source": "npm"
+    },
+    "@types/d3@^7.4.3": {
+      "name": "@types/d3",
+      "version": "^7.4.3",
+      "source": "npm"
+    },
+    "@stacksjs/alias@^0.70.23": {
+      "name": "@stacksjs/alias",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/dnsx@^0.2.2": {
+      "name": "@stacksjs/dnsx",
+      "version": "^0.2.2",
+      "source": "npm"
+    },
+    "@stacksjs/build@^0.70.23": {
+      "name": "@stacksjs/build",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/utils@^0.70.23": {
+      "name": "@stacksjs/utils",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@anthropic-ai/claude-agent-sdk@^0.2.49": {
+      "name": "@anthropic-ai/claude-agent-sdk",
+      "version": "^0.2.49",
+      "source": "npm"
+    },
+    "bunfig@^0.15.6": {
+      "name": "bunfig",
+      "version": "^0.15.6",
+      "source": "npm"
+    },
+    "@stacksjs/config@^0.70.23": {
+      "name": "@stacksjs/config",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/ai@^0.70.23": {
+      "name": "@stacksjs/ai",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/docs@^0.70.23": {
+      "name": "@stacksjs/docs",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/ts-cloud@^0.1.11": {
+      "name": "@stacksjs/ts-cloud",
+      "version": "^0.1.11",
+      "source": "npm"
+    },
+    "@stacksjs/bun-router@^0.0.2": {
+      "name": "@stacksjs/bun-router",
+      "version": "^0.0.2",
+      "source": "npm"
+    },
+    "@vscode/vsce@^3.7.1": {
+      "name": "@vscode/vsce",
+      "version": "^3.7.1",
+      "source": "npm"
+    },
+    "@stacksjs/auth@^0.70.23": {
+      "name": "@stacksjs/auth",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "ts-security-crypto@0.0.2": {
+      "name": "ts-security-crypto",
+      "version": "0.0.2",
+      "source": "npm"
+    },
+    "stripe@^20.3.1": {
+      "name": "stripe",
+      "version": "^20.3.1",
+      "source": "npm"
+    },
+    "bun-plugin-auto-imports@^0.3.1": {
+      "name": "bun-plugin-auto-imports",
+      "version": "^0.3.1",
+      "source": "npm"
+    },
+    "@stacksjs/clarity@^0.3.24": {
+      "name": "@stacksjs/clarity",
+      "version": "^0.3.24",
+      "source": "npm"
+    },
+    "@stacksjs/arrays@^0.70.23": {
+      "name": "@stacksjs/arrays",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/router@^0.70.23": {
+      "name": "@stacksjs/router",
+      "version": "^0.70.23",
+      "source": "npm"
+    },
+    "@stacksjs/realtime@^0.70.23": {
+      "name": "@stacksjs/realtime",
+      "version": "^0.70.23",
+      "source": "npm"
+    }
   }
 }

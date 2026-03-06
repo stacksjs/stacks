@@ -417,7 +417,12 @@ export interface SearchCommandOptions extends CliOptions {
 
 export interface ScheduleOptions extends CliOptions {}
 
-export interface TinkerOptions extends CliOptions {}
+export interface TinkerOptions extends CliOptions {
+  eval?: string | boolean
+  print?: string | boolean
+  noBanner?: boolean
+  preload?: string
+}
 export interface TypesOptions extends CliOptions {}
 
 export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
