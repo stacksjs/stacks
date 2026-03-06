@@ -16,6 +16,7 @@
 
 import process from 'node:process'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { cors, route } from '@stacksjs/router'
 
 const isProduction = process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production'
@@ -24,8 +25,8 @@ const isProduction = process.env.APP_ENV === 'production' || process.env.NODE_EN
 const port = Number(process.env.PORT) || config.ports?.api || 3008
 const hostname = process.env.HOST || (isProduction ? '0.0.0.0' : '127.0.0.1')
 
-console.log(`[Stacks API] Starting server...`)
-console.log(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)
+log.info(`[Stacks API] Starting server...`)
+log.info(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)
 
 // Enable CORS middleware
 route.use(cors().handle.bind(cors()))
@@ -39,4 +40,4 @@ await route.serve({
   hostname,
 })
 
-console.log(`[Stacks API] Server running at http://${hostname}:${port}`)
+log.info(`[Stacks API] Server running at http://${hostname}:${port}`)

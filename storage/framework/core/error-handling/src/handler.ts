@@ -175,7 +175,9 @@ export function handleError(
     logMessage += `\nContext: ${JSON.stringify(contextData, null, 2)}`
   }
 
-  writeToLogFile(logMessage).catch(() => {})
+  writeToLogFile(logMessage).catch((err) => {
+    console.error('Failed to write error log:', err)
+  })
 
   // Create a new Error with the combined message
   const error = new Error(errorMessage)

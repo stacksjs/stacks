@@ -19,7 +19,7 @@ const result = await runCommand('bun compile.ts', { cwd: path.buddyPath() })
 
 if (result.isErr) {
   log.error('There was an error compiling the binary', result.error)
-  process.exit()
+  process.exit(1)
 }
 
 // Check if the source exists (it should be, because bun compile.ts was successful)

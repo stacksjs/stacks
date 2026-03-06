@@ -769,7 +769,13 @@ export class S3Client {
     }
 
     const text = await response.text()
-    return JSON.parse(text) as any
+
+    try {
+      return JSON.parse(text) as any
+    }
+    catch {
+      throw new Error(`Failed to parse bucket policy JSON: ${text.slice(0, 200)}`)
+    }
   }
 
   /**
@@ -851,7 +857,13 @@ export class S3Client {
    */
   async getObjectJson<T = any>(bucket: string, key: string): Promise<T> {
     const content = await this.getObject(bucket, key)
-    return JSON.parse(content) as T
+
+    try {
+      return JSON.parse(content) as T
+    }
+    catch {
+      throw new Error(`Failed to parse JSON from s3://${bucket}/${key}`)
+    }
   }
 
   /**

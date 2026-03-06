@@ -18,7 +18,7 @@ for (const project of projects) {
   $.cwd(project)
   const ports = await $`./buddy ports --project ${project} --quiet`.text()
 
-  console.log('ports', ports)
+  log.debug('ports', ports)
 }
 
 process.exit(0)

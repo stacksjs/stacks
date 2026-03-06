@@ -4,8 +4,7 @@ import { libsPath } from '@stacksjs/path'
 
 const options: DeployOptions = parseOptions()
 
-if (options.verbose)
-  console.log('dev components options', options)
+// verbose logging handled by runCommand
 
 await runCommand(`bun run dev`, {
   ...options,

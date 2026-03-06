@@ -94,6 +94,11 @@ export function useAuth(): AuthComposable {
       body: JSON.stringify(user),
     })
 
+    if (!response.ok) {
+      const errorData = await response.json() as RegisterError
+      return errorData
+    }
+
     const data = await response.json() as RegisterResponse | RegisterError
 
     if (isRegisterError(data)) {

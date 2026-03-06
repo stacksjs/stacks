@@ -70,15 +70,15 @@ export async function isAppKeySet(): Promise<boolean> {
 /**
  * Determines the utilized reset preset.
  *
- * @url https://github.com/stacksjs/headwind
+ * @url https://github.com/cwcss/crosswind
  * @param preset
  */
 export function determineResetPreset(preset?: string): string[] {
   if (ui.reset)
     preset = ui.reset
 
-  // Headwind handles CSS resets internally via preflight
-  // Return empty array as headwind build generates the necessary resets
+  // Crosswind handles CSS resets internally via preflight
+  // Return empty array as crosswind build generates the necessary resets
   return []
 }
 

@@ -118,7 +118,7 @@ export interface UiOptions {
    * reset styles are utilized. You may set this value to `null`
    * if you prefer not applying any default stylesheets.
    *
-   * @url https://github.com/stacksjs/headwind
+   * @url https://github.com/cwcss/crosswind
    * @todo preset needs to be added via a Vite plugin on development & build
    * @example
    * ```ts

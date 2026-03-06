@@ -146,7 +146,7 @@ gstatic
 gupshup
 gzipped
 headlessui
-headwind
+crosswind
 heex
 heroicon
 heroicons

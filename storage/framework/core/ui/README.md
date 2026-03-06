@@ -53,9 +53,8 @@ For casual chit-chat with others using this package:
 
 Many thanks to the following core technologies & people who have contributed to this package:
 
-- [Vue](https://vuejs.org)
-- [Headwind](https://github.com/stacksjs/headwind)
-- [Pinia](https://pinia.vuejs.org)
+- [STX](https://github.com/stacksjs/stx)
+- [Crosswind](https://github.com/cwcss/crosswind)
 - [Chris Breuer](https://github.com/chrisbbreuer)
 - [All Contributors](../../contributors)
 

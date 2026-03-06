@@ -793,13 +793,18 @@ async function requestAwsPort25(
     )
 
     if (result.includes('caseId')) {
-      const caseId = JSON.parse(result).caseId
-      log.success(`Support case created: ${caseId}`)
-      console.log('')
-      console.log('  AWS will process this within 24-48 hours.')
-      console.log('  Check status: aws support describe-cases --region us-east-1')
-      console.log('')
-      process.exit(ExitCode.Success)
+      try {
+        const caseId = JSON.parse(result).caseId
+        log.success(`Support case created: ${caseId}`)
+        log.info('')
+        log.info('  AWS will process this within 24-48 hours.')
+        log.info('  Check status: aws support describe-cases --region us-east-1')
+        log.info('')
+        process.exit(ExitCode.Success)
+      }
+      catch {
+        log.error('Failed to parse AWS support case response')
+      }
     }
   } catch {
     // Support API not available (no Business plan) — fall back to web form
