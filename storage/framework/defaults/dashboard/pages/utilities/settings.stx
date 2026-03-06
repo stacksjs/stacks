@@ -28,6 +28,20 @@ const integrations = [
   { name: 'GitHub', status: 'connected', icon: 'chevron.left.forwardslash.chevron.right' },
   { name: 'Slack', status: 'not_connected', icon: 'bubble.left.and.bubble.right' },
 ]
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -114,7 +128,7 @@ const integrations = [
                   <div class="font-medium text-gray-900 dark:text-white">{{ integration.name }}</div>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ integration.status === 'connected' ? 'success' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : integration.status === 'connected' ? 'success' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : integration.status === 'connected' ? 'success' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(integration.status) }}">
                     {{ integration.status === 'connected' ? 'Connected' : 'Not Connected' }}
                   </span>
                   <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">

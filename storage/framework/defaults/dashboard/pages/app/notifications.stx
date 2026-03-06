@@ -1,16 +1,50 @@
 <script server>
-const notifications = [
+var notifications = [
   { type: 'email', recipient: 'user@example.com', subject: 'Welcome!', status: 'sent', time: '2m ago' },
   { type: 'sms', recipient: '+1234567890', subject: 'Order shipped', status: 'sent', time: '15m ago' },
   { type: 'push', recipient: 'user-123', subject: 'New message', status: 'delivered', time: '1h ago' },
   { type: 'email', recipient: 'admin@example.com', subject: 'Daily report', status: 'failed', time: '2h ago' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Sent Today', value: '1,247' },
   { label: 'Delivered', value: '98.2%' },
   { label: 'Failed', value: '23' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM notifications ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    notifications = rows.map(function(r) { return { type: r.type || 'email', recipient: r.recipient || r.notifiable_id || '', subject: r.subject || r.data || '', status: r.status || 'sent', time: r.created_at || '' } })
+    const sent = rows.filter(function(r) { return r.status === 'sent' || r.status === 'delivered' }).length
+    const failed = rows.filter(function(r) { return r.status === 'failed' }).length
+    stats = [
+      { label: 'Sent Today', value: String(sent) },
+      { label: 'Delivered', value: rows.length > 0 ? Math.round((sent / rows.length) * 100) + '%' : '0%' },
+      { label: 'Failed', value: String(failed) },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -55,9 +89,7 @@ const stats = [
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ notif.recipient }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ notif.subject }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ notif.status === 'sent' || notif.status === 'delivered' ? 'success' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : notif.status === 'sent' || notif.status === 'delivered' ? 'success' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : notif.status === 'sent' || notif.status === 'delivered' ? 'success' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ notif.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(notif.status) }}">{{ notif.status }}</span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ notif.time }}</td>
                 </tr>

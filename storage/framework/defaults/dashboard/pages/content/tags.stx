@@ -1,5 +1,5 @@
 <script server>
-const tags = [
+var tags = [
   { name: 'javascript', count: 45 },
   { name: 'typescript', count: 38 },
   { name: 'vue', count: 24 },
@@ -9,6 +9,18 @@ const tags = [
   { name: 'performance', count: 12 },
   { name: 'security', count: 8 },
 ]
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM tags').all()
+  if (rows.length > 0) {
+    tags = rows.map(function(r) { return { name: r.name || r.slug || '', count: r.count || 0 } })
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

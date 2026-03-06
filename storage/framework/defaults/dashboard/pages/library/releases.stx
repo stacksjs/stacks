@@ -13,6 +13,19 @@ const releases = [
   { version: 'v2.2.0', date: '2023-12-01', type: 'minor', status: 'previous', changes: 15, breaking: false },
   { version: 'v2.0.0', date: '2023-11-15', type: 'major', status: 'previous', changes: 45, breaking: true },
 ]
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -49,14 +62,10 @@ const releases = [
                     @endif
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : release.type === 'major' ? 'error' : release.type === 'minor' ? 'info' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ release.type }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(release.type) }}">{{ release.type }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ release.status === 'current' ? 'success' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : release.status === 'current' ? 'success' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : release.status === 'current' ? 'success' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ release.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(release.status) }}">{{ release.status }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ release.changes }} changes</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ release.date }}</td>

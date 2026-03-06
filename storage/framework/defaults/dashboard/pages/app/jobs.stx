@@ -1,10 +1,37 @@
 <script server>
-const jobs = [
+var jobs = [
   { name: 'SendWelcomeEmail', queue: 'emails', attempts: 1, status: 'completed', duration: '1.2s' },
   { name: 'ProcessPayment', queue: 'default', attempts: 1, status: 'completed', duration: '2.4s' },
   { name: 'GenerateInvoice', queue: 'default', attempts: 2, status: 'failed', duration: '0.5s' },
   { name: 'SyncAnalytics', queue: 'sync', attempts: 1, status: 'pending', duration: '-' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM jobs ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    jobs = rows.map(function(r) { return { name: r.name || r.queue || '', queue: r.queue || 'default', attempts: r.attempts || 0, status: r.status || 'pending', duration: r.duration || '-' } })
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -43,9 +70,7 @@ const jobs = [
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.attempts }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.duration }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : job.status === 'completed' ? 'success' : job.status === 'pending' ? 'info' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ job.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(job.status) }}">{{ job.status }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     @if (job.status === 'failed')

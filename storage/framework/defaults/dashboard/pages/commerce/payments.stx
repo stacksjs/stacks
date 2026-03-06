@@ -1,5 +1,5 @@
 <script server>
-const payments = [
+var payments = [
   { id: 'PAY-1234', order: 'ORD-5678', amount: '$125.00', method: 'Visa •••• 4242', status: 'completed', date: '2024-01-18 14:32' },
   { id: 'PAY-1233', order: 'ORD-5677', amount: '$89.50', method: 'Mastercard •••• 8888', status: 'completed', date: '2024-01-18 13:15' },
   { id: 'PAY-1232', order: 'ORD-5676', amount: '$234.00', method: 'PayPal', status: 'pending', date: '2024-01-18 12:45' },
@@ -8,19 +8,57 @@ const payments = [
   { id: 'PAY-1229', order: 'ORD-5673', amount: '$56.00', method: 'Mastercard •••• 5555', status: 'refunded', date: '2024-01-17 16:30' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Total Revenue', value: '$45,678' },
   { label: 'Pending', value: '$1,234' },
   { label: 'Refunded', value: '$567' },
   { label: 'Failed', value: '12' },
 ]
 
-const paymentMethods = [
+var paymentMethods = [
   { name: 'Credit Cards', provider: 'Stripe', status: 'active', volume: '$32,456' },
   { name: 'PayPal', provider: 'PayPal', status: 'active', volume: '$8,234' },
   { name: 'Apple Pay', provider: 'Stripe', status: 'active', volume: '$3,456' },
   { name: 'Google Pay', provider: 'Stripe', status: 'active', volume: '$1,532' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM payments ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    payments = rows.map(function(r) { return { id: r.id ? 'PAY-' + r.id : '', order: r.order_id ? 'ORD-' + r.order_id : '', amount: '$' + (r.amount || 0), method: r.method || r.payment_method || '', status: r.status || '', date: r.created_at || '' } })
+    const completed = rows.filter(function(r) { return r.status === 'completed' })
+    const totalRev = completed.reduce(function(s, r) { return s + (r.amount || 0) }, 0)
+    const pending = rows.filter(function(r) { return r.status === 'pending' }).reduce(function(s, r) { return s + (r.amount || 0) }, 0)
+    const refunded = rows.filter(function(r) { return r.status === 'refunded' }).reduce(function(s, r) { return s + (r.amount || 0) }, 0)
+    const failed = rows.filter(function(r) { return r.status === 'failed' }).length
+    stats = [
+      { label: 'Total Revenue', value: '$' + totalRev.toLocaleString() },
+      { label: 'Pending', value: '$' + pending.toLocaleString() },
+      { label: 'Refunded', value: '$' + refunded.toLocaleString() },
+      { label: 'Failed', value: String(failed) },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -113,9 +151,7 @@ const paymentMethods = [
                   <td class="font-semibold">{{ payment.amount }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ payment.method }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ payment.status === 'completed' ? 'success' : payment.status === 'pending' ? 'warning' : payment.status === 'refunded' ? 'info' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : payment.status === 'completed' ? 'success' : payment.status === 'pending' ? 'warning' : payment.status === 'refunded' ? 'info' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : payment.status === 'completed' ? 'success' : payment.status === 'pending' ? 'warning' : payment.status === 'refunded' ? 'info' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ payment.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(payment.status) }}">{{ payment.status }}</span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ payment.date }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">

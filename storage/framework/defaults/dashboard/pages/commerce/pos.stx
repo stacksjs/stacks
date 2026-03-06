@@ -19,6 +19,20 @@ const recentTransactions = [
   { id: 'TXN-5676', terminal: 'POS-001', amount: '$89.00', method: 'Card', time: '8m ago' },
   { id: 'TXN-5675', terminal: 'POS-002', amount: '$12.00', method: 'Card', time: '15m ago' },
 ]
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -57,9 +71,7 @@ const recentTransactions = [
                 </div>
                 <div class="flex items-center gap-3">
                   <span class="text-muted text-sm">{{ terminal.lastTransaction }}</span>
-                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ terminal.status === 'online' ? 'success' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : terminal.status === 'online' ? 'success' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : terminal.status === 'online' ? 'success' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                    {{ terminal.status }}
-                  </span>
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(terminal.status) }}">{{ terminal.status }}</span>
                 </div>
               </div>
             @endforeach

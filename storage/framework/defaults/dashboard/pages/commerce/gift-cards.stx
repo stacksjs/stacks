@@ -1,5 +1,5 @@
 <script server>
-const giftCards = [
+var giftCards = [
   { code: 'GC-1234-5678', balance: '$50.00', initial: '$50.00', recipient: 'john@example.com', status: 'active', created: '2024-01-15' },
   { code: 'GC-2345-6789', balance: '$25.00', initial: '$100.00', recipient: 'jane@example.com', status: 'active', created: '2024-01-10' },
   { code: 'GC-3456-7890', balance: '$0.00', initial: '$75.00', recipient: 'bob@example.com', status: 'redeemed', created: '2024-01-05' },
@@ -7,14 +7,49 @@ const giftCards = [
   { code: 'GC-5678-9012', balance: '$50.00', initial: '$50.00', recipient: null, status: 'pending', created: '2024-01-17' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Outstanding Balance', value: '$12,456' },
   { label: 'Active Cards', value: '234' },
   { label: 'Redeemed Today', value: '$567' },
   { label: 'Sold This Month', value: '$3,450' },
 ]
 
-const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
+var denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM gift_cards ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    giftCards = rows.map(function(r) { return { code: r.code || '', balance: '$' + (r.balance || 0), initial: '$' + (r.initial_value || r.amount || 0), recipient: r.recipient_email || r.recipient || null, status: r.status || 'active', created: r.created_at || '' } })
+    const activeCards = rows.filter(function(r) { return r.status === 'active' }).length
+    const totalBalance = rows.reduce(function(s, r) { return s + (r.balance || 0) }, 0)
+    stats = [
+      { label: 'Outstanding Balance', value: '$' + totalBalance.toLocaleString() },
+      { label: 'Active Cards', value: String(activeCards) },
+      { label: 'Redeemed Today', value: '-' },
+      { label: 'Sold This Month', value: '-' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -99,9 +134,7 @@ const denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
                   <td class="text-gray-500 dark:text-gray-400">{{ card.initial }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ card.recipient || '—' }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : card.status === 'active' ? 'success' : card.status === 'pending' ? 'warning' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ card.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(card.status) }}">{{ card.status }}</span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ card.created }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">

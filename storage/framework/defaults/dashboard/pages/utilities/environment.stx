@@ -1,11 +1,11 @@
 <script server>
-const environments = [
+var environments = [
   { name: 'production', url: 'https://stacks.dev', status: 'healthy', lastDeploy: '2d ago', version: '1.2.3' },
   { name: 'staging', url: 'https://staging.stacks.dev', status: 'healthy', lastDeploy: '1h ago', version: '1.2.4-beta' },
   { name: 'development', url: 'http://localhost:3000', status: 'running', lastDeploy: 'Local', version: '1.2.4-dev' },
 ]
 
-const variables = [
+var variables = [
   { key: 'APP_NAME', value: 'Stacks', environments: ['production', 'staging', 'development'] },
   { key: 'APP_URL', value: 'https://stacks.dev', environments: ['production'] },
   { key: 'DATABASE_URL', value: '••••••••', environments: ['production', 'staging'], sensitive: true },
@@ -14,12 +14,58 @@ const variables = [
   { key: 'DEBUG', value: 'true', environments: ['staging', 'development'] },
 ]
 
-const stats = [
+var stats = [
   { label: 'Environments', value: '3' },
   { label: 'Variables', value: '24' },
   { label: 'Secrets', value: '8' },
   { label: 'Last Sync', value: '5m ago' },
 ]
+
+try {
+  const fs = require('fs')
+  const path = require('path')
+  const envPath = path.resolve(process.cwd(), '.env')
+  const envContent = fs.readFileSync(envPath, 'utf-8')
+  const envLines = envContent.split('\n').filter(function(l) { return l.trim() && !l.trim().startsWith('#') })
+  const envVars = []
+  let secretCount = 0
+  const sensitiveKeys = ['PASSWORD', 'SECRET', 'KEY', 'TOKEN', 'DATABASE_URL', 'REDIS_URL', 'API_KEY']
+  envLines.forEach(function(line) {
+    const eqIdx = line.indexOf('=')
+    if (eqIdx > 0) {
+      const key = line.substring(0, eqIdx).trim()
+      let val = line.substring(eqIdx + 1).trim()
+      const isSensitive = sensitiveKeys.some(function(sk) { return key.toUpperCase().indexOf(sk) >= 0 })
+      if (isSensitive) { secretCount++; val = '••••••••' }
+      envVars.push({ key: key, value: val, environments: ['development'], sensitive: isSensitive })
+    }
+  })
+  if (envVars.length > 0) {
+    variables = envVars
+    stats = [
+      { label: 'Environments', value: '3' },
+      { label: 'Variables', value: String(envVars.length) },
+      { label: 'Secrets', value: String(secretCount) },
+      { label: 'Last Sync', value: 'Now' },
+    ]
+  }
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -48,7 +94,7 @@ const stats = [
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
             <div class="flex items-center justify-between mb-4">
               <span class="font-semibold text-gray-900 dark:text-white capitalize">{{ env.name }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ env.status === 'healthy' ? 'success' : 'info'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : env.status === 'healthy' ? 'success' : 'info'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : env.status === 'healthy' ? 'success' : 'info'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ env.status }}</span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(env.status) }}">{{ env.status }}</span>
             </div>
             <div class="mt-4">
               <div class="flex justify-between mb-2">

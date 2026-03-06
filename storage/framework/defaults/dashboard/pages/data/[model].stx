@@ -17,6 +17,20 @@ var columns = []
 var error = null
 var totalCount = 0
 
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
+
 try {
   const Database = require('bun:sqlite').Database
   const path = require('path')
@@ -41,9 +55,35 @@ try {
 } catch (e) {
   error = e.message || 'Database not available'
 }
+
+var recentCount = 0
+var statusBreakdown = {}
+if (items.length > 0) {
+  var now = Date.now()
+  var weekAgo = now - 7 * 24 * 60 * 60 * 1000
+  items.forEach(function(item) {
+    if (item.created_at) {
+      try { if (new Date(item.created_at).getTime() > weekAgo) recentCount++ } catch(e) {}
+    }
+    if (item.status) {
+      var s = String(item.status)
+      statusBreakdown[s] = (statusBreakdown[s] || 0) + 1
+    }
+  })
+}
+var statusKeys = Object.keys(statusBreakdown)
+
+var hiddenColumns = ['uuid', 'password', 'remember_token', 'content', 'description', 'body', 'html', 'nutritional_info', 'two_factor_secret', 'two_factor_recovery_codes']
+columns = columns.filter(function(col) { return hiddenColumns.indexOf(col.name) < 0 })
 </script>
 <DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">
   <div class="p-6">
+    <div class="mb-4">
+      <a href="/app#data-dashboard" class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+        Back to Dashboard
+      </a>
+    </div>
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
@@ -92,6 +132,28 @@ try {
         </button>
       </div>
     @else
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalCount }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total Records</div>
+        </div>
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ recentCount }}</div>
+          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Added This Week</div>
+        </div>
+        @foreach(statusKeys as sk)
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ statusBreakdown[sk] }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ sk }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="mb-4">
+        <input type="text" id="modelSearch" placeholder="Search {{ modelName }}..."
+          class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" style="width: 300px;">
+      </div>
+
       <!-- Data Table -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
         <div class="overflow-x-auto">
@@ -108,7 +170,7 @@ try {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody id="modelTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
               @foreach(items as item)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   @foreach(columns as col)
@@ -118,11 +180,25 @@ try {
                       @elseif(col.name.includes('_at') || col.name.includes('date'))
                         <span class="text-gray-500 dark:text-gray-400">{{ item[col.name] ? new Date(item[col.name]).toLocaleDateString() : '-' }}</span>
                       @elseif(col.name === 'status')
-                        <span class="px-2 py-1 text-xs font-medium rounded-full {{ item[col.name] === 'active' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                          {{ item[col.name] }}
-                        </span>
+                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(item[col.name]) }}">{{ item[col.name] }}</span>
+                      @elseif(col.name === 'email')
+                        <a href="mailto:{{ item[col.name] }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ item[col.name] }}</a>
+                      @elseif(col.name === 'price' || col.name === 'amount' || col.name === 'total' || col.name === 'cost')
+                        <span class="font-mono">${{ typeof item[col.name] === 'number' ? item[col.name].toFixed(2) : (item[col.name] || '0.00') }}</span>
+                      @elseif(col.name.startsWith('is_') || col.name.startsWith('has_'))
+                        @if(item[col.name])
+                          <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Yes</span>
+                        @else
+                          <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">No</span>
+                        @endif
+                      @elseif(col.name.includes('_url') || col.name.includes('url'))
+                        @if(item[col.name])
+                          <a href="{{ item[col.name] }}" class="text-blue-600 dark:text-blue-400 hover:underline text-xs" target="_blank">Link</a>
+                        @else
+                          <span class="text-gray-400">-</span>
+                        @endif
                       @else
-                        {{ item[col.name] !== null ? item[col.name] : '-' }}
+                        {{ item[col.name] !== null && item[col.name] !== undefined ? item[col.name] : '-' }}
                       @endif
                     </td>
                   @endforeach
@@ -168,3 +244,18 @@ try {
     @endif
   </div>
 </DashboardLayout>
+<script client>
+document.addEventListener('DOMContentLoaded', function() {
+  var searchInput = document.getElementById('modelSearch');
+  if (searchInput) {
+    searchInput.addEventListener('input', function() {
+      var query = this.value.toLowerCase();
+      var rows = document.querySelectorAll('#modelTableBody tr');
+      for (var i = 0; i < rows.length; i++) {
+        var text = rows[i].textContent.toLowerCase();
+        rows[i].style.display = text.indexOf(query) >= 0 ? '' : 'none';
+      }
+    });
+  }
+});
+</script>

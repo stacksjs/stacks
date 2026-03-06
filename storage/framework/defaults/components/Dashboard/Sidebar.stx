@@ -80,7 +80,7 @@ const sectionContent = {
       { to: '/data/users', icon: 'i-hugeicons-user-multiple', text: 'Users' },
       { to: '/data/teams', icon: 'i-hugeicons-user-group', text: 'Teams' },
       { to: '/data/subscribers', icon: 'i-hugeicons-mail-open-02', text: 'Subscribers' }
-    ]
+    ].concat(dynamicDataItems)
   },
   marketing: {
     items: [
@@ -113,12 +113,23 @@ const sectionContent = {
   }
 }
 
+var discoveredModels = []
+try {
+  const fs = require('fs')
+  const manifestPath = require('path').resolve(process.cwd(), 'storage/framework/defaults/dashboard/.discovered-models.json')
+  discoveredModels = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
+} catch (e) {}
+
+var dynamicDataItems = discoveredModels.filter(function(m) { return !m.hasDedicatedPage }).map(function(m) {
+  return { to: '/pages/data/' + m.id, icon: 'i-hugeicons-table-02', text: m.name, mpa: true }
+})
+
 function getSidebarWidth() {
   return isSidebarCollapsed ? 64 : 240
 }
 </script>
 <div class="sidebar-root">
-  <div class="hidden lg:fixed lg:flex lg:flex-col" style="top: 0; bottom: 0; width: {{ getSidebarWidth() }}px;">
+  <div class="fixed flex flex-col" style="top: 0; bottom: 0; left: 0; width: {{ getSidebarWidth() }}px; z-index: 30;">
     <div class="sidebar-inner">
 
       <!-- Logo -->
@@ -139,14 +150,14 @@ function getSidebarWidth() {
         <!-- Sections -->
         @foreach(sectionOrder as sectionKey)
           <div class="sidebar-section" data-section="{{ sectionKey }}">
-            <button class="sidebar-section-label" type="button">
+            <button class="sidebar-section-label" type="button" onclick="(function(btn){var sec=btn.closest('.sidebar-section');var key=sec.getAttribute('data-section');sec.classList.toggle('collapsed');try{var c={};var s=localStorage.getItem('sidebar-collapsed');if(s)c=JSON.parse(s);c[key]=sec.classList.contains('collapsed');localStorage.setItem('sidebar-collapsed',JSON.stringify(c));}catch(e){}})(this)">
               <span>{{ sectionKey }}</span>
               <div class="sidebar-chevron"></div>
             </button>
             <ul class="sidebar-section-list">
               @foreach(sectionContent[sectionKey].items as item)
                 <li>
-                  <a href="{{ item.to }}" class="sidebar-link">
+                  <a href="{{ item.to }}" class="sidebar-link"{{ item.mpa ? ' data-mpa="true"' : '' }}>
                     <div class="{{ item.icon }} sidebar-icon"></div>
                     <span>{{ item.text }}</span>
                   </a>
@@ -156,6 +167,9 @@ function getSidebarWidth() {
           </div>
         @endforeach
       </nav>
+      <script>
+        (function(){try{var c=JSON.parse(localStorage.getItem('sidebar-collapsed')||'{}');var secs=document.querySelectorAll('.sidebar-section[data-section]');for(var i=0;i<secs.length;i++){var k=secs[i].getAttribute('data-section');if(c[k])secs[i].classList.add('collapsed');}}catch(e){}})();
+      </script>
 
       <!-- Bottom links -->
       <div class="sidebar-bottom">

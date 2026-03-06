@@ -1,5 +1,5 @@
 <script server>
-const lists = [
+var lists = [
   { name: 'Newsletter Subscribers', members: 12456, growth: '+234', status: 'active', lastSent: '2d ago' },
   { name: 'Product Updates', members: 8234, growth: '+89', status: 'active', lastSent: '1w ago' },
   { name: 'VIP Customers', members: 567, growth: '+12', status: 'active', lastSent: '3d ago' },
@@ -7,12 +7,32 @@ const lists = [
   { name: 'Abandoned Cart', members: 1234, growth: '+156', status: 'active', lastSent: '1d ago' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Total Subscribers', value: '22,725' },
   { label: 'New This Week', value: '+496' },
   { label: 'Unsubscribed', value: '23' },
   { label: 'Avg Open Rate', value: '24.5%' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM email_lists ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    lists = rows.map(function(r) { return { name: r.name || '', members: r.member_count || r.members || 0, growth: '+0', status: r.status || 'active', lastSent: r.last_sent_at || '-' } })
+    const totalMembers = rows.reduce(function(s, r) { return s + (r.member_count || r.members || 0) }, 0)
+    stats = [
+      { label: 'Total Subscribers', value: totalMembers.toLocaleString() },
+      { label: 'New This Week', value: '-' },
+      { label: 'Unsubscribed', value: '-' },
+      { label: 'Avg Open Rate', value: '-' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

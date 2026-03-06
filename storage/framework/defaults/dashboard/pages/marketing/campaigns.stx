@@ -1,5 +1,5 @@
 <script server>
-const campaigns = [
+var campaigns = [
   { name: 'Spring Sale 2024', type: 'Email', status: 'active', sent: '12,456', opened: '28.5%', clicked: '4.2%', revenue: '$12,345' },
   { name: 'New Feature Launch', type: 'Multi-channel', status: 'active', sent: '8,234', opened: '32.1%', clicked: '6.8%', revenue: '$8,567' },
   { name: 'Re-engagement Series', type: 'Email', status: 'scheduled', sent: '-', opened: '-', clicked: '-', revenue: '-' },
@@ -7,12 +7,46 @@ const campaigns = [
   { name: 'Welcome Series', type: 'Automation', status: 'active', sent: '2,345', opened: '45.6%', clicked: '12.3%', revenue: '$5,678' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Active Campaigns', value: '3' },
   { label: 'Total Sent', value: '38,713' },
   { label: 'Avg Open Rate', value: '35.4%' },
   { label: 'Revenue Generated', value: '$72,268' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM campaigns ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    campaigns = rows.map(function(r) { return { name: r.name || '', type: r.type || 'Email', status: r.status || '', sent: r.sent || '-', opened: r.open_rate || '-', clicked: r.click_rate || '-', revenue: r.revenue ? '$' + r.revenue : '-' } })
+    const active = rows.filter(function(r) { return r.status === 'active' }).length
+    stats = [
+      { label: 'Active Campaigns', value: String(active) },
+      { label: 'Total Sent', value: String(rows.length) },
+      { label: 'Avg Open Rate', value: '-' },
+      { label: 'Revenue Generated', value: '-' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -60,9 +94,7 @@ const stats = [
                   <td class="font-medium">{{ campaign.name }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ campaign.type }}</span></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ campaign.status === 'active' ? 'success' : campaign.status === 'scheduled' ? 'info' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : campaign.status === 'active' ? 'success' : campaign.status === 'scheduled' ? 'info' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : campaign.status === 'active' ? 'success' : campaign.status === 'scheduled' ? 'info' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ campaign.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(campaign.status) }}">{{ campaign.status }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ campaign.sent }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ campaign.opened }}</td>

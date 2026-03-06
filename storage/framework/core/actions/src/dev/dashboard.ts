@@ -114,6 +114,15 @@ async function discoverModels(): Promise<Array<{ name: string, icon: string, id:
 // Get discovered models
 const discoveredModels = await discoverModels()
 
+const { writeFileSync } = await import('node:fs')
+const manifestPath = storagePath('framework/defaults/dashboard/.discovered-models.json')
+const dedicatedPages = new Set(['user', 'team', 'subscriber', 'post', 'page', 'product', 'order', 'customer', 'payment', 'coupon', 'category', 'tag', 'comment', 'author', 'notification', 'job', 'campaign', 'review', 'gift-card'])
+const manifest = discoveredModels.map(m => ({
+  id: m.id, name: m.name, icon: m.icon,
+  hasDedicatedPage: dedicatedPages.has(m.id),
+}))
+writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
+
 log.info('Starting Stacks Dashboard...')
 if (verbose) log.info(`Dashboard path: ${dashboardPath}`)
 

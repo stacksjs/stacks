@@ -1,5 +1,5 @@
 <script server>
-const tokens = [
+var tokens = [
   { name: 'Production API', token: 'sk_live_••••••••4a2b', lastUsed: '2m ago', created: '2024-01-01', scopes: ['read', 'write'], status: 'active' },
   { name: 'CI/CD Pipeline', token: 'sk_live_••••••••8c3d', lastUsed: '1h ago', created: '2024-01-10', scopes: ['deploy'], status: 'active' },
   { name: 'Mobile App', token: 'sk_live_••••••••2e4f', lastUsed: '5m ago', created: '2024-01-15', scopes: ['read'], status: 'active' },
@@ -7,20 +7,60 @@ const tokens = [
   { name: 'Old Integration', token: 'sk_live_••••••••0i1j', lastUsed: '30d ago', created: '2023-06-01', scopes: ['read'], status: 'expired' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Active Tokens', value: '4' },
   { label: 'API Calls (24h)', value: '45.2K' },
   { label: 'Rate Limit', value: '1000/min' },
   { label: 'Expired', value: '1' },
 ]
 
-const scopes = [
+var scopes = [
   { name: 'read', description: 'Read access to resources' },
   { name: 'write', description: 'Write access to resources' },
   { name: 'delete', description: 'Delete access to resources' },
   { name: 'deploy', description: 'Deploy applications' },
   { name: 'admin', description: 'Full administrative access' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM personal_access_tokens ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    tokens = rows.map(function(r) {
+      const tokenStr = r.token ? r.token.substring(0, 8) + '••••••••' + r.token.substring(r.token.length - 4) : '••••••••'
+      let abilities = []
+      try { abilities = JSON.parse(r.abilities || '[]') } catch(e) { abilities = ['read'] }
+      return { name: r.name || '', token: tokenStr, lastUsed: r.last_used_at || '-', created: r.created_at || '', scopes: abilities, status: r.expires_at && new Date(r.expires_at) < new Date() ? 'expired' : 'active' }
+    })
+    const activeCount = tokens.filter(function(t) { return t.status === 'active' }).length
+    const expiredCount = tokens.filter(function(t) { return t.status === 'expired' }).length
+    stats = [
+      { label: 'Active Tokens', value: String(activeCount) },
+      { label: 'API Calls (24h)', value: '-' },
+      { label: 'Rate Limit', value: '1000/min' },
+      { label: 'Expired', value: String(expiredCount) },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -78,9 +118,7 @@ const scopes = [
                   <td class="text-gray-500 dark:text-gray-400">{{ token.lastUsed }}</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ token.created }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ token.status === 'active' ? 'success' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : token.status === 'active' ? 'success' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : token.status === 'active' ? 'success' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ token.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(token.status) }}">{{ token.status }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-2">

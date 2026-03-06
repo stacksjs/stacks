@@ -268,7 +268,7 @@ try {
   </div>
 </div>
 
-<script>
+<script client>
 const API_BASE = 'http://localhost:3000/cms'
 let deleteCommentId = null
 

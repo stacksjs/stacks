@@ -1,5 +1,5 @@
 <script server>
-const posts = [
+var posts = [
   { platform: 'Twitter', content: 'Excited to announce our new feature launch! 🚀', status: 'published', engagement: '1.2K', scheduled: '2024-01-18 10:00' },
   { platform: 'LinkedIn', content: 'We\'re hiring! Join our growing team...', status: 'published', engagement: '456', scheduled: '2024-01-17 14:00' },
   { platform: 'Instagram', content: 'Behind the scenes at our office...', status: 'scheduled', engagement: '-', scheduled: '2024-01-19 12:00' },
@@ -7,14 +7,49 @@ const posts = [
   { platform: 'Twitter', content: 'Thank you for 10K followers! 🎉', status: 'scheduled', engagement: '-', scheduled: '2024-01-20 09:00' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Total Reach', value: '45.6K' },
   { label: 'Engagement', value: '3.2K' },
   { label: 'Scheduled', value: '8' },
   { label: 'Drafts', value: '12' },
 ]
 
-const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
+var platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM social_posts ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    posts = rows.map(function(r) { return { platform: r.platform || '', content: r.content || '', status: r.status || 'draft', engagement: r.engagement || '-', scheduled: r.scheduled_at || '-' } })
+    const scheduled = rows.filter(function(r) { return r.status === 'scheduled' }).length
+    const drafts = rows.filter(function(r) { return r.status === 'draft' }).length
+    stats = [
+      { label: 'Total Reach', value: '-' },
+      { label: 'Engagement', value: '-' },
+      { label: 'Scheduled', value: String(scheduled) },
+      { label: 'Drafts', value: String(drafts) },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -63,9 +98,7 @@ const platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ post.platform }}</span></td>
                   <td class="truncate" style="max-width: 300px;">{{ post.content }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ post.status === 'published' ? 'success' : post.status === 'scheduled' ? 'info' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : post.status === 'published' ? 'success' : post.status === 'scheduled' ? 'info' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : post.status === 'published' ? 'success' : post.status === 'scheduled' ? 'info' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ post.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(post.status) }}">{{ post.status }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ post.engagement }}</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ post.scheduled }}</td>

@@ -278,6 +278,7 @@ window.craft._sidebarSelectHandler = function(event) {
 document.addEventListener('click', function(e) {
   var link = e.target.closest ? e.target.closest('a[href]') : null;
   if (!link) return;
+  if (link.hasAttribute('data-mpa')) return; // let browser navigate to MPA page
 
   var href = link.getAttribute('href');
   if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0) return;
@@ -301,36 +302,9 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   }
 
-  // Collapsible sidebar sections
-  var collapsed = {};
-  try {
-    var stored = localStorage.getItem('sidebar-collapsed');
-    if (stored) collapsed = JSON.parse(stored);
-  } catch (e) {}
-
-  var sections = document.querySelectorAll('.sidebar-section[data-section]');
-  for (var s = 0; s < sections.length; s++) {
-    var key = sections[s].getAttribute('data-section');
-    if (collapsed[key]) {
-      sections[s].classList.add('collapsed');
-    }
-  }
-
-  var labels = document.querySelectorAll('.sidebar-section-label');
-  for (var l = 0; l < labels.length; l++) {
-    labels[l].addEventListener('click', function() {
-      var section = this.closest('.sidebar-section');
-      var sectionKey = section.getAttribute('data-section');
-      section.classList.toggle('collapsed');
-      try {
-        var current = {};
-        var st = localStorage.getItem('sidebar-collapsed');
-        if (st) current = JSON.parse(st);
-        current[sectionKey] = section.classList.contains('collapsed');
-        localStorage.setItem('sidebar-collapsed', JSON.stringify(current));
-      } catch (e) {}
-    });
-  }
+  // Hash-based deep linking
+  var hash = window.location.hash.replace('#', '');
+  if (hash) navigateToPage(hash);
 });
 </script>
 <DashboardLayout>

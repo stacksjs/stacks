@@ -1,0 +1,278 @@
+[
+  {
+    "id": "author",
+    "name": "Author",
+    "icon": "person.text.rectangle.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "campaign",
+    "name": "Campaign",
+    "icon": "megaphone.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "cart",
+    "name": "Cart",
+    "icon": "cart.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "cart-item",
+    "name": "CartItem",
+    "icon": "cart.badge.plus",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "category",
+    "name": "Category",
+    "icon": "tag.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "comment",
+    "name": "Comment",
+    "icon": "bubble.left.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "coupon",
+    "name": "Coupon",
+    "icon": "ticket.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "customer",
+    "name": "Customer",
+    "icon": "person.crop.circle.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "delivery-route",
+    "name": "DeliveryRoute",
+    "icon": "map.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "digital-delivery",
+    "name": "DigitalDelivery",
+    "icon": "arrow.down.doc.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "driver",
+    "name": "Driver",
+    "icon": "car.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "email-list",
+    "name": "EmailList",
+    "icon": "envelope.badge.person.crop",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "gift-card",
+    "name": "GiftCard",
+    "icon": "giftcard.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "job",
+    "name": "Job",
+    "icon": "briefcase.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "license-key",
+    "name": "LicenseKey",
+    "icon": "key.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "log",
+    "name": "Log",
+    "icon": "list.bullet.rectangle.portrait.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "loyalty-point",
+    "name": "LoyaltyPoint",
+    "icon": "star.circle.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "loyalty-reward",
+    "name": "LoyaltyReward",
+    "icon": "gift.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "manufacturer",
+    "name": "Manufacturer",
+    "icon": "building.2.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "notification",
+    "name": "Notification",
+    "icon": "bell.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "order",
+    "name": "Order",
+    "icon": "list.clipboard.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "order-item",
+    "name": "OrderItem",
+    "icon": "list.bullet.clipboard.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "page",
+    "name": "Page",
+    "icon": "doc.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "payment",
+    "name": "Payment",
+    "icon": "creditcard.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "payment-method",
+    "name": "PaymentMethod",
+    "icon": "creditcard.and.123",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "payment-product",
+    "name": "PaymentProduct",
+    "icon": "creditcard.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "payment-transaction",
+    "name": "PaymentTransaction",
+    "icon": "creditcard.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "post",
+    "name": "Post",
+    "icon": "doc.text.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "print-device",
+    "name": "PrintDevice",
+    "icon": "printer.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "product",
+    "name": "Product",
+    "icon": "cube.box.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "product-unit",
+    "name": "ProductUnit",
+    "icon": "scalemass.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "product-variant",
+    "name": "ProductVariant",
+    "icon": "cube.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "receipt",
+    "name": "Receipt",
+    "icon": "doc.text.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "review",
+    "name": "Review",
+    "icon": "star.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "shipping-method",
+    "name": "ShippingMethod",
+    "icon": "shippingbox.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "shipping-rate",
+    "name": "ShippingRate",
+    "icon": "dollarsign.circle.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "shipping-zone",
+    "name": "ShippingZone",
+    "icon": "map.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "social-post",
+    "name": "SocialPost",
+    "icon": "bubble.left.and.bubble.right.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "subscription",
+    "name": "Subscription",
+    "icon": "repeat.circle.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "tag",
+    "name": "Tag",
+    "icon": "tag",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "tax-rate",
+    "name": "TaxRate",
+    "icon": "percent",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "transaction",
+    "name": "Transaction",
+    "icon": "arrow.left.arrow.right.circle.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "user",
+    "name": "User",
+    "icon": "person.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "waitlist-product",
+    "name": "WaitlistProduct",
+    "icon": "clock.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "waitlist-restaurant",
+    "name": "WaitlistRestaurant",
+    "icon": "clock.badge.checkmark.fill",
+    "hasDedicatedPage": false
+  },
+  {
+    "id": "websocket",
+    "name": "Websocket",
+    "icon": "antenna.radiowaves.left.and.right",
+    "hasDedicatedPage": false
+  }
+]

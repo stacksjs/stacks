@@ -1,5 +1,5 @@
 <script server>
-const coupons = [
+var coupons = [
   { code: 'SAVE20', type: 'Percentage', value: '20%', uses: 156, limit: 500, expires: '2024-02-28', status: 'active' },
   { code: 'FLAT10', type: 'Fixed', value: '$10', uses: 89, limit: 200, expires: '2024-01-31', status: 'active' },
   { code: 'FREESHIP', type: 'Shipping', value: 'Free', uses: 234, limit: 1000, expires: '2024-03-15', status: 'active' },
@@ -8,12 +8,46 @@ const coupons = [
   { code: 'EXPIRED10', type: 'Fixed', value: '$10', uses: 100, limit: 100, expires: '2024-01-01', status: 'expired' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Active Coupons', value: '12' },
   { label: 'Total Uses', value: '1,158' },
   { label: 'Revenue Impact', value: '-$8,450' },
   { label: 'Avg Discount', value: '$12.34' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM coupons ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    coupons = rows.map(function(r) { return { code: r.code || '', type: r.type || '', value: r.value || '', uses: r.uses || 0, limit: r.usage_limit || null, expires: r.expires_at || 'Never', status: r.status || 'active' } })
+    const activeCount = rows.filter(function(r) { return r.status === 'active' }).length
+    stats = [
+      { label: 'Active Coupons', value: String(activeCount) },
+      { label: 'Total Uses', value: String(rows.reduce(function(s, r) { return s + (r.uses || 0) }, 0)) },
+      { label: 'Revenue Impact', value: '-' },
+      { label: 'Avg Discount', value: '-' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -64,9 +98,7 @@ const stats = [
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ coupon.limit || '∞' }}</td>
                   <td class="text-gray-500 dark:text-gray-400">{{ coupon.expires }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ coupon.status === 'active' ? 'success' : coupon.status === 'expiring' ? 'warning' : 'neutral'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : coupon.status === 'active' ? 'success' : coupon.status === 'expiring' ? 'warning' : 'neutral'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : coupon.status === 'active' ? 'success' : coupon.status === 'expiring' ? 'warning' : 'neutral'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ coupon.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(coupon.status) }}">{{ coupon.status }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-2">

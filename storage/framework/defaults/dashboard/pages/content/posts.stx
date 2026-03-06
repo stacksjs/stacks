@@ -293,7 +293,7 @@ var scheduledCount = posts.filter(function(p) { return p.status === 'scheduled' 
   </div>
 </div>
 
-<script>
+<script client>
 const API_BASE = 'http://localhost:3000/cms'
 let deletePostId = null
 

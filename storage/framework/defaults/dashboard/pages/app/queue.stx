@@ -10,6 +10,19 @@ const recentJobs = [
   { id: 'job-1233', queue: 'default', name: 'ProcessOrder', status: 'processing', time: '5s ago' },
   { id: 'job-1232', queue: 'emails', name: 'SendNotification', status: 'failed', time: '1m ago' },
 ]
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -60,9 +73,7 @@ const recentJobs = [
                 <div class="font-medium text-gray-900 dark:text-white">{{ job.name }}</div>
                 <div class="text-sm text-gray-500 dark:text-gray-400">{{ job.queue }} &middot; {{ job.id }}</div>
               </div>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : job.status === 'completed' ? 'success' : job.status === 'processing' ? 'info' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                {{ job.status }}
-              </span>
+              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(job.status) }}">{{ job.status }}</span>
             </div>
           @endforeach
         </div>

@@ -1,5 +1,5 @@
 <script server>
-const taxRates = [
+var taxRates = [
   { region: 'United States', rate: 'Varies by state', type: 'Sales Tax', status: 'active' },
   { region: 'California', rate: '7.25%', type: 'Sales Tax', status: 'active' },
   { region: 'New York', rate: '8%', type: 'Sales Tax', status: 'active' },
@@ -9,19 +9,38 @@ const taxRates = [
   { region: 'Canada', rate: '5%', type: 'GST', status: 'active' },
 ]
 
-const taxSummary = [
+var taxSummary = [
   { label: 'Collected This Month', value: '$4,567.89' },
   { label: 'Pending Remittance', value: '$2,345.67' },
   { label: 'Tax Rate Regions', value: '23' },
   { label: 'Exempt Transactions', value: '12' },
 ]
 
-const recentTaxes = [
+var recentTaxes = [
   { order: 'ORD-1234', subtotal: '$100.00', taxRate: '8%', taxAmount: '$8.00', region: 'New York' },
   { order: 'ORD-1233', subtotal: '$75.00', taxRate: '7.25%', taxAmount: '$5.44', region: 'California' },
   { order: 'ORD-1232', subtotal: '$200.00', taxRate: '20%', taxAmount: '$40.00', region: 'UK' },
   { order: 'ORD-1231', subtotal: '$50.00', taxRate: '0%', taxAmount: '$0.00', region: 'Exempt' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM tax_rates ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    taxRates = rows.map(function(r) { return { region: r.region || r.name || '', rate: r.rate ? r.rate + '%' : '-', type: r.type || 'Sales Tax', status: r.status || 'active' } })
+    taxSummary = [
+      { label: 'Collected This Month', value: '-' },
+      { label: 'Pending Remittance', value: '-' },
+      { label: 'Tax Rate Regions', value: String(rows.length) },
+      { label: 'Exempt Transactions', value: '-' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

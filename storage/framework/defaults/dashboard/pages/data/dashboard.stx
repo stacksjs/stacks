@@ -1,12 +1,12 @@
 <script server>
-const stats = [
+var stats = [
   { label: 'Total Records', value: '2.4M', change: '+12.5%' },
   { label: 'Database Size', value: '4.2 GB', change: '+8.2%' },
   { label: 'Active Connections', value: '24', change: '-2' },
   { label: 'Query Rate', value: '1.2K/s', change: '+5.1%' },
 ]
 
-const tables = [
+var tables = [
   { name: 'users', rows: '45,892', size: '128 MB', lastModified: '2m ago' },
   { name: 'posts', rows: '234,567', size: '512 MB', lastModified: '5m ago' },
   { name: 'orders', rows: '89,234', size: '256 MB', lastModified: '1m ago' },
@@ -14,11 +14,43 @@ const tables = [
   { name: 'sessions', rows: '1,234,567', size: '2.1 GB', lastModified: 'Just now' },
 ]
 
-const recentQueries = [
+var recentQueries = [
   { query: 'SELECT * FROM users WHERE...', time: '12ms', source: 'API' },
   { query: 'INSERT INTO orders...', time: '8ms', source: 'Queue' },
   { query: 'UPDATE posts SET...', time: '15ms', source: 'Web' },
 ]
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const fs = require('fs')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
+  const dbTables = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name NOT LIKE 'sqlite_%' ORDER BY name").all()
+  if (dbTables.length > 0) {
+    let totalRecords = 0
+    tables = dbTables.map(function(t) {
+      const count = db.query('SELECT COUNT(*) as count FROM ' + t.name).get()?.count || 0
+      totalRecords += count
+      return { name: t.name, rows: count.toLocaleString(), size: '-', lastModified: '-' }
+    })
+    let dbSize = '-'
+    try {
+      const fileStats = fs.statSync(dbPath)
+      const mb = (fileStats.size / (1024 * 1024)).toFixed(1)
+      dbSize = mb + ' MB'
+    } catch(e) {}
+    stats = [
+      { label: 'Total Records', value: totalRecords.toLocaleString(), change: '' },
+      { label: 'Database Size', value: dbSize, change: '' },
+      { label: 'Tables', value: String(dbTables.length), change: '' },
+      { label: 'Query Rate', value: '-', change: '' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

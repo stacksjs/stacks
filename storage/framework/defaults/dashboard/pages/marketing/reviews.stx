@@ -1,5 +1,5 @@
 <script server>
-const reviews = [
+var reviews = [
   { product: 'Premium Widget', author: 'John D.', rating: 5, comment: 'Excellent product! Exactly what I needed.', status: 'published', date: '2024-01-18' },
   { product: 'Basic Package', author: 'Jane S.', rating: 4, comment: 'Good value for money, but could use more features.', status: 'published', date: '2024-01-17' },
   { product: 'Pro Subscription', author: 'Bob W.', rating: 5, comment: 'Best investment for my business!', status: 'published', date: '2024-01-16' },
@@ -7,14 +7,49 @@ const reviews = [
   { product: 'Premium Widget', author: 'Charlie D.', rating: 1, comment: 'Disappointed with quality.', status: 'flagged', date: '2024-01-14' },
 ]
 
-const stats = [
+var stats = [
   { label: 'Total Reviews', value: '2,456' },
   { label: 'Avg Rating', value: '4.3★' },
   { label: 'Pending', value: '23' },
   { label: 'Response Rate', value: '89%' },
 ]
 
-const filters = ['All', 'Published', 'Pending', 'Flagged', '5★', '4★', '3★', '2★', '1★']
+var filters = ['All', 'Published', 'Pending', 'Flagged', '5★', '4★', '3★', '2★', '1★']
+
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
+  const rows = db.query('SELECT * FROM reviews ORDER BY id DESC LIMIT 50').all()
+  if (rows.length > 0) {
+    reviews = rows.map(function(r) { return { product: r.product || r.product_name || '', author: r.author || r.reviewer || '', rating: r.rating || 0, comment: r.comment || r.body || '', status: r.status || 'pending', date: r.created_at || '' } })
+    const totalRating = rows.reduce(function(s, r) { return s + (r.rating || 0) }, 0)
+    const pendingCount = rows.filter(function(r) { return r.status === 'pending' }).length
+    stats = [
+      { label: 'Total Reviews', value: String(rows.length) },
+      { label: 'Avg Rating', value: (totalRating / rows.length).toFixed(1) + '★' },
+      { label: 'Pending', value: String(pendingCount) },
+      { label: 'Response Rate', value: '-' },
+    ]
+  }
+  db.close()
+} catch (e) {
+  // keep mock data as fallback
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  if (['info','completed','processing'].indexOf(s) >= 0)
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -68,9 +103,7 @@ const filters = ['All', 'Published', 'Pending', 'Flagged', '5★', '4★', '3★
                   </td>
                   <td class="truncate" style="max-width: 250px;">{{ review.comment }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error'  === 'success' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error'  === 'warning' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : review.status === 'published' ? 'success' : review.status === 'pending' ? 'warning' : 'error'  === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                      {{ review.status }}
-                    </span>
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(review.status) }}">{{ review.status }}</span>
                   </td>
                   <td class="text-gray-500 dark:text-gray-400">{{ review.date }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
