@@ -3,24 +3,23 @@
  * Comments Moderation Page
  * Uses synchronous SQLite queries (STX doesn't support async/await)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
-
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-let comments = []
-let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
+var comments = []
+var stats = { total: 0, pending: 0, approved: 0, spam: 0 }
 
 try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
   // Fetch all comments with post info
-  const rawComments = db.query(`
-    SELECT c.id, c.author_name, c.author_email, c.content, c.status, c.created_at, c.ip_address,
-           p.title as post_title, p.id as post_id
-    FROM comments c
-    LEFT JOIN posts p ON c.commentable_id = p.id AND c.commentable_type = 'posts'
-    ORDER BY c.created_at DESC
-  `).all()
+  const rawComments = db.query(
+    'SELECT c.id, c.author_name, c.author_email, c.content, c.status, c.created_at, c.ip_address, ' +
+    'p.title as post_title, p.id as post_id ' +
+    'FROM comments c ' +
+    'LEFT JOIN posts p ON c.commentable_id = p.id AND c.commentable_type = \'posts\' ' +
+    'ORDER BY c.created_at DESC'
+  ).all()
 
   comments = rawComments.map(function(c) {
     return {
@@ -44,7 +43,7 @@ try {
 
   db.close()
 } catch (e) {
-  comments = []
+  // Database may not exist yet
 }
 </script>
 

@@ -3,49 +3,56 @@
  * Customers Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+var rawCustomers = []
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Fetch customers with their order stats
-const rawCustomers = db.query(`
-  SELECT
-    c.id, c.name, c.email,
-    COUNT(o.id) as order_count,
-    COALESCE(SUM(o.total_amount), 0) as total_spent
-  FROM customers c
-  LEFT JOIN orders o ON o.customer_id = c.id
-  GROUP BY c.id
-  ORDER BY total_spent DESC
-`).all()
+  // Fetch customers with their order stats
+  rawCustomers = db.query(
+    'SELECT ' +
+    'c.id, c.name, c.email, ' +
+    'COUNT(o.id) as order_count, ' +
+    'COALESCE(SUM(o.total_amount), 0) as total_spent ' +
+    'FROM customers c ' +
+    'LEFT JOIN orders o ON o.customer_id = c.id ' +
+    'GROUP BY c.id ' +
+    'ORDER BY total_spent DESC'
+  ).all()
+
+  db.close()
+} catch (e) {
+  // Database may not exist yet
+}
 
 // Transform customers for display
-const customers = rawCustomers.map(c => ({
-  name: c.name || 'Unknown',
-  email: c.email || 'N/A',
-  orders: c.order_count || 0,
-  spent: '$' + (c.total_spent || 0).toFixed(2),
-  lastOrder: 'Recently',
-  status: (c.total_spent || 0) > 500 ? 'vip' : (c.order_count || 0) > 0 ? 'active' : 'inactive'
-}))
+var customers = rawCustomers.map(function(c) {
+  return {
+    name: c.name || 'Unknown',
+    email: c.email || 'N/A',
+    orders: c.order_count || 0,
+    spent: '$' + (c.total_spent || 0).toFixed(2),
+    lastOrder: 'Recently',
+    status: (c.total_spent || 0) > 500 ? 'vip' : (c.order_count || 0) > 0 ? 'active' : 'inactive'
+  }
+})
 
 // Calculate real stats
-const totalCustomers = customers.length
-const activeCustomers = customers.filter(function(c) { return c.status === 'active' || c.status === 'vip' }).length
-const vipCustomers = customers.filter(function(c) { return c.status === 'vip' }).length
-const totalSpent = rawCustomers.reduce(function(sum, c) { return sum + (c.total_spent || 0) }, 0)
-const avgLifetimeValue = totalCustomers > 0 ? totalSpent / totalCustomers : 0
+var totalCustomers = customers.length
+var activeCustomers = customers.filter(function(c) { return c.status === 'active' || c.status === 'vip' }).length
+var vipCustomers = customers.filter(function(c) { return c.status === 'vip' }).length
+var totalSpent = rawCustomers.reduce(function(sum, c) { return sum + (c.total_spent || 0) }, 0)
+var avgLifetimeValue = totalCustomers > 0 ? totalSpent / totalCustomers : 0
 
-const stats = [
+var stats = [
   { label: 'Total Customers', value: String(totalCustomers) },
   { label: 'Active', value: String(activeCustomers) },
   { label: 'VIP', value: String(vipCustomers) },
   { label: 'Avg Lifetime Value', value: '$' + avgLifetimeValue.toFixed(2) },
 ]
-
-db.close()
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

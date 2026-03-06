@@ -3,20 +3,25 @@
  * Users Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+var rawUsers = []
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Fetch all users from database
-const rawUsers = db.query('SELECT id, name, email, created_at FROM users ORDER BY created_at DESC').all()
+  // Fetch all users from database
+  rawUsers = db.query('SELECT id, name, email, created_at FROM users ORDER BY created_at DESC').all()
 
-db.close()
+  db.close()
+} catch (e) {
+  // Database may not exist yet
+}
 
 // Transform users for display
-const users = rawUsers.map(u => {
-  const initials = (u.name || 'U').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
+var users = rawUsers.map(function(u) {
+  var initials = (u.name || 'U').split(' ').map(function(n) { return n[0] }).join('').slice(0, 2).toUpperCase()
   return {
     name: u.name || 'Unknown',
     email: u.email || 'N/A',
@@ -28,16 +33,16 @@ const users = rawUsers.map(u => {
 })
 
 // Calculate real stats
-const totalUsers = users.length
-const activeUsers = users.filter(u => u.status === 'active').length
+var totalUsers = users.length
+var activeUsers = users.filter(function(u) { return u.status === 'active' }).length
 
-const stats = [
+var stats = [
   { label: 'Total Users', value: String(totalUsers) },
   { label: 'Active Today', value: String(activeUsers) },
   { label: 'New This Week', value: String(Math.min(totalUsers, 5)) },
 ]
 
-const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
+var roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

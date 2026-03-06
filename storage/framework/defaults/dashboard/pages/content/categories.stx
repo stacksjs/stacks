@@ -3,24 +3,23 @@
  * Categories Page
  * Uses synchronous SQLite queries (STX doesn't support async/await)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
-
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-let categories = []
+var categories = []
 
 try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
   // Fetch all categories with post counts
-  const rawCategories = db.query(`
-    SELECT c.id, c.name, c.slug, c.description, c.parent_id,
-           COUNT(DISTINCT cm.categorizable_id) as post_count
-    FROM categories c
-    LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = 'posts'
-    GROUP BY c.id
-    ORDER BY c.name ASC
-  `).all()
+  const rawCategories = db.query(
+    'SELECT c.id, c.name, c.slug, c.description, c.parent_id, ' +
+    'COUNT(DISTINCT cm.categorizable_id) as post_count ' +
+    'FROM categories c ' +
+    'LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = \'posts\' ' +
+    'GROUP BY c.id ' +
+    'ORDER BY c.name ASC'
+  ).all()
 
   categories = rawCategories.map(function(c) {
     return {
@@ -35,7 +34,7 @@ try {
 
   db.close()
 } catch (e) {
-  categories = []
+  // Database may not exist yet
 }
 </script>
 

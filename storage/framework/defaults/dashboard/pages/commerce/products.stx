@@ -3,41 +3,48 @@
  * Products Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+var rawProducts = []
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Fetch all products from database
-const rawProducts = db.query('SELECT id, name, description, price, is_available, inventory_count, image_url FROM products ORDER BY id DESC').all()
+  // Fetch all products from database
+  rawProducts = db.query('SELECT id, name, description, price, is_available, inventory_count, image_url FROM products ORDER BY id DESC').all()
 
-db.close()
+  db.close()
+} catch (e) {
+  // Database may not exist yet
+}
 
 // Transform products for display
-const products = rawProducts.map((p) => ({
-  name: p.name,
-  sku: `PRD-${String(p.id).padStart(3, '0')}`,
-  price: `$${(p.price || 0).toFixed(2)}`,
-  stock: p.inventory_count || 0,
-  category: 'General',
-  status: !p.is_available ? 'inactive' : (p.inventory_count || 0) < 10 ? 'low-stock' : 'active'
-}))
+var products = rawProducts.map(function(p) {
+  return {
+    name: p.name,
+    sku: 'PRD-' + String(p.id).padStart(3, '0'),
+    price: '$' + (p.price || 0).toFixed(2),
+    stock: p.inventory_count || 0,
+    category: 'General',
+    status: !p.is_available ? 'inactive' : (p.inventory_count || 0) < 10 ? 'low-stock' : 'active'
+  }
+})
 
 // Calculate stats from real data
-const totalProducts = products.length
-const activeProducts = products.filter(p => p.status === 'active').length
-const lowStockProducts = products.filter(p => p.status === 'low-stock').length
-const outOfStock = products.filter(p => p.stock === 0).length
+var totalProducts = products.length
+var activeProducts = products.filter(function(p) { return p.status === 'active' }).length
+var lowStockProducts = products.filter(function(p) { return p.status === 'low-stock' }).length
+var outOfStock = products.filter(function(p) { return p.stock === 0 }).length
 
-const stats = [
+var stats = [
   { label: 'Total Products', value: String(totalProducts) },
   { label: 'Active', value: String(activeProducts) },
   { label: 'Low Stock', value: String(lowStockProducts) },
   { label: 'Out of Stock', value: String(outOfStock) },
 ]
 
-const categories = ['All Categories', 'Electronics', 'Clothing', 'Books', 'General']
+var categories = ['All Categories', 'Electronics', 'Clothing', 'Books', 'General']
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

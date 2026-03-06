@@ -3,24 +3,36 @@
  * Sales Analytics Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+var allOrders = []
+var totalSales = 0
+var orderCount = 0
+var avgOrderValue = 0
+var refunds = 0
+var netRevenue = 0
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Fetch all orders to calculate sales stats
-const allOrders = db.query('SELECT id, status, total_amount, created_at FROM orders').all()
-const totalSales = allOrders.reduce(function(sum, o) { return sum + (o.total_amount || 0) }, 0)
-const orderCount = allOrders.length
-const avgOrderValue = orderCount > 0 ? totalSales / orderCount : 0
+  // Fetch all orders to calculate sales stats
+  allOrders = db.query('SELECT id, status, total_amount, created_at FROM orders').all()
+  totalSales = allOrders.reduce(function(sum, o) { return sum + (o.total_amount || 0) }, 0)
+  orderCount = allOrders.length
+  avgOrderValue = orderCount > 0 ? totalSales / orderCount : 0
 
-// Calculate refunds (cancelled orders)
-const cancelledOrders = allOrders.filter(function(o) { return o.status === 'cancelled' })
-const refunds = cancelledOrders.reduce(function(sum, o) { return sum + (o.total_amount || 0) }, 0)
-const netRevenue = totalSales - refunds
+  // Calculate refunds (cancelled orders)
+  const cancelledOrders = allOrders.filter(function(o) { return o.status === 'cancelled' })
+  refunds = cancelledOrders.reduce(function(sum, o) { return sum + (o.total_amount || 0) }, 0)
+  netRevenue = totalSales - refunds
 
-const stats = [
+  db.close()
+} catch (e) {
+  // Database may not exist yet
+}
+
+var stats = [
   { label: 'Total Sales', value: '$' + totalSales.toLocaleString(), change: '+15.3%' },
   { label: 'Transactions', value: String(orderCount), change: '+8.7%' },
   { label: 'Refunds', value: '$' + refunds.toLocaleString(), change: '-12.1%' },
@@ -30,7 +42,7 @@ const stats = [
 // Group orders by date for daily sales
 var ordersByDate = {}
 allOrders.forEach(function(o) {
-  const date = o.created_at ? String(o.created_at).split('T')[0] : 'Unknown'
+  var date = o.created_at ? String(o.created_at).split('T')[0] : 'Unknown'
   if (!ordersByDate[date]) {
     ordersByDate[date] = { total: 0, count: 0 }
   }
@@ -38,11 +50,11 @@ allOrders.forEach(function(o) {
   ordersByDate[date].count++
 })
 
-const dailySales = Object.keys(ordersByDate)
+var dailySales = Object.keys(ordersByDate)
   .sort(function(a, b) { return b.localeCompare(a) })
   .slice(0, 7)
   .map(function(date) {
-    const data = ordersByDate[date]
+    var data = ordersByDate[date]
     return {
       date: date,
       sales: '$' + data.total.toLocaleString(),
@@ -51,21 +63,19 @@ const dailySales = Object.keys(ordersByDate)
     }
   })
 
-const paymentMethods = [
+var paymentMethods = [
   { method: 'Credit Card', amount: '$' + (totalSales * 0.67).toFixed(0), transactions: Math.floor(orderCount * 0.67), percentage: 66.6 },
   { method: 'PayPal', amount: '$' + (totalSales * 0.20).toFixed(0), transactions: Math.floor(orderCount * 0.20), percentage: 19.5 },
   { method: 'Apple Pay', amount: '$' + (totalSales * 0.10).toFixed(0), transactions: Math.floor(orderCount * 0.10), percentage: 10.0 },
   { method: 'Other', amount: '$' + (totalSales * 0.03).toFixed(0), transactions: Math.floor(orderCount * 0.03), percentage: 3.9 },
 ]
 
-const salesTeam = [
+var salesTeam = [
   { name: 'John Doe', closed: '$' + (totalSales * 0.30).toFixed(0), deals: Math.floor(orderCount * 0.30), avgDeal: '$' + avgOrderValue.toFixed(0) },
   { name: 'Jane Smith', closed: '$' + (totalSales * 0.25).toFixed(0), deals: Math.floor(orderCount * 0.25), avgDeal: '$' + avgOrderValue.toFixed(0) },
   { name: 'Bob Wilson', closed: '$' + (totalSales * 0.25).toFixed(0), deals: Math.floor(orderCount * 0.25), avgDeal: '$' + avgOrderValue.toFixed(0) },
   { name: 'Alice Brown', closed: '$' + (totalSales * 0.20).toFixed(0), deals: Math.floor(orderCount * 0.20), avgDeal: '$' + avgOrderValue.toFixed(0) },
 ]
-
-db.close()
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

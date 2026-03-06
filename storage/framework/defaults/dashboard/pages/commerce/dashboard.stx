@@ -3,31 +3,45 @@
  * Commerce Dashboard
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+var totalRevenue = 0
+var orderCount = 0
+var avgOrderValue = 0
+var rawOrders = []
+var rawProducts = []
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Calculate revenue and order stats
-const revenueResult = db.query('SELECT SUM(total_amount) as total FROM orders').get()
-const totalRevenue = revenueResult?.total || 0
+  // Calculate revenue and order stats
+  const revenueResult = db.query('SELECT SUM(total_amount) as total FROM orders').get()
+  totalRevenue = revenueResult?.total || 0
 
-const orderCountResult = db.query('SELECT COUNT(*) as count FROM orders').get()
-const orderCount = orderCountResult?.count || 0
-const avgOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0
+  const orderCountResult = db.query('SELECT COUNT(*) as count FROM orders').get()
+  orderCount = orderCountResult?.count || 0
+  avgOrderValue = orderCount > 0 ? totalRevenue / orderCount : 0
 
-const stats = [
+  // Fetch recent orders
+  rawOrders = db.query('SELECT id, status, total_amount, created_at FROM orders ORDER BY created_at DESC LIMIT 4').all()
+
+  // Fetch top products
+  rawProducts = db.query('SELECT name, price, inventory_count FROM products ORDER BY price DESC LIMIT 4').all()
+
+  db.close()
+} catch (e) {
+  // Database may not exist yet
+}
+
+var stats = [
   { label: 'Revenue Today', value: '$' + totalRevenue.toLocaleString(), change: '+15.2%' },
   { label: 'Orders', value: String(orderCount), change: '+8.5%' },
   { label: 'Avg Order Value', value: '$' + avgOrderValue.toFixed(2), change: '+3.2%' },
   { label: 'Conversion Rate', value: '3.4%', change: '+0.5%' },
 ]
 
-// Fetch recent orders
-const rawOrders = db.query('SELECT id, status, total_amount, created_at FROM orders ORDER BY created_at DESC LIMIT 4').all()
-
-const recentOrders = rawOrders.map(function(o) {
+var recentOrders = rawOrders.map(function(o) {
   return {
     id: 'ORD-' + String(o.id).padStart(4, '0'),
     customer: 'Customer',
@@ -37,18 +51,13 @@ const recentOrders = rawOrders.map(function(o) {
   }
 })
 
-// Fetch top products
-const rawProducts = db.query('SELECT name, price, inventory_count FROM products ORDER BY price DESC LIMIT 4').all()
-
-const topProducts = rawProducts.map(function(p) {
+var topProducts = rawProducts.map(function(p) {
   return {
     name: p.name || 'Product',
     sales: Math.floor(Math.random() * 200) + 50,
     revenue: '$' + ((p.price || 0) * (Math.floor(Math.random() * 50) + 10)).toFixed(0)
   }
 })
-
-db.close()
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

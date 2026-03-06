@@ -4,34 +4,38 @@
  * Main overview with stats, quick links, system health, and recent activity.
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+let userCount = 0
+let productCount = 0
+let orderCount = 0
+let postCount = 0
+let totalRevenue = 0
+let recentOrders = []
+let recentUsers = []
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Fetch real counts from database
-const userCount = db.query('SELECT COUNT(*) as count FROM users').get()?.count || 0
-const productCount = db.query('SELECT COUNT(*) as count FROM products').get()?.count || 0
-const orderCount = db.query('SELECT COUNT(*) as count FROM orders').get()?.count || 0
-const postCount = db.query('SELECT COUNT(*) as count FROM posts').get()?.count || 0
+  userCount = db.query('SELECT COUNT(*) as count FROM users').get()?.count || 0
+  productCount = db.query('SELECT COUNT(*) as count FROM products').get()?.count || 0
+  orderCount = db.query('SELECT COUNT(*) as count FROM orders').get()?.count || 0
+  postCount = db.query('SELECT COUNT(*) as count FROM posts').get()?.count || 0
+  const revenueResult = db.query('SELECT SUM(total_amount) as total FROM orders').get()
+  totalRevenue = revenueResult?.total || 0
+  recentOrders = db.query('SELECT id, status, total_amount, created_at FROM orders ORDER BY created_at DESC LIMIT 5').all()
+  recentUsers = db.query('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 3').all()
 
-// Calculate total revenue from orders
-const revenueResult = db.query('SELECT SUM(total_amount) as total FROM orders').get()
-const totalRevenue = revenueResult?.total || 0
-
-// Fetch recent orders for activity
-const recentOrders = db.query('SELECT id, status, total_amount, created_at FROM orders ORDER BY created_at DESC LIMIT 5').all()
-
-// Fetch recent users
-const recentUsers = db.query('SELECT name, email, created_at FROM users ORDER BY created_at DESC LIMIT 3').all()
-
-db.close()
+  db.close()
+} catch (e) {
+  // Database may not exist yet - use fallback values
+}
 
 const stats = [
   { label: 'Total Users', value: String(userCount), trend: '+12%', up: true, color: 'blue' },
   { label: 'Products', value: String(productCount), trend: '+8%', up: true, color: 'green' },
-  { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, trend: '+23%', up: true, color: 'orange' },
+  { label: 'Revenue', value: '$' + totalRevenue.toLocaleString(), trend: '+23%', up: true, color: 'orange' },
   { label: 'Orders', value: String(orderCount), trend: '+5%', up: true, color: 'red' },
 ]
 
@@ -43,7 +47,7 @@ const quickLinks = [
 ]
 
 const services = [
-  { name: 'Database', status: 'healthy', latency: '12ms' },
+  { name: 'Database', status: userCount > 0 ? 'healthy' : 'offline', latency: userCount > 0 ? '12ms' : 'N/A' },
   { name: 'Cache', status: 'healthy', latency: '2ms' },
   { name: 'Queue', status: 'healthy', latency: '45ms' },
   { name: 'Storage', status: 'healthy', latency: '8ms' },
@@ -52,22 +56,21 @@ const services = [
 
 // Build activities from real data
 const activities = [
-  ...recentOrders.map(o => ({
+  ...recentOrders.map(function(o) { return {
     type: 'order',
-    message: `Order #${o.id} - $${o.total_amount} (${o.status})`,
+    message: 'Order #' + o.id + ' - $' + o.total_amount + ' (' + o.status + ')',
     time: 'Recently',
     user: 'Commerce'
-  })),
-  ...recentUsers.map(u => ({
+  }}),
+  ...recentUsers.map(function(u) { return {
     type: 'user',
-    message: `User ${u.name} registered`,
+    message: 'User ' + u.name + ' registered',
     time: 'Recently',
     user: 'System'
-  }))
+  }})
 ].slice(0, 5)
 </script>
-<DashboardLayout pageTitle="Dashboard" pageDescription="Welcome back! Here's what's happening with your application.">
-  <div class="p-6">
+<div class="p-6">
     <!-- Header Actions -->
     <div class="flex items-center justify-end gap-3 mb-8">
       <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
@@ -171,5 +174,4 @@ const activities = [
         </table>
       </div>
     </div>
-  </div>
-</DashboardLayout>
+</div>

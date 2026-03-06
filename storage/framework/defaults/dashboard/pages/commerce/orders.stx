@@ -3,42 +3,49 @@
  * Orders Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
+var rawOrders = []
 
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
+try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
 
-// Fetch all orders from database
-const rawOrders = db.query('SELECT id, status, total_amount, order_type, special_instructions, created_at FROM orders ORDER BY created_at DESC').all()
+  // Fetch all orders from database
+  rawOrders = db.query('SELECT id, status, total_amount, order_type, special_instructions, created_at FROM orders ORDER BY created_at DESC').all()
 
-db.close()
+  db.close()
+} catch (e) {
+  // Database may not exist yet
+}
 
 // Transform orders for display
-const orders = rawOrders.map(o => ({
-  id: `ORD-${String(o.id).padStart(4, '0')}`,
-  customer: 'Customer', // Would join with customers table if we had customer_id
-  items: Math.floor(Math.random() * 5) + 1,
-  total: `$${(o.total_amount || 0).toFixed(2)}`,
-  status: o.status || 'pending',
-  payment: o.status === 'completed' ? 'paid' : o.status === 'cancelled' ? 'refunded' : 'pending',
-  date: o.created_at ? String(o.created_at).split('T')[0] : 'N/A'
-}))
+var orders = rawOrders.map(function(o) {
+  return {
+    id: 'ORD-' + String(o.id).padStart(4, '0'),
+    customer: 'Customer',
+    items: Math.floor(Math.random() * 5) + 1,
+    total: '$' + (o.total_amount || 0).toFixed(2),
+    status: o.status || 'pending',
+    payment: o.status === 'completed' ? 'paid' : o.status === 'cancelled' ? 'refunded' : 'pending',
+    date: o.created_at ? String(o.created_at).split('T')[0] : 'N/A'
+  }
+})
 
 // Calculate real stats
-const totalOrders = orders.length
-const pendingOrders = orders.filter(o => o.status === 'pending').length
-const processingOrders = orders.filter(o => o.status === 'processing').length
-const completedOrders = orders.filter(o => o.status === 'completed' || o.status === 'shipped' || o.status === 'delivered').length
+var totalOrders = orders.length
+var pendingOrders = orders.filter(function(o) { return o.status === 'pending' }).length
+var processingOrders = orders.filter(function(o) { return o.status === 'processing' }).length
+var completedOrders = orders.filter(function(o) { return o.status === 'completed' || o.status === 'shipped' || o.status === 'delivered' }).length
 
-const stats = [
+var stats = [
   { label: 'Total Orders', value: String(totalOrders) },
   { label: 'Pending', value: String(pendingOrders) },
   { label: 'Processing', value: String(processingOrders) },
   { label: 'Completed', value: String(completedOrders) },
 ]
 
-const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+var filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

@@ -3,32 +3,38 @@
  * Authors Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
-
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
-
-// Fetch authors from database
 var rawAuthors = []
-try {
-  rawAuthors = db.query('SELECT id, name, email FROM authors').all()
-} catch (e) {
-  rawAuthors = []
-}
-
-// Get post count
 var postCount = 0
+
 try {
-  const result = db.query('SELECT COUNT(*) as count FROM posts').get()
-  postCount = result?.count || 0
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
+
+  // Fetch authors from database
+  try {
+    rawAuthors = db.query('SELECT id, name, email FROM authors').all()
+  } catch (e) {
+    rawAuthors = []
+  }
+
+  // Get post count
+  try {
+    const result = db.query('SELECT COUNT(*) as count FROM posts').get()
+    postCount = result?.count || 0
+  } catch (e) {
+    postCount = 0
+  }
+
+  db.close()
 } catch (e) {
-  postCount = 0
+  // Database may not exist yet
 }
 
 // Transform for display (use mock data if no authors exist)
 var authors = rawAuthors.length > 0 ? rawAuthors.map(function(a) {
-  const initials = (a.name || 'A').split(' ').map(function(n) { return n[0] }).join('').slice(0, 2).toUpperCase()
+  var initials = (a.name || 'A').split(' ').map(function(n) { return n[0] }).join('').slice(0, 2).toUpperCase()
   return {
     name: a.name || 'Author',
     email: a.email || 'author@example.com',
@@ -40,8 +46,6 @@ var authors = rawAuthors.length > 0 ? rawAuthors.map(function(a) {
   { name: 'Chris Breuer', email: 'chris@stacks.js', role: 'Admin', posts: postCount, avatar: 'CB' },
   { name: 'Sarah Johnson', email: 'sarah@stacks.js', role: 'Editor', posts: Math.floor(postCount / 2), avatar: 'SJ' },
 ]
-
-db.close()
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

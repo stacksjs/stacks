@@ -3,30 +3,36 @@
  * Subscribers Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
-
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
-
-// Try to fetch from subscribers table, fallback to users
 var rawSubscribers = []
+
 try {
-  rawSubscribers = db.query('SELECT id, email, name, created_at FROM subscribers ORDER BY created_at DESC').all()
-} catch (e) {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
+
+  // Try to fetch from subscribers table, fallback to users
   try {
-    rawSubscribers = db.query('SELECT id, email, name, created_at FROM users ORDER BY created_at DESC').all()
-  } catch (e2) {
-    rawSubscribers = []
+    rawSubscribers = db.query('SELECT id, email, name, created_at FROM subscribers ORDER BY created_at DESC').all()
+  } catch (e) {
+    try {
+      rawSubscribers = db.query('SELECT id, email, name, created_at FROM users ORDER BY created_at DESC').all()
+    } catch (e2) {
+      rawSubscribers = []
+    }
   }
+
+  db.close()
+} catch (e) {
+  // Database may not exist yet
 }
 
 // Plan types and sources for display
-const planTypes = ['Basic', 'Pro', 'Enterprise']
-const sources = ['Website', 'API', 'Referral']
+var planTypes = ['Basic', 'Pro', 'Enterprise']
+var sources = ['Website', 'API', 'Referral']
 
 // Transform for display
-const subscribers = rawSubscribers.map(function(s, idx) {
+var subscribers = rawSubscribers.map(function(s, idx) {
   return {
     email: s.email || 'N/A',
     name: s.name || 'Subscriber',
@@ -38,19 +44,17 @@ const subscribers = rawSubscribers.map(function(s, idx) {
 })
 
 // Calculate real stats
-const totalSubscribers = subscribers.length
-const activeSubscribers = subscribers.filter(function(s) { return s.status === 'active' }).length
+var totalSubscribers = subscribers.length
+var activeSubscribers = subscribers.filter(function(s) { return s.status === 'active' }).length
 
-const stats = [
+var stats = [
   { label: 'Total Subscribers', value: String(totalSubscribers) },
   { label: 'Active', value: String(activeSubscribers) },
   { label: 'New This Month', value: String(Math.min(totalSubscribers, 5)) },
   { label: 'Churn Rate', value: '2.1%' },
 ]
 
-const plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
-
-db.close()
+var plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

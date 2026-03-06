@@ -181,7 +181,7 @@ for (const craftPath of craftPaths) {
 
 if (!craftBinary) {
   log.info('Craft binary not found. Running web server only.')
-  log.info(`Dashboard available at: http://localhost:${dashboardPort}/pages/index`)
+  log.info(`Dashboard available at: http://localhost:${dashboardPort}/app`)
   if (verbose) log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
 
   // Keep the process running since we're serving via STX
@@ -327,9 +327,8 @@ if (verbose) {
   log.info(`Window size: 1400x900`)
 }
 
-// Initial URL to load - STX server handles all routing
-// Routes map to storage/framework/defaults/dashboard/pages/*.stx files
-const initialUrl = `http://localhost:${dashboardPort}/pages/index`
+// Initial URL to load - app.stx is the SPA entry point with all pages
+const initialUrl = `http://localhost:${dashboardPort}/app`
 
 // Launch Craft with native macOS Tahoe sidebar
 // The sidebar is rendered natively by Craft, not by STX
@@ -345,6 +344,21 @@ const craftProcess = spawn(craftBinary!, [
   stdio: 'inherit',
   cwd: dashboardPath,
 })
+
+// Bring the Craft window to the foreground after a short delay
+// macOS doesn't auto-focus windows from background-spawned processes
+setTimeout(() => {
+  try {
+    spawn('osascript', ['-e', `
+      tell application "System Events"
+        set frontmost of (first process whose unix id is ${craftProcess.pid}) to true
+      end tell
+    `], { stdio: 'ignore' })
+  }
+  catch {
+    // Accessibility permissions may not be granted - window still works, just not focused
+  }
+}, 1500)
 
 craftProcess.on('error', (err) => {
   log.error(`Failed to start Craft: ${err.message}`)

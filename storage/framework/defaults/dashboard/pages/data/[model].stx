@@ -4,40 +4,42 @@
  * Displays data for any model dynamically based on the URL path.
  * The 'model' variable is automatically provided from the [model].stx dynamic route.
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
 
 // Get model name from dynamic route parameter (provided by STX serve)
-const modelSlug = typeof model !== 'undefined' ? model : 'unknown'
+var modelSlug = typeof model !== 'undefined' ? model : 'unknown'
 
 // Convert slug to table name (kebab-case to snake_case, pluralized)
-const tableName = modelSlug.replace(/-/g, '_') + 's'
-const modelName = modelSlug.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
+var tableName = modelSlug.replace(/-/g, '_') + 's'
+var modelName = modelSlug.split('-').map(function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }).join(' ')
 
-let items = []
-let columns = []
-let error = null
-let totalCount = 0
+var items = []
+var columns = []
+var error = null
+var totalCount = 0
 
 try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
   const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
   // Get table info to determine columns
-  const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all()
-  columns = tableInfo.map(col => ({
-    name: col.name,
-    type: col.type,
-    label: col.name.split('_').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
-  }))
+  const tableInfo = db.query('PRAGMA table_info(' + tableName + ')').all()
+  columns = tableInfo.map(function(col) {
+    return {
+      name: col.name,
+      type: col.type,
+      label: col.name.split('_').map(function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }).join(' ')
+    }
+  })
 
   // Fetch data with pagination
-  items = db.query(`SELECT * FROM ${tableName} ORDER BY id DESC LIMIT 50`).all()
-  totalCount = db.query(`SELECT COUNT(*) as count FROM ${tableName}`).get()?.count || 0
+  items = db.query('SELECT * FROM ' + tableName + ' ORDER BY id DESC LIMIT 50').all()
+  totalCount = db.query('SELECT COUNT(*) as count FROM ' + tableName).get()?.count || 0
 
   db.close()
 } catch (e) {
-  error = e.message
+  error = e.message || 'Database not available'
 }
 </script>
 <DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">

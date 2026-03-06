@@ -3,25 +3,24 @@
  * Posts Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
-
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-let posts = []
-let categories = []
-let tags = []
+var posts = []
+var categories = []
+var tags = []
 
 try {
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
   // Fetch all posts from database with author info
-  const rawPosts = db.query(`
-    SELECT p.id, p.title, p.content, p.excerpt, p.status, p.views, p.created_at, p.published_at, p.poster,
-           a.name as author_name
-    FROM posts p
-    LEFT JOIN authors a ON p.author_id = a.id
-    ORDER BY p.created_at DESC
-  `).all()
+  const rawPosts = db.query(
+    'SELECT p.id, p.title, p.content, p.excerpt, p.status, p.views, p.created_at, p.published_at, p.poster, ' +
+    'a.name as author_name ' +
+    'FROM posts p ' +
+    'LEFT JOIN authors a ON p.author_id = a.id ' +
+    'ORDER BY p.created_at DESC'
+  ).all()
 
   // Transform posts for display
   posts = rawPosts.map(function(p) {
@@ -54,12 +53,12 @@ try {
 
   db.close()
 } catch (e) {
-  posts = []
+  // Database may not exist yet
 }
 
-const publishedCount = posts.filter(function(p) { return p.status === 'published' }).length
-const draftCount = posts.filter(function(p) { return p.status === 'draft' }).length
-const scheduledCount = posts.filter(function(p) { return p.status === 'scheduled' }).length
+var publishedCount = posts.filter(function(p) { return p.status === 'published' }).length
+var draftCount = posts.filter(function(p) { return p.status === 'draft' }).length
+var scheduledCount = posts.filter(function(p) { return p.status === 'scheduled' }).length
 </script>
 
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

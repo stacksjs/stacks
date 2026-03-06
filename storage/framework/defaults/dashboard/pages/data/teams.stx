@@ -3,27 +3,33 @@
  * Teams Page
  * Uses synchronous SQLite queries (STX doesn't support async/await or ES imports)
  */
-const Database = require('bun:sqlite').Database
-const path = require('path')
-
-const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
-const db = new Database(dbPath, { readonly: true })
-
-// Fetch teams from database
 var rawTeams = []
-try {
-  rawTeams = db.query('SELECT id, name FROM teams').all()
-} catch (e) {
-  rawTeams = []
-}
-
-// Fetch user count for member stats
 var userCount = 0
+
 try {
-  const result = db.query('SELECT COUNT(*) as count FROM users').get()
-  userCount = result?.count || 0
+  const Database = require('bun:sqlite').Database
+  const path = require('path')
+  const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+  const db = new Database(dbPath, { readonly: true })
+
+  // Fetch teams from database
+  try {
+    rawTeams = db.query('SELECT id, name FROM teams').all()
+  } catch (e) {
+    rawTeams = []
+  }
+
+  // Fetch user count for member stats
+  try {
+    const result = db.query('SELECT COUNT(*) as count FROM users').get()
+    userCount = result?.count || 0
+  } catch (e) {
+    userCount = 0
+  }
+
+  db.close()
 } catch (e) {
-  userCount = 0
+  // Database may not exist yet
 }
 
 // Transform for display (use mock data if no teams exist)
@@ -42,17 +48,15 @@ var teams = rawTeams.length > 0 ? rawTeams.map(function(t) {
 ]
 
 // Calculate real stats
-const totalTeams = teams.length
-const totalMembers = teams.reduce(function(sum, t) { return sum + t.members }, 0)
-const totalProjects = teams.reduce(function(sum, t) { return sum + t.projects }, 0)
+var totalTeams = teams.length
+var totalMembers = teams.reduce(function(sum, t) { return sum + t.members }, 0)
+var totalProjects = teams.reduce(function(sum, t) { return sum + t.projects }, 0)
 
-const stats = [
+var stats = [
   { label: 'Total Teams', value: String(totalTeams) },
   { label: 'Total Members', value: String(totalMembers) },
   { label: 'Active Projects', value: String(totalProjects) },
 ]
-
-db.close()
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

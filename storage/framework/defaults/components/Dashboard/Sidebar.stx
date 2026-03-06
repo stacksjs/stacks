@@ -301,6 +301,7 @@ function getSidebarWidth() {
 .sidebar-links {
   @apply flex items-center gap-x-2 p-1 text-sm leading-6 text-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:hover:bg-blue-gray-800 rounded-md;
   transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 /* Active state styling */
@@ -328,5 +329,6 @@ function getSidebarWidth() {
 .sidebar-bottom-link {
   @apply flex items-center p-1.5 text-gray-400 hover:text-gray-700 dark:text-gray-300 dark:hover:text-gray-100 rounded-md;
   transition: all 0.2s ease;
+  cursor: pointer;
 }
 </style>
