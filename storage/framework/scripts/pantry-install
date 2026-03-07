@@ -1,0 +1,31 @@
+#!/bin/sh
+set -e
+
+if command -v pantry >/dev/null 2>&1; then
+  exit 0
+fi
+
+# Detect platform
+OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+ARCH=$(uname -m)
+case "$ARCH" in
+  x86_64|amd64) ARCH="x64" ;;
+  arm64|aarch64) ARCH="arm64" ;;
+esac
+
+INSTALL_DIR="${HOME}/.local/bin"
+mkdir -p "$INSTALL_DIR"
+
+ZIP="pantry-${OS}-${ARCH}.zip"
+URL="https://github.com/home-lang/pantry/releases/latest/download/${ZIP}"
+
+echo "Downloading Pantry from ${URL}..."
+TMP=$(mktemp -d)
+curl -fsSL -o "${TMP}/${ZIP}" "$URL"
+unzip -o "${TMP}/${ZIP}" -d "$INSTALL_DIR"
+chmod +x "${INSTALL_DIR}/pantry"
+rm -rf "$TMP"
+
+# Ensure ~/.local/bin is in PATH for this session
+export PATH="${INSTALL_DIR}:${PATH}"
+echo "Pantry installed to ${INSTALL_DIR}/pantry"

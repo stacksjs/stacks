@@ -1344,6 +1344,20 @@ SERVICEFILE`,
 
       await uploadDir(buildDir)
 
+      // Upload bootstrap/install script to frontend bucket
+      const bootstrapPath = p.projectPath('bootstrap')
+      if (existsSync(bootstrapPath)) {
+        const bootstrapContent = readFileSync(bootstrapPath)
+        await withS3Retry(() => s3.putObject({
+          bucket: bucketName,
+          key: 'install',
+          body: bootstrapContent,
+          contentType: 'text/plain',
+          cacheControl: 'no-cache, no-store, must-revalidate',
+        }), 'upload bootstrap install script')
+        if (isVerbose) log.debug('  Uploaded bootstrap install script')
+      }
+
       // Invalidate CloudFront cache if distribution exists
       const distributionId = stackOutputs.publicCloudFrontDistributionId || stackOutputs.CloudFrontDistributionId
       if (distributionId) {

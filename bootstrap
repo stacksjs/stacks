@@ -1,63 +1,74 @@
 #!/bin/sh
+set -e
 
 ## To learn more, visit https://stacksjs.com/docs/guide/bootstrap
+## Usage:
+##   curl -fsSL https://stacksjs.com/install | bash                # bootstrap in current dir
+##   curl -fsSL https://stacksjs.com/install | bash -s my-project  # clone + bootstrap
+##   ./bootstrap                                                   # local bootstrap
 
-if [ -n "$1" ]; then
-  # Check if the directory exists
-  if [ -d "storage/framework/core" ]; then # determines whether we are in a Stacks context
-    :
-  else
-    if [ -d "$1" ]; then
-      echo "Project $1 exists locally. Please use a different name & run again."
-      exit 1
-    else
-      git clone https://github.com/stacksjs/stacks.git $1
-      cd "$1" || exit 1
-
-      echo "Project $1 has been created. Please open a new terminal, run 'bun run dev' to start the server."
-
-      exit 1
-    fi
+# --- Pantry installer (inlined so it works via curl-pipe-bash before clone) ---
+ensure_pantry() {
+  if command -v pantry >/dev/null 2>&1; then
+    return
   fi
+
+  OS=$(uname -s | tr '[:upper:]' '[:lower:]')
+  ARCH=$(uname -m)
+  case "$ARCH" in
+    x86_64|amd64) ARCH="x64" ;;
+    arm64|aarch64) ARCH="arm64" ;;
+  esac
+
+  INSTALL_DIR="${HOME}/.local/bin"
+  mkdir -p "$INSTALL_DIR"
+
+  ZIP="pantry-${OS}-${ARCH}.zip"
+  URL="https://github.com/home-lang/pantry/releases/latest/download/${ZIP}"
+
+  echo "Downloading Pantry from ${URL}..."
+  TMP=$(mktemp -d)
+  curl -fsSL -o "${TMP}/${ZIP}" "$URL"
+  unzip -o "${TMP}/${ZIP}" -d "$INSTALL_DIR"
+  chmod +x "${INSTALL_DIR}/pantry"
+  rm -rf "$TMP"
+
+  export PATH="${INSTALL_DIR}:${PATH}"
+  echo "Pantry installed to ${INSTALL_DIR}/pantry"
+}
+
+# --- Main ---
+
+# If a project name is passed, download and extract the project
+if [ -n "$1" ]; then
+  if [ -d "$1" ]; then
+    echo "Directory '$1' already exists. Please use a different name."
+    exit 1
+  fi
+
+  echo "Downloading Stacks..."
+  TMP=$(mktemp -d)
+  curl -fsSL -o "${TMP}/stacks.zip" "https://github.com/stacksjs/stacks/archive/refs/heads/main.zip"
+  unzip -q "${TMP}/stacks.zip" -d "$TMP"
+  mv "${TMP}/stacks-main" "$1"
+  rm -rf "$TMP"
+  cd "$1"
 fi
 
-# Get the directory of the current script and go up 3 directories
-PROJECT_ROOT="$(cd "$(dirname "$0")" && pwd)"
-CLI_PATH="$PROJECT_ROOT/storage/framework/core/buddy/src/cli.ts"
-SCRIPT_PATH="$PROJECT_ROOT/storage/framework/scripts/pantry-install"
-LOG_PATH="$PROJECT_ROOT/storage/logs/console.log"
+# Detect if we're in a Stacks project
+if [ ! -d "storage/framework/core" ]; then
+  echo "Error: not inside a Stacks project. Run with a project name to clone one:"
+  echo "  curl -fsSL https://stacksjs.com/install | bash -s my-project"
+  exit 1
+fi
 
-case "$*" in
-  *--verbose*)
-    echo "Project root: $PROJECT_ROOT"
-    echo "CLI path: $CLI_PATH"
-    echo "Script path: $SCRIPT_PATH"
-    echo "Log path: $LOG_PATH"
-    ;;
-  *)
-esac
+ensure_pantry
 
-cd "$PROJECT_ROOT" || exit 1
-# Run the pantry-install script
-case "$*" in
-  *--verbose*)
-    "$SCRIPT_PATH"
-    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup --verbose
-    ;;
-  *)
-    "$SCRIPT_PATH" > /dev/null 2>&1
-    # bun --bun ./storage/framework/core/buddy/src/cli.ts setup
-    ;;
-esac
+echo "Running pantry install..."
+pantry install
 
-# Create a named pipe
-mkfifo /tmp/pipe
-
-# Run the command, send output to both the console and the pipe
-bun --bun "$CLI_PATH" setup | tee /tmp/pipe &
-
-# Read from the pipe, add timestamps, and append to the file
-while IFS= read -r line; do echo "$(date '+[%Y-%m-%d %H:%M:%S]') $line"; done < /tmp/pipe >> "$LOG_PATH"
-
-# Remove the named pipe
-rm /tmp/pipe
+echo ""
+echo "Project bootstrapped successfully!"
+if [ -n "$1" ]; then
+  echo "Run 'cd $1 && pantry run dev' to start the dev server."
+fi

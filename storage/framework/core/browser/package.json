@@ -49,6 +49,7 @@
   "dependencies": {
     "@stripe/stripe-js": "^8.7.0",
     "bun-query-builder": "^0.1.12",
+    "magic-regexp": "^0.11.0",
     "ofetch": "^1.5.1",
     "perfect-debounce": "^2.1.0",
     "pretty-bytes": "^7.1.0"

@@ -61,7 +61,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/strings": "workspace:*",
-    "@stacksjs/types": "workspace:*",
-    "magic-regexp": "^0.10.0"
+    "@stacksjs/types": "workspace:*"
   }
 }
