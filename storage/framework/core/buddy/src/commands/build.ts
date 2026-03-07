@@ -157,7 +157,6 @@ export function build(buddy: CLI): void {
     })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .alias('build:vue')
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:vue-components` ...', options)
       await runAction(Action.BuildVueComponentLib, options)

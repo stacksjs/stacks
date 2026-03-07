@@ -654,36 +654,36 @@ export function cloud(buddy: CLI): void {
       }
 
       log.info('Invalidating the CloudFront cache...')
-      // const result = await runCommand('aws cloudfront create-invalidation --distribution-id E1U4Z2E9NJW9J --paths "/*"', {
-      //   ...options,
-      //   cwd: p.projectPath(),
-      //   stdin: 'pipe',
-      // })
-
-      if (options.paths) {
-        const result = await runCommand(
-          `aws cloudfront create-invalidation --distribution-id E1U4Z2E9NJW9J --paths ${options.paths}`,
-          {
-            ...options,
-            cwd: p.projectPath(), // TODO: this should be the cloud path
-            stdin: 'pipe',
-          },
-        ) // TODO: this should be the cloud path
-
-        if (isResultError(result)) {
-          await outro(
-            'While running the cloud command, there was an issue',
-            { startTime, useSeconds: true },
-            getResultError(result),
-          )
-          process.exit(ExitCode.FatalError)
-        }
-
-        await outro('Exited', { startTime, useSeconds: true })
-        process.exit(ExitCode.Success)
+      const distributionId = await getCloudFrontDistributionId()
+      if (!distributionId) {
+        await outro(
+          'Could not resolve CloudFront distribution ID',
+          { startTime, useSeconds: true },
+          'Ensure your cloud stack is deployed before invalidating cache.',
+        )
+        process.exit(ExitCode.FatalError)
       }
 
-      log.info('Not implemented yet. Read more about `buddy cloud` here: https://stacksjs.com/docs/cloud')
+      const paths = options.paths ? String(options.paths) : '/*'
+      const result = await runCommand(
+        `aws cloudfront create-invalidation --distribution-id ${distributionId} --paths ${paths}`,
+        {
+          ...options,
+          cwd: p.projectPath(),
+          stdin: 'pipe',
+        },
+      )
+
+      if (isResultError(result)) {
+        await outro(
+          'While running the cloud command, there was an issue',
+          { startTime, useSeconds: true },
+          getResultError(result),
+        )
+        process.exit(ExitCode.FatalError)
+      }
+
+      await outro('Exited', { startTime, useSeconds: true })
       process.exit(ExitCode.Success)
     })
 

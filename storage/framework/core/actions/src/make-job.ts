@@ -3,10 +3,18 @@ import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
 import { writeFile } from '@stacksjs/storage'
 
+interface MakeJobOptions extends MakeOptions {
+  class?: boolean
+  queue?: string
+  tries?: number
+  backoff?: number
+}
+
 /**
  * Create a new job file in app/Jobs
  */
 export async function makeJob(options: MakeOptions): Promise<boolean> {
+  const jobOptions = options as MakeJobOptions
   const name = options.name
 
   if (!name) {
@@ -18,12 +26,12 @@ export async function makeJob(options: MakeOptions): Promise<boolean> {
   const jobName = name.endsWith('Job') ? name : `${name}Job`
 
   // Determine job type
-  const isClassBased = (options as any).class ?? false
+  const isClassBased = jobOptions.class ?? false
 
   // Generate job content
   const content = isClassBased
-    ? generateClassBasedJob(jobName, options)
-    : generateFunctionBasedJob(jobName, options)
+    ? generateClassBasedJob(jobName, jobOptions)
+    : generateFunctionBasedJob(jobName, jobOptions)
 
   // Write the file
   const filePath = p.userJobsPath(`${jobName}.ts`)
@@ -42,10 +50,10 @@ export async function makeJob(options: MakeOptions): Promise<boolean> {
 /**
  * Generate function-based job content
  */
-function generateFunctionBasedJob(name: string, options: MakeOptions): string {
-  const queue = (options as any).queue || 'default'
-  const tries = (options as any).tries || 3
-  const backoff = (options as any).backoff || 3
+function generateFunctionBasedJob(name: string, options: MakeJobOptions): string {
+  const queue = options.queue ?? 'default'
+  const tries = options.tries ?? 3
+  const backoff = options.backoff ?? 3
 
   return `import { Job } from '@stacksjs/queue'
 
@@ -58,7 +66,7 @@ export default new Job({
   /**
    * A description of what this job does (optional)
    */
-  description: 'TODO: Add job description',
+  description: '${name} job',
 
   /**
    * The queue this job should be dispatched to
@@ -99,8 +107,8 @@ export default new Job({
    * @param payload - The job payload data
    * @returns The result of the job processing
    */
-  async handle(payload: any) {
-    // TODO: Implement job logic
+  async handle(payload: Record<string, unknown>) {
+    // Add your job logic here.
     console.log('Processing job with payload:', payload)
 
     return { success: true }
@@ -112,16 +120,16 @@ export default new Job({
 /**
  * Generate class-based job content
  */
-function generateClassBasedJob(name: string, options: MakeOptions): string {
-  const queue = (options as any).queue || 'default'
-  const tries = (options as any).tries || 3
+function generateClassBasedJob(name: string, options: MakeJobOptions): string {
+  const queue = options.queue ?? 'default'
+  const tries = options.tries ?? 3
 
   return `import { log } from '@stacksjs/logging'
 
 /**
  * ${name}
  *
- * TODO: Add job description
+ * Generated job class.
  */
 export default class ${name} {
   /**
@@ -167,11 +175,11 @@ export default class ${name} {
    * Execute the job
    * @param payload - The job payload data
    */
-  public static async handle(payload?: any): Promise<any> {
+  public static async handle(payload?: Record<string, unknown>): Promise<{ success: boolean }> {
     try {
       log.info('${name}: Starting job execution')
 
-      // TODO: Implement job logic
+      // Add your job logic here.
       console.log('Processing with payload:', payload)
 
       log.info('${name}: Job completed successfully')

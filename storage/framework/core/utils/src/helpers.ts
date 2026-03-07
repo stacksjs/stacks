@@ -40,7 +40,7 @@ export async function ensureProjectIsInitialized(): Promise<boolean> {
 
   // copy the .env.example file to .env
   if (fs.existsSync(projectPath('.env.example')))
-    await runCommand('cp .env.example .env', { cwd: projectPath() })
+    fs.copyFileSync(projectPath('.env.example'), projectPath('.env'))
   else console.error('no .env.example file found')
 
   return await isAppKeySet()
@@ -98,7 +98,7 @@ export function isManifest(obj: any): obj is Manifest {
 /**
  * Determines whether the specified value is a string, null, or undefined.
  */
-export function isOptionalString(value: any): value is string | undefined {
+export function isOptionalString(value: any): value is string | null | undefined {
   const type = typeof value
   return value === null || type === 'undefined' || type === 'string'
 }
@@ -106,9 +106,16 @@ export function isOptionalString(value: any): value is string | undefined {
 export async function setEnvValue(key: string, value: string): Promise<void> {
   const file = await readTextFile(projectPath('.env'))
 
+  const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+  const keyPattern = new RegExp(`^${escapedKey}=.*$`, 'm')
+  const nextValue = `${key}=${value}`
+  const data = keyPattern.test(file.data)
+    ? file.data.replace(keyPattern, nextValue)
+    : `${file.data}${file.data.endsWith('\n') ? '' : '\n'}${nextValue}\n`
+
   await writeTextFile({
     path: projectPath('.env'),
-    data: file.data.replace(/APP_KEY=/g, `APP_KEY=${value}`), // todo: do not hardcode the APP_KEY here and instead use the key parameter
+    data,
   })
 }
 
@@ -171,9 +178,13 @@ export function isIpv6(address: AddressInfo): boolean {
   )
 }
 
-export function dumpYaml(_content: any): string {
-  // TODO: Bun.YAML.stringify when available
-  return JSON.stringify(_content, null, 2)
+export function dumpYaml(content: any): string {
+  const yaml = Bun.YAML as unknown as { stringify?: (value: unknown) => string }
+
+  if (typeof yaml.stringify === 'function')
+    return yaml.stringify(content)
+
+  return JSON.stringify(content, null, 2)
 }
 
 export function loadYaml(content: string): any {

@@ -14,7 +14,7 @@
     "directory": "./storage/framework"
   },
   "scripts": {
-    "dev": "wip: needs to start each dev server (views, api, components, docs, desktop)",
+    "dev": "bun --filter='./core' run buddy dev",
     "build": "bun --filter='./core/*' run build",
     "build:components": "bun --filter='./core/components/*' run build",
     "publish:framework": "./scripts/publish",

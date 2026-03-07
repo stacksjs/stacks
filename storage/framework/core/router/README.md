@@ -15,7 +15,7 @@ wip
 wip
 
 ```bash
-bun install -d @stacksjs/actions
+bun install -d @stacksjs/router
 ```
 
 Now, you can use it in your project:

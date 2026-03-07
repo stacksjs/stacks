@@ -1,17 +1,22 @@
 import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
-import { exists, glob } from '@stacksjs/storage'
+import * as storage from '@stacksjs/storage'
 import { version } from './package.json'
 
-const componentsDir = p.resolve('./components')
+const { existsSync, globSync, readFileSync, writeFileSync } = storage as unknown as {
+  existsSync: (path: string) => boolean
+  globSync: (patterns: string | string[], options?: Record<string, unknown>) => string[]
+  readFileSync: (path: string, encoding: string) => string
+  writeFileSync: (path: string, data: string) => void
+}
 
-// Get base directories excluding components
-const dirs = await glob([p.resolve('./', '*'), `!${componentsDir}`], {
+const componentsDir = p.resolve('./components')
+const dirs = globSync([p.resolve('./', '*'), `!${componentsDir}`], {
   onlyDirectories: true,
   absolute: true,
   deep: 1,
 })
-dirs.sort((a, b) => a.localeCompare(b))
+dirs.sort((a: string, b: string) => a.localeCompare(b))
 
 // Get component directories directly
 // const components = await glob('./components/*', {
@@ -27,10 +32,23 @@ for (const dir of dirs) {
   if (dir.includes('bun-create') || dir.includes('dist') || dir.includes('core/desktop'))
     continue
 
+  const packagePath = p.resolve(dir, 'package.json')
+  if (!existsSync(packagePath)) {
+    log.debug(`Skipping ${dir} (no package.json)`)
+    continue
+  }
+
+  const manifestContent = readFileSync(packagePath, 'utf8')
+  const manifest = JSON.parse(manifestContent) as { scripts?: Record<string, string> }
+  if (!manifest.scripts?.build) {
+    log.debug(`Skipping ${dir} (no build script)`)
+    continue
+  }
+
   console.log(`Building ${dir}`)
   const distPath = p.resolve(dir, 'dist')
 
-  if (await exists(distPath)) {
+  if (existsSync(distPath)) {
     await runCommand('rm -rf dist', {
       cwd: dir,
     })
@@ -45,10 +63,14 @@ for (const dir of dirs) {
 
 // Update the package.json workspace:* references to the specific version
 const packageJsonPath = './package.json'
-const packageJson = await Bun.file(packageJsonPath).json()
+const packageJson = JSON.parse(readFileSync(packageJsonPath, 'utf8')) as {
+  dependencies?: Record<string, string>
+  devDependencies?: Record<string, string>
+  peerDependencies?: Record<string, string>
+}
 
 // Find all workspace:* dependencies in the main package.json and update them to use the current version
-for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
+for (const section of ['dependencies', 'devDependencies', 'peerDependencies'] as const) {
   if (!packageJson[section])
     continue
 
@@ -62,7 +84,7 @@ for (const section of ['dependencies', 'devDependencies', 'peerDependencies']) {
 }
 
 // Write the updated package.json back to the file
-await Bun.write(packageJsonPath, JSON.stringify(packageJson, null, 2))
+writeFileSync(packageJsonPath, JSON.stringify(packageJson, null, 2))
 
 const endTime = Date.now()
 const timeTaken = endTime - startTime

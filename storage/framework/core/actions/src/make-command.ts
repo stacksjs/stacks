@@ -57,9 +57,7 @@ function generateCommandContent(name: string, options: MakeCommandOptions): stri
   const description = options.description || `The ${signature} command`
 
   return `import type { CLI } from '@stacksjs/types'
-import process from 'node:process'
 import { log } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
 
 /**
  * ${name} Command
@@ -84,21 +82,19 @@ export default function (cli: CLI) {
           log.info('Running ${signature} command...')
         }
 
-        // TODO: Implement your command logic here
+        log.info('No command logic implemented yet. Update this command action to add behavior.')
 
         log.success('${signature} completed successfully!')
-        process.exit(ExitCode.Success)
       }
       catch (error) {
         log.error('${signature} failed:', error)
-        process.exit(ExitCode.FatalError)
+        throw error
       }
     })
 
   // Handle unknown subcommands
   cli.on('${signature}:*', () => {
     log.error('Invalid command: %s\\nSee --help for a list of available commands.', cli.args.join(' '))
-    process.exit(1)
   })
 }
 `

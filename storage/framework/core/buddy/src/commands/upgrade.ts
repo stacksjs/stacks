@@ -30,7 +30,7 @@ export function upgrade(buddy: CLI): void {
     .option('--framework', descriptions.framework, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-s, --shell', descriptions.shell, { default: false })
-    .option('-b, --binary', descriptions.binary, { default: false })
+    .option('-B, --binary', descriptions.binary, { default: false })
     // .option('--canary', descriptions.canary, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('update')
@@ -63,10 +63,13 @@ export function upgrade(buddy: CLI): void {
           answersValue = [answersValue]
 
         // creates an object out of array and sets answers to true
-        options = answersValue.reduce((a: any, v: any) => {
-          a[v] = true
-          return a
+        const selectedValues = answersValue as string[]
+        const selected = selectedValues.reduce((acc: Record<string, boolean>, value: string) => {
+          acc[value] = true
+          return acc
         }, {})
+
+        options = selected as unknown as UpgradeOptions
       }
 
       const result = await runAction(Action.Upgrade, options)

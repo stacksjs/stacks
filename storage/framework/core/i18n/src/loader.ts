@@ -210,52 +210,22 @@ export async function loadLocale(
 }
 
 /**
- * Simple YAML parser for translation files
- * Supports basic key-value pairs and nested objects
+ * Parse YAML translation files.
  */
 function parseYaml(content: string): TranslationMessages {
-  const result: TranslationMessages = {}
-  const lines = content.split('\n')
-  const stack: Array<{ indent: number, obj: TranslationMessages }> = [{ indent: -1, obj: result }]
+  try {
+    const parsed = Bun.YAML.parse(content)
 
-  for (let line of lines) {
-    // Skip empty lines and comments
-    if (!line.trim() || line.trim().startsWith('#')) continue
-
-    // Calculate indentation
-    const indent = line.search(/\S/)
-    line = line.trim()
-
-    // Skip lines that don't look like key-value pairs
-    const colonIndex = line.indexOf(':')
-    if (colonIndex === -1) continue
-
-    const key = line.slice(0, colonIndex).trim()
-    let value = line.slice(colonIndex + 1).trim()
-
-    // Pop stack until we find the right parent
-    while (stack.length > 1 && stack[stack.length - 1].indent >= indent) {
-      stack.pop()
+    if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+      throw new Error('YAML content must be an object at the root level')
     }
 
-    const parent = stack[stack.length - 1].obj
-
-    if (value) {
-      // Remove quotes if present
-      if ((value.startsWith('"') && value.endsWith('"'))
-        || (value.startsWith('\'') && value.endsWith('\''))) {
-        value = value.slice(1, -1)
-      }
-      parent[key] = value
-    }
-    else {
-      // Nested object
-      parent[key] = {}
-      stack.push({ indent, obj: parent[key] as TranslationMessages })
-    }
+    return parsed as TranslationMessages
   }
-
-  return result
+  catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown YAML parse error'
+    throw new Error(`Invalid YAML translation file: ${message}`)
+  }
 }
 
 /**

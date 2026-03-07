@@ -115,10 +115,10 @@ async function watchFolders() {
     if (filename === null)
       return
 
-    log.info(`Detected ${event} in app/Actions/${filename}`)
-    log.info('Invalidating module cache for Actions...')
+    log.info(`Detected ${event} in built actions/${filename}`)
+    log.info('Invalidating module cache for built Actions...')
 
-    const actionPath = path.appPath(`Actions/${filename}`)
+    const actionPath = path.builtUserActionsPath(`src/${filename}`)
     if (invalidateModuleCache(actionPath)) {
       // Update the global cache buster to force fresh imports
       ;(Router as any).updateCacheBuster()

@@ -5,7 +5,7 @@ import { log, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
 import { path as p } from '@stacksjs/path'
-import { storage } from '@stacksjs/storage'
+import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 
 export function setup(buddy: CLI): void {
@@ -148,19 +148,18 @@ async function initializeProject(options: CliOptions): Promise<void> {
 }
 
 export async function optimizePantryDeps(): Promise<void> {
-  return new Promise(resolve => setTimeout(resolve, 300))
+  return Promise.resolve()
 }
 
 export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
   log.info('Ensuring .env exists...')
 
   if (storage.doesNotExist(p.projectPath('.env'))) {
-    const envResult = await runCommand('cp .env.example .env', {
-      cwd: options.cwd || p.projectPath(),
-    })
-
-    if (envResult.isErr) {
-      handleError(envResult.error)
+    try {
+      copyFile(p.projectPath('.env.example'), p.projectPath('.env'))
+    }
+    catch (error) {
+      handleError(error)
       process.exit(ExitCode.FatalError)
     }
 
