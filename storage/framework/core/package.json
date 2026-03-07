@@ -232,10 +232,6 @@
       "types": "./server/dist/index.d.ts",
       "import": "./server/dist/index.js"
     },
-    "./signals": {
-      "types": "./signals/dist/index.d.ts",
-      "import": "./signals/dist/index.js"
-    },
     "./slug": {
       "types": "./slug/dist/index.d.ts",
       "import": "./slug/dist/index.js"
@@ -243,14 +239,6 @@
     "./sms": {
       "types": "./sms/dist/index.d.ts",
       "import": "./sms/dist/index.js"
-    },
-    "./stepper": {
-      "types": "./components/stepper/dist/index.d.ts",
-      "import": "./components/stepper/dist/index.js"
-    },
-    "./modal": {
-      "types": "./components/modal/dist/index.d.ts",
-      "import": "./components/modal/dist/index.js"
     },
     "./storage": {
       "types": "./storage/dist/index.d.ts",

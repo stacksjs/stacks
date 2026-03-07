@@ -73,7 +73,7 @@ export async function isAppKeySet(): Promise<boolean> {
  * @url https://github.com/cwcss/crosswind
  * @param preset
  */
-export function determineResetPreset(preset?: string): string[] {
+export function determineResetPreset(preset?: string | null): string[] {
   if (preset === undefined && ui.reset)
     preset = ui.reset
 
