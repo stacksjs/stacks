@@ -74,12 +74,23 @@ export async function isAppKeySet(): Promise<boolean> {
  * @param preset
  */
 export function determineResetPreset(preset?: string): string[] {
-  if (ui.reset)
+  if (preset === undefined && ui.reset)
     preset = ui.reset
 
-  // Crosswind handles CSS resets internally via preflight
-  // Return empty array as crosswind build generates the necessary resets
-  return []
+  if (preset === null)
+    return []
+
+  const selectedPreset = preset ?? 'tailwind'
+  const resetImports: Record<string, string> = {
+    tailwind: 'import \"@unocss/reset/tailwind.css\"',
+    normalize: 'import \"@unocss/reset/normalize.css\"',
+    sanitize: 'import \"@unocss/reset/sanitize/sanitize.css\"',
+    'eric-meyer': 'import \"@unocss/reset/eric-meyer.css\"',
+    antfu: 'import \"@unocss/reset/antfu.css\"',
+  }
+
+  const resetImport = resetImports[selectedPreset]
+  return resetImport ? [resetImport] : []
 }
 
 /**

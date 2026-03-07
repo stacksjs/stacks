@@ -117,7 +117,7 @@ async function initializeProject(options: CliOptions): Promise<void> {
 
   log.success('Installed node_modules')
 
-  ensureEnvIsSet(options)
+  await ensureEnvIsSet(options)
 
   const keyResult = await runCommand('buddy key:generate', {
     cwd: options.cwd || p.projectPath(),
@@ -154,9 +154,13 @@ export async function optimizePantryDeps(): Promise<void> {
 export async function ensureEnvIsSet(options: CliOptions): Promise<void> {
   log.info('Ensuring .env exists...')
 
-  if (storage.doesNotExist(p.projectPath('.env'))) {
+  const cwd = options.cwd || p.projectPath()
+  const envPath = `${cwd}/.env`
+  const envExamplePath = `${cwd}/.env.example`
+
+  if (storage.doesNotExist(envPath)) {
     try {
-      copyFile(p.projectPath('.env.example'), p.projectPath('.env'))
+      copyFile(envExamplePath, envPath)
     }
     catch (error) {
       handleError(error)
