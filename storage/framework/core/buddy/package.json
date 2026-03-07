@@ -116,7 +116,7 @@
     "@stacksjs/payments": "^0.70.23",
     "@stacksjs/realtime": "^0.70.23",
     "@stacksjs/router": "^0.70.23",
-    "@stacksjs/rpx": "^0.11.0",
+    "@stacksjs/rpx": "^0.11.2",
     "@stacksjs/search-engine": "^0.70.23",
     "@stacksjs/security": "^0.70.23",
     "@stacksjs/server": "^0.70.23",
