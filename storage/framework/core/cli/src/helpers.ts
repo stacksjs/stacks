@@ -2,12 +2,12 @@ import type { IntroOptions, OutroOptions } from '@stacksjs/types'
 import { handleError } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
-import { bgCyan, bold, cyan, dim, gray, green, italic } from 'kolorist'
+import { bgCyan, bold, cyan, dim, gray, green, italic } from './utils'
 import { version } from '../package.json'
 
 // Re-export commonly used CLI utilities
 export { log }
-export { italic, bold, cyan, dim, gray, green } from 'kolorist'
+export { italic, bold, cyan, dim, gray, green } from './utils'
 
 /**
  * Prints the intro message.
