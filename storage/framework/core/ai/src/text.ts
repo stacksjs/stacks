@@ -32,8 +32,7 @@ export async function summarize(text: string, options: SummarizeOptions = {}): P
     return responseBody.results[0].outputText
   }
   catch (error) {
-    console.error('Error summarizing text:', error)
-    throw error
+    throw new Error(`Error summarizing text: ${(error as Error).message}`)
   }
 }
 
@@ -60,7 +59,6 @@ export async function ask(question: string, options: AskOptions = {}): Promise<s
     return responseBody.results[0].outputText
   }
   catch (error) {
-    console.error('Error asking question:', error)
-    throw error
+    throw new Error(`Error asking question: ${(error as Error).message}`)
   }
 }

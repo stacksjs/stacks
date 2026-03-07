@@ -288,11 +288,11 @@ export async function openRepository(input: string): Promise<RepoState> {
     repoPath = join(CONFIG.workDir, repoName)
 
     if (existsSync(repoPath)) {
-      console.log(`Repository already exists, pulling latest...`)
+      // Repository already exists, pull latest
       await _$`cd ${repoPath} && git pull --rebase`.quiet()
     }
     else {
-      console.log(`Cloning ${input}...`)
+      // Clone the repository
       await _$`git clone ${input} ${repoPath}`.quiet()
     }
   }
@@ -358,7 +358,6 @@ export async function applyChanges(aiResponse: string): Promise<string[]> {
 
     writeFileSync(fullPath, content)
     modifiedFiles.push(filePath)
-    console.log(`Modified: ${filePath}`)
   }
 
   if (modifiedFiles.length > 0 && currentState.repo) {
@@ -380,8 +379,6 @@ export async function configureGitUser(): Promise<void> {
 
   await _$`cd ${currentState.repo.path} && git config user.name ${name}`.quiet()
   await _$`cd ${currentState.repo.path} && git config user.email ${email}`.quiet()
-
-  console.log(`Git configured for ${name} <${email}>`)
 }
 
 /**

@@ -54,9 +54,17 @@ export async function getLastMigrationFields(modelName: string): Promise<Attribu
   const model = (await import(oldModelPath)).default as Model
   let fields = {} as AttributesElements
 
-  if (typeof model.attributes === 'object')
+  if (typeof model.attributes === 'object') {
     fields = model.attributes
-  else fields = JSON.parse(model.attributes || '{}') as AttributesElements
+  }
+  else {
+    try {
+      fields = JSON.parse(model.attributes || '{}') as AttributesElements
+    }
+    catch {
+      fields = {} as AttributesElements
+    }
+  }
 
   return fields
 }

@@ -6,7 +6,14 @@ export const _dirname: string = typeof __dirname !== 'undefined' ? __dirname : d
 
 export function updateConfigFile(filePath: string, newConfig: Record<string, unknown>): Promise<void> {
   return new Promise((resolve, reject) => {
-    const config = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Record<string, unknown>
+    let config: Record<string, unknown>
+    try {
+      config = JSON.parse(fs.readFileSync(filePath, 'utf8')) as Record<string, unknown>
+    }
+    catch (error) {
+      reject(new Error(`Failed to parse config file "${filePath}": ${(error as Error).message}`))
+      return
+    }
 
     for (const key in newConfig) config[key] = newConfig[key]
 

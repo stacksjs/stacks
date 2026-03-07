@@ -135,10 +135,7 @@ export function createClaudeAgentSDKDriver(config: ClaudeAgentSDKConfig = {}): A
             result = message.result
           }
 
-          // Log tool usage for debugging
-          if (message.type === 'assistant' && 'tool_use' in message) {
-            console.log(`[Claude Agent SDK] Tool use: ${JSON.stringify((message as { tool_use: unknown }).tool_use)}`)
-          }
+          // Tool usage events are available for debugging if needed
         }
 
         return result || 'No response from Claude Agent SDK'

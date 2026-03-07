@@ -718,7 +718,12 @@ export class SecretsManagerClient {
   async getJson<T = Record<string, any>>(secretId: string): Promise<T | undefined> {
     const str = await this.getString(secretId)
     if (str) {
-      return JSON.parse(str) as T
+      try {
+        return JSON.parse(str) as T
+      }
+      catch (error) {
+        throw new Error(`Failed to parse secret "${secretId}" as JSON: ${(error as Error).message}`)
+      }
     }
     return undefined
   }

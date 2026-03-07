@@ -200,12 +200,16 @@ export class VectorIndex {
    * Add documents to the index, computing embeddings automatically.
    */
   async add(documents: SearchDocument[]): Promise<void> {
+    if (documents.length === 0) return
+
     const contents = documents.map(d => d.content)
     const embeddings = await createEmbedding(contents, this.embeddingOptions)
 
-    const embeddingsList = Array.isArray(embeddings[0])
-      ? (embeddings as number[][])
-      : [embeddings as number[]]
+    // createEmbedding returns number[][] for array input, number[] for single input
+    // Since we always pass an array, we get number[][]
+    const embeddingsList = contents.length === 1
+      ? [embeddings as number[]]
+      : (embeddings as number[][])
 
     for (let i = 0; i < documents.length; i++) {
       this.documents.push({
