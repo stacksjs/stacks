@@ -138,3 +138,43 @@ export interface BuddyApiKeys {
   openai?: string
   claudeCliHost?: string
 }
+
+// Image types
+export interface ImageGenerationConfig {
+  provider: 'openai'
+  model?: string
+  apiKey?: string
+}
+
+// Search/RAG types
+export interface SearchConfig {
+  embeddingProvider: 'openai' | 'ollama'
+  embeddingModel?: string
+  generationProvider?: 'anthropic' | 'openai' | 'ollama'
+  generationModel?: string
+}
+
+// MCP types
+export interface MCPConfig {
+  servers: Array<{
+    name: string
+    command?: string
+    args?: string[]
+    url?: string
+    env?: Record<string, string>
+  }>
+}
+
+// AI module config (used by @stacksjs/config)
+export interface AIConfig {
+  default?: string
+  models?: string[]
+  drivers?: {
+    anthropic?: AIDriverConfig & { anthropicVersion?: string }
+    openai?: AIDriverConfig & { embeddingModel?: string }
+    ollama?: AIDriverConfig & { host?: string; embeddingModel?: string }
+  }
+  image?: ImageGenerationConfig
+  search?: SearchConfig
+  mcp?: MCPConfig
+}

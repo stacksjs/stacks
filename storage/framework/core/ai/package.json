@@ -20,8 +20,13 @@
   },
   "keywords": [
     "ai",
-    "huggingface",
+    "anthropic",
     "openai",
+    "ollama",
+    "embeddings",
+    "rag",
+    "mcp",
+    "vision",
     "artificial intelligence",
     "api",
     "stacks"

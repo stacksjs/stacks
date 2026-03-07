@@ -13,6 +13,12 @@ const result = await Bun.build({
   // sourcemap: 'linked',
   target: 'bun',
   minify: true,
+  external: [
+    '@anthropic-ai/claude-agent-sdk',
+    '@stacksjs/ts-cloud',
+    '@stacksjs/cli',
+    '@stacksjs/config',
+  ],
   plugins: [
     dts({
       root: '.',
