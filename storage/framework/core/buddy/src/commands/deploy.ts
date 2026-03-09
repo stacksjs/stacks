@@ -1,5 +1,4 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
-import { $ } from 'bun'
 import { existsSync, readFileSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
@@ -12,6 +11,7 @@ import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { ensureAppKey, ensureEnvIsSet, ensurePantryDependencies, ensurePantryInstalled } from './setup'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -24,6 +24,16 @@ const log = {
       console.log('🔍', ...args)
     }
   },
+}
+
+async function ensureDeployPrerequisites(verbose = false): Promise<void> {
+  const cwd = p.projectPath()
+
+  await ensurePantryInstalled()
+  await ensurePantryDependencies(cwd)
+
+  await ensureEnvIsSet({ cwd, verbose })
+  await ensureAppKey(cwd)
 }
 
 /**
@@ -509,6 +519,8 @@ export function deploy(buddy: CLI): void {
     .action(async (envArg: string | undefined, options: DeployOptions) => {
       log.debug('Running `buddy deploy` ...', options)
 
+      await ensureDeployPrerequisites(options.verbose === true)
+
       const deployEnv = envArg || 'production'
 
       // Clear AWS_PROFILE to prevent credential conflicts when static credentials are provided
@@ -967,7 +979,7 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
     log.info('Creating/updating cloud infrastructure. This may take a few moments...')
 
     // Get email configuration
-    const emailDomain = (emailConfig?.from?.address?.includes('@') ? emailConfig.from.address.split('@')[1] : undefined) || 'stacksjs.com'
+    const emailDomain = emailConfig?.from?.address?.split('@')?.[1] || 'stacksjs.com'
     const emailBucketName = `${appName}-emails`
     const region = process.env.AWS_REGION || 'us-east-1'
     const enableEmailServer = emailConfig?.server?.scan !== undefined

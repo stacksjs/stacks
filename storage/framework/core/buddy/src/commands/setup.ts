@@ -1,3 +1,5 @@
+import { existsSync, readFileSync } from 'node:fs'
+import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction, setupSSL } from '@stacksjs/actions'
@@ -7,6 +9,11 @@ import { handleError } from '@stacksjs/error-handling'
 import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+
+type SetupOptions = CliOptions & {
+  skipAws?: boolean
+  skipKeygen?: boolean
+}
 
 export function setup(buddy: CLI): void {
   const descriptions = {
@@ -19,18 +26,21 @@ export function setup(buddy: CLI): void {
     domain: 'Custom domain to setup (defaults to APP_URL)',
     skipHosts: 'Skip adding domain to hosts file',
     skipTrust: 'Skip trusting the certificate',
+    skipAws: 'Skip AWS configuration during setup',
+    skipKeygen: 'Skip generating an application key during setup',
   }
 
   buddy
     .command('setup', descriptions.setup)
     .alias('ensure')
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--skip-aws', descriptions.skipAws, { default: false })
+    .option('--skip-keygen', descriptions.skipKeygen, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: CliOptions) => {
+    .action(async (options: SetupOptions) => {
       log.debug('Running `buddy setup` ...', options)
 
-      if (!(await isPantryInstalled()))
-        await installPantry()
+      await ensurePantryInstalled()
 
       // ensure the minimal amount of deps are written to ./pantry.yaml
       await optimizePantryDeps()
@@ -103,24 +113,42 @@ async function installPantry(): Promise<void> {
   process.exit(ExitCode.FatalError)
 }
 
-async function initializeProject(options: CliOptions): Promise<void> {
-  log.info('Installing dependencies...')
+export async function ensurePantryInstalled(): Promise<void> {
+  if (!(await isPantryInstalled()))
+    await installPantry()
+}
 
-  const result = await runCommand('bun install', {
-    cwd: options.cwd || p.projectPath(),
-  })
+export async function ensurePantryDependencies(cwd: string): Promise<void> {
+  log.info('Installing Pantry dependencies...')
 
-  if (result.isErr) {
-    handleError(result.error)
-    process.exit(ExitCode.FatalError)
+  const result = await runCommand('pantry install', { cwd })
+
+  if (result.isOk) {
+    log.success('Installed Pantry dependencies')
+    return
   }
 
-  log.success('Installed node_modules')
+  handleError((result as any).error)
+  process.exit(ExitCode.FatalError)
+}
 
-  await ensureEnvIsSet(options)
+function hasAppKey(cwd: string): boolean {
+  const envPath = join(cwd, '.env')
 
-  const keyResult = await runCommand('buddy key:generate', {
-    cwd: options.cwd || p.projectPath(),
+  if (!existsSync(envPath))
+    return false
+
+  return /^APP_KEY=.+$/m.test(readFileSync(envPath, 'utf-8'))
+}
+
+export async function ensureAppKey(cwd: string): Promise<void> {
+  if (hasAppKey(cwd)) {
+    log.success('APP_KEY existed')
+    return
+  }
+
+  const keyResult = await runCommand('./buddy key:generate', {
+    cwd,
   })
 
   if (keyResult.isErr) {
@@ -128,18 +156,34 @@ async function initializeProject(options: CliOptions): Promise<void> {
     process.exit(ExitCode.FatalError)
   }
 
-  log.info('Ensuring AWS is connected...')
+  log.success('Generated application key')
+}
 
-  const awsResult = await runCommand('buddy configure:aws', {
-    cwd: options.cwd || p.projectPath(),
-  })
+async function initializeProject(options: SetupOptions): Promise<void> {
+  const cwd = options.cwd || p.projectPath()
 
-  if (awsResult.isErr) {
-    handleError(awsResult.error)
-    process.exit(ExitCode.FatalError)
+  await ensurePantryDependencies(cwd)
+
+  await ensureEnvIsSet(options)
+
+  if (!options.skipKeygen) {
+    await ensureAppKey(cwd)
   }
 
-  log.success('Configured AWS')
+  if (!options.skipAws) {
+    log.info('Ensuring AWS is connected...')
+
+    const awsResult = await runCommand('./buddy configure:aws', {
+      cwd,
+    })
+
+    if (awsResult.isErr) {
+      handleError(awsResult.error)
+      process.exit(ExitCode.FatalError)
+    }
+
+    log.success('Configured AWS')
+  }
 
   // TODO: ensure the IDE is setup by making sure .vscode etc exists, and if not, copy them over
 

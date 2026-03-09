@@ -64,11 +64,11 @@ fi
 
 ensure_pantry
 
-echo "Running pantry install..."
-pantry install
+echo "Bootstrapping Stacks project..."
+./buddy setup --skip-aws
 
 echo ""
 echo "Project bootstrapped successfully!"
 if [ -n "$1" ]; then
-  echo "Run 'cd $1 && pantry run dev' to start the dev server."
+  echo "Run 'cd $1 && ./buddy dev' to start the dev server."
 fi

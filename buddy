@@ -1,3 +1,39 @@
-#!/usr/bin/env bun
-// TODO: should be a symlink to the prod-compiled `buddy` binary
-import('./storage/framework/core/buddy/src/cli')
+#!/bin/sh
+set -e
+
+ROOT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
+PANTRY_LOCAL_BIN="${ROOT_DIR}/pantry/.bin"
+USER_LOCAL_BIN="${HOME}/.local/bin"
+PANTRY_INSTALLER="${ROOT_DIR}/storage/framework/scripts/pantry-install"
+BUDDY_ENTRY="${ROOT_DIR}/storage/framework/core/buddy/src/cli.ts"
+
+run_buddy() {
+  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${PANTRY_LOCAL_BIN}/bun" "${BUDDY_ENTRY}" "$@"
+}
+
+if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
+  run_buddy "$@"
+fi
+
+if ! command -v pantry >/dev/null 2>&1; then
+  if [ ! -x "${PANTRY_INSTALLER}" ]; then
+    echo "Pantry installer not found at ${PANTRY_INSTALLER}" >&2
+    exit 1
+  fi
+
+  "${PANTRY_INSTALLER}"
+  export PATH="${USER_LOCAL_BIN}:${PATH}"
+fi
+
+pantry install
+
+if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
+  run_buddy "$@"
+fi
+
+if command -v bun >/dev/null 2>&1; then
+  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" bun "${BUDDY_ENTRY}" "$@"
+fi
+
+echo "Pantry did not provide a local bun runtime." >&2
+exit 1
