@@ -10,10 +10,25 @@ import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 
-type SetupOptions = CliOptions & {
+interface SetupOptions extends CliOptions {
   skipAws?: boolean
   skipKeygen?: boolean
 }
+
+function getTimeoutMs(envVar: string, fallbackMs: number): number {
+  const value = Number(process.env[envVar])
+
+  if (Number.isFinite(value) && value > 0)
+    return value
+
+  return fallbackMs
+}
+
+const PANTRY_CHECK_TIMEOUT_MS = getTimeoutMs('PANTRY_CHECK_TIMEOUT_MS', 15_000)
+const PANTRY_INSTALL_TIMEOUT_MS = getTimeoutMs('PANTRY_INSTALL_TIMEOUT_MS', 10 * 60_000)
+const PANTRY_DEPENDENCIES_TIMEOUT_MS = getTimeoutMs('PANTRY_DEPENDENCIES_TIMEOUT_MS', 20 * 60_000)
+const KEYGEN_TIMEOUT_MS = getTimeoutMs('KEYGEN_TIMEOUT_MS', 2 * 60_000)
+const AWS_CONFIG_TIMEOUT_MS = getTimeoutMs('AWS_CONFIG_TIMEOUT_MS', 15 * 60_000)
 
 export function setup(buddy: CLI): void {
   const descriptions = {
@@ -95,7 +110,10 @@ export function setup(buddy: CLI): void {
 }
 
 async function isPantryInstalled(): Promise<boolean> {
-  const result = await runCommand('pantry --version', { silent: true })
+  const result = await runCommand('pantry --version', {
+    silent: true,
+    timeoutMs: PANTRY_CHECK_TIMEOUT_MS,
+  })
 
   if (result.isOk)
     return true
@@ -104,7 +122,9 @@ async function isPantryInstalled(): Promise<boolean> {
 }
 
 async function installPantry(): Promise<void> {
-  const result = await runCommand(p.frameworkPath('scripts/pantry-install'))
+  const result = await runCommand(p.frameworkPath('scripts/pantry-install'), {
+    timeoutMs: PANTRY_INSTALL_TIMEOUT_MS,
+  })
 
   if (result.isOk)
     return
@@ -121,7 +141,10 @@ export async function ensurePantryInstalled(): Promise<void> {
 export async function ensurePantryDependencies(cwd: string): Promise<void> {
   log.info('Installing Pantry dependencies...')
 
-  const result = await runCommand('pantry install', { cwd })
+  const result = await runCommand('pantry install', {
+    cwd,
+    timeoutMs: PANTRY_DEPENDENCIES_TIMEOUT_MS,
+  })
 
   if (result.isOk) {
     log.success('Installed Pantry dependencies')
@@ -149,6 +172,7 @@ export async function ensureAppKey(cwd: string): Promise<void> {
 
   const keyResult = await runCommand('./buddy key:generate', {
     cwd,
+    timeoutMs: KEYGEN_TIMEOUT_MS,
   })
 
   if (keyResult.isErr) {
@@ -175,6 +199,7 @@ async function initializeProject(options: SetupOptions): Promise<void> {
 
     const awsResult = await runCommand('./buddy configure:aws', {
       cwd,
+      timeoutMs: AWS_CONFIG_TIMEOUT_MS,
     })
 
     if (awsResult.isErr) {

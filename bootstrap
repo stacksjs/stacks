@@ -62,10 +62,12 @@ if [ ! -d "storage/framework/core" ]; then
   exit 1
 fi
 
+PROJECT_ROOT=$(pwd)
+
 ensure_pantry
 
 echo "Bootstrapping Stacks project..."
-./buddy setup --skip-aws
+"${PROJECT_ROOT}/buddy" setup --skip-aws
 
 echo ""
 echo "Project bootstrapped successfully!"

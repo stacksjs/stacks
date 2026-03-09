@@ -6,9 +6,29 @@ import { path as p } from '@stacksjs/path'
 // Get the command being run to determine what to load
 const args = process.argv.slice(2)
 const requestedCommand = args[0] || 'help'
+const isHelpFlag = args.includes('--help') || args.includes('-h')
 // Minimal commands that don't need full project setup
 const isMinimalCommand = ['--version', '-v', '--help', '-h', 'help', 'version'].includes(requestedCommand)
-const skipAppKeyCheck = ['build', 'lint', 'lint:fix', 'test', 'test:types', 'test:unit', 'test:feature', 'typecheck', 'types:fix', 'types:generate', 'clean', 'fresh', 'about', 'doctor'].some(cmd => requestedCommand.startsWith(cmd))
+const skipAppKeyCheck = [
+  'build',
+  'lint',
+  'lint:fix',
+  'test',
+  'test:types',
+  'test:unit',
+  'test:feature',
+  'typecheck',
+  'types:fix',
+  'types:generate',
+  'clean',
+  'fresh',
+  'about',
+  'doctor',
+  'setup',
+  'setup:ssl',
+  'setup:oh-my-zsh',
+  'deploy',
+].some(cmd => requestedCommand.startsWith(cmd)) || isHelpFlag
 const needsFullSetup = !isMinimalCommand
 
 // Setup global error handlers (skip for minimal commands for performance)

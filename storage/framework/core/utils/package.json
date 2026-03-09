@@ -51,6 +51,9 @@
     "prepublishOnly": "bun run build",
     "size": "bun scripts/export-size.ts"
   },
+  "dependencies": {
+    "@stacksjs/browser": "workspace:*"
+  },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
     "@stacksjs/arrays": "workspace:*",

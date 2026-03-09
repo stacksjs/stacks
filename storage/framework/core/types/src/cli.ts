@@ -174,6 +174,8 @@ export interface CliOptions {
    */
   background?: boolean
 
+  timeoutMs?: number
+
   startTime?: number
 
   /**

@@ -6,6 +6,45 @@ PANTRY_LOCAL_BIN="${ROOT_DIR}/pantry/.bin"
 USER_LOCAL_BIN="${HOME}/.local/bin"
 PANTRY_INSTALLER="${ROOT_DIR}/storage/framework/scripts/pantry-install"
 BUDDY_ENTRY="${ROOT_DIR}/storage/framework/core/buddy/src/cli.ts"
+PANTRY_BOOTSTRAP_TIMEOUT_SECONDS="${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS:-600}"
+PANTRY_DEPENDENCIES_TIMEOUT_SECONDS="${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS:-1200}"
+
+run_with_timeout() {
+  timeout_seconds="$1"
+  shift
+  timeout_flag="${TMPDIR:-/tmp}/buddy-timeout-$$"
+  rm -f "${timeout_flag}"
+
+  "$@" &
+  cmd_pid=$!
+
+  (
+    sleep "${timeout_seconds}"
+
+    if kill -0 "${cmd_pid}" 2>/dev/null; then
+      echo "Command timed out after ${timeout_seconds}s: $*" >&2
+      : > "${timeout_flag}"
+      kill "${cmd_pid}" 2>/dev/null || true
+      sleep 2
+      kill -9 "${cmd_pid}" 2>/dev/null || true
+    fi
+  ) &
+  watchdog_pid=$!
+
+  wait "${cmd_pid}"
+  status=$?
+
+  kill "${watchdog_pid}" 2>/dev/null || true
+  wait "${watchdog_pid}" 2>/dev/null || true
+
+  if [ -f "${timeout_flag}" ]; then
+    rm -f "${timeout_flag}"
+    return 124
+  fi
+
+  rm -f "${timeout_flag}"
+  return "${status}"
+}
 
 run_buddy() {
   exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${PANTRY_LOCAL_BIN}/bun" "${BUDDY_ENTRY}" "$@"
@@ -21,11 +60,11 @@ if ! command -v pantry >/dev/null 2>&1; then
     exit 1
   fi
 
-  "${PANTRY_INSTALLER}"
+  run_with_timeout "${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS}" "${PANTRY_INSTALLER}"
   export PATH="${USER_LOCAL_BIN}:${PATH}"
 fi
 
-pantry install
+run_with_timeout "${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS}" pantry install
 
 if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
   run_buddy "$@"
