@@ -225,6 +225,31 @@ export function job(name: string, payload?: any): JobBuilder {
 }
 
 /**
+ * Create a job batch for dispatching multiple jobs together
+ *
+ * @example
+ * ```typescript
+ * import SendWelcomeEmail from '~/app/Jobs/SendWelcomeEmail'
+ * import ProcessOrder from '~/app/Jobs/ProcessOrder'
+ *
+ * const batch = await jobBatch([
+ *   { job: SendWelcomeEmail, payload: { email: 'user@example.com' } },
+ *   { job: ProcessOrder, payload: { orderId: 123 } },
+ * ])
+ *   .name('Onboard User')
+ *   .allowFailures()
+ *   .then(async (b) => console.log('All done!'))
+ *   .dispatch()
+ * ```
+ */
+export function jobBatch(jobs: Array<import('./action').Job | import('./batch').BatchableJob>): import('./batch').PendingBatch {
+  // Use inline require for synchronous access - batch module is local
+  // eslint-disable-next-line ts/no-require-imports
+  const { PendingBatch } = require('./batch') as typeof import('./batch')
+  return new PendingBatch(jobs)
+}
+
+/**
  * Run a job immediately by name
  *
  * This loads the job from app/Jobs/{name}.ts and executes it

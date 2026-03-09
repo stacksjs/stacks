@@ -31,6 +31,35 @@ function hasJobsMigrationBeenCreated(): boolean {
   }
 }
 
+async function jobBatchesTableExists(): Promise<boolean> {
+  const sqlitePath = getDatabasePath()
+  if (existsSync(sqlitePath)) {
+    try {
+      const sqlite = new Database(sqlitePath)
+      const result = sqlite.query(`SELECT name FROM sqlite_master WHERE type='table' AND name='job_batches'`).get()
+      sqlite.close()
+      return result !== null
+    }
+    catch {
+      // Fall through
+    }
+  }
+
+  const driver = getDriver()
+  if (driver !== 'sqlite') {
+    try {
+      const { db } = await import('../utils')
+      await (db as any).selectFrom('job_batches').select('id').limit(1).execute()
+      return true
+    }
+    catch {
+      return false
+    }
+  }
+
+  return false
+}
+
 function getDatabasePath(): string {
   // Try APP_ROOT first (set by stacks), then fall back to cwd
   const appRoot = envVars.APP_ROOT || process.cwd()
@@ -102,6 +131,20 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
   exception TEXT NOT NULL,
   failed_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create job_batches table
+CREATE TABLE IF NOT EXISTS job_batches (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL DEFAULT '',
+  total_jobs INTEGER NOT NULL DEFAULT 0,
+  pending_jobs INTEGER NOT NULL DEFAULT 0,
+  failed_jobs INTEGER NOT NULL DEFAULT 0,
+  failed_job_ids TEXT NOT NULL DEFAULT '[]',
+  options TEXT,
+  cancelled_at DATETIME,
+  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+  finished_at DATETIME
+);
 `
         }
         else if (driver === 'mysql') {
@@ -127,6 +170,20 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
   exception LONGTEXT NOT NULL,
   failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- Create job_batches table
+CREATE TABLE IF NOT EXISTS job_batches (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL DEFAULT '',
+  total_jobs INT NOT NULL DEFAULT 0,
+  pending_jobs INT NOT NULL DEFAULT 0,
+  failed_jobs INT NOT NULL DEFAULT 0,
+  failed_job_ids LONGTEXT NOT NULL,
+  options LONGTEXT,
+  cancelled_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  finished_at TIMESTAMP NULL
+);
 `
         }
         else if (driver === 'postgres') {
@@ -151,6 +208,20 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
   payload TEXT NOT NULL,
   exception TEXT NOT NULL,
   failed_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- Create job_batches table
+CREATE TABLE IF NOT EXISTS job_batches (
+  id VARCHAR(255) PRIMARY KEY,
+  name VARCHAR(255) NOT NULL DEFAULT '',
+  total_jobs INTEGER NOT NULL DEFAULT 0,
+  pending_jobs INTEGER NOT NULL DEFAULT 0,
+  failed_jobs INTEGER NOT NULL DEFAULT 0,
+  failed_job_ids TEXT NOT NULL DEFAULT '[]',
+  options TEXT,
+  cancelled_at TIMESTAMP,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  finished_at TIMESTAMP
 );
 `
         }
@@ -258,6 +329,68 @@ CREATE TABLE IF NOT EXISTS failed_jobs (
       }
       else {
         console.log('✓ Jobs tables already exist')
+      }
+
+      // Create job_batches table if it doesn't exist
+      const batchesExist = await jobBatchesTableExists()
+
+      if (!batchesExist) {
+        console.log('  Creating job_batches table...')
+
+        const sqlitePath = getDatabasePath()
+        if (driver === 'sqlite' || existsSync(sqlitePath)) {
+          const sqlite = new Database(sqlitePath)
+
+          sqlite.run(`CREATE TABLE IF NOT EXISTS job_batches (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL DEFAULT '',
+            total_jobs INTEGER NOT NULL DEFAULT 0,
+            pending_jobs INTEGER NOT NULL DEFAULT 0,
+            failed_jobs INTEGER NOT NULL DEFAULT 0,
+            failed_job_ids TEXT NOT NULL DEFAULT '[]',
+            options TEXT,
+            cancelled_at DATETIME,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+            finished_at DATETIME
+          )`)
+
+          sqlite.close()
+        }
+        else if (driver === 'mysql') {
+          const { db } = await import('../utils')
+          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS job_batches (
+            id VARCHAR(255) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL DEFAULT '',
+            total_jobs INT NOT NULL DEFAULT 0,
+            pending_jobs INT NOT NULL DEFAULT 0,
+            failed_jobs INT NOT NULL DEFAULT 0,
+            failed_job_ids LONGTEXT NOT NULL,
+            options LONGTEXT,
+            cancelled_at TIMESTAMP NULL,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            finished_at TIMESTAMP NULL
+          )`).execute()
+        }
+        else if (driver === 'postgres') {
+          const { db } = await import('../utils')
+          await (db as any).unsafe(`CREATE TABLE IF NOT EXISTS job_batches (
+            id VARCHAR(255) PRIMARY KEY,
+            name VARCHAR(255) NOT NULL DEFAULT '',
+            total_jobs INTEGER NOT NULL DEFAULT 0,
+            pending_jobs INTEGER NOT NULL DEFAULT 0,
+            failed_jobs INTEGER NOT NULL DEFAULT 0,
+            failed_job_ids TEXT NOT NULL DEFAULT '[]',
+            options TEXT,
+            cancelled_at TIMESTAMP,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            finished_at TIMESTAMP
+          )`).execute()
+        }
+
+        console.log('✓ job_batches table created')
+      }
+      else {
+        console.log('✓ job_batches table already exists')
       }
     }
 

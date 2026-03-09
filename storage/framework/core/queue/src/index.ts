@@ -14,7 +14,7 @@ export { Job } from './action'
 // =============================================================================
 // Stacks job helper for dispatching file-based jobs
 // =============================================================================
-export { job, runJob } from './job'
+export { job, jobBatch, runJob } from './job'
 
 // =============================================================================
 // Job discovery (for app/Jobs directory)
@@ -105,6 +105,23 @@ export {
   runJob as runTestJob,
   type DispatchedJob,
 } from './testing'
+
+// =============================================================================
+// Job batches
+// =============================================================================
+export {
+  Batch,
+  DispatchedBatch,
+  PendingBatch,
+  getBatchCallbacks,
+  isBatchCancelled,
+  recordBatchJobCompletion,
+  recordBatchJobFailure,
+  type BatchableJob,
+  type BatchOptions,
+  type BatchRecord,
+  type BatchStatus,
+} from './batch'
 
 // =============================================================================
 // Worker functions (for queue:work command)

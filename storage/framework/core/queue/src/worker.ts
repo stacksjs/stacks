@@ -225,6 +225,25 @@ async function processJob(job: any): Promise<void> {
     jobName: parsedJobName,
   })
 
+  // Check if this job belongs to a cancelled batch
+  try {
+    const parsedForBatch = JSON.parse(job.payload || '{}')
+    const batchId = parsedForBatch.payload?._batchId
+    if (batchId) {
+      const { isBatchCancelled } = await import('./batch')
+      if (await isBatchCancelled(batchId)) {
+        log.info(`[Queue] Skipping job ${jobId} - batch ${batchId} has been cancelled`)
+        await deleteJob(jobId)
+        activeJobCount--
+        tracker.markIdle(workerId)
+        return
+      }
+    }
+  }
+  catch {
+    // Continue processing if batch check fails
+  }
+
   let jobError: Error | null = null
 
   // Execute the job
@@ -248,6 +267,19 @@ async function processJob(job: any): Promise<void> {
         queueName,
         duration: Date.now() - startTime,
       })
+
+      // Track batch completion if this job belongs to a batch
+      try {
+        const payload = JSON.parse(job.payload || '{}')
+        const batchId = payload.payload?._batchId
+        if (batchId) {
+          const { recordBatchJobCompletion } = await import('./batch')
+          await recordBatchJobCompletion(batchId)
+        }
+      }
+      catch {
+        // Batch tracking is best-effort
+      }
     }
     catch {
       log.info(`[Queue] Failed to delete completed job ${jobId}`)
@@ -292,6 +324,19 @@ async function processJob(job: any): Promise<void> {
       }
       catch {
         log.info(`[Queue] Failed to delete failed job ${jobId}`)
+      }
+
+      // Track batch failure if this job belongs to a batch
+      try {
+        const failedPayload = JSON.parse(job.payload || '{}')
+        const batchId = failedPayload.payload?._batchId
+        if (batchId) {
+          const { recordBatchJobFailure } = await import('./batch')
+          await recordBatchJobFailure(batchId, String(jobId), jobError)
+        }
+      }
+      catch {
+        // Batch tracking is best-effort
       }
     }
     else {
@@ -417,6 +462,24 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
     activeJobCount++
     tracker.markActive(workerId)
     const startTime = Date.now()
+    const data = bunJob.data
+
+    // Check if this job belongs to a cancelled batch
+    const batchId = data?.payload?._batchId
+    if (batchId) {
+      try {
+        const { isBatchCancelled } = await import('./batch')
+        if (await isBatchCancelled(batchId)) {
+          log.info(`[Queue] Skipping Redis job ${bunJob.id} - batch ${batchId} has been cancelled`)
+          activeJobCount--
+          tracker.markIdle(workerId)
+          return
+        }
+      }
+      catch {
+        // Continue processing if batch check fails
+      }
+    }
 
     await emitQueueEvent('job:processing', {
       jobId: String(bunJob.id),
@@ -424,7 +487,6 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
     })
 
     try {
-      const data = bunJob.data
       if (data?.jobName) {
         const { runJob } = await import('./job')
         await runJob(data.jobName, { payload: data.payload })
@@ -441,6 +503,18 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
         queueName,
         duration: Date.now() - startTime,
       })
+
+      // Track batch completion
+      if (batchId) {
+        try {
+          const { recordBatchJobCompletion } = await import('./batch')
+          await recordBatchJobCompletion(batchId)
+        }
+        catch {
+          // Batch tracking is best-effort
+        }
+      }
+
       log.info(`[Queue] Redis job ${bunJob.id} completed`)
     }
     catch (e) {
@@ -451,6 +525,18 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
         error: e instanceof Error ? e : new Error(String(e)),
         duration: Date.now() - startTime,
       })
+
+      // Track batch failure
+      if (batchId) {
+        try {
+          const { recordBatchJobFailure } = await import('./batch')
+          await recordBatchJobFailure(batchId, String(bunJob.id), e instanceof Error ? e : new Error(String(e)))
+        }
+        catch {
+          // Batch tracking is best-effort
+        }
+      }
+
       log.error(`[Queue] Redis job ${bunJob.id} failed: ${e}`)
       throw e // Let bun-queue handle retries
     }
