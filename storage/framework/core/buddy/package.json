@@ -128,7 +128,7 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.1.13",
+    "@stacksjs/ts-cloud": "^0.1.14",
     "better-dx": "^0.2.5"
   },
   "devDependencies": {
