@@ -116,7 +116,7 @@
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/rpx": "^0.11.0",
+    "@stacksjs/rpx": "^0.11.2",
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/server": "workspace:*",
