@@ -13,29 +13,29 @@ export interface Desktop {
   window: unknown
 }
 
-let _desktop: Desktop | undefined
+// let _desktop: Desktop | undefined
 
-export async function getDesktop(): Promise<Desktop> {
-  if (_desktop) return _desktop
+// export async function getDesktop(): Promise<Desktop> {
+//   if (_desktop) return _desktop
 
-  const tauri = await import('@tauri-apps/api')
-  _desktop = {
-    app: tauri.app,
-    core: tauri.core,
-    dpi: tauri.dpi,
-    event: tauri.event,
-    image: tauri.image,
-    menu: tauri.menu,
-    mocks: tauri.mocks,
-    path: tauri.path,
-    tray: tauri.tray,
-    webview: tauri.webview,
-    webviewWindow: tauri.webviewWindow,
-    window: tauri.window,
-  }
+//   const tauri = await import('@tauri-apps/api')
+//   _desktop = {
+//     app: tauri.app,
+//     core: tauri.core,
+//     dpi: tauri.dpi,
+//     event: tauri.event,
+//     image: tauri.image,
+//     menu: tauri.menu,
+//     mocks: tauri.mocks,
+//     path: tauri.path,
+//     tray: tauri.tray,
+//     webview: tauri.webview,
+//     webviewWindow: tauri.webviewWindow,
+//     window: tauri.window,
+//   }
 
-  return _desktop
-}
+//   return _desktop
+// }
 
 export interface OpenDevWindowOptions {
   title?: string
