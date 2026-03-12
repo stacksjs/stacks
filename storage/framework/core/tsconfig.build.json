@@ -8,8 +8,6 @@
     "moduleResolution": "bundler",
     "paths": {
       "~/*": ["../../../*"],
-      "@stacksjs/stx": ["../../../pantry/@stacksjs/stx"],
-      "@stacksjs/stx/*": ["../../../pantry/@stacksjs/stx/*"],
       "@stacksjs/*": ["./*/src"],
       "*": ["../../../pantry/*"]
     },
