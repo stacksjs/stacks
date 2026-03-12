@@ -4,8 +4,7 @@
  */
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
-import { path as p } from '@stacksjs/path'
-import type { CloudConfig } from 'ts-cloud-types'
+import type { CloudConfig } from '@ts-cloud/core'
 
 // Load cloud config lazily to avoid import issues
 async function getCloudConfig(): Promise<CloudConfig | null> {
