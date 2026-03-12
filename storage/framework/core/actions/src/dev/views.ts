@@ -1,5 +1,14 @@
 import { log } from '@stacksjs/cli'
-import { serve } from 'bun-plugin-stx/serve'
+import { projectPath } from '@stacksjs/path'
+
+// Try standard resolution first, then fall back to pantry path
+let serve: any
+try {
+  ;({ serve } = await import('bun-plugin-stx/serve'))
+}
+catch {
+  ;({ serve } = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+}
 
 // Run stx dev server for resources/views
 // This serves .stx templates from the project's resources/views directory

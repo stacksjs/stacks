@@ -134,7 +134,15 @@ log.info(`Starting dashboard dev server on http://localhost:${dashboardPort}...`
 let serverStarted = false
 
 try {
-  const { serve } = await import('bun-plugin-stx/serve')
+  // Try standard resolution first, then fall back to pantry path
+  // (subpath exports like 'bun-plugin-stx/serve' may not resolve from pantry/)
+  let serve: typeof import('bun-plugin-stx/serve').serve
+  try {
+    ;({ serve } = await import('bun-plugin-stx/serve'))
+  }
+  catch {
+    ;({ serve } = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+  }
 
   // Run serve in background - don't await since it blocks forever
   // User views take priority over defaults (checked in order)

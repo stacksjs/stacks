@@ -26,8 +26,24 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     try {
       const port = Number(process.env.PORT) || 3000
 
+      // Ensure pantry packages are resolvable for compiled dependencies
+      // that import @stacksjs/* packages at runtime
+      const pantryPath = p.projectPath('pantry')
+      if (!process.env.NODE_PATH?.includes(pantryPath)) {
+        process.env.NODE_PATH = process.env.NODE_PATH ? `${pantryPath}:${process.env.NODE_PATH}` : pantryPath
+        // @ts-expect-error - force Bun/Node to re-read module paths
+        require('module').Module._initPaths?.()
+      }
+
       // Import and call serve function directly - no subprocess!
-      const { serve } = await import('bun-plugin-stx/serve')
+      // Try standard resolution first, then fall back to pantry path
+      let serve: any
+      try {
+        ;({ serve } = await import('bun-plugin-stx/serve'))
+      }
+      catch {
+        ;({ serve } = await import(p.projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+      }
       await serve({
         patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
         port,
@@ -97,10 +113,18 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   const watchFlag = isDevAction ? '--watch' : ''
   const cmd = `bun ${watchFlag} ${path} ${opts}`.trimEnd()
 
+  // Ensure pantry packages are resolvable via NODE_PATH
+  // This allows compiled pantry packages (e.g., bun-plugin-stx/serve.js) to
+  // import their dependencies like @stacksjs/stx at runtime
+  const pantryNodePath = p.projectPath('pantry')
+  const existingNodePath = process.env.NODE_PATH
+  const nodePath = existingNodePath ? `${pantryNodePath}:${existingNodePath}` : pantryNodePath
+
   const optionsWithCwd: CliOptions = {
     cwd: options?.cwd || p.projectPath(),
     stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
     ...options,
+    env: { ...options?.env, NODE_PATH: nodePath },
     // Suppress stdout for dev actions (output handled by unified dev output)
     ...(isDevAction && !options?.verbose && { quiet: true }),
   }
