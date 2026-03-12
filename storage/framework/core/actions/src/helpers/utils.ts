@@ -122,8 +122,11 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
 
   const optionsWithCwd: CliOptions = {
     cwd: options?.cwd || p.projectPath(),
-    stdio: [options?.stdin ?? 'inherit', 'pipe', 'pipe'],
     ...options,
+    // Explicitly set stdout/stderr to 'inherit' when verbose so subprocess
+    // output (including log.info which writes to stderr) is always visible
+    stdout: options?.verbose ? 'inherit' : undefined,
+    stderr: options?.verbose ? 'inherit' : undefined,
     env: { ...options?.env, NODE_PATH: nodePath },
     // Suppress stdout for dev actions (output handled by unified dev output)
     ...(isDevAction && !options?.verbose && { quiet: true }),
