@@ -1,7 +1,10 @@
+import type { StxOptions } from '@stacksjs/stx'
+
 /**
  * STX Configuration for Stacks
  * Note: Dashboard mode overrides these settings via serve() options
  */
+
 export default {
   // Components directory - for user-defined components
   componentsDir: 'resources/components',
@@ -11,4 +14,4 @@ export default {
 
   // Partials directory - for partial templates
   partialsDir: 'resources/partials',
-}
+} satisfies StxOptions
