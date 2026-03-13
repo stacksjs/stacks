@@ -29,6 +29,7 @@ export function process(): StacksEnv {
 
 export const env: StacksEnv = new Proxy(process(), handler)
 
+// eslint-disable-next-line pickier/no-unused-vars
 export function writeEnv(key: EnvKey, value: string, options?: { path: string }): void {
   const envPath = options?.path || projectPath('.env')
   const env = fs.readFileSync(envPath, 'utf-8')

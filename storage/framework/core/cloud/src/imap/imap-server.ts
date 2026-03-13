@@ -2322,6 +2322,7 @@ export class ImapServer {
 
     const date = quote(msg.date.toUTCString())
     const subject = quote(msg.subject)
+    // eslint-disable-next-line pickier/no-unused-vars
     const parseAddr = (addr: string) => {
       const atIdx = addr.indexOf('@')
       const local = atIdx >= 0 ? addr.slice(0, atIdx) : addr
