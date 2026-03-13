@@ -8,6 +8,26 @@ const dashboardPath = storagePath('framework/defaults/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
 const verbose = process.argv.includes('--verbose')
 
+function supportsNativeSidebarFlags(binaryPath: string): boolean {
+  try {
+    const result = Bun.spawnSync({
+      cmd: [binaryPath, '--help'],
+      stdout: 'pipe',
+      stderr: 'pipe',
+    })
+
+    const decoder = new TextDecoder()
+    const stdout = result.stdout ? decoder.decode(result.stdout) : ''
+    const stderr = result.stderr ? decoder.decode(result.stderr) : ''
+    const helpText = `${stdout}\n${stderr}`
+
+    return helpText.includes('--native-sidebar') && helpText.includes('--sidebar-config')
+  }
+  catch {
+    return false
+  }
+}
+
 // Discover models from both user and default directories
 async function discoverModels(): Promise<Array<{ name: string, icon: string, id: string }>> {
   const models: Array<{ name: string, icon: string, id: string }> = []
@@ -173,10 +193,10 @@ catch (err: any) {
 
 // Path to the Craft binary - check common locations (craft-minimal parses CLI args)
 const craftPaths = [
+  projectPath('../craft/packages/zig/zig-out/bin/craft-minimal'), // Local monorepo build (preferred for Tahoe sidebar)
+  projectPath('../craft/zig-out/bin/craft-minimal'), // Local single-package build (preferred for Tahoe sidebar)
   `${process.env.HOME}/Code/Tools/craft/packages/zig/zig-out/bin/craft-minimal`, // Development location (Tools)
   `${process.env.HOME}/Code/Tools/craft/zig-out/bin/craft-minimal`, // Development location (Tools, single package)
-  projectPath('../craft/packages/zig/zig-out/bin/craft-minimal'), // Development location (monorepo)
-  projectPath('../craft/zig-out/bin/craft-minimal'), // Development location (single package)
   '/usr/local/bin/craft', // Installed location
   projectPath('node_modules/.bin/craft'), // npm installed
 ]
@@ -186,9 +206,13 @@ for (const craftPath of craftPaths) {
   try {
     const file = Bun.file(craftPath)
     if (await file.exists()) {
-      craftBinary = craftPath
-      if (verbose) log.info(`Found Craft at: ${craftPath}`)
-      break
+      if (supportsNativeSidebarFlags(craftPath)) {
+        craftBinary = craftPath
+        log.info(`[Dashboard] Found compatible Craft at: ${craftPath}`)
+        break
+      }
+
+      log.warn(`[Dashboard] Skipping Craft binary without native sidebar support: ${craftPath}`)
     }
   }
   catch {
@@ -197,9 +221,9 @@ for (const craftPath of craftPaths) {
 }
 
 if (!craftBinary) {
-  log.info('Craft binary not found. Running web server only.')
+  log.warn('No compatible Craft binary found (missing --native-sidebar support). Running web server only.')
   log.info(`Dashboard available at: http://localhost:${dashboardPort}/app`)
-  if (verbose) log.info('To enable native macOS sidebar, build Craft: cd ~/Code/Tools/craft && zig build')
+  log.info('To enable Tahoe native sidebar, build Craft: zig build -Doptimize=Debug (inside your craft repo)')
 
   // Keep the process running since we're serving via STX
   await new Promise(() => {}) // Block forever
@@ -354,6 +378,7 @@ const craftProcess = spawn(craftBinary!, [
   '--url', initialUrl,
   '--width', '1400',
   '--height', '900',
+  '--titlebar-hidden',
   '--native-sidebar',
   '--sidebar-config', sidebarConfigJson,
   '--sidebar-width', '240',

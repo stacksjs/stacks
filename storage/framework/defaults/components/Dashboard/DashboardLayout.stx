@@ -29,6 +29,29 @@ function shouldShowWebSidebar() {
   return getProp('showSidebar', true)
 }
 </script>
+<script>
+(function() {
+  if (typeof window === 'undefined') return;
+
+  // Craft sets this flag when the Tahoe native sidebar is active.
+  var hasNativeSidebarFlag = Boolean(window.__craftNativeSidebar);
+  var hasCraftWindowApi = Boolean(window.craft && window.craft.window);
+  var hasNativeSidebar = hasNativeSidebarFlag;
+  if (!hasNativeSidebar && hasCraftWindowApi)
+    hasNativeSidebar = true;
+
+  console.info('[Stacks Dashboard] Native sidebar detection:', {
+    hasNativeSidebarFlag: hasNativeSidebarFlag,
+    hasCraftWindowApi: hasCraftWindowApi,
+    resolvedNativeSidebar: hasNativeSidebar
+  });
+
+  if (hasNativeSidebar)
+    document.documentElement.setAttribute('data-craft-native-sidebar', 'true');
+
+  console.info('[Stacks Dashboard] Active sidebar mode:', hasNativeSidebar ? 'tahoe-native' : 'web-fallback');
+})();
+</script>
 <!-- macOS-inspired layout with subtle background -->
 <div class="min-h-screen bg-white dark:bg-neutral-950">
   <!-- Mobile sidebar overlay -->
@@ -41,19 +64,21 @@ function shouldShowWebSidebar() {
 
   <!-- Mobile sidebar (web-based, only when no native sidebar) -->
   @if(props.isMobileMenuOpen && props.isMobile && shouldShowWebSidebar())
-    <div class="fixed inset-y-0 left-0 z-50 w-64 lg:hidden transition-transform duration-300">
+    <div class="dashboard-web-sidebar fixed inset-y-0 left-0 z-50 w-64 lg:hidden transition-transform duration-300">
       <Sidebar />
     </div>
   @endif
 
   <!-- Desktop sidebar (web-based, only when no native sidebar) -->
   @if(shouldShowWebSidebar() && !props.isMobile)
-    <Sidebar />
+    <div class="dashboard-web-sidebar">
+      <Sidebar />
+    </div>
   @endif
 
   <!-- Main content area -->
   <div
-    class="flex flex-col min-h-screen transition-all duration-300"
+    class="dashboard-main-content flex flex-col min-h-screen transition-all duration-300"
     style="{{ getMainContentStyle() }}"
   >
     <!-- Navbar -->
@@ -111,3 +136,12 @@ function shouldShowWebSidebar() {
   <!-- Global overlays/modals slot -->
   <slot name="overlays" />
 </div>
+<style>
+html[data-craft-native-sidebar='true'] .dashboard-web-sidebar {
+  display: none !important;
+}
+
+html[data-craft-native-sidebar='true'] .dashboard-main-content {
+  padding-left: 0 !important;
+}
+</style>
