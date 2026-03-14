@@ -116,7 +116,7 @@
     "@stacksjs/payments": "workspace:*",
     "@stacksjs/realtime": "workspace:*",
     "@stacksjs/router": "workspace:*",
-    "@stacksjs/rpx": "^0.11.0",
+    "@stacksjs/rpx": "^0.11.2",
     "@stacksjs/search-engine": "workspace:*",
     "@stacksjs/security": "workspace:*",
     "@stacksjs/server": "workspace:*",
@@ -128,11 +128,11 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "@stacksjs/ts-cloud": "^0.1.14",
-    "better-dx": "^0.2.5"
+    "@stacksjs/ts-cloud": "^0.2.3",
+    "better-dx": "^0.2.7"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.7"
   },
   "web-types": "./web-types.json"
 }
