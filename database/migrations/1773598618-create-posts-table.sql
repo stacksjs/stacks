@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `posts` (
   `excerpt` text,
   `views` real default 0,
   `published_at` datetime,
-  `status` text default 'draft',
+  `status` ENUM('published', 'draft', 'archived') default 'draft',
   `is_featured` real,
   `author_id` bigint,
   `created_at` datetime not null default CURRENT_TIMESTAMP,

@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `shipping_methods` (
   `description` text,
   `base_rate` real,
   `free_shipping` real,
-  `status` text,
+  `status` ENUM('active', 'inactive', 'draft'),
   `created_at` datetime not null default CURRENT_TIMESTAMP,
   `updated_at` datetime
 );

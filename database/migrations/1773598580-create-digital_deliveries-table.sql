@@ -6,7 +6,7 @@ CREATE TABLE IF NOT EXISTS `digital_deliveries` (
   `expiry_days` real,
   `requires_login` tinyint(1) default 0,
   `automatic_delivery` tinyint(1) default 0,
-  `status` text default 'active',
+  `status` ENUM('active', 'inactive') default 'active',
   `created_at` datetime not null default CURRENT_TIMESTAMP,
   `updated_at` datetime
 );

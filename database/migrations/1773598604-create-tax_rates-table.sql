@@ -4,8 +4,8 @@ CREATE TABLE IF NOT EXISTS `tax_rates` (
   `rate` real,
   `type` varchar(255),
   `country` varchar(255),
-  `region` text,
-  `status` text default 'active',
+  `region` ENUM('North America', 'South America', 'Europe', 'Asia', 'Africa', 'Oceania', 'Antarctica'),
+  `status` ENUM('active', 'inactive') default 'active',
   `is_default` tinyint(1) default 0,
   `created_at` datetime not null default CURRENT_TIMESTAMP,
   `updated_at` datetime

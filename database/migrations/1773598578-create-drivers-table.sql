@@ -1,12 +1,10 @@
-CREATE TABLE IF NOT EXISTS `customers` (
+CREATE TABLE IF NOT EXISTS `drivers` (
   `id` bigint PRIMARY KEY auto_increment,
   `name` varchar(255),
-  `email` varchar(255),
   `phone` varchar(255),
-  `total_spent` real default 0,
-  `last_order` varchar(255),
-  `status` text default 'Active',
-  `avatar` varchar(255),
+  `vehicle_number` varchar(255),
+  `license` varchar(255),
+  `status` ENUM('active', 'on_delivery', 'on_break') default 'active',
   `user_id` bigint,
   `created_at` datetime not null default CURRENT_TIMESTAMP,
   `updated_at` datetime

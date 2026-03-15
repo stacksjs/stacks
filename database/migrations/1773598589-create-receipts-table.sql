@@ -3,7 +3,7 @@ CREATE TABLE IF NOT EXISTS `receipts` (
   `printer` varchar(255),
   `document` varchar(255),
   `timestamp` datetime,
-  `status` text,
+  `status` ENUM('success', 'failed', 'warning'),
   `size` real,
   `pages` real,
   `duration` real,

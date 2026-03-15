@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `websockets` (
   `id` bigint PRIMARY KEY auto_increment,
-  `type` text,
+  `type` ENUM('disconnection', 'error', 'success'),
   `socket` varchar(255),
   `details` text,
   `time` real,

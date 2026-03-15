@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `carts` (
   `id` bigint PRIMARY KEY auto_increment,
-  `status` text default 'active',
+  `status` ENUM('active', 'abandoned', 'converted', 'expired') default 'active',
   `total_items` real default 0,
   `subtotal` real default 0,
   `tax_amount` real default 0,

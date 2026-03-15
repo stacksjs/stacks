@@ -1,8 +1,8 @@
 CREATE TABLE IF NOT EXISTS `logs` (
   `id` bigint PRIMARY KEY auto_increment,
   `timestamp` real,
-  `type` text,
-  `source` text,
+  `type` ENUM('warning', 'error', 'info', 'success'),
+  `source` ENUM('file', 'cli', 'system'),
   `message` text,
   `project` varchar(255),
   `stacktrace` text,

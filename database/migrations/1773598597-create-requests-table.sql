@@ -1,6 +1,6 @@
 CREATE TABLE IF NOT EXISTS `requests` (
   `id` bigint PRIMARY KEY auto_increment,
-  `method` text,
+  `method` ENUM('GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD'),
   `path` varchar(255),
   `status_code` real,
   `duration_ms` real,

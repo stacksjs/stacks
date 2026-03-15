@@ -1,9 +1,9 @@
 CREATE TABLE IF NOT EXISTS `license_keys` (
   `id` bigint PRIMARY KEY auto_increment,
   `key` varchar(255),
-  `template` text,
+  `template` ENUM('Standard License', 'Premium License', 'Enterprise License'),
   `expiry_date` datetime,
-  `status` text default 'unassigned',
+  `status` ENUM('active', 'inactive', 'unassigned') default 'unassigned',
   `customer_id` bigint,
   `product_id` bigint,
   `order_id` bigint,

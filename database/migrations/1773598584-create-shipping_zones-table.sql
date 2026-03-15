@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `shipping_zones` (
   `countries` text,
   `regions` text,
   `postal_codes` text,
-  `status` text,
+  `status` ENUM('active', 'inactive', 'draft'),
   `shipping_method_id` bigint,
   `created_at` datetime not null default CURRENT_TIMESTAMP,
   `updated_at` datetime

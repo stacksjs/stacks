@@ -4,7 +4,7 @@ CREATE TABLE IF NOT EXISTS `product_variants` (
   `type` varchar(255),
   `description` varchar(255),
   `options` varchar(255),
-  `status` text,
+  `status` ENUM('active', 'inactive', 'draft'),
   `product_id` bigint,
   `created_at` datetime not null default CURRENT_TIMESTAMP,
   `updated_at` datetime
