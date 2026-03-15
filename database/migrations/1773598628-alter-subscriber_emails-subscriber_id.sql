@@ -1,1 +1,0 @@
-ALTER TABLE `subscriber_emails` ADD CONSTRAINT `subscriber_emails_subscriber_id_fk` FOREIGN KEY (`subscriber_id`) REFERENCES `subscribers`(`id`);

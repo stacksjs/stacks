@@ -1,1 +1,0 @@
-ALTER TABLE `cart_items` ADD CONSTRAINT `cart_items_cart_id_fk` FOREIGN KEY (`cart_id`) REFERENCES `carts`(`id`);

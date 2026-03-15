@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `subscriptions_subscriptions_provider_id_unique` ON `subscriptions` (`provider_id`);

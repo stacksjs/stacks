@@ -1,1 +1,0 @@
-ALTER TABLE `license_keys` ADD CONSTRAINT `license_keys_order_id_fk` FOREIGN KEY (`order_id`) REFERENCES `orders`(`id`);

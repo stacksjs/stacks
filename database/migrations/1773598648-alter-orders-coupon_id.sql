@@ -1,1 +1,0 @@
-ALTER TABLE `orders` ADD CONSTRAINT `orders_coupon_id_fk` FOREIGN KEY (`coupon_id`) REFERENCES `coupons`(`id`);

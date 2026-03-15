@@ -1,1 +1,0 @@
-CREATE INDEX `authors_authors_email_name_index` ON `authors` (`email`, `name`);

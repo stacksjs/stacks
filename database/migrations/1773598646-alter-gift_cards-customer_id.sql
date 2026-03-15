@@ -1,1 +1,0 @@
-ALTER TABLE `gift_cards` ADD CONSTRAINT `gift_cards_customer_id_fk` FOREIGN KEY (`customer_id`) REFERENCES `customers`(`id`);

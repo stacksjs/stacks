@@ -1,1 +1,0 @@
-ALTER TABLE `product_units` ADD CONSTRAINT `product_units_product_id_fk` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`);

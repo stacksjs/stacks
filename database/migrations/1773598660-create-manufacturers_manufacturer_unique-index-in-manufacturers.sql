@@ -1,1 +1,0 @@
-CREATE UNIQUE INDEX `manufacturers_manufacturers_manufacturer_unique` ON `manufacturers` (`manufacturer`);

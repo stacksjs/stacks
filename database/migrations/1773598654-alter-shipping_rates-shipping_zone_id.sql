@@ -1,1 +1,0 @@
-ALTER TABLE `shipping_rates` ADD CONSTRAINT `shipping_rates_shipping_zone_id_fk` FOREIGN KEY (`shipping_zone_id`) REFERENCES `shipping_zones`(`id`);

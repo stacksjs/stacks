@@ -1,1 +1,0 @@
-ALTER TABLE `pages` ADD CONSTRAINT `pages_author_id_fk` FOREIGN KEY (`author_id`) REFERENCES `authors`(`id`);
