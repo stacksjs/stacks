@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `authors_authors_email_unique` ON `authors` (`email`);

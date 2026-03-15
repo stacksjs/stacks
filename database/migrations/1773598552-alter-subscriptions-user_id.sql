@@ -1,0 +1,1 @@
+ALTER TABLE `subscriptions` ADD CONSTRAINT `subscriptions_user_id_fk` FOREIGN KEY (`user_id`) REFERENCES `users`(`id`);

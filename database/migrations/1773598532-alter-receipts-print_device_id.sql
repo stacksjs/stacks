@@ -1,0 +1,1 @@
+ALTER TABLE `receipts` ADD CONSTRAINT `receipts_print_device_id_fk` FOREIGN KEY (`print_device_id`) REFERENCES `print_devices`(`id`);

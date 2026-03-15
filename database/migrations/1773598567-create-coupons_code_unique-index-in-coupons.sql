@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `coupons_coupons_code_unique` ON `coupons` (`code`);

@@ -1,1 +1,0 @@
-CREATE INDEX IF NOT EXISTS "authors_authors_email_name_index" ON "authors" ("email", "name");

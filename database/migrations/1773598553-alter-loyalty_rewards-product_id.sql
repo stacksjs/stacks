@@ -1,0 +1,1 @@
+ALTER TABLE `loyalty_rewards` ADD CONSTRAINT `loyalty_rewards_product_id_fk` FOREIGN KEY (`product_id`) REFERENCES `products`(`id`);

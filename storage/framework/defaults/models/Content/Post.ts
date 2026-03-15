@@ -55,7 +55,7 @@ export default defineModel({
           url: 'Poster must be a valid URL',
         },
       },
-      factory: faker => faker.image.url(),
+      factory: faker => faker.image.url().substring(0, 255),
     },
 
     content: {

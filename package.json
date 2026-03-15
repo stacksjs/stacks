@@ -5,7 +5,9 @@
   "private": true,
   "description": "Your project description",
   "author": "your-name <your-email>",
-  "contributors": ["Chris Breuer <chris@stacksjs.org>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.org>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -63,7 +65,7 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "stacks": "workspace:*"
+    "stacks": "workspace:*",
   },
   "workspaces": [
     "storage/framework/**",

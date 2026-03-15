@@ -49,7 +49,7 @@ export default defineModel({
       order: 2,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(500),
       },
       factory: faker => faker.lorem.paragraph(),
     },
@@ -112,9 +112,9 @@ export default defineModel({
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(255),
       },
-      factory: faker => faker.image.url(),
+      factory: faker => faker.image.url().substring(0, 255),
     },
   },
 

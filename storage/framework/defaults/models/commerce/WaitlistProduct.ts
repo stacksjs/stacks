@@ -102,7 +102,7 @@ export default defineModel({
       order: 7,
       fillable: true,
       validation: {
-        rule: schema.string(),
+        rule: schema.string().max(500),
       },
       factory: faker => faker.lorem.paragraph(),
     },
@@ -121,25 +121,25 @@ export default defineModel({
       order: 9,
       fillable: true,
       validation: {
-        rule: schema.unix(),
+        rule: schema.date(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => faker.date.future().toISOString().slice(0, 19).replace('T', ' '),
     },
     purchasedAt: {
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.unix(),
+        rule: schema.date(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => faker.date.future().toISOString().slice(0, 19).replace('T', ' '),
     },
     cancelledAt: {
       order: 11,
       fillable: true,
       validation: {
-        rule: schema.unix(),
+        rule: schema.date(),
       },
-      factory: faker => faker.date.future().getTime(),
+      factory: faker => faker.date.future().toISOString().slice(0, 19).replace('T', ' '),
     },
   },
 

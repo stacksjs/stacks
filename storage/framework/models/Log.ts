@@ -104,7 +104,7 @@ export default defineModel({
           max: 'File path must not exceed 255 characters',
         },
       },
-      factory: faker => faker.system.filePath(),
+      factory: faker => faker.system.filePath().substring(0, 255),
     },
   },
 } as const)

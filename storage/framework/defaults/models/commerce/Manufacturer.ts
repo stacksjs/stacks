@@ -41,7 +41,7 @@ export default defineModel({
           max: 'Manufacturer name must have a maximum of 100 characters',
         },
       },
-      factory: faker => faker.company.name(),
+      factory: faker => `${faker.company.name()} ${faker.string.alphanumeric(6)}`,
     },
 
     description: {

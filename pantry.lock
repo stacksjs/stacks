@@ -120,22 +120,22 @@
         "@stacksjs/strings": "workspace:*"
       }
     },
-    "storage/framework/core/tunnel": {
-      "name": "@stacksjs/tunnel",
-      "version": "0.70.23",
-      "dependencies": {
-        "localtunnels": "^0.2.7"
-      },
-      "devDependencies": {
-        "better-dx": "^0.2.5"
-      }
-    },
     "storage/framework/core/ai": {
       "name": "@stacksjs/ai",
       "version": "0.70.23",
       "dependencies": {
         "@anthropic-ai/claude-agent-sdk": "^0.2.49",
         "@stacksjs/ts-cloud": "^0.1.14"
+      },
+      "devDependencies": {
+        "better-dx": "^0.2.5"
+      }
+    },
+    "storage/framework/core/tunnel": {
+      "name": "@stacksjs/tunnel",
+      "version": "0.70.23",
+      "dependencies": {
+        "localtunnels": "^0.2.7"
       },
       "devDependencies": {
         "better-dx": "^0.2.5"
@@ -256,6 +256,14 @@
         "@stacksjs/config": "workspace:*"
       }
     },
+    "storage/framework/core/api": {
+      "name": "@stacksjs/api",
+      "version": "0.70.23",
+      "devDependencies": {
+        "better-dx": "^0.2.5",
+        "@stacksjs/utils": "workspace:*"
+      }
+    },
     "storage/framework/core/queue": {
       "name": "@stacksjs/queue",
       "version": "0.70.23",
@@ -266,26 +274,18 @@
         "better-dx": "^0.2.5"
       }
     },
-    "storage/framework/core/api": {
-      "name": "@stacksjs/api",
-      "version": "0.70.23",
-      "devDependencies": {
-        "better-dx": "^0.2.5",
-        "@stacksjs/utils": "workspace:*"
-      }
-    },
     "storage/framework/core/logging": {
       "name": "@stacksjs/logging",
       "version": "0.70.23",
       "devDependencies": {
-        "@stacksjs/clarity": "^0.3.24",
+        "@stacksjs/config": "workspace:*",
         "typescript": "^5.9.3",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/cli": "workspace:*",
         "@stacksjs/path": "workspace:*",
         "@stacksjs/error-handling": "workspace:*",
         "@stacksjs/validation": "workspace:*",
-        "@stacksjs/config": "workspace:*"
+        "@stacksjs/clarity": "^0.3.24"
       }
     },
     "storage/framework/core/deploy": {
@@ -470,10 +470,10 @@
         "@stacksjs/lint": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/git": "workspace:*",
-        "@stacksjs/build": "workspace:*",
-        "@stacksjs/config": "workspace:*",
-        "better-dx": "^0.2.5",
         "@stacksjs/objects": "workspace:*",
+        "@stacksjs/build": "workspace:*",
+        "better-dx": "^0.2.5",
+        "@stacksjs/config": "workspace:*",
         "@stacksjs/dns": "workspace:*",
         "@stacksjs/desktop": "workspace:*",
         "@stacksjs/health": "workspace:*",
@@ -554,10 +554,10 @@
       "version": "0.70.23",
       "devDependencies": {
         "better-dx": "^0.2.5",
-        "stripe": "^20.3.1",
+        "@stacksjs/config": "workspace:*",
         "@stacksjs/utils": "workspace:*",
-        "@stripe/stripe-js": "^8.7.0",
-        "@stacksjs/config": "workspace:*"
+        "stripe": "^20.3.1",
+        "@stripe/stripe-js": "^8.7.0"
       }
     },
     "storage/framework/actions": {
@@ -891,10 +891,11 @@
       "version": "0.70.23",
       "devDependencies": {
         "better-dx": "^0.2.5",
+        "@types/d3": "^7.4.3",
         "unified-network": "^0.6.4",
         "@stacksjs/server": "workspace:*",
-        "@stacksjs/ts-charts": "^0.1.0",
-        "@stacksjs/build": "workspace:*"
+        "@stacksjs/build": "workspace:*",
+        "d3": "^7.9.0"
       }
     },
     "storage/framework/core/error-handling": {
@@ -1055,6 +1056,45 @@
         "tsserver": "./bin/tsserver"
       }
     },
+    "@types/d3@7.4.3": {
+      "name": "@types/d3",
+      "version": "7.4.3",
+      "source": "npm",
+      "resolved": "https://registry.npmjs.org/@types/d3/-/d3-7.4.3.tgz",
+      "integrity": "sha512-lZXZ9ckh5R8uiFVt8ogUNf+pIrK4EsWrx2Np75WvF/eTpJ0FMHNhjXk8CKEx/+gpHbNQyJWehbFaTvqmHWB3ww==",
+      "dependencies": {
+        "@types/d3-shape": "*",
+        "@types/d3-transition": "*",
+        "@types/d3-dispatch": "*",
+        "@types/d3-polygon": "*",
+        "@types/d3-ease": "*",
+        "@types/d3-contour": "*",
+        "@types/d3-color": "*",
+        "@types/d3-selection": "*",
+        "@types/d3-random": "*",
+        "@types/d3-fetch": "*",
+        "@types/d3-time-format": "*",
+        "@types/d3-drag": "*",
+        "@types/d3-axis": "*",
+        "@types/d3-scale-chromatic": "*",
+        "@types/d3-force": "*",
+        "@types/d3-time": "*",
+        "@types/d3-brush": "*",
+        "@types/d3-quadtree": "*",
+        "@types/d3-scale": "*",
+        "@types/d3-timer": "*",
+        "@types/d3-dsv": "*",
+        "@types/d3-hierarchy": "*",
+        "@types/d3-format": "*",
+        "@types/d3-array": "*",
+        "@types/d3-delaunay": "*",
+        "@types/d3-geo": "*",
+        "@types/d3-interpolate": "*",
+        "@types/d3-zoom": "*",
+        "@types/d3-path": "*",
+        "@types/d3-chord": "*"
+      }
+    },
     "@stacksjs/ts-validation@^0.4.9": {
       "name": "@stacksjs/ts-validation",
       "version": "^0.4.9",
@@ -1177,11 +1217,6 @@
     "@stripe/stripe-js@^8.7.0": {
       "name": "@stripe/stripe-js",
       "version": "^8.7.0",
-      "source": "npm"
-    },
-    "@stacksjs/ts-charts@^0.1.0": {
-      "name": "@stacksjs/ts-charts",
-      "version": "^0.1.0",
       "source": "npm"
     },
     "@stacksjs/gitit@^0.2.2": {
@@ -1505,6 +1540,9 @@
       "bin": {
         "vsce": "vsce"
       }
+    },
+      "version": "18.3",
+      "source": "pantry"
     },
     "@stacksjs/clarity@^0.3.24": {
       "name": "@stacksjs/clarity",

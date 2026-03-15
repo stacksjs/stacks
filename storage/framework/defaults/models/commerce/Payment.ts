@@ -28,7 +28,7 @@ export default defineModel({
     observe: true,
   },
 
-  belongsTo: ['Order', 'Customer'], // For order_id and customer_id
+  belongsTo: ['Order', 'Customer'],
 
   attributes: {
     amount: {
@@ -122,6 +122,7 @@ export default defineModel({
       order: 12,
       unique: true,
       fillable: true,
+      foreignKey: false, // This is a payment processor transaction ID string, not a FK to transactions table
       validation: {
         rule: schema.string(),
       },

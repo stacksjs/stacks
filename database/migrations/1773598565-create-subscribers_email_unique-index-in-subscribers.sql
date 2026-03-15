@@ -1,0 +1,1 @@
+CREATE UNIQUE INDEX `subscribers_subscribers_email_unique` ON `subscribers` (`email`);

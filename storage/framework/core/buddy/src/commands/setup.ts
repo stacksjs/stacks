@@ -1,4 +1,4 @@
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
@@ -216,8 +216,97 @@ async function initializeProject(options: SetupOptions): Promise<void> {
   log.info('Happy coding! 💙')
 }
 
+/**
+ * Maps DB_CONNECTION values to pantry package domains
+ */
+const DB_CONNECTION_PACKAGES: Record<string, string> = {
+  postgres: 'postgresql.org',
+  mysql: 'mysql.com',
+  sqlite: 'sqlite.org',
+}
+
+/**
+ * Reads DB_CONNECTION from .env or .env.example and returns the corresponding
+ * pantry package domain, if any.
+ */
+function detectDbPackage(cwd: string): string | undefined {
+  const envPath = join(cwd, '.env')
+  const envExamplePath = join(cwd, '.env.example')
+
+  const filePath = existsSync(envPath) ? envPath : existsSync(envExamplePath) ? envExamplePath : undefined
+
+  if (!filePath)
+    return undefined
+
+  const content = readFileSync(filePath, 'utf-8')
+  const match = content.match(/^DB_CONNECTION=(.+)$/m)
+
+  if (!match)
+    return undefined
+
+  const value = match[1].trim().replace(/['"]/g, '')
+
+  return DB_CONNECTION_PACKAGES[value]
+}
+
+/**
+ * Reads config/deps.ts dependencies and merges in environment-detected
+ * dependencies (e.g. DB_CONNECTION), then writes deps.yaml so pantry install
+ * picks up the correct packages.
+ */
 export async function optimizePantryDeps(): Promise<void> {
-  return Promise.resolve()
+  const cwd = p.projectPath()
+  const depsConfigPath = join(cwd, 'config', 'deps.ts')
+
+  if (!existsSync(depsConfigPath)) {
+    log.debug('No config/deps.ts found, skipping dependency optimization')
+    return
+  }
+
+  let configDeps: Record<string, string> = {}
+
+  try {
+    const mod = await import(depsConfigPath)
+    const config = mod.config || mod.default
+
+    if (config?.dependencies) {
+      configDeps = { ...config.dependencies }
+    }
+  }
+  catch (err) {
+    log.debug('Could not load config/deps.ts, skipping dependency optimization')
+    return
+  }
+
+  const dbPackage = detectDbPackage(cwd)
+
+  if (dbPackage) {
+    const alreadyHasDb = Object.keys(configDeps).some(key => key === dbPackage || key.startsWith(`${dbPackage}/`))
+
+    if (!alreadyHasDb) {
+      log.info(`Detected DB_CONNECTION requires ${dbPackage}, adding to dependencies`)
+      configDeps[dbPackage] = '*'
+    }
+  }
+
+  const lines = [
+    '# Auto-generated from config/deps.ts and .env sniffing.',
+    '# This file is regenerated on each `buddy setup` run.',
+    '#',
+    '# To learn more, please visit:',
+    '# https://stacksjs.com/docs/dependency-management',
+    '',
+    'dependencies:',
+  ]
+
+  for (const [pkg, version] of Object.entries(configDeps)) {
+    lines.push(`  ${pkg}: ${version}`)
+  }
+
+  const depsYamlPath = join(cwd, 'deps.yaml')
+  writeFileSync(depsYamlPath, `${lines.join('\n')}\n`)
+
+  log.success('Generated deps.yaml from config/deps.ts')
 }
 
 export async function ensureEnvIsSet(options: CliOptions): Promise<void> {

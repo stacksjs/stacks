@@ -345,6 +345,20 @@ async function seedModel(model: SeederModel, options: SeederConfig): Promise<See
   const startTime = Date.now()
 
   try {
+    // Check if the table exists before attempting to seed
+    try {
+      await db.selectFrom(model.table as any).limit(0).execute()
+    }
+    catch {
+      return {
+        model: model.name,
+        table: model.table,
+        count: 0,
+        success: true, // Not a failure — table just doesn't exist (model not opted into)
+        duration: Date.now() - startTime,
+      }
+    }
+
     // Generate records
     const records = await generateRecords(model, options.verbose)
 
