@@ -1,7 +1,3 @@
-import type { ViteSSGContext } from 'vite-ssg'
-
-export type UserModule = (_ctx: ViteSSGContext) => void
-
 export interface GitHubCommit {
   sha: string
   node_id: string

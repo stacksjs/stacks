@@ -1,32 +1,12 @@
-import { spawn } from 'node:child_process'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
+import { createApp } from '@stacksjs/ts-craft'
 import { Glob } from 'bun'
 
 const dashboardPath = storagePath('framework/defaults/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
 const verbose = process.argv.includes('--verbose')
-
-function supportsNativeSidebarFlags(binaryPath: string): boolean {
-  try {
-    const result = Bun.spawnSync({
-      cmd: [binaryPath, '--help'],
-      stdout: 'pipe',
-      stderr: 'pipe',
-    })
-
-    const decoder = new TextDecoder()
-    const stdout = result.stdout ? decoder.decode(result.stdout) : ''
-    const stderr = result.stderr ? decoder.decode(result.stderr) : ''
-    const helpText = `${stdout}\n${stderr}`
-
-    return helpText.includes('--native-sidebar') && helpText.includes('--sidebar-config')
-  }
-  catch {
-    return false
-  }
-}
 
 // Discover models from both user and default directories
 async function discoverModels(): Promise<Array<{ name: string, icon: string, id: string }>> {
@@ -191,46 +171,7 @@ catch (err: any) {
   if (verbose) log.info('Continuing with Craft launch...')
 }
 
-// Path to the Craft binary - check common locations (craft-minimal parses CLI args)
-const craftPaths = [
-  projectPath('../craft/packages/zig/zig-out/bin/craft-minimal'), // Local monorepo build (preferred for Tahoe sidebar)
-  projectPath('../craft/zig-out/bin/craft-minimal'), // Local single-package build (preferred for Tahoe sidebar)
-  `${process.env.HOME}/Code/Tools/craft/packages/zig/zig-out/bin/craft-minimal`, // Development location (Tools)
-  `${process.env.HOME}/Code/Tools/craft/zig-out/bin/craft-minimal`, // Development location (Tools, single package)
-  '/usr/local/bin/craft', // Installed location
-  projectPath('node_modules/.bin/craft'), // npm installed
-]
-
-let craftBinary: string | null = null
-for (const craftPath of craftPaths) {
-  try {
-    const file = Bun.file(craftPath)
-    if (await file.exists()) {
-      if (supportsNativeSidebarFlags(craftPath)) {
-        craftBinary = craftPath
-        log.info(`[Dashboard] Found compatible Craft at: ${craftPath}`)
-        break
-      }
-
-      log.warn(`[Dashboard] Skipping Craft binary without native sidebar support: ${craftPath}`)
-    }
-  }
-  catch {
-    // Continue checking
-  }
-}
-
-if (!craftBinary) {
-  log.warn('No compatible Craft binary found (missing --native-sidebar support). Running web server only.')
-  log.info(`Dashboard available at: http://localhost:${dashboardPort}/app`)
-  log.info('To enable Tahoe native sidebar, build Craft: zig build -Doptimize=Debug (inside your craft repo)')
-
-  // Keep the process running since we're serving via STX
-  await new Promise(() => {}) // Block forever
-}
-
-// Build sidebar config - each item needs a url for navigation
-// Routes are served from storage/framework/defaults/dashboard/pages/ at /pages/* paths
+// Build sidebar config for native sidebar navigation
 const serverUrl = `http://localhost:${dashboardPort}`
 const baseRoute = `${serverUrl}/pages`
 const sidebarConfig = {
@@ -358,68 +299,46 @@ const sidebarConfig = {
   maxWidth: 280,
 }
 
-// Convert sidebar config to JSON string for CLI
-const sidebarConfigJson = JSON.stringify(sidebarConfig)
+// Launch the dashboard as a native Craft window app
+// The SDK handles binary resolution automatically via pantry
+const initialUrl = `http://localhost:${dashboardPort}/app`
+
+const app = createApp({
+  url: initialUrl,
+  window: {
+    title: 'Stacks Dashboard',
+    width: 1400,
+    height: 900,
+    titlebarHidden: true,
+    nativeSidebar: true,
+    sidebarWidth: 240,
+    sidebarConfig,
+  },
+})
 
 if (verbose) {
-  log.info('Launching Craft with native macOS sidebar...')
-  log.info(`Using Craft binary: ${craftBinary}`)
-  log.info(`Sidebar width: 240px`)
+  log.info('Launching Craft native window...')
   log.info(`Window size: 1400x900`)
 }
 
-// Initial URL to load - app.stx is the SPA entry point with all pages
-const initialUrl = `http://localhost:${dashboardPort}/app`
-
-// Launch Craft with native macOS Tahoe sidebar
-// The sidebar is rendered natively by Craft, not by STX
-const craftProcess = spawn(craftBinary!, [
-  '--title', 'Stacks Dashboard',
-  '--url', initialUrl,
-  '--width', '1400',
-  '--height', '900',
-  '--titlebar-hidden',
-  '--native-sidebar',
-  '--sidebar-config', sidebarConfigJson,
-  '--sidebar-width', '240',
-], {
-  stdio: 'inherit',
-  cwd: dashboardPath,
-})
-
-// Bring the Craft window to the foreground after a short delay
-// macOS doesn't auto-focus windows from background-spawned processes
-setTimeout(() => {
-  try {
-    spawn('osascript', ['-e', `
-      tell application "System Events"
-        set frontmost of (first process whose unix id is ${craftProcess.pid}) to true
-      end tell
-    `], { stdio: 'ignore' })
-  }
-  catch {
-    // Accessibility permissions may not be granted - window still works, just not focused
-  }
-}, 1500)
-
-craftProcess.on('error', (err) => {
-  log.error(`Failed to start Craft: ${err.message}`)
-  log.info('Make sure Craft is built. Run: cd ~/Code/Tools/craft && zig build')
-  process.exit(1)
-})
-
-craftProcess.on('close', (code) => {
-  if (verbose) log.info(`Dashboard closed with code ${code}`)
-  process.exit(code || 0)
-})
-
-// Keep the process running
+// Clean up on exit
 process.on('SIGINT', () => {
-  craftProcess.kill()
+  app.close()
+  process.exit(0)
+})
+process.on('SIGTERM', () => {
+  app.close()
   process.exit(0)
 })
 
-process.on('SIGTERM', () => {
-  craftProcess.kill()
+try {
+  await app.show()
   process.exit(0)
-})
+}
+catch (err: any) {
+  log.error(err.message)
+  log.info(`Dashboard still available at: http://localhost:${dashboardPort}/app`)
+
+  // Keep the process running since we're serving via STX
+  await new Promise(() => {})
+}
