@@ -2,127 +2,236 @@
 /**
  * Services Page
  *
- * Lists all configured services for the current project.
- * Reads from config/services.ts at runtime.
+ * Reads from multiple config files to show all infrastructure
+ * and third-party services managed by Stacks and Pantry.
  */
 
-var services = []
-var configuredCount = 0
-var unconfiguredCount = 0
+var fs = require('fs')
+var path = require('path')
+var net = require('net')
+var projectRoot = process.cwd()
 
-try {
-  var fs = require('fs')
-  var path = require('path')
+function readConfig(name) {
+  try {
+    return fs.readFileSync(path.join(projectRoot, 'config', name), 'utf-8')
+  } catch (e) { return '' }
+}
 
-  // Read config/services.ts and extract the exported object structure
-  var servicesPath = path.resolve(process.cwd(), 'config', 'services.ts')
-  var content = fs.readFileSync(servicesPath, 'utf-8')
+function extractValue(content, pattern) {
+  var m = content.match(pattern)
+  return m ? m[1].trim().replace(/['"]/g, '') : ''
+}
 
-  // Parse service names from the config file by finding top-level keys
-  // Match patterns like "  serviceName: {" at the start of lines (2-space indent)
-  var keyPattern = /^ {2}(\w[\w]*)\s*:\s*\{/gm
-  var match
-  while ((match = keyPattern.exec(content)) !== null) {
-    var name = match[1]
-    // Extract the block for this service to check if it has values set
-    var blockStart = match.index
-    var braceCount = 0
-    var blockEnd = blockStart
-    var inBlock = false
-    for (var i = blockStart; i < content.length; i++) {
-      if (content[i] === '{') { braceCount++; inBlock = true }
-      if (content[i] === '}') { braceCount-- }
-      if (inBlock && braceCount === 0) { blockEnd = i; break }
-    }
-    var block = content.substring(blockStart, blockEnd + 1)
+function checkPort(port) {
+  try {
+    var sock = new net.Socket()
+    sock.setTimeout(100)
+    var ok = false
+    sock.on('connect', function() { ok = true; sock.destroy() })
+    sock.on('error', function() { sock.destroy() })
+    sock.on('timeout', function() { sock.destroy() })
+    sock.connect(port, '127.0.0.1')
+    // Synchronous wait via Bun.sleepSync if available
+    if (typeof Bun !== 'undefined' && Bun.sleepSync) Bun.sleepSync(120)
+    return ok
+  } catch (e) { return false }
+}
 
-    // Check if any real values are configured (not just empty strings or defaults)
-    var hasApiKey = /apiKey.*env\./.test(block) || /secretKey.*env\./.test(block) || /accessToken.*env\./.test(block)
-    var hasCredentials = /clientId.*env\./.test(block) || /clientSecret.*env\./.test(block)
-    var hasConnection = /host.*env\./.test(block) || /region.*env\./.test(block) || /webhookUrl.*env\./.test(block)
-    var isConfigured = hasApiKey || hasCredentials || hasConnection
+function fileExists(p) {
+  try { fs.accessSync(p); return true } catch(e) { return false }
+}
 
-    // Determine category
-    var category = 'other'
-    if (['algolia', 'meilisearch'].indexOf(name) >= 0) category = 'search'
-    else if (['aws', 'digitalOcean', 'hetzner'].indexOf(name) >= 0) category = 'cloud'
-    else if (['github', 'google', 'facebook', 'twitter'].indexOf(name) >= 0) category = 'auth'
-    else if (['mailgun', 'mailtrap', 'sendgrid', 'ses', 'smtp'].indexOf(name) >= 0) category = 'email'
-    else if (['slack', 'discord', 'teams'].indexOf(name) >= 0) category = 'messaging'
-    else if (['expo', 'fcm'].indexOf(name) >= 0) category = 'push'
-    else if (['openai', 'anthropic', 'ollama'].indexOf(name) >= 0) category = 'ai'
-    else if (['stripe'].indexOf(name) >= 0) category = 'payment'
+// ── Infrastructure Services ──────────────────────────────────
+var infra = []
 
-    services.push({
-      name: name,
-      category: category,
-      configured: isConfigured,
-    })
+// Database
+var dbConf = readConfig('database.ts')
+var dbDriver = extractValue(dbConf, /default:\s*['"](\w+)['"]/) || 'sqlite'
+var dbFile = extractValue(dbConf, /filename:\s*['"]([^'"]+)['"]/) || 'database/stacks.sqlite'
+var dbStatus = 'configured'
+if (dbDriver === 'sqlite') {
+  dbStatus = fileExists(path.join(projectRoot, dbFile)) ? 'running' : 'configured'
+}
+infra.push({
+  name: 'Database',
+  driver: dbDriver.charAt(0).toUpperCase() + dbDriver.slice(1),
+  detail: dbDriver === 'sqlite' ? dbFile : extractValue(dbConf, /host:\s*['"]([^'"]+)['"]/) || 'localhost',
+  status: dbStatus,
+  category: 'data',
+})
 
-    if (isConfigured) configuredCount++
-    else unconfiguredCount++
+// Cache
+var cacheConf = readConfig('cache.ts')
+var cacheDriver = extractValue(cacheConf, /driver:\s*['"](\w+)['"]/) || 'memory'
+var cacheDetail = cacheDriver === 'redis' ? '127.0.0.1:6379' : 'In-Memory'
+infra.push({
+  name: 'Cache',
+  driver: cacheDriver.charAt(0).toUpperCase() + cacheDriver.slice(1),
+  detail: cacheDetail,
+  status: cacheDriver === 'memory' ? 'running' : 'configured',
+  category: 'data',
+})
+
+// Queue
+var queueConf = readConfig('queue.ts')
+var queueDriver = extractValue(queueConf, /default:\s*['"](\w+)['"]/) || 'sync'
+var queueDetail = queueDriver
+if (queueDriver === 'redis') queueDetail = 'Redis-backed (bun-queue)'
+else if (queueDriver === 'database') queueDetail = 'Database-backed'
+else if (queueDriver === 'sync') queueDetail = 'Synchronous (dev)'
+else if (queueDriver === 'sqs') queueDetail = 'AWS SQS'
+infra.push({
+  name: 'Queue',
+  driver: queueDriver.charAt(0).toUpperCase() + queueDriver.slice(1),
+  detail: queueDetail,
+  status: 'configured',
+  category: 'data',
+})
+
+// Search
+var searchConf = readConfig('search-engine.ts')
+var searchDriver = extractValue(searchConf, /driver:\s*['"]([^'"]+)['"]/) || 'opensearch'
+infra.push({
+  name: 'Search',
+  driver: searchDriver === 'opensearch' ? 'OpenSearch' : searchDriver.charAt(0).toUpperCase() + searchDriver.slice(1),
+  detail: searchDriver,
+  status: 'configured',
+  category: 'data',
+})
+
+// Storage
+var storageConf = readConfig('filesystems.ts')
+var storageDriver = extractValue(storageConf, /driver:\s*['"](\w+)['"]/) || 'bun'
+var storageDetail = storageDriver === 's3' ? 'AWS S3' : storageDriver === 'bun' ? 'Bun Native' : 'Local FS'
+infra.push({
+  name: 'Storage',
+  driver: storageDriver.charAt(0).toUpperCase() + storageDriver.slice(1),
+  detail: storageDetail,
+  status: 'configured',
+  category: 'data',
+})
+
+// Email
+var emailConf = readConfig('email.ts')
+var emailMode = 'serverless'
+if (/mode:\s*['"]server['"]/.test(emailConf)) emailMode = 'server'
+var emailDomain = extractValue(emailConf, /domain:\s*['"]([^'"]+)['"]/) || ''
+infra.push({
+  name: 'Email',
+  driver: emailMode === 'server' ? 'Zig Server' : 'Serverless',
+  detail: emailDomain || 'Not configured',
+  status: emailDomain ? 'running' : 'configured',
+  category: 'communication',
+})
+
+// Realtime
+var realtimeConf = readConfig('realtime.ts')
+var rtPort = extractValue(realtimeConf, /port:\s*(\d+)/) || '6001'
+infra.push({
+  name: 'Realtime',
+  driver: 'WebSocket',
+  detail: 'Port ' + rtPort,
+  status: 'configured',
+  category: 'communication',
+})
+
+// AI
+var aiConf = readConfig('ai.ts')
+var aiModel = extractValue(aiConf, /default:\s*['"]([^'"]+)['"]/) || ''
+infra.push({
+  name: 'AI',
+  driver: 'Bedrock',
+  detail: aiModel || 'Not configured',
+  status: aiModel ? 'configured' : 'not set',
+  category: 'compute',
+})
+
+// ── System Dependencies (from config/deps.ts) ───────────────
+var systemDeps = []
+var depsConf = readConfig('deps.ts')
+// Extract dependency entries like: 'bun.sh': '^1.3.0'
+var depPattern = /['"]([^'"]+)['"]\s*:\s*['"]([^'"]+)['"]/g
+var depMatch
+while ((depMatch = depPattern.exec(depsConf)) !== null) {
+  var depName = depMatch[1]
+  var depVer = depMatch[2]
+  // Only include domain-style deps (not config keys)
+  if (depName.indexOf('.') > 0 || depName === 'redis' || depName === 'mailpit') {
+    systemDeps.push({ name: depName, version: depVer })
   }
-} catch (e) {
-  // config/services.ts may not exist
 }
 
-var categories = {}
-for (var i = 0; i < services.length; i++) {
-  var svc = services[i]
-  if (!categories[svc.category]) categories[svc.category] = []
-  categories[svc.category].push(svc)
+// ── Third-Party API Services (from config/services.ts) ───────
+var apiServices = []
+var svcConf = readConfig('services.ts')
+var keyPattern = /^ {2}(\w[\w]*)\s*:\s*\{/gm
+var svcMatch
+while ((svcMatch = keyPattern.exec(svcConf)) !== null) {
+  var name = svcMatch[1]
+  var blockStart = svcMatch.index
+  var braceCount = 0
+  var blockEnd = blockStart
+  var inBlock = false
+  for (var i = blockStart; i < svcConf.length; i++) {
+    if (svcConf[i] === '{') { braceCount++; inBlock = true }
+    if (svcConf[i] === '}') { braceCount-- }
+    if (inBlock && braceCount === 0) { blockEnd = i; break }
+  }
+  var block = svcConf.substring(blockStart, blockEnd + 1)
+  var hasEnvRef = /env\./.test(block)
+
+  var category = 'other'
+  if (['algolia', 'meilisearch'].indexOf(name) >= 0) category = 'search'
+  else if (['aws', 'digitalOcean', 'hetzner'].indexOf(name) >= 0) category = 'cloud'
+  else if (['github', 'google', 'facebook', 'twitter'].indexOf(name) >= 0) category = 'auth'
+  else if (['mailgun', 'mailtrap', 'sendgrid', 'ses', 'smtp'].indexOf(name) >= 0) category = 'email'
+  else if (['slack', 'discord', 'teams'].indexOf(name) >= 0) category = 'messaging'
+  else if (['expo', 'fcm'].indexOf(name) >= 0) category = 'push'
+  else if (['openai', 'anthropic', 'ollama'].indexOf(name) >= 0) category = 'ai'
+  else if (['stripe'].indexOf(name) >= 0) category = 'payment'
+
+  apiServices.push({ name: name, category: category, configured: hasEnvRef })
 }
 
+// Group API services by category
+var apiCategories = {}
+for (var j = 0; j < apiServices.length; j++) {
+  var s = apiServices[j]
+  if (!apiCategories[s.category]) apiCategories[s.category] = []
+  apiCategories[s.category].push(s)
+}
 var categoryLabels = {
-  auth: 'Authentication',
-  cloud: 'Cloud Infrastructure',
-  email: 'Email Delivery',
-  messaging: 'Messaging & Chat',
-  push: 'Push Notifications',
-  ai: 'AI & Machine Learning',
-  payment: 'Payments',
-  search: 'Search',
-  other: 'Other',
+  auth: 'Authentication', cloud: 'Cloud', email: 'Email',
+  messaging: 'Messaging', push: 'Push Notifications', ai: 'AI',
+  payment: 'Payments', search: 'Search', other: 'Other',
 }
-
-var categoryIcons = {
-  auth: 'lock',
-  cloud: 'cloud',
-  email: 'mail',
-  messaging: 'chat',
-  push: 'bell',
-  ai: 'cpu',
-  payment: 'credit-card',
-  search: 'search',
-  other: 'grid',
-}
-
 var categoryOrder = ['auth', 'cloud', 'email', 'messaging', 'push', 'ai', 'payment', 'search', 'other']
-var orderedCategories = []
+var orderedApiGroups = []
 for (var ci = 0; ci < categoryOrder.length; ci++) {
   var cat = categoryOrder[ci]
-  if (categories[cat] && categories[cat].length > 0) {
-    orderedCategories.push({ key: cat, label: categoryLabels[cat] || cat, items: categories[cat] })
+  if (apiCategories[cat] && apiCategories[cat].length > 0) {
+    orderedApiGroups.push({ key: cat, label: categoryLabels[cat] || cat, items: apiCategories[cat] })
   }
+}
+
+var configuredApi = apiServices.filter(function(s) { return s.configured }).length
+
+function formatName(n) {
+  return n.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase() }).trim()
 }
 
 var stats = [
-  { label: 'Total Services', value: String(services.length) },
-  { label: 'Configured', value: String(configuredCount) },
-  { label: 'Not Configured', value: String(unconfiguredCount) },
-  { label: 'Categories', value: String(orderedCategories.length) },
+  { label: 'Infrastructure', value: String(infra.length) },
+  { label: 'API Services', value: String(apiServices.length) },
+  { label: 'System Deps', value: String(systemDeps.length) },
+  { label: 'Configured', value: String(configuredApi) + '/' + String(apiServices.length) },
 ]
-
-function formatName(name) {
-  // camelCase to Title Case
-  return name.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase() }).trim()
-}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Services</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Third-party services configured for this project</p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Infrastructure, APIs, and system dependencies managed by Stacks & Pantry</p>
     </div>
   </div>
 
@@ -136,9 +245,57 @@ function formatName(name) {
     @endforeach
   </div>
 
-  <!-- Service Categories -->
+  <!-- Infrastructure Services -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-semibold text-gray-900 dark:text-white">Infrastructure</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ infra.length }} services</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+      @foreach (infra as svc)
+        <div class="flex flex-col gap-1 p-4 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+          <div class="flex items-center justify-between">
+            <span class="font-medium text-sm text-gray-900 dark:text-white">{{ svc.name }}</span>
+            @if(svc.status === 'running')
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> running
+              </span>
+            @elseif(svc.status === 'configured')
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">configured</span>
+            @else
+              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
+            @endif
+          </div>
+          <div class="flex items-center justify-between">
+            <span class="text-xs text-gray-500 dark:text-gray-400">{{ svc.driver }}</span>
+            <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ svc.detail }}</span>
+          </div>
+        </div>
+      @endforeach
+    </div>
+  </div>
+
+  <!-- System Dependencies (Pantry) -->
+  @if(systemDeps.length > 0)
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-semibold text-gray-900 dark:text-white">System Dependencies</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ systemDeps.length }} managed by Pantry</span>
+    </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
+      @foreach (systemDeps as dep)
+        <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+          <span class="font-medium text-sm text-gray-900 dark:text-white">{{ dep.name }}</span>
+          <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ dep.version }}</span>
+        </div>
+      @endforeach
+    </div>
+  </div>
+  @endif
+
+  <!-- Third-Party API Services -->
   <div class="flex flex-col gap-6">
-    @foreach (orderedCategories as group)
+    @foreach (orderedApiGroups as group)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">{{ group.label }}</span>
