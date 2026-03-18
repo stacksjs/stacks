@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "lockfileVersion": 2,
+  "lockfileVersion": 1,
   "workspaces": {
     "storage/framework/actions": {
       "name": "temp"
@@ -15,9 +15,6 @@
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/utils": "workspace:*"
       }
-    },
-    "storage/framework/cache/docs/deps": {
-      "name": "temp"
     },
     "storage/framework/cloud": {
       "name": "stacks-cloud",
@@ -782,7 +779,7 @@
         "@stacksjs/router": "workspace:*",
         "@stacksjs/validation": "workspace:*",
         "better-dx": "^0.2.5",
-        "bun-plugin-auto-imports": "^0.3.1"
+        "bun-plugin-auto-imports": "^0.4.0"
       }
     },
     "storage/framework/core/shell": {
@@ -1061,20 +1058,12 @@
       "version": "0.1.3",
       "source": "npm",
       "resolved": "https://registry.npmjs.org/@stacksjs/bunpress/-/bunpress-0.1.3.tgz",
-      "integrity": "sha512-oIIQddMFqVoRpfMhsg0CDpL6tCV090pYdHcNzjUJmM0D0Zw/YGOMELeGKpmaF5xKUnqgCwU9NisyMjn8zqDnSQ==",
-      "dependencies": {
-        "@stacksjs/ts-md": "^0.1.1"
-      },
-      "bin": {
-        "bunpress": "./dist/bin/cli.js"
-      }
+      "integrity": "sha512-oIIQddMFqVoRpfMhsg0CDpL6tCV090pYdHcNzjUJmM0D0Zw/YGOMELeGKpmaF5xKUnqgCwU9NisyMjn8zqDnSQ=="
     },
-    "@stacksjs/clapp@0.2.0": {
+    "@stacksjs/clapp@^0.2.0": {
       "name": "@stacksjs/clapp",
-      "version": "0.2.0",
+      "version": "^0.2.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/clapp/-/clapp-0.2.0.tgz",
-      "integrity": "sha512-dSqnbeZjXnQLLvVxC5NU7D9Vpjxc6cC9Bo2ZwaqjgruK7pbVoFCI0goc9Mtf/lfSTbTx6Uvv/mbY7+cOW/j3Og==",
       "dependencies": {
         "mri": "^1.2.0",
         "wrap-ansi": "^9.0.0"
@@ -1084,12 +1073,10 @@
         "clapp": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/clarity@0.3.24": {
+    "@stacksjs/clarity@^0.3.24": {
       "name": "@stacksjs/clarity",
-      "version": "0.3.24",
+      "version": "^0.3.24",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/clarity/-/clarity-0.3.24.tgz",
-      "integrity": "sha512-QN21fT/9dovcuFTkni9LFHDzBpiBZ4Q//0a3vFJsckPiblNIu1RhwwePkkTK4j6Xu2DtVYGR60/9Scdrp6wRfw==",
       "bin": {
         "clarity": "./dist/bin/cli.js"
       }
@@ -1158,18 +1145,7 @@
       "version": "0.2.10",
       "source": "npm",
       "resolved": "https://registry.npmjs.org/@stacksjs/stx/-/stx-0.2.10.tgz",
-      "integrity": "sha512-X7sc4oqFpx9b8GwW8DlJpXkhtj03ZmBt8z/i57X6BmtIY5H8LHF64t8Ei4LjfYhM5UUo79y6VEPGbyKz3prfOQ==",
-      "dependencies": {
-        "@stacksjs/clapp": "^0.2.0",
-        "@stacksjs/desktop": "0.2.6",
-        "@stacksjs/sanitizer": "0.2.6",
-        "bun-plugin-stx": "0.2.6",
-        "bunfig": "^0.15.6",
-        "ts-syntax-highlighter": "^0.2.1"
-      },
-      "bin": {
-        "stx": "./dist/cli.js"
-      }
+      "integrity": "sha512-X7sc4oqFpx9b8GwW8DlJpXkhtj03ZmBt8z/i57X6BmtIY5H8LHF64t8Ei4LjfYhM5UUo79y6VEPGbyKz3prfOQ=="
     },
     "@stacksjs/tlsx@0.13.0": {
       "name": "@stacksjs/tlsx",
@@ -1212,17 +1188,27 @@
         "cache": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/ts-cloud@0.2.3": {
+    "@stacksjs/ts-cloud@^0.1.14": {
       "name": "@stacksjs/ts-cloud",
-      "version": "0.2.3",
+      "version": "^0.1.14",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/ts-cloud/-/ts-cloud-0.2.3.tgz",
-      "integrity": "sha512-KHBwsIGgeTYT3f+OF7pU+EcpqKZRICmv6u8MnZz6Tk7wBFb2CPFIRgZvQarpDxxmK0R9KOFEaOV2gFIBa4AgxA==",
       "dependencies": {
-        "fast-xml-parser": "^5.3.5",
-        "ts-cloud-aws-types": "0.1.11",
-        "ts-cloud-core": "0.1.11",
-        "ts-cloud-types": "0.1.11"
+        "@stacksjs/ts-xml": "^0.1.0",
+        "@ts-cloud/aws-types": "0.2.3",
+        "@ts-cloud/core": "0.2.3"
+      },
+      "bin": {
+        "cloud": "./dist/bin/cli.js"
+      }
+    },
+    "@stacksjs/ts-cloud@^0.2.1": {
+      "name": "@stacksjs/ts-cloud",
+      "version": "^0.2.1",
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-xml": "^0.1.0",
+        "@ts-cloud/aws-types": "0.2.3",
+        "@ts-cloud/core": "0.2.3"
       },
       "bin": {
         "cloud": "./dist/bin/cli.js"
@@ -1233,10 +1219,7 @@
       "version": "0.4.10",
       "source": "npm",
       "resolved": "https://registry.npmjs.org/@stacksjs/ts-validation/-/ts-validation-0.4.10.tgz",
-      "integrity": "sha512-HwJeypd55h2DlmPeGqMopYNCuXD3c4EzbKERDyS87YDZQ8Q5F/DmfPEWWgSSLdZ7GAmrCcXg/jac2gFdBCW9IQ==",
-      "dependencies": {
-        "dompurify": "^3.3.1"
-      }
+      "integrity": "sha512-HwJeypd55h2DlmPeGqMopYNCuXD3c4EzbKERDyS87YDZQ8Q5F/DmfPEWWgSSLdZ7GAmrCcXg/jac2gFdBCW9IQ=="
     },
     "@stripe/stripe-js@8.10.0": {
       "name": "@stripe/stripe-js",
@@ -1245,12 +1228,10 @@
       "resolved": "https://registry.npmjs.org/@stripe/stripe-js/-/stripe-js-8.10.0.tgz",
       "integrity": "sha512-E1FtmN4/AMpdV0zDUyEnTVMpQTMDi7iy2njG22DpFcSxeCujK22bQ/hmF3bGtNUclqGJhOZMkf7rjUyOAcj4CQ=="
     },
-    "@types/bun@1.3.10": {
+    "@types/bun@^1.3.9": {
       "name": "@types/bun",
-      "version": "1.3.10",
+      "version": "^1.3.9",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@types/bun/-/bun-1.3.10.tgz",
-      "integrity": "sha512-0+rlrUrOrTSskibryHbvQkDOWRJwJZqZlxrUs1u4oOoTln8+WIXBPmAuCF35SWB2z4Zl3E84Nl/D0P7803nigQ==",
       "dependencies": {
         "bun-types": "1.3.10"
       }
@@ -1308,10 +1289,10 @@
         "@stacksjs/clarity": "^0.3.24",
         "@stacksjs/gitlint": "^0.1.5",
         "@stacksjs/logsmith": "^0.2.1",
-        "@types/bun": "^1.3.9",
-        "buddy-bot": "^0.9.16",
+        "@types/bun": "^1.3.10",
+        "buddy-bot": "^0.9.17",
         "bun-git-hooks": "^0.3.1",
-        "bun-plugin-dtsx": "^0.9.10",
+        "bun-plugin-dtsx": "^0.9.13",
         "bunfig": "^0.15.6",
         "pickier": "^0.1.20",
         "ts-error-handling": "^0.1.1",
@@ -1327,21 +1308,14 @@
       "version": "0.3.1",
       "source": "npm",
       "resolved": "https://registry.npmjs.org/bun-git-hooks/-/bun-git-hooks-0.3.1.tgz",
-      "integrity": "sha512-Xs/QUqIYgBmLHSVr5VBLVbM5lZbUoAXKX2WZyoQDb2LlzcxC3BpBvMkMTQH75UuOJZwaRBq8yEe4IR6NckqdgQ==",
-      "bin": {
-        "bun-git-hooks": "./dist/bin/cli.js",
-        "git-hooks": "./dist/bin/cli.js"
-      }
+      "integrity": "sha512-Xs/QUqIYgBmLHSVr5VBLVbM5lZbUoAXKX2WZyoQDb2LlzcxC3BpBvMkMTQH75UuOJZwaRBq8yEe4IR6NckqdgQ=="
     },
-    "bun-plugin-auto-imports@0.3.1": {
+    "bun-plugin-auto-imports@0.4.0": {
       "name": "bun-plugin-auto-imports",
-      "version": "0.3.1",
+      "version": "0.4.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bun-plugin-auto-imports/-/bun-plugin-auto-imports-0.3.1.tgz",
-      "integrity": "sha512-rWgCe/C4yQ31R1MIwhtVgKWwpGN2OFUIkAdvAgX0TxbS2X8kt5Tc5QN8d7NpaeNjbT/v/rEJ1NmqauQjIB9WLQ==",
-      "dependencies": {
-        "unimport": "^3.14.6"
-      }
+      "resolved": "https://registry.npmjs.org/bun-plugin-auto-imports/-/bun-plugin-auto-imports-0.4.0.tgz",
+      "integrity": "sha512-YX+buOTQoJoIFSrgR3Y2PTz9Co60YyQ21ez6jJCkQuFMNe9atQJ9PfKNmCQINjhs6m/p3x8QD9jxbJ9/JMpSew=="
     },
     "bun-query-builder@0.1.13": {
       "name": "bun-query-builder",
@@ -1366,12 +1340,10 @@
       "version": "^1.3.0",
       "source": "pantry"
     },
-    "bunfig@0.15.6": {
+    "bunfig@^0.15.6": {
       "name": "bunfig",
-      "version": "0.15.6",
+      "version": "^0.15.6",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/bunfig/-/bunfig-0.15.6.tgz",
-      "integrity": "sha512-7ynPmrn1dN5F+0DtUVY0Vo2MZOOnSdb6hpQePwABEYIJ+d/rSb3vaOVUs3MFxwxWuaVc1FEStVJG6+kCgbLuyg==",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
         "@stacksjs/clarity": "^0.3.24"
@@ -1401,13 +1373,10 @@
       "resolved": "https://registry.npmjs.org/magic-regexp/-/magic-regexp-0.11.0.tgz",
       "integrity": "sha512-LG77Z/gVnwz7oaDpD4heX6ryl+lcr4l1B2gnP4MMvt2pGhGC1Dfj7dl1pXpP4ih+VQFLuAadeKVa+lARAzfW+Q==",
       "dependencies": {
-        "estree-walker": "^3.0.3",
-        "magic-string": "^0.30.12",
-        "mlly": "^1.7.2",
+        "magic-string": "^0.30.21",
         "regexp-tree": "^0.1.27",
         "type-level-regexp": "~0.1.17",
-        "ufo": "^1.5.4",
-        "unplugin": "^2.0.0"
+        "unplugin": "^3.0.0"
       }
     },
     "sqlite.org@^3.47.2": {
@@ -1440,42 +1409,22 @@
       "resolved": "https://registry.npmjs.org/ts-error-handling/-/ts-error-handling-0.1.1.tgz",
       "integrity": "sha512-d4VqdX0bJ+jvOYNsY58isJgrEr806Q9cjef5+1UO/kIn1M/+YYSwpR6fqdRhn9XXVASJLSzNmcnBSdl0fRCjDg=="
     },
-    "ts-mocker@0.1.7": {
+    "ts-mocker@^0.1.6": {
       "name": "ts-mocker",
-      "version": "0.1.7",
-      "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-mocker/-/ts-mocker-0.1.7.tgz",
-      "integrity": "sha512-9I8ZHwNuyriGiHPtvbDwr4Xn3DjvWtYcGwuvzrZNP2oK7IE1It9aFKxAIy9IHnzf1HOtfExZEdGyZNH0hyAXzQ==",
-      "dependencies": {
-        "cac": "^6.7.14"
-      },
-      "bin": {
-        "mock": "./dist/bin/cli.js",
-        "ts-mocker": "./dist/bin/cli.js"
-      }
+      "version": "^0.1.6",
+      "source": "npm"
     },
     "ts-pantry@0.7.5": {
       "name": "ts-pantry",
       "version": "0.7.5",
       "source": "npm",
       "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.7.5.tgz",
-      "integrity": "sha512-2XidbgFFpgdnDxu3wCNdFbcmGx9o5kgEwamXKOoFAnosr7f04dTwbVcrvX5eU/8HwmRJYL5LxOB0svKj0hGMyA==",
-      "dependencies": {
-        "@stacksjs/ts-cloud": "^0.1.2",
-        "bunfig": "^0.15.6",
-        "ts-web-scraper": "^0.1.1"
-      },
-      "bin": {
-        "pantry-ts": "./scripts/pantry-cli.ts",
-        "ts-pantry": "./dist/bin/cli.js"
-      }
+      "integrity": "sha512-2XidbgFFpgdnDxu3wCNdFbcmGx9o5kgEwamXKOoFAnosr7f04dTwbVcrvX5eU/8HwmRJYL5LxOB0svKj0hGMyA=="
     },
-    "ts-rate-limiter@0.4.0": {
+    "ts-rate-limiter@^0.4.0": {
       "name": "ts-rate-limiter",
-      "version": "0.4.0",
+      "version": "^0.4.0",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-rate-limiter/-/ts-rate-limiter-0.4.0.tgz",
-      "integrity": "sha512-BlH2LPlj5he22HopctNL/F/jfFCowoqLRMcVx1VMcgZzxNSim4aSBYMM/ffH+EB5bviCxave0w9BV+OKtwqwfw==",
       "bin": {
         "ts-rate-limiter": "./dist/bin/init-config.js"
       }

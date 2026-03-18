@@ -1,0 +1,10 @@
+{
+  "generated_at": "2026-03-18T15:49:27.771Z",
+  "packages": {
+    "bunfig": {
+      "providers": [
+        "BunfigServiceProvider"
+      ]
+    }
+  }
+}

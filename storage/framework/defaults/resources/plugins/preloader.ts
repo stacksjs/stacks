@@ -244,4 +244,13 @@ async function loadAutoImports() {
 const skipAutoImports = skipPreloader || ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0])
 if (!skipAutoImports) {
   await loadAutoImports()
+
+  // Run package auto-discovery after all imports are loaded
+  try {
+    const { discoverPackages } = await import('@stacksjs/actions')
+    await discoverPackages()
+  }
+  catch {
+    // Discovery may fail during early bootstrap — not critical
+  }
 }
