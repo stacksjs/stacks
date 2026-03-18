@@ -121,7 +121,7 @@ export function buildManifest(models: DiscoveredModel[]): Array<{ id: string, na
 }
 
 /** Wait for STX server to accept connections */
-export async function waitForServer(port: number, maxWait = 3000): Promise<boolean> {
+export async function waitForServer(port: number, maxWait = 500): Promise<boolean> {
   const start = Date.now()
   while (Date.now() - start < maxWait) {
     try {

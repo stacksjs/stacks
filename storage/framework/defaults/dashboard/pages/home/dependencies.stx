@@ -2,44 +2,101 @@
 /**
  * Dependencies Page
  *
- * Lists all pantry-managed dependencies for the current project.
- * Reads live data from the pantry directory.
+ * Lists all project dependencies: declared (from pantry.lock) and
+ * transitive (from the pantry/ directory).
  */
 
-let packages = []
-let thirdPartyCount = 0
+let declared = []
+let transitive = []
 let workspaceCount = 0
+let thirdPartyCount = 0
+let transitiveCount = 0
 let totalCount = 0
 
 try {
+  var fs = require('fs')
   var path = require('path')
   var projectRoot = process.cwd()
-  var pantryIndex = path.join(projectRoot, 'pantry', 'ts-pantry', 'dist', 'dist', 'src', 'index.js')
-  var { readProjectDependencies } = require(pantryIndex)
-  var result = readProjectDependencies(projectRoot)
-  packages = result.packages
-  thirdPartyCount = result.thirdPartyCount
-  workspaceCount = result.workspaceCount
-  totalCount = result.totalCount
+
+  // 1. Read declared deps from pantry.lock
+  var declaredSet = {}
+  var lockPath = path.join(projectRoot, 'pantry.lock')
+  var lockfile = JSON.parse(fs.readFileSync(lockPath, 'utf-8'))
+  var workspaces = lockfile.workspaces || {}
+  for (var wsKey in workspaces) {
+    var ws = workspaces[wsKey]
+    var allDeps = Object.assign({}, ws.dependencies || {}, ws.devDependencies || {})
+    for (var depName in allDeps) {
+      if (declaredSet[depName]) continue
+      declaredSet[depName] = true
+      var version = allDeps[depName]
+      var isWorkspace = version === 'workspace:*' || depName.startsWith('@stacksjs/')
+      declared.push({
+        name: depName,
+        version: version,
+        isWorkspace: isWorkspace,
+        isScoped: depName.indexOf('/') > 0,
+      })
+    }
+  }
+  declared.sort(function(a, b) { return a.name.localeCompare(b.name) })
+
+  // 2. Scan pantry/ directory for all installed packages (includes transitive)
+  var pantryDir = path.join(projectRoot, 'pantry')
+  var entries = fs.readdirSync(pantryDir, { withFileTypes: true })
+  for (var i = 0; i < entries.length; i++) {
+    var entry = entries[i]
+    if (!entry.isDirectory()) continue
+
+    if (entry.name.startsWith('@')) {
+      var scopeDir = path.join(pantryDir, entry.name)
+      try {
+        var scopedEntries = fs.readdirSync(scopeDir, { withFileTypes: true })
+        for (var j = 0; j < scopedEntries.length; j++) {
+          if (!scopedEntries[j].isDirectory()) continue
+          var pkgName = entry.name + '/' + scopedEntries[j].name
+          if (!declaredSet[pkgName]) {
+            var pkgJson = path.join(scopeDir, scopedEntries[j].name, 'package.json')
+            var ver = '0.0.0'
+            try { ver = JSON.parse(fs.readFileSync(pkgJson, 'utf-8')).version || '0.0.0' } catch(e) {}
+            transitive.push({ name: pkgName, version: ver, isScoped: true })
+          }
+        }
+      } catch(e) {}
+    } else if (entry.name !== '.bin' && entry.name !== 'node_modules') {
+      if (!declaredSet[entry.name]) {
+        var pkgJson2 = path.join(pantryDir, entry.name, 'package.json')
+        var ver2 = '0.0.0'
+        try { ver2 = JSON.parse(fs.readFileSync(pkgJson2, 'utf-8')).version || '0.0.0' } catch(e) {}
+        transitive.push({ name: entry.name, version: ver2, isScoped: false })
+      }
+    }
+  }
+  transitive.sort(function(a, b) { return a.name.localeCompare(b.name) })
+
+  workspaceCount = declared.filter(function(p) { return p.isWorkspace }).length
+  thirdPartyCount = declared.length - workspaceCount
+  transitiveCount = transitive.length
+  totalCount = declared.length + transitiveCount
 } catch (e) {
-  // ts-pantry may not be available
+  // pantry.lock or pantry/ may not exist
 }
 
-var thirdParty = packages.filter(function(p) { return !p.isWorkspace })
-var workspace = packages.filter(function(p) { return p.isWorkspace })
+var thirdParty = declared.filter(function(p) { return !p.isWorkspace })
+var workspace = declared.filter(function(p) { return p.isWorkspace })
 
 var stats = [
-  { label: 'Total Packages', value: String(totalCount) },
+  { label: 'Declared', value: String(declared.length) },
   { label: 'Third-Party', value: String(thirdPartyCount) },
   { label: 'Workspace', value: String(workspaceCount) },
-  { label: 'Scoped', value: String(packages.filter(function(p) { return p.isScoped }).length) },
+  { label: 'Transitive', value: String(transitiveCount) },
 ]
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dependencies</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Pantry-managed project dependencies</p>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">{{ totalCount }} packages — {{ declared.length }} declared, {{ transitiveCount }} transitive</p>
     </div>
   </div>
 
@@ -53,11 +110,11 @@ var stats = [
     @endforeach
   </div>
 
-  <!-- Third-Party Packages -->
+  <!-- Third-Party Packages (declared) -->
   <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
       <span class="font-semibold text-gray-900 dark:text-white">Third-Party Packages</span>
-      <span class="text-xs text-gray-500 dark:text-gray-400">{{ thirdPartyCount }} packages</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ thirdPartyCount }} declared</span>
     </div>
     <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
       <table class="w-full text-sm">
@@ -65,7 +122,6 @@ var stats = [
           <tr>
             <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
             <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Scope</th>
           </tr>
         </thead>
         <tbody>
@@ -73,13 +129,6 @@ var stats = [
             <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
               <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ pkg.name }}</td>
               <td class="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ pkg.version }}</td>
-              <td class="px-4 py-3">
-                @if(pkg.isScoped)
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">scoped</span>
-                @else
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">unscoped</span>
-                @endif
-              </td>
             </tr>
           @endforeach
         </tbody>
@@ -87,8 +136,8 @@ var stats = [
     </div>
   </div>
 
-  <!-- Workspace Packages -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+  <!-- Workspace Packages (declared) -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
       <span class="font-semibold text-gray-900 dark:text-white">Workspace Packages</span>
       <span class="text-xs text-gray-500 dark:text-gray-400">{{ workspaceCount }} packages</span>
@@ -106,6 +155,32 @@ var stats = [
             <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
               <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ pkg.name }}</td>
               <td class="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ pkg.version }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Transitive Dependencies -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-semibold text-gray-900 dark:text-white">Transitive Dependencies</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ transitiveCount }} packages</span>
+    </div>
+    <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-700/50">
+          <tr>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (transitive as pkg)
+            <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <td class="px-4 py-3 font-medium text-gray-500 dark:text-gray-400">{{ pkg.name }}</td>
+              <td class="px-4 py-3 text-gray-400 dark:text-gray-500 font-mono text-xs">{{ pkg.version }}</td>
             </tr>
           @endforeach
         </tbody>

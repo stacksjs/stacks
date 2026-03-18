@@ -85,32 +85,32 @@ async function startReverseProxy(): Promise<boolean> {
   }
 }
 
-// Phase 1: Start STX server, discover models, and start reverse proxy in parallel
-const [, discoveredModels, proxyStarted] = await Promise.all([
+// Phase 1: Start STX server and discover models in parallel
+const [, discoveredModels] = await Promise.all([
   startStxServer(),
   discoverModels(projectPath('app/Models'), storagePath('framework/defaults/models')),
-  startReverseProxy(),
 ])
 
-// Phase 2: Write manifest and wait for server readiness
+// Write manifest
 const manifestPath = storagePath('framework/defaults/dashboard/.discovered-models.json')
 writeFileSync(manifestPath, JSON.stringify(buildManifest(discoveredModels), null, 2))
 
+// Wait briefly for STX server (it's usually ready by now)
 const serverReady = await waitForServer(dashboardPort)
 
 // Restore console before our output
 restoreConsole()
 
-// Determine URLs for display and Craft window
+// Start reverse proxy in the background (not needed for Craft window, only for browser access)
+let proxyStarted = false
+startReverseProxy().then(ok => { proxyStarted = ok }).catch(() => {})
+
 const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
 const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 
-// Build sidebar config — use local HTTP URL to match the Craft webview origin
+// Use local HTTP URL — Craft webview loads directly, no proxy needed
 const baseRoute = `${dashboardLocalUrl}/pages`
 const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels)
-
-// Use HTTP URL for the Craft window (WKWebView may reject self-signed certs)
-// The HTTPS proxy is still available for browser access
 const initialUrl = `http://localhost:${dashboardPort}/app?native-sidebar=1`
 
 // Print vite-style output
@@ -119,7 +119,7 @@ const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
 console.log()
 console.log(`  ${bold(cyan('stacks dashboard'))}`)
 console.log()
-if (dashboardHttpsUrl && proxyStarted) {
+if (dashboardHttpsUrl) {
   console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardHttpsUrl)}`)
   console.log(`  ${dim('➜')}  ${dim('Origin')}:  ${dim(dashboardLocalUrl)}`)
 }
