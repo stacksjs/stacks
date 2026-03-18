@@ -16,8 +16,6 @@ export const config: PantryConfig = {
   dependencies: {
     'bun.com': '^1.3.0',
     'sqlite.org': '^3.47.2',
-    'info-zip.org/zip': '^3.0.0',
-    'info-zip.org/unzip': '^6.0.0',
     // Uncomment as needed:
     // 'redis.io': '^7.4.1',
     // 'mailpit.axllent.org': '^1.21.8',

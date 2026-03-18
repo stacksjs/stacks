@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { writeFileSync } from 'node:fs'
+import { readFileSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { createApp } from '@craft-native/ts'
@@ -84,6 +84,78 @@ async function startReverseProxy(): Promise<boolean> {
     return false
   }
 }
+
+// Config API server for dashboard editing
+const configApiPort = dashboardPort + 1 // 3457
+function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
+      ...extraHeaders,
+    },
+  })
+}
+
+function startConfigApi(): void {
+  Bun.serve({
+    port: configApiPort,
+    fetch: async (req: Request) => {
+      if (req.method === 'OPTIONS')
+        return new Response(null, {
+          headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+          },
+        })
+
+      const url = new URL(req.url)
+
+      if (url.pathname === '/api/config/update' && req.method === 'POST') {
+        try {
+          const { file, updates } = await req.json() as {
+            file: string
+            updates: Array<{ path: string, value: string }>
+          }
+
+          if (!file || file.includes('..') || !file.match(/^[\w.-]+\.ts$/))
+            return jsonResponse({ error: 'Invalid file name' }, 400)
+
+          const filePath = projectPath(`config/${file}`)
+          let content = readFileSync(filePath, 'utf-8')
+
+          for (const { path: keyPath, value } of updates) {
+            const lastKey = keyPath.split('.').pop()!
+            const escapedKey = lastKey.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+            const pattern = new RegExp(
+              `(${escapedKey}\\s*:\\s*)(?:'[^']*'|"[^"]*"|\\d+(?:\\.\\d+)?|true|false)`,
+            )
+            if (pattern.test(content)) {
+              const isNum = /^\d+(\.\d+)?$/.test(value)
+              const isBool = value === 'true' || value === 'false'
+              const replacement = isNum || isBool ? value : `'${value}'`
+              content = content.replace(pattern, `$1${replacement}`)
+            }
+          }
+
+          writeFileSync(filePath, content, 'utf-8')
+          return jsonResponse({ success: true })
+        }
+        catch (err: any) {
+          return jsonResponse({ error: err.message }, 500)
+        }
+      }
+
+      return jsonResponse({ error: 'Not found' }, 404)
+    },
+  })
+}
+
+startConfigApi()
 
 // Phase 1: Start STX server and discover models in parallel
 const [, discoveredModels] = await Promise.all([

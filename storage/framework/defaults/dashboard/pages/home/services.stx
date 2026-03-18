@@ -4,11 +4,11 @@
  *
  * Reads from multiple config files to show all infrastructure
  * and third-party services managed by Stacks and Pantry.
+ * Supports inline editing of config values.
  */
 
 var fs = require('fs')
 var path = require('path')
-var net = require('net')
 var projectRoot = process.cwd()
 
 function readConfig(name) {
@@ -22,19 +22,11 @@ function extractValue(content, pattern) {
   return m ? m[1].trim().replace(/['"]/g, '') : ''
 }
 
-function checkPort(port) {
-  try {
-    var sock = new net.Socket()
-    sock.setTimeout(100)
-    var ok = false
-    sock.on('connect', function() { ok = true; sock.destroy() })
-    sock.on('error', function() { sock.destroy() })
-    sock.on('timeout', function() { sock.destroy() })
-    sock.connect(port, '127.0.0.1')
-    // Synchronous wait via Bun.sleepSync if available
-    if (typeof Bun !== 'undefined' && Bun.sleepSync) Bun.sleepSync(120)
-    return ok
-  } catch (e) { return false }
+function extractAll(content, pattern) {
+  var results = []
+  var m
+  while ((m = pattern.exec(content)) !== null) results.push(m[1].trim().replace(/['"]/g, ''))
+  return results
 }
 
 function fileExists(p) {
@@ -48,114 +40,116 @@ var infra = []
 var dbConf = readConfig('database.ts')
 var dbDriver = extractValue(dbConf, /default:\s*['"](\w+)['"]/) || 'sqlite'
 var dbFile = extractValue(dbConf, /filename:\s*['"]([^'"]+)['"]/) || 'database/stacks.sqlite'
-var dbStatus = 'configured'
-if (dbDriver === 'sqlite') {
-  dbStatus = fileExists(path.join(projectRoot, dbFile)) ? 'running' : 'configured'
-}
+var dbHost = extractValue(dbConf, /host:\s*['"]([^'"]+)['"]/) || 'localhost'
+var dbPort = extractValue(dbConf, /port:\s*(\d+)/) || ''
 infra.push({
-  name: 'Database',
-  driver: dbDriver.charAt(0).toUpperCase() + dbDriver.slice(1),
-  detail: dbDriver === 'sqlite' ? dbFile : extractValue(dbConf, /host:\s*['"]([^'"]+)['"]/) || 'localhost',
-  status: dbStatus,
-  category: 'data',
+  name: 'Database', configFile: 'database.ts', category: 'data',
+  driver: dbDriver, status: dbDriver === 'sqlite' && fileExists(path.join(projectRoot, dbFile)) ? 'running' : 'configured',
+  detail: dbDriver === 'sqlite' ? dbFile : dbHost + (dbPort ? ':' + dbPort : ''),
+  fields: [
+    { key: 'default', label: 'Driver', value: dbDriver, options: 'sqlite,mysql,postgres,dynamodb' },
+  ],
 })
 
 // Cache
 var cacheConf = readConfig('cache.ts')
 var cacheDriver = extractValue(cacheConf, /driver:\s*['"](\w+)['"]/) || 'memory'
-var cacheDetail = cacheDriver === 'redis' ? '127.0.0.1:6379' : 'In-Memory'
+var redisHost = extractValue(cacheConf, /host:\s*['"]([^'"]+)['"]/) || '127.0.0.1'
+var redisPort = extractValue(cacheConf, /port:\s*(\d+)/) || '6379'
 infra.push({
-  name: 'Cache',
-  driver: cacheDriver.charAt(0).toUpperCase() + cacheDriver.slice(1),
-  detail: cacheDetail,
-  status: cacheDriver === 'memory' ? 'running' : 'configured',
-  category: 'data',
+  name: 'Cache', configFile: 'cache.ts', category: 'data',
+  driver: cacheDriver, status: cacheDriver === 'memory' ? 'running' : 'configured',
+  detail: cacheDriver === 'redis' ? redisHost + ':' + redisPort : 'In-Memory',
+  fields: [
+    { key: 'driver', label: 'Driver', value: cacheDriver, options: 'memory,redis' },
+  ],
 })
 
 // Queue
 var queueConf = readConfig('queue.ts')
 var queueDriver = extractValue(queueConf, /default:\s*['"](\w+)['"]/) || 'sync'
-var queueDetail = queueDriver
-if (queueDriver === 'redis') queueDetail = 'Redis-backed (bun-queue)'
-else if (queueDriver === 'database') queueDetail = 'Database-backed'
-else if (queueDriver === 'sync') queueDetail = 'Synchronous (dev)'
-else if (queueDriver === 'sqs') queueDetail = 'AWS SQS'
 infra.push({
-  name: 'Queue',
-  driver: queueDriver.charAt(0).toUpperCase() + queueDriver.slice(1),
-  detail: queueDetail,
-  status: 'configured',
-  category: 'data',
+  name: 'Queue', configFile: 'queue.ts', category: 'data',
+  driver: queueDriver, status: 'configured',
+  detail: queueDriver === 'redis' ? 'Redis (bun-queue)' : queueDriver === 'database' ? 'Database' : queueDriver === 'sqs' ? 'AWS SQS' : 'Sync (dev)',
+  fields: [
+    { key: 'default', label: 'Driver', value: queueDriver, options: 'sync,database,redis,sqs,memory' },
+  ],
 })
 
 // Search
 var searchConf = readConfig('search-engine.ts')
 var searchDriver = extractValue(searchConf, /driver:\s*['"]([^'"]+)['"]/) || 'opensearch'
 infra.push({
-  name: 'Search',
-  driver: searchDriver === 'opensearch' ? 'OpenSearch' : searchDriver.charAt(0).toUpperCase() + searchDriver.slice(1),
+  name: 'Search', configFile: 'search-engine.ts', category: 'data',
+  driver: searchDriver, status: 'configured',
   detail: searchDriver,
-  status: 'configured',
-  category: 'data',
+  fields: [
+    { key: 'driver', label: 'Driver', value: searchDriver, options: 'opensearch,meilisearch,algolia,typesense' },
+  ],
 })
 
 // Storage
 var storageConf = readConfig('filesystems.ts')
 var storageDriver = extractValue(storageConf, /driver:\s*['"](\w+)['"]/) || 'bun'
-var storageDetail = storageDriver === 's3' ? 'AWS S3' : storageDriver === 'bun' ? 'Bun Native' : 'Local FS'
 infra.push({
-  name: 'Storage',
-  driver: storageDriver.charAt(0).toUpperCase() + storageDriver.slice(1),
-  detail: storageDetail,
-  status: 'configured',
-  category: 'data',
+  name: 'Storage', configFile: 'filesystems.ts', category: 'data',
+  driver: storageDriver, status: 'configured',
+  detail: storageDriver === 's3' ? 'AWS S3' : storageDriver === 'bun' ? 'Bun Native' : 'Local FS',
+  fields: [
+    { key: 'driver', label: 'Driver', value: storageDriver, options: 'bun,local,s3,memory' },
+  ],
 })
 
 // Email
 var emailConf = readConfig('email.ts')
-var emailMode = 'serverless'
-if (/mode:\s*['"]server['"]/.test(emailConf)) emailMode = 'server'
+var emailMode = /mode:\s*['"]server['"]/.test(emailConf) ? 'server' : 'serverless'
 var emailDomain = extractValue(emailConf, /domain:\s*['"]([^'"]+)['"]/) || ''
 infra.push({
-  name: 'Email',
+  name: 'Email', configFile: 'email.ts', category: 'communication',
   driver: emailMode === 'server' ? 'Zig Server' : 'Serverless',
-  detail: emailDomain || 'Not configured',
   status: emailDomain ? 'running' : 'configured',
-  category: 'communication',
+  detail: emailDomain || 'Not configured',
+  fields: [
+    { key: 'domain', label: 'Domain', value: emailDomain, options: '' },
+    { key: 'mode', label: 'Mode', value: emailMode, options: 'server,serverless' },
+  ],
 })
 
 // Realtime
 var realtimeConf = readConfig('realtime.ts')
 var rtPort = extractValue(realtimeConf, /port:\s*(\d+)/) || '6001'
+var rtDriver = extractValue(realtimeConf, /driver:\s*['"](\w+)['"]/) || 'socket'
 infra.push({
-  name: 'Realtime',
-  driver: 'WebSocket',
+  name: 'Realtime', configFile: 'realtime.ts', category: 'communication',
+  driver: 'WebSocket', status: 'configured',
   detail: 'Port ' + rtPort,
-  status: 'configured',
-  category: 'communication',
+  fields: [
+    { key: 'port', label: 'Port', value: rtPort, options: '' },
+    { key: 'driver', label: 'Driver', value: rtDriver, options: 'socket,pusher,bun,reverb,ably' },
+  ],
 })
 
 // AI
 var aiConf = readConfig('ai.ts')
 var aiModel = extractValue(aiConf, /default:\s*['"]([^'"]+)['"]/) || ''
 infra.push({
-  name: 'AI',
-  driver: 'Bedrock',
+  name: 'AI', configFile: 'ai.ts', category: 'compute',
+  driver: 'Bedrock', status: aiModel ? 'configured' : 'not set',
   detail: aiModel || 'Not configured',
-  status: aiModel ? 'configured' : 'not set',
-  category: 'compute',
+  fields: [
+    { key: 'default', label: 'Model', value: aiModel, options: '' },
+  ],
 })
 
 // ── System Dependencies (from config/deps.ts) ───────────────
 var systemDeps = []
 var depsConf = readConfig('deps.ts')
-// Extract dependency entries like: 'bun.sh': '^1.3.0'
 var depPattern = /['"]([^'"]+)['"]\s*:\s*['"]([^'"]+)['"]/g
 var depMatch
 while ((depMatch = depPattern.exec(depsConf)) !== null) {
   var depName = depMatch[1]
   var depVer = depMatch[2]
-  // Only include domain-style deps (not config keys)
   if (depName.indexOf('.') > 0 || depName === 'redis' || depName === 'mailpit') {
     systemDeps.push({ name: depName, version: depVer })
   }
@@ -178,8 +172,20 @@ while ((svcMatch = keyPattern.exec(svcConf)) !== null) {
     if (inBlock && braceCount === 0) { blockEnd = i; break }
   }
   var block = svcConf.substring(blockStart, blockEnd + 1)
-  var hasEnvRef = /env\./.test(block)
 
+  // Extract field values from the block
+  var svcFields = []
+  var fieldPattern = /(\w+)\s*:\s*(?:env\.(\w+)\s*\?\?\s*)?['"]?([^'",\n}]*)['"]?/g
+  var fm
+  while ((fm = fieldPattern.exec(block)) !== null) {
+    var fName = fm[1]
+    if (['maxRetries', 'retryTimeout'].indexOf(fName) >= 0) continue
+    var fValue = fm[3] ? fm[3].trim().replace(/['"]/g, '') : ''
+    var envVar = fm[2] || ''
+    svcFields.push({ key: fName, label: fName, value: fValue, env: envVar })
+  }
+
+  var hasEnvRef = /env\./.test(block)
   var category = 'other'
   if (['algolia', 'meilisearch'].indexOf(name) >= 0) category = 'search'
   else if (['aws', 'digitalOcean', 'hetzner'].indexOf(name) >= 0) category = 'cloud'
@@ -190,10 +196,9 @@ while ((svcMatch = keyPattern.exec(svcConf)) !== null) {
   else if (['openai', 'anthropic', 'ollama'].indexOf(name) >= 0) category = 'ai'
   else if (['stripe'].indexOf(name) >= 0) category = 'payment'
 
-  apiServices.push({ name: name, category: category, configured: hasEnvRef })
+  apiServices.push({ name: name, category: category, configured: hasEnvRef, fields: svcFields })
 }
 
-// Group API services by category
 var apiCategories = {}
 for (var j = 0; j < apiServices.length; j++) {
   var s = apiServices[j]
@@ -227,6 +232,63 @@ var stats = [
   { label: 'Configured', value: String(configuredApi) + '/' + String(apiServices.length) },
 ]
 </script>
+
+<script>
+(function() {
+  // Toggle edit panel visibility
+  function toggleEdit(id) {
+    var panel = document.getElementById('edit-' + id);
+    if (!panel) return;
+    var isHidden = panel.style.display === 'none' || !panel.style.display;
+    // Close all other panels
+    var allPanels = document.querySelectorAll('[data-edit-panel]');
+    for (var i = 0; i < allPanels.length; i++) allPanels[i].style.display = 'none';
+    panel.style.display = isHidden ? 'block' : 'none';
+  }
+
+  // Save config changes
+  function saveConfig(file, panelId) {
+    var panel = document.getElementById('edit-' + panelId);
+    if (!panel) return;
+    var inputs = panel.querySelectorAll('[data-config-key]');
+    var updates = [];
+    for (var i = 0; i < inputs.length; i++) {
+      var inp = inputs[i];
+      var key = inp.getAttribute('data-config-key');
+      var val = inp.value;
+      updates.push({ path: key, value: val });
+    }
+
+    var btn = panel.querySelector('[data-save-btn]');
+    if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
+
+    fetch('http://localhost:3457/api/config/update', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ file: file, updates: updates })
+    })
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      if (data.success) {
+        if (btn) { btn.textContent = 'Saved!'; btn.style.backgroundColor = '#059669'; }
+        setTimeout(function() {
+          panel.style.display = 'none';
+          if (btn) { btn.textContent = 'Save'; btn.disabled = false; btn.style.backgroundColor = ''; }
+        }, 800);
+      } else {
+        if (btn) { btn.textContent = 'Error: ' + (data.error || 'Unknown'); btn.disabled = false; }
+      }
+    })
+    .catch(function(err) {
+      if (btn) { btn.textContent = 'Failed'; btn.disabled = false; }
+    });
+  }
+
+  window._toggleEdit = toggleEdit;
+  window._saveConfig = saveConfig;
+})();
+</script>
+
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
@@ -256,19 +318,44 @@ var stats = [
         <div class="flex flex-col gap-1 p-4 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
           <div class="flex items-center justify-between">
             <span class="font-medium text-sm text-gray-900 dark:text-white">{{ svc.name }}</span>
-            @if(svc.status === 'running')
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> running
-              </span>
-            @elseif(svc.status === 'configured')
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">configured</span>
-            @else
-              <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
-            @endif
+            <div class="flex items-center gap-2">
+              @if(svc.status === 'running')
+                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
+                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> running
+                </span>
+              @elseif(svc.status === 'configured')
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">configured</span>
+              @else
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
+              @endif
+              <button onclick="_toggleEdit('infra-{{ svc.name }}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Edit</button>
+            </div>
           </div>
           <div class="flex items-center justify-between">
             <span class="text-xs text-gray-500 dark:text-gray-400">{{ svc.driver }}</span>
             <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ svc.detail }}</span>
+          </div>
+
+          <!-- Inline edit panel -->
+          <div id="edit-infra-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+            @foreach (svc.fields as field)
+              <div class="flex items-center gap-2 mb-2">
+                <label class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">{{ field.label }}</label>
+                @if(field.options)
+                  <select data-config-key="{{ field.key }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                    @foreach (field.options.split(',') as opt)
+                      <option value="{{ opt }}" {{ opt === field.value ? 'selected' : '' }}>{{ opt }}</option>
+                    @endforeach
+                  </select>
+                @else
+                  <input type="text" data-config-key="{{ field.key }}" value="{{ field.value }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                @endif
+              </div>
+            @endforeach
+            <div class="flex justify-end gap-2 mt-2">
+              <button onclick="_toggleEdit('infra-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-gray-400">Cancel</button>
+              <button data-save-btn onclick="_saveConfig('{{ svc.configFile }}', 'infra-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">Save</button>
+            </div>
           </div>
         </div>
       @endforeach
@@ -303,18 +390,40 @@ var stats = [
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           @foreach (group.items as svc)
-            <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
-              <div class="flex items-center gap-3">
-                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold {{ svc.configured ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500' }}">
-                  {{ svc.name.charAt(0).toUpperCase() }}
+            <div class="flex flex-col p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold {{ svc.configured ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500' }}">
+                    {{ svc.name.charAt(0).toUpperCase() }}
+                  </div>
+                  <span class="font-medium text-sm text-gray-900 dark:text-white">{{ formatName(svc.name) }}</span>
                 </div>
-                <span class="font-medium text-sm text-gray-900 dark:text-white">{{ formatName(svc.name) }}</span>
+                <div class="flex items-center gap-2">
+                  @if(svc.configured)
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">configured</span>
+                  @else
+                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
+                  @endif
+                  <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Edit</button>
+                </div>
               </div>
-              @if(svc.configured)
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">configured</span>
-              @else
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
-              @endif
+
+              <!-- Inline edit panel for API service -->
+              <div id="edit-api-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+                @foreach (svc.fields as field)
+                  <div class="flex items-center gap-2 mb-2">
+                    <label class="text-xs text-gray-500 dark:text-gray-400 w-24 shrink-0 truncate" title="{{ field.key }}">{{ field.label }}</label>
+                    <input type="{{ field.key === 'apiKey' || field.key === 'secretKey' || field.key === 'password' || field.key === 'privateKey' || field.key === 'botToken' ? 'password' : 'text' }}" data-config-key="{{ field.key }}" value="{{ field.value }}" placeholder="{{ field.env ? 'env.' + field.env : '' }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono" />
+                  </div>
+                @endforeach
+                @if(svc.fields.length === 0)
+                  <p class="text-xs text-gray-400 dark:text-gray-500 mb-2">No editable fields found.</p>
+                @endif
+                <div class="flex justify-end gap-2 mt-2">
+                  <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-gray-400">Cancel</button>
+                  <button data-save-btn onclick="_saveConfig('services.ts', 'api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">Save</button>
+                </div>
+              </div>
             </div>
           @endforeach
         </div>
