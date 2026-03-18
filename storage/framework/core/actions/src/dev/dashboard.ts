@@ -1,141 +1,43 @@
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
+import { writeFileSync } from 'node:fs'
+import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { createApp } from '@stacksjs/ts-craft'
-import { Glob } from 'bun'
+import { createApp } from '@craft-native/ts'
+import { buildDashboardUrl, buildManifest, buildSidebarConfig, discoverModels, waitForServer } from './dashboard-utils'
+
+const verbose = process.argv.includes('--verbose')
+const startTime = Bun.nanoseconds()
+
+// Buffer all dependency console output (STX serve, Crosswind, bun-router)
+// so we can display it cleanly after our banner (verbose) or discard it (normal).
+const originalConsoleLog = console.log
+const originalConsoleWarn = console.warn
+const bufferedLogs: string[] = []
+
+console.log = (...args: unknown[]) => {
+  bufferedLogs.push(args.map(String).join(' '))
+}
+console.warn = (...args: unknown[]) => {
+  bufferedLogs.push(args.map(String).join(' '))
+}
 
 const dashboardPath = storagePath('framework/defaults/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
-const verbose = process.argv.includes('--verbose')
-
-// Discover models from both user and default directories
-async function discoverModels(): Promise<Array<{ name: string, icon: string, id: string }>> {
-  const models: Array<{ name: string, icon: string, id: string }> = []
-  const seenNames = new Set<string>()
-
-  // Models to exclude (already have dedicated pages)
-  const excludeModels = new Set(['activity', 'request', 'error', 'failedjob'])
-
-  // Model name to icon mapping
-  const iconMap: Record<string, string> = {
-    user: 'person.fill',
-    team: 'person.2.fill',
-    subscriber: 'envelope.open.fill',
-    subscriberemail: 'envelope.fill',
-    post: 'doc.text.fill',
-    page: 'doc.fill',
-    product: 'cube.box.fill',
-    productvariant: 'cube.fill',
-    productunit: 'scalemass.fill',
-    order: 'list.clipboard.fill',
-    orderitem: 'list.bullet.clipboard.fill',
-    customer: 'person.crop.circle.fill',
-    payment: 'creditcard.fill',
-    paymentmethod: 'creditcard.and.123',
-    paymentproduct: 'creditcard.fill',
-    paymenttransaction: 'creditcard.fill',
-    category: 'tag.fill',
-    tag: 'tag',
-    comment: 'bubble.left.fill',
-    author: 'person.text.rectangle.fill',
-    notification: 'bell.fill',
-    job: 'briefcase.fill',
-    log: 'list.bullet.rectangle.portrait.fill',
-    campaign: 'megaphone.fill',
-    review: 'star.fill',
-    coupon: 'ticket.fill',
-    giftcard: 'giftcard.fill',
-    cart: 'cart.fill',
-    cartitem: 'cart.badge.plus',
-    taxrate: 'percent',
-    transaction: 'arrow.left.arrow.right.circle.fill',
-    subscription: 'repeat.circle.fill',
-    emaillist: 'envelope.badge.person.crop',
-    socialpost: 'bubble.left.and.bubble.right.fill',
-    manufacturer: 'building.2.fill',
-    shippingmethod: 'shippingbox.fill',
-    shippingzone: 'map.fill',
-    shippingrate: 'dollarsign.circle.fill',
-    deliveryroute: 'map.fill',
-    driver: 'car.fill',
-    digitaldelivery: 'arrow.down.doc.fill',
-    licensekey: 'key.fill',
-    loyaltypoint: 'star.circle.fill',
-    loyaltyreward: 'gift.fill',
-    printdevice: 'printer.fill',
-    receipt: 'doc.text.fill',
-    waitlistproduct: 'clock.fill',
-    waitlistrestaurant: 'clock.badge.checkmark.fill',
-    websocket: 'antenna.radiowaves.left.and.right',
-    default: 'tablecells.fill',
-  }
-
-  // Scan user models (app/Models)
-  const userModelsPath = projectPath('app/Models')
-  try {
-    const glob = new Glob('**/*.ts')
-    for await (const file of glob.scan({ cwd: userModelsPath })) {
-      if (file.includes('README') || file.includes('.d.ts')) continue
-      const name = file.replace(/\.ts$/, '').split('/').pop() || ''
-      const nameLower = name.toLowerCase()
-      if (name && !seenNames.has(nameLower) && !excludeModels.has(nameLower)) {
-        seenNames.add(nameLower)
-        const id = name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
-        const icon = iconMap[nameLower] || iconMap.default
-        models.push({ name, icon, id })
-      }
-    }
-  } catch {
-    // User models directory may not exist
-  }
-
-  // Scan ALL default models (storage/framework/defaults/models) including subdirectories
-  const defaultModelsPath = storagePath('framework/defaults/models')
-  try {
-    const glob = new Glob('**/*.ts')
-    for await (const file of glob.scan({ cwd: defaultModelsPath })) {
-      if (file.includes('README') || file.includes('.d.ts')) continue
-      const name = file.replace(/\.ts$/, '').split('/').pop() || ''
-      const nameLower = name.toLowerCase()
-      if (name && !seenNames.has(nameLower) && !excludeModels.has(nameLower)) {
-        seenNames.add(nameLower)
-        const id = name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '')
-        const icon = iconMap[nameLower] || iconMap.default
-        models.push({ name, icon, id })
-      }
-    }
-  } catch {
-    // Default models directory may not exist
-  }
-
-  return models.sort((a, b) => a.name.localeCompare(b.name))
-}
-
-// Get discovered models
-const discoveredModels = await discoverModels()
-
-const { writeFileSync } = await import('node:fs')
-const manifestPath = storagePath('framework/defaults/dashboard/.discovered-models.json')
-const dedicatedPages = new Set(['user', 'team', 'subscriber', 'post', 'page', 'product', 'order', 'customer', 'payment', 'coupon', 'category', 'tag', 'comment', 'author', 'notification', 'job', 'campaign', 'review', 'gift-card'])
-const manifest = discoveredModels.map(m => ({
-  id: m.id, name: m.name, icon: m.icon,
-  hasDedicatedPage: dedicatedPages.has(m.id),
-}))
-writeFileSync(manifestPath, JSON.stringify(manifest, null, 2))
-
-log.info('Starting Stacks Dashboard...')
-if (verbose) log.info(`Dashboard path: ${dashboardPath}`)
-
-// Start STX dev server for the dashboard
 const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
 
-log.info(`Starting dashboard dev server on http://localhost:${dashboardPort}...`)
+// Determine if we have a custom domain (like stacks.localhost)
+const appUrl = process.env.APP_URL || ''
+const hasCustomDomain = appUrl !== '' && appUrl !== 'localhost' && !appUrl.includes('localhost:')
+const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
+const dashboardDomain = domain ? `dashboard.${domain}` : null
+const sslBasePath = `${process.env.HOME}/.stacks/ssl`
 
-let serverStarted = false
+function restoreConsole(): void {
+  console.log = originalConsoleLog
+  console.warn = originalConsoleWarn
+}
 
-try {
-  // Try standard resolution first, then fall back to pantry path
-  // (subpath exports like 'bun-plugin-stx/serve' may not resolve from pantry/)
+async function startStxServer(): Promise<void> {
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
     ;({ serve } = await import('bun-plugin-stx/serve'))
@@ -144,8 +46,6 @@ try {
     ;({ serve } = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js')))
   }
 
-  // Run serve in background - don't await since it blocks forever
-  // User views take priority over defaults (checked in order)
   const serverPromise = serve({
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
@@ -154,157 +54,107 @@ try {
     partialsDir: dashboardPath,
   })
 
-  // Set up error handler but don't let it kill the process
   serverPromise.catch((err: Error) => {
-    if (!serverStarted && verbose) {
-      log.warn(`STX server issue: ${err.message}`)
-    }
+    if (verbose) originalConsoleLog(`  ${dim(`STX server issue: ${err.message}`)}`)
   })
-
-  // Give the server a moment to start
-  await new Promise(resolve => setTimeout(resolve, 500))
-  serverStarted = true
-  log.success(`Dashboard dev server running on http://localhost:${dashboardPort}`)
-}
-catch (err: any) {
-  if (verbose) log.warn(`STX server warning: ${err.message || err}`)
-  if (verbose) log.info('Continuing with Craft launch...')
 }
 
-// Build sidebar config for native sidebar navigation
-const serverUrl = `http://localhost:${dashboardPort}`
-const baseRoute = `${serverUrl}/pages`
-const sidebarConfig = {
-  sections: [
-    {
-      id: 'home',
-      title: 'Home',
-      items: [
-        { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/index` },
+async function startReverseProxy(): Promise<boolean> {
+  if (!dashboardDomain) return false
+
+  try {
+    const { startProxies } = await import('@stacksjs/rpx')
+
+    await startProxies({
+      proxies: [
+        { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
       ],
-    },
-    {
-      id: 'library',
-      title: 'Library',
-      items: [
-        { id: 'components', label: 'Components', icon: 'puzzlepiece.fill', url: `${baseRoute}/library/components` },
-        { id: 'functions', label: 'Functions', icon: 'function', url: `${baseRoute}/library/functions` },
-        { id: 'packages', label: 'Packages', icon: 'shippingbox.fill', url: `${baseRoute}/library/packages` },
-      ],
-    },
-    {
-      id: 'content',
-      title: 'Content',
-      items: [
-        { id: 'content-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/content/dashboard` },
-        { id: 'files', label: 'Files', icon: 'folder.fill', url: `${baseRoute}/content/files` },
-        { id: 'pages', label: 'Pages', icon: 'doc.fill', url: `${baseRoute}/content/pages` },
-        { id: 'posts', label: 'Posts', icon: 'text.bubble.fill', url: `${baseRoute}/content/posts` },
-        { id: 'categories', label: 'Categories', icon: 'tag.fill', url: `${baseRoute}/content/categories` },
-        { id: 'tags', label: 'Tags', icon: 'tag', url: `${baseRoute}/content/tags` },
-        { id: 'comments', label: 'Comments', icon: 'bubble.left.fill', url: `${baseRoute}/content/comments` },
-        { id: 'authors', label: 'Authors', icon: 'person.text.rectangle.fill', url: `${baseRoute}/content/authors` },
-        { id: 'seo', label: 'SEO', icon: 'magnifyingglass', url: `${baseRoute}/content/seo` },
-      ],
-    },
-    {
-      id: 'app',
-      title: 'App',
-      items: [
-        { id: 'deployments', label: 'Deployments', icon: 'rocket.fill', url: `${baseRoute}/app/deployments` },
-        { id: 'requests', label: 'Requests', icon: 'arrow.left.arrow.right', url: `${baseRoute}/app/requests` },
-        { id: 'realtime', label: 'Realtime', icon: 'link', url: `${baseRoute}/app/realtime` },
-        { id: 'actions', label: 'Actions', icon: 'bolt.fill', url: `${baseRoute}/app/actions` },
-        { id: 'commands', label: 'Commands', icon: 'terminal.fill', url: `${baseRoute}/app/commands` },
-        { id: 'queue', label: 'Queue', icon: 'list.bullet.rectangle.fill', url: `${baseRoute}/app/queue` },
-        { id: 'jobs', label: 'Jobs', icon: 'briefcase.fill', url: `${baseRoute}/app/jobs` },
-        { id: 'queries', label: 'Queries', icon: 'magnifyingglass.circle.fill', url: `${baseRoute}/app/queries` },
-        { id: 'notifications', label: 'Notifications', icon: 'bell.fill', url: `${baseRoute}/app/notifications` },
-      ],
-    },
-    {
-      id: 'data',
-      title: 'Data',
-      items: [
-        { id: 'data-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/data/dashboard` },
-        { id: 'activity', label: 'Activity', icon: 'waveform.path.ecg', url: `${baseRoute}/data/activity` },
-        // Add discovered models dynamically
-        ...discoveredModels.map(model => ({
-          id: `model-${model.id}`,
-          label: model.name,
-          icon: model.icon,
-          url: `${baseRoute}/data/${model.id}`,
-        })),
-      ],
-    },
-    {
-      id: 'commerce',
-      title: 'Commerce',
-      items: [
-        { id: 'commerce-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/commerce/dashboard` },
-        { id: 'customers', label: 'Customers', icon: 'person.crop.circle.fill', url: `${baseRoute}/commerce/customers` },
-        { id: 'orders', label: 'Orders', icon: 'list.clipboard.fill', url: `${baseRoute}/commerce/orders` },
-        { id: 'products', label: 'Products', icon: 'cube.box.fill', url: `${baseRoute}/commerce/products` },
-        { id: 'coupons', label: 'Coupons', icon: 'ticket.fill', url: `${baseRoute}/commerce/coupons` },
-        { id: 'gift-cards', label: 'Gift Cards', icon: 'giftcard.fill', url: `${baseRoute}/commerce/gift-cards` },
-        { id: 'payments', label: 'Payments', icon: 'creditcard.fill', url: `${baseRoute}/commerce/payments` },
-        { id: 'delivery', label: 'Delivery', icon: 'truck.box.fill', url: `${baseRoute}/commerce/delivery` },
-        { id: 'taxes', label: 'Taxes', icon: 'percent', url: `${baseRoute}/commerce/taxes` },
-      ],
-    },
-    {
-      id: 'marketing',
-      title: 'Marketing',
-      items: [
-        { id: 'lists', label: 'Lists', icon: 'list.bullet', url: `${baseRoute}/marketing/lists` },
-        { id: 'social-posts', label: 'Social Posts', icon: 'clock.fill', url: `${baseRoute}/marketing/social-posts` },
-        { id: 'campaigns', label: 'Campaigns', icon: 'megaphone.fill', url: `${baseRoute}/marketing/campaigns` },
-        { id: 'marketing-reviews', label: 'Reviews', icon: 'star.fill', url: `${baseRoute}/marketing/reviews` },
-      ],
-    },
-    {
-      id: 'analytics',
-      title: 'Analytics',
-      items: [
-        { id: 'analytics-web', label: 'Web', icon: 'globe', url: `${baseRoute}/analytics/web` },
-        { id: 'analytics-blog', label: 'Blog', icon: 'doc.text.fill', url: `${baseRoute}/analytics/blog` },
-        { id: 'analytics-commerce', label: 'Commerce', icon: 'cart.fill', url: `${baseRoute}/analytics/commerce` },
-        { id: 'analytics-marketing', label: 'Marketing', icon: 'megaphone.fill', url: `${baseRoute}/analytics/marketing` },
-      ],
-    },
-    {
-      id: 'management',
-      title: 'Management',
-      items: [
-        { id: 'cloud', label: 'Cloud', icon: 'cloud.fill', url: `${baseRoute}/management/cloud` },
-        { id: 'servers', label: 'Servers', icon: 'server.rack', url: `${baseRoute}/management/servers` },
-        { id: 'serverless', label: 'Serverless', icon: 'bolt.horizontal.circle.fill', url: `${baseRoute}/management/serverless` },
-        { id: 'dns', label: 'DNS', icon: 'network', url: `${baseRoute}/management/dns` },
-        { id: 'mailboxes', label: 'Mailboxes', icon: 'tray.full.fill', url: `${baseRoute}/management/mailboxes` },
-        { id: 'logs', label: 'Logs', icon: 'list.bullet.rectangle.portrait.fill', url: `${baseRoute}/management/logs` },
-      ],
-    },
-    {
-      id: 'utilities',
-      title: 'Utilities',
-      items: [
-        { id: 'buddy', label: 'AI Buddy', icon: 'bubble.left.and.bubble.right.fill', url: `${baseRoute}/utilities/buddy` },
-        { id: 'environment', label: 'Environment', icon: 'key.fill', url: `${baseRoute}/utilities/environment` },
-        { id: 'access-tokens', label: 'Access Tokens', icon: 'key.horizontal.fill', url: `${baseRoute}/utilities/access-tokens` },
-        { id: 'settings', label: 'Settings', icon: 'gear', url: `${baseRoute}/utilities/settings` },
-      ],
-    },
-  ],
-  minWidth: 200,
-  maxWidth: 280,
+      https: {
+        basePath: sslBasePath,
+        validityDays: 825,
+      },
+      regenerateUntrustedCerts: false,
+      verbose,
+    })
+
+    return true
+  }
+  catch (error) {
+    if (verbose) originalConsoleLog(`  ${dim(`Proxy: ${error}`)}`)
+    return false
+  }
 }
 
-// Launch the dashboard as a native Craft window app
-// The SDK handles binary resolution automatically via pantry
-const initialUrl = `http://localhost:${dashboardPort}/app`
+// Phase 1: Start STX server, discover models, and start reverse proxy in parallel
+const [, discoveredModels, proxyStarted] = await Promise.all([
+  startStxServer(),
+  discoverModels(projectPath('app/Models'), storagePath('framework/defaults/models')),
+  startReverseProxy(),
+])
+
+// Phase 2: Write manifest and wait for server readiness
+const manifestPath = storagePath('framework/defaults/dashboard/.discovered-models.json')
+writeFileSync(manifestPath, JSON.stringify(buildManifest(discoveredModels), null, 2))
+
+const serverReady = await waitForServer(dashboardPort)
+
+// Restore console before our output
+restoreConsole()
+
+// Determine URLs for display and Craft window
+const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
+const dashboardLocalUrl = `http://localhost:${dashboardPort}`
+
+// Build sidebar config — use local HTTP URL to match the Craft webview origin
+const baseRoute = `${dashboardLocalUrl}/pages`
+const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels)
+
+// Use HTTP URL for the Craft window (WKWebView may reject self-signed certs)
+// The HTTPS proxy is still available for browser access
+const initialUrl = `http://localhost:${dashboardPort}/app?native-sidebar=1`
+
+// Print vite-style output
+const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
+
+console.log()
+console.log(`  ${bold(cyan('stacks dashboard'))}`)
+console.log()
+if (dashboardHttpsUrl && proxyStarted) {
+  console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardHttpsUrl)}`)
+  console.log(`  ${dim('➜')}  ${dim('Origin')}:  ${dim(dashboardLocalUrl)}`)
+}
+else {
+  console.log(`  ${green('➜')}  ${bold('Local')}:   ${cyan(dashboardLocalUrl)}`)
+}
+console.log(`  ${green('➜')}  ${bold('Window')}:  ${dim('Stacks Dashboard')} ${dim('1400×900')}`)
+console.log(`  ${green('➜')}  ${bold('Models')}:  ${dim(`${discoveredModels.length} discovered`)}`)
+if (!serverReady) {
+  console.log(`  ${dim('⚠')}  ${dim('Dev server may not be ready yet')}`)
+}
+console.log()
+console.log(`  ${dim(`ready in ${elapsedMs.toFixed(0)} ms`)}`)
+
+if (verbose) {
+  console.log()
+  console.log(`  ${dim('➜')}  ${dim('Sidebar')}:  ${dim(`${sidebarConfig.sections.length} sections, 240px`)}`)
+  console.log(`  ${dim('➜')}  ${dim('URL')}:      ${dim(initialUrl)}`)
+  if (dashboardDomain) {
+    console.log(`  ${dim('➜')}  ${dim('SSL')}:      ${dim(sslBasePath)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:    ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
+  }
+
+  if (bufferedLogs.length > 0) {
+    console.log()
+    for (const line of bufferedLogs) {
+      console.log(`  ${dim(line)}`)
+    }
+  }
+}
+console.log()
 
 const app = createApp({
   url: initialUrl,
+  quiet: !verbose,
   window: {
     title: 'Stacks Dashboard',
     width: 1400,
@@ -315,11 +165,6 @@ const app = createApp({
     sidebarConfig,
   },
 })
-
-if (verbose) {
-  log.info('Launching Craft native window...')
-  log.info(`Window size: 1400x900`)
-}
 
 // Clean up on exit
 process.on('SIGINT', () => {
@@ -336,8 +181,9 @@ try {
   process.exit(0)
 }
 catch (err: any) {
-  log.error(err.message)
-  log.info(`Dashboard still available at: http://localhost:${dashboardPort}/app`)
+  const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
+  console.log(`  ${dim('Dashboard available at:')} ${cyan(`${fallbackUrl}/app`)}`)
+  console.log()
 
   // Keep the process running since we're serving via STX
   await new Promise(() => {})

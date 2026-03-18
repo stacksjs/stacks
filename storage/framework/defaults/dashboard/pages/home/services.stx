@@ -1,0 +1,167 @@
+<script server>
+/**
+ * Services Page
+ *
+ * Lists all configured services for the current project.
+ * Reads from config/services.ts at runtime.
+ */
+
+var services = []
+var configuredCount = 0
+var unconfiguredCount = 0
+
+try {
+  var fs = require('fs')
+  var path = require('path')
+
+  // Read config/services.ts and extract the exported object structure
+  var servicesPath = path.resolve(process.cwd(), 'config', 'services.ts')
+  var content = fs.readFileSync(servicesPath, 'utf-8')
+
+  // Parse service names from the config file by finding top-level keys
+  // Match patterns like "  serviceName: {" at the start of lines (2-space indent)
+  var keyPattern = /^ {2}(\w[\w]*)\s*:\s*\{/gm
+  var match
+  while ((match = keyPattern.exec(content)) !== null) {
+    var name = match[1]
+    // Extract the block for this service to check if it has values set
+    var blockStart = match.index
+    var braceCount = 0
+    var blockEnd = blockStart
+    var inBlock = false
+    for (var i = blockStart; i < content.length; i++) {
+      if (content[i] === '{') { braceCount++; inBlock = true }
+      if (content[i] === '}') { braceCount-- }
+      if (inBlock && braceCount === 0) { blockEnd = i; break }
+    }
+    var block = content.substring(blockStart, blockEnd + 1)
+
+    // Check if any real values are configured (not just empty strings or defaults)
+    var hasApiKey = /apiKey.*env\./.test(block) || /secretKey.*env\./.test(block) || /accessToken.*env\./.test(block)
+    var hasCredentials = /clientId.*env\./.test(block) || /clientSecret.*env\./.test(block)
+    var hasConnection = /host.*env\./.test(block) || /region.*env\./.test(block) || /webhookUrl.*env\./.test(block)
+    var isConfigured = hasApiKey || hasCredentials || hasConnection
+
+    // Determine category
+    var category = 'other'
+    if (['algolia', 'meilisearch'].indexOf(name) >= 0) category = 'search'
+    else if (['aws', 'digitalOcean', 'hetzner'].indexOf(name) >= 0) category = 'cloud'
+    else if (['github', 'google', 'facebook', 'twitter'].indexOf(name) >= 0) category = 'auth'
+    else if (['mailgun', 'mailtrap', 'sendgrid', 'ses', 'smtp'].indexOf(name) >= 0) category = 'email'
+    else if (['slack', 'discord', 'teams'].indexOf(name) >= 0) category = 'messaging'
+    else if (['expo', 'fcm'].indexOf(name) >= 0) category = 'push'
+    else if (['openai', 'anthropic', 'ollama'].indexOf(name) >= 0) category = 'ai'
+    else if (['stripe'].indexOf(name) >= 0) category = 'payment'
+
+    services.push({
+      name: name,
+      category: category,
+      configured: isConfigured,
+    })
+
+    if (isConfigured) configuredCount++
+    else unconfiguredCount++
+  }
+} catch (e) {
+  // config/services.ts may not exist
+}
+
+var categories = {}
+for (var i = 0; i < services.length; i++) {
+  var svc = services[i]
+  if (!categories[svc.category]) categories[svc.category] = []
+  categories[svc.category].push(svc)
+}
+
+var categoryLabels = {
+  auth: 'Authentication',
+  cloud: 'Cloud Infrastructure',
+  email: 'Email Delivery',
+  messaging: 'Messaging & Chat',
+  push: 'Push Notifications',
+  ai: 'AI & Machine Learning',
+  payment: 'Payments',
+  search: 'Search',
+  other: 'Other',
+}
+
+var categoryIcons = {
+  auth: 'lock',
+  cloud: 'cloud',
+  email: 'mail',
+  messaging: 'chat',
+  push: 'bell',
+  ai: 'cpu',
+  payment: 'credit-card',
+  search: 'search',
+  other: 'grid',
+}
+
+var categoryOrder = ['auth', 'cloud', 'email', 'messaging', 'push', 'ai', 'payment', 'search', 'other']
+var orderedCategories = []
+for (var ci = 0; ci < categoryOrder.length; ci++) {
+  var cat = categoryOrder[ci]
+  if (categories[cat] && categories[cat].length > 0) {
+    orderedCategories.push({ key: cat, label: categoryLabels[cat] || cat, items: categories[cat] })
+  }
+}
+
+var stats = [
+  { label: 'Total Services', value: String(services.length) },
+  { label: 'Configured', value: String(configuredCount) },
+  { label: 'Not Configured', value: String(unconfiguredCount) },
+  { label: 'Categories', value: String(orderedCategories.length) },
+]
+
+function formatName(name) {
+  // camelCase to Title Case
+  return name.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase() }).trim()
+}
+</script>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Services</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Third-party services configured for this project</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    @foreach (stats as stat)
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
+      </div>
+    @endforeach
+  </div>
+
+  <!-- Service Categories -->
+  <div class="flex flex-col gap-6">
+    @foreach (orderedCategories as group)
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">{{ group.label }}</span>
+          <span class="text-xs text-gray-500 dark:text-gray-400">{{ group.items.length }} services</span>
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+          @foreach (group.items as svc)
+            <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold {{ svc.configured ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500' }}">
+                  {{ svc.name.charAt(0).toUpperCase() }}
+                </div>
+                <span class="font-medium text-sm text-gray-900 dark:text-white">{{ formatName(svc.name) }}</span>
+              </div>
+              @if(svc.configured)
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">configured</span>
+              @else
+                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
+              @endif
+            </div>
+          @endforeach
+        </div>
+      </div>
+    @endforeach
+  </div>
+</div>

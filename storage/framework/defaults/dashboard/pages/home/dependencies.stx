@@ -1,0 +1,115 @@
+<script server>
+/**
+ * Dependencies Page
+ *
+ * Lists all pantry-managed dependencies for the current project.
+ * Reads live data from the pantry directory.
+ */
+
+let packages = []
+let thirdPartyCount = 0
+let workspaceCount = 0
+let totalCount = 0
+
+try {
+  var path = require('path')
+  var projectRoot = process.cwd()
+  var pantryIndex = path.join(projectRoot, 'pantry', 'ts-pantry', 'dist', 'dist', 'src', 'index.js')
+  var { readProjectDependencies } = require(pantryIndex)
+  var result = readProjectDependencies(projectRoot)
+  packages = result.packages
+  thirdPartyCount = result.thirdPartyCount
+  workspaceCount = result.workspaceCount
+  totalCount = result.totalCount
+} catch (e) {
+  // ts-pantry may not be available
+}
+
+var thirdParty = packages.filter(function(p) { return !p.isWorkspace })
+var workspace = packages.filter(function(p) { return p.isWorkspace })
+
+var stats = [
+  { label: 'Total Packages', value: String(totalCount) },
+  { label: 'Third-Party', value: String(thirdPartyCount) },
+  { label: 'Workspace', value: String(workspaceCount) },
+  { label: 'Scoped', value: String(packages.filter(function(p) { return p.isScoped }).length) },
+]
+</script>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Dependencies</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Pantry-managed project dependencies</p>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+    @foreach (stats as stat)
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
+      </div>
+    @endforeach
+  </div>
+
+  <!-- Third-Party Packages -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-semibold text-gray-900 dark:text-white">Third-Party Packages</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ thirdPartyCount }} packages</span>
+    </div>
+    <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-700/50">
+          <tr>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Scope</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (thirdParty as pkg)
+            <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ pkg.name }}</td>
+              <td class="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ pkg.version }}</td>
+              <td class="px-4 py-3">
+                @if(pkg.isScoped)
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">scoped</span>
+                @else
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">unscoped</span>
+                @endif
+              </td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- Workspace Packages -->
+  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-semibold text-gray-900 dark:text-white">Workspace Packages</span>
+      <span class="text-xs text-gray-500 dark:text-gray-400">{{ workspaceCount }} packages</span>
+    </div>
+    <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+      <table class="w-full text-sm">
+        <thead class="bg-gray-50 dark:bg-gray-700/50">
+          <tr>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
+            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+          </tr>
+        </thead>
+        <tbody>
+          @foreach (workspace as pkg)
+            <tr class="border-t border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ pkg.name }}</td>
+              <td class="px-4 py-3 text-gray-500 dark:text-gray-400 font-mono text-xs">{{ pkg.version }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

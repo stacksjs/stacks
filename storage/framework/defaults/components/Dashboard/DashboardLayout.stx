@@ -33,23 +33,19 @@ function shouldShowWebSidebar() {
 (function() {
   if (typeof window === 'undefined') return;
 
-  // Craft sets this flag when the Tahoe native sidebar is active.
+  // Detect native sidebar via multiple signals:
+  // 1. Craft bridge flag (WKUserScript injection)
+  // 2. Craft window API
+  // 3. URL parameter (reliable fallback when WKUserScript timing is off)
   var hasNativeSidebarFlag = Boolean(window.__craftNativeSidebar);
   var hasCraftWindowApi = Boolean(window.craft && window.craft.window);
-  var hasNativeSidebar = hasNativeSidebarFlag;
-  if (!hasNativeSidebar && hasCraftWindowApi)
-    hasNativeSidebar = true;
+  var hasUrlParam = window.location.search.indexOf('native-sidebar=1') !== -1;
+  var hasNativeSidebar = hasNativeSidebarFlag || hasCraftWindowApi || hasUrlParam;
 
-  console.info('[Stacks Dashboard] Native sidebar detection:', {
-    hasNativeSidebarFlag: hasNativeSidebarFlag,
-    hasCraftWindowApi: hasCraftWindowApi,
-    resolvedNativeSidebar: hasNativeSidebar
-  });
-
-  if (hasNativeSidebar)
+  if (hasNativeSidebar) {
+    window.__craftNativeSidebar = true;
     document.documentElement.setAttribute('data-craft-native-sidebar', 'true');
-
-  console.info('[Stacks Dashboard] Active sidebar mode:', hasNativeSidebar ? 'tahoe-native' : 'web-fallback');
+  }
 })();
 </script>
 <!-- macOS-inspired layout with subtle background -->
