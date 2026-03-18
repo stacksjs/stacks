@@ -60,9 +60,6 @@
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "better-dx": "^0.2.5",
-    "@stacksjs/server": "workspace:*",
-    "@types/d3": "^7.4.3",
-    "d3": "^7.9.0",
-    "unified-network": "^0.6.4"
+    "@stacksjs/server": "workspace:*"
   }
 }
