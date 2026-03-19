@@ -94,7 +94,6 @@
       "name": "@stacksjs/actions",
       "version": "0.70.23",
       "dependencies": {
-        "@stacksjs/gitit": "link:@stacksjs/gitit",
         "@stacksjs/ts-cloud": "^0.2.1"
       },
       "devDependencies": {
@@ -553,7 +552,7 @@
       "name": "@stacksjs/git",
       "version": "0.70.23",
       "devDependencies": {
-        "@stacksjs/gitit": "^0.2.2",
+        "@stacksjs/gitit": "^0.2.5",
         "@stacksjs/gitlint": "^0.1.5",
         "bun-git-hooks": "^0.3.1"
       }
@@ -1105,12 +1104,12 @@
         "dnsx": "./dist/bin/cli.js"
       }
     },
-    "@stacksjs/gitit@0.2.2": {
+    "@stacksjs/gitit@0.2.5": {
       "name": "@stacksjs/gitit",
-      "version": "0.2.2",
+      "version": "0.2.5",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@stacksjs/gitit/-/gitit-0.2.2.tgz",
-      "integrity": "sha512-1dGvB+V/tPJ9nNUlLOHgTKBYc7awn9odEpk4uNqyhuj9NojPzleEBZZOc7NwNj+QrlsCfJHCS7JnU9+eUZw99g==",
+      "resolved": "https://registry.npmjs.org/@stacksjs/gitit/-/gitit-0.2.5.tgz",
+      "integrity": "sha512-HI9L1EsWTXG4JxqMlEjujDWovH5UnYqP6Uv9Pll74+vLGEH2OK6FRfarNQgRHBkMyzBx2fjutAHOXrPSCTN8eQ==",
       "dependencies": {
         "nanotar": "^0.2.0"
       },
