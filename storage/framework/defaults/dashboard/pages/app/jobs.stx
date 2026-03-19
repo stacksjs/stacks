@@ -1,89 +1,107 @@
 <script server>
-var jobs = [
-  { name: 'SendWelcomeEmail', queue: 'emails', attempts: 1, status: 'completed', duration: '1.2s' },
-  { name: 'ProcessPayment', queue: 'default', attempts: 1, status: 'completed', duration: '2.4s' },
-  { name: 'GenerateInvoice', queue: 'default', attempts: 2, status: 'failed', duration: '0.5s' },
-  { name: 'SyncAnalytics', queue: 'sync', attempts: 1, status: 'pending', duration: '-' },
-]
+import { getQueueManager } from '@stacksjs/queue/bun-queue'
+
+let jobs = []
 
 try {
-  const Database = require('bun:sqlite').Database
-  const path = require('path')
-  const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
-  const rows = db.query('SELECT * FROM jobs ORDER BY id DESC LIMIT 50').all()
-  if (rows.length > 0) {
-    jobs = rows.map(function(r) { return { name: r.name || r.queue || '', queue: r.queue || 'default', attempts: r.attempts || 0, status: r.status || 'pending', duration: r.duration || '-' } })
+  const manager = getQueueManager()
+  if (manager) {
+    for (const connName of manager.getConnections()) {
+      try {
+        const conn = manager.connection(connName)
+        for (const q of conn.queues.values()) {
+          const waiting = await q.getJobs('waiting', 0, 25)
+          const active = await q.getJobs('active', 0, 25)
+          const completed = await q.getJobs('completed', 0, 25)
+          const failed = await q.getJobs('failed', 0, 25)
+
+          const mapJob = function(j, status) {
+            return {
+              id: j.id || '',
+              name: j.name || j.data?.name || 'Unknown',
+              queue: q.name,
+              status: status,
+              attempts: j.attemptsMade || j.attempts || 0,
+              maxAttempts: j.opts?.attempts || 3,
+              duration: j.finishedOn && j.processedOn ? (j.finishedOn - j.processedOn) + 'ms' : '-',
+              createdAt: j.timestamp ? new Date(j.timestamp).toLocaleString() : '-',
+            }
+          }
+
+          for (const j of waiting) jobs.push(mapJob(j, 'pending'))
+          for (const j of active) jobs.push(mapJob(j, 'active'))
+          for (const j of completed) jobs.push(mapJob(j, 'completed'))
+          for (const j of failed) jobs.push(mapJob(j, 'failed'))
+        }
+      } catch {}
+    }
   }
-  db.close()
-} catch (e) {
-  // keep mock data as fallback
+} catch {
+  // Queue system not initialized — show empty state
 }
+
+// Sort by most recent first
+jobs.sort(function(a, b) { return b.createdAt.localeCompare(a.createdAt) })
+jobs = jobs.slice(0, 50)
 
 function statusClass(s) {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
   s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
+  if (s === 'active' || s === 'processing')
     return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  if (s === 'completed' || s === 'success')
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (s === 'pending' || s === 'waiting')
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (s === 'failed' || s === 'error')
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
   return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
 }
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div class="">
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Jobs</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Background job management</p>
-      </div>
-    </div>
-
-    <div class="flex flex-col gap-6">
-      <div class="flex gap-2 mb-4">
-        <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">All</button>
-        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Pending</button>
-        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Completed</button>
-        <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Failed</button>
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Queue</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attempts</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (jobs as job)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="font-medium">{{ job.name }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.attempts }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.duration }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(job.status) }}">{{ job.status }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    @if (job.status === 'failed')
-                      <button class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Retry</button>
-                    @else
-                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
-                    @endif
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Jobs</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Background job management powered by bun-queue</p>
     </div>
   </div>
+
+  @if (jobs.length === 0)
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+      <p class="text-gray-500 dark:text-gray-400">No jobs found. Dispatch a job to see it here.</p>
+    </div>
+  @else
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Queue</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attempts</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+              <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (jobs as job)
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.name }}</td>
+                <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span>
+                </td>
+                <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.attempts }}/{{ job.maxAttempts }}</td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 font-mono text-xs">{{ job.duration }}</td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 text-xs">{{ job.createdAt }}</td>
+                <td class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(job.status) }}">{{ job.status }}</span>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+  @endif
+</div>
