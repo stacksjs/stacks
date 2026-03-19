@@ -1,48 +1,28 @@
 <script server>
-import { getQueueManager } from '@stacksjs/queue/bun-queue'
+const BQ_API = 'http://localhost:4400'
 
 let jobs = []
 
 try {
-  const manager = getQueueManager()
-  if (manager) {
-    for (const connName of manager.getConnections()) {
-      try {
-        const conn = manager.connection(connName)
-        for (const q of conn.queues.values()) {
-          const waiting = await q.getJobs('waiting', 0, 25)
-          const active = await q.getJobs('active', 0, 25)
-          const completed = await q.getJobs('completed', 0, 25)
-          const failed = await q.getJobs('failed', 0, 25)
-
-          const mapJob = function(j, status) {
-            return {
-              id: j.id || '',
-              name: j.name || j.data?.name || 'Unknown',
-              queue: q.name,
-              status: status,
-              attempts: j.attemptsMade || j.attempts || 0,
-              maxAttempts: j.opts?.attempts || 3,
-              duration: j.finishedOn && j.processedOn ? (j.finishedOn - j.processedOn) + 'ms' : '-',
-              createdAt: j.timestamp ? new Date(j.timestamp).toLocaleString() : '-',
-            }
-          }
-
-          for (const j of waiting) jobs.push(mapJob(j, 'pending'))
-          for (const j of active) jobs.push(mapJob(j, 'active'))
-          for (const j of completed) jobs.push(mapJob(j, 'completed'))
-          for (const j of failed) jobs.push(mapJob(j, 'failed'))
-        }
-      } catch {}
-    }
+  const res = await fetch(`${BQ_API}/api/jobs`)
+  if (res.ok) {
+    const data = await res.json()
+    jobs = data.slice(0, 50).map(function(j) {
+      return {
+        id: j.id || '',
+        name: j.name || 'Unknown',
+        queue: j.queue || '-',
+        status: j.status || 'waiting',
+        attempts: j.attempts || 0,
+        maxAttempts: j.maxAttempts || 3,
+        duration: j.duration ? j.duration + 'ms' : '-',
+        createdAt: j.createdAt || '-',
+      }
+    })
   }
 } catch {
-  // Queue system not initialized — show empty state
+  // bun-queue devtools not running — show empty state
 }
-
-// Sort by most recent first
-jobs.sort(function(a, b) { return b.createdAt.localeCompare(a.createdAt) })
-jobs = jobs.slice(0, 50)
 
 function statusClass(s) {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'

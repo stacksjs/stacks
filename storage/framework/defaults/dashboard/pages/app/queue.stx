@@ -1,45 +1,36 @@
 <script server>
-import { getQueueManager } from '@stacksjs/queue/bun-queue'
-import { checkQueueHealth } from '@stacksjs/queue'
+const BQ_API = 'http://localhost:4400'
 
 let queues = []
 let stats = { totalQueues: 0, totalJobs: 0, activeJobs: 0, completedJobs: 0, failedJobs: 0, throughputPerMinute: 0 }
-let healthStatus = null
 
 try {
-  const manager = getQueueManager()
-  if (manager) {
-    for (const connName of manager.getConnections()) {
-      try {
-        const conn = manager.connection(connName)
-        for (const q of conn.queues.values()) {
-          const counts = await q.getJobCounts()
-          const isPaused = typeof q.isPaused === 'function' ? await q.isPaused() : false
-          queues.push({
-            name: q.name,
-            status: isPaused ? 'paused' : counts.active > 0 ? 'active' : counts.waiting > 0 ? 'active' : 'idle',
-            pending: counts.waiting || 0,
-            active: counts.active || 0,
-            completed: counts.completed || 0,
-            failed: counts.failed || 0,
-            total: (counts.waiting || 0) + (counts.active || 0) + (counts.completed || 0) + (counts.failed || 0),
-          })
-          stats.totalQueues++
-          stats.totalJobs += (counts.waiting || 0) + (counts.active || 0) + (counts.completed || 0) + (counts.failed || 0)
-          stats.activeJobs += counts.active || 0
-          stats.completedJobs += counts.completed || 0
-          stats.failedJobs += counts.failed || 0
-        }
-      } catch {}
-    }
+  const [queuesRes, statsRes] = await Promise.all([
+    fetch(`${BQ_API}/api/queues`),
+    fetch(`${BQ_API}/api/stats`),
+  ])
+
+  if (queuesRes.ok) {
+    const data = await queuesRes.json()
+    queues = data.map(function(q) {
+      return {
+        name: q.name,
+        status: q.status || 'idle',
+        pending: q.pendingJobs || 0,
+        active: q.activeJobs || 0,
+        completed: q.completedJobs || 0,
+        failed: q.failedJobs || 0,
+        total: q.jobCount || 0,
+      }
+    })
+  }
+
+  if (statsRes.ok) {
+    stats = await statsRes.json()
   }
 } catch {
-  // Queue system not initialized — show empty state
+  // bun-queue devtools not running — show empty state
 }
-
-try {
-  healthStatus = await checkQueueHealth()
-} catch {}
 
 function statusClass(s) {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -117,23 +108,4 @@ function statusClass(s) {
     </div>
   @endif
 
-  <!-- Health Status -->
-  @if (healthStatus)
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-      <div class="flex items-center justify-between mb-4">
-        <span class="font-semibold text-gray-900 dark:text-white">Queue Health</span>
-        <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(healthStatus.status || 'unknown') }}">{{ healthStatus.status || 'unknown' }}</span>
-      </div>
-      @if (healthStatus.queues)
-        <div class="divide-y divide-gray-100 dark:divide-gray-700">
-          @foreach (healthStatus.queues as qh)
-            <div class="flex items-center justify-between py-3">
-              <span class="text-sm text-gray-900 dark:text-white">{{ qh.name }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(qh.status) }}">{{ qh.status }}</span>
-            </div>
-          @endforeach
-        </div>
-      @endif
-    </div>
-  @endif
 </div>
