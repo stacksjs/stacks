@@ -85,6 +85,7 @@ export function debounce<T extends (..._args: any[]) => any>(
       return invokeFunc()
     }
 
+    // Returns the result from the previous invocation (standard debounce behavior)
     return result
   } as T & { cancel: () => void; flush: () => void }
 

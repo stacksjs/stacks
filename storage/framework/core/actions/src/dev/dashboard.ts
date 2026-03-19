@@ -40,10 +40,12 @@ function restoreConsole(): void {
 async function startStxServer(): Promise<void> {
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
-    ;({ serve } = await import('bun-plugin-stx/serve'))
+    const mod = await import('bun-plugin-stx/serve')
+    serve = mod.serve
   }
   catch {
-    ;({ serve } = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js')))
+    const mod = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js'))
+    serve = mod.serve
   }
 
   const serverPromise = serve({
@@ -56,7 +58,7 @@ async function startStxServer(): Promise<void> {
   })
 
   serverPromise.catch((err: Error) => {
-    if (verbose) originalConsoleLog(`  ${dim(`STX server issue: ${err.message}`)}`)
+    console.error(`[Dashboard] STX server failed to start: ${err.message}`)
   })
 }
 
@@ -142,9 +144,10 @@ function startConfigApi(): void {
               `(${escapedKey}\\s*:\\s*)(?:'[^']*'|"[^"]*"|\\d+(?:\\.\\d+)?|true|false)`,
             )
             if (pattern.test(content)) {
-              const isNum = /^\d+(\.\d+)?$/.test(value)
+              const isNum = /^\d+(?:\.\d+)?$/.test(value)
               const isBool = value === 'true' || value === 'false'
-              const replacement = isNum || isBool ? value : `'${value}'`
+              const sanitizedValue = value.replace(/'/g, '\\\'').replace(/\$/g, '$$$$')
+              const replacement = isNum || isBool ? value : `'${sanitizedValue}'`
               content = content.replace(pattern, `$1${replacement}`)
             }
           }
@@ -165,6 +168,7 @@ function startConfigApi(): void {
 startConfigApi()
 
 // Phase 1: Start STX server and discover models in parallel
+// eslint-disable-next-line ts/no-top-level-await
 const [, discoveredModels] = await Promise.all([
   startStxServer(),
   discoverModels(projectPath('app/Models'), storagePath('framework/defaults/models')),
@@ -175,6 +179,7 @@ const manifestPath = storagePath('framework/defaults/dashboard/.discovered-model
 writeFileSync(manifestPath, JSON.stringify(buildManifest(discoveredModels), null, 2))
 
 // Wait briefly for STX server (it's usually ready by now)
+// eslint-disable-next-line ts/no-top-level-await
 const serverReady = await waitForServer(dashboardPort)
 
 // Restore console before our output
@@ -182,7 +187,9 @@ restoreConsole()
 
 // Start reverse proxy in the background (not needed for Craft window, only for browser access)
 let proxyStarted = false
-startReverseProxy().then(ok => { proxyStarted = ok }).catch(() => {})
+startReverseProxy().then(ok => { proxyStarted = ok }).catch((err) => {
+  if (verbose) console.warn('[Dashboard] Reverse proxy failed:', err)
+})
 
 const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
 const dashboardLocalUrl = `http://localhost:${dashboardPort}`
@@ -195,6 +202,7 @@ const initialUrl = `http://localhost:${dashboardPort}/app?native-sidebar=1`
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
 
+/* eslint-disable no-console */
 console.log()
 console.log(`  ${bold(cyan('stacks dashboard'))}`)
 console.log()
@@ -230,6 +238,7 @@ if (verbose) {
   }
 }
 console.log()
+/* eslint-enable no-console */
 
 const app = createApp({
   url: initialUrl,
@@ -261,8 +270,8 @@ try {
 }
 catch (err: any) {
   const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
-  console.log(`  ${dim('Dashboard available at:')} ${cyan(`${fallbackUrl}/app`)}`)
-  console.log()
+  // eslint-disable-next-line no-console
+  console.log(`  ${dim('Dashboard available at:')} ${cyan(`${fallbackUrl}/app`)}\n`)
 
   // Keep the process running since we're serving via STX
   await new Promise(() => {})

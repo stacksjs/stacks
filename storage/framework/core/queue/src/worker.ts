@@ -301,9 +301,10 @@ async function processJob(job: any): Promise<void> {
 
     // Get max attempts from job payload options, default to 1 (no retries)
     let maxAttempts = 1
+    let parsedPayload: Record<string, any> = {}
     try {
-      const payload = JSON.parse(job.payload || '{}') as Record<string, any>
-      maxAttempts = payload.options?.tries || 1
+      parsedPayload = JSON.parse(job.payload || '{}') as Record<string, any>
+      maxAttempts = parsedPayload.options?.tries || 1
     }
     catch {
       // Malformed payload — use default max attempts
@@ -328,8 +329,7 @@ async function processJob(job: any): Promise<void> {
 
       // Track batch failure if this job belongs to a batch
       try {
-        const failedPayload = JSON.parse(job.payload || '{}')
-        const batchId = failedPayload.payload?._batchId
+        const batchId = parsedPayload.payload?._batchId
         if (batchId) {
           const { recordBatchJobFailure } = await import('./batch')
           await recordBatchJobFailure(batchId, String(jobId), jobError)
@@ -341,7 +341,7 @@ async function processJob(job: any): Promise<void> {
     }
     else {
       // Release for retry with backoff
-      const backoffDelays = payload.options?.backoff
+      const backoffDelays = parsedPayload.options?.backoff
       let retryDelay = 30 // default 30 seconds
       if (Array.isArray(backoffDelays) && backoffDelays.length > 0) {
         // Use the appropriate backoff delay for this attempt (0-indexed)

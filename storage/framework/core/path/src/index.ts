@@ -960,7 +960,11 @@ export function paymentsPath(path?: string): string {
 export function projectPath(filePath = '', options?: { relative: boolean }): string {
   let path = process.cwd()
 
-  while (path.includes('storage')) path = resolve(path, '..')
+  while (path.includes('storage')) {
+    const parent = resolve(path, '..')
+    if (parent === path) break
+    path = parent
+  }
 
   const finalPath = resolve(path, filePath)
 

@@ -71,7 +71,7 @@ export function template(str: string, ...args: any[]): string {
   return str.replace(/\{(\d+)\}/g, (match, key) => {
     const index = Number(key)
 
-    return Number.isNaN(index) ? match : args[index]
+    return Number.isNaN(index) || args[index] === undefined ? match : args[index]
   })
 }
 

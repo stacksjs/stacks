@@ -7,8 +7,10 @@
 import type { VerifiedRegistrationResponse } from '@stacksjs/ts-auth'
 import type { Insertable } from '@stacksjs/database'
 
-type UserModel = InstanceType<typeof User>
 import { db } from '@stacksjs/database'
+import { User } from '@stacksjs/orm'
+
+type UserModel = InstanceType<typeof User>
 
 // Re-export WebAuthn functions from ts-auth
 export {

@@ -148,17 +148,11 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
       // Check if key should be encrypted
       let shouldEncrypt = true
 
-      try {
-        if (options.key && !key.match(new RegExp(options.key))) {
-          shouldEncrypt = false
-        }
-
-        if (options.excludeKey && key.match(new RegExp(options.excludeKey))) {
-          shouldEncrypt = false
-        }
+      if (options.key && !key.includes(options.key)) {
+        shouldEncrypt = false
       }
-      catch {
-        log.error(`Invalid regex pattern in key/excludeKey option`)
+
+      if (options.excludeKey && key.includes(options.excludeKey)) {
         shouldEncrypt = false
       }
 
@@ -266,13 +260,7 @@ export function decryptEnv(options: DecryptOptions = {}): { success: boolean, ou
       // Check if key should be decrypted
       let shouldDecrypt = value.startsWith('encrypted:')
 
-      try {
-        if (options.key && !key.match(new RegExp(options.key))) {
-          shouldDecrypt = false
-        }
-      }
-      catch {
-        log.error(`Invalid regex pattern in key option`)
+      if (options.key && !key.includes(options.key)) {
         shouldDecrypt = false
       }
 

@@ -1,26 +1,35 @@
+import { timingSafeEqual } from 'node:crypto'
 import { base64Decode, base64Encode, hashPassword, md5, verifyPassword } from 'ts-security-crypto'
 
 /**
- * Lazy-load hashing config to avoid circular dependency issues
+ * Lazy-load hashing config to avoid circular dependency issues.
+ * Cached after first successful load.
  */
+let _hashingConfigCache: { driver?: string, bcrypt?: { rounds?: number }, argon2?: { memory?: number, time?: number } } | null = null
+
 function getHashingConfig(): {
   driver?: string
   bcrypt?: { rounds?: number }
   argon2?: { memory?: number, time?: number }
 } {
+  if (_hashingConfigCache)
+    return _hashingConfigCache
+
   try {
     // Dynamic import to avoid circular dependency
     // eslint-disable-next-line ts/no-require-imports
     const { hashing } = require('@stacksjs/config')
-    return hashing || {}
+    _hashingConfigCache = hashing || {}
+    return _hashingConfigCache!
   }
   catch {
-    // Fallback to Laravel-like defaults if config not available
-    return {
+    console.warn('[Security] Failed to load hashing config, using defaults')
+    _hashingConfigCache = {
       driver: 'bcrypt',
       bcrypt: { rounds: 12 },
       argon2: { memory: 65536, time: 2 },
     }
+    return _hashingConfigCache
   }
 }
 
@@ -247,7 +256,7 @@ export async function argon2Encode(
   const config = getHashingConfig()
   const type = options?.type || 'argon2id'
   const memory = options?.memory || config.argon2?.memory || 65536
-  const time = options?.time || config.argon2?.time || 1
+  const time = options?.time || config.argon2?.time || 2
 
   return await hashPassword(password, {
     algorithm: type,
@@ -277,7 +286,12 @@ export async function bcryptVerify(password: string, hash: string): Promise<bool
  * Note: base64 is NOT a secure password hash - only for legacy support
  */
 export function base64Verify(password: string, hash: string): boolean {
-  return base64Decode(hash) === password
+  const decoded = base64Decode(hash)
+  const a = Buffer.from(decoded)
+  const b = Buffer.from(password)
+  if (a.length !== b.length)
+    return false
+  return timingSafeEqual(a, b)
 }
 
 /**

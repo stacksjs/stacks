@@ -117,7 +117,8 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
       html,
     })
   }
-  catch {
+  catch (templateError) {
+    console.warn('[EmailVerification] Template rendering failed, using fallback:', templateError)
     // Fallback: send a simple text email if template is not found
     await mail.send({
       to: user.email,

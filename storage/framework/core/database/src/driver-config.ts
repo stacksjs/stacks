@@ -248,7 +248,7 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
       return {
         name: env.DB_DATABASE || 'stacks',
         host: env.DB_HOST || '127.0.0.1',
-        port: env.DB_PORT ||3306,
+        port: env.DB_PORT ?? 3306,
         username: env.DB_USERNAME || 'root',
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',
@@ -258,7 +258,7 @@ export function getConfigFromEnv(driver: SupportedDialect): DatabaseConnections[
       return {
         name: env.DB_DATABASE || 'stacks',
         host: env.DB_HOST || '127.0.0.1',
-        port: env.DB_PORT ||5432,
+        port: env.DB_PORT ?? 5432,
         username: env.DB_USERNAME || 'postgres',
         password: env.DB_PASSWORD || '',
         prefix: env.DB_PREFIX || '',

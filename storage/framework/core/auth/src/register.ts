@@ -1,6 +1,7 @@
 import type { NewUser } from '@stacksjs/orm'
 import type { AuthToken } from './token'
 import { db } from '@stacksjs/database'
+import { HttpError } from '@stacksjs/error-handling'
 import { User } from '@stacksjs/orm'
 import { makeHash } from '@stacksjs/security'
 import { Auth } from './authentication'
@@ -12,7 +13,7 @@ export async function register(credentials: NewUser): Promise<{ token: AuthToken
   const existingUser = await User.where('email', '=', email).first()
 
   if (existingUser)
-    throw new Error(`Email already exists!`)
+    throw new HttpError(409, 'Email already exists')
 
   // Hash the password
   const hashedPassword = await makeHash(password, { algorithm: 'bcrypt' })

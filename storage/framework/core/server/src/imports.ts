@@ -1,6 +1,7 @@
 import type { AutoImportsOptions } from 'bun-plugin-auto-imports'
 import { dirname, relative } from 'node:path'
 import { plugin } from 'bun'
+import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
 import { autoImports, generateRuntimeIndex, generateGlobalsScript } from 'bun-plugin-auto-imports'
 import { globSync } from '@stacksjs/storage'
@@ -127,7 +128,7 @@ export * from './controllers'
     `${outputDir}/index.ts`,
   )
 
-  console.log('Auto-import files generated successfully')
+  log.debug('Auto-import files generated successfully')
 }
 
 /**
@@ -216,9 +217,9 @@ export function initiateImports(): void {
   // Register bundler plugin (for Bun bundler)
   plugin(autoImports(options))
 
-  // Generate runtime files asynchronously
+  // Generate runtime files — fire-and-forget but log errors visibly
   generateAutoImportFiles().catch(err => {
-    console.warn('Failed to generate auto-import files:', err)
+    console.error('[Server] Failed to generate auto-import files:', err)
   })
 }
 

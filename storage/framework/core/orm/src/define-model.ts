@@ -92,7 +92,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
 
   // Lazy import to avoid circular dependency
   const dispatchEvent = (event: string, data: any) => {
-    import('@stacksjs/events')
+    return import('@stacksjs/events')
       .then(({ dispatch }) => dispatch(event, data))
       .catch(() => {
         // Events module may not be available in all contexts (e.g., browser, tests)

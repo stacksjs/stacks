@@ -7,8 +7,8 @@ import { runAction } from '../helpers'
 const options: any = parseArgs()
 
 // run all the upgrade actions
-// if (options?.framework || options?.all)
-//   await updateFramework(options)
+if (options?.framework || options?.all)
+  await runAction(Action.UpgradeFramework, options)
 
 if (options?.dependencies || options?.all)
   await runAction(Action.UpgradeDeps, options)
@@ -22,7 +22,4 @@ if (options?.shell || options?.all)
 if (options?.binary || options?.all)
   await runAction(Action.UpgradeBinary, options)
 
-process.exit(ExitCode.InvalidArgument)
-
-// TODO: also update CI files & configurations, and other files, possibly (taze?)
-// we want this to be smart enough to update only if files that have been updated
+process.exit(ExitCode.Success)

@@ -1050,7 +1050,10 @@ let routesLoadPromise: Promise<void> | null = null
 export async function serverResponse(request: Request, _body?: string): Promise<Response> {
   // Load routes on first request — use a shared promise to prevent double-loading
   if (!routesLoadPromise) {
-    routesLoadPromise = route.importRoutes()
+    routesLoadPromise = route.importRoutes().catch((err) => {
+      routesLoadPromise = null
+      throw err
+    })
   }
   await routesLoadPromise
 

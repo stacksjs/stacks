@@ -51,6 +51,12 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
 async function importRouteFile(path: string): Promise<void> {
   // Remove .ts extension if present
   const cleanPath = path.replace(/\.ts$/, '')
+
+  // Prevent path traversal
+  if (cleanPath.includes('..') || cleanPath.startsWith('/')) {
+    throw new Error(`Invalid route path: ${cleanPath}`)
+  }
+
   await import(`../../../../../routes/${cleanPath}`)
 }
 

@@ -389,7 +389,8 @@ export class SmtpServer {
           const b = Buffer.alloc(maxLen)
           a.set(expected)
           b.set(actual)
-          crypto.timingSafeEqual(a, b)
+          // Always false when lengths differ, but run comparison to avoid timing leak
+          crypto.timingSafeEqual(a, b) // result intentionally discarded — length mismatch means invalid
           return false
         }
         return crypto.timingSafeEqual(expected, actual)

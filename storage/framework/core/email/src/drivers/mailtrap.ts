@@ -13,7 +13,7 @@ export class MailtrapDriver extends BaseEmailDriver {
   private inboxId?: number | null = null
 
   private getConfig() {
-    if (!this.host || !this.token || !this.inboxId) {
+    if (this.host === null || this.token === null || this.inboxId === null) {
       this.host = config.services.mailtrap?.host ?? 'https://sandbox.api.mailtrap.io/api/send'
       this.token = config.services.mailtrap?.token ?? ''
       this.inboxId = config.services.mailtrap?.inboxId ? Number(config.services.mailtrap.inboxId) : undefined

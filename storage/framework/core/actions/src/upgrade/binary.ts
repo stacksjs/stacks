@@ -2,6 +2,7 @@ import process from 'node:process'
 import { runCommand } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { path } from '@stacksjs/path'
+import { ExitCode } from '@stacksjs/types'
 import { fs, storage } from '@stacksjs/storage'
 
 /**
@@ -19,7 +20,7 @@ const result = await runCommand('bun compile.ts', { cwd: path.buddyPath() })
 
 if (result.isErr) {
   log.error('There was an error compiling the binary', result.error)
-  process.exit(1)
+  process.exit(ExitCode.FatalError)
 }
 
 // Check if the source exists (it should be, because bun compile.ts was successful)
@@ -36,8 +37,10 @@ if (await storage.exists(source)) {
   }
   catch (err: any) {
     log.error(err)
+    process.exit(ExitCode.FatalError)
   }
 }
 else {
   log.error(`Binary source not found: ${source}`)
+  process.exit(ExitCode.FatalError)
 }

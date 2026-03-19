@@ -35,17 +35,22 @@ export function aesDecrypt(ciphertext: string, key: Buffer, iv: string, authTag:
   // Convert key to proper format (32 bytes for AES-256)
   const keyBuffer = key.length === 32 ? key : Buffer.from(key.toString('hex').slice(0, 64), 'hex')
 
-  // Create decipher
-  const decipher = createDecipheriv('aes-256-gcm', keyBuffer, Buffer.from(iv, 'hex'))
-  decipher.setAuthTag(Buffer.from(authTag, 'hex'))
+  try {
+    // Create decipher
+    const decipher = createDecipheriv('aes-256-gcm', keyBuffer, Buffer.from(iv, 'hex'))
+    decipher.setAuthTag(Buffer.from(authTag, 'hex'))
 
-  // Decrypt
-  const decrypted = Buffer.concat([
-    decipher.update(Buffer.from(ciphertext, 'hex')),
-    decipher.final(),
-  ])
+    // Decrypt
+    const decrypted = Buffer.concat([
+      decipher.update(Buffer.from(ciphertext, 'hex')),
+      decipher.final(),
+    ])
 
-  return decrypted.toString('utf8')
+    return decrypted.toString('utf8')
+  }
+  catch (error) {
+    throw new Error(`Decryption failed (data may be corrupted or key is incorrect): ${error instanceof Error ? error.message : String(error)}`)
+  }
 }
 
 // secp256k1 key generation
@@ -93,6 +98,10 @@ export function decryptValue(encryptedValue: string, privateKey: string): string
 
   const encryptedData = encryptedValue.slice(10) // Remove "encrypted:"
   const data = Buffer.from(encryptedData, 'base64')
+
+  if (data.length < 33) {
+    throw new Error('Invalid encrypted data: payload too short')
+  }
 
   // Extract components
   const iv = data.subarray(0, 16).toString('hex')

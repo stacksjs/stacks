@@ -154,8 +154,11 @@ export async function dump(...args: any[]): Promise<void> {
   }
 }
 
-export async function dd(...args: any[]): Promise<void> {
+export async function dd(...args: any[]): Promise<never> {
   await log.info(args)
+  // Flush stdout/stderr before exiting to ensure output is visible
+  process.stdout.write?.('')
+  process.stderr.write?.('')
   process.exit(ExitCode.FatalError)
 }
 

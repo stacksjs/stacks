@@ -44,7 +44,7 @@ function getJsonHeaders(): Record<string, string> {
   const isDev = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
   if (isDev) {
-    headers['Access-Control-Allow-Origin'] = '*'
+    headers['Access-Control-Allow-Origin'] = 'http://localhost:5173'
   }
   return headers
 }
@@ -319,7 +319,7 @@ export async function createErrorResponse(
       status,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': '*',
+        'Access-Control-Allow-Origin': 'http://localhost:5173',
       },
     })
   }

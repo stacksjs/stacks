@@ -105,7 +105,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   }
 
   // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath
-  const opts = buddyOptions()
+  const opts = buddyOptions(options) || ''
   const path = p.relativeActionsPath(`src/${action}.ts`)
 
   // Use --watch for dev actions to enable hot reloading
@@ -154,7 +154,7 @@ export async function runActions(
       return err(`The specified action "${action}" does not exist`)
   }
 
-  const opts = buddyOptions()
+  const opts = buddyOptions(options) || ''
 
   const o = {
     cwd: options?.cwd || p.projectPath(),

@@ -6,6 +6,7 @@
  */
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
+import process from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
 
 // AsyncLocalStorage for request context
@@ -52,6 +53,9 @@ export const request = new Proxy({} as EnhancedRequest, {
     const currentRequest = getCurrentRequest()
 
     if (!currentRequest) {
+      if (process.env.NODE_ENV !== 'production') {
+        console.warn(`[RequestContext] Accessing request.${String(prop)} outside of request context`)
+      }
       // Return safe defaults when no request context
       if (prop === 'bearerToken') {
         return (): any => null

@@ -5,6 +5,25 @@ import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 
 const sessions = new Map<string, { userId: number, expiresAt: number }>()
+const MAX_SESSIONS = 10_000
+const EVICTION_INTERVAL = 5 * 60 * 1000
+let lastEviction = Date.now()
+
+function evictExpiredSessions(): void {
+  const now = Date.now()
+  if (now - lastEviction < EVICTION_INTERVAL && sessions.size < MAX_SESSIONS)
+    return
+
+  lastEviction = now
+  for (const [key, value] of sessions) {
+    if (value.expiresAt <= now) {
+      sessions.delete(key)
+    }
+  }
+}
+
+// Dummy hash for timing-safe comparison when user doesn't exist
+const DUMMY_BCRYPT_HASH = '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
 
 function generateSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))
@@ -16,15 +35,15 @@ function generateSessionId(): string {
  * Returns the session ID to be set as a cookie.
  */
 export async function sessionLogin(email: string, password: string): Promise<{ user: UserModel, sessionId: string }> {
+  evictExpiredSessions()
+
   const user = await User.where('email', email).first()
 
-  if (!user) {
-    throw new HttpError(401, 'Invalid credentials')
-  }
+  // Always run hash verification to prevent timing-based user enumeration
+  const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
+  const isValid = await verifyHash(password, hashToVerify)
 
-  const isValid = await verifyHash(password, user.password ?? '')
-
-  if (!isValid) {
+  if (!isValid || !user) {
     throw new HttpError(401, 'Invalid credentials')
   }
 

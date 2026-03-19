@@ -339,6 +339,8 @@ export async function createCommentablesTable(options: {
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('${options.requiresApproval ? 'pending' : 'approved'}'))\n`
+  migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
 
@@ -385,6 +387,8 @@ export async function createPostgresCommentsTable(): Promise<void> {
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
+  migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('pending'))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
@@ -409,7 +413,7 @@ export async function dropCommonTables(): Promise<void> {
   await db.unsafe('DROP TABLE IF EXISTS password_resets').execute()
   await db.unsafe('DROP TABLE IF EXISTS query_logs').execute()
   await db.unsafe('DROP TABLE IF EXISTS categorizables').execute()
-  await db.unsafe('DROP TABLE IF EXISTS commenteable_upvotes').execute()
+  await db.unsafe('DROP TABLE IF EXISTS commentable_upvotes').execute()
   await db.unsafe('DROP TABLE IF EXISTS tags').execute()
   await db.unsafe('DROP TABLE IF EXISTS taggables').execute()
   await db.unsafe('DROP TABLE IF EXISTS categorizable_models').execute()
@@ -430,7 +434,7 @@ export async function dropMigrationTables(): Promise<void> {
 }
 
 export async function createCommentUpvoteMigration(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable_upvotes')
+  const hasBeenMigrated = await hasMigrationBeenCreated('commentable_upvotes')
 
   if (hasBeenMigrated)
     return
@@ -438,17 +442,17 @@ export async function createCommentUpvoteMigration(): Promise<void> {
   let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('commenteable_upvotes')\n`
+  migrationContent += `    .createTable('commentable_upvotes')\n`
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('upvoteable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('upvoteable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_upvoteable').on('commenteable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commentable_upvotes_upvoteable').on('commentable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
+  const migrationFileName = `${timestamp}-create-commentable_upvotes-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   await Bun.write(migrationFilePath, migrationContent)
@@ -457,7 +461,7 @@ export async function createCommentUpvoteMigration(): Promise<void> {
 }
 
 export async function createPostgresCommentUpvoteMigration(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('commenteable_upvotes')
+  const hasBeenMigrated = await hasMigrationBeenCreated('commentable_upvotes')
 
   if (hasBeenMigrated)
     return
@@ -465,17 +469,17 @@ export async function createPostgresCommentUpvoteMigration(): Promise<void> {
   let migrationContent = `import type { Database } from '@stacksjs/database'\n import { sql } from '@stacksjs/database'\n\n`
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await db.schema\n`
-  migrationContent += `    .createTable('commenteable_upvotes')\n`
+  migrationContent += `    .createTable('commentable_upvotes')\n`
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('upvoteable_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('upvoteable_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
   migrationContent += `    .execute()\n\n`
-  migrationContent += `  await db.schema.createIndex('idx_commenteable_upvotes_upvoteable').on('commenteable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
+  migrationContent += `  await db.schema.createIndex('idx_commentable_upvotes_upvoteable').on('commentable_upvotes').columns(['upvoteable_id', 'upvoteable_type']).execute()\n`
   migrationContent += `}\n`
 
   const timestamp = new Date().getTime().toString()
-  const migrationFileName = `${timestamp}-create-commenteable_upvotes-table.ts`
+  const migrationFileName = `${timestamp}-create-commentable_upvotes-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
   await Bun.write(migrationFilePath, migrationContent)

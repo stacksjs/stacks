@@ -119,12 +119,12 @@ export function createBillableMethods(_tableName: string) {
 
     async subscriptionHistory(model: any): Promise<any> {
       const { manageInvoice } = await import('@stacksjs/payments')
-      return manageInvoice.list(model)
+      return await manageInvoice.list(model)
     },
 
     async transactionHistory(model: any): Promise<any> {
       const { manageTransaction } = await import('@stacksjs/payments')
-      return manageTransaction.list(model)
+      return await manageTransaction.list(model)
     },
   }
 }

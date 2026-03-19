@@ -185,5 +185,5 @@ export function handleError(
     Object.assign(error, err)
   }
 
-  return ErrorHandler.handle(error, { ...options as ErrorOptions, message: errorMessage })
+  return ErrorHandler.handle(error, { ...options as LogErrorOptions, message: errorMessage })
 }

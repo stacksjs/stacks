@@ -24,7 +24,7 @@ if (data.dependencies['aws.amazon.com/cli'] === undefined) {
 if (data.dependencies['bun.sh'] === undefined) {
   log.info('bun.sh dependency not found in pantry.yaml.')
   // throw an error unless its installed locally
-  const result = await runCommand('which aws')
+  const result = await runCommand('which bun')
   if (result.isErr)
     throw new Error('bun.sh dependency not found in pantry.yaml. To confirm, run `which bun`')
 }

@@ -16,16 +16,22 @@ export async function move(
 ): Promise<Result<{ message: string }, Error>> {
   try {
     if (Array.isArray(src)) {
+      const errors: Error[] = []
       const operations = src.map(async (file) => {
         const from = file
         const to = path.resolve(dest, path.basename(file))
         const result = await rename(from, to, options)
 
-        if (result.isErr)
-          return log.error(result.error)
+        if (result.isErr) {
+          log.error(result.error)
+          errors.push(result.error)
+        }
       })
 
       await Promise.all(operations)
+
+      if (errors.length > 0)
+        return err(handleError(errors[0]))
 
       return ok({ message: 'Files moved successfully' })
     }
@@ -67,7 +73,7 @@ export async function rename(
         if (!options?.overwrite)
           return reject(err(new Error(`File or directory already exists: ${to}`)))
 
-        fs.unlinkSync(to)
+        fs.rmSync(to, { recursive: true, force: true })
       }
 
       // "Move" the file

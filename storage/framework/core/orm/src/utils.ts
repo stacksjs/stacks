@@ -652,6 +652,8 @@ export function findUserModel(modelName: string): string {
 
 export function formatDate(date: Date | number | string): string {
   const d = typeof date === 'number' ? new Date(date) : typeof date === 'string' ? new Date(date) : date
+  if (Number.isNaN(d.getTime()))
+    throw new Error(`Invalid date value: ${String(date)}`)
   return d.toISOString().replace('T', ' ').split('.')[0]
 }
 

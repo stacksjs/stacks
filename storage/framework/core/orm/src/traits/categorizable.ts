@@ -88,11 +88,12 @@ export function createCategorizableMethods(tableName: string) {
         .execute()
     },
 
-    async removeCategory(categoryId: number): Promise<void> {
+    async removeCategory(id: number, categoryId: number): Promise<void> {
       await db
-        .deleteFrom('categorizable')
+        .deleteFrom('categorizable_models')
+        .where('categorizable_id', '=', id)
         .where('categorizable_type', '=', tableName)
-        .where('id', '=', categoryId)
+        .where('category_id', '=', categoryId)
         .execute()
     },
   }

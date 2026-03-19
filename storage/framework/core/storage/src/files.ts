@@ -102,7 +102,7 @@ function isFile(path: string): boolean {
 }
 
 export function doesExist(path: string): boolean {
-  return !isFile(path) || !isFolder(path)
+  return isFile(path) || isFolder(path)
 }
 
 export function doesNotExist(path: string): boolean {

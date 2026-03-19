@@ -28,6 +28,7 @@ function evictStaleEntries(): void {
 
 export class RateLimiter {
   static isRateLimited(email: string): boolean {
+    email = email.toLowerCase()
     evictStaleEntries()
 
     const now = Date.now()
@@ -50,6 +51,7 @@ export class RateLimiter {
   }
 
   static recordFailedAttempt(email: string): void {
+    email = email.toLowerCase()
     const now = Date.now()
     const userAttempts = attemptStore.get(email) || { attempts: 0, lockedUntil: 0 }
     userAttempts.attempts++
@@ -64,7 +66,7 @@ export class RateLimiter {
   }
 
   static resetAttempts(email: string): void {
-    attemptStore.delete(email)
+    attemptStore.delete(email.toLowerCase())
   }
 
   static validateAttempt(email: string): void {

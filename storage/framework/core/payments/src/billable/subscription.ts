@@ -138,16 +138,16 @@ export const manageSubscription: SubscriptionManager = (() => {
     await db.updateTable('subscriptions').set({ provider_status: 'canceled' }).where('provider_id', '=', subscriptionId).executeTakeFirst()
   }
 
-  async function isActive(subscription: SubscriptionsTable): Promise<boolean> {
+  function isActive(subscription: SubscriptionsTable): boolean {
     return (subscription as Record<string, unknown>).provider_status === 'active'
   }
 
-  async function isTrial(subscription: SubscriptionsTable): Promise<boolean> {
+  function isTrial(subscription: SubscriptionsTable): boolean {
     return (subscription as Record<string, unknown>).provider_status === 'trialing'
   }
 
-  async function isIncomplete(_user: UserModel, type: string): Promise<boolean> {
-    const subscription = await db.selectFrom('subscriptions').where('type', '=', type).selectAll().executeTakeFirst()
+  async function isIncomplete(user: UserModel, type: string): Promise<boolean> {
+    const subscription = await db.selectFrom('subscriptions').where('user_id', '=', user.id).where('type', '=', type).selectAll().executeTakeFirst()
 
     if (!subscription)
       return false

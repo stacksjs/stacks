@@ -48,8 +48,8 @@ export async function validateField(modelFile: string, params: RequestData): Pro
         ? (attributeKey.validation?.rule as Validator<any>).isRequired
         : false
 
-      // Skip validation if the attribute has a default value or is required
-      if (attributeKey.default !== undefined || isRequired === false)
+      // Skip validation if the attribute has a default value and is not required
+      if (attributeKey.default !== undefined && isRequired === false)
         continue
 
       ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>

@@ -133,7 +133,7 @@ function expandVariables(value: string, env: Record<string, string | undefined>)
  * Only a small set of safe commands are allowed to prevent
  * arbitrary code execution from tampered .env files.
  */
-const ALLOWED_ENV_COMMANDS = new Set(['date', 'hostname', 'whoami', 'uname', 'pwd', 'echo'])
+const ALLOWED_ENV_COMMANDS = new Set(['date', 'hostname', 'whoami', 'uname', 'pwd'])
 
 function expandCommands(value: string): string {
   // Match $(command) patterns
@@ -198,9 +198,11 @@ export async function loadEnvFiles(
         allParsed[key] = value
       }
     }
-    catch (error) {
-      // File doesn't exist or can't be read
-      continue
+    catch (error: any) {
+      if (error?.code === 'ENOENT') {
+        continue
+      }
+      allErrors.push(`Failed to read ${file}: ${error instanceof Error ? error.message : String(error)}`)
     }
   }
 

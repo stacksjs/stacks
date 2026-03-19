@@ -351,24 +351,28 @@ export async function fetchDailyOrderTrends(_daysRange: number = 30): Promise<{
   const startDate = new Date(today)
   startDate.setDate(today.getDate() - _daysRange)
 
-  // Query to get daily order counts and revenue
-  const dailyOrders = await db
+  // Query all orders in the range, then aggregate in JS by date
+  const orders = await db
     .selectFrom('orders')
-    .select([
-      (eb: any) => eb.fn.count('id').as('order_count'),
-      (eb: any) => eb.fn.sum('total_amount').as('revenue'),
-      // Extract just the date part in ISO format (YYYY-MM-DD)
-      'created_at',
-    ] as any)
+    .select(['created_at', 'total_amount'] as any)
     .where('created_at', '>=', startDate.toISOString())
     .where('created_at', '<=', today.toISOString())
-    .groupBy('created_at')
     .orderBy('created_at', 'asc')
-    .execute() as { created_at: string, order_count: number, revenue: number }[]
+    .execute() as { created_at: string, total_amount: number }[]
 
-  return dailyOrders.map((day: any) => ({
-    date: day.created_at!,
-    order_count: Number(day.order_count || 0),
-    revenue: Number(day.revenue || 0),
+  // Group by date (YYYY-MM-DD)
+  const dailyMap = new Map<string, { order_count: number, revenue: number }>()
+  for (const order of orders) {
+    const date = (order.created_at || '').split('T')[0] || 'unknown'
+    const entry = dailyMap.get(date) || { order_count: 0, revenue: 0 }
+    entry.order_count++
+    entry.revenue += Number(order.total_amount || 0)
+    dailyMap.set(date, entry)
+  }
+
+  return Array.from(dailyMap.entries()).map(([date, stats]) => ({
+    date,
+    order_count: stats.order_count,
+    revenue: stats.revenue,
   }))
 }

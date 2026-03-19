@@ -259,7 +259,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
         migrationContent += `.unique()`
       if (fieldOptions.default !== undefined) {
         if (typeof fieldOptions.default === 'string')
-          migrationContent += `.defaultTo('${fieldOptions.default}')`
+          migrationContent += `.defaultTo('${fieldOptions.default.replace(/'/g, "\\'")}')`
         else if (fieldOptions.default === null)
           migrationContent += `.defaultTo(null)`
         else
@@ -320,8 +320,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const migrationFileName = `${timestamp}-create-${tableName}-table.ts`
   const migrationFilePath = path.userMigrationsPath(migrationFileName)
 
-  // eslint-disable-next-line no-console
-  console.log(migrationFilePath)
+  log.debug(migrationFilePath)
 
   await Bun.write(migrationFilePath, migrationContent)
 

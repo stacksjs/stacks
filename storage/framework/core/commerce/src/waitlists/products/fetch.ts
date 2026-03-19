@@ -349,7 +349,7 @@ export async function fetchCountByDateGrouped(
 
   // Group by date and count
   const dateCounts = results.reduce((acc: any, { created_at }: any) => {
-    const date = created_at!.split('T')[0] // Get YYYY-MM-DD
+    const date = (created_at || '').split('T')[0] || 'unknown' // Get YYYY-MM-DD
     acc[date] = (acc[date] || 0) + 1
     return acc
   }, {} as Record<string, number>)

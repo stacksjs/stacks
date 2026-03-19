@@ -116,5 +116,6 @@ export enum Action {
   UpgradeBinary = 'upgrade/binary', // the `stacks` binary
   UpgradeBun = 'upgrade/bun',
   UpgradeDeps = 'upgrade/dependencies',
+  UpgradeFramework = 'upgrade/framework',
   UpgradeShell = 'upgrade/shell',
 }

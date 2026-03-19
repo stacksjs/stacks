@@ -891,8 +891,12 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
     if (callbacks) {
       // Only fire "then" if no failures (or allowFailures is set)
       const freshRecord = await getBatchRecord(batchId)
-      const opts = JSON.parse(freshRecord?.options || '{}')
-      const hasFailed = (freshRecord?.failed_jobs || 0) > 0
+      if (!freshRecord) {
+        removeBatchCallbacks(batchId)
+        return
+      }
+      const opts = JSON.parse(freshRecord.options || '{}')
+      const hasFailed = (freshRecord.failed_jobs || 0) > 0
 
       if (!hasFailed || opts.allowFailures) {
         for (const cb of callbacks.thenCallbacks) {

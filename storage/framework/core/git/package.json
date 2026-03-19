@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@stacksjs/gitlint": "^0.1.5",
-    "@stacksjs/gitit": "^0.2.2",
+    "@stacksjs/gitit": "^0.2.5",
     "bun-git-hooks": "^0.3.1"
   }
 }

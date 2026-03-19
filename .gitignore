@@ -32,6 +32,8 @@ custom-cli
 .fleet
 .idea
 .stacks
+.stacks-channel
+.tmp-upgrade
 .vscode
 .cursor
 .zed

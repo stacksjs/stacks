@@ -159,7 +159,7 @@ export class Auth {
 
     // Always run hash verification to prevent timing-based user enumeration
     // If user doesn't exist, verify against a dummy hash
-    const hashToVerify = user?.password || '$2b$12$invalidhashplaceholdervalue000000000000000000000'
+    const hashToVerify = user?.password || '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     if (hashCheck && user) {
@@ -188,7 +188,7 @@ export class Auth {
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
-    const hashToVerify = user?.password || '$2b$12$invalidhashplaceholdervalue000000000000000000000'
+    const hashToVerify = user?.password || '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     return hashCheck && !!user
@@ -764,7 +764,7 @@ export class Auth {
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
-    const hashToVerify = user?.password || '$2b$12$invalidhashplaceholdervalue000000000000000000000'
+    const hashToVerify = user?.password || '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     if (hashCheck && user) {

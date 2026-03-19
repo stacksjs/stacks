@@ -135,8 +135,8 @@ export class FailedJobNotifier {
       this.pendingBatch.push(job)
 
       if (!this.batchTimeout) {
-        this.batchTimeout = setTimeout(async () => {
-          await this.flushBatch()
+        this.batchTimeout = setTimeout(() => {
+          this.flushBatch().catch(error => log.error('Failed to flush notification batch:', error))
         }, this.config.batchInterval || 60000)
       }
 
@@ -197,10 +197,12 @@ export class FailedJobNotifier {
 
     try {
       await Promise.all(promises)
-      this.notificationCount += jobs.length
     }
     catch (error) {
       log.error('Failed to send job failure notifications:', error)
+    }
+    finally {
+      this.notificationCount += jobs.length
     }
   }
 
