@@ -45,7 +45,7 @@ features:
     details: Focus on coding, not publishing. Automates linting, version tagging, changelog generation, test execution, and more.
   - title: Global CDN
     icon: 🌐
-    details: “Securely deliver content with low latency and high transfer speeds,” AWS. Your assets, zero-config.
+    details: '"Securely deliver content with low latency and high transfer speeds," AWS. Your assets, zero-config.'
   - title: Queues & Jobs
     icon: 📦
     details: Leverage the power of queues. Defer time-consuming tasks using managed serverless queues.
@@ -57,13 +57,13 @@ features:
     details: Accept payments from your users using Stripe. One-off payments, subscriptions, and more.
   - title: Search Engine
     icon: 🔍
-    details: Powerful & fast. “Build an intuitive search experience in a snap,” Meilisearch.
+    details: 'Powerful & fast. "Build an intuitive search experience in a snap," Meilisearch.'
   - title: Progressive UI Engine
     icon: ⚙️
-    details: “An approachable, performant and versatile framework for building web UIs,” Vue.
+    details: An approachable, performant and versatile framework for building web UIs.
   - title: Atomic CSS Engine
     icon: 🎨
-    details: "Blazingly fast utility-first CSS framework," Headwind. Easily create & manage your styles.
+    details: '"Blazingly fast utility-first CSS framework," Headwind. Easily create & manage your styles.'
   - title: Streamlined Testing
     icon: 🧪
     details: A fast built-in testing framework. Enjoyable support for both unit & feature tests.

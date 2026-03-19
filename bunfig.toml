@@ -10,4 +10,8 @@ coverage = true
 bun = true
 
 [serve.static]
-plugins = [ "bun-plugin-tailwind" ]
+plugins = [ "bun-plugin-stx" ]
+
+[install]
+registry = { url = "https://registry.npmjs.org/", token = "$BUN_AUTH_TOKEN" }
+linker = "hoisted"

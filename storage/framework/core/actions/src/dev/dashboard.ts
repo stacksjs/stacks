@@ -23,7 +23,7 @@ console.warn = (...args: unknown[]) => {
 
 const dashboardPath = storagePath('framework/defaults/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
-const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
+const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
 
 // Determine if we have a custom domain (like stacks.localhost)
 const appUrl = process.env.APP_URL || ''
@@ -52,6 +52,7 @@ async function startStxServer(): Promise<void> {
     componentsDir: storagePath('framework/defaults/components/Dashboard'),
     layoutsDir: `${dashboardPath}/layouts`,
     partialsDir: dashboardPath,
+    quiet: true,
   })
 
   serverPromise.catch((err: Error) => {
@@ -62,8 +63,14 @@ async function startStxServer(): Promise<void> {
 async function startReverseProxy(): Promise<boolean> {
   if (!dashboardDomain) return false
 
+  // When running as part of `buddy dev`, the main dev server handles the
+  // reverse proxy for all subdomains. Starting a second proxy here would
+  // race for port 443 and break routing for other subdomains (docs, api, etc.).
+  if (process.env.STACKS_PROXY_MANAGED) return false
+
   try {
-    const { startProxies } = await import('@stacksjs/rpx')
+    const rpxPath = projectPath('node_modules/@stacksjs/rpx')
+    const { startProxies } = await import(rpxPath)
 
     await startProxies({
       proxies: [

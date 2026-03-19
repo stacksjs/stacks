@@ -12,7 +12,7 @@ import {
 } from '@stacksjs/actions'
 import { bold, cyan, dim, green, intro, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { libsPath } from '@stacksjs/path'
+import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
 
@@ -279,9 +279,9 @@ export function dev(buddy: CLI): void {
 export async function startDevelopmentServer(options: DevOptions, startTime?: number): Promise<void> {
   const appUrl = process.env.APP_URL
   const frontendPort = Number(process.env.PORT) || 3000
-  const apiPort = 3008
+  const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
-  const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
+  const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
   const hasCustomDomain = appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
   const apiDomain = domain ? `api.${domain}` : null
@@ -311,6 +311,10 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
   }
   console.log()
+
+  // Signal subprocesses that the main dev server manages the reverse proxy,
+  // so they don't start their own (which would conflict on port 443)
+  process.env.STACKS_PROXY_MANAGED = '1'
 
   // Clean up child processes on exit to prevent orphaned processes
   let isExiting = false
@@ -369,14 +373,17 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
   const docsDomain = `docs.${domain}`
   const dashboardDomain = `dashboard.${domain}`
   const frontendPort = Number(process.env.PORT) || 3000
-  const apiPort = 3008
+  const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
-  const dashboardPort = Number(process.env.PORT_ADMIN) || 3456
+  const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
   const sslBasePath = `${process.env.HOME}/.stacks/ssl`
   const verbose = options.verbose ?? false
 
   try {
-    const { startProxies } = await import('@stacksjs/rpx')
+    // Resolve rpx from the project root (buddy's nested copy may lack src/ files
+    // needed for Bun's "bun" export condition in the package.json)
+    const rpxPath = projectPath('node_modules/@stacksjs/rpx')
+    const { startProxies } = await import(rpxPath)
 
     // Use multi-proxy mode so rpx generates a SINGLE cert covering all domains
     await startProxies({

@@ -32,4 +32,5 @@ await serve({
   // Additional fallback layouts from defaults
   fallbackLayoutsDir: defaultLayoutsPath,
   fallbackPartialsDir: defaultViewsPath,
+  quiet: true,
 })
