@@ -31,7 +31,6 @@ async function handleLogin(credentials) {
   }
   catch (err) {
     error = err.message || 'An error occurred during login'
-    console.error(err)
   }
   finally {
     isLoading = false

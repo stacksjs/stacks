@@ -53,7 +53,7 @@ function filteredOrders() {
 function paginatedOrders() {
   const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredOrders.slice(start, end)
+  return filteredOrders().slice(start, end)
 }
 
 // Event handlers
@@ -69,7 +69,7 @@ const handlePrevPage = () => {
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredOrders().length / itemsPerPage)
   if (currentPage < totalPages) {
     currentPage++
   }

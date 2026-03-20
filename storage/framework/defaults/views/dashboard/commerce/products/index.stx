@@ -117,13 +117,11 @@ function toggleSort(column: string): void {
 
 // Product actions
 function viewProduct(product: Products): void {
-  console.log('View product:', product)
-  // Implement view product logic
+  // TODO: implement view product detail
 }
 
 function editProduct(product: Products): void {
-  console.log('Edit product:', product)
-  // Implement edit product logic
+  // TODO: implement edit product
 }
 
 // Define new product type

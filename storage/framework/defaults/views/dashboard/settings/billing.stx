@@ -19,7 +19,7 @@ const paymentStore = usePaymentStore()
   <div id="subscribed">
     <TransactionHistory />
     <div class="flex space-x-8">
-      <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+      <div class="mt-16 w-2/3 bg-white dark:bg-gray-800 px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
         @if(paymentStore.isStateLoading('fetchActivePlan') && paymentStore.isStateLoading('fetchStripeCustomer'))
           <LoadingDetails :height="24" />
         @else

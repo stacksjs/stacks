@@ -787,7 +787,7 @@ function starsData() { return ({
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
+              <thead class="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                   <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
                     Package
@@ -813,7 +813,7 @@ function starsData() { return ({
                 </tr>
               </thead>
 
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                 @foreach(packages as pkg)
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">

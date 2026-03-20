@@ -70,8 +70,7 @@ function updateQueuePositions(): void {
 
 // Send SMS notification
 async function sendSMSNotification(entry: WaitlistEntry, message: string): Promise<void> {
-  // In a real app, this would integrate with Twilio or similar service
-  console.log(`Sending SMS to ${entry.phone}: ${message}`)
+  // TODO: integrate with Twilio or similar SMS service
 }
 
 // Send notification based on preference
@@ -80,8 +79,7 @@ async function notifyCustomer(entry: WaitlistEntry, message: string): Promise<vo
     await sendSMSNotification(entry, message)
   }
   if (entry.notificationPreference === 'email' || entry.notificationPreference === 'both') {
-    // Send email notification
-    console.log(`Sending email to ${entry.email}: ${message}`)
+    // TODO: integrate with email notification service
   }
   entry.lastNotified = new Date().toISOString()
   entry.notified = true

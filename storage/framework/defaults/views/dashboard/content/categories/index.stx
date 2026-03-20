@@ -221,12 +221,12 @@ function filteredCategories() {
 }
 
 // Pagination
-function totalPages() { return Math.ceil(filteredCategories.length / itemsPerPage) }
+function totalPages() { return Math.ceil(filteredCategories().length / itemsPerPage) }
 
 function paginatedCategories() {
   const startIndex = (currentPage - 1) * itemsPerPage
   const endIndex = startIndex + itemsPerPage
-  return filteredCategories.slice(startIndex, endIndex)
+  return filteredCategories().slice(startIndex, endIndex)
 }
 
 function paginationRange() {
@@ -712,7 +712,7 @@ async function fetchCategories() {
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-gray-700 dark:text-gray-300">
-                Showing <span class="font-medium">{{ ((currentPage - 1) * itemsPerPage) + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredCategories.length) }}</span> of <span class="font-medium">{{ filteredCategories.length }}</span> results
+                Showing <span class="font-medium">{{ ((currentPage - 1) * itemsPerPage) + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredCategories().length) }}</span> of <span class="font-medium">{{ filteredCategories().length }}</span> results
               </p>
             </div>
             <div>

@@ -57,7 +57,7 @@ function filteredCustomers() {
 function paginatedCustomers() {
   const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredCustomers.slice(start, end)
+  return filteredCustomers().slice(start, end)
 }
 
 // Event handlers
@@ -73,7 +73,7 @@ const handlePrevPage = () => {
 }
 
 const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredCustomers.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredCustomers().length / itemsPerPage)
   if (currentPage < totalPages) {
     currentPage++
   }
@@ -95,11 +95,11 @@ function toggleSort(column: string): void {
 
 // Customer actions
 function viewCustomer(customer: any): void {
-  console.log('View customer:', customer)
+  // TODO: implement view customer detail
 }
 
 function editCustomer(customer: any): void {
-  console.log('Edit customer:', customer)
+  // TODO: implement edit customer
 }
 
 function removeCustomer(customer: any): void {
@@ -191,11 +191,10 @@ async function addCustomer(): Promise<void> {
 
   try {
     const response = await createCustomer(customerData)
-    console.log(response)
+    // customer created successfully
   } catch (error) {
     // If server request fails, remove from local state
     customers = customers.filter(c => c.id !== id)
-    console.error('Failed to create customer:', error)
   }
 }
 </script>

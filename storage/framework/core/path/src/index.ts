@@ -1251,6 +1251,14 @@ export function stacksPath(path?: string): string {
   return frameworkPath(`src/${path || ''}`)
 }
 
+export function stacksLockPath(): string {
+  return storagePath('framework/stacks.lock.json')
+}
+
+export function stacksBackupPath(stackName?: string): string {
+  return storagePath(`framework/stacks/backups/${stackName || ''}`)
+}
+
 /**
  * Returns the path to the `shell` directory within the core directory.
  *
@@ -1493,6 +1501,8 @@ export interface Path {
   userServerPath: (path?: string) => string
   serverlessPath: (path?: string) => string
   stacksPath: (path?: string) => string
+  stacksLockPath: () => string
+  stacksBackupPath: (stackName?: string) => string
   stringsPath: (path?: string) => string
   shellPath: (path?: string) => string
   storesPath: (path?: string) => string
@@ -1627,6 +1637,8 @@ export const path: Path = {
   userServerPath,
   serverlessPath,
   stacksPath,
+  stacksLockPath,
+  stacksBackupPath,
   stringsPath,
   shellPath,
   socialsPath,

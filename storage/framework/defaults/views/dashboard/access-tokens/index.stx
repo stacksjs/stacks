@@ -38,7 +38,7 @@ const tokens = [
       </h3>
 
       <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6">
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-key h-6 w-6 text-white" />
@@ -82,7 +82,7 @@ const tokens = [
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300">
-              <thead class="bg-gray-50">
+              <thead class="bg-gray-50 dark:bg-gray-700/50">
                 <tr>
                   <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
                     Name
@@ -114,7 +114,7 @@ const tokens = [
                 </tr>
               </thead>
 
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                 @foreach(tokens as token)
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">

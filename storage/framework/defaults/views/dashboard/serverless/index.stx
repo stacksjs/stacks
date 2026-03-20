@@ -486,13 +486,13 @@ const updateVisualization = () => {
   // Update the header text
   const headerText = document.querySelector('.text-base.text-gray-900.dark\\:text-gray-100')
   if (headerText) {
-    headerText.innerHTML = 'Serverless Infrastructure'
+    headerText.textContent = 'Serverless Infrastructure'
   }
 
   // Add IAM note
   const description = document.querySelector('.mt-2.text-sm.text-gray-700.dark\\:text-gray-400')
   if (description) {
-    description.innerHTML = 'Visualize and manage your serverless AWS services and their relationships.'
+    description.textContent = 'Visualize and manage your serverless AWS services and their relationships.'
   }
 }
 

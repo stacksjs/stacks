@@ -54,7 +54,7 @@ function filteredCategories() {
 function paginatedCategories() {
   const start = (currentPage - 1) * itemsPerPage
   const end = start + itemsPerPage
-  return filteredCategories.slice(start, end)
+  return filteredCategories().slice(start, end)
 }
 
 // Pagination handlers
@@ -65,7 +65,7 @@ function handlePrevPage(): void {
 }
 
 function handleNextPage(): void {
-  const totalPages = Math.ceil(filteredCategories.length / itemsPerPage)
+  const totalPages = Math.ceil(filteredCategories().length / itemsPerPage)
   if (currentPage < totalPages) {
     currentPage++
   }
