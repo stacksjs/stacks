@@ -46,7 +46,7 @@ function updateQueuePositions() {
 }
 
 async function sendSMSNotification(entry, message) {
-  console.log(`Sending SMS to ${entry.phone}: ${message}`)
+  // TODO: implement SMS notification via API
 }
 
 async function notifyCustomer(entry, message) {
@@ -54,7 +54,7 @@ async function notifyCustomer(entry, message) {
     await sendSMSNotification(entry, message)
   }
   if (entry.notificationPreference === 'email' || entry.notificationPreference === 'both') {
-    console.log(`Sending email to ${entry.email}: ${message}`)
+    // TODO: implement email notification via API
   }
   entry.lastNotified = new Date().toISOString()
   entry.notified = true

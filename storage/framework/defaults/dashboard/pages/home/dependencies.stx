@@ -120,8 +120,8 @@ var stats = [
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-700/50">
           <tr>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
           </tr>
         </thead>
         <tbody>
@@ -146,8 +146,8 @@ var stats = [
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-700/50">
           <tr>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
           </tr>
         </thead>
         <tbody>
@@ -172,8 +172,8 @@ var stats = [
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-700/50">
           <tr>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
-            <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
+            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Version</th>
           </tr>
         </thead>
         <tbody>

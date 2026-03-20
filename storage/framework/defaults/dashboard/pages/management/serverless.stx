@@ -23,7 +23,7 @@ const edges = [
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Serverless</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Functions and edge computing</p>
       </div>
@@ -50,20 +50,20 @@ const edges = [
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Function</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Runtime</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invocations</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg Duration</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Errors</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <tr>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Function</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Runtime</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Invocations</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg Duration</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Errors</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (functions as fn)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="font-medium">{{ fn.name }}</td>
+                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ fn.name }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ fn.runtime }}</span></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ fn.invocations }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ fn.avgDuration }}</td>
@@ -88,12 +88,12 @@ const edges = [
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Edge Locations</span>
         </div>
-        <div class="grid grid-4 p-4">
+        <div class="grid grid-cols-4 p-4 gap-4">
           @foreach (edges as edge)
             <div class="text-center p-4 rounded-lg bg-gray-50">
               <div class="text-lg font-semibold">{{ edge.region }}</div>
-              <div class="text-2xl font-bold text-primary mt-2">{{ edge.latency }}</div>
-              <div class="text-sm text-muted">{{ edge.requests }} requests</div>
+              <div class="text-2xl font-bold text-blue-600 dark:text-blue-400 mt-2">{{ edge.latency }}</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">{{ edge.requests }} requests</div>
             </div>
           @endforeach
         </div>

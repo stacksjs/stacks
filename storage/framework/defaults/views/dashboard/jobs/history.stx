@@ -53,7 +53,7 @@ function paginatedJobs() {
 function totalPages() { return Math.ceil(filteredJobs.length / perPage) }
 
 const handleRetry = async (jobId) => {
-  console.log('Retrying job:', jobId)
+  // TODO: implement retry via queue API
 }
 
 </script>

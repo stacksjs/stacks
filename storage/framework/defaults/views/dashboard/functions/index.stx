@@ -137,7 +137,7 @@ interface FunctionStatsMap {
 
 let functionStats = {
   '7': {
-    labels: generateDateLabels(7,
+    labels: generateDateLabels(7),
     data: [8500, 11800, 10200, 12800, 15200, 14100, 13200],
     compareData: [6500, 8800, 7200, 9800, 11200, 10100, 9200]
   },
@@ -163,7 +163,7 @@ const fetchFunctionData = async (days) => {
   try {
     await new Promise(resolve => setTimeout(resolve, 500))
   } catch (error) {
-    console.error('Error fetching function data:', error)
+    // TODO: show error state to user
   } finally {
     isLoading = false
   }
@@ -175,7 +175,7 @@ function downloadsData() { return ({
     {
       label: '@your/function',
       data: functionStats[timeRange].data,
-      borderColor: 'rgb(59, 130, 246 }',
+      borderColor: 'rgb(59, 130, 246)',
       backgroundColor: 'rgba(59, 130, 246, 0.1)',
       fill: true,
     },

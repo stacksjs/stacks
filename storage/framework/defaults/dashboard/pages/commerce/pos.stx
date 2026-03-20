@@ -36,7 +36,7 @@ function statusClass(s) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Point of Sale</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Manage POS terminals and transactions</p>
       </div>
@@ -70,7 +70,7 @@ function statusClass(s) {
                   <div class="text-sm text-gray-500 dark:text-gray-400">{{ terminal.id }} &middot; {{ terminal.location }}</div>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="text-muted text-sm">{{ terminal.lastTransaction }}</span>
+                  <span class="text-gray-500 dark:text-gray-400 text-sm">{{ terminal.lastTransaction }}</span>
                   <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(terminal.status) }}">{{ terminal.status }}</span>
                 </div>
               </div>

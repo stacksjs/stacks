@@ -12,14 +12,24 @@ try {
   const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
-  // Fetch authors from database
+  // Fetch authors from database with their actual post counts
   try {
-    rawAuthors = db.query('SELECT id, name, email FROM authors').all()
+    rawAuthors = db.query(
+      'SELECT a.id, a.name, a.email, COUNT(p.id) as post_count ' +
+      'FROM authors a ' +
+      'LEFT JOIN posts p ON p.author_id = a.id ' +
+      'GROUP BY a.id, a.name, a.email'
+    ).all()
   } catch (e) {
-    rawAuthors = []
+    // Fallback without join
+    try {
+      rawAuthors = db.query('SELECT id, name, email FROM authors').all()
+    } catch (e2) {
+      rawAuthors = []
+    }
   }
 
-  // Get post count
+  // Get total post count
   try {
     const result = db.query('SELECT COUNT(*) as count FROM posts').get()
     postCount = result?.count || 0
@@ -39,7 +49,7 @@ var authors = rawAuthors.length > 0 ? rawAuthors.map(function(a) {
     name: a.name || 'Author',
     email: a.email || 'author@example.com',
     role: 'Writer',
-    posts: Math.floor(Math.random() * 30) + 5,
+    posts: a.post_count || 0,
     avatar: initials
   }
 }) : [
@@ -49,7 +59,7 @@ var authors = rawAuthors.length > 0 ? rawAuthors.map(function(a) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Authors</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Manage content authors</p>
       </div>
@@ -63,10 +73,10 @@ var authors = rawAuthors.length > 0 ? rawAuthors.map(function(a) {
         @foreach (authors as author)
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
             <div class="flex items-center gap-4">
-              <div class="avatar avatar-lg">{{ author.avatar }}</div>
+              <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex items-center justify-center font-semibold text-sm">{{ author.avatar }}</div>
               <div>
-                <div class="font-semibold">{{ author.name }}</div>
-                <div class="text-sm text-muted">{{ author.email }}</div>
+                <div class="font-semibold text-gray-900 dark:text-white">{{ author.name }}</div>
+                <div class="text-sm text-gray-500 dark:text-gray-400">{{ author.email }}</div>
               </div>
             </div>
             <div class="mt-4 flex justify-between items-center">

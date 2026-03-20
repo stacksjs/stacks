@@ -166,7 +166,7 @@ const fetchReleaseData = async (days) => {
     // For now we're using the mock data already set in releaseStats
     await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
   } catch (error) {
-    console.error('Error fetching release data:', error)
+    // TODO: show error state to user
   } finally {
     isLoading = false
   }
@@ -178,17 +178,17 @@ function downloadsData() { return ({
   datasets: [{
     label: 'Downloads',
     data: releaseStats[timeRange].downloads,
-    borderColor: 'rgb(59, 130, 246 }',
+    borderColor: 'rgb(59, 130, 246)',
     backgroundColor: 'rgba(59, 130, 246, 0.1)',
     fill: true,
   }]
-}))
+})}
 
 // Chart data for release times
 function releaseTimeData() { return ({
   labels: releaseStats[timeRange].labels,
   datasets: [{
-    label: 'Release Time (minutes }',
+    label: 'Release Time (minutes)',
     data: releaseStats[timeRange].releaseTimes,
     borderColor: 'rgb(234, 179, 8)',
     backgroundColor: 'rgba(234, 179, 8, 0.1)',

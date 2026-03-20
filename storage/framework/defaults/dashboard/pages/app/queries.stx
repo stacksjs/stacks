@@ -14,7 +14,7 @@ const stats = [
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Queries</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Database query monitoring</p>
       </div>
@@ -37,24 +37,24 @@ const stats = [
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Query</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rows</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Timestamp</th>
+              <tr>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Query</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rows</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Timestamp</th>
               </tr>
             </thead>
             <tbody>
               @foreach (queries as query)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline truncate" style="max-width: 400px;">{{ query.query }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded truncate max-w-[400px] inline-block">{{ query.query }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="{{ query.time.includes('ms') && parseInt(query.time) > 100 ? 'text-warning' : '' }}">
                       {{ query.time }}
                     </span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ query.rows }}</td>
-                  <td class="text-gray-500 dark:text-gray-400">{{ query.timestamp }}</td>
+                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ query.timestamp }}</td>
                 </tr>
               @endforeach
             </tbody>

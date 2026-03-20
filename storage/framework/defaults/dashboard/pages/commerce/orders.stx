@@ -11,20 +11,37 @@ try {
   const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
 
-  // Fetch all orders from database
-  rawOrders = db.query('SELECT id, status, total_amount, order_type, special_instructions, created_at FROM orders ORDER BY created_at DESC').all()
+  // Fetch all orders from database with item counts and customer info
+  rawOrders = db.query(
+    'SELECT o.id, o.status, o.total_amount, o.order_type, o.special_instructions, o.created_at, o.customer_id, ' +
+    'COALESCE(c.name, \'Guest\') as customer_name, ' +
+    'COALESCE((SELECT COUNT(*) FROM order_items oi WHERE oi.order_id = o.id), 0) as item_count ' +
+    'FROM orders o ' +
+    'LEFT JOIN customers c ON o.customer_id = c.id ' +
+    'ORDER BY o.created_at DESC'
+  ).all()
 
   db.close()
 } catch (e) {
-  // Database may not exist yet
+  // Database may not exist yet — try simpler query without joins
+  try {
+    const Database = require('bun:sqlite').Database
+    const path = require('path')
+    const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
+    const db = new Database(dbPath, { readonly: true })
+    rawOrders = db.query('SELECT id, status, total_amount, order_type, special_instructions, created_at FROM orders ORDER BY created_at DESC').all()
+    db.close()
+  } catch (e2) {
+    // Database may not exist yet
+  }
 }
 
 // Transform orders for display
 var orders = rawOrders.map(function(o) {
   return {
     id: 'ORD-' + String(o.id).padStart(4, '0'),
-    customer: 'Customer',
-    items: Math.floor(Math.random() * 5) + 1,
+    customer: o.customer_name || 'Guest',
+    items: o.item_count || 1,
     total: '$' + (o.total_amount || 0).toFixed(2),
     status: o.status || 'pending',
     payment: o.status === 'completed' ? 'paid' : o.status === 'cancelled' ? 'refunded' : 'pending',
@@ -63,7 +80,7 @@ function statusClass(s) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Orders</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Manage customer orders</p>
       </div>
@@ -85,7 +102,7 @@ function statusClass(s) {
 
       <div class="flex gap-2 mb-4">
         @foreach (filters as filter)
-          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ filter === 'All' ? 'btn-primary' : 'btn-ghost' === 'btn-primary' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">{{ filter }}</button>
+          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ filter === 'All' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">{{ filter }}</button>
         @endforeach
       </div>
 
@@ -93,31 +110,31 @@ function statusClass(s) {
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <tr>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (orders as order)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ order.id }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ order.id }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.customer }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.items }}</td>
-                  <td class="font-semibold">{{ order.total }}</td>
+                  <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.total }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(order.payment) }}">{{ order.payment }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(order.status) }}">{{ order.status }}</span>
                   </td>
-                  <td class="text-gray-500 dark:text-gray-400">{{ order.date }}</td>
+                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ order.date }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
                   </td>

@@ -44,7 +44,7 @@ function statusClass(s) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Delivery</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Shipping and fulfillment management</p>
       </div>
@@ -78,7 +78,7 @@ function statusClass(s) {
                   <div class="text-sm text-gray-500 dark:text-gray-400">{{ carrier.shipments }} shipments</div>
                 </div>
                 <div class="flex items-center gap-3">
-                  <span class="text-success">{{ carrier.onTime }} on-time</span>
+                  <span class="text-green-600 dark:text-green-400">{{ carrier.onTime }} on-time</span>
                   <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ carrier.status }}</span>
                 </div>
               </div>
@@ -112,23 +112,23 @@ function statusClass(s) {
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Shipment ID</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Carrier</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tracking</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ETA</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <tr>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Shipment ID</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Carrier</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tracking</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">ETA</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (shipments as shipment)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ shipment.id }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><a href="#" class="text-primary">{{ shipment.order }}</a></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ shipment.id }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">{{ shipment.order }}</a></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ shipment.carrier }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline text-sm">{{ shipment.tracking }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ shipment.tracking }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(shipment.status) }}">{{ shipment.status.replace('_', ' ') }}</span>
                   </td>
@@ -144,14 +144,3 @@ function statusClass(s) {
       </div>
     </div>
   </div>
-<style>
-.text-primary {
-  color: var(--color-primary);
-}
-.text-success {
-  color: var(--color-success);
-}
-.text-sm {
-  font-size: 0.8rem;
-}
-</style>

@@ -69,7 +69,7 @@ function statusClass(s) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Environment</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Environment configuration and variables</p>
       </div>
@@ -99,11 +99,11 @@ function statusClass(s) {
             <div class="mt-4">
               <div class="flex justify-between mb-2">
                 <span class="text-gray-500 dark:text-gray-400">URL</span>
-                <a href="{{ env.url }}" class="text-primary text-sm">{{ env.url }}</a>
+                <a href="{{ env.url }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">{{ env.url }}</a>
               </div>
               <div class="flex justify-between mb-2">
                 <span class="text-gray-500 dark:text-gray-400">Version</span>
-                <code class="code-inline text-sm">{{ env.version }}</code>
+                <code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ env.version }}</code>
               </div>
               <div class="flex justify-between">
                 <span class="text-gray-500 dark:text-gray-400">Last Deploy</span>
@@ -120,28 +120,28 @@ function statusClass(s) {
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Environment Variables</span>
-          <input type="text" class="input w-64" placeholder="Search variables..." />
+          <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" placeholder="Search variables..." />
         </div>
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Key</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Environments</th>
-                <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+              <tr>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Key</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Environments</th>
+                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
               </tr>
             </thead>
             <tbody>
               @foreach (variables as variable)
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ variable.key }}</code></td>
+                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ variable.key }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     @if (variable.sensitive)
                       <span class="text-gray-500 dark:text-gray-400">••••••••</span>
                       <button class="ml-2 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Reveal</button>
                     @else
-                      <code class="code-inline">{{ variable.value }}</code>
+                      <code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ variable.value }}</code>
                     @endif
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">

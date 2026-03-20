@@ -35,7 +35,7 @@
     <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
       <button
         type="button"
-        class="rounded-md text-gray-400 dark:text-gray-200 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark-hover:text-gray-100"
+        class="rounded-md text-gray-400 dark:text-gray-200 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:hover:text-gray-100"
         data-action="close"
       >
         <span class="sr-only">Close</span>

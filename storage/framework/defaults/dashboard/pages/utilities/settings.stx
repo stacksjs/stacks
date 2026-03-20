@@ -45,7 +45,7 @@ function statusClass(s) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Settings</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Application configuration</p>
       </div>
@@ -66,9 +66,9 @@ function statusClass(s) {
               <div class="flex justify-between items-center py-3 border-b last:border-0">
                 <label class="font-medium">{{ setting.key }}</label>
                 @if (setting.type === 'text' || setting.type === 'email')
-                  <input type="{{ setting.type }}" class="input w-64" value="{{ setting.value }}" />
+                  <input type="{{ setting.type }}" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" value="{{ setting.value }}" />
                 @else
-                  <select class="input w-64">
+                  <select class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64">
                     <option>{{ setting.value }}</option>
                   </select>
                 @endif
@@ -91,7 +91,7 @@ function statusClass(s) {
                     <span class="slider"></span>
                   </label>
                 @else
-                  <select class="input w-48">
+                  <select class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-48">
                     <option>{{ setting.value }}</option>
                   </select>
                 @endif
@@ -149,7 +149,7 @@ function statusClass(s) {
           <div class="flex justify-between items-center">
             <div>
               <div class="font-medium">Delete Application</div>
-              <div class="text-sm text-muted">Permanently delete this application and all its data</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">Permanently delete this application and all its data</div>
             </div>
             <button class="px-4 py-2 text-sm font-medium text-red-600 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20">Delete Application</button>
           </div>

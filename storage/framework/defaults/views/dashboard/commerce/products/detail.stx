@@ -97,7 +97,7 @@ function saveProduct(): void {
   toast({
     message: 'Product updated successfully',
     type: 'success',
-  }
+  })
 
   // Close the dialog
   showEditDialog = false
@@ -122,7 +122,7 @@ function saveSimilarProducts(): void {
   toast({
     message: 'Similar products updated successfully',
     type: 'success',
-  }
+  })
 
   // Close the dialog
   showSimilarProductsDialog = false
@@ -133,7 +133,7 @@ function deleteProduct(): void {
   toast({
     message: 'Delete functionality would be implemented here',
     type: 'error',
-  }
+  })
   // After successful deletion, navigate back to products list
   // router.push('/commerce/products')
 }

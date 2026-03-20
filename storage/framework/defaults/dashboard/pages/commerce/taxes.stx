@@ -44,7 +44,7 @@ try {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Taxes</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Tax rates and compliance</p>
       </div>
@@ -73,17 +73,17 @@ try {
           <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700/50">
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Region</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rate</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                <tr>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Region</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rate</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                 </tr>
               </thead>
               <tbody>
                 @foreach (taxRates as tax)
                   <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td class="font-medium">{{ tax.region }}</td>
+                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ tax.region }}</td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ tax.rate }}</td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ tax.type }}</span></td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
@@ -103,22 +103,22 @@ try {
           <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700/50">
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subtotal</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rate</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tax</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Region</th>
+                <tr>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Subtotal</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rate</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Tax</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Region</th>
                 </tr>
               </thead>
               <tbody>
                 @foreach (recentTaxes as tax)
                   <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><a href="#" class="text-primary">{{ tax.order }}</a></td>
+                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><a href="#" class="text-blue-600 dark:text-blue-400 hover:underline">{{ tax.order }}</a></td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ tax.subtotal }}</td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ tax.taxRate }}</td>
-                    <td class="font-semibold">{{ tax.taxAmount }}</td>
-                    <td class="text-gray-500 dark:text-gray-400">{{ tax.region }}</td>
+                    <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ tax.taxAmount }}</td>
+                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ tax.region }}</td>
                   </tr>
                 @endforeach
               </tbody>
@@ -135,7 +135,7 @@ try {
           <div class="flex items-center justify-between mb-4">
             <div>
               <div class="font-medium">Automatic Tax Calculation</div>
-              <div class="text-sm text-muted">Calculate taxes based on customer location</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">Calculate taxes based on customer location</div>
             </div>
             <label class="switch">
               <input type="checkbox" checked />
@@ -145,7 +145,7 @@ try {
           <div class="flex items-center justify-between mb-4">
             <div>
               <div class="font-medium">Tax-Inclusive Pricing</div>
-              <div class="text-sm text-muted">Display prices with tax included</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">Display prices with tax included</div>
             </div>
             <label class="switch">
               <input type="checkbox" />
@@ -155,7 +155,7 @@ try {
           <div class="flex items-center justify-between">
             <div>
               <div class="font-medium">Avalara Integration</div>
-              <div class="text-sm text-muted">Use Avalara for tax compliance</div>
+              <div class="text-sm text-gray-500 dark:text-gray-400">Use Avalara for tax compliance</div>
             </div>
             <button class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Configure</button>
           </div>

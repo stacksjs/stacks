@@ -13,9 +13,24 @@ try {
   const Database = require('bun:sqlite').Database
   const path = require('path')
   const db = new Database(path.resolve(process.cwd(), 'database/stacks.sqlite'), { readonly: true })
-  const rows = db.query('SELECT * FROM tags').all()
+
+  // Query tags with actual usage counts from taggable_models pivot table
+  var rows = []
+  try {
+    rows = db.query(
+      'SELECT t.id, t.name, t.slug, COUNT(DISTINCT tm.taggable_id) as usage_count ' +
+      'FROM tags t ' +
+      'LEFT JOIN taggable_models tm ON t.id = tm.tag_id ' +
+      'GROUP BY t.id, t.name, t.slug ' +
+      'ORDER BY usage_count DESC, t.name ASC'
+    ).all()
+  } catch (e) {
+    // Fallback without join
+    rows = db.query('SELECT * FROM tags ORDER BY name ASC').all()
+  }
+
   if (rows.length > 0) {
-    tags = rows.map(function(r) { return { name: r.name || r.slug || '', count: r.count || 0 } })
+    tags = rows.map(function(r) { return { name: r.name || r.slug || '', count: r.usage_count || r.count || 0 } })
   }
   db.close()
 } catch (e) {
@@ -24,7 +39,7 @@ try {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Tags</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Manage content tags</p>
       </div>
@@ -34,14 +49,25 @@ try {
     </div>
 
     <div class="flex flex-col gap-6">
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex gap-2" style="flex-wrap: wrap;">
-          @foreach (tags as tag)
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400" style="padding: 8px 16px; font-size: 13px;">
-              #{{ tag.name }} ({{ tag.count }})
-            </span>
-          @endforeach
+      @if (tags.length === 0)
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"></path>
+          </svg>
+          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No tags yet</h3>
+          <p class="mt-2 text-gray-500 dark:text-gray-400">Get started by creating your first tag.</p>
+          <button class="mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Tag</button>
         </div>
-      </div>
+      @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex gap-2 flex-wrap">
+            @foreach (tags as tag)
+              <span class="px-4 py-2 text-sm font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
+                #{{ tag.name }} ({{ tag.count }})
+              </span>
+            @endforeach
+          </div>
+        </div>
+      @endif
     </div>
   </div>

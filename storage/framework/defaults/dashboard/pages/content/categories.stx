@@ -118,11 +118,11 @@ try {
 </div>
 
 <!-- Category Modal -->
-<div id="categoryModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
+<div id="categoryModal" role="dialog" aria-modal="true" aria-label="Category editor" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
   <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md m-4">
     <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
       <h2 id="modalTitle" class="text-xl font-semibold text-gray-900 dark:text-white">New Category</h2>
-      <button id="closeModal" class="p-2 text-gray-400 hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
+      <button id="closeModal" aria-label="Close" class="p-2 text-gray-400 hover:text-gray-500 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700">
         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
@@ -163,7 +163,7 @@ try {
 </div>
 
 <!-- Delete Confirmation Modal -->
-<div id="deleteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
+<div id="deleteModal" role="dialog" aria-modal="true" aria-label="Delete confirmation" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">
   <div class="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-md m-4 p-6">
     <div class="text-center">
       <svg class="mx-auto h-12 w-12 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -306,5 +306,10 @@ onMount(function() {
 
   categoryModal.onclick = e => { if (e.target === categoryModal) closeModal() }
   deleteModal.onclick = e => { if (e.target === deleteModal) closeModal() }
+
+  // Escape key closes modals
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal()
+  })
 })
 </script>

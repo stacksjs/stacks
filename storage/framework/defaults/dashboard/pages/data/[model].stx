@@ -9,7 +9,8 @@
 var modelSlug = typeof model !== 'undefined' ? model : 'unknown'
 
 // Convert slug to table name (kebab-case to snake_case, pluralized)
-var tableName = modelSlug.replace(/-/g, '_') + 's'
+// Sanitize: only allow alphanumeric and underscores to prevent SQL injection
+var tableName = modelSlug.replace(/-/g, '_').replace(/[^a-z0-9_]/gi, '') + 's'
 var modelName = modelSlug.split('-').map(function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }).join(' ')
 
 var items = []
@@ -36,6 +37,12 @@ try {
   const path = require('path')
   const dbPath = path.resolve(process.cwd(), 'database/stacks.sqlite')
   const db = new Database(dbPath, { readonly: true })
+
+  // Verify table exists in sqlite_master before querying (prevents injection via crafted model names)
+  const tableExists = db.query("SELECT name FROM sqlite_master WHERE type='table' AND name=?").get(tableName)
+  if (!tableExists) {
+    throw new Error('Table "' + tableName + '" does not exist')
+  }
 
   // Get table info to determine columns
   const tableInfo = db.query('PRAGMA table_info(' + tableName + ')').all()
@@ -151,7 +158,7 @@ columns = columns.filter(function(col) { return hiddenColumns.indexOf(col.name) 
 
       <div class="mb-4">
         <input type="text" id="modelSearch" placeholder="Search {{ modelName }}..."
-          class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" style="width: 300px;">
+          class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" >
       </div>
 
       <!-- Data Table -->
@@ -161,11 +168,11 @@ columns = columns.filter(function(col) { return hiddenColumns.indexOf(col.name) 
             <thead class="bg-gray-50 dark:bg-gray-700/50">
               <tr>
                 @foreach(columns as col)
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                     {{ col.label }}
                   </th>
                 @endforeach
-                <th class="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
@@ -251,13 +258,18 @@ onMount(function() {
   if (!el) return;
   var searchInput = el.querySelector('#modelSearch');
   if (searchInput) {
+    var searchTimer = null;
     searchInput.addEventListener('input', function() {
-      var query = this.value.toLowerCase();
-      var rows = el.querySelectorAll('#modelTableBody tr');
-      for (var i = 0; i < rows.length; i++) {
-        var text = rows[i].textContent.toLowerCase();
-        rows[i].style.display = text.indexOf(query) >= 0 ? '' : 'none';
-      }
+      var value = this.value;
+      if (searchTimer) clearTimeout(searchTimer);
+      searchTimer = setTimeout(function() {
+        var query = value.toLowerCase();
+        var rows = el.querySelectorAll('#modelTableBody tr');
+        for (var i = 0; i < rows.length; i++) {
+          var text = rows[i].textContent.toLowerCase();
+          rows[i].style.display = text.indexOf(query) >= 0 ? '' : 'none';
+        }
+      }, 150);
     });
   }
 });

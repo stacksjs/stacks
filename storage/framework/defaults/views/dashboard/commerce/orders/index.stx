@@ -91,13 +91,11 @@ function toggleSort(column: string): void {
 
 // Order actions
 function viewOrder(order: any): void {
-  console.log('View order:', order)
-  // Implement view order logic
+  // TODO: implement view order detail
 }
 
 function editOrder(order: any): void {
-  console.log('Edit order:', order)
-  // Implement edit order logic
+  // TODO: implement edit order
 }
 
 function removeOrder(order: any): void {

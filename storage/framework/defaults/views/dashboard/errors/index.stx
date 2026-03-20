@@ -120,12 +120,14 @@ const openInEditor = (location) => {
   fetch('/api/editor/open', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ location })
-  }
-  .then(() => {
-  }
-  .catch(() => {
-  }
+    body: JSON.stringify({ location }),
+  })
+    .then(() => {
+      // opened in editor
+    })
+    .catch(() => {
+      // editor may not be available
+    })
 }
 
 const resolveError = (errorId) => {
@@ -150,9 +152,9 @@ const analyzeWithAI = async (errorId) => {
         errorId,
         message: error.message,
         type: error.type,
-        location: error.location
-      }
-    }
+        location: error.location,
+      }),
+    })
 
     if (!response.ok) throw new Error('AI analysis failed')
 

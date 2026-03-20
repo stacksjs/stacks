@@ -2,7 +2,7 @@
   const width = props.width || 30 // in rem
   const position = props.position || 'top-right' // 'center' | 'top' | 'top-right' | 'top-left'
 </script>
-<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+<div class="relative z-60" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="fixed inset-0"></div>
 
   <div class="fixed inset-0 z-10 overflow-y-auto">

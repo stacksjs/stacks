@@ -279,12 +279,7 @@ function getPercentageColorClass(percentage) {
 
 // Mock function to update data when date range changes
 function updateDataForDateRange() {
-  // In a real app, this would fetch data from the server based on the selected date range
-  console.log('Updating data for date range:', selectedDateRange)
-
-  if (selectedDateRange === 'custom') {
-    console.log('Custom date range:', customStartDate, 'to', customEndDate)
-  }
+  // TODO: fetch data from the server based on the selected date range
 }
 
 // Watch for date range changes

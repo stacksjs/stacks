@@ -8,7 +8,7 @@ const seoData = {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">SEO Settings</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Configure search engine optimization</p>
       </div>

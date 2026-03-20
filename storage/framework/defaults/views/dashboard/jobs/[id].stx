@@ -68,7 +68,7 @@ const getLogLevelColor = (level) => {
 }
 
 const handleRetry = async () => {
-  console.log('Retrying job:', route.params.id)
+  // TODO: implement retry via queue API
 }
 
 const formatBytes = (bytes) => {
@@ -86,7 +86,7 @@ const openFile = (file, line) => {
   const filePath = match ? match[1] : file
   const lineNumber = line || (match ? parseInt(match[2]) : 1)
 
-  console.log('Opening file:', filePath, 'at line:', lineNumber)
+  // TODO: implement editor integration via API
 }
 
 </script>

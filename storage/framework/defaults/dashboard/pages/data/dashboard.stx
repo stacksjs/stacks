@@ -54,7 +54,7 @@ try {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Data Dashboard</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Database overview and statistics</p>
       </div>
@@ -70,9 +70,11 @@ try {
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
             <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
             <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-            <div class="text-sm font-medium {{ stat.change.startsWith('+') ? 'positive' : 'negative' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400' }}">
-              {{ stat.change }}
-            </div>
+            @if(stat.change)
+              <div class="text-sm font-medium {{ stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : stat.change.startsWith('-') ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' }}">
+                {{ stat.change }}
+              </div>
+            @endif
           </div>
         @endforeach
       </div>
@@ -86,20 +88,20 @@ try {
           <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700/50">
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Table</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rows</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Size</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Modified</th>
+                <tr>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Table</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Rows</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Size</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Modified</th>
                 </tr>
               </thead>
               <tbody>
                 @foreach (tables as table)
                   <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ table.name }}</code></td>
+                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ table.name }}</code></td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ table.rows }}</td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ table.size }}</td>
-                    <td class="text-gray-500 dark:text-gray-400">{{ table.lastModified }}</td>
+                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ table.lastModified }}</td>
                   </tr>
                 @endforeach
               </tbody>
@@ -115,7 +117,7 @@ try {
             @foreach (recentQueries as q)
               <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                 <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-900 dark:text-white"><code class="code-inline truncate">{{ q.query }}</code></div>
+                  <div class="font-medium text-gray-900 dark:text-white"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded truncate">{{ q.query }}</code></div>
                   <div class="text-sm text-gray-500 dark:text-gray-400">{{ q.source }} &middot; {{ q.time }}</div>
                 </div>
               </div>

@@ -39,7 +39,7 @@ function statusClass(s) {
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
-      <div class="">
+      <div>
         <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Buddy CLI</h1>
         <p class="text-gray-500 dark:text-gray-400 mt-1">Command line interface for Stacks</p>
       </div>
@@ -67,19 +67,19 @@ function statusClass(s) {
           <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700/50">
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Command</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Run</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                  <th class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
+                <tr>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Command</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Last Run</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider"></th>
                 </tr>
               </thead>
               <tbody>
                 @foreach (commands as cmd)
                   <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="code-inline">{{ cmd.command }}</code></td>
-                    <td class="text-gray-500 dark:text-gray-400">{{ cmd.description }}</td>
+                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ cmd.command }}</code></td>
+                    <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ cmd.description }}</td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ cmd.lastRun }}</td>
                     <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                       <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(cmd.status) }}">{{ cmd.status }}</span>
@@ -111,7 +111,7 @@ function statusClass(s) {
         </div>
         <div class="p-4">
           <div class="flex gap-2">
-            <input type="text" class="input flex-1 font-mono" placeholder="buddy ..." />
+            <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 flex-1 font-mono" placeholder="buddy ..." />
             <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Execute</button>
           </div>
         </div>
