@@ -1,0 +1,59 @@
+{
+  "name": "@stacksjs/skills",
+  "type": "module",
+  "version": "0.70.23",
+  "description": "Agent skills for the Stacks framework, following the agentskills.io standard.",
+  "author": "Chris Breuer",
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
+  "license": "MIT",
+  "funding": "https://github.com/sponsors/chrisbbreuer",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/skills#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/stacksjs/stacks.git",
+    "directory": "./storage/framework/core/skills"
+  },
+  "bugs": {
+    "url": "https://github.com/stacksjs/stacks/issues"
+  },
+  "keywords": [
+    "skills",
+    "agent",
+    "ai",
+    "agentskills",
+    "stacks"
+  ],
+  "exports": {
+    ".": {
+      "bun": "./src/index.ts",
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "bun": "./src/*",
+      "import": "./dist/*"
+    }
+  },
+  "module": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "README.md",
+    "dist",
+    "skills"
+  ],
+  "scripts": {
+    "build": "bun build.ts",
+    "typecheck": "bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
+  },
+  "dependencies": {
+    "@stacksjs/path": "workspace:*",
+    "@stacksjs/storage": "workspace:*"
+  },
+  "devDependencies": {
+    "better-dx": "^0.2.5",
+    "@stacksjs/types": "workspace:*"
+  }
+}

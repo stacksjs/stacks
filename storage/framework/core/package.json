@@ -275,6 +275,10 @@
     "./validation": {
       "types": "./validation/dist/index.d.ts",
       "import": "./validation/dist/index.js"
+    },
+    "./skills": {
+      "types": "./skills/dist/index.d.ts",
+      "import": "./skills/dist/index.js"
     }
   },
   "types": "./types/dist/index.d.ts",
@@ -333,6 +337,7 @@
     "@stacksjs/types": "workspace:*",
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
+    "@stacksjs/skills": "workspace:*",
     "@stacksjs/validation": "workspace:*",
     "bun-query-builder": "^0.1.12"
   }
