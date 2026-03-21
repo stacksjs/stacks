@@ -304,7 +304,7 @@
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
     "@stacksjs/desktop": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.7",
     "@stacksjs/dns": "workspace:*",
     "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
@@ -334,6 +334,6 @@
     "@stacksjs/ui": "workspace:*",
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.1.12"
+    "bun-query-builder": "^0.1.13"
   }
 }

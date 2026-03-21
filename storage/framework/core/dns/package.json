@@ -52,11 +52,11 @@
   },
   "dependencies": {
     "@stacksjs/dnsx": "^0.2.2",
-    "@stacksjs/ts-cloud": "^0.1.14"
+    "@stacksjs/ts-cloud": "^0.2.3"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.7",
     "@stacksjs/error-handling": "workspace:*",
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
