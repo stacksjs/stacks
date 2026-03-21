@@ -55,7 +55,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@anthropic-ai/claude-agent-sdk": "^0.2.79",
+    "@anthropic-ai/claude-agent-sdk": "^0.2.81",
     "@stacksjs/ts-cloud": "^0.1.14"
   },
   "devDependencies": {
