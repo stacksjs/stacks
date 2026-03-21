@@ -1,18 +1,12 @@
-export type Registry = {
-  name: string
-  url: string
-  github: string
-  // bitbucket: string
-  // gitlab: string
-}[]
+import type { StackExtensionRegistry } from '@stacksjs/types'
+
+export type Registry = StackExtensionRegistry
 
 export const registry: Registry = [
   {
     name: 'stacks',
     url: 'stacksjs.com',
     github: 'stacksjs/stacks',
-    // bitbucket: 'stacksjs/stacks',
-    // gitlab: 'stacksjs/stacks'
   },
 ]
 

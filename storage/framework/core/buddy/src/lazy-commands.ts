@@ -61,6 +61,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'seed': { path: './commands/seed.ts', exportName: 'seed' },
   'setup': { path: './commands/setup.ts', exportName: 'setup' },
   'share': { path: './commands/share.ts', exportName: 'share' },
+  'stack': { path: './commands/stacks.ts', exportName: 'stacks' },
   'sms': { path: './commands/sms.ts', exportName: 'sms' },
   'telemetry': { path: './commands/telemetry.ts', exportName: 'telemetryCommand' },
   'test': { path: './commands/test.ts', exportName: 'test' },

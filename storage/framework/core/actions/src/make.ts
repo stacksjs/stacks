@@ -55,7 +55,7 @@ export async function invoke(options: MakeOptions): Promise<void> {
   if (options.page)
     await makePage(options)
   if (options.stack)
-    makeStack(options)
+    await makeStack(options)
 }
 
 export async function make(options: MakeOptions): Promise<void> {
@@ -199,15 +199,38 @@ export async function createLanguage(options: MakeOptions): Promise<void> {
   await createFileWithTemplate(p.resourcesPath(`lang/${name}.yml`), 'language', name)
 }
 
-export function makeStack(options: MakeOptions): void {
+export async function makeStack(options: MakeOptions): Promise<void> {
   try {
     const name = options.name
     log.info(`Creating your ${name} stack...`)
-    const path = resolve(process.cwd(), name)
+    const stackDir = resolve(process.cwd(), name)
 
-    // await spawn(`giget stacks ${path}`)
-    log.success('Successfully scaffolded your project')
-    log.info(`cd ${path} && bun install`)
+    if (doesFolderExist(stackDir)) {
+      log.error(`Directory "${name}" already exists`)
+      process.exit(ExitCode.FatalError)
+    }
+
+    // Create directory structure
+    await createFolder(stackDir)
+    const dirs = ['app/Actions', 'app/Models', 'config', 'database/migrations', 'resources/views', 'resources/components', 'resources/functions', 'routes', 'public']
+    for (const dir of dirs) {
+      await createFolder(resolve(stackDir, dir))
+    }
+
+    // Derive a short name from the package name
+    const shortName = name.replace(/^@[^/]+\//, '').replace(/-stack$/, '')
+
+    // Create package.json
+    await createFileWithTemplate(resolve(stackDir, 'package.json'), 'stackPackageJson', name, shortName)
+
+    log.success(`Successfully scaffolded your "${name}" stack`)
+    log.info('')
+    log.info(`  cd ${name}`)
+    log.info('  # Add your models, actions, views, etc.')
+    log.info('  # Then publish: bun publish')
+    log.info('')
+    log.info('  Users install it with:')
+    log.info(`  buddy stack:install ${name}`)
   }
   catch (error) {
     log.error('There was an error creating your stack', error)

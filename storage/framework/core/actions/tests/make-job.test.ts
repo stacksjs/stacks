@@ -114,7 +114,7 @@ describe('makeJob', () => {
       createdFiles.push(filePath)
 
       const content = await get(filePath)
-      expect(content).toContain('async handle(payload: any)')
+      expect(content).toContain('async handle(payload: Record<string, unknown>)')
       expect(content).toContain('return { success: true }')
     })
 

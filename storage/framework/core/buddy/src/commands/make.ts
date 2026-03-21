@@ -502,7 +502,7 @@ export function make(buddy: CLI): void {
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action((name: string, options: MakeOptions) => {
+    .action(async (name: string, options: MakeOptions) => {
       log.debug('Running `buddy make:stack` ...', options)
 
       name = name ?? options.name
@@ -513,7 +513,7 @@ export function make(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      makeStack(options)
+      await makeStack(options)
     })
 
   buddy

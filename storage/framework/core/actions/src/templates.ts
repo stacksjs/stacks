@@ -107,6 +107,16 @@ export async function up(db: Database): Promise<void> {
     .execute()
 }`,
 
+  stackPackageJson: `{
+  "name": "{0}",
+  "version": "0.0.1",
+  "type": "module",
+  "stacks": {
+    "name": "{1}",
+    "description": "A Stacks extension"
+  }
+}`,
+
   // Add more templates as needed
   job: `import { Job } from '@stacksjs/jobs'
 

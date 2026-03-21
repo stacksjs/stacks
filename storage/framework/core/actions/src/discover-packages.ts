@@ -1,3 +1,4 @@
+import type { StackDirectory } from '@stacksjs/types'
 import { projectPath, storagePath } from '@stacksjs/path'
 
 export interface PackageStacksMeta {
@@ -8,6 +9,12 @@ export interface PackageStacksMeta {
   commands?: string[]
   middleware?: string[]
   migrations?: string[]
+  /** Stack extension name (identifies this as a full Stack extension) */
+  name?: string
+  /** Stack extension description */
+  description?: string
+  /** Which top-level directories this stack provides */
+  directories?: StackDirectory[]
 }
 
 export interface DiscoveredPackagesManifest {
