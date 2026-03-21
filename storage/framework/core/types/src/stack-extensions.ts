@@ -13,6 +13,50 @@ export type StackDirectory =
   | 'docs'
   | (string & {})
 
+// ─── Stack Extensions Registry ──────────────────────────────────────────────
+//
+// This is the central registry of known stack extensions. Third-party authors
+// can submit a PR to add their stack here. Once merged, all Stacks users get
+// autocomplete and type safety for the new stack name.
+//
+// To add your stack, add a new entry below following the pattern:
+//   'your-stack-name': { package: '@your-org/your-stack', description: '...' },
+//
+// Requirements for PRs:
+//   - The package must be published to npm
+//   - The package.json must contain a valid `stacks` field with a `name`
+//   - The description should be concise (under 80 chars)
+// ─────────────────────────────────────────────────────────────────────────────
+
+interface StackRegistryEntry {
+  /** The npm package name */
+  package: string
+  /** A short description of what this stack provides */
+  description: string
+  /** GitHub repository (e.g. 'stacksjs/blog-stack') */
+  github?: string
+}
+
+/**
+ * The central registry of known stack extensions.
+ *
+ * Third-party stack authors: submit a PR to add your stack here.
+ * Once merged, all Stacks users will get autocomplete for your stack name.
+ */
+export const stackExtensionRegistry = {
+  // ── Community Stacks ────────────────────────────────────────────────────
+  // Add your stack here via PR! Follow the pattern:
+  //   'your-stack': { package: '@your-org/your-stack', description: 'What it does' },
+  //
+  // Once merged, all Stacks users get autocomplete for your stack name.
+} as const satisfies Record<string, StackRegistryEntry>
+
+/**
+ * All known stack extension names, derived from the registry.
+ * Uses `(string & {})` to also accept any custom/unregistered stack name.
+ */
+export type KnownStackName = keyof typeof stackExtensionRegistry | (string & {})
+
 /**
  * Metadata for a stack extension, defined in the `stacks` field of a stack's package.json.
  *
@@ -30,7 +74,7 @@ export type StackDirectory =
  */
 export interface StackMeta {
   /** Short identifier for the stack (e.g. 'blog', 'commerce') */
-  name: string
+  name: KnownStackName
   /** Human-readable description of what this stack provides */
   description?: string
   /** Semver version of the stack */
@@ -75,7 +119,7 @@ export interface StackLock {
 
 export interface StackInstallOptions {
   /** The stack name or package name to install */
-  name: string
+  name: KnownStackName
   /** How to handle file conflicts. Defaults to 'skip'. */
   conflict?: ConflictStrategy
   /** Force overwrite all files (shorthand for conflict: 'overwrite') */
@@ -88,7 +132,7 @@ export interface StackInstallOptions {
 
 export interface StackUninstallOptions {
   /** The stack name or package name to uninstall */
-  name: string
+  name: KnownStackName
   /** Force removal even if files were modified after install */
   force?: boolean
   /** Enable verbose output */
@@ -107,26 +151,6 @@ export interface StackListEntry {
 }
 
 /**
- * Known stack extension names. Uses `(string & {})` to allow any string
- * while providing autocomplete for well-known/first-party stacks.
- */
-export type KnownStackName =
-  | 'blog'
-  | 'commerce'
-  | 'analytics'
-  | 'auth'
-  | 'cms'
-  | 'api'
-  | 'email'
-  | 'notifications'
-  | 'payments'
-  | 'search'
-  | 'realtime'
-  | 'calendar'
-  | 'table'
-  | (string & {})
-
-/**
  * A stack extension entry in the registry (`config/stacks.ts`).
  *
  * Can be either:
@@ -136,7 +160,7 @@ export type KnownStackName =
  * @example
  * ```ts
  * export default [
- *   'blog',                                    // shorthand
+ *   'blog',                                    // shorthand — autocomplete from registry
  *   '@stacksjs/commerce',                      // scoped package shorthand
  *   { name: 'analytics', github: 'stacksjs/analytics-stack' },
  * ] satisfies StackExtensionRegistry
