@@ -999,6 +999,25 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return bunRouter.handleRequest(req)
     },
 
+    // Register routes from a package or module file within an optional group
+    async register(routePath: string, options?: { prefix?: string, middleware?: string | string[] }): Promise<StacksRouterInstance> {
+      const callback = async () => {
+        await import(routePath)
+      }
+
+      if (options?.prefix || options?.middleware) {
+        await stacksRouter.group({
+          prefix: options.prefix,
+          middleware: options.middleware,
+        }, callback)
+      }
+      else {
+        await callback()
+      }
+
+      return stacksRouter
+    },
+
     // Import routes from route registry
     async importRoutes(): Promise<void> {
       try {
@@ -1010,9 +1029,51 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         // Also load ORM routes
         const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
         await import(ormRoutesPath)
+
+        // Load routes from discovered packages
+        await stacksRouter.loadDiscoveredRoutes()
       }
       catch (error) {
         log.error('Failed to import routes:', error)
+      }
+    },
+
+    // Load routes from discovered Stacks packages in pantry
+    async loadDiscoveredRoutes(): Promise<void> {
+      try {
+        const manifestPath = p.storagePath('framework/discovered-packages.json')
+        const file = Bun.file(manifestPath)
+        if (!(await file.exists())) return
+
+        const manifest = await file.json()
+        const packages = manifest?.packages
+        if (!packages) return
+
+        const pantryDir = p.projectPath('pantry')
+
+        for (const [pkgName, meta] of Object.entries(packages) as [string, any][]) {
+          const routes = meta?.routes
+          if (!routes) continue
+
+          const routeList = Array.isArray(routes) ? routes : [routes]
+          const pkgDir = `${pantryDir}/${pkgName}`
+
+          for (const routeFile of routeList) {
+            const fullPath = routeFile.startsWith('/') ? routeFile : `${pkgDir}/${routeFile}`
+            const prefix = meta?.routePrefix
+            const middleware = meta?.routeMiddleware
+
+            try {
+              await stacksRouter.register(fullPath, { prefix, middleware })
+            }
+            catch (err) {
+              log.warn(`Failed to load routes from package '${pkgName}': ${err}`)
+            }
+          }
+        }
+      }
+      catch {
+        // No manifest or failed to parse — skip silently
       }
     },
   }
@@ -1032,9 +1093,11 @@ export interface StacksRouterInstance {
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler) => StacksRouterInstance
+  register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
   serve: (options?: ServerOptions) => Promise<Server<unknown>>
   handleRequest: (req: Request) => Promise<Response>
   importRoutes: () => Promise<void>
+  loadDiscoveredRoutes: () => Promise<void>
 }
 
 // Create and export a default router instance

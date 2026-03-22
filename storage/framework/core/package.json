@@ -310,7 +310,6 @@
     "@stacksjs/desktop": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/dns": "workspace:*",
-    "@stacksjs/docs": "workspace:*",
     "@stacksjs/email": "workspace:*",
     "@stacksjs/enums": "workspace:*",
     "@stacksjs/env": "workspace:*",
