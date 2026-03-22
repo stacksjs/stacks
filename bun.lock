@@ -7,6 +7,9 @@
       "dependencies": {
         "stacks": "workspace:*",
       },
+      "devDependencies": {
+        "bun-git-hooks": "^0.3.1",
+      },
     },
     "storage/framework": {
       "name": "stacks-framework",
@@ -84,6 +87,7 @@
         "@stacksjs/search-engine": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/server": "workspace:*",
+        "@stacksjs/skills": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/tlsx": "^0.13.0",
@@ -818,6 +822,18 @@
         "better-dx": "^0.2.5",
       },
     },
+    "storage/framework/core/skills": {
+      "name": "@stacksjs/skills",
+      "version": "0.70.23",
+      "dependencies": {
+        "@stacksjs/path": "workspace:*",
+        "@stacksjs/storage": "workspace:*",
+      },
+      "devDependencies": {
+        "@stacksjs/types": "workspace:*",
+        "better-dx": "^0.2.5",
+      },
+    },
     "storage/framework/core/slug": {
       "name": "@stacksjs/slug",
       "version": "0.70.23",
@@ -1314,6 +1330,8 @@
     "@stacksjs/server": ["@stacksjs/server@workspace:storage/framework/core/server"],
 
     "@stacksjs/shell": ["@stacksjs/shell@workspace:storage/framework/core/shell"],
+
+    "@stacksjs/skills": ["@stacksjs/skills@workspace:storage/framework/core/skills"],
 
     "@stacksjs/slug": ["@stacksjs/slug@workspace:storage/framework/core/slug"],
 
