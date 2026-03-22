@@ -1,6 +1,6 @@
 ---
 name: stacks-analytics
-description: Use when adding or configuring analytics in a Stacks application — setting up tracking, privacy-friendly analytics, or integrating analytics providers. Covers the @stacksjs/analytics package and config/analytics.ts.
+description: Use when adding analytics to a Stacks application — configuring Fathom or self-hosted analytics, generating tracking scripts, privacy-friendly analytics setup, or the analytics configuration. Covers @stacksjs/analytics and config/analytics.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,29 +8,84 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Analytics
 
-The `@stacksjs/analytics` package provides privacy-friendly analytics integration for Stacks applications.
+Privacy-friendly analytics with Fathom and self-hosted driver support.
 
 ## Key Paths
 - Core package: `storage/framework/core/analytics/src/`
 - Configuration: `config/analytics.ts`
-- Package: `@stacksjs/analytics`
 
-## Configuration
-Edit `config/analytics.ts` to configure analytics providers and tracking preferences.
+## Drivers
 
-## Features
-- Privacy-friendly by default
-- Configurable tracking providers
-- Server-side analytics collection
-- Integration with the Stacks event system
+### Fathom Analytics
+Privacy-focused, GDPR-compliant analytics. Requires a Fathom account.
 
-## Usage
+### Self-Hosted Analytics
+Generate tracking scripts for self-hosted analytics:
+
 ```typescript
-import { track } from '@stacksjs/analytics'
+import { generateSelfHostedScript, getSelfHostedAnalyticsHead, generateInlineScript } from '@stacksjs/analytics'
+
+// Generate tracking script tag
+const script = generateSelfHostedScript({
+  siteId: 'ABCDEF',
+  apiEndpoint: 'https://analytics.myapp.com/api/event',
+  honorDnt: true,                // respect Do Not Track
+  trackHashChanges: false,       // track hash URL changes
+  trackOutboundLinks: true       // track external link clicks
+})
+
+// Generate head configuration for STX
+const headConfig = getSelfHostedAnalyticsHead({
+  siteId: 'ABCDEF',
+  apiEndpoint: 'https://analytics.myapp.com/api/event'
+})
+
+// Generate inline script (no external JS file)
+const inline = generateInlineScript(config)
 ```
 
+## SelfHostedConfig Interface
+
+```typescript
+interface SelfHostedConfig {
+  siteId: string                  // unique site identifier
+  apiEndpoint: string             // analytics API URL
+  honorDnt?: boolean              // respect Do Not Track header
+  trackHashChanges?: boolean      // track SPA hash navigation
+  trackOutboundLinks?: boolean    // track clicks to external sites
+}
+```
+
+## config/analytics.ts
+
+```typescript
+{
+  driver: 'fathom',              // 'fathom' | 'google-analytics'
+  drivers: {
+    googleAnalytics: {
+      trackingId: ''              // GA tracking ID
+    },
+    fathom: {
+      siteId: ''                  // Fathom site ID
+    }
+  }
+}
+```
+
+## Dashboard Integration
+
+Analytics dashboard at `/dashboard/analytics` displays:
+- Page views and visitor counts
+- Traffic sources
+- Popular pages
+- Engagement metrics
+
 ## Gotchas
-- Analytics must respect user privacy preferences
-- Server-side tracking avoids ad-blocker issues
-- Configure data retention policies in the analytics config
-- Events can be tracked via the Stacks event system integration
+- Default driver is `fathom` — privacy-focused by default
+- Self-hosted analytics require your own analytics endpoint
+- `honorDnt: true` respects browser Do Not Track settings
+- `escapeAttr()` is used internally to prevent XSS in generated scripts
+- Google Analytics tracking ID goes in config, not env (unless you override)
+- Analytics scripts are generated server-side and injected into page head
+- Fathom is a paid service — self-hosted is free but requires infrastructure
+- `trackOutboundLinks` adds click handlers to external `<a>` tags
