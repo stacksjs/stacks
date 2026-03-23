@@ -1,6 +1,6 @@
 ---
 name: stacks-registry
-description: Use when working with the Stacks package registry — registering packages, managing package discovery, or the registry system. Covers the @stacksjs/registry package.
+description: Use when working with the Stacks extension registry — framework extension metadata, package discovery, or the registry system. Covers @stacksjs/registry.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,23 +8,51 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Registry
 
-The `@stacksjs/registry` package provides a registry system for the Stacks framework.
-
 ## Key Paths
 - Core package: `storage/framework/core/registry/src/`
-- Discovered packages: `storage/framework/discovered-packages.json`
+- Config: `config/stacks.ts`
 - Package: `@stacksjs/registry`
 
-## Purpose
-- Package discovery and registration
-- Manages the discovered packages manifest
-- Auto-discovers workspace packages
-- Provides package metadata resolution
+## Source Files
+```
+registry/src/
+└── index.ts              # Registry definition and exports
+```
 
-## Key Files
-- `storage/framework/discovered-packages.json` - Auto-generated manifest of discovered packages
+## API
+
+```typescript
+import { registry } from '@stacksjs/registry'
+import type { Registry } from '@stacksjs/registry'
+
+type Registry = StackExtensionRegistry
+
+const registry: Registry = [
+  {
+    name: 'stacks',
+    url: 'stacksjs.com',
+    github: 'stacksjs/stacks',
+  },
+]
+
+export default registry
+```
+
+The registry is a simple array of `StackExtensionRegistry` entries containing framework extension metadata — name, URL, and GitHub repository.
+
+## Usage
+
+```typescript
+import { registry } from '@stacksjs/registry'
+
+// Access extension metadata
+registry.forEach(ext => {
+  console.log(ext.name, ext.url, ext.github)
+})
+```
 
 ## Gotchas
-- The discovered-packages.json is auto-generated — do not edit manually
-- Registry works with the monorepo workspace system
-- Package discovery runs during build and setup processes
+- **Minimal package** — currently just a static array with the core Stacks framework entry
+- **Type comes from `@stacksjs/types`** — `StackExtensionRegistry` is defined in the types package
+- **Used for framework metadata** — not a package manager or dependency registry
+- **Config in `config/stacks.ts`** — the `StackExtensionRegistry` config is defined there

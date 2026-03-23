@@ -1,6 +1,6 @@
 ---
 name: stacks-plugins
-description: Use when working with the Stacks plugin system — creating plugins, registering plugins, or extending framework functionality via plugins. Covers the @stacksjs/plugins package.
+description: Use when working with the Stacks plugin system — Bun plugins, Vite plugins, preloader, or extending the framework's build/serve capabilities. Covers @stacksjs/plugins.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -8,26 +8,54 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 # Stacks Plugins
 
-The `@stacksjs/plugins` package provides the plugin system for extending Stacks framework functionality.
-
 ## Key Paths
 - Core package: `storage/framework/core/plugins/src/`
-- Default plugins: `storage/framework/defaults/resources/plugins/`
+- Source: `storage/framework/core/plugins/src/index.ts`
 - Preloader: `storage/framework/defaults/resources/plugins/preloader.ts`
 - Package: `@stacksjs/plugins`
 
-## Architecture
-- Plugins extend framework functionality
-- The preloader at `storage/framework/defaults/resources/plugins/preloader.ts` initializes plugins
-- Plugins can hook into the build, server, and CLI systems
-- Plugin resources are in `storage/framework/defaults/resources/plugins/`
+## API
 
-## Plugin Loading
-- Plugins are preloaded via `bunfig.toml`: `preload = ["./storage/framework/defaults/resources/plugins/preloader.ts"]`
-- The serve plugin `bun-plugin-stx` is loaded for STX template support
+```typescript
+import { plugin } from '@stacksjs/plugins'
+import type { BunPlugin, VitePlugin } from '@stacksjs/plugins'
+```
+
+The package exports:
+- `plugin` — Bun's native plugin factory for creating Bun plugins
+- `BunPlugin` — Type definition for Bun plugins
+- `VitePlugin` — Type definition for Vite plugins
+
+## Creating a Bun Plugin
+
+```typescript
+import { plugin } from '@stacksjs/plugins'
+import type { BunPlugin } from '@stacksjs/plugins'
+
+const myPlugin: BunPlugin = {
+  name: 'my-plugin',
+  setup(build) {
+    build.onLoad({ filter: /\.custom$/ }, async (args) => {
+      const content = await Bun.file(args.path).text()
+      return { contents: transformContent(content), loader: 'ts' }
+    })
+  },
+}
+
+plugin(myPlugin)
+```
+
+## Preloader
+
+The framework preloader at `storage/framework/defaults/resources/plugins/preloader.ts` runs before the application starts:
+
+- Configured in `bunfig.toml`: `preload = ["./storage/framework/defaults/resources/plugins/preloader.ts"]`
+- Loads `bun-plugin-stx` for STX template processing
+- Initializes auto-imports and framework globals
 
 ## Gotchas
-- Plugin preloader runs before the application starts
-- STX plugin (`bun-plugin-stx`) is critical for template processing
-- Plugins must be compatible with Bun's plugin API
-- Framework plugins are separate from application-level middleware
+- **Thin wrapper** — re-exports Bun's `plugin` factory and types for both Bun and Vite
+- **Preloader is critical** — the STX plugin (`bun-plugin-stx`) must be preloaded for template processing to work
+- **Two plugin systems** — Bun plugins (runtime) and Vite plugins (build) are different APIs
+- **Plugins must be Bun-compatible** — Node.js plugins won't work without adaptation
+- **Plugin preloader runs before app** — any setup in preloader.ts happens before any application code
