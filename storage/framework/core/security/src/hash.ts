@@ -141,7 +141,7 @@ export function info(hash: string): HashInfo {
 export function needsRehash(hash: string, options?: HashMakeOptions): boolean {
   const hashInfo = info(hash)
   const config = getHashingConfig()
-  const configuredDriver = options?.algorithm || config.driver || 'argon2id'
+  const configuredDriver = options?.algorithm || config.driver || 'bcrypt'
 
   // Normalize algorithm names for comparison
   const normalizeAlgorithm = (alg: string): string => {
@@ -184,7 +184,7 @@ export function needsRehash(hash: string, options?: HashMakeOptions): boolean {
  */
 export async function make(value: string, options?: HashMakeOptions): Promise<string> {
   const config = getHashingConfig()
-  const algorithm = options?.algorithm || config.driver || 'argon2id'
+  const algorithm = options?.algorithm || config.driver || 'bcrypt'
 
   if (algorithm === 'bcrypt') {
     return await bcryptEncode(value, options?.rounds)

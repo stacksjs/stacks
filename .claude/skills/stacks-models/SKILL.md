@@ -74,14 +74,14 @@ allowed-tools: Read Edit Write Bash Grep Glob
 - **Receipt** — receipt records
 
 ## CLI Commands
-- `buddy generate:model-files` — regenerate all model files
 - `buddy make:model [name]` — create new model
 - `buddy make:migration [name]` — create migration for schema changes
 - `buddy make:factory [name]` — create model factory
+- `buddy generate:migrations` — generate migrations from model diffs
 
 ## Gotchas
-- Models in `storage/framework/models/` are AUTO-GENERATED — edit the definition source, not the generated file
-- `build:reset` runs `buddy generate:model-files` — regenerates everything
+- Models work directly via the dynamic ORM — no code generation step needed
+- `defineModel()` uses `createModel()` from bun-query-builder at runtime, providing typed query methods immediately
 - Each model can have a `factory` function per attribute using `@stacksjs/faker`
 - `hidden` attributes are excluded from JSON serialization (passwords)
 - `guarded` attributes prevent mass assignment

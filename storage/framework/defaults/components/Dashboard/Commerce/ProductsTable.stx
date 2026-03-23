@@ -7,6 +7,21 @@
   const currentPage = props.currentPage || 1
   const itemsPerPage = props.itemsPerPage || 10
   const categories = props.categories || []
+  const selectedItems = props.selectedItems || []
+
+  function isSelected(productId) {
+    return selectedItems.includes(productId)
+  }
+
+  function toggleSelect(productId) {
+    $emit('toggle-select', productId)
+  }
+
+  function toggleSelectAll() {
+    $emit('toggle-select-all')
+  }
+
+  const allSelected = products.length > 0 && products.every(p => selectedItems.includes(p.id))
 
   function getStatusClass(isAvailable) {
     switch (isAvailable) {
@@ -32,7 +47,15 @@
     <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
       <thead class="bg-stone-50/80 dark:bg-neutral-800">
         <tr>
-          <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
+          <th scope="col" class="w-10 py-3.5 pl-4 pr-1">
+            <input
+              type="checkbox"
+              class="w-4 h-4 rounded border-stone-300 dark:border-neutral-600 text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0 bg-white dark:bg-neutral-800 cursor-pointer"
+              :checked="allSelected"
+              @change="toggleSelectAll"
+            />
+          </th>
+          <th scope="col" class="py-3.5 pl-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
             <button class="group inline-flex items-center" data-action="sort" data-column="name">
               Product
               <span class="ml-2 flex-none rounded text-stone-400 group-hover:visible group-focus:visible">

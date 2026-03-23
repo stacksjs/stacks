@@ -91,11 +91,11 @@ function toggleSort(column: string): void {
 
 // Order actions
 function viewOrder(order: any): void {
-  // TODO: implement view order detail
+  window.location.href = `/dashboard/commerce/orders/${order.id}`
 }
 
 function editOrder(order: any): void {
-  // TODO: implement edit order
+  window.location.href = `/dashboard/commerce/orders/${order.id}?edit=true`
 }
 
 function removeOrder(order: any): void {

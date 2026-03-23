@@ -14,7 +14,7 @@ export interface ManagePaymentMethod {
   setUserDefaultPayment: (user: UserModel, paymentMethodId: string) => Promise<Stripe.Response<Stripe.Customer>>
   setDefaultPaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.Customer>>
   storePaymentMethod: (user: UserModel, paymentMethodId: Stripe.PaymentMethod) => Promise<PaymentMethodInstance>
-  deletePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<Stripe.Response<Stripe.PaymentMethod>>
+  deletePaymentMethod: (user: UserModel, paymentMethodId: string | number) => Promise<Stripe.Response<Stripe.PaymentMethod>>
   retrievePaymentMethod: (user: UserModel, paymentMethodId: number) => Promise<PaymentMethodInstance | undefined>
   retrieveDefaultPaymentMethod: (user: UserModel) => Promise<PaymentMethodInstance | undefined>
   listPaymentMethods: (user: UserModel, cardType?: string) => Promise<Selectable<PaymentMethodsTable>[]>
@@ -153,12 +153,15 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
     return paymentMethod as unknown as PaymentMethodInstance
   }
 
-  async function deletePaymentMethod(user: UserModel, paymentMethodId: number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
+  async function deletePaymentMethod(user: UserModel, paymentMethodId: string | number): Promise<Stripe.Response<Stripe.PaymentMethod>> {
     if (!user.hasStripeId()) {
       throw new Error('Customer does not exist in Stripe')
     }
 
-    const pm = await PaymentMethod.find(paymentMethodId)
+    // Support both numeric database IDs and Stripe payment method ID strings (pm_xxx)
+    const pm = typeof paymentMethodId === 'string'
+      ? await db.selectFrom('payment_methods').where('provider_id', '=', paymentMethodId).selectAll().executeTakeFirst() as PaymentMethodInstance | undefined
+      : await PaymentMethod.find(paymentMethodId)
 
     if (!pm?.provider_id) {
       throw new Error(`Payment method with id ${paymentMethodId} not found`)

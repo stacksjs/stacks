@@ -1,0 +1,124 @@
+<script server>
+import { useGlobalSearch } from '../../functions/search'
+
+const { query, results, isSearching, isOpen, selectedIndex, modelIcons, search, open, close, moveUp, moveDown, selectCurrent, flatResults } = useGlobalSearch()
+
+function handleKeydown(event) {
+  if (event.key === 'ArrowUp') {
+    event.preventDefault()
+    moveUp()
+  } else if (event.key === 'ArrowDown') {
+    event.preventDefault()
+    moveDown()
+  } else if (event.key === 'Enter') {
+    event.preventDefault()
+    const href = selectCurrent()
+    if (href) window.location.href = href
+  } else if (event.key === 'Escape') {
+    close()
+  }
+}
+
+function handleInput(event) {
+  search(event.target.value)
+}
+
+function navigateTo(href) {
+  close()
+  window.location.href = href
+}
+</script>
+
+<!-- Search Modal Overlay -->
+@if(isOpen)
+  <div class="fixed inset-0 z-50 overflow-y-auto" @keydown="handleKeydown">
+    <!-- Backdrop -->
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" @click="close"></div>
+
+    <!-- Modal -->
+    <div class="relative mx-auto mt-[15vh] max-w-lg">
+      <div class="bg-white dark:bg-neutral-900 rounded-xl shadow-2xl border border-neutral-200 dark:border-neutral-700 overflow-hidden">
+        <!-- Search Input -->
+        <div class="flex items-center px-4 border-b border-neutral-200 dark:border-neutral-700">
+          <svg class="w-5 h-5 text-neutral-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+          </svg>
+          <input
+            type="text"
+            placeholder="Search across all models..."
+            class="w-full px-3 py-4 text-sm bg-transparent border-none text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-0"
+            :value="query"
+            @input="handleInput"
+            autofocus
+          />
+          @if(isSearching)
+            <div class="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin shrink-0"></div>
+          @else
+            <kbd class="shrink-0 px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded">
+              ESC
+            </kbd>
+          @endif
+        </div>
+
+        <!-- Results -->
+        <div class="max-h-80 overflow-y-auto">
+          @if(Object.keys(results).length > 0)
+            @for(modelType in results)
+              <div class="px-3 pt-3 pb-1">
+                <h3 class="text-xs font-semibold text-neutral-400 uppercase tracking-wider px-1">
+                  {{ modelType }}
+                </h3>
+              </div>
+              @for(item, itemIndex in results[modelType])
+                <button
+                  class="w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-neutral-50 dark:hover:bg-neutral-800"
+                  @click="navigateTo(item.href)"
+                >
+                  <div :class="modelIcons[modelType] || 'i-hugeicons-file-02'" class="w-5 h-5 text-neutral-400 shrink-0"></div>
+                  <div class="min-w-0 flex-1">
+                    <p class="text-sm font-medium text-neutral-900 dark:text-white truncate">
+                      {{ item.title }}
+                    </p>
+                    @if(item.subtitle)
+                      <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate">
+                        {{ item.subtitle }}
+                      </p>
+                    @endif
+                  </div>
+                  <svg class="w-4 h-4 text-neutral-300 dark:text-neutral-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                  </svg>
+                </button>
+              @endfor
+            @endfor
+          @elseif(query && !isSearching)
+            <div class="px-4 py-8 text-center">
+              <div class="i-hugeicons-search-02 w-8 h-8 text-neutral-300 dark:text-neutral-600 mx-auto mb-2"></div>
+              <p class="text-sm text-neutral-500 dark:text-neutral-400">No results found for "{{ query }}"</p>
+            </div>
+          @else
+            <div class="px-4 py-8 text-center">
+              <p class="text-sm text-neutral-400">Start typing to search...</p>
+            </div>
+          @endif
+        </div>
+
+        <!-- Footer -->
+        <div class="px-4 py-2.5 border-t border-neutral-200 dark:border-neutral-700 flex items-center gap-4 text-xs text-neutral-400">
+          <span class="flex items-center gap-1">
+            <kbd class="px-1 py-0.5 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded text-[10px]">↑↓</kbd>
+            Navigate
+          </span>
+          <span class="flex items-center gap-1">
+            <kbd class="px-1 py-0.5 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded text-[10px]">↵</kbd>
+            Open
+          </span>
+          <span class="flex items-center gap-1">
+            <kbd class="px-1 py-0.5 bg-neutral-100 dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded text-[10px]">esc</kbd>
+            Close
+          </span>
+        </div>
+      </div>
+    </div>
+  </div>
+@endif

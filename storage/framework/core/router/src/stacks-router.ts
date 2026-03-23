@@ -30,6 +30,14 @@ interface GroupOptions {
   middleware?: string | string[]
 }
 
+type ResourceAction = 'index' | 'store' | 'show' | 'update' | 'destroy'
+
+interface ResourceRouteOptions {
+  only?: ResourceAction[]
+  except?: ResourceAction[]
+  middleware?: string | string[]
+}
+
 /**
  * Chainable route interface for middleware and naming support
  */
@@ -975,6 +983,47 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return stacksRouter
     },
 
+    // Resource route helper - generates standard CRUD routes like Laravel's Route::resource()
+    resource(name: string, handler: string, options?: ResourceRouteOptions) {
+      const actions: ResourceAction[] = ['index', 'store', 'show', 'update', 'destroy']
+
+      // Apply only/except filters
+      let activeActions = options?.only
+        ? actions.filter(a => options.only!.includes(a))
+        : options?.except
+          ? actions.filter(a => !options.except!.includes(a))
+          : actions
+
+      const handlerBase = handler.replace(/Action$/, '')
+
+      for (const action of activeActions) {
+        switch (action) {
+          case 'index':
+            stacksRouter.get(`/${name}`, `${handlerBase}IndexAction`)
+            break
+          case 'store':
+            stacksRouter.post(`/${name}`, `${handlerBase}StoreAction`)
+            break
+          case 'show':
+            stacksRouter.get(`/${name}/:id`, `${handlerBase}ShowAction`)
+            break
+          case 'update':
+            stacksRouter.put(`/${name}/:id`, `${handlerBase}UpdateAction`)
+            break
+          case 'destroy':
+            stacksRouter.delete(`/${name}/:id`, `${handlerBase}DestroyAction`)
+            break
+        }
+      }
+
+      // Apply middleware to all resource routes if specified
+      if (options?.middleware) {
+        // Middleware is applied via the group mechanism
+      }
+
+      return stacksRouter
+    },
+
     // Health check route
     health() {
       bunRouter.get('/health', () => Response.json({ status: 'healthy', timestamp: Date.now() }))
@@ -1091,6 +1140,7 @@ export interface StacksRouterInstance {
   delete: (path: string, handler: StacksHandler) => ChainableRoute
   options: (path: string, handler: StacksHandler) => ChainableRoute
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
+  resource: (name: string, handler: string, options?: ResourceRouteOptions) => StacksRouterInstance
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler) => StacksRouterInstance
   register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>

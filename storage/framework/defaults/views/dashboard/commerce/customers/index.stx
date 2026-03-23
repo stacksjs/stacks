@@ -95,11 +95,11 @@ function toggleSort(column: string): void {
 
 // Customer actions
 function viewCustomer(customer: any): void {
-  // TODO: implement view customer detail
+  window.location.href = `/dashboard/commerce/customers/${customer.id}`
 }
 
 function editCustomer(customer: any): void {
-  // TODO: implement edit customer
+  window.location.href = `/dashboard/commerce/customers/${customer.id}?edit=true`
 }
 
 function removeCustomer(customer: any): void {

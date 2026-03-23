@@ -125,6 +125,25 @@ export class StacksCache implements CacheDriver {
     return await this.manager.fetch(key, fetcher, ttl)
   }
 
+  /**
+   * Get a cached value or compute and store it (Laravel-style).
+   * TTL comes before callback (Laravel convention).
+   */
+  async remember<T>(key: string, ttl: number, callback: () => T | Promise<T>): Promise<T> {
+    return await this.getOrSet(key, callback, ttl)
+  }
+
+  /**
+   * Get a cached value or compute and store it forever (no expiration).
+   */
+  async rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> {
+    const existing = await this.get<T>(key)
+    if (existing !== undefined) return existing
+    const value = await callback()
+    await this.setForever(key, value)
+    return value
+  }
+
   async del(keys: string | string[]): Promise<number> {
     return await this.manager.del(keys)
   }

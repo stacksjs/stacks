@@ -321,15 +321,14 @@ System: Job, FailedJob, Error, Log, Notification, Activity, Request, Websocket, 
 Marketing: Campaign, EmailList, SocialPost
 
 ## CLI Commands
-- `buddy generate` -- generate model files
-- `buddy generate:model-files` -- regenerate all model files
 - `buddy make:migration` -- create migration for model changes
+- `buddy generate:migrations` -- generate migrations from model diffs
 - `buddy migrate` -- run pending migrations
 
 ## Gotchas
-- Model files in `storage/framework/models/` are AUTO-GENERATED from definitions -- edit the model definition in `app/Models/` or `storage/framework/defaults/models/`, not the generated file
+- Models work directly via the dynamic ORM — no code generation step needed
+- `defineModel()` calls `createModel()` from bun-query-builder at runtime, providing all typed query methods immediately
 - Two ORM locations: `storage/framework/core/orm/` (package) and `storage/framework/orm/` (implementation)
-- `build:reset` script runs `buddy generate:model-files` -- regenerates all models
 - Factories use `@stacksjs/faker` -- each attribute can have a `factory` function
 - The `hidden` attribute flag excludes fields from JSON serialization (e.g., passwords)
 - The `guarded` flag prevents mass assignment

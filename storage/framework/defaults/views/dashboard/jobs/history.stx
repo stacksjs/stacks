@@ -53,7 +53,25 @@ function paginatedJobs() {
 function totalPages() { return Math.ceil(filteredJobs.length / perPage) }
 
 const handleRetry = async (jobId) => {
-  // TODO: implement retry via queue API
+  try {
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const response = await fetch(`${baseUrl}/jobs/${jobId}/retry`, {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+    })
+
+    if (response.ok) {
+      // Update the job status locally
+      const job = jobs.find(j => j.id === jobId)
+      if (job) {
+        job.status = 'queued'
+        job.attempts = (job.attempts || 0) + 1
+      }
+    }
+  }
+  catch (e) {
+    console.error('Failed to retry job:', e)
+  }
 }
 
 </script>

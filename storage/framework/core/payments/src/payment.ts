@@ -204,11 +204,12 @@ export async function setDefaultPaymentMethod(
 }
 
 /**
- * Remove a payment method
+ * Remove a payment method.
+ * Accepts either a numeric database ID or a Stripe payment method ID string (pm_xxx).
  */
 export async function removePaymentMethod(
   user: UserModel,
-  paymentMethodId: number,
+  paymentMethodId: string | number,
 ): Promise<Stripe.PaymentMethod> {
   return managePaymentMethod.deletePaymentMethod(user, paymentMethodId)
 }

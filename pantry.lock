@@ -78,6 +78,7 @@
         "@stacksjs/search-engine": "workspace:*",
         "@stacksjs/security": "workspace:*",
         "@stacksjs/server": "workspace:*",
+        "@stacksjs/skills": "workspace:*",
         "@stacksjs/storage": "workspace:*",
         "@stacksjs/strings": "workspace:*",
         "@stacksjs/tlsx": "^0.13.0",
@@ -789,6 +790,18 @@
       "name": "@stacksjs/shell",
       "version": "0.70.23",
       "devDependencies": {
+        "better-dx": "^0.2.5"
+      }
+    },
+    "storage/framework/core/skills": {
+      "name": "@stacksjs/skills",
+      "version": "0.70.23",
+      "dependencies": {
+        "@stacksjs/path": "workspace:*",
+        "@stacksjs/storage": "workspace:*"
+      },
+      "devDependencies": {
+        "@stacksjs/types": "workspace:*",
         "better-dx": "^0.2.5"
       }
     },

@@ -59,9 +59,6 @@ export function useDashboard() {
   const error = ref<string | null>(null)
 
   async function fetchDashboardStats(timeRange = '7d') {
-    isLoading.value = true
-    error.value = null
-
     try {
       const response = await fetch(`${baseUrl}/dashboard/stats?range=${timeRange}`, {
         headers: {
@@ -73,11 +70,10 @@ export function useDashboard() {
         const data = await response.json()
         stats.value = data.stats || defaultStats
       }
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to fetch dashboard stats:', e)
-      // Keep default/fallback data
-    } finally {
-      isLoading.value = false
+      throw e
     }
   }
 
@@ -93,8 +89,10 @@ export function useDashboard() {
         const data = await response.json()
         recentActivity.value = data.activity || defaultActivity
       }
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to fetch recent activity:', e)
+      throw e
     }
   }
 
@@ -110,19 +108,34 @@ export function useDashboard() {
         const data = await response.json()
         systemHealth.value = data.services || defaultHealth
       }
-    } catch (e) {
+    }
+    catch (e) {
       console.error('Failed to fetch system health:', e)
+      throw e
     }
   }
 
   async function fetchAll(timeRange = '7d') {
     isLoading.value = true
-    await Promise.all([
-      fetchDashboardStats(timeRange),
-      fetchRecentActivity(),
-      fetchSystemHealth(),
-    ])
-    isLoading.value = false
+    error.value = null
+
+    try {
+      await Promise.all([
+        fetchDashboardStats(timeRange),
+        fetchRecentActivity(),
+        fetchSystemHealth(),
+      ])
+    }
+    catch (e) {
+      error.value = 'Failed to load dashboard data. Please try again.'
+    }
+    finally {
+      isLoading.value = false
+    }
+  }
+
+  function retry(timeRange = '7d') {
+    return fetchAll(timeRange)
   }
 
   return {
@@ -135,5 +148,6 @@ export function useDashboard() {
     fetchRecentActivity,
     fetchSystemHealth,
     fetchAll,
+    retry,
   }
 }

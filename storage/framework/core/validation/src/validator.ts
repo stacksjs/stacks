@@ -86,6 +86,97 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   }
 }
 
+/**
+ * Async validation rule type.
+ * Return true if valid, or a string error message if invalid.
+ */
+export type AsyncValidator = (value: unknown, params: RequestData) => Promise<boolean | string>
+
+// Custom rule registry
+const customRuleRegistry = new Map<string, AsyncValidator>()
+
+/**
+ * Register a custom validation rule that can be referenced by name.
+ */
+export function registerRule(name: string, rule: AsyncValidator): void {
+  customRuleRegistry.set(name, rule)
+}
+
+/**
+ * Get a registered custom rule by name.
+ */
+export function getCustomRule(name: string): AsyncValidator | undefined {
+  return customRuleRegistry.get(name)
+}
+
+/**
+ * Built-in async rule: checks that a value is unique in a database table.
+ */
+export function unique(table: string, column: string, exceptId?: number): AsyncValidator {
+  return async (value: unknown): Promise<boolean | string> => {
+    try {
+      const { db } = await import('@stacksjs/database')
+      let query = db.selectFrom(table as any).where(column as any, '=', value as any)
+      if (exceptId) query = query.where('id' as any, '!=', exceptId as any)
+      const existing = await (query as any).selectAll().executeTakeFirst()
+      return existing ? `The ${column} has already been taken` : true
+    }
+    catch {
+      // If database is not available, skip async validation
+      return true
+    }
+  }
+}
+
+/**
+ * Built-in async rule: checks that a value exists in a database table.
+ */
+export function exists(table: string, column: string): AsyncValidator {
+  return async (value: unknown): Promise<boolean | string> => {
+    try {
+      const { db } = await import('@stacksjs/database')
+      const existing = await (db.selectFrom(table as any).where(column as any, '=', value as any) as any).selectAll().executeTakeFirst()
+      return existing ? true : `The selected ${column} does not exist`
+    }
+    catch {
+      return true
+    }
+  }
+}
+
+/**
+ * Validate fields with both sync rules (from model) and async rules.
+ * Runs sync validation first, then async rules, combining all errors.
+ */
+export async function validateFieldAsync(
+  modelFile: string,
+  params: RequestData,
+  asyncRules?: Record<string, AsyncValidator>,
+): Promise<any> {
+  // Run sync validation first
+  const syncResult = await validateField(modelFile, params)
+
+  // Then run async rules if provided
+  if (asyncRules && Object.keys(asyncRules).length > 0) {
+    const asyncErrors: Record<string, string> = {}
+
+    await Promise.all(
+      Object.entries(asyncRules).map(async ([field, validator]) => {
+        const result = await validator(params[field], params)
+        if (result !== true) {
+          asyncErrors[field] = typeof result === 'string' ? result : `${field} validation failed`
+        }
+      }),
+    )
+
+    if (Object.keys(asyncErrors).length > 0) {
+      throw new HttpError(422, JSON.stringify(asyncErrors))
+    }
+  }
+
+  return syncResult
+}
+
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
   const ruleObject: Record<string, Validator<any>> = {}
   const messageObject: Record<string, string> = {}

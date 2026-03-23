@@ -70,8 +70,10 @@ function getNotificationCount() {
       <input
         type="text"
         placeholder="Search..."
-        class="w-full pl-10 pr-16 py-2 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40"
-        value="{{ props.searchQuery || '' }}"
+        class="w-full pl-10 pr-16 py-2 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 cursor-pointer"
+        readonly
+        @click="$emit('open-search')"
+        @focus="$emit('open-search')"
       />
       <div class="absolute right-3 flex items-center">
         <kbd class="hidden lg:inline-flex px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded shadow-sm">

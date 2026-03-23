@@ -149,6 +149,64 @@ class Mail {
     const instance = new Mail({ defaultDriver: driver })
     return instance
   }
+
+  /**
+   * Queue an email for background sending via the job system.
+   * Falls back to synchronous send if queue driver is 'sync'.
+   */
+  public async queue(message: EmailMessage): Promise<void> {
+    try {
+      const { job } = await import('@stacksjs/queue')
+      await job('SendEmail', {
+        message,
+        driver: this.defaultDriver,
+      })
+        .onQueue('emails')
+        .dispatch()
+    }
+    catch {
+      // Queue system not available, fall back to sync send
+      await this.send(message)
+    }
+  }
+
+  /**
+   * Queue an email for sending after a delay (in seconds).
+   */
+  public async later(delaySeconds: number, message: EmailMessage): Promise<void> {
+    try {
+      const { job } = await import('@stacksjs/queue')
+      await job('SendEmail', {
+        message,
+        driver: this.defaultDriver,
+      })
+        .onQueue('emails')
+        .delay(delaySeconds)
+        .dispatch()
+    }
+    catch {
+      // Queue system not available, fall back to sync send
+      await this.send(message)
+    }
+  }
+
+  /**
+   * Queue an email on a specific named queue.
+   */
+  public async queueOn(queueName: string, message: EmailMessage): Promise<void> {
+    try {
+      const { job } = await import('@stacksjs/queue')
+      await job('SendEmail', {
+        message,
+        driver: this.defaultDriver,
+      })
+        .onQueue(queueName)
+        .dispatch()
+    }
+    catch {
+      await this.send(message)
+    }
+  }
 }
 
 // Export a singleton instance - reads default driver from config

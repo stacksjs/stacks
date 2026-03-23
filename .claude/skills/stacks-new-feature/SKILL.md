@@ -76,8 +76,7 @@ export default defineModel({
 ## Step 2: Generate & Run Migration
 
 ```bash
-buddy generate:model-files     # regenerate model types
-buddy generate:migrations      # generate migration SQL
+buddy generate:migrations      # generate migration SQL from model diffs
 buddy migrate                  # apply migration
 buddy seed                     # seed with factory data
 ```
@@ -199,7 +198,7 @@ export default new Job({
 ```
 
 ## Gotchas
-- Always generate model files before migrations: `buddy generate:model-files`
+- Models work directly via the dynamic ORM — no generation step needed before migrations
 - The `useApi` trait auto-generates both routes AND dashboard views
 - Model events (observe: true) emit `article:created`, `article:updated`, `article:deleted`
 - Factories in model attributes are used by `buddy seed`

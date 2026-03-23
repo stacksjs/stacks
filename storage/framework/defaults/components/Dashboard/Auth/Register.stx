@@ -19,7 +19,54 @@ const isLoading = props.isLoading || false
 const error = props.error || ''
 const errors = props.errors || {}
 
-// Validation
+// Password strength calculation
+let passwordStrength = 0
+let passwordStrengthLabel = ''
+
+function computePasswordStrength(pw) {
+  let score = 0
+  if (pw.length >= 8) score++
+  if (pw.length >= 12) score++
+  if (/[A-Z]/.test(pw) && /[a-z]/.test(pw)) score++
+  if (/\d/.test(pw)) score++
+  if (/[^A-Za-z0-9]/.test(pw)) score++
+
+  // Map 0-5 score to 0-4 strength
+  passwordStrength = Math.min(4, score)
+  const labels = ['', 'Weak', 'Fair', 'Good', 'Strong']
+  passwordStrengthLabel = pw.length > 0 ? labels[passwordStrength] : ''
+}
+
+// Validation - validates individual fields on blur, full form on submit
+function validateEmail() {
+  if (!email.trim()) {
+    errors.email = 'Email is required'
+  } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    errors.email = 'Please enter a valid email'
+  } else {
+    errors.email = ''
+  }
+}
+
+function validatePassword() {
+  if (!password) {
+    errors.password = 'Password is required'
+  } else if (password.length < 8) {
+    errors.password = 'Password must be at least 8 characters'
+  } else {
+    errors.password = ''
+  }
+  computePasswordStrength(password)
+}
+
+function validateConfirmation() {
+  if (passwordConfirmation && password !== passwordConfirmation) {
+    errors.passwordConfirmation = 'Passwords do not match'
+  } else {
+    errors.passwordConfirmation = ''
+  }
+}
+
 function validateForm() {
   const newErrors = {}
 
@@ -115,6 +162,7 @@ function handleSubmit(event) {
             placeholder="you@example.com"
             :value="email"
             @input="email = $event.target.value"
+            @blur="validateEmail"
             :error="errors.email"
             required
             :disabled="isLoading"
@@ -128,11 +176,26 @@ function handleSubmit(event) {
             label="Password"
             placeholder="At least 8 characters"
             :value="password"
-            @input="password = $event.target.value"
+            @input="password = $event.target.value; validatePassword()"
+            @blur="validatePassword"
             :error="errors.password"
             required
             :disabled="isLoading"
           />
+          <!-- Password Strength Indicator -->
+          @if(password.length > 0)
+            <div class="mt-2">
+              <div class="flex gap-1">
+                <div class="h-1 flex-1 rounded-full" :class="passwordStrength >= 1 ? (passwordStrength <= 1 ? 'bg-red-500' : passwordStrength === 2 ? 'bg-orange-500' : passwordStrength === 3 ? 'bg-yellow-500' : 'bg-green-500') : 'bg-neutral-200 dark:bg-neutral-700'"></div>
+                <div class="h-1 flex-1 rounded-full" :class="passwordStrength >= 2 ? (passwordStrength === 2 ? 'bg-orange-500' : passwordStrength === 3 ? 'bg-yellow-500' : 'bg-green-500') : 'bg-neutral-200 dark:bg-neutral-700'"></div>
+                <div class="h-1 flex-1 rounded-full" :class="passwordStrength >= 3 ? (passwordStrength === 3 ? 'bg-yellow-500' : 'bg-green-500') : 'bg-neutral-200 dark:bg-neutral-700'"></div>
+                <div class="h-1 flex-1 rounded-full" :class="passwordStrength >= 4 ? 'bg-green-500' : 'bg-neutral-200 dark:bg-neutral-700'"></div>
+              </div>
+              <p class="mt-1 text-xs" :class="passwordStrength <= 1 ? 'text-red-500' : passwordStrength === 2 ? 'text-orange-500' : passwordStrength === 3 ? 'text-yellow-600 dark:text-yellow-400' : 'text-green-500'">
+                {{ passwordStrengthLabel }}
+              </p>
+            </div>
+          @endif
         </div>
 
         <!-- Confirm Password Field -->
@@ -142,7 +205,7 @@ function handleSubmit(event) {
             label="Confirm password"
             placeholder="Confirm your password"
             :value="passwordConfirmation"
-            @input="passwordConfirmation = $event.target.value"
+            @input="passwordConfirmation = $event.target.value; validateConfirmation()"
             :error="errors.passwordConfirmation"
             required
             :disabled="isLoading"

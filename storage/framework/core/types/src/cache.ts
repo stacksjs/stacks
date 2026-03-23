@@ -212,6 +212,17 @@ export interface CacheDriver {
   take: <T>(key: string) => Promise<T | undefined>
 
   /**
+   * Get a cached value or compute and store it (Laravel-style).
+   * TTL comes before callback (Laravel convention).
+   */
+  remember: <T>(key: string, ttl: number, callback: () => T | Promise<T>) => Promise<T>
+
+  /**
+   * Get a cached value or compute and store it forever (no expiration).
+   */
+  rememberForever: <T>(key: string, callback: () => T | Promise<T>) => Promise<T>
+
+  /**
    * Get cache statistics
    */
   getStats: () => Promise<CacheStats>
