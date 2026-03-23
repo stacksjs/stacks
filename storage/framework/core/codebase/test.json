@@ -1,0 +1,660 @@
+{
+  "sections": [
+    {
+      "id": "home",
+      "title": "Home",
+      "items": [
+        {
+          "id": "home",
+          "label": "Dashboard",
+          "icon": "house.fill",
+          "url": "http://localhost:3002/pages/index"
+        },
+        {
+          "id": "dependencies",
+          "label": "Dependencies",
+          "icon": "shippingbox.fill",
+          "url": "http://localhost:3002/pages/home/dependencies"
+        },
+        {
+          "id": "services",
+          "label": "Services",
+          "icon": "square.stack.3d.up.fill",
+          "url": "http://localhost:3002/pages/home/services"
+        }
+      ]
+    },
+    {
+      "id": "library",
+      "title": "Library",
+      "items": [
+        {
+          "id": "components",
+          "label": "Components",
+          "icon": "puzzlepiece.fill",
+          "url": "http://localhost:3002/pages/library/components"
+        },
+        {
+          "id": "functions",
+          "label": "Functions",
+          "icon": "function",
+          "url": "http://localhost:3002/pages/library/functions"
+        },
+        {
+          "id": "packages",
+          "label": "Packages",
+          "icon": "shippingbox.fill",
+          "url": "http://localhost:3002/pages/library/packages"
+        }
+      ]
+    },
+    {
+      "id": "content",
+      "title": "Content",
+      "items": [
+        {
+          "id": "content-dashboard",
+          "label": "Dashboard",
+          "icon": "gauge.with.dots.needle.33percent",
+          "url": "http://localhost:3002/pages/content/dashboard"
+        },
+        {
+          "id": "files",
+          "label": "Files",
+          "icon": "folder.fill",
+          "url": "http://localhost:3002/pages/content/files"
+        },
+        {
+          "id": "pages",
+          "label": "Pages",
+          "icon": "doc.fill",
+          "url": "http://localhost:3002/pages/content/pages"
+        },
+        {
+          "id": "posts",
+          "label": "Posts",
+          "icon": "text.bubble.fill",
+          "url": "http://localhost:3002/pages/content/posts"
+        },
+        {
+          "id": "categories",
+          "label": "Categories",
+          "icon": "tag.fill",
+          "url": "http://localhost:3002/pages/content/categories"
+        },
+        {
+          "id": "tags",
+          "label": "Tags",
+          "icon": "tag",
+          "url": "http://localhost:3002/pages/content/tags"
+        },
+        {
+          "id": "comments",
+          "label": "Comments",
+          "icon": "bubble.left.fill",
+          "url": "http://localhost:3002/pages/content/comments"
+        },
+        {
+          "id": "authors",
+          "label": "Authors",
+          "icon": "person.text.rectangle.fill",
+          "url": "http://localhost:3002/pages/content/authors"
+        },
+        {
+          "id": "seo",
+          "label": "SEO",
+          "icon": "magnifyingglass",
+          "url": "http://localhost:3002/pages/content/seo"
+        }
+      ]
+    },
+    {
+      "id": "app",
+      "title": "App",
+      "items": [
+        {
+          "id": "deployments",
+          "label": "Deployments",
+          "icon": "rocket.fill",
+          "url": "http://localhost:3002/pages/app/deployments"
+        },
+        {
+          "id": "requests",
+          "label": "Requests",
+          "icon": "arrow.left.arrow.right",
+          "url": "http://localhost:3002/pages/app/requests"
+        },
+        {
+          "id": "realtime",
+          "label": "Realtime",
+          "icon": "link",
+          "url": "http://localhost:3002/pages/app/realtime"
+        },
+        {
+          "id": "actions",
+          "label": "Actions",
+          "icon": "bolt.fill",
+          "url": "http://localhost:3002/pages/app/actions"
+        },
+        {
+          "id": "commands",
+          "label": "Commands",
+          "icon": "terminal.fill",
+          "url": "http://localhost:3002/pages/app/commands"
+        },
+        {
+          "id": "queue",
+          "label": "Queue",
+          "icon": "list.bullet.rectangle.fill",
+          "url": "http://localhost:3002/pages/app/queue"
+        },
+        {
+          "id": "jobs",
+          "label": "Jobs",
+          "icon": "briefcase.fill",
+          "url": "http://localhost:3002/pages/app/jobs"
+        },
+        {
+          "id": "queries",
+          "label": "Queries",
+          "icon": "magnifyingglass.circle.fill",
+          "url": "http://localhost:3002/pages/app/queries"
+        },
+        {
+          "id": "notifications",
+          "label": "Notifications",
+          "icon": "bell.fill",
+          "url": "http://localhost:3002/pages/app/notifications"
+        }
+      ]
+    },
+    {
+      "id": "data",
+      "title": "Data",
+      "items": [
+        {
+          "id": "data-dashboard",
+          "label": "Dashboard",
+          "icon": "gauge.with.dots.needle.33percent",
+          "url": "http://localhost:3002/pages/data/dashboard"
+        },
+        {
+          "id": "activity",
+          "label": "Activity",
+          "icon": "waveform.path.ecg",
+          "url": "http://localhost:3002/pages/data/activity"
+        },
+        {
+          "id": "model-author",
+          "label": "Author",
+          "icon": "person.text.rectangle.fill",
+          "url": "http://localhost:3002/pages/data/author"
+        },
+        {
+          "id": "model-campaign",
+          "label": "Campaign",
+          "icon": "megaphone.fill",
+          "url": "http://localhost:3002/pages/data/campaign"
+        },
+        {
+          "id": "model-cart",
+          "label": "Cart",
+          "icon": "cart.fill",
+          "url": "http://localhost:3002/pages/data/cart"
+        },
+        {
+          "id": "model-cart-item",
+          "label": "CartItem",
+          "icon": "cart.badge.plus",
+          "url": "http://localhost:3002/pages/data/cart-item"
+        },
+        {
+          "id": "model-category",
+          "label": "Category",
+          "icon": "tag.fill",
+          "url": "http://localhost:3002/pages/data/category"
+        },
+        {
+          "id": "model-comment",
+          "label": "Comment",
+          "icon": "bubble.left.fill",
+          "url": "http://localhost:3002/pages/data/comment"
+        },
+        {
+          "id": "model-coupon",
+          "label": "Coupon",
+          "icon": "ticket.fill",
+          "url": "http://localhost:3002/pages/data/coupon"
+        },
+        {
+          "id": "model-customer",
+          "label": "Customer",
+          "icon": "person.crop.circle.fill",
+          "url": "http://localhost:3002/pages/data/customer"
+        },
+        {
+          "id": "model-delivery-route",
+          "label": "DeliveryRoute",
+          "icon": "map.fill",
+          "url": "http://localhost:3002/pages/data/delivery-route"
+        },
+        {
+          "id": "model-digital-delivery",
+          "label": "DigitalDelivery",
+          "icon": "arrow.down.doc.fill",
+          "url": "http://localhost:3002/pages/data/digital-delivery"
+        },
+        {
+          "id": "model-driver",
+          "label": "Driver",
+          "icon": "car.fill",
+          "url": "http://localhost:3002/pages/data/driver"
+        },
+        {
+          "id": "model-email-list",
+          "label": "EmailList",
+          "icon": "envelope.badge.person.crop",
+          "url": "http://localhost:3002/pages/data/email-list"
+        },
+        {
+          "id": "model-gift-card",
+          "label": "GiftCard",
+          "icon": "giftcard.fill",
+          "url": "http://localhost:3002/pages/data/gift-card"
+        },
+        {
+          "id": "model-job",
+          "label": "Job",
+          "icon": "briefcase.fill",
+          "url": "http://localhost:3002/pages/data/job"
+        },
+        {
+          "id": "model-license-key",
+          "label": "LicenseKey",
+          "icon": "key.fill",
+          "url": "http://localhost:3002/pages/data/license-key"
+        },
+        {
+          "id": "model-log",
+          "label": "Log",
+          "icon": "list.bullet.rectangle.portrait.fill",
+          "url": "http://localhost:3002/pages/data/log"
+        },
+        {
+          "id": "model-loyalty-point",
+          "label": "LoyaltyPoint",
+          "icon": "star.circle.fill",
+          "url": "http://localhost:3002/pages/data/loyalty-point"
+        },
+        {
+          "id": "model-loyalty-reward",
+          "label": "LoyaltyReward",
+          "icon": "gift.fill",
+          "url": "http://localhost:3002/pages/data/loyalty-reward"
+        },
+        {
+          "id": "model-manufacturer",
+          "label": "Manufacturer",
+          "icon": "building.2.fill",
+          "url": "http://localhost:3002/pages/data/manufacturer"
+        },
+        {
+          "id": "model-notification",
+          "label": "Notification",
+          "icon": "bell.fill",
+          "url": "http://localhost:3002/pages/data/notification"
+        },
+        {
+          "id": "model-order",
+          "label": "Order",
+          "icon": "list.clipboard.fill",
+          "url": "http://localhost:3002/pages/data/order"
+        },
+        {
+          "id": "model-order-item",
+          "label": "OrderItem",
+          "icon": "list.bullet.clipboard.fill",
+          "url": "http://localhost:3002/pages/data/order-item"
+        },
+        {
+          "id": "model-page",
+          "label": "Page",
+          "icon": "doc.fill",
+          "url": "http://localhost:3002/pages/data/page"
+        },
+        {
+          "id": "model-payment",
+          "label": "Payment",
+          "icon": "creditcard.fill",
+          "url": "http://localhost:3002/pages/data/payment"
+        },
+        {
+          "id": "model-payment-method",
+          "label": "PaymentMethod",
+          "icon": "creditcard.and.123",
+          "url": "http://localhost:3002/pages/data/payment-method"
+        },
+        {
+          "id": "model-payment-product",
+          "label": "PaymentProduct",
+          "icon": "creditcard.fill",
+          "url": "http://localhost:3002/pages/data/payment-product"
+        },
+        {
+          "id": "model-payment-transaction",
+          "label": "PaymentTransaction",
+          "icon": "creditcard.fill",
+          "url": "http://localhost:3002/pages/data/payment-transaction"
+        },
+        {
+          "id": "model-post",
+          "label": "Post",
+          "icon": "doc.text.fill",
+          "url": "http://localhost:3002/pages/data/post"
+        },
+        {
+          "id": "model-print-device",
+          "label": "PrintDevice",
+          "icon": "printer.fill",
+          "url": "http://localhost:3002/pages/data/print-device"
+        },
+        {
+          "id": "model-product",
+          "label": "Product",
+          "icon": "cube.box.fill",
+          "url": "http://localhost:3002/pages/data/product"
+        },
+        {
+          "id": "model-product-unit",
+          "label": "ProductUnit",
+          "icon": "scalemass.fill",
+          "url": "http://localhost:3002/pages/data/product-unit"
+        },
+        {
+          "id": "model-product-variant",
+          "label": "ProductVariant",
+          "icon": "cube.fill",
+          "url": "http://localhost:3002/pages/data/product-variant"
+        },
+        {
+          "id": "model-receipt",
+          "label": "Receipt",
+          "icon": "doc.text.fill",
+          "url": "http://localhost:3002/pages/data/receipt"
+        },
+        {
+          "id": "model-review",
+          "label": "Review",
+          "icon": "star.fill",
+          "url": "http://localhost:3002/pages/data/review"
+        },
+        {
+          "id": "model-shipping-method",
+          "label": "ShippingMethod",
+          "icon": "shippingbox.fill",
+          "url": "http://localhost:3002/pages/data/shipping-method"
+        },
+        {
+          "id": "model-shipping-rate",
+          "label": "ShippingRate",
+          "icon": "dollarsign.circle.fill",
+          "url": "http://localhost:3002/pages/data/shipping-rate"
+        },
+        {
+          "id": "model-shipping-zone",
+          "label": "ShippingZone",
+          "icon": "map.fill",
+          "url": "http://localhost:3002/pages/data/shipping-zone"
+        },
+        {
+          "id": "model-social-post",
+          "label": "SocialPost",
+          "icon": "bubble.left.and.bubble.right.fill",
+          "url": "http://localhost:3002/pages/data/social-post"
+        },
+        {
+          "id": "model-subscription",
+          "label": "Subscription",
+          "icon": "repeat.circle.fill",
+          "url": "http://localhost:3002/pages/data/subscription"
+        },
+        {
+          "id": "model-tag",
+          "label": "Tag",
+          "icon": "tag",
+          "url": "http://localhost:3002/pages/data/tag"
+        },
+        {
+          "id": "model-tax-rate",
+          "label": "TaxRate",
+          "icon": "percent",
+          "url": "http://localhost:3002/pages/data/tax-rate"
+        },
+        {
+          "id": "model-transaction",
+          "label": "Transaction",
+          "icon": "arrow.left.arrow.right.circle.fill",
+          "url": "http://localhost:3002/pages/data/transaction"
+        },
+        {
+          "id": "model-user",
+          "label": "User",
+          "icon": "person.fill",
+          "url": "http://localhost:3002/pages/data/user"
+        },
+        {
+          "id": "model-waitlist-product",
+          "label": "WaitlistProduct",
+          "icon": "clock.fill",
+          "url": "http://localhost:3002/pages/data/waitlist-product"
+        },
+        {
+          "id": "model-waitlist-restaurant",
+          "label": "WaitlistRestaurant",
+          "icon": "clock.badge.checkmark.fill",
+          "url": "http://localhost:3002/pages/data/waitlist-restaurant"
+        },
+        {
+          "id": "model-websocket",
+          "label": "Websocket",
+          "icon": "antenna.radiowaves.left.and.right",
+          "url": "http://localhost:3002/pages/data/websocket"
+        }
+      ]
+    },
+    {
+      "id": "commerce",
+      "title": "Commerce",
+      "items": [
+        {
+          "id": "commerce-dashboard",
+          "label": "Dashboard",
+          "icon": "gauge.with.dots.needle.33percent",
+          "url": "http://localhost:3002/pages/commerce/dashboard"
+        },
+        {
+          "id": "customers",
+          "label": "Customers",
+          "icon": "person.crop.circle.fill",
+          "url": "http://localhost:3002/pages/commerce/customers"
+        },
+        {
+          "id": "orders",
+          "label": "Orders",
+          "icon": "list.clipboard.fill",
+          "url": "http://localhost:3002/pages/commerce/orders"
+        },
+        {
+          "id": "products",
+          "label": "Products",
+          "icon": "cube.box.fill",
+          "url": "http://localhost:3002/pages/commerce/products"
+        },
+        {
+          "id": "coupons",
+          "label": "Coupons",
+          "icon": "ticket.fill",
+          "url": "http://localhost:3002/pages/commerce/coupons"
+        },
+        {
+          "id": "gift-cards",
+          "label": "Gift Cards",
+          "icon": "giftcard.fill",
+          "url": "http://localhost:3002/pages/commerce/gift-cards"
+        },
+        {
+          "id": "payments",
+          "label": "Payments",
+          "icon": "creditcard.fill",
+          "url": "http://localhost:3002/pages/commerce/payments"
+        },
+        {
+          "id": "delivery",
+          "label": "Delivery",
+          "icon": "truck.box.fill",
+          "url": "http://localhost:3002/pages/commerce/delivery"
+        },
+        {
+          "id": "taxes",
+          "label": "Taxes",
+          "icon": "percent",
+          "url": "http://localhost:3002/pages/commerce/taxes"
+        }
+      ]
+    },
+    {
+      "id": "marketing",
+      "title": "Marketing",
+      "items": [
+        {
+          "id": "lists",
+          "label": "Lists",
+          "icon": "list.bullet",
+          "url": "http://localhost:3002/pages/marketing/lists"
+        },
+        {
+          "id": "social-posts",
+          "label": "Social Posts",
+          "icon": "clock.fill",
+          "url": "http://localhost:3002/pages/marketing/social-posts"
+        },
+        {
+          "id": "campaigns",
+          "label": "Campaigns",
+          "icon": "megaphone.fill",
+          "url": "http://localhost:3002/pages/marketing/campaigns"
+        },
+        {
+          "id": "marketing-reviews",
+          "label": "Reviews",
+          "icon": "star.fill",
+          "url": "http://localhost:3002/pages/marketing/reviews"
+        }
+      ]
+    },
+    {
+      "id": "analytics",
+      "title": "Analytics",
+      "items": [
+        {
+          "id": "analytics-web",
+          "label": "Web",
+          "icon": "globe",
+          "url": "http://localhost:3002/pages/analytics/web"
+        },
+        {
+          "id": "analytics-blog",
+          "label": "Blog",
+          "icon": "doc.text.fill",
+          "url": "http://localhost:3002/pages/analytics/blog"
+        },
+        {
+          "id": "analytics-commerce",
+          "label": "Commerce",
+          "icon": "cart.fill",
+          "url": "http://localhost:3002/pages/analytics/commerce"
+        },
+        {
+          "id": "analytics-marketing",
+          "label": "Marketing",
+          "icon": "megaphone.fill",
+          "url": "http://localhost:3002/pages/analytics/marketing"
+        }
+      ]
+    },
+    {
+      "id": "management",
+      "title": "Management",
+      "items": [
+        {
+          "id": "cloud",
+          "label": "Cloud",
+          "icon": "cloud.fill",
+          "url": "http://localhost:3002/pages/management/cloud"
+        },
+        {
+          "id": "servers",
+          "label": "Servers",
+          "icon": "server.rack",
+          "url": "http://localhost:3002/pages/management/servers"
+        },
+        {
+          "id": "serverless",
+          "label": "Serverless",
+          "icon": "bolt.horizontal.circle.fill",
+          "url": "http://localhost:3002/pages/management/serverless"
+        },
+        {
+          "id": "dns",
+          "label": "DNS",
+          "icon": "network",
+          "url": "http://localhost:3002/pages/management/dns"
+        },
+        {
+          "id": "mailboxes",
+          "label": "Mailboxes",
+          "icon": "tray.full.fill",
+          "url": "http://localhost:3002/pages/management/mailboxes"
+        },
+        {
+          "id": "logs",
+          "label": "Logs",
+          "icon": "list.bullet.rectangle.portrait.fill",
+          "url": "http://localhost:3002/pages/management/logs"
+        }
+      ]
+    },
+    {
+      "id": "utilities",
+      "title": "Utilities",
+      "items": [
+        {
+          "id": "buddy",
+          "label": "AI Buddy",
+          "icon": "bubble.left.and.bubble.right.fill",
+          "url": "http://localhost:3002/pages/utilities/buddy"
+        },
+        {
+          "id": "environment",
+          "label": "Environment",
+          "icon": "key.fill",
+          "url": "http://localhost:3002/pages/utilities/environment"
+        },
+        {
+          "id": "access-tokens",
+          "label": "Access Tokens",
+          "icon": "key.horizontal.fill",
+          "url": "http://localhost:3002/pages/utilities/access-tokens"
+        },
+        {
+          "id": "settings",
+          "label": "Settings",
+          "icon": "gear",
+          "url": "http://localhost:3002/pages/utilities/settings"
+        }
+      ]
+    }
+  ],
+  "minWidth": 200,
+  "maxWidth": 280
+}
