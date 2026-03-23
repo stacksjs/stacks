@@ -158,12 +158,25 @@ let functionStats = {
   }
 }
 
+let fetchError = ''
+
 const fetchFunctionData = async (days) => {
   isLoading = true
+  fetchError = ''
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const response = await fetch(`${baseUrl}/functions/stats?days=${days}`, {
+      headers: { 'Accept': 'application/json' },
+    })
+    if (response.ok) {
+      const data = await response.json()
+      if (data.stats) {
+        functionStats[timeRange] = data.stats
+      }
+    }
   } catch (error) {
-    // TODO: show error state to user
+    fetchError = 'Failed to load function data. Using cached data.'
+    console.error('Failed to fetch function data:', error)
   } finally {
     isLoading = false
   }

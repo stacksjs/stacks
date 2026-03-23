@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent shipping rates array using VueUse's useStorage
 const shippingRates = useStorage<ShippingRates[]>('shippingRates', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Basic fetch function to get all shipping rates
 async function fetchShippingRates() {

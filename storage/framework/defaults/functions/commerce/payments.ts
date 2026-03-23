@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent payments array using VueUse's useStorage
 const payments = useStorage<Payments[]>('payments', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = `${import.meta.env.VITE_API_URL || 'http://localhost:3008'}/api`
 
 // Basic fetch function to get all payments
 async function fetchPayments(): Promise<Payments[]> {

@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent tax rates array using VueUse's useStorage
 const taxRates = useStorage<TaxRates[]>('taxRates', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = `${import.meta.env.VITE_API_URL || 'http://localhost:3008'}/api`
 
 // Basic fetch function to get all tax rates
 async function fetchTaxRates() {

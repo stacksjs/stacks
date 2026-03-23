@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent license keys array using VueUse's useStorage
 const licenseKeys = useStorage<LicenseKeys[]>('licenseKeys', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Basic fetch function to get all license keys
 async function fetchLicenseKeys() {

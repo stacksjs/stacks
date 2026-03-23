@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent items array using VueUse's useStorage
 const products = useStorage<Products[]>('products', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = `${import.meta.env.VITE_API_URL || 'http://localhost:3008'}/api`
 
 // Basic fetch function to get all items
 async function fetchProducts(): Promise<Products[]> {

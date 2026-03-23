@@ -158,12 +158,25 @@ let downloadStats = {
   }
 }
 
+let fetchError = ''
+
 const fetchDownloadData = async (days) => {
   isLoading = true
+  fetchError = ''
   try {
-    await new Promise(resolve => setTimeout(resolve, 500))
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const response = await fetch(`${baseUrl}/components/stats?days=${days}`, {
+      headers: { 'Accept': 'application/json' },
+    })
+    if (response.ok) {
+      const data = await response.json()
+      if (data.stats) {
+        downloadStats[timeRange] = data.stats
+      }
+    }
   } catch (error) {
-    // TODO: show error state to user
+    fetchError = 'Failed to load component data. Using cached data.'
+    console.error('Failed to fetch component data:', error)
   } finally {
     isLoading = false
   }

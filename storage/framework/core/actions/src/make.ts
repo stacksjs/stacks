@@ -128,8 +128,41 @@ export function factory(options: MakeOptions): void {
   }
 }
 
-export function createFactory(options: MakeOptions): void {
-  log.debug('createFactory options', options)
+export async function createFactory(options: MakeOptions): Promise<void> {
+  const name = options.name || 'MyFactory'
+  const factoryName = name.endsWith('Factory') ? name : `${name}Factory`
+
+  try {
+    const { path: p } = await import('@stacksjs/path')
+    const factoryDir = p.userDatabasePath('factories')
+    const factoryPath = `${factoryDir}/${factoryName}.ts`
+
+    // Check if factory already exists
+    const file = Bun.file(factoryPath)
+    if (await file.exists()) {
+      log.warn(`Factory ${factoryName} already exists at ${factoryPath}`)
+      return
+    }
+
+    const modelName = name.replace(/Factory$/, '')
+    const content = `import type { ${modelName}Model } from '@stacksjs/orm'
+
+export function ${factoryName}(): Partial<${modelName}Model> {
+  return {
+    // Define your factory attributes here
+  }
+}
+
+export default ${factoryName}
+`
+
+    await Bun.write(factoryPath, content)
+    log.success(`Created factory: ${factoryPath}`)
+  }
+  catch (error) {
+    log.error(`Failed to create factory ${factoryName}`, error)
+    throw error
+  }
 }
 
 export async function makeNotification(options: MakeOptions): Promise<void> {

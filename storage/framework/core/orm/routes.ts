@@ -183,6 +183,12 @@ for (const [modelName, model] of Object.entries(models)) {
     route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = (req as any).params?.id
+
+        // Validate ID parameter
+        if (!id || (typeof id === 'string' && id.trim() === '')) {
+          return jsonResponse({ error: 'Invalid ID parameter' }, 400)
+        }
+
         const result = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
 
         if (!result) {

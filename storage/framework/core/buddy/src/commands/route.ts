@@ -1,4 +1,4 @@
-import type { CLI, MigrateOptions } from '@stacksjs/types'
+import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, outro } from '@stacksjs/cli'
@@ -14,13 +14,13 @@ export function route(buddy: CLI): void {
   buddy
     .command('route:list', descriptions.route)
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: MigrateOptions) => {
+    .action(async (options: { verbose?: boolean }) => {
       const perf = await intro('buddy route:list')
       const result = await runAction(Action.RouteList, options)
 
       if (result.isErr) {
         await outro(
-          'While running the migrate command, there was an issue',
+          'While running the route:list command, there was an issue',
           { startTime: perf, useSeconds: true },
           result.error,
         )

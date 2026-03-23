@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent delivery routes array using VueUse's useStorage
 const deliveryRoutes = useStorage<DeliveryRoutes[]>('deliveryRoutes', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Basic fetch function to get all delivery routes
 async function fetchDeliveryRoutes() {

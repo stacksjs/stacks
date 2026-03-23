@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent digital deliveries array using VueUse's useStorage
 const digitalDeliveries = useStorage<DigitalDeliveries[]>('digitalDeliveries', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Basic fetch function to get all digital deliveries
 async function fetchDigitalDeliveries() {

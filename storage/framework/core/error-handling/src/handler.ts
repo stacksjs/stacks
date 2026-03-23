@@ -14,6 +14,19 @@ function stripAnsi(str: string): string {
 import * as path from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
+/**
+ * Context information attached to errors for better debugging.
+ */
+export interface ErrorContext {
+  requestId?: string
+  url?: string
+  method?: string
+  userId?: string | number
+  ip?: string
+  userAgent?: string
+  [key: string]: unknown
+}
+
 type ErrorMessage = string
 
 export class ErrorHandler {
@@ -60,13 +73,17 @@ export class ErrorHandler {
     return err
   }
 
-  static async writeErrorToFile(err: Error | unknown): Promise<void> {
+  static async writeErrorToFile(err: Error | unknown, context?: ErrorContext): Promise<void> {
     if (!(err instanceof Error)) {
       console.error('Error is not an instance of Error:', err)
       return
     }
 
-    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}\n`
+    const contextStr = context
+      ? ` | url=${context.url || 'N/A'} method=${context.method || 'N/A'} user=${context.userId || 'anonymous'}`
+      : ''
+    const stackLine = err.stack ? `\n${err.stack.split('\n').slice(1, 4).join('\n')}` : ''
+    const formattedError = `[${new Date().toISOString()}] ${err.name}: ${err.message}${contextStr}${stackLine}\n`
     const logFilePath = path.logsPath('stacks.log') ?? path.logsPath('errors.log')
 
     try {

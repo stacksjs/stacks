@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categories[]>('categories', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Basic fetch function to get all categories
 async function fetchCategories(): Promise<Categories[]> {

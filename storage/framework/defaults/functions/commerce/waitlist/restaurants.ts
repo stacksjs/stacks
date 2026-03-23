@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent waitlist restaurants array using VueUse's useStorage
 const waitlistRestaurants = useStorage<WaitlistRestaurant[]>('waitlist_restaurants', [])
 
-const baseURL = 'http://localhost:3008/api'
+const baseURL = `${import.meta.env.VITE_API_URL || 'http://localhost:3008'}/api`
 
 // Basic fetch function to get all waitlist restaurants
 async function fetchWaitlistRestaurants() {

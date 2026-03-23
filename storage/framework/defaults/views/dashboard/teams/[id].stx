@@ -1,15 +1,70 @@
+<script server>
+import { get, post } from '../../../functions/api'
+
+let inviteEmail = ''
+let inviteError = ''
+let inviteSuccess = ''
+let isInviting = false
+let teammates = []
+let isLoading = true
+
+async function fetchTeammates() {
+  isLoading = true
+  try {
+    const data = await get('/teams/' + route.params.id + '/members')
+    teammates = data.data || []
+  }
+  catch (e) {
+    // Keep empty list on error
+  }
+  finally {
+    isLoading = false
+  }
+}
+
+function validateEmail(email) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)
+}
+
+async function handleInvite(event) {
+  event.preventDefault()
+  inviteError = ''
+  inviteSuccess = ''
+
+  if (!inviteEmail.trim()) {
+    inviteError = 'Please enter an email address.'
+    return
+  }
+
+  if (!validateEmail(inviteEmail)) {
+    inviteError = 'Please enter a valid email address.'
+    return
+  }
+
+  isInviting = true
+  try {
+    await post('/teams/' + route.params.id + '/invite', { email: inviteEmail })
+    inviteSuccess = `Invitation sent to ${inviteEmail}.`
+    inviteEmail = ''
+    await fetchTeammates()
+  }
+  catch (e) {
+    inviteError = e instanceof Error ? e.message : 'Failed to send invitation.'
+  }
+  finally {
+    isInviting = false
+  }
+}
+
+fetchTeammates()
+</script>
+
 <div class="px-4 py-8 lg:px-8 sm:px-6">
-  <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800">
-    <div
-      class="sm:flex sm:items-center"
-    >
-      <div
-        class="sm:flex-auto"
-      >
-        <h1
-          class="text-base text-gray-900 font-semibold leading-6 dark:text-gray-100"
-        >
-          Team X
+  <form class="rounded-lg bg-white px-6 py-4 text-sm dark:bg-blue-gray-800" @submit="handleInvite">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="text-base text-gray-900 font-semibold leading-6 dark:text-gray-100">
+          Team Members
         </h1>
       </div>
     </div>
@@ -17,18 +72,31 @@
       <div class="flex flex-row rounded-lg bg-gray-50 p-4 text-sm text-gray-600 dark:bg-blue-gray-700 dark:text-gray-400">
         <div class="i-hugeicons-information-circle h-6 w-6 flex-shrink-0 text-gray-400" />
         <div class="ml-4 mt-0.5 flex flex-grow">
-          <p class="">
-            You can add teammates here.
-          </p>
+          <p>You can add teammates here.</p>
         </div>
       </div>
+
+      @if(inviteSuccess)
+        <div class="mt-3 rounded-md bg-green-50 dark:bg-green-900/20 p-3">
+          <p class="text-sm text-green-700 dark:text-green-400">{{ inviteSuccess }}</p>
+        </div>
+      @endif
+
+      @if(inviteError)
+        <div class="mt-3 rounded-md bg-red-50 dark:bg-red-900/20 p-3">
+          <p class="text-sm text-red-700 dark:text-red-400">{{ inviteError }}</p>
+        </div>
+      @endif
+
       <div class="mt-4 flex flex-col">
-        <label>Enter teammate email to invite them.</label>
+        <label class="text-gray-700 dark:text-gray-300">Enter teammate email to invite them.</label>
         <div class="mt-1 flex flex-col">
           <input
-            type="text"
-            class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
-            list="artisanCommands"
+            type="email"
+            :value="inviteEmail"
+            @input="inviteEmail = $event.target.value"
+            placeholder="teammate@example.com"
+            class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 focus:ring-2 focus:ring-blue-500"
             autocorrect="off"
           >
         </div>
@@ -37,10 +105,11 @@
     <div>
       <div class="mt-4 flex justify-end">
         <button
-          type="button"
-          class="primary-button"
+          type="submit"
+          :disabled="isInviting"
+          class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Invite
+          {{ isInviting ? 'Inviting...' : 'Invite' }}
         </button>
       </div>
     </div>
@@ -60,67 +129,53 @@
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
             <thead>
               <tr>
-                <th
-                  scope="col"
-                  class="py-3 pl-4 pr-3 text-left text-xs text-gray-500 font-medium tracking-wide uppercase sm:pl-0 dark:text-gray-400"
-                >
+                <th scope="col" class="py-3 pl-4 pr-3 text-left text-xs text-gray-500 font-medium tracking-wide uppercase sm:pl-0 dark:text-gray-400">
                   Name
                 </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3 text-left text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400"
-                >
+                <th scope="col" class="px-3 py-3 text-left text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400">
                   Email
                 </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3 text-left text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400"
-                >
+                <th scope="col" class="px-3 py-3 text-left text-xs text-gray-500 font-medium tracking-wide uppercase dark:text-gray-400">
                   Role
                 </th>
-                <th
-                  scope="col"
-                  class="relative py-3 pl-3 pr-4 sm:pr-0"
-                >
-                  <span class="sr-only">Remove</span>
+                <th scope="col" class="relative py-3 pl-3 pr-4 sm:pr-0">
+                  <span class="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200 dark:bg-blue-gray-800 dark:divide-gray-600">
-              <tr>
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-0 dark:text-gray-100">
-                  John Doe
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  johndoe@example.com
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  User
-                </td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                  <a
-                    href="#"
-                    class="text-gray-400 hover:text-blue-gray-500"
-                  ><div class="i-hugeicons-ellipsis-vertical h-6 w-6" /></a>
-                </td>
-              </tr>
-              <tr>
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-0 dark:text-gray-100">
-                  Sheldon Cooper
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  sheldoncooper@gmail.com
-                </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
-                  Admin
-                </td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
-                  <a
-                    href="#"
-                    class="text-gray-400 hover:text-blue-gray-500 transition-colors duration-150"
-                  ><div class="i-hugeicons-ellipsis-vertical h-6 w-6" /></a>
-                </td>
-              </tr>
+              @if(isLoading)
+                <tr>
+                  <td colspan="4" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    Loading teammates...
+                  </td>
+                </tr>
+              @elseif(teammates.length === 0)
+                <tr>
+                  <td colspan="4" class="py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    No teammates yet. Invite someone above.
+                  </td>
+                </tr>
+              @else
+                @for(teammate in teammates)
+                  <tr>
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-0 dark:text-gray-100">
+                      {{ teammate.name }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {{ teammate.email }}
+                    </td>
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {{ teammate.role }}
+                    </td>
+                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-0">
+                      <button class="text-gray-400 hover:text-blue-gray-500 transition-colors duration-150">
+                        <div class="i-hugeicons-ellipsis-vertical h-6 w-6" />
+                      </button>
+                    </td>
+                  </tr>
+                @endfor
+              @endif
             </tbody>
           </table>
         </div>

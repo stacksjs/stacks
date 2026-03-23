@@ -67,7 +67,12 @@ export class Broadcast {
       channelName = `presence-${channel}`
     }
 
-    server.broadcast(channelName, event, data)
+    try {
+      server.broadcast(channelName, event, data)
+    }
+    catch (err) {
+      log.error(`[Broadcast] Failed to broadcast event '${event}' to channel '${channelName}':`, err)
+    }
   }
 
   /**
