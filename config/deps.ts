@@ -1,4 +1,4 @@
-import type { PantryConfig } from 'ts-pantry'
+import type { PantryConfig } from "ts-pantry";
 
 /**
  * Pantry configuration for the Stacks project
@@ -14,8 +14,9 @@ export const config: PantryConfig = {
    * These are binary tools and system packages required for development
    */
   dependencies: {
-    'bun.com': '^1.3.0',
-    'sqlite.org': '^3.47.2',
+    "bun.com": "^1.3.0",
+    "sqlite.org": "^3.47.2",
+    craft: "^0.0.1",
     // Uncomment as needed:
     // 'redis.io': '^7.4.1',
     // 'mailpit.axllent.org': '^1.21.8',
@@ -42,21 +43,18 @@ export const config: PantryConfig = {
      * Automatically provisions and starts the database
      */
     database: {
-      connection: 'sqlite',
-      name: 'stacks',
-      username: 'root',
-      password: '',
-      authMethod: 'trust',
+      connection: "sqlite",
+      name: "stacks",
+      username: "root",
+      password: "",
+      authMethod: "trust",
     },
 
     /**
      * Commands to run after database setup
      * Useful for migrations and seeding
      */
-    postDatabaseSetup: [
-      './buddy migrate',
-      './buddy seed',
-    ],
+    postDatabaseSetup: ["./buddy migrate", "./buddy seed"],
 
     /**
      * Framework-specific service detection
@@ -82,10 +80,10 @@ export const config: PantryConfig = {
     enabled: true,
     commands: [
       {
-        name: 'Generate model files',
-        command: './buddy',
-        args: ['generate:model-files'],
-        description: 'Generate TypeScript model files from database schema',
+        name: "Generate model files",
+        command: "./buddy",
+        args: ["generate:model-files"],
+        description: "Generate TypeScript model files from database schema",
         required: false,
       },
     ],
@@ -135,7 +133,7 @@ export const config: PantryConfig = {
    * Logging configuration
    */
   logging: {
-    level: 'info',
+    level: "info",
     toFile: false,
     timestamps: true,
     json: false,
@@ -149,7 +147,7 @@ export const config: PantryConfig = {
     autoUpdate: false,
     checkFrequency: 24,
     includePrereleases: false,
-    channels: ['stable'],
+    channels: ["stable"],
   },
 
   /**
@@ -164,17 +162,17 @@ export const config: PantryConfig = {
    * Environment profiles for different contexts
    */
   profiles: {
-    active: 'development',
+    active: "development",
     development: {
       verbose: true,
       logging: {
-        level: 'debug',
+        level: "debug",
       },
     },
     production: {
       verbose: false,
       logging: {
-        level: 'warn',
+        level: "warn",
       },
       cache: {
         maxSize: 4096, // 4GB for production
@@ -197,7 +195,7 @@ export const config: PantryConfig = {
   /**
    * Installation path for packages
    */
-  installPath: '/usr/local',
+  installPath: "/usr/local",
 
   /**
    * Auto-install missing dependencies
@@ -213,6 +211,6 @@ export const config: PantryConfig = {
    * Install build-time dependencies
    */
   installBuildDeps: false,
-}
+};
 
-export default config
+export default config;

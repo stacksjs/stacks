@@ -35,7 +35,7 @@ It’s incredibly easy to get started with this framework. Simply run the follow
 ```bash
 curl -Ssf stacksjs.com/install | sh # wip
 
-# alternatively, if Bun >= v1.2.14 is installed already,
+# alternatively, if Bun >= v1.3.11 is installed already,
 # you may also get started via:
 bunx buddy new my-project
 ```
