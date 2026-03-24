@@ -1,24 +1,17 @@
 /**
  * Analytics Composable
- *
- * Provides data fetching for analytics dashboard pages.
  */
-
 import { ref } from '@stacksjs/stx'
 
 const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 export interface AnalyticsOverview {
-  totalVisitors: string
-  totalPageViews: string
-  avgSessionDuration: string
+  realtime: number
+  people: number
+  views: number
+  avgTimeOnSite: string
   bounceRate: string
-  trends: {
-    visitors: number
-    pageViews: number
-    sessionDuration: number
-    bounceRate: number
-  }
+  eventCompletions: number
 }
 
 export interface TrafficDataPoint {
@@ -27,84 +20,78 @@ export interface TrafficDataPoint {
   pageViews: number
 }
 
-const defaultOverview: AnalyticsOverview = {
-  totalVisitors: '0',
-  totalPageViews: '0',
-  avgSessionDuration: '0s',
-  bounceRate: '0%',
-  trends: {
-    visitors: 0,
-    pageViews: 0,
-    sessionDuration: 0,
-    bounceRate: 0,
-  },
+export interface PageData {
+  path: string
+  entries: number
+  visitors: number
+  views: number
+  percentage: number
+}
+
+export interface ReferrerData {
+  name: string
+  visitors: number
+  views: number
+  percentage: number
+}
+
+export interface DeviceData {
+  name: string
+  visitors: number
+  percentage: number
+}
+
+export interface BrowserData {
+  name: string
+  visitors: number
+  percentage: number
+}
+
+export interface CountryData {
+  name: string
+  visitors: number
+  percentage: number
+  flag: string
 }
 
 export function useAnalytics() {
-  const overview = ref<AnalyticsOverview>(defaultOverview)
+  const overview = ref<AnalyticsOverview>({ realtime: 0, people: 0, views: 0, avgTimeOnSite: '0s', bounceRate: '0%', eventCompletions: 0 })
   const trafficData = ref<TrafficDataPoint[]>([])
+  const pagesData = ref<PageData[]>([])
+  const referrersData = ref<ReferrerData[]>([])
+  const devicesData = ref<DeviceData[]>([])
+  const browsersData = ref<BrowserData[]>([])
+  const countriesData = ref<CountryData[]>([])
   const isLoading = ref(false)
   const error = ref<string | null>(null)
-
-  async function fetchOverview(dateRange = '7d') {
-    try {
-      const response = await fetch(`${baseUrl}/analytics/overview?range=${dateRange}`, {
-        headers: { 'Accept': 'application/json' },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        overview.value = data.overview || defaultOverview
-      }
-    }
-    catch (e) {
-      console.error('Failed to fetch analytics overview:', e)
-      throw e
-    }
-  }
-
-  async function fetchTraffic(dateRange = '7d') {
-    try {
-      const response = await fetch(`${baseUrl}/analytics/traffic?range=${dateRange}`, {
-        headers: { 'Accept': 'application/json' },
-      })
-
-      if (response.ok) {
-        const data = await response.json()
-        trafficData.value = data.traffic || []
-      }
-    }
-    catch (e) {
-      console.error('Failed to fetch traffic data:', e)
-      throw e
-    }
-  }
 
   async function fetchAll(dateRange = '7d') {
     isLoading.value = true
     error.value = null
-
     try {
-      await Promise.all([
-        fetchOverview(dateRange),
-        fetchTraffic(dateRange),
-      ])
-    }
-    catch (e) {
+      const response = await fetch(`${baseUrl}/analytics/web?range=${dateRange}`, {
+        headers: { 'Accept': 'application/json' },
+      })
+      if (response.ok) {
+        const data = await response.json()
+        overview.value = data.overview || overview.value
+        trafficData.value = data.traffic || []
+        pagesData.value = data.pages || []
+        referrersData.value = data.referrers || []
+        devicesData.value = data.devices || []
+        browsersData.value = data.browsers || []
+        countriesData.value = data.countries || []
+      }
+    } catch (e) {
       error.value = 'Failed to load analytics data.'
-    }
-    finally {
+      console.error('Failed to fetch analytics:', e)
+    } finally {
       isLoading.value = false
     }
   }
 
   return {
-    overview,
-    trafficData,
-    isLoading,
-    error,
-    fetchOverview,
-    fetchTraffic,
-    fetchAll,
+    overview, trafficData, pagesData, referrersData, devicesData, browsersData, countriesData,
+    isLoading, error, fetchAll,
   }
 }
