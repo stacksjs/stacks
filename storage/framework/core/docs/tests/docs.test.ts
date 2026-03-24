@@ -1,18 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-// Mock heavy dependencies
-mock.module('@stacksjs/config', () => ({
-  docs: {},
-}))
-
-mock.module('@stacksjs/path', () => ({
-  path: {
-    projectPath: (p: string) => `/project/${p}`,
-    frameworkPath: (p: string) => `/framework/${p}`,
-  },
-}))
-
-mock.module('@stacksjs/bunpress', () => ({}))
+import { describe, expect, test } from 'bun:test'
 
 describe('docs meta exports', () => {
   test('googleapis URL is exported', async () => {

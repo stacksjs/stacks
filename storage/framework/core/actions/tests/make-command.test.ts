@@ -1,16 +1,5 @@
-import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, unlinkSync } from 'node:fs'
-
-// Mock logging to prevent process hanging
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    debug: () => {},
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-    success: () => {},
-  },
-}))
 
 const { makeCommand } = await import('../src/make-command')
 const p = await import('@stacksjs/path')

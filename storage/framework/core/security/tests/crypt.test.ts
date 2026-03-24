@@ -1,15 +1,12 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { beforeAll, describe, expect, test } from 'bun:test'
+import { encrypt, decrypt } from '../src/crypt'
 
-// Mock config with a 32-char app key
-mock.module('@stacksjs/config', () => ({
-  config: {
-    app: {
-      key: 'test-key-that-is-32-chars-long!!',
-    },
-  },
-}))
+const TEST_APP_KEY = 'test-key-that-is-32-chars-long!!'
 
-const { encrypt, decrypt } = await import('../src/crypt')
+// Set APP_KEY for tests that use the default passphrase (config.app.key)
+beforeAll(() => {
+  process.env.APP_KEY = TEST_APP_KEY
+})
 
 // ---------------------------------------------------------------------------
 // encrypt / decrypt round-trip
@@ -17,59 +14,59 @@ const { encrypt, decrypt } = await import('../src/crypt')
 describe('encrypt and decrypt', () => {
   test('round-trip returns original string', async () => {
     const original = 'hello world'
-    const encrypted = await encrypt(original)
-    const decrypted = await decrypt(encrypted)
+    const encrypted = await encrypt(original, TEST_APP_KEY)
+    const decrypted = await decrypt(encrypted, TEST_APP_KEY)
     expect(decrypted).toBe(original)
   })
 
   test('different strings produce different ciphertexts', async () => {
-    const enc1 = await encrypt('string-one')
-    const enc2 = await encrypt('string-two')
+    const enc1 = await encrypt('string-one', TEST_APP_KEY)
+    const enc2 = await encrypt('string-two', TEST_APP_KEY)
     expect(enc1).not.toBe(enc2)
   })
 
   test('empty string encrypts and decrypts successfully', async () => {
-    const encrypted = await encrypt('')
-    const decrypted = await decrypt(encrypted)
+    const encrypted = await encrypt('', TEST_APP_KEY)
+    const decrypted = await decrypt(encrypted, TEST_APP_KEY)
     expect(decrypted).toBe('')
   })
 
   test('unicode content works', async () => {
-    const original = 'Hello 你好 مرحبا 🌍'
-    const encrypted = await encrypt(original)
-    const decrypted = await decrypt(encrypted)
+    const original = 'Hello \u4f60\u597d \u0645\u0631\u062d\u0628\u0627 \ud83c\udf0d'
+    const encrypted = await encrypt(original, TEST_APP_KEY)
+    const decrypted = await decrypt(encrypted, TEST_APP_KEY)
     expect(decrypted).toBe(original)
   })
 
   test('very long strings work', async () => {
     const original = 'a'.repeat(10000)
-    const encrypted = await encrypt(original)
-    const decrypted = await decrypt(encrypted)
+    const encrypted = await encrypt(original, TEST_APP_KEY)
+    const decrypted = await decrypt(encrypted, TEST_APP_KEY)
     expect(decrypted).toBe(original)
   })
 
   test('special characters work', async () => {
     const original = '!@#$%^&*()_+-=[]{}|;:,.<>?/~`"\'\\\n\t\r'
-    const encrypted = await encrypt(original)
-    const decrypted = await decrypt(encrypted)
+    const encrypted = await encrypt(original, TEST_APP_KEY)
+    const decrypted = await decrypt(encrypted, TEST_APP_KEY)
     expect(decrypted).toBe(original)
   })
 
   test('encrypted output is a non-empty string', async () => {
-    const encrypted = await encrypt('test')
+    const encrypted = await encrypt('test', TEST_APP_KEY)
     expect(typeof encrypted).toBe('string')
     expect(encrypted.length).toBeGreaterThan(0)
   })
 
   test('encrypted output differs from plaintext', async () => {
     const original = 'plaintext-message'
-    const encrypted = await encrypt(original)
+    const encrypted = await encrypt(original, TEST_APP_KEY)
     expect(encrypted).not.toBe(original)
   })
 
   test('same plaintext encrypts to different ciphertext each time', async () => {
-    const enc1 = await encrypt('identical')
-    const enc2 = await encrypt('identical')
+    const enc1 = await encrypt('identical', TEST_APP_KEY)
+    const enc2 = await encrypt('identical', TEST_APP_KEY)
     expect(enc1).not.toBe(enc2)
   })
 })
@@ -93,11 +90,11 @@ describe('custom passphrase', () => {
     ).rejects.toThrow()
   })
 
-  test('custom passphrase produces different ciphertext than default key', async () => {
+  test('custom passphrase produces different ciphertext than another passphrase', async () => {
     const original = 'same-message'
-    const encDefault = await encrypt(original)
+    const encOne = await encrypt(original, TEST_APP_KEY)
     const encCustom = await encrypt(original, 'another-passphrase-32-chars-ok!!')
-    expect(encDefault).not.toBe(encCustom)
+    expect(encOne).not.toBe(encCustom)
   })
 })
 
@@ -116,7 +113,7 @@ describe('error handling', () => {
   test('encrypt does not throw for number input (coerced by underlying crypto)', async () => {
     // The guard only catches falsy non-empty-string values;
     // a number like 123 is truthy, so it passes through to the crypto layer
-    const result = await encrypt(123 as unknown as string)
+    const result = await encrypt(123 as unknown as string, TEST_APP_KEY)
     expect(typeof result).toBe('string')
   })
 
@@ -133,6 +130,6 @@ describe('error handling', () => {
   })
 
   test('decrypt throws for invalid encrypted data', async () => {
-    await expect(decrypt('not-valid-encrypted-data')).rejects.toThrow()
+    await expect(decrypt('not-valid-encrypted-data', TEST_APP_KEY)).rejects.toThrow()
   })
 })

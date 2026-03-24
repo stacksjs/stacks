@@ -1,29 +1,5 @@
-import { describe, expect, it, mock } from 'bun:test'
-
-// Mock config
-mock.module('@stacksjs/config', () => ({
-  config: {
-    email: {
-      default: 'ses',
-      from: { name: 'Test', address: 'test@example.com' },
-    },
-  },
-}))
-
-mock.module('@stacksjs/queue', () => ({
-  job: () => ({
-    onQueue: () => ({
-      dispatch: async () => {},
-      delay: () => ({ dispatch: async () => {} }),
-    }),
-  }),
-}))
-
-mock.module('@stacksjs/path', () => ({
-  path: { resourcesPath: (p: string) => `/mock/resources/${p}` },
-}))
-
-const { Email, mail } = await import('../src/email')
+import { describe, expect, it } from 'bun:test'
+import { Email, mail } from '../src/email'
 
 describe('@stacksjs/email', () => {
   describe('Email class', () => {

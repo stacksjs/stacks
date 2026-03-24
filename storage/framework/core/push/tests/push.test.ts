@@ -1,13 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-// Mock the CLI logger to prevent actual logging
-mock.module('@stacksjs/cli', () => ({
-  log: {
-    warn: mock(() => {}),
-    error: mock(() => {}),
-    info: mock(() => {}),
-  },
-}))
+import { describe, expect, test } from 'bun:test'
 
 describe('Push Module Exports', () => {
   test('send function is exported', async () => {

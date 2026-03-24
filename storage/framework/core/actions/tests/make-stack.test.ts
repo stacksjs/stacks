@@ -1,17 +1,6 @@
-import { afterEach, describe, expect, it, mock } from 'bun:test'
+import { afterEach, describe, expect, it } from 'bun:test'
 import { existsSync, readFileSync, rmSync } from 'node:fs'
 import { join, resolve } from 'node:path'
-
-// Mock logging to prevent process hanging
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    debug: () => {},
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-    success: () => {},
-  },
-}))
 
 const { makeStack } = await import('../src/make')
 

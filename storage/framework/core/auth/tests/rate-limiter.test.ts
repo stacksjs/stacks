@@ -1,21 +1,6 @@
-import { beforeEach, describe, expect, it, mock } from 'bun:test'
-
-// Mock @stacksjs/error-handling so we can import RateLimiter without pulling in the full framework
-class HttpError extends Error {
-  status: number
-  constructor(status: number, message: string) {
-    super(message)
-    this.status = status
-    this.name = 'HttpError'
-  }
-}
-
-mock.module('@stacksjs/error-handling', () => ({
-  HttpError,
-}))
-
-// Must import after mock is registered
-const { RateLimiter } = await import('../src/rate-limiter')
+import { beforeEach, describe, expect, it } from 'bun:test'
+import { HttpError } from '@stacksjs/error-handling'
+import { RateLimiter } from '../src/rate-limiter'
 
 /**
  * Helper: record N failed attempts for a given email
@@ -38,7 +23,7 @@ describe('RateLimiter', () => {
     RateLimiter.resetAttempts('mixed@example.com')
   })
 
-  // ─── isRateLimited ────────────────────────────────────────────
+  // --- isRateLimited ---
 
   it('should not rate-limit a brand-new identifier', () => {
     expect(RateLimiter.isRateLimited('new-user@example.com')).toBe(false)
@@ -60,7 +45,7 @@ describe('RateLimiter', () => {
     expect(RateLimiter.isRateLimited('test@example.com')).toBe(true)
   })
 
-  // ─── recordFailedAttempt ──────────────────────────────────────
+  // --- recordFailedAttempt ---
 
   it('should increment attempt counter on each failed attempt', () => {
     // 1 attempt -> not locked
@@ -89,7 +74,7 @@ describe('RateLimiter', () => {
     Date.now = originalNow
   })
 
-  // ─── lockout duration ─────────────────────────────────────────
+  // --- lockout duration ---
 
   it('should remain locked during the 15-minute lockout window', () => {
     const originalNow = Date.now
@@ -116,7 +101,7 @@ describe('RateLimiter', () => {
     Date.now = originalNow
   })
 
-  // ─── resetAttempts / clearAttempts ────────────────────────────
+  // --- resetAttempts / clearAttempts ---
 
   it('should fully reset attempts via resetAttempts', () => {
     recordAttempts('test@example.com', 4)
@@ -135,7 +120,7 @@ describe('RateLimiter', () => {
     expect(RateLimiter.isRateLimited('test@example.com')).toBe(false)
   })
 
-  // ─── case-insensitive identifiers ─────────────────────────────
+  // --- case-insensitive identifiers ---
 
   it('should treat identifiers as case-insensitive', () => {
     recordAttempts('User@Example.COM', 3)
@@ -154,7 +139,7 @@ describe('RateLimiter', () => {
     expect(RateLimiter.isRateLimited('test@example.com')).toBe(false)
   })
 
-  // ─── multiple identifiers tracked independently ───────────────
+  // --- multiple identifiers tracked independently ---
 
   it('should track different identifiers independently', () => {
     recordAttempts('alice@example.com', 5)
@@ -176,7 +161,7 @@ describe('RateLimiter', () => {
     expect(RateLimiter.isRateLimited('bob@example.com')).toBe(false)
   })
 
-  // ─── validateAttempt ──────────────────────────────────────────
+  // --- validateAttempt ---
 
   it('should not throw for a non-rate-limited user', () => {
     expect(() => RateLimiter.validateAttempt('test@example.com')).not.toThrow()

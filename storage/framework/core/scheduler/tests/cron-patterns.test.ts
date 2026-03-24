@@ -1,14 +1,12 @@
-import { describe, expect, test, mock } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 
-// Mock bun-queue before any imports to prevent missing package error
-mock.module('bun-queue', () => ({
-  Queue: class {},
-  Worker: class {},
-}))
-mock.module('@stacksjs/queue', () => ({
-  runJob: async () => {},
-  dispatch: async () => {},
-}))
+// ---------------------------------------------------------------------------
+// Import the real Schedule class directly — no mocks.
+// The Schedule constructor sets a setTimeout(0) to auto-start, but since we
+// only test cron pattern generation (synchronous), the timer fires after
+// our assertions. The start() method may fail due to missing deps at runtime,
+// but that's fine — we only care about the pattern property.
+// ---------------------------------------------------------------------------
 
 const { Schedule } = await import('../src/schedule')
 

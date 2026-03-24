@@ -1031,12 +1031,12 @@
     }
   },
   "packages": {
-    "@anthropic-ai/claude-agent-sdk@0.2.79": {
+    "@anthropic-ai/claude-agent-sdk@0.2.81": {
       "name": "@anthropic-ai/claude-agent-sdk",
-      "version": "0.2.79",
+      "version": "0.2.81",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.2.79.tgz",
-      "integrity": "sha512-4HmjT2pzjcYSXGxe18L0D1+5GEak3bk25C2H9GlKFnOeCkYAHG4cla4U/rn+v+S2Ecv5m/hsNQ1hDbzg4Ns7rA==",
+      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.2.81.tgz",
+      "integrity": "sha512-CBeebgibBEN/DWOQGZN67vhuTG55RbI1hlsFSSoZ4uA/Io3lw04eHTE2ISCmdbqyJaefYTt6GKZei1nP0TQMNw==",
       "peerDependencies": {
         "zod": "^4.0.0"
       }
@@ -1438,12 +1438,12 @@
       "version": "^3.47.2",
       "source": "pantry"
     },
-    "stripe@20.5.0-alpha.1": {
+    "stripe@20.4.1": {
       "name": "stripe",
-      "version": "20.5.0-alpha.1",
+      "version": "20.4.1",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/stripe/-/stripe-20.5.0-alpha.1.tgz",
-      "integrity": "sha512-CYe13yiotYw87yY5vMESuQ0Bkz9ZqZDXZ/Umbio2WZaY+tQK48yQ5sZVSkUr6O/og2sU0xiTy3OAT5JC6shhiQ==",
+      "resolved": "https://registry.npmjs.org/stripe/-/stripe-20.4.1.tgz",
+      "integrity": "sha512-axCguHItc8Sxt0HC6aSkdVRPffjYPV7EQqZRb2GkIa8FzWDycE7nHJM19C6xAIynH1Qp1/BHiopSi96jGBxT0w==",
       "peerDependencies": {
         "@types/node": ">=16"
       },
@@ -1477,12 +1477,12 @@
         "ts-mocker": "./dist/bin/cli.js"
       }
     },
-    "ts-pantry@0.8.16": {
+    "ts-pantry@0.8.17": {
       "name": "ts-pantry",
-      "version": "0.8.16",
+      "version": "0.8.17",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.8.16.tgz",
-      "integrity": "sha512-sGRnF2eBsicfJYqLCnIP+W05N8RrGm1oLTh8FT5Js06dj/ot6lgj2BdI5vLs69zPbnfCBQQ+TvfmiyW5sGNEZg==",
+      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.8.17.tgz",
+      "integrity": "sha512-RHIjgChhlfC1zC2Pi3QbZzgQzJMuSG4JcR2d2CbEhfUCGT6u0zmyQts6CRrKab47alPTAslxiv74FkETlGubLg==",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.1.2",
         "bunfig": "^0.15.6",

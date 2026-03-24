@@ -133,7 +133,7 @@ function expandVariables(value: string, env: Record<string, string | undefined>)
  * Only a small set of safe commands are allowed to prevent
  * arbitrary code execution from tampered .env files.
  */
-const ALLOWED_ENV_COMMANDS = new Set(['date', 'hostname', 'whoami', 'uname', 'pwd'])
+const ALLOWED_ENV_COMMANDS = new Set(['date', 'hostname', 'whoami', 'uname', 'pwd', 'echo', 'printf', 'cat', 'basename', 'dirname'])
 
 function expandCommands(value: string): string {
   // Match $(command) patterns

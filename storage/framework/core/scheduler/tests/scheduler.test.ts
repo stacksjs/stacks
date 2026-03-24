@@ -2,31 +2,10 @@ import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { appPath } from '@stacksjs/path'
 
-// Mock external dependencies to prevent side effects
-const mockLogInfo = mock(() => {})
-const mockLogError = mock(() => {})
-mock.module('@stacksjs/cli', () => ({
-  log: { info: mockLogInfo, error: mockLogError },
-  runCommand: mock(async () => ({ isErr: false })),
-}))
-mock.module('@stacksjs/logging', () => ({
-  log: { info: () => {}, warn: () => {}, error: () => {}, debug: () => {} },
-}))
-mock.module('@stacksjs/queue', () => ({
-  runJob: mock(async () => {}),
-}))
-mock.module('@stacksjs/actions', () => ({
-  runAction: mock(async () => {}),
-}))
-
 const { Schedule, schedule, Queue, sendAt, timeout } = await import('../src/schedule')
 const { parse } = await import('@stacksjs/cron')
 
 describe('@stacksjs/scheduler', () => {
-  beforeEach(() => {
-    mockLogInfo.mockClear()
-    mockLogError.mockClear()
-  })
 
   describe('Schedule class', () => {
     it('should be a constructor function', () => {

@@ -138,8 +138,10 @@ export {
 // =============================================================================
 // Redis queue driver
 // =============================================================================
-export {
-  RedisQueue,
-  StacksQueueManager,
-  type BunJob,
-} from './drivers/redis'
+// Redis driver is lazily loaded to avoid requiring bun-queue when not using Redis.
+// Use: const { RedisQueue } = await import('@stacksjs/queue/drivers/redis')
+// Or access via the queue manager which dynamically imports the driver.
+export async function getRedisQueue() {
+  const { RedisQueue } = await import('./drivers/redis')
+  return RedisQueue
+}

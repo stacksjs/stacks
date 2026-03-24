@@ -1,11 +1,15 @@
-import { setupTestEnvironment } from '@stacksjs/testing'
-
 /**
  * Test Setup
  *
- * A place to register logic that should run before the tests run.
- * e.g. you may abstract your module mocks here, if you want
- * to prevent the original module from being evaluated.
+ * Runs before every test file. Sets environment variables that must
+ * be present before any @stacksjs/* packages are evaluated, then
+ * initialises the test environment.
  */
+
+// Env vars that config reads at module-evaluation time
+if (!Bun.env.STRIPE_SECRET_KEY)
+  Bun.env.STRIPE_SECRET_KEY = 'sk_test_fake_key_for_testing'
+
+import { setupTestEnvironment } from '@stacksjs/testing'
 
 setupTestEnvironment()

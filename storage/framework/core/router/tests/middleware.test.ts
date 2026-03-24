@@ -1,17 +1,7 @@
-import { afterEach, describe, expect, mock, test } from 'bun:test'
+import { afterEach, describe, expect, test } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { Middleware } from '../src/middleware'
 import { appPath, storagePath } from '@stacksjs/path'
-
-// Mock @stacksjs/logging to prevent process hanging
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-    debug: () => {},
-  },
-}))
 
 describe('Middleware class', () => {
   test('should create a Middleware instance with name and handle', () => {

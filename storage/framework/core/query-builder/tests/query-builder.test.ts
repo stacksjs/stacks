@@ -1,16 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-// Mock the bun-query-builder dependency
-mock.module('bun-query-builder', () => ({
-  createQueryBuilder: () => ({
-    select: () => ({}),
-    from: () => ({}),
-  }),
-  QueryBuilder: class {},
-  SqliteDialect: class {},
-  MysqlDialect: class {},
-  PostgresDialect: class {},
-}))
+import { describe, expect, test } from 'bun:test'
 
 describe('query-builder module', () => {
   test('module re-exports from bun-query-builder', async () => {

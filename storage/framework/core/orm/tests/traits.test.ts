@@ -224,7 +224,7 @@ describe('trait modules', () => {
         traits: {
           taggable: true,
           categorizable: true,
-          commentables: true,
+          commentable: true,
           billable: true,
           likeable: true,
           useAuth: { useTwoFactor: true },

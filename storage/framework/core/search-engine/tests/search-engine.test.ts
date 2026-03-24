@@ -1,16 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-mock.module('@stacksjs/config', () => ({
-  searchEngine: {
-    driver: 'meilisearch',
-    meilisearch: { host: 'http://127.0.0.1:7700', apiKey: 'test-key' },
-    algolia: { appId: 'test-app', apiKey: 'test-api-key' },
-  },
-}))
-
-mock.module('@stacksjs/logging', () => ({
-  log: { warn: () => {}, error: () => {}, info: () => {}, debug: () => {} },
-}))
+import { describe, expect, test } from 'bun:test'
 
 describe('@stacksjs/search-engine', () => {
   test('SearchDriver type has expected values', () => {
@@ -32,8 +20,6 @@ describe('@stacksjs/search-engine', () => {
   })
 
   test('index file exists and parses', async () => {
-    // The index.ts has an export * conflict with export default from drivers
-    // This is a known Bun issue — verify the file at least parses
     const fs = await import('node:fs')
     const content = fs.readFileSync('storage/framework/core/search-engine/src/index.ts', 'utf-8')
     expect(content).toContain('useSearchEngine')

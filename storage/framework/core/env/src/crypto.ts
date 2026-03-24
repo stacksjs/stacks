@@ -99,8 +99,8 @@ export function decryptValue(encryptedValue: string, privateKey: string): string
   const encryptedData = encryptedValue.slice(10) // Remove "encrypted:"
   const data = Buffer.from(encryptedData, 'base64')
 
-  if (data.length < 33) {
-    throw new Error('Invalid encrypted data: payload too short')
+  if (data.length < 32) {
+    throw new Error('Invalid encrypted data: payload too short (need at least iv + authTag = 32 bytes)')
   }
 
   // Extract components

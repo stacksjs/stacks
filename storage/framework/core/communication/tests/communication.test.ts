@@ -1,16 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-// Mock the email SDK dependency
-mock.module('../../email/src/sdk', () => ({
-  EmailSDK: class {
-    async send() { return { success: true, messageId: 'test-msg-id' } }
-  },
-}))
-
-// Mock ts-cloud dependency used by SmsSDK
-mock.module('@stacksjs/ts-cloud/aws', () => ({
-  PinpointClient: undefined,
-}))
+import { describe, expect, test } from 'bun:test'
 
 describe('communication module exports', () => {
   test('Communication class is exported', async () => {

@@ -1,31 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-
-// Mock heavy AWS/cloud dependencies
-mock.module('@stacksjs/ts-cloud', () => ({
-  S3Client: class { async bucketExists() { return false } async sync() {} },
-  AWSCloudFrontClient: class { async listDistributions() { return [] } async createInvalidation() {} },
-  AWSCloudFormationClient: class {
-    async describeStacks() { return { Stacks: [] } }
-    async createStack() { return { StackId: 'test-id' } }
-    async updateStack() { return { StackId: 'test-id' } }
-    async deleteStack() {}
-    async describeStackEvents() { return { StackEvents: [] } }
-    async listStackResources() { return { StackResourceSummaries: [] } }
-  },
-  InfrastructureGenerator: class { generate() { return { toJSON: () => '{}' } } },
-  Route53Client: class { async listResourceRecordSets() { return {} } },
-  SESClient: class { async getSuppressedDestination() { return null } },
-}))
-
-mock.module('~/config/cloud', () => ({
-  tsCloud: {
-    project: { name: 'test', slug: 'test' },
-    environments: { production: {} },
-    infrastructure: {},
-  },
-}))
 
 const basePath = join(import.meta.dir, '..')
 

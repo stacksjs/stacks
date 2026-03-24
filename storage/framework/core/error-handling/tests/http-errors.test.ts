@@ -1,22 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
-
-// Mock the error-page module to avoid complex rendering dependencies
-mock.module('../src/error-page', () => ({
-  createErrorHandler: () => ({
-    setFramework: () => {},
-    setRequest: () => {},
-    setRouting: () => {},
-    addQuery: () => {},
-    handleError: (error: Error, status: number) =>
-      new Response(`DEV: ${error.message}`, {
-        status,
-        headers: { 'Content-Type': 'text/html; charset=utf-8' },
-      }),
-  }),
-  renderProductionErrorPage: (status: number) => `<h1>${status}</h1>`,
-  HTTP_ERRORS: {},
-}))
-
+import { describe, expect, it } from 'bun:test'
 import { HttpError, HttpErrorHandler, createHttpErrorHandler, renderHttpError, errorMiddleware } from '../src/http'
 
 describe('HttpError', () => {
@@ -134,7 +116,7 @@ describe('HttpErrorHandler', () => {
       const handler = new HttpErrorHandler({ isDevelopment: true })
       const response = handler.notFound('Missing resource')
       const body = await response.text()
-      expect(body).toContain('DEV:')
+      // The real error page handler renders a full HTML page with the error message
       expect(body).toContain('Missing resource')
     })
 

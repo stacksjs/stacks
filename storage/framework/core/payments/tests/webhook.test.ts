@@ -1,19 +1,10 @@
-import { afterEach, beforeEach, describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 
-// Mock all transitive deps to prevent circular init issues
-mock.module('stripe', () => ({ default: class {} }))
-mock.module('@stacksjs/orm', () => ({
-  User: { find: async () => ({}) },
-  PaymentMethod: { find: async () => ({}) },
-  Transaction: { create: async () => ({}) },
-  Subscription: { where: () => ({ first: async () => ({}) }) },
-}))
-mock.module('@stacksjs/database', () => ({ db: {} }))
-mock.module('@stacksjs/config', () => ({
-  config: { payment: { driver: 'stripe', stripe: { webhookSecret: 'whsec_test' } } },
-}))
+// ---------------------------------------------------------------------------
+// Test webhook handler registration and event routing patterns.
+// These are all pure pattern-based tests — no mocks needed.
+// ---------------------------------------------------------------------------
 
-// Test webhook handler registration and event routing patterns
 describe('@stacksjs/payments - Webhooks', () => {
   describe('Webhook handler pattern', () => {
     test('handlers can be registered as callbacks', () => {
@@ -61,7 +52,8 @@ describe('@stacksjs/payments - Webhooks', () => {
 
       try {
         await handler()
-      } catch (e) {
+      }
+      catch (e) {
         errors.push(e as Error)
       }
 
@@ -72,7 +64,6 @@ describe('@stacksjs/payments - Webhooks', () => {
 
   describe('Webhook signature verification pattern', () => {
     test('valid signature passes', () => {
-      const payload = JSON.stringify({ type: 'test' })
       const secret = 'whsec_test'
       // Signature verification is done by Stripe SDK — we test the pattern
       expect(() => {
@@ -121,7 +112,7 @@ describe('@stacksjs/payments - Webhooks', () => {
   })
 
   describe('Data extraction patterns', () => {
-    const mockEvent = {
+    const sampleEvent = {
       type: 'payment_intent.succeeded',
       data: {
         object: {
@@ -135,22 +126,22 @@ describe('@stacksjs/payments - Webhooks', () => {
     }
 
     test('extracts object from event data', () => {
-      const obj = mockEvent.data.object
+      const obj = sampleEvent.data.object
       expect(obj.id).toBe('pi_123')
     })
 
     test('extracts amount from payment intent', () => {
-      const amount = mockEvent.data.object.amount
+      const amount = sampleEvent.data.object.amount
       expect(amount).toBe(5000)
     })
 
     test('extracts customer from payment intent', () => {
-      const customer = mockEvent.data.object.customer
+      const customer = sampleEvent.data.object.customer
       expect(customer).toBe('cus_456')
     })
 
     test('extracts status from payment intent', () => {
-      expect(mockEvent.data.object.status).toBe('succeeded')
+      expect(sampleEvent.data.object.status).toBe('succeeded')
     })
   })
 })

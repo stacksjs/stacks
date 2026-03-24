@@ -1,20 +1,13 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { Channel, channel } from '../src/channel'
 
-// Mock the server-instance module
-const mockBroadcast = mock(() => Promise.resolve())
-
-mock.module('../src/server-instance', () => ({
-  getServer: () => ({
-    broadcast: mockBroadcast,
-  }),
-}))
+// ---------------------------------------------------------------------------
+// Tests use the real Channel class directly — no mocks.
+// The Channel class calls getServer() internally. When no server is set,
+// it throws 'Broadcast server not initialized', which we test explicitly.
+// ---------------------------------------------------------------------------
 
 describe('Channel', () => {
-  beforeEach(() => {
-    mockBroadcast.mockClear()
-  })
-
   test('Channel class can be instantiated with a name', () => {
     const ch = new Channel('orders')
     expect(ch).toBeInstanceOf(Channel)
@@ -25,71 +18,81 @@ describe('Channel', () => {
     expect(ch).toBeInstanceOf(Channel)
   })
 
-  test('public() broadcasts to the channel name as-is', async () => {
+  test('public() throws when server is not initialized', async () => {
     const ch = new Channel('orders')
-    await ch.public('created', { id: 1 })
-    expect(mockBroadcast).toHaveBeenCalledWith('orders', 'created', { id: 1 })
+    expect(ch.public('created', { id: 1 })).rejects.toThrow('Broadcast server not initialized')
   })
 
-  test('private() adds private- prefix to channel name', async () => {
+  test('private() throws when server is not initialized', async () => {
     const ch = new Channel('orders')
-    await ch.private('updated', { status: 'shipped' })
-    expect(mockBroadcast).toHaveBeenCalledWith('private-orders', 'updated', { status: 'shipped' })
+    expect(ch.private('updated', { status: 'shipped' })).rejects.toThrow('Broadcast server not initialized')
   })
 
-  test('private() does not double-prefix when already prefixed', async () => {
-    const ch = new Channel('private-orders')
-    await ch.private('updated', { status: 'shipped' })
-    expect(mockBroadcast).toHaveBeenCalledWith('private-orders', 'updated', { status: 'shipped' })
-  })
-
-  test('presence() adds presence- prefix to channel name', async () => {
+  test('presence() throws when server is not initialized', async () => {
     const ch = new Channel('chat.room.1')
-    await ch.presence('message', { text: 'Hello' })
-    expect(mockBroadcast).toHaveBeenCalledWith('presence-chat.room.1', 'message', { text: 'Hello' })
+    expect(ch.presence('message', { text: 'Hello' })).rejects.toThrow('Broadcast server not initialized')
   })
 
-  test('presence() does not double-prefix when already prefixed', async () => {
-    const ch = new Channel('presence-chat.room.1')
-    await ch.presence('message', { text: 'Hello' })
-    expect(mockBroadcast).toHaveBeenCalledWith('presence-chat.room.1', 'message', { text: 'Hello' })
-  })
-
-  test('broadcast() with public type calls public()', async () => {
+  test('broadcast() with public type throws when server is not initialized', async () => {
     const ch = new Channel('orders')
-    await ch.broadcast('created', { id: 1 }, 'public')
-    expect(mockBroadcast).toHaveBeenCalledWith('orders', 'created', { id: 1 })
+    expect(ch.broadcast('created', { id: 1 }, 'public')).rejects.toThrow('Broadcast server not initialized')
   })
 
-  test('broadcast() with private type calls private()', async () => {
+  test('broadcast() with private type throws when server is not initialized', async () => {
     const ch = new Channel('orders')
-    await ch.broadcast('created', { id: 1 }, 'private')
-    expect(mockBroadcast).toHaveBeenCalledWith('private-orders', 'created', { id: 1 })
+    expect(ch.broadcast('created', { id: 1 }, 'private')).rejects.toThrow('Broadcast server not initialized')
   })
 
-  test('broadcast() with presence type calls presence()', async () => {
+  test('broadcast() with presence type throws when server is not initialized', async () => {
     const ch = new Channel('chat')
-    await ch.broadcast('join', { user: 'alice' }, 'presence')
-    expect(mockBroadcast).toHaveBeenCalledWith('presence-chat', 'join', { user: 'alice' })
+    expect(ch.broadcast('join', { user: 'alice' }, 'presence')).rejects.toThrow('Broadcast server not initialized')
   })
 
   test('broadcast() defaults to public type when not specified', async () => {
     const ch = new Channel('notifications')
-    await ch.broadcast('alert', { msg: 'test' })
-    expect(mockBroadcast).toHaveBeenCalledWith('notifications', 'alert', { msg: 'test' })
+    // defaults to 'public', which still requires a server
+    expect(ch.broadcast('alert', { msg: 'test' })).rejects.toThrow('Broadcast server not initialized')
   })
 })
 
-describe('Channel with no server', () => {
-  test('public() throws when server is not initialized', async () => {
-    // Override mock to return null server
-    mock.module('../src/server-instance', () => ({
-      getServer: () => null,
-    }))
+describe('Channel with setServer', () => {
+  test('Channel works with a manually set server', async () => {
+    // Import setServer to inject a fake server for this test
+    const { setServer, getServer } = await import('../src/server-instance')
+    const broadcasted: Array<{ channel: string, event: string, data: any }> = []
 
-    // Re-import to get the new mock
-    const { Channel: ChannelNoServer } = await import('../src/channel')
-    const ch = new ChannelNoServer('test')
-    expect(ch.public('event', {})).rejects.toThrow('Broadcast server not initialized')
+    // Set a real-shaped server object (not a mock.module, just a plain object)
+    setServer({
+      broadcast(channelName: string, event: string, data: any) {
+        broadcasted.push({ channel: channelName, event, data })
+      },
+    } as any)
+
+    try {
+      const ch = new Channel('orders')
+      await ch.public('created', { id: 1 })
+      expect(broadcasted).toContainEqual({ channel: 'orders', event: 'created', data: { id: 1 } })
+
+      await ch.private('updated', { status: 'shipped' })
+      expect(broadcasted).toContainEqual({ channel: 'private-orders', event: 'updated', data: { status: 'shipped' } })
+
+      // private- prefix should not be doubled
+      const ch2 = new Channel('private-orders')
+      await ch2.private('updated', { status: 'shipped' })
+      expect(broadcasted).toContainEqual({ channel: 'private-orders', event: 'updated', data: { status: 'shipped' } })
+
+      const ch3 = new Channel('chat.room.1')
+      await ch3.presence('message', { text: 'Hello' })
+      expect(broadcasted).toContainEqual({ channel: 'presence-chat.room.1', event: 'message', data: { text: 'Hello' } })
+
+      // presence- prefix should not be doubled
+      const ch4 = new Channel('presence-chat.room.1')
+      await ch4.presence('message', { text: 'Hello' })
+      expect(broadcasted).toContainEqual({ channel: 'presence-chat.room.1', event: 'message', data: { text: 'Hello' } })
+    }
+    finally {
+      // Clean up: reset server to null
+      setServer(null as any)
+    }
   })
 })

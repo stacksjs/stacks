@@ -1,11 +1,6 @@
-import { describe, expect, mock, test } from 'bun:test'
+import { describe, expect, test } from 'bun:test'
 import { existsSync } from 'node:fs'
 import { join } from 'node:path'
-
-// Mock dependencies that some type files may reference
-mock.module('bun-query-builder', () => ({
-  SupportedDialect: {},
-}))
 
 const typesDir = join(import.meta.dir, '..', 'src')
 
@@ -76,9 +71,6 @@ describe('types module', () => {
 })
 
 describe('types index re-exports', () => {
-  // The index.ts re-exports from 44+ files via export *
-  // Verify the module itself can be read and has the expected shape
-
   test('index re-exports ai module', async () => {
     const indexContent = await Bun.file(join(typesDir, 'index.ts')).text()
     expect(indexContent).toContain("export * from './ai'")

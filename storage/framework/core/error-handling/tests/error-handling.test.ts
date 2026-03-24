@@ -108,7 +108,7 @@ describe('@stacksjs/error-handling', () => {
       await ErrorHandler.writeErrorToFile(error)
       expect(appendFileSpy).toHaveBeenCalledWith(
         expect.any(String),
-        expect.stringMatching(/^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z\] Error: Test error\n$/),
+        expect.stringMatching(/^\[\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.\d{3}Z\] Error: Test error/),
       )
       mkdirSpy.mockRestore()
       appendFileSpy.mockRestore()

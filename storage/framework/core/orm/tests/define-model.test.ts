@@ -281,7 +281,7 @@ describe('defineModel', () => {
       expect(typeof Post._categorizable.removeCategory).toBe('function')
     })
 
-    it('should attach commentable methods when commentables trait is set', () => {
+    it('should attach commentable methods when commentable trait is set', () => {
       const Post = defineModel({
         name: 'Post',
         table: 'posts',
@@ -291,7 +291,7 @@ describe('defineModel', () => {
           title: { type: 'string', fillable: true },
         },
         traits: {
-          commentables: true,
+          commentable: true,
         },
       } as const)
 

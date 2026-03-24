@@ -1,29 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-// Mock heavy dependencies before importing
-mock.module('@stacksjs/cli', () => ({
-  bold: (s: string) => s,
-  dim: (s: string) => s,
-  green: (s: string) => s,
-  italic: (s: string) => s,
-  log: { info: () => {} },
-}))
-
-mock.module('@stacksjs/path', () => ({
-  path: {
-    basename: (dir: string) => dir.split('/').pop() || dir,
-    resolve: (...args: string[]) => args.join('/'),
-    relative: (from: string, to: string) => to.replace(from, '.'),
-  },
-}))
-
-mock.module('@stacksjs/storage', () => ({
-  glob: async () => [],
-}))
-
-mock.module('@babel/generator', () => ({ default: {} }))
-mock.module('@babel/parser', () => ({ default: {} }))
-mock.module('@babel/traverse', () => ({ default: {} }))
+import { describe, expect, test } from 'bun:test'
 
 describe('build module', () => {
   test('intro is exported and is a function', async () => {
@@ -72,22 +47,37 @@ describe('build module', () => {
 
   test('outro succeeds with passing esbuild result', async () => {
     const { outro } = await import('../src/index')
-    // No errors, no success:false -- should succeed
-    await outro({
-      dir: '/tmp/test',
-      startTime: Date.now() - 100,
-      result: { errors: [] },
-    })
+    const tmpDir = `/tmp/stacks-build-test-${Date.now()}`
+    const fs = await import('node:fs')
+    fs.mkdirSync(`${tmpDir}/dist`, { recursive: true })
+    try {
+      await outro({
+        dir: tmpDir,
+        startTime: Date.now() - 100,
+        result: { errors: [] },
+      })
+    }
+    finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true })
+    }
   })
 
   test('outro uses custom pkgName', async () => {
     const { outro } = await import('../src/index')
-    await outro({
-      dir: '/tmp/test',
-      startTime: Date.now() - 50,
-      result: { errors: [] },
-      pkgName: '@stacksjs/custom-pkg',
-    })
+    const tmpDir = `/tmp/stacks-build-test-${Date.now()}`
+    const fs = await import('node:fs')
+    fs.mkdirSync(`${tmpDir}/dist`, { recursive: true })
+    try {
+      await outro({
+        dir: tmpDir,
+        startTime: Date.now() - 50,
+        result: { errors: [] },
+        pkgName: '@stacksjs/custom-pkg',
+      })
+    }
+    finally {
+      fs.rmSync(tmpDir, { recursive: true, force: true })
+    }
   })
 })
 

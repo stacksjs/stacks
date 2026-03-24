@@ -1,16 +1,5 @@
-import { beforeAll, describe, expect, mock, test } from 'bun:test'
-
-// Mock config to avoid circular dependency
-mock.module('@stacksjs/config', () => ({
-  hashing: {
-    driver: 'bcrypt',
-    bcrypt: { rounds: 10 },
-    argon2: { memory: 65536, time: 2 },
-  },
-}))
-
-// Import after mock is set up
-const {
+import { beforeAll, describe, expect, test } from 'bun:test'
+import {
   detectAlgorithm,
   info,
   needsRehash,
@@ -28,7 +17,7 @@ const {
   makeHash,
   verifyHash,
   base64Encode,
-} = await import('../src/hash')
+} from '../src/hash'
 
 // Pre-generated hashes for synchronous tests
 let bcryptHash: string
@@ -155,8 +144,8 @@ describe('info', () => {
 // ---------------------------------------------------------------------------
 describe('needsRehash', () => {
   test('returns false when bcrypt hash matches configured rounds', () => {
-    // Config driver is bcrypt with rounds: 10
-    const hash = '$2b$10$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012'
+    // The real config fallback uses bcrypt with rounds: 12
+    const hash = '$2b$12$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012'
     expect(needsRehash(hash)).toBe(false)
   })
 
@@ -167,7 +156,7 @@ describe('needsRehash', () => {
   })
 
   test('returns true when bcrypt rounds differ from configured', () => {
-    // Config driver is bcrypt rounds=10, but hash has rounds=8
+    // Config driver is bcrypt rounds=12 (default), but hash has rounds=8
     const hash = '$2b$08$abcdefghijklmnopqrstuuABCDEFGHIJKLMNOPQRSTUVWXYZ012'
     expect(needsRehash(hash)).toBe(true)
   })
@@ -238,7 +227,7 @@ describe('make', () => {
   })
 
   test('uses default algorithm from config when no options given', async () => {
-    // Config driver is bcrypt
+    // Config driver is bcrypt (default)
     const hash = await make('password123')
     expect(hash.startsWith('$2')).toBe(true)
   })
@@ -342,8 +331,7 @@ describe('bcryptEncode', () => {
   test('uses config rounds when none specified', async () => {
     const hash = await bcryptEncode('test-password')
     const result = info(hash)
-    // Config has rounds: 10, but getHashingConfig fallback uses 12 if require fails,
-    // and mock sets 10. Either way it should be a valid number.
+    // Real config fallback uses rounds: 12, should be a valid number either way
     expect(result.options.rounds).toBeGreaterThanOrEqual(4)
   })
 

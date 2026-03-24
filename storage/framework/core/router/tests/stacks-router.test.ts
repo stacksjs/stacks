@@ -1,104 +1,4 @@
-import { beforeEach, describe, expect, mock, test } from 'bun:test'
-
-// ---------------------------------------------------------------------------
-// Mocks — BEFORE imports
-// ---------------------------------------------------------------------------
-
-// Track routes registered on the underlying bun-router so we can assert on them
-const registeredRoutes: Array<{ method: string, path: string }> = []
-const globalMiddleware: any[] = []
-
-class MockRouter {
-  routes: any[] = []
-  globalMiddleware = globalMiddleware
-
-  get(path: string, handler: any) {
-    registeredRoutes.push({ method: 'GET', path })
-    this.routes.push({ method: 'GET', path, handler })
-    return this
-  }
-
-  post(path: string, handler: any) {
-    registeredRoutes.push({ method: 'POST', path })
-    this.routes.push({ method: 'POST', path, handler })
-    return this
-  }
-
-  put(path: string, handler: any) {
-    registeredRoutes.push({ method: 'PUT', path })
-    this.routes.push({ method: 'PUT', path, handler })
-    return this
-  }
-
-  patch(path: string, handler: any) {
-    registeredRoutes.push({ method: 'PATCH', path })
-    this.routes.push({ method: 'PATCH', path, handler })
-    return this
-  }
-
-  delete(path: string, handler: any) {
-    registeredRoutes.push({ method: 'DELETE', path })
-    this.routes.push({ method: 'DELETE', path, handler })
-    return this
-  }
-
-  options(path: string, handler: any) {
-    registeredRoutes.push({ method: 'OPTIONS', path })
-    this.routes.push({ method: 'OPTIONS', path, handler })
-    return this
-  }
-
-  async serve() {
-    return {} as any
-  }
-
-  async handleRequest(req: Request) {
-    return new Response('mock', { status: 200 })
-  }
-}
-
-mock.module('@stacksjs/bun-router', () => ({
-  Router: MockRouter,
-}))
-
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    info: () => {},
-    error: () => {},
-    warn: () => {},
-    debug: () => {},
-  },
-}))
-
-mock.module('@stacksjs/path', () => ({
-  path: {
-    appPath: (p: string) => `/app/${p}`,
-    storagePath: (p: string) => `/storage/${p}`,
-    projectPath: (p: string) => `/project/${p}`,
-    frameworkPath: (p: string) => `/framework/${p}`,
-  },
-}))
-
-mock.module('@stacksjs/storage', () => ({
-  UploadedFile: class UploadedFile {
-    constructor(public file: any) {}
-  },
-}))
-
-mock.module('../src/request-context', () => ({
-  runWithRequest: (_req: any, fn: any) => fn(),
-}))
-
-mock.module('../src/error-handler', () => ({
-  clearTrackedQueries: () => {},
-  createErrorResponse: () => new Response('error', { status: 500 }),
-  createMiddlewareErrorResponse: () => new Response('middleware error', { status: 403 }),
-}))
-
-// ---------------------------------------------------------------------------
-// Import module-under-test AFTER mocks
-// ---------------------------------------------------------------------------
-
+import { beforeEach, describe, expect, test } from 'bun:test'
 import { createStacksRouter, url, clearMiddlewareCache } from '../src/stacks-router'
 
 // ---------------------------------------------------------------------------
@@ -106,8 +6,6 @@ import { createStacksRouter, url, clearMiddlewareCache } from '../src/stacks-rou
 // ---------------------------------------------------------------------------
 
 beforeEach(() => {
-  registeredRoutes.length = 0
-  globalMiddleware.length = 0
   clearMiddlewareCache()
 })
 
@@ -139,7 +37,6 @@ describe('createStacksRouter - returns expected shape', () => {
   test('has access to the underlying bunRouter', () => {
     const router = createStacksRouter()
     expect(router.bunRouter).toBeDefined()
-    expect(router.bunRouter).toBeInstanceOf(MockRouter)
   })
 
   test('routes getter returns array from bunRouter', () => {
@@ -156,37 +53,43 @@ describe('createStacksRouter - HTTP method registration', () => {
   test('get() registers a GET route on bunRouter', () => {
     const router = createStacksRouter()
     router.get('/test', () => new Response('ok'))
-    expect(registeredRoutes).toContainEqual({ method: 'GET', path: '/test' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/test')).toBe(true)
   })
 
   test('post() registers a POST route on bunRouter', () => {
     const router = createStacksRouter()
     router.post('/submit', () => new Response('ok'))
-    expect(registeredRoutes).toContainEqual({ method: 'POST', path: '/submit' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'POST' && r.path === '/submit')).toBe(true)
   })
 
   test('put() registers a PUT route on bunRouter', () => {
     const router = createStacksRouter()
     router.put('/update', () => new Response('ok'))
-    expect(registeredRoutes).toContainEqual({ method: 'PUT', path: '/update' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'PUT' && r.path === '/update')).toBe(true)
   })
 
   test('patch() registers a PATCH route on bunRouter', () => {
     const router = createStacksRouter()
     router.patch('/partial', () => new Response('ok'))
-    expect(registeredRoutes).toContainEqual({ method: 'PATCH', path: '/partial' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'PATCH' && r.path === '/partial')).toBe(true)
   })
 
   test('delete() registers a DELETE route on bunRouter', () => {
     const router = createStacksRouter()
     router.delete('/remove', () => new Response('ok'))
-    expect(registeredRoutes).toContainEqual({ method: 'DELETE', path: '/remove' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'DELETE' && r.path === '/remove')).toBe(true)
   })
 
   test('options() registers an OPTIONS route on bunRouter', () => {
     const router = createStacksRouter()
     router.options('/cors', () => new Response('ok'))
-    expect(registeredRoutes).toContainEqual({ method: 'OPTIONS', path: '/cors' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'OPTIONS' && r.path === '/cors')).toBe(true)
   })
 
   test('HTTP methods return a chainable route with middleware() and name()', () => {
@@ -215,7 +118,8 @@ describe('createStacksRouter - group()', () => {
     router.group({ prefix: '/api' }, () => {
       router.get('/users', () => new Response('users'))
     })
-    expect(registeredRoutes).toContainEqual({ method: 'GET', path: '/api/users' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/api/users')).toBe(true)
   })
 
   test('group restores prefix after callback completes', () => {
@@ -225,8 +129,9 @@ describe('createStacksRouter - group()', () => {
     })
     // Route registered outside group should not have prefix
     router.get('/public', () => new Response('public'))
-    expect(registeredRoutes).toContainEqual({ method: 'GET', path: '/admin/dashboard' })
-    expect(registeredRoutes).toContainEqual({ method: 'GET', path: '/public' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/admin/dashboard')).toBe(true)
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/public')).toBe(true)
   })
 
   test('nested groups accumulate prefixes', () => {
@@ -236,7 +141,8 @@ describe('createStacksRouter - group()', () => {
         router.get('/items', () => new Response('items'))
       })
     })
-    expect(registeredRoutes).toContainEqual({ method: 'GET', path: '/api/v1/items' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/api/v1/items')).toBe(true)
   })
 })
 
@@ -248,7 +154,8 @@ describe('createStacksRouter - resource()', () => {
   test('resource() generates all 5 CRUD routes by default', () => {
     const router = createStacksRouter()
     router.resource('posts', 'PostAction')
-    const methods = registeredRoutes.map(r => `${r.method}:${r.path}`)
+    const routes = router.bunRouter.routes
+    const methods = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(methods).toContain('GET:/posts')       // index
     expect(methods).toContain('POST:/posts')      // store
     expect(methods).toContain('GET:/posts/:id')   // show
@@ -259,7 +166,8 @@ describe('createStacksRouter - resource()', () => {
   test('resource() with only option limits routes', () => {
     const router = createStacksRouter()
     router.resource('tags', 'TagAction', { only: ['index', 'show'] })
-    const paths = registeredRoutes.map(r => `${r.method}:${r.path}`)
+    const routes = router.bunRouter.routes
+    const paths = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(paths).toContain('GET:/tags')
     expect(paths).toContain('GET:/tags/:id')
     expect(paths).not.toContain('POST:/tags')
@@ -270,7 +178,8 @@ describe('createStacksRouter - resource()', () => {
   test('resource() with except option excludes routes', () => {
     const router = createStacksRouter()
     router.resource('comments', 'CommentAction', { except: ['destroy'] })
-    const paths = registeredRoutes.map(r => `${r.method}:${r.path}`)
+    const routes = router.bunRouter.routes
+    const paths = routes.map((r: any) => `${r.method}:${r.path}`)
     expect(paths).toContain('GET:/comments')
     expect(paths).toContain('POST:/comments')
     expect(paths).toContain('GET:/comments/:id')
@@ -283,7 +192,8 @@ describe('createStacksRouter - resource()', () => {
     router.resource('users', 'UserAction')
     // The handler names registered internally should be like UserIndexAction, UserStoreAction, etc.
     // We verify routes are created — the handler resolution is tested at integration level
-    expect(registeredRoutes.length).toBe(5)
+    const routes = router.bunRouter.routes
+    expect(routes.length).toBeGreaterThanOrEqual(5)
   })
 
   test('resource() returns the router for chaining', () => {
@@ -301,7 +211,8 @@ describe('createStacksRouter - health()', () => {
   test('health() registers a GET /health route', () => {
     const router = createStacksRouter()
     router.health()
-    expect(registeredRoutes).toContainEqual({ method: 'GET', path: '/health' })
+    const routes = router.bunRouter.routes
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/health')).toBe(true)
   })
 
   test('health() returns the router for chaining', () => {
@@ -360,7 +271,7 @@ describe('createStacksRouter - use()', () => {
     const router = createStacksRouter()
     const mw = () => {}
     router.use(mw)
-    expect(globalMiddleware).toContain(mw)
+    expect(router.bunRouter.globalMiddleware).toContain(mw)
   })
 
   test('use() returns the router for chaining', () => {

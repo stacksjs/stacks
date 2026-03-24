@@ -1,33 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
-
-// Mock @stacksjs/clarity to avoid filesystem writes and path resolution
-mock.module('@stacksjs/clarity', () => ({
-  Logger: class {
-    info() {}
-    error() {}
-    warn() {}
-    debug() {}
-    success() {}
-  },
-}))
-
-// Mock @stacksjs/path to avoid resolution errors
-mock.module('@stacksjs/path', () => ({
-  projectPath: (p: string) => `/mock/project/${p}`,
-}))
-
-// Mock @stacksjs/error-handling to avoid side effects
-mock.module('@stacksjs/error-handling', () => ({
-  handleError: () => {},
-}))
-
-// Mock @stacksjs/types
-mock.module('@stacksjs/types', () => ({
-  ExitCode: { FatalError: 1 },
-}))
-
-// Now import the module under test (after mocks are set up)
-// eslint-disable-next-line antfu/no-import-dist
+import { describe, expect, it } from 'bun:test'
 import { log, dump, dd, withLogContext, getLogContext } from '../src/index'
 
 describe('@stacksjs/logging', () => {

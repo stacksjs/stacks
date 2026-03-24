@@ -1,9 +1,4 @@
-import { describe, expect, it, mock } from 'bun:test'
-
-// Mock crypto-js which is used by ICS generator
-mock.module('crypto-js/md5', () => ({
-  default: (str: string) => ({ toString: () => 'mock-hash-' + str.slice(0, 8) }),
-}))
+import { describe, expect, it } from 'bun:test'
 
 const {
   exportCalendarGoogle,
@@ -124,7 +119,6 @@ describe('Calendar Link Generation', () => {
       const url = exportCalendarGoogle(createEvent({ allDay: true }))
       // All-day events use YYYYMMDD format (no T separator)
       expect(url).toContain('dates=')
-      // Should not contain the timezone-specific time format markers that non-allday uses
     })
 
     it('should include DURATION in ICS for all-day events', () => {

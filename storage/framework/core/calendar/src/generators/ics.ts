@@ -1,6 +1,12 @@
 import type { CalendarLink } from '../types'
 import { format } from '@stacksjs/datetime'
-import md5 from 'crypto-js/md5'
+import { createHash } from 'node:crypto'
+
+function md5(input: string): { toString(): string } {
+  return {
+    toString: () => createHash('md5').update(input).digest('hex'),
+  }
+}
 
 export function generateIcs(link: CalendarLink): string {
   const dateFormat = 'YYYYMMDD'

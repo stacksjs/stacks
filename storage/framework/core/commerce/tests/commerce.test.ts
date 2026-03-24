@@ -1,10 +1,4 @@
-import { describe, expect, mock, test } from 'bun:test'
-
-// Mock ORM/database dependencies that commerce submodules use
-mock.module('@stacksjs/orm', () => ({}))
-mock.module('@stacksjs/database', () => ({
-  db: {},
-}))
+import { describe, expect, test } from 'bun:test'
 
 describe('commerce module', () => {
   test('commerce namespace is exported', async () => {

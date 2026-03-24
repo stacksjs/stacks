@@ -1,16 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, mock } from 'bun:test'
 
-// Mock logging to prevent noisy output and process hanging
-mock.module('@stacksjs/logging', () => ({
-  log: {
-    debug: () => {},
-    info: () => {},
-    warn: () => {},
-    error: () => {},
-    success: () => {},
-  },
-}))
-
 const { QueueEvents } = await import('../src/events')
 
 describe('QueueEvents', () => {
