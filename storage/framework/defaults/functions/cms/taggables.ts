@@ -4,7 +4,7 @@ import { useFetch, useStorage } from '@stacksjs/browser'
 // Create a persistent tags array using VueUse's useStorage
 const taggables = useStorage<Taggables[]>('taggables', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Basic fetch function to get all tags
 async function fetchTaggables(): Promise<Taggables[]> {

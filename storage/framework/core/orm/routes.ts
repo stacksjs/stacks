@@ -150,6 +150,37 @@ for (const [modelName, model] of Object.entries(models)) {
 
         let query = (db as any).selectFrom(table)
         query = applySorting(query, sort, table)
+
+        // Apply query string filters: ?status=active&name=foo filters by column values
+        for (const [key, value] of url.searchParams.entries()) {
+          if (['page', 'per_page', 'sort', 'fields', 'search', 'include'].includes(key)) continue
+          // Only filter by valid column-like names (prevent injection)
+          if (/^[a-z_][a-z0-9_]*$/i.test(key) && value) {
+            query = query.where(key, '=', value)
+          }
+        }
+
+        // Apply search across fillable text fields: ?search=keyword
+        const searchTerm = url.searchParams.get('search')
+        if (searchTerm && fillableFields.length > 0) {
+          const textFields = fillableFields.slice(0, 5) // Limit to first 5 fields for performance
+          query = query.where((qb: any) => {
+            for (const field of textFields) {
+              qb = qb.orWhere(field, 'like', `%${searchTerm}%`)
+            }
+            return qb
+          })
+        }
+
+        // Apply field selection: ?fields=id,name,email
+        const fieldsParam = url.searchParams.get('fields')
+        if (fieldsParam) {
+          const selectedFields = fieldsParam.split(',').filter(f => /^[a-z_][a-z0-9_]*$/i.test(f.trim()))
+          if (selectedFields.length > 0) {
+            query = query.select(selectedFields.map((f: string) => f.trim()))
+          }
+        }
+
         const results = await query.limit(perPage).offset(offset).get()
         const records = (results || []).map((r: any) => stripHidden(r, hiddenFields))
 
@@ -291,12 +322,45 @@ for (const [modelName, model] of Object.entries(models)) {
     route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = (req as any).params?.id
+
+        if (!id || (typeof id === 'string' && id.trim() === '')) {
+          return jsonResponse({ error: 'Invalid ID parameter' }, 400)
+        }
+
         await (db as any).deleteFrom(table).where({ id }).execute()
 
         return new Response(null, { status: 204 })
       }
       catch (err) {
         return jsonResponse({ error: `Failed to delete ${modelName}`, detail: String(err) }, 500)
+      }
+    })
+  }
+
+  // POST /api/{uri}/bulk-delete — delete multiple records
+  if (enabledRoutes.includes('destroy') && !routeExists('POST', `${basePath}/bulk-delete`)) {
+    route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
+      try {
+        const body = await getRequestBody(req)
+        const ids = body?.ids
+
+        if (!Array.isArray(ids) || ids.length === 0) {
+          return jsonResponse({ error: 'An array of IDs is required' }, 422)
+        }
+
+        // Limit bulk operations to 100 records
+        if (ids.length > 100) {
+          return jsonResponse({ error: 'Cannot delete more than 100 records at once' }, 422)
+        }
+
+        for (const id of ids) {
+          await (db as any).deleteFrom(table).where({ id }).execute()
+        }
+
+        return jsonResponse({ message: `Successfully deleted ${ids.length} ${uri}` })
+      }
+      catch (err) {
+        return jsonResponse({ error: `Failed to bulk delete ${uri}`, detail: String(err) }, 500)
       }
     })
   }

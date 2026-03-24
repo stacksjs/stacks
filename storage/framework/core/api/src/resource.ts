@@ -157,6 +157,14 @@ export abstract class JsonResource<T = unknown> {
   }
 
   /**
+   * Standard JavaScript serialization hook.
+   * Called automatically by JSON.stringify() for proper resource serialization.
+   */
+  toJSON(): Record<string, unknown> {
+    return this.toResponse()
+  }
+
+  /**
    * Create a resource collection
    */
   static collection<T, R extends JsonResource<T>>(

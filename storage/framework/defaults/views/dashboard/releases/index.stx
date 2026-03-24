@@ -155,18 +155,25 @@ let releaseStats = {
 }
 
 // Function to fetch release data from API
+let fetchError = ''
+
 const fetchReleaseData = async (days) => {
   isLoading = true
+  fetchError = ''
   try {
-    // Here you would make your API call
-    // const response = await fetch(`/api/releases/stats?days=${days}`)
-    // const data = await response.json()
-    // releaseStats[days] = data
-
-    // For now we're using the mock data already set in releaseStats
-    await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API delay
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const response = await fetch(`${baseUrl}/releases/stats?days=${days}`, {
+      headers: { 'Accept': 'application/json' },
+    })
+    if (response.ok) {
+      const data = await response.json()
+      if (data.stats) {
+        releaseStats[days] = data.stats
+      }
+    }
   } catch (error) {
-    // TODO: show error state to user
+    fetchError = 'Failed to load release data. Using cached data.'
+    console.error('Failed to fetch release data:', error)
   } finally {
     isLoading = false
   }

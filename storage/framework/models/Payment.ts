@@ -35,7 +35,11 @@ export default defineModel({
       order: 3,
       fillable: true,
       validation: {
-        rule: schema.number().required().min(1),
+        rule: schema.number().required().min(0.01).max(999999.99),
+        message: {
+          min: 'Amount must be at least 0.01',
+          max: 'Amount cannot exceed 999,999.99',
+        },
       },
       factory: faker => faker.number.int({ min: 1000, max: 50000 }),
     },

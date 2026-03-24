@@ -33,10 +33,11 @@ export default defineModel({
     lastFour: {
       fillable: true,
       validation: {
-        rule: schema.number().required(),
+        rule: schema.string().required().length(4),
         message: {
-          number: 'last_four must be a number',
+          string: 'last_four must be a string',
           required: 'last_four is required',
+          length: 'last_four must be exactly 4 characters',
         },
       },
       factory: faker => faker.string.numeric(4),
@@ -47,7 +48,7 @@ export default defineModel({
       validation: {
         rule: schema.string().required().max(50),
         message: {
-          number: 'brand must be a number',
+          string: 'brand must be a string',
           required: 'brand is required',
         },
       },
@@ -59,7 +60,7 @@ export default defineModel({
       validation: {
         rule: schema.number().required(),
         message: {
-          string: 'exp_month must be a number',
+          number: 'exp_month must be a number',
           required: 'exp_month is required',
         },
       },

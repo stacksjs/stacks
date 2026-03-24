@@ -58,7 +58,7 @@ export default defineModel({
         rule: schema.string().required().max(50),
         message: {
           string: 'type must be a string',
-          max: 'type must have a maximum of 512 characters',
+          max: 'type must have a maximum of 50 characters',
         },
       },
       factory: () => collect(['one-time', 'subscription']).random().first(),
@@ -68,8 +68,7 @@ export default defineModel({
       validation: {
         rule: schema.string().max(255),
         message: {
-          string: 'provider_id must be a number',
-          required: 'provider_id is required',
+          string: 'provider_id must be a string',
         },
       },
       factory: faker => faker.string.alphanumeric(10),

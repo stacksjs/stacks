@@ -1,7 +1,7 @@
 import type { StoreWebsocket, Websockets } from '../../types/defaults'
 import { useFetch, useStorage } from '@stacksjs/browser'
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 // Create a persistent websockets array using VueUse's useStorage
 const websockets = useStorage<Websockets[]>('websockets', [])

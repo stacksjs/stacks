@@ -45,7 +45,7 @@ export default defineModel({
         message: {
           string: 'provider_id must be a string',
           required: 'provider_id is required',
-          max: 'provider_id must have a maximum of 512 characters',
+          max: 'provider_id must have a maximum of 255 characters',
         },
       },
       factory: faker => faker.string.alphanumeric(10),

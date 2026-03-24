@@ -42,7 +42,7 @@ const groupedErrors = useStorage<GroupedError[]>('grouped-errors', [])
 const errorStats = useStorage<ErrorStats | null>('error-stats', null)
 const errorTimeline = useStorage<ErrorTimelinePoint[]>('error-timeline', [])
 
-const baseURL = 'http://localhost:3008'
+const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
 
 /**
  * Fetch all grouped errors

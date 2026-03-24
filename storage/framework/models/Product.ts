@@ -100,7 +100,7 @@ export default defineModel({
     },
 
     preparationTime: {
-      order: 8,
+      order: 7,
       fillable: true,
       validation: {
         rule: schema.number().required().min(1),
@@ -112,7 +112,7 @@ export default defineModel({
     },
 
     allergens: {
-      order: 9,
+      order: 8,
       fillable: true,
       validation: {
         rule: schema.string(),
@@ -126,7 +126,7 @@ export default defineModel({
     },
 
     nutritionalInfo: {
-      order: 10,
+      order: 9,
       fillable: true,
       validation: {
         rule: schema.string(),

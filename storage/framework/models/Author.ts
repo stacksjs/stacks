@@ -52,7 +52,7 @@ export default defineModel({
       validation: {
         rule: schema.string().required().min(5).max(255),
         message: {
-          min: 'Name must have a minimum of 3 characters',
+          min: 'Name must have a minimum of 5 characters',
           max: 'Name must have a maximum of 255 characters',
         },
       },

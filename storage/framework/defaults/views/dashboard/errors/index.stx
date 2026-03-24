@@ -159,7 +159,12 @@ const analyzeWithAI = async (errorId) => {
     if (!response.ok) throw new Error('AI analysis failed')
 
     const data = await response.json()
+    if (data.analysis) {
+      error.aiAnalysis = data.analysis
+    }
   } catch (err) {
+    console.error('AI analysis error:', err)
+    error.aiAnalysis = 'AI analysis failed. Please try again later.'
   } finally {
     isAiAnalyzing = false
   }
@@ -192,7 +197,7 @@ const analyzeWithAI = async (errorId) => {
           </p>
         </dt>
         <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-          <p class="text-2xl text-gray-900 font-semibold">
+          <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
             2,847
           </p>
           <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
@@ -216,7 +221,7 @@ const analyzeWithAI = async (errorId) => {
           </p>
         </dt>
         <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-          <p class="text-2xl text-gray-900 font-semibold">
+          <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
             1,624
           </p>
           <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">

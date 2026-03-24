@@ -145,7 +145,14 @@ export class Schedule implements UntimedSchedule {
   }
 
   at(time: string): TimedSchedule {
-    const [hour, minute] = time.split(':').map(Number)
+    const parts = time.split(':')
+    if (parts.length !== 2) {
+      throw new Error(`Invalid time format "${time}". Expected "HH:MM" (e.g., "14:30")`)
+    }
+    const [hour, minute] = parts.map(Number)
+    if (Number.isNaN(hour) || Number.isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+      throw new Error(`Invalid time "${time}". Hour must be 0-23, minute must be 0-59`)
+    }
     this.cronPattern = `${minute} ${hour} * * *`
     return this as TimedSchedule
   }

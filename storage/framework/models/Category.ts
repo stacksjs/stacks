@@ -63,7 +63,7 @@ export default defineModel({
     },
 
     imageUrl: {
-      order: 3,
+      order: 4,
       fillable: true,
       validation: {
         rule: schema.string(),

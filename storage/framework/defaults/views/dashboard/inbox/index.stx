@@ -7,7 +7,7 @@ definePageMeta({
 const { ref, computed, onMounted, onUnmounted, watch } = await import('@stacksjs/stx')
 const { useHead } = await import('@stacksjs/stx')
 const { useRoute } = await import('vue-router')
-const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
+const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.stx')).default
 
 // Define the Email interface
 interface Email {

@@ -81,7 +81,7 @@ export default defineModel({
       factory: faker => faker.helpers.arrayElement(['ACTIVE', 'USED', 'EXPIRED', 'DEACTIVATED']),
     },
 
-    purchaser_id: {
+    purchaserId: {
       order: 6,
       fillable: true,
       validation: {
@@ -90,7 +90,7 @@ export default defineModel({
       factory: faker => faker.string.uuid(),
     },
 
-    recipient_email: {
+    recipientEmail: {
       order: 7,
       fillable: true,
       validation: {

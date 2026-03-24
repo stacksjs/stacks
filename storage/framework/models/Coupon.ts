@@ -105,7 +105,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
         message: {
-          min: 'Min order amount must be greater than 0',
+          min: 'Min order amount must be at least 0',
         },
       },
       factory: faker => faker.number.int({ min: 0, max: 50 }),
@@ -138,7 +138,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(1),
         message: {
-          min: 'Usage limit must be greater than 1',
+          min: 'Usage limit must be at least 1',
         },
       },
       factory: faker => faker.number.int({ min: 1, max: 100 }),
@@ -150,7 +150,7 @@ export default defineModel({
       validation: {
         rule: schema.number().min(0),
         message: {
-          min: 'Usage count must be greater than 0',
+          min: 'Usage count must be at least 0',
         },
       },
       factory: faker => faker.number.int({ min: 0, max: 50 }),

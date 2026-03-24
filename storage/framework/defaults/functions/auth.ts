@@ -190,6 +190,9 @@ export function authGuard(options: { guest?: boolean } = {}): void {
   const guest = options.guest ?? false
   const { isAuthenticated } = useAuth()
 
+  // Guard against SSR — window is only available in the browser
+  if (typeof window === 'undefined') return
+
   if (guest) {
     // Guest-only page: block if authenticated
     if (isAuthenticated.value) {
