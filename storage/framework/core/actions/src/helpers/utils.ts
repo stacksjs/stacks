@@ -20,7 +20,6 @@ type Action = ActionPath | ActionName | string
  * @returns The result of the command.
  */
 export async function runAction(action: Action, options?: ActionOptions): Promise<Result<Subprocess, CommandError>> {
-
   // Special case: handle dev/views directly for maximum performance
   if (action === 'dev/views') {
     try {

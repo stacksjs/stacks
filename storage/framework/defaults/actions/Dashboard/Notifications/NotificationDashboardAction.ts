@@ -1,26 +1,23 @@
 import { Action } from '@stacksjs/actions'
+import { Notification } from '@stacksjs/orm'
 
 export default new Action({
   name: 'NotificationDashboardAction',
-  description: 'Returns notification dashboard stats and channel data.',
+  description: 'Returns notification dashboard stats and recent notifications.',
   method: 'GET',
   async handle() {
+    const items = await Notification.orderBy('created_at', 'desc').limit(50).get()
+    const count = await Notification.count()
+
+    const stats = [
+      { label: 'Total Notifications', value: String(count) },
+      { label: 'Delivered', value: '-' },
+      { label: 'Failed', value: '-' },
+    ]
+
     return {
-      stats: {
-        total: 15642,
-        delivered: 15234,
-        failed: 408,
-        deliveryRate: '97.4%',
-      },
-      channels: [
-        { name: 'Email', sent: 8765, delivered: 8543, failed: 222 },
-        { name: 'SMS', sent: 3456, delivered: 3345, failed: 111 },
-        { name: 'Push', sent: 2345, delivered: 2270, failed: 75 },
-        { name: 'Database', sent: 1076, delivered: 1076, failed: 0 },
-      ],
-      recent: [
-        { id: 1, channel: 'email', recipient: 'chris@stacks.dev', subject: 'Welcome!', status: 'delivered', sentAt: new Date(Date.now() - 3600000).toISOString() },
-      ],
+      notifications: items.map(i => i.toJSON()),
+      stats,
     }
   },
 })

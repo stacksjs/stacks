@@ -1,16 +1,23 @@
 import { Action } from '@stacksjs/actions'
+import { Team } from '@stacksjs/orm'
 
 export default new Action({
   name: 'TeamIndexAction',
   description: 'Returns team data for the dashboard.',
   method: 'GET',
   async handle() {
+    const items = await Team.orderBy('created_at', 'desc').limit(50).get()
+    const count = await Team.count()
+
+    const stats = [
+      { label: 'Total Teams', value: String(count) },
+      { label: 'Total Members', value: '-' },
+      { label: 'Active Projects', value: '-' },
+    ]
+
     return {
-      data: [
-        { id: 1, name: 'Engineering', memberCount: 8, owner: 'Chris Breuer', createdAt: '2024-01-01' },
-        { id: 2, name: 'Design', memberCount: 4, owner: 'Jane Smith', createdAt: '2024-02-15' },
-        { id: 3, name: 'Marketing', memberCount: 6, owner: 'John Doe', createdAt: '2024-03-01' },
-      ],
+      teams: items.map(i => i.toJSON()),
+      stats,
     }
   },
 })

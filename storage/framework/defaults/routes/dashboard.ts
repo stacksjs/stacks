@@ -96,9 +96,14 @@ route.group({ prefix: '/voide' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/dashboard' }, () => {
+  route.get('/home', 'Actions/Dashboard/DashboardHomeAction')
   route.get('/stats', 'Actions/Dashboard/DashboardStatsAction')
   route.get('/activity', 'Actions/Dashboard/DashboardActivityAction')
   route.get('/health', 'Actions/Dashboard/DashboardHealthAction')
+  route.get('/services', 'Actions/Dashboard/ServiceHealthAction')
+  route.get('/buddy', 'Actions/Dashboard/BuddyDashboardAction')
+  route.get('/actions/list', 'Actions/Dashboard/Actions/GetActions')
+  route.get('/settings', 'Actions/Dashboard/Settings/SettingsIndexAction')
 })
 
 route.get('/search', 'Actions/Dashboard/Search/GlobalSearchAction')
@@ -149,6 +154,7 @@ route.group({ prefix: '/realtime' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/queries' }, () => {
+  route.get('/dashboard', 'Actions/Dashboard/Queries/QueryIndexAction')
   route.get('/stats', 'Controllers/QueryController@getStats')
   route.get('/recent', 'Controllers/QueryController@getRecentQueries')
   route.get('/slow', 'Controllers/QueryController@getSlowQueries')
@@ -179,6 +185,7 @@ route.group({ prefix: '/monitoring' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/cms' }, () => {
+  route.get('/dashboard', 'Actions/Dashboard/Content/ContentDashboardAction')
   route.get('/posts', 'Actions/Cms/PostIndexAction')
   route.get('/posts/{id}', 'Actions/Cms/PostShowAction')
   route.post('/posts', 'Actions/Cms/PostStoreAction')
@@ -234,6 +241,8 @@ route.group({ prefix: '/blog' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/commerce' }, () => {
+  route.get('/dashboard', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
+  route.get('/pos', 'Actions/Dashboard/Commerce/PosIndexAction')
   route.get('/products', 'Actions/Commerce/Product/ProductIndexAction')
   route.get('/products/{id}', 'Actions/Commerce/Product/ProductShowAction')
   route.post('/products', 'Actions/Commerce/Product/ProductStoreAction')
@@ -386,6 +395,7 @@ route.group({ prefix: '/shipping' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/analytics' }, () => {
+  route.get('/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction')
   route.get('/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction')
   route.get('/blog', 'Actions/Dashboard/Analytics/BlogAnalyticsAction')
   route.get('/browsers', 'Actions/Dashboard/Analytics/BrowserAnalyticsAction')
@@ -437,6 +447,7 @@ route.group({ prefix: '/settings' }, () => {
 // ============================================================================
 
 route.group({ prefix: '/data' }, () => {
+  route.get('/dashboard', 'Actions/Dashboard/Data/DataDashboardAction')
   route.get('/access-tokens', 'Actions/Dashboard/Data/AccessTokenIndexAction')
   route.get('/subscribers', 'Actions/Dashboard/Data/SubscriberIndexAction')
   route.get('/teams', 'Actions/Dashboard/Data/TeamIndexAction')
@@ -462,6 +473,35 @@ route.group({ prefix: '/infrastructure' }, () => {
 })
 
 route.get('/serverless', 'Actions/Dashboard/Cloud/CloudIndexAction')
+
+// ============================================================================
+// Dashboard Views — Commerce
+// ============================================================================
+
+route.group({ prefix: '/dashboard/commerce' }, () => {
+  route.get('/customers', 'Actions/Dashboard/Commerce/CommerceCustomersAction')
+  route.get('/orders', 'Actions/Dashboard/Commerce/CommerceOrdersAction')
+  route.get('/products', 'Actions/Dashboard/Commerce/CommerceProductsAction')
+  route.get('/coupons', 'Actions/Dashboard/Commerce/CommerceCouponsAction')
+  route.get('/gift-cards', 'Actions/Dashboard/Commerce/CommerceGiftCardsAction')
+  route.get('/payments', 'Actions/Dashboard/Commerce/CommercePaymentsAction')
+  route.get('/delivery', 'Actions/Dashboard/Commerce/CommerceDeliveryAction')
+  route.get('/taxes', 'Actions/Dashboard/Commerce/CommerceTaxesAction')
+  route.get('/reviews', 'Actions/Dashboard/Commerce/ReviewIndexAction')
+})
+
+// ============================================================================
+// Dashboard Views — CMS Content
+// ============================================================================
+
+route.group({ prefix: '/dashboard/cms' }, () => {
+  route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
+  route.get('/pages', 'Actions/Dashboard/Content/PageIndexAction')
+  route.get('/categories', 'Actions/Dashboard/Content/CategoryIndexAction')
+  route.get('/tags', 'Actions/Dashboard/Content/TagIndexAction')
+  route.get('/comments', 'Actions/Dashboard/Content/CommentIndexAction')
+  route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
+})
 
 // ============================================================================
 // Marketing

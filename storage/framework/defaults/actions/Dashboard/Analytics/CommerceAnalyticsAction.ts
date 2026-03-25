@@ -5,23 +5,40 @@ export default new Action({
   description: 'Returns commerce analytics data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
+    const stats = [
+      { label: 'Total Revenue', value: '$145,678', change: '+18.5%' },
+      { label: 'Orders', value: '2,345', change: '+12.3%' },
+      { label: 'Avg Order Value', value: '$62.12', change: '+5.2%' },
+      { label: 'Conversion Rate', value: '3.4%', change: '+0.8%' },
+    ]
+
+    const topProducts = [
+      { name: 'Premium Widget', revenue: '$23,456', units: 234, growth: '+15%' },
+      { name: 'Pro Subscription', revenue: '$18,234', units: 182, growth: '+22%' },
+      { name: 'Basic Package', revenue: '$12,345', units: 456, growth: '+8%' },
+      { name: 'Starter Kit', revenue: '$8,765', units: 876, growth: '+12%' },
+      { name: 'Enterprise Plan', revenue: '$45,678', units: 45, growth: '+35%' },
+    ]
+
+    const salesByRegion = [
+      { region: 'North America', revenue: '$78,234', orders: 1234, percentage: 53.7 },
+      { region: 'Europe', revenue: '$34,567', orders: 567, percentage: 23.7 },
+      { region: 'Asia Pacific', revenue: '$23,456', orders: 345, percentage: 16.1 },
+      { region: 'Rest of World', revenue: '$9,421', orders: 199, percentage: 6.5 },
+    ]
+
+    const revenueByChannel = [
+      { channel: 'Website', revenue: '$89,234', percentage: 61.2 },
+      { channel: 'Mobile App', revenue: '$34,567', percentage: 23.7 },
+      { channel: 'API/Partners', revenue: '$21,877', percentage: 15.1 },
+    ]
+
     return {
-      overview: {
-        totalRevenue: 125400,
-        totalOrders: 1876,
-        avgOrderValue: 66.84,
-        conversionRate: '3.2%',
-      },
-      revenueByDay: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split('T')[0],
-        revenue: Math.floor(Math.random() * 5000) + 2000,
-        orders: Math.floor(Math.random() * 50) + 20,
-      })),
-      topProducts: [
-        { name: 'Premium Plan', revenue: 45600, orders: 456 },
-        { name: 'Pro Plan', revenue: 32100, orders: 534 },
-        { name: 'Starter Kit', revenue: 18900, orders: 378 },
-      ],
+      stats,
+      topProducts,
+      salesByRegion,
+      revenueByChannel,
     }
   },
 })

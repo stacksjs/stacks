@@ -5,6 +5,7 @@ export default new Action({
   description: 'Returns page analytics data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
     return {
       pages: [
         { path: '/', title: 'Home', views: 12543, uniqueViews: 8934, avgTime: '2m 30s', bounceRate: '32.1%' },

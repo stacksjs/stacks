@@ -5,6 +5,7 @@ export default new Action({
   description: 'Returns referrer analytics data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
     return {
       referrers: [
         { name: 'Google', visitors: 4521, sessions: 8932, bounceRate: '28.5%' },

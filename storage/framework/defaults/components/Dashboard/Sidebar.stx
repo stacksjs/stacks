@@ -235,7 +235,7 @@ const sectionContent = {
 var discoveredModels = []
 try {
   const fs = require('fs')
-  const manifestPath = require('path').resolve(process.cwd(), 'storage/framework/defaults/dashboard/.discovered-models.json')
+  const manifestPath = require('path').resolve(process.cwd(), 'storage/framework/defaults/views/dashboard/.discovered-models.json')
   discoveredModels = JSON.parse(fs.readFileSync(manifestPath, 'utf8'))
 } catch (e) {}
 

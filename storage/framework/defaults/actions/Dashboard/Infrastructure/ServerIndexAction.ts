@@ -5,11 +5,25 @@ export default new Action({
   description: 'Returns server status data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when Server model is available
+    const servers = [
+      { name: 'web-1.stacks.dev', ip: '192.168.1.100', cpu: 45, memory: 62, disk: 34, status: 'healthy', uptime: '45d 12h' },
+      { name: 'web-2.stacks.dev', ip: '192.168.1.101', cpu: 38, memory: 58, disk: 28, status: 'healthy', uptime: '45d 12h' },
+      { name: 'db-primary.stacks.dev', ip: '192.168.1.200', cpu: 72, memory: 85, disk: 67, status: 'warning', uptime: '30d 8h' },
+      { name: 'db-replica.stacks.dev', ip: '192.168.1.201', cpu: 25, memory: 45, disk: 67, status: 'healthy', uptime: '30d 8h' },
+      { name: 'cache.stacks.dev', ip: '192.168.1.150', cpu: 12, memory: 78, disk: 15, status: 'healthy', uptime: '60d 4h' },
+    ]
+
+    const stats = [
+      { label: 'Total Servers', value: '5' },
+      { label: 'Healthy', value: '4' },
+      { label: 'Warnings', value: '1' },
+      { label: 'Avg CPU', value: '38%' },
+    ]
+
     return {
-      data: [
-        { id: 'srv-1', name: 'Production', type: 'EC2 t3.medium', status: 'running', cpu: '34%', memory: '62%', disk: '45%', uptime: '30d 12h', ip: '10.0.1.100' },
-        { id: 'srv-2', name: 'Staging', type: 'EC2 t3.small', status: 'running', cpu: '12%', memory: '38%', disk: '28%', uptime: '15d 6h', ip: '10.0.2.100' },
-      ],
+      servers,
+      stats,
     }
   },
 })

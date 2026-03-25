@@ -5,14 +5,14 @@ export default new Action({
   description: 'Returns SEO data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when SEO model is available
     return {
-      pages: [
-        { url: '/', title: 'Home | Stacks', score: 92, issues: 1, lastCrawled: '2024-03-15' },
-        { url: '/docs', title: 'Documentation | Stacks', score: 88, issues: 3, lastCrawled: '2024-03-15' },
-        { url: '/blog', title: 'Blog | Stacks', score: 95, issues: 0, lastCrawled: '2024-03-15' },
-      ],
-      overallScore: 91,
-      totalIssues: 4,
+      seoData: {
+        title: 'Stacks - Build better web applications',
+        description: 'A modern full-stack framework for building web applications with TypeScript.',
+        keywords: ['stacks', 'typescript', 'framework', 'web development'],
+        ogImage: '/images/og-image.png',
+      },
     }
   },
 })

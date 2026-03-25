@@ -1031,12 +1031,12 @@
     }
   },
   "packages": {
-    "@anthropic-ai/claude-agent-sdk@0.2.81": {
+    "@anthropic-ai/claude-agent-sdk@0.2.83": {
       "name": "@anthropic-ai/claude-agent-sdk",
-      "version": "0.2.81",
+      "version": "0.2.83",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.2.81.tgz",
-      "integrity": "sha512-CBeebgibBEN/DWOQGZN67vhuTG55RbI1hlsFSSoZ4uA/Io3lw04eHTE2ISCmdbqyJaefYTt6GKZei1nP0TQMNw==",
+      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.2.83.tgz",
+      "integrity": "sha512-O8g56htGMxrwbjCbqUqRBMNC0O98B7SkPnfQC7vmo3w2DVnUrBj3qat/IBLB8SI4sjVSZHeJrcK7+ozsCzStSw==",
       "peerDependencies": {
         "zod": "^4.0.0"
       }
@@ -1477,12 +1477,12 @@
         "ts-mocker": "./dist/bin/cli.js"
       }
     },
-    "ts-pantry@0.8.17": {
+    "ts-pantry@0.8.18": {
       "name": "ts-pantry",
-      "version": "0.8.17",
+      "version": "0.8.18",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.8.17.tgz",
-      "integrity": "sha512-RHIjgChhlfC1zC2Pi3QbZzgQzJMuSG4JcR2d2CbEhfUCGT6u0zmyQts6CRrKab47alPTAslxiv74FkETlGubLg==",
+      "resolved": "https://registry.npmjs.org/ts-pantry/-/ts-pantry-0.8.18.tgz",
+      "integrity": "sha512-JQ7jOJIHBROl/fn2ROqBMgA/PMbQycrgDuFoS7thH7vW62eHYMTulePkksWJs55p68zIBuAwqRuFx22rRcoPzQ==",
       "dependencies": {
         "@stacksjs/ts-cloud": "^0.1.2",
         "bunfig": "^0.15.6",

@@ -1,24 +1,19 @@
 import { Action } from '@stacksjs/actions'
+import { Job } from '@stacksjs/orm'
 
 export default new Action({
   name: 'JobIndexAction',
   description: 'Returns a paginated list of jobs.',
   method: 'GET',
   async handle() {
+    const items = await Job.orderBy('created_at', 'desc').limit(50).get()
+    const count = await Job.count()
+
     return {
-      data: Array.from({ length: 25 }, (_, i) => ({
-        id: `job-${1000 + i}`,
-        name: ['SendEmailJob', 'ProcessPaymentJob', 'SyncInventoryJob', 'GenerateReportJob', 'CleanupTempFilesJob'][i % 5],
-        queue: ['default', 'high', 'low'][i % 3],
-        status: ['completed', 'completed', 'completed', 'failed', 'queued', 'processing'][i % 6],
-        attempts: Math.floor(Math.random() * 3) + 1,
-        runtime: Math.floor(Math.random() * 5000),
-        started_at: new Date(Date.now() - Math.random() * 86400000).toISOString(),
-        finished_at: new Date(Date.now() - Math.random() * 3600000).toISOString(),
-        error: i % 6 === 3 ? 'Connection timeout after 30s' : undefined,
-        payload: { userId: Math.floor(Math.random() * 100) },
-      })),
-      total: 156,
+      jobs: items.map(i => i.toJSON()),
+      stats: [
+        { label: 'Total Jobs', value: String(count) },
+      ],
     }
   },
 })

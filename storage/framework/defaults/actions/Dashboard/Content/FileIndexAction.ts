@@ -5,14 +5,21 @@ export default new Action({
   description: 'Returns file/media data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when File/Media model is available
     return {
-      data: [
-        { id: 1, name: 'hero-image.png', path: '/uploads/images/', size: '2.4 MB', type: 'image/png', uploadedAt: '2024-03-15' },
-        { id: 2, name: 'product-catalog.pdf', path: '/uploads/documents/', size: '5.1 MB', type: 'application/pdf', uploadedAt: '2024-03-14' },
-        { id: 3, name: 'logo.svg', path: '/uploads/images/', size: '12 KB', type: 'image/svg+xml', uploadedAt: '2024-03-10' },
+      files: [
+        { name: 'images', type: 'folder', items: 247, size: '1.2 GB', modified: '2024-01-10' },
+        { name: 'documents', type: 'folder', items: 89, size: '456 MB', modified: '2024-01-09' },
+        { name: 'videos', type: 'folder', items: 34, size: '4.8 GB', modified: '2024-01-08' },
+        { name: 'hero-banner.png', type: 'image', items: null, size: '2.4 MB', modified: '2024-01-10' },
+        { name: 'style-guide.pdf', type: 'document', items: null, size: '892 KB', modified: '2024-01-07' },
+        { name: 'product-demo.mp4', type: 'video', items: null, size: '124 MB', modified: '2024-01-05' },
       ],
-      totalSize: '45.2 MB',
-      totalFiles: 156,
+      storage: {
+        used: 12.4,
+        total: 50,
+        percentage: 24.8,
+      },
     }
   },
 })

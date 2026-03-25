@@ -5,53 +5,41 @@ export default new Action({
   description: 'Returns web analytics data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
+    const stats = [
+      { label: 'Page Views', value: '145,678', change: '+12.5%' },
+      { label: 'Unique Visitors', value: '45,234', change: '+8.2%' },
+      { label: 'Avg Session', value: '3m 24s', change: '+5.1%' },
+      { label: 'Bounce Rate', value: '42.3%', change: '-2.1%' },
+    ]
+
+    const topPages = [
+      { page: '/', title: 'Home', views: '23,456', unique: '18,234', avgTime: '45s' },
+      { page: '/products', title: 'Products', views: '12,345', unique: '9,876', avgTime: '2m 12s' },
+      { page: '/blog', title: 'Blog', views: '8,765', unique: '6,543', avgTime: '4m 32s' },
+      { page: '/pricing', title: 'Pricing', views: '5,432', unique: '4,321', avgTime: '1m 45s' },
+      { page: '/about', title: 'About Us', views: '3,210', unique: '2,345', avgTime: '1m 12s' },
+    ]
+
+    const sources = [
+      { source: 'Google Search', visitors: '18,234', percentage: '40.3%' },
+      { source: 'Direct', visitors: '12,345', percentage: '27.3%' },
+      { source: 'Social Media', visitors: '8,765', percentage: '19.4%' },
+      { source: 'Referrals', visitors: '4,321', percentage: '9.5%' },
+      { source: 'Email', visitors: '1,569', percentage: '3.5%' },
+    ]
+
+    const devices = [
+      { device: 'Desktop', percentage: 58 },
+      { device: 'Mobile', percentage: 35 },
+      { device: 'Tablet', percentage: 7 },
+    ]
+
     return {
-      overview: {
-        realtime: 42,
-        people: 1247,
-        views: 8934,
-        avgTimeOnSite: '3m 24s',
-        bounceRate: '34.2%',
-        eventCompletions: 523,
-      },
-      traffic: Array.from({ length: 30 }, (_, i) => ({
-        date: new Date(Date.now() - (29 - i) * 86400000).toISOString().split('T')[0],
-        visitors: Math.floor(Math.random() * 500) + 200,
-        pageViews: Math.floor(Math.random() * 1500) + 500,
-      })),
-      pages: [
-        { path: '/', entries: 3421, visitors: 2890, views: 5234, percentage: 35.2 },
-        { path: '/docs', entries: 1856, visitors: 1654, views: 2891, percentage: 19.4 },
-        { path: '/blog', entries: 1243, visitors: 1102, views: 2156, percentage: 14.5 },
-        { path: '/pricing', entries: 987, visitors: 876, views: 1432, percentage: 9.6 },
-        { path: '/about', entries: 654, visitors: 543, views: 987, percentage: 6.6 },
-      ],
-      referrers: [
-        { name: 'Google', visitors: 4521, views: 8932, percentage: 45.2 },
-        { name: 'GitHub', visitors: 2134, views: 3876, percentage: 21.3 },
-        { name: 'Twitter/X', visitors: 1432, views: 2654, percentage: 14.3 },
-        { name: 'Direct', visitors: 987, views: 1654, percentage: 9.9 },
-        { name: 'Hacker News', visitors: 543, views: 987, percentage: 5.4 },
-      ],
-      devices: [
-        { name: 'Desktop', visitors: 6234, percentage: 62.3 },
-        { name: 'Mobile', visitors: 2876, percentage: 28.8 },
-        { name: 'Tablet', visitors: 890, percentage: 8.9 },
-      ],
-      browsers: [
-        { name: 'Chrome', visitors: 5432, percentage: 54.3 },
-        { name: 'Safari', visitors: 2134, percentage: 21.3 },
-        { name: 'Firefox', visitors: 1234, percentage: 12.3 },
-        { name: 'Edge', visitors: 876, percentage: 8.8 },
-        { name: 'Other', visitors: 324, percentage: 3.2 },
-      ],
-      countries: [
-        { name: 'United States', visitors: 4521, percentage: 45.2, flag: '🇺🇸' },
-        { name: 'United Kingdom', visitors: 1234, percentage: 12.3, flag: '🇬🇧' },
-        { name: 'Germany', visitors: 987, percentage: 9.9, flag: '🇩🇪' },
-        { name: 'Canada', visitors: 876, percentage: 8.8, flag: '🇨🇦' },
-        { name: 'Australia', visitors: 654, percentage: 6.5, flag: '🇦🇺' },
-      ],
+      stats,
+      topPages,
+      sources,
+      devices,
     }
   },
 })

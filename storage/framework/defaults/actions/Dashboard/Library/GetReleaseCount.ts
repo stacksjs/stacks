@@ -1,12 +1,14 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
+import { Release } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetReleaseCount',
   description: 'Gets the total number of releases of your library.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Library.releaseCount()
+    const count = await Release.count()
+    return { count }
   },
 })

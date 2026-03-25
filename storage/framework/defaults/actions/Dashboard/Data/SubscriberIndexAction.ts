@@ -1,17 +1,26 @@
 import { Action } from '@stacksjs/actions'
+import { Subscriber } from '@stacksjs/orm'
 
 export default new Action({
   name: 'SubscriberIndexAction',
   description: 'Returns subscriber data for the dashboard.',
   method: 'GET',
   async handle() {
+    const items = await Subscriber.orderBy('created_at', 'desc').limit(50).get()
+    const count = await Subscriber.count()
+    const plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
+
+    const stats = [
+      { label: 'Total Subscribers', value: String(count) },
+      { label: 'Active', value: String(count) },
+      { label: 'New This Month', value: '-' },
+      { label: 'Churn Rate', value: '-' },
+    ]
+
     return {
-      data: [
-        { id: 1, email: 'subscriber1@example.com', status: 'active', subscribedAt: '2024-01-15', source: 'website' },
-        { id: 2, email: 'subscriber2@example.com', status: 'active', subscribedAt: '2024-02-20', source: 'api' },
-        { id: 3, email: 'subscriber3@example.com', status: 'unsubscribed', subscribedAt: '2024-01-05', source: 'import' },
-      ],
-      total: 8934,
+      subscribers: items.map(i => i.toJSON()),
+      stats,
+      plans,
     }
   },
 })

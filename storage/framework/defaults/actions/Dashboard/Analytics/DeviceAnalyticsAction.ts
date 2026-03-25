@@ -5,6 +5,7 @@ export default new Action({
   description: 'Returns device and OS analytics data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
     return {
       devices: [
         { name: 'Desktop', sessions: 6234, percentage: 62.3 },

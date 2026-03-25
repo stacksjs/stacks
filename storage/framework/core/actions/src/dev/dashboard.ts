@@ -21,7 +21,7 @@ console.warn = (...args: unknown[]) => {
   bufferedLogs.push(args.map(String).join(' '))
 }
 
-const dashboardPath = storagePath('framework/defaults/dashboard')
+const dashboardPath = storagePath('framework/defaults/views/dashboard')
 const userDashboardPath = projectPath('resources/views/dashboard')
 const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
 
@@ -175,7 +175,7 @@ const [, discoveredModels] = await Promise.all([
 ])
 
 // Write manifest
-const manifestPath = storagePath('framework/defaults/dashboard/.discovered-models.json')
+const manifestPath = storagePath('framework/defaults/views/dashboard/.discovered-models.json')
 writeFileSync(manifestPath, JSON.stringify(buildManifest(discoveredModels), null, 2))
 
 // Wait briefly for STX server (it's usually ready by now)

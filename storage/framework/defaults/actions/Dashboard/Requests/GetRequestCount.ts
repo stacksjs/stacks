@@ -1,12 +1,14 @@
 import { Action } from '@stacksjs/actions'
-// import { Request } from '@stacksjs/orm'
+import { Request } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetRequestCount',
   description: 'Gets the total number of requests.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Request.count()
+    const count = await Request.count()
+    return { count }
   },
 })

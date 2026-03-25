@@ -1,12 +1,17 @@
 import { Action } from '@stacksjs/actions'
-// import { Job } from '@stacksjs/orm'
+import { Job } from '@stacksjs/orm'
 
 export default new Action({
-  name: 'GetJobs',
-  description: 'Gets your jobs.',
+  name: 'GetJobHistory',
+  description: 'Gets job history.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Job.all()
+    const items = await Job.orderBy('created_at', 'desc').limit(50).get()
+
+    return {
+      jobs: items.map(i => i.toJSON()),
+    }
   },
 })

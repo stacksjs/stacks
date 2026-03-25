@@ -1,12 +1,18 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
+import { Release } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetAverageReleaseTime',
   description: 'Gets the average release time of your library.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Library.averageReleaseTime()
+    const count = await Release.count()
+
+    return {
+      averageReleaseTime: '-',
+      totalReleases: count,
+    }
   },
 })

@@ -1,0 +1,119 @@
+<script server>
+const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+
+let stats = []
+let topProducts = []
+let salesByRegion = []
+let revenueByChannel = []
+
+try {
+  const res = await fetch(API_URL + '/analytics/commerce')
+  if (res.ok) {
+    const json = await res.json()
+    stats = json.stats || []
+    topProducts = json.topProducts || []
+    salesByRegion = json.salesByRegion || []
+    revenueByChannel = json.revenueByChannel || []
+  }
+} catch (e) {
+  // API not available
+}
+</script>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+    <div class="flex items-start justify-between mb-8">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Commerce Analytics</h1>
+        <p class="text-gray-500 dark:text-gray-400 mt-1">Sales and revenue insights</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <select class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-40">
+          <option>Last 7 days</option>
+          <option>Last 30 days</option>
+          <option>Last 90 days</option>
+          <option>This year</option>
+        </select>
+        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Export</button>
+      </div>
+    </div>
+
+    <div class="flex flex-col gap-6">
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        @foreach (stats as stat)
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
+            <div class="text-sm font-medium {{ stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : stat.change.startsWith('-') ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' }}">{{ stat.change }}</div>
+          </div>
+        @endforeach
+      </div>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Top Products</span>
+          </div>
+          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <tr>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Revenue</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Units</th>
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Growth</th>
+                </tr>
+              </thead>
+              <tbody>
+                @foreach (topProducts as product)
+                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ product.name }}</td>
+                    <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ product.revenue }}</td>
+                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ product.units }}</td>
+                    <td class="px-4 py-3 text-green-600 dark:text-green-400 border-t border-gray-100 dark:border-gray-700">{{ product.growth }}</td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+          <div class="flex items-center justify-between mb-4">
+            <span class="font-semibold text-gray-900 dark:text-white">Sales by Region</span>
+          </div>
+          <div class="divide-y divide-gray-100 dark:divide-gray-700">
+            @foreach (salesByRegion as region)
+              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                <div class="flex-1 min-w-0">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ region.region }}</div>
+                  <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
+                    <div class="h-full bg-blue-500 rounded-full" style="width: {{ region.percentage }}%;"></div>
+                  </div>
+                </div>
+                <div class="text-right">
+                  <div class="font-semibold">{{ region.revenue }}</div>
+                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ region.orders }} orders</div>
+                </div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">Revenue by Channel</span>
+        </div>
+        <div class="p-6">
+          <div class="flex justify-around">
+            @foreach (revenueByChannel as channel)
+              <div class="text-center">
+                <div class="text-3xl font-bold">{{ channel.percentage }}%</div>
+                <div class="text-gray-500 dark:text-gray-400 mt-1">{{ channel.channel }}</div>
+                <div class="font-semibold text-success mt-2">{{ channel.revenue }}</div>
+              </div>
+            @endforeach
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>

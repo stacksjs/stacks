@@ -111,7 +111,7 @@ export default defineModel({
       order: 8,
       fillable: true,
       validation: {
-        rule: schema.string().url().nullable(),
+        rule: schema.string().url().optional(),
         message: {
           url: 'Avatar must be a valid URL',
         },

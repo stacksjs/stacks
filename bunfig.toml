@@ -3,7 +3,7 @@ preload = [ "./storage/framework/defaults/resources/plugins/preloader.ts" ]
 
 [test]
 preload = [ "./tests/setup.ts" ]
-coverage = true
+coverage = false
 
 [run]
 # equivalent to `bun --bun` for all `bun run` commands

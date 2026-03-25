@@ -1,0 +1,90 @@
+<script server>
+const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+
+let jobs = []
+let queueConnected = false
+
+try {
+  const res = await fetch(API_URL + '/jobs/')
+  if (res.ok) {
+    const json = await res.json()
+    jobs = json.jobs || []
+    queueConnected = json.queueConnected || false
+  }
+} catch (e) {
+  // API not available
+}
+
+function statusClass(s) {
+  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+  s = String(s).toLowerCase()
+  if (s === 'active' || s === 'processing')
+    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
+  if (s === 'completed' || s === 'success')
+    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
+  if (s === 'pending' || s === 'waiting')
+    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+  if (s === 'failed' || s === 'error')
+    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
+  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+}
+</script>
+<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+  <div class="flex items-start justify-between mb-8">
+    <div>
+      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Jobs</h1>
+      <p class="text-gray-500 dark:text-gray-400 mt-1">Background job management powered by bun-queue</p>
+    </div>
+  </div>
+
+  @if (!queueConnected)
+    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
+      </svg>
+      <h3 class="mt-4 text-lg font-medium text-yellow-900 dark:text-yellow-200">Queue Not Connected</h3>
+      <p class="mt-2 text-yellow-700 dark:text-yellow-300">The bun-queue devtools API is not running on port 4400. Start your queue worker to see job data here.</p>
+    </div>
+  @elseif (jobs.length === 0)
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
+      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
+      </svg>
+      <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No Jobs Found</h3>
+      <p class="mt-2 text-gray-500 dark:text-gray-400">Dispatch a job to see it here.</p>
+    </div>
+  @else
+    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
+        <table class="w-full text-sm">
+          <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <tr>
+              <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job</th>
+              <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Queue</th>
+              <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attempts</th>
+              <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
+              <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
+              <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            @foreach (jobs as job)
+              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.name }}</td>
+                <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span>
+                </td>
+                <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.attempts }}/{{ job.maxAttempts }}</td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 font-mono text-xs">{{ job.duration }}</td>
+                <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 text-xs">{{ job.createdAt }}</td>
+                <td class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
+                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(job.status) }}">{{ job.status }}</span>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+  @endif
+</div>

@@ -1,16 +1,25 @@
 import { Action } from '@stacksjs/actions'
+import { EmailList, Subscriber } from '@stacksjs/orm'
 
 export default new Action({
   name: 'ListIndexAction',
   description: 'Returns mailing list data for the dashboard.',
   method: 'GET',
   async handle() {
+    const items = await EmailList.orderBy('created_at', 'desc').limit(50).get()
+    const listCount = await EmailList.count()
+    const subscriberCount = await Subscriber.count()
+
+    const stats = [
+      { label: 'Total Subscribers', value: String(subscriberCount) },
+      { label: 'Email Lists', value: String(listCount) },
+      { label: 'Unsubscribed', value: '-' },
+      { label: 'Avg Open Rate', value: '-' },
+    ]
+
     return {
-      data: [
-        { id: 1, name: 'Newsletter Subscribers', subscriberCount: 8934, growthRate: '2.3%', createdAt: '2024-01-01' },
-        { id: 2, name: 'Product Updates', subscriberCount: 5432, growthRate: '1.8%', createdAt: '2024-02-15' },
-        { id: 3, name: 'Beta Testers', subscriberCount: 1234, growthRate: '5.2%', createdAt: '2024-03-01' },
-      ],
+      lists: items.map(i => i.toJSON()),
+      stats,
     }
   },
 })

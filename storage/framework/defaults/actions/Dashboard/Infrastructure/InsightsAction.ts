@@ -5,6 +5,7 @@ export default new Action({
   description: 'Returns performance and infrastructure insights for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
     return {
       performance: {
         avgResponseTime: '18ms',

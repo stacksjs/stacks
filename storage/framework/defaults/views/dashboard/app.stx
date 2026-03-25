@@ -1,0 +1,187 @@
+<script server>
+/**
+ * Stacks Dashboard - Native macOS Application
+ *
+ * The main entry point for the Stacks Dashboard built with STX and Craft.
+ * Uses native macOS sidebar for navigation.
+ * Pages are lazy-loaded on first navigation for fast initial render.
+ */
+
+let currentPage = 'home'
+</script>
+
+<script>
+const appRef = useRef('app')
+let currentPageId = 'home'
+
+const specialMappings = {
+  'notifications/dashboard': 'notifications',
+  'analytics/events': 'analytics-goals',
+  'analytics/commerce/web': 'analytics-commerce',
+  'analytics/commerce/sales': 'analytics-sales',
+  'management/permissions': 'permissions',
+  'settings/ai': 'settings'
+}
+
+const routeMap = {
+  'home': 'pages/index',
+  'dependencies': 'pages/home/dependencies',
+  'services': 'pages/home/services',
+  'components': 'pages/library/components',
+  'functions': 'pages/library/functions',
+  'releases': 'pages/library/releases',
+  'packages': 'pages/library/packages',
+  'content-dashboard': 'pages/content/dashboard',
+  'files': 'pages/content/files',
+  'pages': 'pages/content/pages',
+  'posts': 'pages/content/posts',
+  'categories': 'pages/content/categories',
+  'tags': 'pages/content/tags',
+  'comments': 'pages/content/comments',
+  'authors': 'pages/content/authors',
+  'seo': 'pages/content/seo',
+  'deployments': 'pages/app/deployments',
+  'requests': 'pages/app/requests',
+  'realtime': 'pages/app/realtime',
+  'actions': 'pages/app/actions',
+  'commands': 'pages/app/commands',
+  'queue': 'pages/app/queue',
+  'jobs': 'pages/app/jobs',
+  'queries': 'pages/app/queries',
+  'notifications': 'pages/app/notifications',
+  'data-dashboard': 'pages/data/dashboard',
+  'activity': 'pages/data/activity',
+  'users': 'pages/data/users',
+  'teams': 'pages/data/teams',
+  'subscribers': 'pages/data/subscribers',
+  'commerce-dashboard': 'pages/commerce/dashboard',
+  'pos': 'pages/commerce/pos',
+  'customers': 'pages/commerce/customers',
+  'orders': 'pages/commerce/orders',
+  'products': 'pages/commerce/products',
+  'coupons': 'pages/commerce/coupons',
+  'gift-cards': 'pages/commerce/gift-cards',
+  'payments': 'pages/commerce/payments',
+  'delivery': 'pages/commerce/delivery',
+  'taxes': 'pages/commerce/taxes',
+  'lists': 'pages/marketing/lists',
+  'social-posts': 'pages/marketing/social-posts',
+  'campaigns': 'pages/marketing/campaigns',
+  'marketing-reviews': 'pages/marketing/reviews',
+  'analytics-web': 'pages/analytics/web',
+  'analytics-blog': 'pages/analytics/blog',
+  'analytics-goals': 'pages/analytics/goals',
+  'analytics-commerce': 'pages/analytics/commerce',
+  'analytics-sales': 'pages/analytics/sales',
+  'analytics-marketing': 'pages/analytics/marketing',
+  'cloud': 'pages/management/cloud',
+  'servers': 'pages/management/servers',
+  'serverless': 'pages/management/serverless',
+  'dns': 'pages/management/dns',
+  'permissions': 'pages/management/permissions',
+  'mailboxes': 'pages/management/mailboxes',
+  'logs': 'pages/management/logs',
+  'buddy': 'pages/utilities/buddy',
+  'environment': 'pages/utilities/environment',
+  'access-tokens': 'pages/utilities/access-tokens',
+  'settings': 'pages/utilities/settings'
+}
+
+function hrefToPageId(href) {
+  if (href === '/') return 'home'
+  const path = href.replace(/^\//, '')
+  if (specialMappings[path]) return specialMappings[path]
+  const fullId = path.replace(/\//g, '-')
+  if (routeMap[fullId]) return fullId
+  const segments = path.split('/')
+  const lastSegment = segments[segments.length - 1]
+  if (routeMap[lastSegment]) return lastSegment
+  return fullId
+}
+
+function executeScripts(container) {
+  const scripts = container.querySelectorAll('script')
+  for (let i = 0; i < scripts.length; i++) {
+    const original = scripts[i]
+    const copy = Object.assign(original.ownerDocument.createElement('script'), {
+      src: original.src || undefined,
+      textContent: original.src ? '' : original.textContent,
+    })
+    original.replaceWith(copy)
+  }
+}
+
+function navigateToPage(pageId) {
+  if (currentPageId === pageId) return
+
+  const container = appRef.value
+  if (!container) return
+
+  const targetEl = container.querySelector('[data-page-content="' + pageId + '"]')
+  if (targetEl) {
+    const cur = container.querySelector('[data-page-content="' + currentPageId + '"]')
+    if (cur) cur.style.display = 'none'
+    targetEl.style.display = 'block'
+    currentPageId = pageId
+    return
+  }
+
+  let route = routeMap[pageId]
+  if (!route && pageId.indexOf('model-') === 0) {
+    route = 'pages/data/' + pageId.replace('model-', '')
+  }
+  if (!route) return
+
+  const previousPageId = currentPageId
+  const curEl = container.querySelector('[data-page-content="' + previousPageId + '"]')
+  if (curEl) curEl.style.display = 'none'
+
+  fetch('/' + route)
+    .then(function(res) {
+      if (!res.ok) throw new Error('HTTP ' + res.status)
+      return res.text()
+    })
+    .then(function(html) {
+      container.insertAdjacentHTML('beforeend',
+        '<div data-page-content="' + pageId + '" style="display: block;">' + html + '</div>'
+      )
+      currentPageId = pageId
+
+      const newPage = container.querySelector('[data-page-content="' + pageId + '"]')
+      if (newPage) executeScripts(newPage)
+    })
+    .catch(function() {
+      const prevEl = container.querySelector('[data-page-content="' + previousPageId + '"]')
+      if (prevEl) prevEl.style.display = 'block'
+    })
+}
+
+window.craft = window.craft || {}
+window.craft._sidebarSelectHandler = function(event) {
+  navigateToPage(event.itemId)
+}
+
+useEventListener('click', function(e) {
+  const link = e.target.closest ? e.target.closest('a[href]') : null
+  if (!link || link.hasAttribute('data-mpa')) return
+  const href = link.getAttribute('href')
+  if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0) return
+  const pageId = hrefToPageId(href)
+  if (routeMap[pageId]) {
+    e.preventDefault()
+    navigateToPage(pageId)
+  }
+})
+
+if (location.hash) {
+  const hash = location.hash.replace('#', '')
+  if (routeMap[hash]) navigateToPage(hash)
+}
+</script>
+<DashboardLayout>
+  <div id="app" ref="app" data-page="home">
+    <div data-page-content="home" style="display: block;">
+      @include('pages/index')
+    </div>
+  </div>
+</DashboardLayout>

@@ -2,18 +2,36 @@ import { Action } from '@stacksjs/actions'
 
 export default new Action({
   name: 'EventAnalyticsAction',
-  description: 'Returns event analytics data for the dashboard.',
+  description: 'Returns goals and conversions data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
+    const goals = [
+      { name: 'Newsletter Signups', target: 1000, current: 856, progress: 85.6, status: 'on_track' },
+      { name: 'Product Demo Requests', target: 100, current: 112, progress: 112, status: 'completed' },
+      { name: 'Free Trial Conversions', target: 50, current: 34, progress: 68, status: 'at_risk' },
+      { name: 'Contact Form Submissions', target: 200, current: 189, progress: 94.5, status: 'on_track' },
+      { name: 'Ebook Downloads', target: 500, current: 523, progress: 104.6, status: 'completed' },
+    ]
+
+    const stats = [
+      { label: 'Active Goals', value: '5' },
+      { label: 'Completed', value: '2' },
+      { label: 'Avg Progress', value: '92.8%' },
+      { label: 'At Risk', value: '1' },
+    ]
+
+    const conversions = [
+      { funnel: 'Homepage \u2192 Signup', rate: '3.2%', visitors: '45,234', conversions: '1,447' },
+      { funnel: 'Blog \u2192 Newsletter', rate: '8.5%', visitors: '12,345', conversions: '1,049' },
+      { funnel: 'Pricing \u2192 Trial', rate: '12.3%', visitors: '5,432', conversions: '668' },
+      { funnel: 'Trial \u2192 Paid', rate: '24.5%', visitors: '668', conversions: '164' },
+    ]
+
     return {
-      events: [
-        { name: 'page_view', count: 45231, trend: 12.5 },
-        { name: 'button_click', count: 12876, trend: 5.3 },
-        { name: 'form_submit', count: 3456, trend: -2.1 },
-        { name: 'signup', count: 876, trend: 18.7 },
-        { name: 'purchase', count: 234, trend: 8.9 },
-      ],
-      totalEvents: 62673,
+      goals,
+      stats,
+      conversions,
     }
   },
 })

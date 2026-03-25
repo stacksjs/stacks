@@ -1,12 +1,13 @@
 import { Action } from '@stacksjs/actions'
-// import { Deployment } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetDeployScript',
   description: 'Gets the deploy script used by the application.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Deployment.script()
+    // TODO: replace with model query when available
+    return { script: '' }
   },
 })

@@ -1,12 +1,17 @@
 import { Action } from '@stacksjs/actions'
-// import { Notification } from '@stacksjs/orm'
+import { Notification } from '@stacksjs/orm'
 
 export default new Action({
-  name: 'GetNotifications',
-  description: 'Gets your notifications.',
+  name: 'GetNotificationHistory',
+  description: 'Gets notification history.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Notification.all()
+    const items = await Notification.orderBy('created_at', 'desc').limit(50).get()
+
+    return {
+      notifications: items.map(i => i.toJSON()),
+    }
   },
 })

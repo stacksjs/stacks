@@ -1,12 +1,13 @@
 import { Action } from '@stacksjs/actions'
-// import { Command } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetCommandCount',
   description: 'Gets the total number of commands.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Command.count()
+    // TODO: replace with model query when Command model is available
+    return { count: 0 }
   },
 })

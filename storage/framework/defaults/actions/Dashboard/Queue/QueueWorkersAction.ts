@@ -5,6 +5,7 @@ export default new Action({
   description: 'Returns queue worker information.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when Worker model is available
     return {
       data: [
         { id: 'worker-1', name: 'worker-1', status: 'running', queues: ['default', 'high'], jobs_processed: 4521, uptime: '3d 12h', memory: '128MB' },

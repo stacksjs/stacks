@@ -19,7 +19,6 @@ export default new Action({
     }
 
     if (!displayModels.length) {
-      // If no models should be highlighted, we can just return up to 8 models in alphabetical order
       for await (const file of glob.scan(scanOptions)) {
         const model = (await import(path.userModelsPath(file))).default as Model
         displayModels.push(model)
@@ -32,7 +31,7 @@ export default new Action({
 
     return displayModels.map(model => ({
       model: model.name,
-      // TODO: implement this total logic
+      // TODO: replace with model query when available
       total: Math.floor(Math.random() * (999 - 10 + 1)) + 10,
     }))
   },

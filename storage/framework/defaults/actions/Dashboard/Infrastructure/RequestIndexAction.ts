@@ -1,24 +1,24 @@
 import { Action } from '@stacksjs/actions'
+import { Request } from '@stacksjs/orm'
 
 export default new Action({
   name: 'RequestIndexAction',
   description: 'Returns request history data for the dashboard.',
   method: 'GET',
   async handle() {
+    const items = await Request.orderBy('created_at', 'desc').limit(50).get()
+    const count = await Request.count()
+
+    const stats = [
+      { label: 'Total Requests', value: String(count) },
+      { label: 'Avg Response', value: '-' },
+      { label: 'Error Rate', value: '-' },
+      { label: 'Requests/min', value: '-' },
+    ]
+
     return {
-      data: [
-        { method: 'GET', path: '/api/users', status: 200, duration: '12ms', timestamp: new Date(Date.now() - 60000).toISOString() },
-        { method: 'POST', path: '/api/orders', status: 201, duration: '45ms', timestamp: new Date(Date.now() - 120000).toISOString() },
-        { method: 'GET', path: '/api/products', status: 200, duration: '8ms', timestamp: new Date(Date.now() - 180000).toISOString() },
-        { method: 'DELETE', path: '/api/users/5', status: 204, duration: '15ms', timestamp: new Date(Date.now() - 240000).toISOString() },
-        { method: 'GET', path: '/api/missing', status: 404, duration: '3ms', timestamp: new Date(Date.now() - 300000).toISOString() },
-      ],
-      stats: {
-        totalRequests: 45231,
-        avgResponseTime: '18ms',
-        successRate: '98.7%',
-        errorRate: '1.3%',
-      },
+      requests: items.map(i => i.toJSON()),
+      stats,
     }
   },
 })

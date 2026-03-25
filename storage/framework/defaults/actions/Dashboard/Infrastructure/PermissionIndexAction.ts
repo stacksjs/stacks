@@ -5,20 +5,33 @@ export default new Action({
   description: 'Returns roles and permissions data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when Permission/Role model is available
+    const roles = [
+      { name: 'Admin', users: 3, permissions: 'Full access', description: 'Complete system access' },
+      { name: 'Editor', users: 8, permissions: '24 permissions', description: 'Content management' },
+      { name: 'Author', users: 12, permissions: '12 permissions', description: 'Create and edit own content' },
+      { name: 'Moderator', users: 5, permissions: '18 permissions', description: 'Content moderation' },
+      { name: 'Viewer', users: 45, permissions: '6 permissions', description: 'Read-only access' },
+    ]
+
+    const permissions = [
+      { group: 'Content', items: ['Create', 'Edit', 'Delete', 'Publish'] },
+      { group: 'Users', items: ['View', 'Create', 'Edit', 'Delete'] },
+      { group: 'Settings', items: ['View', 'Edit'] },
+      { group: 'Analytics', items: ['View', 'Export'] },
+      { group: 'Commerce', items: ['View Orders', 'Manage Products', 'Process Refunds'] },
+    ]
+
+    const recentChanges = [
+      { user: 'admin@example.com', action: 'Updated role', target: 'Editor', time: '2h ago' },
+      { user: 'admin@example.com', action: 'Added permission', target: 'Author - Publish', time: '1d ago' },
+      { user: 'admin@example.com', action: 'Created role', target: 'Moderator', time: '3d ago' },
+    ]
+
     return {
-      roles: [
-        { id: 1, name: 'Admin', description: 'Full access to all resources', userCount: 2, permissions: ['*'] },
-        { id: 2, name: 'Editor', description: 'Can manage content and media', userCount: 5, permissions: ['content:*', 'media:*'] },
-        { id: 3, name: 'User', description: 'Basic access', userCount: 1240, permissions: ['profile:read', 'profile:update'] },
-      ],
-      permissions: [
-        { name: 'content:create', description: 'Create content' },
-        { name: 'content:read', description: 'Read content' },
-        { name: 'content:update', description: 'Update content' },
-        { name: 'content:delete', description: 'Delete content' },
-        { name: 'users:manage', description: 'Manage users' },
-        { name: 'settings:manage', description: 'Manage settings' },
-      ],
+      roles,
+      permissions,
+      recentChanges,
     }
   },
 })

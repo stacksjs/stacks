@@ -1,13 +1,13 @@
 import { Action } from '@stacksjs/actions'
-// import { Commit } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetRecentCommits',
   description: 'Gets recent commits.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // use git to get the last 3 commits
-    // Commit.recent(3)
+    // TODO: replace with model query when Commit model is available
+    return { commits: [] }
   },
 })

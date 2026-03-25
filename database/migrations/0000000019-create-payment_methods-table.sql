@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "payment_methods" (
   "id" INTEGER PRIMARY KEY AUTOINCREMENT,
   "type" TEXT,
-  "last_four" REAL,
+  "last_four" TEXT,
   "brand" TEXT,
   "exp_month" REAL,
   "exp_year" REAL,

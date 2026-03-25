@@ -127,7 +127,7 @@ export default defineModel({
       order: 10,
       fillable: true,
       validation: {
-        rule: schema.string().nullable(),
+        rule: schema.string().optional(),
       },
       factory: () => null,
     },

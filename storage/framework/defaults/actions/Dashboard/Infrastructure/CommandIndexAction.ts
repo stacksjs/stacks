@@ -5,15 +5,15 @@ export default new Action({
   description: 'Returns command history data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when Command model is available
     return {
-      data: [
-        { name: 'buddy dev', description: 'Start development server', lastRun: '2 min ago', avgTime: '0.3s', status: 'success' },
-        { name: 'buddy build', description: 'Build for production', lastRun: '1 hour ago', avgTime: '12.5s', status: 'success' },
-        { name: 'buddy deploy', description: 'Deploy to cloud', lastRun: '3 hours ago', avgTime: '45.2s', status: 'success' },
-        { name: 'buddy migrate', description: 'Run migrations', lastRun: '1 day ago', avgTime: '2.1s', status: 'success' },
-        { name: 'buddy seed', description: 'Seed database', lastRun: '1 day ago', avgTime: '5.3s', status: 'failed' },
+      commands: [
+        { name: 'migrate', description: 'Run database migrations', lastRun: '2024-01-10 10:30', status: 'success' },
+        { name: 'seed', description: 'Seed the database', lastRun: '2024-01-10 10:31', status: 'success' },
+        { name: 'cache:clear', description: 'Clear application cache', lastRun: '2024-01-10 09:15', status: 'success' },
+        { name: 'queue:work', description: 'Process queue jobs', lastRun: 'Running', status: 'running' },
+        { name: 'schedule:run', description: 'Run scheduled tasks', lastRun: '2024-01-10 10:00', status: 'success' },
       ],
-      total: 52,
     }
   },
 })

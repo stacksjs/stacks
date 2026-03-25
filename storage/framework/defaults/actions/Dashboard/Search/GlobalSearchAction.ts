@@ -1,25 +1,20 @@
 import { Action } from '@stacksjs/actions'
+import { User, Post, Product } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GlobalSearchAction',
   description: 'Returns global search results grouped by model.',
   method: 'GET',
-  async handle(request: RequestInstance) {
-    const q = request?.get('q') || ''
-
-    if (!q) return { results: {} }
+  async handle() {
+    const users = await User.orderBy('created_at', 'desc').limit(5).get()
+    const posts = await Post.orderBy('created_at', 'desc').limit(5).get()
+    const products = await Product.orderBy('created_at', 'desc').limit(5).get()
 
     return {
       results: {
-        users: [
-          { id: 1, title: 'Chris Breuer', subtitle: 'chris@stacks.dev', href: '/data/users', icon: 'i-hugeicons-user-02' },
-        ],
-        posts: [
-          { id: 1, title: 'Getting Started with Stacks', subtitle: 'Published 2 days ago', href: '/content/posts', icon: 'i-hugeicons-note-edit' },
-        ],
-        products: [
-          { id: 1, title: 'Premium Plan', subtitle: '$99/mo', href: '/commerce/products', icon: 'i-hugeicons-shopping-bag-02' },
-        ],
+        users: users.map(i => i.toJSON()),
+        posts: posts.map(i => i.toJSON()),
+        products: products.map(i => i.toJSON()),
       },
     }
   },

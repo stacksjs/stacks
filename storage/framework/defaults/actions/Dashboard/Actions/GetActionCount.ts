@@ -1,12 +1,13 @@
 import { Action } from '@stacksjs/actions'
-// import { Action as ActionModel } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetActionCount',
   description: 'Gets the total number of actions.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return ActionModel.count()
+    // TODO: replace with model query when Action model is available
+    return { count: 0 }
   },
 })

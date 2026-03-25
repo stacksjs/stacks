@@ -1,12 +1,16 @@
 import { Action } from '@stacksjs/actions'
-// import { Release } from '@stacksjs/orm'
+import { Release } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetReleases',
   description: 'Gets your releases.',
-  apiResponse: true,
+  method: 'GET',
 
   async handle() {
-    // return Release.all()
+    const items = await Release.orderBy('created_at', 'desc').limit(50).get()
+
+    return {
+      releases: items.map(i => i.toJSON()),
+    }
   },
 })

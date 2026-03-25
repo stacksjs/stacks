@@ -1,12 +1,18 @@
 import { Action } from '@stacksjs/actions'
-// import { Notification } from '@stacksjs/orm'
+import { Notification } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetNotificationDeliveryRate',
   description: 'Gets the notification delivery rate of your application.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Notification.deliveryRate()
+    const count = await Notification.count()
+
+    return {
+      deliveryRate: '-',
+      totalNotifications: count,
+    }
   },
 })

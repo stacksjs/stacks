@@ -5,6 +5,7 @@ export default new Action({
   description: 'Returns browser analytics data for the dashboard.',
   method: 'GET',
   async handle() {
+    // TODO: replace with model query when available
     return {
       browsers: [
         { name: 'Chrome', sessions: 5432, percentage: 54.3, version: '122.0' },

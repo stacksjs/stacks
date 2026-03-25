@@ -1,12 +1,13 @@
 import { Action } from '@stacksjs/actions'
-// import { Library } from '@stacksjs/orm'
 
 export default new Action({
   name: 'GetDownloadCount',
   description: 'Gets the total number of downloads.',
+  method: 'GET',
   apiResponse: true,
 
   async handle() {
-    // return Library.downloadCount()
+    // TODO: replace with model query when available
+    return { count: 0 }
   },
 })

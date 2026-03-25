@@ -7,6 +7,9 @@ export * from './types'
 export * from './utils'
 export * from './define-model'
 
+// Re-export all model instances so Actions can use: import { User } from '@stacksjs/orm'
+export * from '../../../auto-imports/models'
+
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions
 export type { InferAttributes, InferPrimaryKey, InferTableName, ModelDefinition } from 'bun-query-builder'
@@ -46,51 +49,7 @@ export interface NewUser {
   [key: string]: unknown
 }
 
-/** Stub model class for the users table. */
-export declare class User {
-  id: number
-  email: string
-  name: string
-  password: string
-  uuid: string
-  two_factor_secret: string | null
-  public_key: string | null
-  stripe_id: string | null
-  created_at: string
-  updated_at: string | null
-  deleted_at: string | null
-  [key: string]: unknown
-  hasStripeId(): boolean
-  update(data: Record<string, unknown>): Promise<unknown>
-  static where(column: string, ...args: unknown[]): { first: () => Promise<User | undefined>, get: () => Promise<User[]>, [key: string]: unknown }
-  static find(id: number): Promise<User | undefined>
-  static create(data: Record<string, unknown>): Promise<User>
-  static all(): Promise<User[]>
-}
-
-/** Stub model class for the jobs table. */
-export const Job: {
-  where: (column: string, ...args: unknown[]) => { get: () => Promise<{ id: number, queue: string, delete: () => Promise<void>, [key: string]: unknown }[]> }
-  all: () => Promise<{ id: number, queue: string, delete: () => Promise<void>, [key: string]: unknown }[]>
-  find: (id: number) => Promise<{ id: number, queue: string, [key: string]: unknown } | undefined>
-  [key: string]: unknown
-} = undefined as never
-
-/** Stub model class for the failed_jobs table. */
-export const FailedJob: {
-  where: (column: string, ...args: unknown[]) => { get: () => Promise<{ id: number, queue: string, failed_at: string, exception: string, [key: string]: unknown }[]> }
-  all: () => Promise<{ id: number, queue: string, failed_at: string, exception: string, [key: string]: unknown }[]>
-  find: (id: number) => Promise<{ id: number, queue: string, [key: string]: unknown } | undefined>
-  [key: string]: unknown
-} = undefined as never
-
-/** Stub model class for the payment_methods table. */
-export const PaymentMethod: {
-  create: (data: Record<string, unknown>) => Promise<Record<string, unknown>>
-  find: (id: number) => Promise<{ id: number, provider_id: string, is_default: boolean, update: (data: Record<string, unknown>) => Promise<unknown>, delete: () => Promise<void>, [key: string]: unknown } | undefined>
-  where: (column: string, ...args: unknown[]) => { where: (column: string, ...args: unknown[]) => { first: () => Promise<Record<string, unknown> | undefined>, [key: string]: unknown }, first: () => Promise<Record<string, unknown> | undefined>, [key: string]: unknown }
-  [key: string]: unknown
-} = undefined as never
+// Model type stubs (runtime instances re-exported from auto-imports/models above)
 
 /** Stub interface for the categorizables table row. */
 export interface CategorizableTable {
