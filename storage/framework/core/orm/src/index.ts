@@ -12,44 +12,42 @@ export * from '../../../auto-imports/models'
 
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions
-export type { InferAttributes, InferPrimaryKey, InferTableName, ModelDefinition } from 'bun-query-builder'
-export type { InferRelationNames } from 'bun-query-builder'
-
+export type {
+  InferAttributes,
+  InferFillableAttributes,
+  InferPrimaryKey,
+  InferTableName,
+  InferRelationNames,
+  InferNumericColumns,
+  InferColumnNames,
+  ModelDefinition,
+  ModelRow,
+  ModelCreateData,
+} from 'bun-query-builder'
 
 // ---------------------------------------------------------------------------
-// Shared type interfaces used by framework packages (@stacksjs/payments,
-// @stacksjs/auth, etc.) for structural typing of model rows and pivot tables.
+// Model row types — inferred from model definitions via bun-query-builder.
+// These replace hand-written interfaces and stay in sync automatically.
+// Consumers: import type { UserModel, NewUser } from '@stacksjs/orm'
 // ---------------------------------------------------------------------------
 
-/** Type interface representing a User model row. */
-export interface UserModel {
-  id: number
-  email: string
-  name: string
-  password: string
-  uuid: string
-  two_factor_secret: string | null
-  public_key: string | null
-  stripe_id: string | null
-  created_at: string
-  updated_at: string | null
-  deleted_at: string | null
-  hasStripeId: () => boolean
-  update: (data: Record<string, unknown>) => Promise<unknown>
-  [key: string]: unknown
-}
+import type { ModelRow, ModelCreateData } from 'bun-query-builder'
+import type _User from '../../../auto-imports/models'
 
-/** Type interface for creating a new User record. */
-export interface NewUser {
-  email: string
-  password: string
-  name: string
-  [key: string]: unknown
-}
+/** User model row type — inferred from the User model definition. */
+export type UserModel = ModelRow<typeof _User.User>
 
-// Model type stubs (runtime instances re-exported from auto-imports/models above)
+/** Data required to create a new User — inferred fillable attributes. */
+export type NewUser = ModelCreateData<typeof _User.User>
 
-/** Stub interface for the categorizables table row. */
+// ---------------------------------------------------------------------------
+// Polymorphic trait table types — used by @stacksjs/cms and database drivers.
+// These describe trait-managed tables (categorizable, commentable, taggable)
+// that don't have standalone model definitions. Once the trait system in
+// bun-query-builder supports schema inference, these can be removed.
+// ---------------------------------------------------------------------------
+
+/** Row type for the polymorphic categories table (categorizable trait). */
 export interface CategorizableTable {
   id?: number
   name: string
@@ -61,7 +59,7 @@ export interface CategorizableTable {
   updated_at?: string
 }
 
-/** Stub interface for the categorizable_models pivot table row. */
+/** Row type for the category-model pivot table (categorizable trait). */
 export interface CategorizableModelsTable {
   id?: number
   category_id: number
@@ -71,7 +69,7 @@ export interface CategorizableModelsTable {
   updated_at?: string
 }
 
-/** Stub interface for the commentables table row. */
+/** Row type for the polymorphic comments table (commentable trait). */
 export interface CommentablesTable {
   id?: number
   title: string
@@ -86,7 +84,7 @@ export interface CommentablesTable {
   updated_at?: string | null
 }
 
-/** Stub interface for the taggables table row. */
+/** Row type for the polymorphic tags table (taggable trait). */
 export interface TaggableTable {
   id?: number
   name: string
