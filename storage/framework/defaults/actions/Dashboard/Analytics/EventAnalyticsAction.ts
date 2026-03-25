@@ -2,36 +2,89 @@ import { Action } from '@stacksjs/actions'
 
 export default new Action({
   name: 'EventAnalyticsAction',
-  description: 'Returns goals and conversions data for the dashboard.',
+  description: 'Returns goals and conversions data from ts-analytics.',
   method: 'GET',
   async handle() {
-    // TODO: replace with model query when available
-    const goals = [
-      { name: 'Newsletter Signups', target: 1000, current: 856, progress: 85.6, status: 'on_track' },
-      { name: 'Product Demo Requests', target: 100, current: 112, progress: 112, status: 'completed' },
-      { name: 'Free Trial Conversions', target: 50, current: 34, progress: 68, status: 'at_risk' },
-      { name: 'Contact Form Submissions', target: 200, current: 189, progress: 94.5, status: 'on_track' },
-      { name: 'Ebook Downloads', target: 500, current: 523, progress: 104.6, status: 'completed' },
-    ]
+    try {
+      const { AnalyticsQueryAPI, AnalyticsStore } = await import('ts-analytics')
+      const store = new AnalyticsStore({ tableName: 'analytics' })
 
-    const stats = [
-      { label: 'Active Goals', value: '5' },
-      { label: 'Completed', value: '2' },
-      { label: 'Avg Progress', value: '92.8%' },
-      { label: 'At Risk', value: '1' },
-    ]
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      const dateRange = { start: thirtyDaysAgo, end: now }
+      const period = AnalyticsQueryAPI.determinePeriod(dateRange)
+      const periodStart = AnalyticsStore.getPeriodStart(now, period)
+      const startPeriod = AnalyticsStore.getPeriodStart(thirtyDaysAgo, period)
 
-    const conversions = [
-      { funnel: 'Homepage \u2192 Signup', rate: '3.2%', visitors: '45,234', conversions: '1,447' },
-      { funnel: 'Blog \u2192 Newsletter', rate: '8.5%', visitors: '12,345', conversions: '1,049' },
-      { funnel: 'Pricing \u2192 Trial', rate: '12.3%', visitors: '5,432', conversions: '668' },
-      { funnel: 'Trial \u2192 Paid', rate: '24.5%', visitors: '668', conversions: '164' },
-    ]
+      const goalsCmd = store.listGoalsCommand('default')
+      const goalsResult = (goalsCmd as unknown as { Items?: unknown[] })?.Items ?? []
+      const goalItems = goalsResult as any[]
 
-    return {
-      goals,
-      stats,
-      conversions,
+      // Fetch goal stats for each goal
+      const goalStatsPromises = goalItems.map((goal: any) => {
+        const cmd = store.getGoalStatsCommand('default', goal.id, period, startPeriod, periodStart)
+        return (cmd as unknown as { Items?: unknown[] })?.Items ?? []
+      })
+
+      const goalStatsResults = await Promise.all(goalStatsPromises)
+
+      const goals = goalItems.map((goal: any, index: number) => {
+        const stats = goalStatsResults[index] as any[]
+        const totalConversions = stats.reduce((sum: number, s: any) => sum + (s.conversions || 0), 0)
+        const target = goal.value || 100
+        const progress = target > 0 ? (totalConversions / target) * 100 : 0
+
+        let status = 'on_track'
+        if (progress >= 100) status = 'completed'
+        else if (progress < 50) status = 'at_risk'
+
+        return {
+          name: goal.name,
+          target,
+          current: totalConversions,
+          progress: Math.round(progress * 10) / 10,
+          status,
+        }
+      })
+
+      const activeGoals = goals.length
+      const completedGoals = goals.filter(g => g.status === 'completed').length
+      const atRiskGoals = goals.filter(g => g.status === 'at_risk').length
+      const avgProgress = goals.length > 0
+        ? goals.reduce((sum, g) => sum + g.progress, 0) / goals.length
+        : 0
+
+      const stats = [
+        { label: 'Active Goals', value: String(activeGoals) },
+        { label: 'Completed', value: String(completedGoals) },
+        { label: 'Avg Progress', value: `${avgProgress.toFixed(1)}%` },
+        { label: 'At Risk', value: String(atRiskGoals) },
+      ]
+
+      // Get event stats for conversion funnels
+      const eventStatsCmd = store.getEventStatsCommand('default', period, periodStart)
+      const eventStatsResult = (eventStatsCmd as unknown as { Items?: unknown[] })?.Items ?? []
+      const eventItems = eventStatsResult as any[]
+
+      const conversions = eventItems
+        .filter((e: any) => e.count > 0)
+        .sort((a: any, b: any) => (b.count || 0) - (a.count || 0))
+        .slice(0, 10)
+        .map((e: any) => ({
+          funnel: e.eventName || 'Unknown',
+          rate: e.uniqueVisitors > 0 ? `${((e.count / e.uniqueVisitors) * 100).toFixed(1)}%` : '0%',
+          visitors: (e.uniqueVisitors || 0).toLocaleString(),
+          conversions: (e.count || 0).toLocaleString(),
+        }))
+
+      return {
+        goals,
+        stats,
+        conversions,
+      }
+    }
+    catch {
+      return { goals: [], stats: [], conversions: [] }
     }
   },
 })

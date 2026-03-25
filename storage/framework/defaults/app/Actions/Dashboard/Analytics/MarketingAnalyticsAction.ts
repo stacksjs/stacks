@@ -1,45 +1,76 @@
 import { Action } from '@stacksjs/actions'
 
-// TODO: integrate with analytics provider (Fathom/Plausible)
 export default new Action({
   name: 'MarketingAnalyticsAction',
-  description: 'Returns marketing analytics data for the dashboard.',
+  description: 'Returns marketing analytics data from ts-analytics campaign and referrer stats.',
   method: 'GET',
   async handle() {
-    const stats = [
-      { label: 'Campaign ROI', value: '324%', change: '+45%' },
-      { label: 'Lead Acquisition', value: '2,345', change: '+18%' },
-      { label: 'Cost per Lead', value: '$12.34', change: '-8%' },
-      { label: 'Email Open Rate', value: '28.5%', change: '+3.2%' },
-    ]
+    try {
+      const { AnalyticsQueryAPI, AnalyticsStore } = await import('ts-analytics')
+      const store = new AnalyticsStore({ tableName: 'analytics' })
 
-    const campaigns = [
-      { name: 'Spring Sale 2024', spend: '$5,678', leads: 456, cpl: '$12.45', revenue: '$23,456', roi: '313%' },
-      { name: 'Product Launch', spend: '$3,456', leads: 234, cpl: '$14.77', revenue: '$15,678', roi: '354%' },
-      { name: 'Retargeting', spend: '$2,345', leads: 189, cpl: '$12.41', revenue: '$12,345', roi: '426%' },
-      { name: 'Content Marketing', spend: '$1,234', leads: 567, cpl: '$2.18', revenue: '$8,765', roi: '610%' },
-      { name: 'Social Ads', spend: '$4,567', leads: 345, cpl: '$13.24', revenue: '$18,234', roi: '299%' },
-    ]
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      const dateRange = { start: thirtyDaysAgo, end: now }
+      const period = AnalyticsQueryAPI.determinePeriod(dateRange)
+      const periodStart = AnalyticsStore.getPeriodStart(now, period)
 
-    const channels = [
-      { channel: 'Paid Search', spend: '$12,345', leads: 890, conversion: '4.2%' },
-      { channel: 'Social Media', spend: '$8,765', leads: 567, conversion: '3.1%' },
-      { channel: 'Email', spend: '$2,345', leads: 456, conversion: '8.5%' },
-      { channel: 'Content', spend: '$1,234', leads: 789, conversion: '2.8%' },
-      { channel: 'Referral', spend: '$567', leads: 234, conversion: '12.3%' },
-    ]
+      const campaignStatsCmd = store.getCampaignStatsCommand('default', period, periodStart)
+      const campaignResult = (campaignStatsCmd as unknown as { Items?: unknown[] })?.Items ?? []
 
-    const attribution = [
-      { source: 'First Touch', leads: 1234, percentage: 52.6 },
-      { source: 'Last Touch', leads: 890, percentage: 37.9 },
-      { source: 'Linear', leads: 221, percentage: 9.5 },
-    ]
+      const campaignItems = campaignResult as any[]
 
-    return {
-      stats,
-      campaigns,
-      channels,
-      attribution,
+      const totalVisitors = campaignItems.reduce((sum: number, c: any) => sum + (c.visitors || 0), 0)
+      const totalConversions = campaignItems.reduce((sum: number, c: any) => sum + (c.conversions || 0), 0)
+      const totalRevenue = campaignItems.reduce((sum: number, c: any) => sum + (c.revenue || 0), 0)
+
+      const stats = [
+        { label: 'Campaign Visitors', value: totalVisitors.toLocaleString(), change: '' },
+        { label: 'Conversions', value: totalConversions.toLocaleString(), change: '' },
+        { label: 'Revenue', value: `$${totalRevenue.toLocaleString()}`, change: '' },
+        { label: 'Avg Conversion Rate', value: totalVisitors > 0 ? `${((totalConversions / totalVisitors) * 100).toFixed(1)}%` : '0%', change: '' },
+      ]
+
+      const campaigns = campaignItems
+        .sort((a: any, b: any) => (b.revenue || 0) - (a.revenue || 0))
+        .slice(0, 10)
+        .map((c: any) => ({
+          name: [c.utmSource, c.utmCampaign].filter(Boolean).join(' - ') || 'Unknown',
+          spend: '-',
+          leads: c.visitors || 0,
+          cpl: '-',
+          revenue: `$${(c.revenue || 0).toLocaleString()}`,
+          roi: '-',
+        }))
+
+      const channelMap: Record<string, { visitors: number, conversions: number }> = {}
+      for (const c of campaignItems) {
+        const channel = c.utmMedium || c.utmSource || 'Other'
+        if (!channelMap[channel]) {
+          channelMap[channel] = { visitors: 0, conversions: 0 }
+        }
+        channelMap[channel].visitors += c.visitors || 0
+        channelMap[channel].conversions += c.conversions || 0
+      }
+
+      const channels = Object.entries(channelMap)
+        .sort(([, a], [, b]) => b.visitors - a.visitors)
+        .map(([channel, data]) => ({
+          channel,
+          spend: '-',
+          leads: data.visitors,
+          conversion: data.visitors > 0 ? `${((data.conversions / data.visitors) * 100).toFixed(1)}%` : '0%',
+        }))
+
+      return {
+        stats,
+        campaigns,
+        channels,
+        attribution: [],
+      }
+    }
+    catch {
+      return { stats: [], campaigns: [], channels: [], attribution: [] }
     }
   },
 })

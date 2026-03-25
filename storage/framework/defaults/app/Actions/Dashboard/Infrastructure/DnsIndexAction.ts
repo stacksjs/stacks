@@ -1,36 +1,101 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 
 export default new Action({
   name: 'DnsIndexAction',
-  description: 'Returns DNS record data for the dashboard.',
+  description: 'Returns DNS configuration from config files.',
   method: 'GET',
   async handle() {
-    const domains = [
-      { domain: 'stacks.dev', records: 12, status: 'active', ssl: 'valid', expires: '2025-01-15' },
-      { domain: 'api.stacks.dev', records: 4, status: 'active', ssl: 'valid', expires: '2025-01-15' },
-      { domain: 'docs.stacks.dev', records: 3, status: 'active', ssl: 'valid', expires: '2025-01-15' },
-    ]
+    try {
+      const dnsConfig = config.dns || {}
 
-    const records = [
-      { type: 'A', name: '@', value: '192.168.1.100', ttl: '300', proxied: true },
-      { type: 'A', name: 'api', value: '192.168.1.101', ttl: '300', proxied: true },
-      { type: 'CNAME', name: 'www', value: 'stacks.dev', ttl: '300', proxied: true },
-      { type: 'CNAME', name: 'docs', value: 'stacks-docs.pages.dev', ttl: '300', proxied: false },
-      { type: 'MX', name: '@', value: 'mx.example.com', ttl: '3600', proxied: false },
-      { type: 'TXT', name: '@', value: 'v=spf1 include:_spf.google.com ~all', ttl: '3600', proxied: false },
-    ]
+      // Read A records from config/dns.ts
+      const aRecords = (dnsConfig as any).a || []
+      const aaaaRecords = (dnsConfig as any).aaaa || []
+      const cnameRecords = (dnsConfig as any).cname || []
+      const mxRecords = (dnsConfig as any).mx || []
+      const txtRecords = (dnsConfig as any).txt || []
+      const nameservers = (dnsConfig as any).nameservers || []
 
-    const stats = [
-      { label: 'Domains', value: '3' },
-      { label: 'DNS Records', value: '19' },
-      { label: 'SSL Certificates', value: '3' },
-      { label: 'Queries (24h)', value: '45.2K' },
-    ]
+      // Build unified records list
+      const records: Array<Record<string, unknown>> = []
 
-    return {
-      domains,
-      records,
-      stats,
+      for (const rec of aRecords) {
+        records.push({
+          type: 'A',
+          name: rec.name || '@',
+          value: rec.address || rec.value || '',
+          ttl: String(rec.ttl || 300),
+        })
+      }
+
+      for (const rec of aaaaRecords) {
+        records.push({
+          type: 'AAAA',
+          name: rec.name || '@',
+          value: rec.address || rec.value || '',
+          ttl: String(rec.ttl || 300),
+        })
+      }
+
+      for (const rec of cnameRecords) {
+        records.push({
+          type: 'CNAME',
+          name: rec.name || '',
+          value: rec.target || rec.value || '',
+          ttl: String(rec.ttl || 300),
+        })
+      }
+
+      for (const rec of mxRecords) {
+        records.push({
+          type: 'MX',
+          name: rec.name || '@',
+          value: rec.server || rec.value || '',
+          ttl: String(rec.ttl || 3600),
+          priority: rec.priority,
+        })
+      }
+
+      for (const rec of txtRecords) {
+        records.push({
+          type: 'TXT',
+          name: rec.name || '@',
+          value: rec.value || '',
+          ttl: String(rec.ttl || 3600),
+        })
+      }
+
+      // Build domain info from the cloud config DNS settings
+      const cloudDns = (config.cloud as any)?.infrastructure?.dns ?? {}
+      const primaryDomain = cloudDns.domain || ''
+
+      const domains = []
+      if (primaryDomain) {
+        domains.push({
+          domain: primaryDomain,
+          records: records.length,
+          status: 'active',
+          hostedZoneId: cloudDns.hostedZoneId || '',
+        })
+      }
+
+      const stats = [
+        { label: 'Domains', value: String(domains.length || 1) },
+        { label: 'DNS Records', value: String(records.length) },
+        { label: 'Nameservers', value: String(nameservers.length) },
+        { label: 'A Records', value: String(aRecords.length) },
+      ]
+
+      return {
+        domains,
+        records,
+        nameservers,
+        stats,
+      }
+    }
+    catch {
+      return { domains: [], records: [], nameservers: [], stats: [] }
     }
   },
 })

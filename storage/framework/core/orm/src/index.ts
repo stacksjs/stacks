@@ -17,13 +17,11 @@ export type { InferRelationNames } from 'bun-query-builder'
 
 
 // ---------------------------------------------------------------------------
-// Stub exports for generated model types.
-// These types are normally code-generated from model definitions. The stubs
-// below keep the typecheck green when the generated files have not been
-// produced yet (e.g. in CI or a fresh clone).
+// Shared type interfaces used by framework packages (@stacksjs/payments,
+// @stacksjs/auth, etc.) for structural typing of model rows and pivot tables.
 // ---------------------------------------------------------------------------
 
-/** Stub type representing a User model instance (generated at build time). */
+/** Type interface representing a User model row. */
 export interface UserModel {
   id: number
   email: string
@@ -41,7 +39,7 @@ export interface UserModel {
   [key: string]: unknown
 }
 
-/** Stub type for creating a new User record. */
+/** Type interface for creating a new User record. */
 export interface NewUser {
   email: string
   password: string

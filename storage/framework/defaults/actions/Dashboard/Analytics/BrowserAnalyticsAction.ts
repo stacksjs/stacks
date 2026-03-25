@@ -2,18 +2,41 @@ import { Action } from '@stacksjs/actions'
 
 export default new Action({
   name: 'BrowserAnalyticsAction',
-  description: 'Returns browser analytics data for the dashboard.',
+  description: 'Returns browser analytics data from ts-analytics device stats.',
   method: 'GET',
   async handle() {
-    // TODO: replace with model query when available
-    return {
-      browsers: [
-        { name: 'Chrome', sessions: 5432, percentage: 54.3, version: '122.0' },
-        { name: 'Safari', sessions: 2134, percentage: 21.3, version: '17.3' },
-        { name: 'Firefox', sessions: 1234, percentage: 12.3, version: '123.0' },
-        { name: 'Edge', sessions: 876, percentage: 8.8, version: '122.0' },
-        { name: 'Other', sessions: 324, percentage: 3.2, version: 'N/A' },
-      ],
+    try {
+      const { AnalyticsQueryAPI, AnalyticsStore } = await import('ts-analytics')
+      const store = new AnalyticsStore({ tableName: 'analytics' })
+
+      const now = new Date()
+      const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)
+      const dateRange = { start: thirtyDaysAgo, end: now }
+      const period = AnalyticsQueryAPI.determinePeriod(dateRange)
+      const periodStart = AnalyticsStore.getPeriodStart(now, period)
+
+      const deviceStatsCmd = store.getDeviceStatsCommand('default', period, periodStart, 'browser')
+      const deviceResult = (deviceStatsCmd as unknown as { Items?: unknown[] })?.Items ?? []
+
+      const totalVisitors = (deviceResult as any[]).reduce((sum: number, d: any) => sum + (d.visitors || 0), 0)
+
+      const browsers = AnalyticsQueryAPI.processTopDevices(
+        deviceResult as Parameters<typeof AnalyticsQueryAPI.processTopDevices>[0],
+        'browser',
+        totalVisitors,
+      )
+
+      return {
+        browsers: browsers.map(b => ({
+          name: b.name,
+          sessions: b.value,
+          percentage: Math.round(b.percentage * 10) / 10,
+          version: '',
+        })),
+      }
+    }
+    catch {
+      return { browsers: [] }
     }
   },
 })

@@ -1,36 +1,54 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 
 export default new Action({
   name: 'PermissionIndexAction',
-  description: 'Returns roles and permissions data for the dashboard.',
+  description: 'Returns security and permission configuration from config files.',
   method: 'GET',
   async handle() {
-    const roles = [
-      { name: 'Admin', users: 3, permissions: 'Full access', description: 'Complete system access' },
-      { name: 'Editor', users: 8, permissions: '24 permissions', description: 'Content management' },
-      { name: 'Author', users: 12, permissions: '12 permissions', description: 'Create and edit own content' },
-      { name: 'Moderator', users: 5, permissions: '18 permissions', description: 'Content moderation' },
-      { name: 'Viewer', users: 45, permissions: '6 permissions', description: 'Read-only access' },
-    ]
+    try {
+      const securityConfig = config.security || {}
 
-    const permissions = [
-      { group: 'Content', items: ['Create', 'Edit', 'Delete', 'Publish'] },
-      { group: 'Users', items: ['View', 'Create', 'Edit', 'Delete'] },
-      { group: 'Settings', items: ['View', 'Edit'] },
-      { group: 'Analytics', items: ['View', 'Export'] },
-      { group: 'Commerce', items: ['View Orders', 'Manage Products', 'Process Refunds'] },
-    ]
+      // Read firewall settings from config/security.ts
+      const firewall = (securityConfig as any).firewall || {}
 
-    const recentChanges = [
-      { user: 'admin@example.com', action: 'Updated role', target: 'Editor', time: '2h ago' },
-      { user: 'admin@example.com', action: 'Added permission', target: 'Author - Publish', time: '1d ago' },
-      { user: 'admin@example.com', action: 'Created role', target: 'Moderator', time: '3d ago' },
-    ]
+      const firewallRules = {
+        enabled: firewall.enabled ?? false,
+        rateLimitPerMinute: firewall.rateLimitPerMinute || 0,
+        useIpReputationLists: firewall.useIpReputationLists ?? false,
+        useKnownBadInputsRuleSet: firewall.useKnownBadInputsRuleSet ?? false,
+      }
 
-    return {
-      roles,
-      permissions,
-      recentChanges,
+      // Read blocked countries
+      const blockedCountries = firewall.countryCodes || []
+
+      // Read blocked IP addresses
+      const blockedIps = firewall.ipAddresses || []
+
+      // Read blocked query strings
+      const blockedQueryStrings = firewall.queryString || []
+
+      // Read blocked HTTP headers
+      const blockedHttpHeaders = firewall.httpHeaders || []
+
+      const stats = [
+        { label: 'Firewall', value: firewallRules.enabled ? 'Enabled' : 'Disabled' },
+        { label: 'Rate Limit', value: `${firewallRules.rateLimitPerMinute}/min` },
+        { label: 'Blocked Countries', value: String(blockedCountries.length) },
+        { label: 'Blocked IPs', value: String(blockedIps.length) },
+      ]
+
+      return {
+        firewall: firewallRules,
+        blockedCountries,
+        blockedIps,
+        blockedQueryStrings,
+        blockedHttpHeaders,
+        stats,
+      }
+    }
+    catch {
+      return { firewall: {}, blockedCountries: [], blockedIps: [], stats: [] }
     }
   },
 })

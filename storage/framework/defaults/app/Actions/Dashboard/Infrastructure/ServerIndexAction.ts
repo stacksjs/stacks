@@ -1,28 +1,101 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 
 export default new Action({
   name: 'ServerIndexAction',
-  description: 'Returns server status data for the dashboard.',
+  description: 'Returns server configuration from config files.',
   method: 'GET',
   async handle() {
-    const servers = [
-      { name: 'web-1.stacks.dev', ip: '192.168.1.100', cpu: 45, memory: 62, disk: 34, status: 'healthy', uptime: '45d 12h' },
-      { name: 'web-2.stacks.dev', ip: '192.168.1.101', cpu: 38, memory: 58, disk: 28, status: 'healthy', uptime: '45d 12h' },
-      { name: 'db-primary.stacks.dev', ip: '192.168.1.200', cpu: 72, memory: 85, disk: 67, status: 'warning', uptime: '30d 8h' },
-      { name: 'db-replica.stacks.dev', ip: '192.168.1.201', cpu: 25, memory: 45, disk: 67, status: 'healthy', uptime: '30d 8h' },
-      { name: 'cache.stacks.dev', ip: '192.168.1.150', cpu: 12, memory: 78, disk: 15, status: 'healthy', uptime: '60d 4h' },
-    ]
+    try {
+      const cloudConfig = config.cloud || {}
+      const servers: Array<Record<string, unknown>> = []
 
-    const stats = [
-      { label: 'Total Servers', value: '5' },
-      { label: 'Healthy', value: '4' },
-      { label: 'Warnings', value: '1' },
-      { label: 'Avg CPU', value: '38%' },
-    ]
+      // Read compute configuration from config/cloud.ts
+      const infra = (cloudConfig as any).infrastructure ?? (cloudConfig as any)
+      const compute = infra?.compute ?? (cloudConfig as any).compute
 
-    return {
-      servers,
-      stats,
+      if (compute) {
+        const diskSize = compute.disk?.size ? `${compute.disk.size}GB` : '20GB'
+        const diskType = compute.disk?.type ?? 'ssd'
+
+        servers.push({
+          name: 'App Server',
+          type: compute.size || 'small',
+          instances: compute.instances || 1,
+          storage: diskSize,
+          diskType,
+          encrypted: compute.disk?.encrypted ?? false,
+          status: 'configured',
+        })
+      }
+
+      // Read server definitions from config/cloud.ts infrastructure.servers
+      const serverDefs = infra?.servers ?? {}
+      for (const [key, value] of Object.entries(serverDefs)) {
+        if (value && typeof value === 'object') {
+          servers.push({
+            name: key,
+            ...value as Record<string, unknown>,
+            status: 'configured',
+          })
+        }
+        else if (value) {
+          servers.push({
+            name: key,
+            reference: String(value),
+            status: 'configured',
+          })
+        }
+      }
+
+      // Read container configuration if present
+      const containers = infra?.containers ?? {}
+      const containerList: Array<Record<string, unknown>> = []
+      for (const [name, containerConfig] of Object.entries(containers)) {
+        if (containerConfig && typeof containerConfig === 'object') {
+          containerList.push({
+            name,
+            ...containerConfig as Record<string, unknown>,
+          })
+        }
+      }
+
+      // Read load balancer configuration
+      const loadBalancer = infra?.loadBalancer ?? {}
+
+      // Read SSL configuration
+      const ssl = infra?.ssl ?? {}
+
+      // Read DNS configuration from cloud config
+      const dns = infra?.dns ?? {}
+
+      // Read storage buckets
+      const storageBuckets = infra?.storage ?? {}
+      const bucketNames = Object.keys(storageBuckets)
+
+      // Build stats from actual config
+      const totalServers = servers.length
+      const mode = (cloudConfig as any).mode ?? 'server'
+
+      const stats = [
+        { label: 'Total Servers', value: String(totalServers) },
+        { label: 'Mode', value: mode },
+        { label: 'Region', value: String((cloudConfig as any).project?.region ?? infra?.dns?.domain ?? 'us-east-1') },
+        { label: 'Storage Buckets', value: String(bucketNames.length) },
+      ]
+
+      return {
+        servers,
+        containers: containerList,
+        loadBalancer,
+        ssl,
+        dns,
+        storageBuckets: bucketNames,
+        stats,
+      }
+    }
+    catch {
+      return { servers: [], containers: [], stats: [] }
     }
   },
 })
