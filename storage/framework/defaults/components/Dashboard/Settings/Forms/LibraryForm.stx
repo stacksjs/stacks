@@ -14,10 +14,10 @@
   const functionsGenerateSourcemap = props.functionsGenerateSourcemap !== undefined ? props.functionsGenerateSourcemap : true
   const functionsFiles = props.functionsFiles || 'counter,dark'
 
-  const vueComponentsName = props.vueComponentsName || 'hello-world-vue'
-  const vueComponentsKeywords = props.vueComponentsKeywords || 'component,library,vue,vite,typescript,javascript'
-  const vueComponentsDescription = props.vueComponentsDescription || 'Your Vue component library description'
-  const vueComponentsTags = props.vueComponentsTags || [
+  const stxComponentsName = props.stxComponentsName || 'hello-world-stx'
+  const stxComponentsKeywords = props.stxComponentsKeywords || 'component,library,stx,vite,typescript,javascript'
+  const stxComponentsDescription = props.stxComponentsDescription || 'Your stx component library description'
+  const stxComponentsTags = props.stxComponentsTags || [
     { names: 'HelloWorld, AppHelloWorld', description: 'The Hello World custom element, built via this framework.', attributes: 'name : greeting' }
   ]
 
@@ -196,23 +196,23 @@
           <div class="md:col-span-full">
             <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-2">
-                <label for="vue-name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
+                <label for="stx-name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
                 <div class="mt-2">
-                  <input id="vue-name" type="text" name="vue-name" value="{{ vueComponentsName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="stx-name" type="text" name="stx-name" value="{{ stxComponentsName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-4">
-                <label for="vue-keywords" class="block text-sm text-gray-900 font-medium leading-6">Keywords</label>
+                <label for="stx-keywords" class="block text-sm text-gray-900 font-medium leading-6">Keywords</label>
                 <div class="mt-2">
-                  <input id="vue-keywords" type="text" name="vue-keywords" value="{{ vueComponentsKeywords }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="stx-keywords" type="text" name="stx-keywords" value="{{ stxComponentsKeywords }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="vue-description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
+                <label for="stx-description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
                 <div class="mt-2">
-                  <input id="vue-description" type="text" name="vue-description" value="{{ vueComponentsDescription }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="stx-description" type="text" name="stx-description" value="{{ stxComponentsDescription }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
@@ -246,7 +246,7 @@
                           </tr>
                         </thead>
                         <tbody class="bg-white divide-y divide-gray-200">
-                          @foreach(vueComponentsTags as tag)
+                          @foreach(stxComponentsTags as tag)
                             <tr>
                               <td class="whitespace-nowrap py-5 text-sm sm:pl-0">
                                 <div class="flex items-center">

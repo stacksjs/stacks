@@ -8,8 +8,6 @@ import { generateTypes } from './generate'
 export async function invoke(options: BuildOptions): Promise<void> {
   if (options.components)
     await componentLibraries(options)
-  else if (options.vueComponents)
-    await vueComponentLibrary(options)
   else if (options.webComponents || options.elements)
     await webComponentLibrary(options)
   else if (options.functions)

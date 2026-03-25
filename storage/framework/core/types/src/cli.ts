@@ -210,9 +210,7 @@ DomainsOptions
 
 export type BuildOption =
   | 'components'
-  | 'vueComponents'
   | 'webComponents'
-  | 'elements'
   | 'functions'
   | 'docs'
   | 'views'
@@ -427,6 +425,6 @@ export interface TinkerOptions extends CliOptions {
 }
 export interface TypesOptions extends CliOptions {}
 
-export type LibEntryType = 'vue-components' | 'web-components' | 'functions' | 'all'
+export type LibEntryType = 'web-components' | 'functions' | 'all'
 
 export type { CAC as CLI } from 'cac'

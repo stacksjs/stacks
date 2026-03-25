@@ -39,7 +39,7 @@ actions/src/build/
 
 ```typescript
 type BuildOption =
-  | 'components' | 'vueComponents' | 'webComponents' | 'elements'
+  | 'components' | 'webComponents' | 'elements'
   | 'functions' | 'docs' | 'views' | 'stacks' | 'all' | 'buddy' | 'server'
 
 type BuildOptions = { [key in BuildOption]: boolean } & CliOptions
@@ -61,7 +61,6 @@ interface CliOptions {
 buddy build                    # Interactive build
 buddy build components         # All component libraries
 buddy build:components         # Alias
-buddy build:vue-components     # Vue component library only
 buddy build:web-components     # Web Components library only
 buddy build:functions          # Functions library
 buddy build:cli                # Buddy CLI binary
@@ -74,7 +73,6 @@ buddy build:views              # Frontend views
 
 # Flags
 buddy build -c    # --components
-buddy build -v    # --vue-components
 buddy build -w    # --web-components
 buddy build -f    # --functions
 buddy build -d    # --docs

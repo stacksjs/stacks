@@ -64,7 +64,7 @@ bun test
 
 ## 📈 Changelog
 
-Please see our [releases](https://github.com/stacksjs/vue-components-library-starter/releases) page for more information on what has changed recently.
+Please see our [releases](https://github.com/stacksjs/stacks/releases) page for more information on what has changed recently.
 
 ## 🚜 Contributing
 

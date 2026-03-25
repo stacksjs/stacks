@@ -29,7 +29,6 @@ buddy build [type] [options]
 | Option | Description |
 |--------|-------------|
 | `-c, --components` | Build your component library |
-| `-v, --vue-components` | Build your Vue component library |
 | `-w, --web-components` | Build your framework-agnostic web component library |
 | `-e, --elements` | Alias for --web-components |
 | `-f, --functions` | Build your function library |
@@ -55,18 +54,6 @@ buddy prod:components
 ```
 
 This creates production-ready component libraries for distribution via npm or CDN.
-
-### Vue Components
-
-Build Vue 2 & 3 compatible component library:
-
-```bash
-buddy build:vue-components
-# or
-buddy build:vue
-buddy prod:vue-components
-buddy prod:vue
-```
 
 ### Web Components
 
@@ -166,7 +153,6 @@ buddy prod:desktop      # Same as buddy build:desktop
 buddy prod:library      # Same as buddy build:library
 buddy prod:views        # Same as buddy build:views
 buddy prod:functions    # Same as buddy build:functions
-buddy prod:vue-components
 buddy prod:web-components
 buddy prod:all
 buddy production        # Same as buddy prod

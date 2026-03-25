@@ -1,5 +1,3 @@
-export type { Options as ComponentOptions } from 'unplugin-vue-components'
-
 export interface TagOption {
   /**
    * **Tag Name**

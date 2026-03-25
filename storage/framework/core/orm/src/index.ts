@@ -22,7 +22,9 @@ export type {
   InferColumnNames,
   ModelDefinition,
   ModelRow,
+  ModelRowLoose,
   ModelCreateData,
+  ModelCreateDataLoose,
 } from 'bun-query-builder'
 
 // ---------------------------------------------------------------------------
@@ -31,14 +33,13 @@ export type {
 // Consumers: import type { UserModel, NewUser } from '@stacksjs/orm'
 // ---------------------------------------------------------------------------
 
-import type { ModelRow, ModelCreateData } from 'bun-query-builder'
 import type _User from '../../../auto-imports/models'
 
 /** User model row type — inferred from the User model definition. */
-export type UserModel = ModelRow<typeof _User.User>
+export type UserModel = ModelRowLoose<typeof _User.User>
 
 /** Data required to create a new User — inferred fillable attributes. */
-export type NewUser = ModelCreateData<typeof _User.User>
+export type NewUser = ModelCreateDataLoose<typeof _User.User>
 
 // ---------------------------------------------------------------------------
 // Polymorphic trait table types — used by @stacksjs/cms and database drivers.

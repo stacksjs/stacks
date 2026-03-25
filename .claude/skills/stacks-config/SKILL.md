@@ -121,7 +121,7 @@ All builders: `defineApp`, `defineCache`, `defineCdn`, `defineChat`, `defineCli`
 | `cli.ts` | BinaryConfig | name, command, description |
 | `deps.ts` | PantryConfig | system dependencies (bun, sqlite, redis, etc.) |
 | `errors.ts` | ErrorConfig | comprehensive validation error messages |
-| `library.ts` | LibraryConfig | name, owner, vueComponents, webComponents, functions |
+| `library.ts` | LibraryConfig | name, owner, webComponents, functions |
 | `phone.ts` | PhoneConfig | enabled, provider, businessHours |
 | `services.ts` | ServicesConfig | API keys for 20+ services |
 | `team.ts` | Team | name, members |

@@ -436,24 +436,6 @@ export const defaults: StacksOptions = {
     contributors: ['Chris Breuer <chris@stacksjs.com>'],
     defaultLanguage: 'en',
 
-    vueComponents: {
-      name: 'hello-world-vue',
-      description: 'Your Vue component library description',
-      keywords: ['component', 'library', 'vue', 'vite', 'typescript', 'javascript'],
-      tags: [
-        {
-          name: ['HelloWorld', 'AppHelloWorld'],
-          description: 'The Hello World custom element, built via this framework.',
-          attributes: [
-            {
-              name: 'greeting',
-              description: 'The greeting.',
-            },
-          ],
-        },
-      ],
-    },
-
     webComponents: {
       name: 'hello-world-elements',
       description: 'Your framework agnostic web component library description.',

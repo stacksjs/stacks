@@ -128,7 +128,6 @@ buddy build:library # builds any or all libraries
 buddy build:functions # builds function library
 buddy build:components # builds Vue component library & Web Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
-buddy build:vue-components # builds Vue 2 & 3-ready Component library
 buddy build:all # builds all your code
 
 # `buddy build` aliases
@@ -138,7 +137,6 @@ buddy prod:desktop
 buddy prod:library
 buddy prod:views
 buddy prod:functions
-buddy prod:vue-components
 buddy prod:web-components
 buddy prod:all
 buddy production # `buddy prod` alias

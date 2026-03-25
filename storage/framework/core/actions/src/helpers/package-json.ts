@@ -3,7 +3,7 @@ import { packageJsonPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import library from '~/config/library'
 
-type PackageJsonType = 'vue-components' | 'web-components' | 'functions'
+type PackageJsonType = 'web-components' | 'functions'
 
 export async function generatePackageJson(type: PackageJsonType): Promise<void> {
   let name
@@ -13,14 +13,7 @@ export async function generatePackageJson(type: PackageJsonType): Promise<void> 
   let config
   let prettyName
 
-  if (type === 'vue-components') {
-    name = library.vueComponents?.name
-    description = library.vueComponents?.description
-    directory = 'components'
-    keywords = library.vueComponents?.keywords
-    config = 'vue-components'
-  }
-  else if (type === 'web-components') {
+  if (type === 'web-components') {
     name = library.webComponents?.name
     description = library.webComponents?.description
     directory = 'components'
@@ -84,9 +77,7 @@ export async function generatePackageJson(type: PackageJsonType): Promise<void> 
 `,
     })
 
-    if (type === 'vue-components')
-      prettyName = 'Vue Component library'
-    else if (type === 'web-components')
+    if (type === 'web-components')
       prettyName = 'Web Component library'
     else if (type === 'functions')
       prettyName = 'Function Library'

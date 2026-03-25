@@ -8,7 +8,6 @@ export async function generateLibEntries(): Promise<void> {
   log.info('Generating library entry points...')
 
   if (library.releaseable && hasComponents()) {
-    await generateLibEntry('vue-components')
     await generateLibEntry('web-components')
   }
   else {

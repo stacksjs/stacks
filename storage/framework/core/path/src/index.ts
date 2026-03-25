@@ -678,10 +678,10 @@ export function coreEnvPath(path?: string): string {
 /**
  * Returns the path to the `examples` directory within the framework directory, filtered by type.
  *
- * @param type - The type of examples to filter by ('vue-components' or 'web-components').
+ * @param type - The type of examples to filter by ('web-components').
  * @returns The absolute path to the specified type of examples within the `examples` directory.
  */
-export function examplesPath(type?: 'vue-components' | 'web-components'): string {
+export function examplesPath(type?: 'web-components'): string {
   return frameworkPath(`examples/${type || ''}`)
 }
 
@@ -788,10 +788,10 @@ export function layoutsPath(path?: string, options?: { relative?: boolean, defau
 /**
  * Returns the path to the library entry file, filtered by library type.
  *
- * @param type - The type of library ('vue-components', 'web-components', or 'functions').
+ * @param type - The type of library ('web-components', or 'functions').
  * @returns The absolute path to the specified library entry file.
  */
-export type LibraryType = 'vue-components' | 'web-components' | 'functions'
+export type LibraryType = 'web-components' | 'functions'
 export function libraryEntryPath(type: LibraryType): string {
   return libsEntriesPath(`${type}.ts`)
 }
@@ -909,12 +909,10 @@ export function onboardingPath(path?: string): string {
 /**
  * Returns the path to the `package.json` file of a specified library type within the framework directory.
  *
- * @param type - The type of the library ('vue-components', 'web-components', or 'functions') for which to return the package.json path.
+ * @param type - The type of the library ('web-components', or 'functions') for which to return the package.json path.
  * @returns The absolute path to the specified package.json file within the framework directory.
  */
 export function packageJsonPath(type: LibraryType): string {
-  if (type === 'vue-components')
-    return frameworkPath('libs/components/vue/package.json')
   if (type === 'web-components')
     return frameworkPath('libs/components/web/package.json')
 
@@ -1451,7 +1449,7 @@ export interface Path {
   eventsPath: (path?: string) => string
   coreEnvPath: (path?: string) => string
   healthPath: (path?: string) => string
-  examplesPath: (type?: 'vue-components' | 'web-components') => string
+  examplesPath: (type?: 'web-components') => string
   fakerPath: (path?: string) => string
   frameworkPath: (path?: string) => string
   browserPath: (path?: string) => string

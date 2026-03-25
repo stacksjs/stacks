@@ -65,11 +65,6 @@ export interface LibraryOptions {
   defaultLanguage: LanguageCode
 
   /**
-   * The Vue component library options.
-   */
-  vueComponents: LibraryBuildOptions
-
-  /**
    * The Web Component library options.
    */
   webComponents: LibraryBuildOptions

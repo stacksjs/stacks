@@ -29,13 +29,3 @@ export async function generateWebTypes(): Promise<void> {
   log.info('Generating web-types.json...')
   log.info('This feature is not yet implemented.')
 }
-
-function generateComponentInfoData() {
-  const componentsData = JSON.stringify(library.vueComponents?.tags)
-
-  return `{
-  "version": 1.1,
-  "tags": ${componentsData}
-}
-`
-}

@@ -9,7 +9,6 @@ export function build(buddy: CLI): void {
   const descriptions = {
     build: 'Build any of your libraries (packages) for production use',
     components: 'Build your component library',
-    vueComponents: 'Build your Vue component library',
     webComponents: 'Build your framework agnostic web component library',
     elements: 'An alias to the -w flag',
     buddy: 'Build the Buddy binary',
@@ -28,7 +27,6 @@ export function build(buddy: CLI): void {
   buddy
     .command('build [type]', descriptions.build)
     .option('-c, --components', descriptions.components)
-    .option('-v, --vue-components', descriptions.vueComponents) // also automatically built via the -c flag
     .option('-w, --web-components', descriptions.webComponents) // also automatically built via the -c flag
     .option('-e, --elements', descriptions.elements) // alias for --web-components
     .option('-f, --functions', descriptions.functions)
@@ -46,9 +44,6 @@ export function build(buddy: CLI): void {
       switch (server) {
         case 'components':
           options.components = true
-          break
-        case 'vue':
-          options.vueComponents = true
           break
         case 'web-components':
           options.webComponents = true
@@ -87,8 +82,6 @@ export function build(buddy: CLI): void {
         await runAction(Action.BuildDocs)
       if (options.components)
         await runAction(Action.BuildComponentLibs)
-      if (options.vueComponents)
-        await runAction(Action.BuildVueComponentLib)
       if (options.webComponents)
         await runAction(Action.BuildWebComponentLib)
       if (options.functions)
@@ -145,21 +138,6 @@ export function build(buddy: CLI): void {
     .action(async (options: BuildOptions) => {
       log.debug('Running `buddy build:functions` ...', options)
       await runAction(Action.BuildFunctionLib, options)
-    })
-
-  buddy
-    .command('build:vue-components', 'Automagically build Vue component library for npm/CDN distribution')
-    .alias('build:vue')
-    .alias('prod:vue-components')
-    .alias('prod:vue')
-    .option('-v, --vue-components', descriptions.vueComponents, {
-      default: true,
-    })
-    .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: BuildOptions) => {
-      log.debug('Running `buddy build:vue-components` ...', options)
-      await runAction(Action.BuildVueComponentLib, options)
     })
 
   buddy
@@ -264,7 +242,6 @@ export function build(buddy: CLI): void {
 function hasNoOptions(options: BuildOptions) {
   return (
     !options.components
-    && !options.vueComponents
     && !options.webComponents
     && !options.elements
     && !options.functions

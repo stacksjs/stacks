@@ -19,28 +19,11 @@ export async function generateLibEntry(type: LibraryType): Promise<void> {
 }
 
 export async function createLibraryEntryPoint(type: LibraryType): Promise<void> {
-  if (type === 'vue-components')
-    await createVueLibraryEntryPoint()
-
   if (type === 'web-components')
     await createWebComponentLibraryEntryPoint()
 
   if (type === 'functions')
     await createFunctionLibraryEntryPoint()
-}
-
-export async function createVueLibraryEntryPoint(type: LibraryType = 'vue-components'): Promise<void> {
-  log.info('Ensuring Component Library Entry Point...')
-
-  await writeTextFile({
-    path: libraryEntryPath(type),
-    data: generateEntryPointData(type),
-  }).catch((err: Error) => {
-    log.error('There was an error generating the Vue Component Library Entry Point.', err)
-    process.exit(ExitCode.FatalError)
-  })
-
-  log.success('Created Vue Component Library Entry Point')
 }
 
 export async function createWebComponentLibraryEntryPoint(type: LibraryType = 'web-components'): Promise<void> {
@@ -88,28 +71,6 @@ export function generateEntryPointData(type: LibraryType): string {
       if (Array.isArray(fx))
         arr.push(`export * as ${fx[1]} from '${functionsPath(fx[0])}'`)
       else arr.push(`export * from '${functionsPath(fx)}'`)
-    }
-
-    // join the array into a string with each element being on a new line
-    return arr.join('\r\n')
-  }
-
-  if (type === 'vue-components') {
-    if (!library.vueComponents?.tags) {
-      log.error(
-        new Error(
-          'There are no components defined to be built. Please check your config/library.ts file for potential adjustments',
-        ),
-      )
-      process.exit(ExitCode.FatalError)
-    }
-
-    arr = determineResetPreset()
-
-    for (const component of library.vueComponents.tags.map(tag => tag.name)) {
-      if (Array.isArray(component))
-        arr.push(`export { default as ${component[1]} } from '${componentsPath(component[0])}.vue'`)
-      else arr.push(`export { default as ${component} } from '${componentsPath(component)}.vue'`)
     }
 
     // join the array into a string with each element being on a new line

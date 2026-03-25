@@ -130,7 +130,6 @@ buddy changelog # generates CHANGELOG.md
 buddy build # select a specific build (follow CLI prompts)
 buddy build:components # builds Vue component library & Web Component library
 buddy build:functions # builds function library
-buddy build:vue-components # builds Vue 2 & 3-ready Component library
 buddy build:web-components # builds framework agnostic Web Component library (i.e. Custom Elements)
 buddy build:views # builds views
 

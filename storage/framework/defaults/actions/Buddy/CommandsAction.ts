@@ -287,15 +287,6 @@ export default new Action({
           options: [],
         },
         {
-          signature: 'buddy build:vue-components',
-          description: 'Builds Vue 2 & 3-ready Component library',
-          notes: '',
-          synopsis: 'buddy build:vue-components',
-          aliases: [],
-          arguments: [],
-          options: [],
-        },
-        {
           signature: 'buddy build:all',
           description: 'Builds all your code',
           notes: '',

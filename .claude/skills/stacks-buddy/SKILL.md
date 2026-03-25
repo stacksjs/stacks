@@ -176,9 +176,7 @@ buddy build server           # Docker image
 Flags:
 ```bash
 buddy build -c/--components        # component library (Vue + Web Components)
-buddy build -v/--vue-components    # Vue component library only
 buddy build -w/--web-components    # web component library only
-buddy build -e/--elements          # alias for --web-components
 buddy build -f/--functions         # function library
 buddy build -p/--views/--pages     # frontend views
 buddy build -d/--docs              # documentation site
@@ -193,7 +191,6 @@ buddy build:components       # component libraries (alias: prod:components)
 buddy build:cli              # CLI binary (alias: prod:cli)
 buddy build:server           # Docker image (aliases: prod:server, build:docker)
 buddy build:functions        # function library
-buddy build:vue-components   # Vue components (aliases: build:vue, prod:vue-components, prod:vue)
 buddy build:web-components   # web components (aliases: build:wc, prod:web-components, prod:wc)
 buddy build:docs             # documentation (aliases: prod:docs, build:documentation, prod:documentation)
 buddy build:core             # Stacks core packages
