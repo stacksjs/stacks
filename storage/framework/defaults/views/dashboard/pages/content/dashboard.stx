@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 /**
  * Content Dashboard Page
@@ -88,3 +91,4 @@ try {
       </div>
     </div>
   </div>
+@endsection

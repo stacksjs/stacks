@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 /**
  * Authors Page
@@ -48,3 +51,4 @@ try {
       </div>
     </div>
   </div>
+@endsection

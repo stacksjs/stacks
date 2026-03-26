@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 /**
  * SEO Settings Page
@@ -56,3 +59,4 @@ try {
       </div>
     </div>
   </div>
+@endsection

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
@@ -142,3 +145,4 @@ const statusClass = (s) => {
   display: block;
 }
 </style>
+@endsection

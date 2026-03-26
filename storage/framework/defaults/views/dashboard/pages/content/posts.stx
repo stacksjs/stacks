@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 /**
  * Posts Page
@@ -434,3 +437,4 @@ onMount(function() {
   })
 })
 </script>
+@endsection

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 /**
  * Files Page
@@ -99,3 +102,4 @@ try {
       </div>
     </div>
   </div>
+@endsection

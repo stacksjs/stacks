@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
@@ -70,3 +73,4 @@ try {
   border-top: 1px solid var(--color-border);
 }
 </style>
+@endsection
