@@ -7,7 +7,7 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var seoData = { title: '', description: '', keywords: [], ogImage: '' }
+let seoData = { title: '', description: '', keywords: [], ogImage: '' }
 
 try {
   const res = await fetch(API_URL + '/cms/seo')

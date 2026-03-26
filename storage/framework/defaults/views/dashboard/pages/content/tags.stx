@@ -7,7 +7,7 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var tags = []
+let tags = []
 
 try {
   const res = await fetch(API_URL + '/dashboard/cms/tags')

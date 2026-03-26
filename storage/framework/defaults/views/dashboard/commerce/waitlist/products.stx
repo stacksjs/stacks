@@ -309,7 +309,7 @@ function goToPage(page) {
   }
 }
 
-function getStatusClass(status) {
+const getStatusClass = (status) => {
   switch (status) {
     case 'Waiting':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -324,7 +324,7 @@ function getStatusClass(status) {
   }
 }
 
-function getPriorityClass(priority) {
+const getPriorityClass = (priority) => {
   switch (priority) {
     case 3:
       return 'text-red-600 dark:text-red-400 font-semibold'

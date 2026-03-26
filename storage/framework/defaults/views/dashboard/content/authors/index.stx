@@ -705,7 +705,7 @@ function toggleAuthorSelection(authorId: string): void {
 function hasSelectedAuthors() { return selectedAuthorIds.length > 0 }
 
 // Get role badge class
-function getRoleBadgeClass(role: string): string {
+const getRoleBadgeClass = (role: string): string => {
   switch (role) {
     case 'admin':
       return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/20 dark:text-purple-400 dark:ring-purple-500/30'

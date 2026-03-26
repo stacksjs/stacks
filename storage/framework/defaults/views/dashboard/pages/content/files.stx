@@ -7,8 +7,8 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var files = []
-var storage = { used: 0, total: 0, percentage: 0 }
+let files = []
+let storage = { used: 0, total: 0, percentage: 0 }
 
 try {
   const res = await fetch(API_URL + '/cms/files')

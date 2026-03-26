@@ -7,7 +7,7 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var pages = []
+let pages = []
 
 try {
   const res = await fetch(API_URL + '/dashboard/cms/pages')
@@ -19,7 +19,7 @@ try {
   // API not available
 }
 
-function statusClass(s) {
+const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
   s = String(s).toLowerCase()
   if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)

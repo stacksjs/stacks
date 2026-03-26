@@ -68,7 +68,7 @@ function getStatusVariant(status) {
   return variants[status] || 'default'
 }
 
-function getStatusDotClass(status) {
+const getStatusDotClass = (status) => {
   if (status === 'healthy') return 'bg-green-500'
   if (status === 'degraded') return 'bg-amber-500'
   if (status === 'critical') return 'bg-red-500'

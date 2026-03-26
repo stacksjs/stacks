@@ -405,7 +405,7 @@ function selectTable(table: number): void {
 }
 
 // Get allergy tag class
-function getAllergyClass(allergy: string): string {
+const getAllergyClass = (allergy: string): string => {
   switch (allergy) {
     case 'dairy':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'

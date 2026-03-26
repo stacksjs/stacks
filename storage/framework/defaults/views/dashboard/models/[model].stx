@@ -3,7 +3,7 @@
  * Dynamic Model Page
  * Displays data from any model based on the URL parameter.
  */
-const { Database } = require('bun:sqlite')
+const { Database } = await import('bun:sqlite')
 
 // Get the model name from the route parameter
 const modelSlug = route.params.model || ''

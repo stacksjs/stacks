@@ -5,8 +5,8 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var comments = []
-var stats = { total: 0, pending: 0, approved: 0, spam: 0 }
+let comments = []
+let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
 
 try {
   const res = await fetch(API_URL + '/dashboard/cms/comments')
@@ -244,7 +244,7 @@ try {
 </div>
 
 <script client>
-var _root = useRef('pageRoot')
+const _root = useRef('pageRoot')
 const API_BASE = 'http://localhost:3000/cms'
 let deleteCommentId = null
 
@@ -256,7 +256,7 @@ function closeModals() {
 }
 
 function showToast(message) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   const toast = el.querySelector('#toast')
   el.querySelector('#toastMessage').textContent = message
@@ -295,7 +295,7 @@ function deleteComment() {
 }
 
 function filterComments(status) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   el.querySelectorAll('.comment-row').forEach(row => {
     row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
@@ -309,7 +309,7 @@ function filterComments(status) {
 }
 
 onMount(function() {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
 
   viewModal = el.querySelector('#viewModal')

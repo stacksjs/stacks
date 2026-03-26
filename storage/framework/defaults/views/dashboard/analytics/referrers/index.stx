@@ -234,7 +234,7 @@ function formatNumber(number) {
 }
 
 // Get referrer type badge class
-function getReferrerTypeBadgeClass(type) {
+const getReferrerTypeBadgeClass = (type) => {
   switch (type) {
     case 'direct':
       return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'

@@ -427,7 +427,7 @@ function getRatingStars(rating: number): string[] {
 }
 
 // Get sentiment class
-function getSentimentClass(sentiment: string): string {
+const getSentimentClass = (sentiment: string): string => {
   switch (sentiment) {
     case 'positive':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
@@ -441,7 +441,7 @@ function getSentimentClass(sentiment: string): string {
 }
 
 // Get status badge class
-function getStatusClass(status: string): string {
+const getStatusClass = (status: string): string => {
   switch (status) {
     case 'responded':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'

@@ -19,7 +19,7 @@ try {
   // API not available
 }
 
-function statusClass(s) {
+const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
   s = String(s).toLowerCase()
   if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)

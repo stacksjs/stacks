@@ -5,12 +5,12 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var posts = []
-var categories = []
-var tags = []
-var publishedCount = 0
-var draftCount = 0
-var scheduledCount = 0
+let posts = []
+let categories = []
+let tags = []
+let publishedCount = 0
+let draftCount = 0
+let scheduledCount = 0
 
 try {
   const res = await fetch(API_URL + '/dashboard/cms/posts')
@@ -263,14 +263,14 @@ try {
 </div>
 
 <script client>
-var _root = useRef('pageRoot')
+const _root = useRef('pageRoot')
 const API_BASE = 'http://localhost:3000/cms'
 let deletePostId = null
 
 let postModal, deleteModal, postForm, editor, contentInput
 
 function openNewPostModal() {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   el.querySelector('#modalTitle').textContent = 'New Post'
   el.querySelector('#postId').value = ''
@@ -280,7 +280,7 @@ function openNewPostModal() {
 }
 
 function openEditPostModal(id) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   el.querySelector('#modalTitle').textContent = 'Edit Post'
   el.querySelector('#postId').value = id
@@ -288,7 +288,7 @@ function openEditPostModal(id) {
   fetch(`${API_BASE}/posts/${id}`)
     .then(r => r.json())
     .then(post => {
-      var el2 = _root.current
+      const el2 = _root.current
       if (!el2) return
       el2.querySelector('#title').value = post.title || ''
       el2.querySelector('#excerpt').value = post.excerpt || ''
@@ -306,7 +306,7 @@ function closeModal() {
 }
 
 function showToast(message) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   const toast = el.querySelector('#toast')
   el.querySelector('#toastMessage').textContent = message
@@ -361,7 +361,7 @@ function deletePost() {
 }
 
 function filterPosts(status) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   el.querySelectorAll('.post-row').forEach(row => {
     row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
@@ -375,7 +375,7 @@ function filterPosts(status) {
 }
 
 onMount(function() {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
 
   postModal = el.querySelector('#postModal')
@@ -403,7 +403,7 @@ onMount(function() {
 
   // Event bindings
   el.querySelector('#newPostBtn').onclick = openNewPostModal
-  var emptyBtn = el.querySelector('#emptyStateNewPost')
+  const emptyBtn = el.querySelector('#emptyStateNewPost')
   if (emptyBtn) emptyBtn.addEventListener('click', openNewPostModal)
   el.querySelector('#closeModal').onclick = closeModal
   el.querySelector('#cancelBtn').onclick = closeModal

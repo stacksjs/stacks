@@ -5,7 +5,7 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var authors = []
+let authors = []
 
 try {
   const res = await fetch(API_URL + '/dashboard/cms/authors')

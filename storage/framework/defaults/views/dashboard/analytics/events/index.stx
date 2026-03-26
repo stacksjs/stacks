@@ -322,7 +322,7 @@ function formatPercentageChange(value) {
   return `${value > 0 ? '+' : ''}${value.toFixed(1)}%`
 }
 
-function getPercentageChangeClass(value) {
+const getPercentageChangeClass = (value) => {
   if (value > 0) return 'text-green-600 dark:text-green-400'
   if (value < 0) return 'text-red-600 dark:text-red-400'
   return 'text-gray-600 dark:text-gray-400'

@@ -28,29 +28,29 @@ function formatName(n) {
 (function() {
   // Toggle edit panel visibility
   function toggleEdit(id) {
-    var panel = document.getElementById('edit-' + id);
+    const panel = document.getElementById('edit-' + id);
     if (!panel) return;
-    var isHidden = panel.style.display === 'none' || !panel.style.display;
+    const isHidden = panel.style.display === 'none' || !panel.style.display;
     // Close all other panels
-    var allPanels = document.querySelectorAll('[data-edit-panel]');
-    for (var i = 0; i < allPanels.length; i++) allPanels[i].style.display = 'none';
+    const allPanels = document.querySelectorAll('[data-edit-panel]');
+    for (let i = 0; i < allPanels.length; i++) allPanels[i].style.display = 'none';
     panel.style.display = isHidden ? 'block' : 'none';
   }
 
   // Save config changes
   function saveConfig(file, panelId) {
-    var panel = document.getElementById('edit-' + panelId);
+    const panel = document.getElementById('edit-' + panelId);
     if (!panel) return;
-    var inputs = panel.querySelectorAll('[data-config-key]');
-    var updates = [];
-    for (var i = 0; i < inputs.length; i++) {
-      var inp = inputs[i];
-      var key = inp.getAttribute('data-config-key');
-      var val = inp.value;
+    const inputs = panel.querySelectorAll('[data-config-key]');
+    const updates = [];
+    for (let i = 0; i < inputs.length; i++) {
+      const inp = inputs[i];
+      const key = inp.getAttribute('data-config-key');
+      const val = inp.value;
       updates.push({ path: key, value: val });
     }
 
-    var btn = panel.querySelector('[data-save-btn]');
+    const btn = panel.querySelector('[data-save-btn]');
     if (btn) { btn.textContent = 'Saving...'; btn.disabled = true; }
 
     fetch('http://localhost:3457/api/config/update', {
@@ -58,11 +58,11 @@ function formatName(n) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ file: file, updates: updates })
     })
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
+    .then((res) => res.json())
+    .then((data) => {
       if (data.success) {
         if (btn) { btn.textContent = 'Saved!'; btn.style.backgroundColor = '#059669'; }
-        setTimeout(function() {
+        setTimeout(() => {
           panel.style.display = 'none';
           if (btn) { btn.textContent = 'Save'; btn.disabled = false; btn.style.backgroundColor = ''; }
         }, 800);
@@ -70,7 +70,7 @@ function formatName(n) {
         if (btn) { btn.textContent = 'Error: ' + (data.error || 'Unknown'); btn.disabled = false; }
       }
     })
-    .catch(function(err) {
+    .catch((err) => {
       if (btn) { btn.textContent = 'Failed'; btn.disabled = false; }
     });
   }

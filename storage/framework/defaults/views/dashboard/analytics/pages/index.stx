@@ -197,7 +197,7 @@ function formatNumber(number) {
 }
 
 // Get performance score color class
-function getPerformanceColorClass(score) {
+const getPerformanceColorClass = (score) => {
   switch (score) {
     case 'Good':
       return 'text-green-600 dark:text-green-400'

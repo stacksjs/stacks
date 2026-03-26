@@ -15,7 +15,7 @@ try {
   // API not available
 }
 
-function methodClass(m) {
+const methodClass = (m) => {
   if (!m) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
   m = String(m).toUpperCase()
   if (m === 'GET') return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'

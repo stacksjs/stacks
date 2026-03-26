@@ -5,7 +5,7 @@
 
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var categories = []
+let categories = []
 
 try {
   const res = await fetch(API_URL + '/dashboard/cms/categories')
@@ -168,14 +168,14 @@ try {
 </div>
 
 <script client>
-var _root = useRef('pageRoot')
+const _root = useRef('pageRoot')
 const API_BASE = 'http://localhost:3000/cms'
 let deleteCategoryId = null
 
 let categoryModal, deleteModal, categoryForm, nameField, slugField
 
 function openNewCategoryModal() {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   el.querySelector('#modalTitle').textContent = 'New Category'
   el.querySelector('#categoryId').value = ''
@@ -184,7 +184,7 @@ function openNewCategoryModal() {
 }
 
 function openEditCategoryModal(id, name, slug, description) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   el.querySelector('#modalTitle').textContent = 'Edit Category'
   el.querySelector('#categoryId').value = id
@@ -200,7 +200,7 @@ function closeModal() {
 }
 
 function showToast(message) {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
   const toast = el.querySelector('#toast')
   el.querySelector('#toastMessage').textContent = message
@@ -246,7 +246,7 @@ function deleteCategory() {
 }
 
 onMount(function() {
-  var el = _root.current
+  const el = _root.current
   if (!el) return
 
   categoryModal = el.querySelector('#categoryModal')
@@ -266,7 +266,7 @@ onMount(function() {
 
   // Event bindings
   el.querySelector('#newCategoryBtn').onclick = openNewCategoryModal
-  var emptyBtn = el.querySelector('#emptyStateNewCategory')
+  const emptyBtn = el.querySelector('#emptyStateNewCategory')
   if (emptyBtn) emptyBtn.addEventListener('click', openNewCategoryModal)
   el.querySelector('#closeModal').onclick = closeModal
   el.querySelector('#cancelBtn').onclick = closeModal

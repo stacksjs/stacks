@@ -1,17 +1,17 @@
 <script server>
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
-var modelSlug = typeof model !== 'undefined' ? model : 'unknown'
-var tableName = modelSlug.replace(/-/g, '_').replace(/[^a-z0-9_]/gi, '') + 's'
-var modelName = modelSlug.split('-').map(function(s) { return s.charAt(0).toUpperCase() + s.slice(1) }).join(' ')
+let modelSlug = typeof model !== 'undefined' ? model : 'unknown'
+let tableName = modelSlug.replace(/-/g, '_').replace(/[^a-z0-9_]/gi, '') + 's'
+let modelName = modelSlug.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
 
-var items = []
-var columns = []
-var error = null
-var totalCount = 0
-var recentCount = 0
-var statusBreakdown = {}
-var statusKeys = []
+let items = []
+let columns = []
+let error = null
+let totalCount = 0
+let recentCount = 0
+let statusBreakdown = {}
+let statusKeys = []
 
 try {
   const res = await fetch(API_URL + '/models/' + encodeURIComponent(modelSlug))
@@ -31,7 +31,7 @@ try {
   error = 'API not available'
 }
 
-function statusClass(s) {
+const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
   s = String(s).toLowerCase()
   if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
@@ -214,21 +214,21 @@ function statusClass(s) {
   </div>
 </DashboardLayout>
 <script client>
-var _root = useRef('pageRoot')
+const _root = useRef('pageRoot')
 onMount(function() {
-  var el = _root.current;
+  const el = _root.current;
   if (!el) return;
-  var searchInput = el.querySelector('#modelSearch');
+  const searchInput = el.querySelector('#modelSearch');
   if (searchInput) {
-    var searchTimer = null;
+    let searchTimer = null;
     searchInput.addEventListener('input', function() {
-      var value = this.value;
+      const value = this.value;
       if (searchTimer) clearTimeout(searchTimer);
       searchTimer = setTimeout(function() {
-        var query = value.toLowerCase();
-        var rows = el.querySelectorAll('#modelTableBody tr');
-        for (var i = 0; i < rows.length; i++) {
-          var text = rows[i].textContent.toLowerCase();
+        const query = value.toLowerCase();
+        const rows = el.querySelectorAll('#modelTableBody tr');
+        for (let i = 0; i < rows.length; i++) {
+          const text = rows[i].textContent.toLowerCase();
           rows[i].style.display = text.indexOf(query) >= 0 ? '' : 'none';
         }
       }, 150);

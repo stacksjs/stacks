@@ -407,7 +407,7 @@ function goToPage(page: number) {
 }
 
 // Get status badge class
-function getStatusClass(status: string): string {
+const getStatusClass = (status: string): string => {
   switch (status) {
     case 'Waiting':
       return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
@@ -423,7 +423,7 @@ function getStatusClass(status: string): string {
 }
 
 // Get priority class
-function getPriorityClass(priority: number): string {
+const getPriorityClass = (priority: number): string => {
   switch (priority) {
     case 3:
       return 'text-red-600 dark:text-red-400 font-semibold'

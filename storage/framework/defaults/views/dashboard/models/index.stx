@@ -3,9 +3,9 @@
  * Models Overview Page
  * Shows all available models with their record counts.
  */
-const { Database } = require('bun:sqlite')
-const fs = require('node:fs')
-const path = require('node:path')
+const { Database } = await import('bun:sqlite')
+const fs = await import('node:fs')
+const path = await import('node:path')
 
 // Get list of models from app/Models directory
 function getModels() {
