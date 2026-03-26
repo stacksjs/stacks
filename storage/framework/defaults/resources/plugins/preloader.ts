@@ -10,7 +10,7 @@
 // These commands don't need env loading
 const args = process.argv.slice(2)
 const fastCommands = ['dev', 'build', 'test', 'lint', '--version', '-v', 'version', '--help', '-h', 'help']
-const skipPreloader = args.length === 0 || fastCommands.includes(args[0])
+const skipPreloader = args.length === 0 || fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`))
 
 if (!skipPreloader) {
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files

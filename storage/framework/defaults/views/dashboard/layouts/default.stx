@@ -1,17 +1,5 @@
-<script server>
-/**
- * Stacks Dashboard - Native macOS Application
- *
- * The main entry point for the Stacks Dashboard built with STX and Craft.
- * Uses native macOS sidebar for navigation.
- * Pages are lazy-loaded on first navigation for fast initial render.
- */
-
-let currentPage = 'home'
-</script>
-
-<script>
-const appRef = useRef('app')
+<script client>
+const appRef = useRef('dashboardApp')
 let currentPageId = 'home'
 
 const specialMappings = {
@@ -87,7 +75,7 @@ const routeMap = {
   'settings': 'pages/utilities/settings'
 }
 
-function hrefToPageId(href) {
+const hrefToPageId = (href) => {
   if (href === '/') return 'home'
   const path = href.replace(/^\//, '')
   if (specialMappings[path]) return specialMappings[path]
@@ -99,7 +87,7 @@ function hrefToPageId(href) {
   return fullId
 }
 
-function executeScripts(container) {
+const executeScripts = (container) => {
   const scripts = container.querySelectorAll('script')
   for (let i = 0; i < scripts.length; i++) {
     const original = scripts[i]
@@ -111,15 +99,15 @@ function executeScripts(container) {
   }
 }
 
-function navigateToPage(pageId) {
+const navigateToPage = (pageId) => {
   if (currentPageId === pageId) return
 
-  const container = appRef.value
+  const container = appRef.current
   if (!container) return
 
-  const targetEl = container.querySelector('[data-page-content="' + pageId + '"]')
+  const targetEl = container.querySelector(`[data-page-content="${pageId}"]`)
   if (targetEl) {
-    const cur = container.querySelector('[data-page-content="' + currentPageId + '"]')
+    const cur = container.querySelector(`[data-page-content="${currentPageId}"]`)
     if (cur) cur.style.display = 'none'
     targetEl.style.display = 'block'
     currentPageId = pageId
@@ -127,61 +115,68 @@ function navigateToPage(pageId) {
   }
 
   let route = routeMap[pageId]
-  if (!route && pageId.indexOf('model-') === 0) {
-    route = 'pages/data/' + pageId.replace('model-', '')
+  if (!route && pageId.startsWith('model-')) {
+    route = `pages/data/${pageId.replace('model-', '')}`
   }
   if (!route) return
 
   const previousPageId = currentPageId
-  const curEl = container.querySelector('[data-page-content="' + previousPageId + '"]')
+  const curEl = container.querySelector(`[data-page-content="${previousPageId}"]`)
   if (curEl) curEl.style.display = 'none'
 
-  fetch('/' + route)
-    .then(function(res) {
-      if (!res.ok) throw new Error('HTTP ' + res.status)
+  fetch(`/${route}`)
+    .then((res) => {
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.text()
     })
-    .then(function(html) {
+    .then((html) => {
       container.insertAdjacentHTML('beforeend',
-        '<div data-page-content="' + pageId + '" style="display: block;">' + html + '</div>'
+        `<div data-page-content="${pageId}" style="display: block;">${html}</div>`
       )
       currentPageId = pageId
 
-      const newPage = container.querySelector('[data-page-content="' + pageId + '"]')
+      const newPage = container.querySelector(`[data-page-content="${pageId}"]`)
       if (newPage) executeScripts(newPage)
     })
-    .catch(function() {
-      const prevEl = container.querySelector('[data-page-content="' + previousPageId + '"]')
+    .catch(() => {
+      const prevEl = container.querySelector(`[data-page-content="${previousPageId}"]`)
       if (prevEl) prevEl.style.display = 'block'
     })
 }
 
 window.craft = window.craft || {}
-window.craft._sidebarSelectHandler = function(event) {
+window.craft._sidebarSelectHandler = (event) => {
   navigateToPage(event.itemId)
 }
 
-useEventListener('click', function(e) {
-  const link = e.target.closest ? e.target.closest('a[href]') : null
-  if (!link || link.hasAttribute('data-mpa')) return
+onMount(() => {
+  if (location.hash) {
+    const hash = location.hash.replace('#', '')
+    if (routeMap[hash]) navigateToPage(hash)
+  }
+})
+
+useEventListener('click', (e) => {
+  const link = e.target.closest?.('a[href]')
+  if (!link || link.hasAttribute('data-mpa') || link.hasAttribute('data-stx-no-router')) return
   const href = link.getAttribute('href')
-  if (!href || href.indexOf('http') === 0 || href.indexOf('#') === 0) return
+  if (!href || href.startsWith('http') || href.startsWith('#')) return
   const pageId = hrefToPageId(href)
   if (routeMap[pageId]) {
     e.preventDefault()
     navigateToPage(pageId)
   }
 })
-
-if (location.hash) {
-  const hash = location.hash.replace('#', '')
-  if (routeMap[hash]) navigateToPage(hash)
-}
 </script>
-<DashboardLayout>
-  <div id="app" ref="app" data-page="home">
-    <div data-page-content="home" style="display: block;">
-      @include('pages/index')
-    </div>
+
+<div id="dashboard-app" ref="dashboardApp">
+  <div data-page-content="home" style="display: block;">
+    @slot('content')
   </div>
-</DashboardLayout>
+</div>
+
+<style>
+body {
+  @apply bg-neutral-100 dark:bg-neutral-950;
+}
+</style>

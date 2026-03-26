@@ -1,69 +1,38 @@
-<script server>
-/**
- * Dashboard Default Layout - macOS Style
- * Uses the modern DashboardLayout component for consistent styling.
- * Supports both web and native (Craft) environments.
- */
-import DashboardLayout from '../../components/Dashboard/DashboardLayout.stx'
-
-// Check if running in Craft native environment
-function isCraftNative() {
+<script client>
+const isCraftNative = () => {
   return typeof window !== 'undefined' && window.craft?.window !== undefined
 }
 
-// Window control handlers for Craft native app integration
-function handleMinimize() {
-  if (isCraftNative()) {
-    window.craft.window.minimize()
-  }
+const handleMinimize = () => {
+  if (isCraftNative()) window.craft.window.minimize()
 }
 
-function handleMaximize() {
-  if (isCraftNative()) {
-    window.craft.window.toggle()
-  }
+const handleMaximize = () => {
+  if (isCraftNative()) window.craft.window.toggle()
 }
 
-function handleClose() {
-  if (isCraftNative()) {
-    window.craft.window.close()
-  }
+const handleClose = () => {
+  if (isCraftNative()) window.craft.window.close()
 }
 </script>
+
 <DashboardLayout
   :show-window-controls="true"
   @minimize="handleMinimize"
   @maximize="handleMaximize"
   @close="handleClose"
 >
-  <RouterView v-slot="{ Component }">
-    <Transition mode="out-in">
-      <Suspense timeout="0">
-        <Component :is="Component" />
-        <template #fallback>
-          <div class="flex items-center justify-center py-12">
-            <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
-          </div>
-</Suspense>
-    </Transition>
-  </RouterView>
+  <main>
+    @slot('content')
+  </main>
 
-  <!-- Global toast notifications -->
   <template #overlays>
     <Toast />
+  </template>
 </DashboardLayout>
+
 <style>
 body {
   @apply bg-neutral-100 dark:bg-neutral-950;
-}
-
-.v-enter-active,
-.v-leave-active {
-  transition: opacity 0.15s ease-in-out;
-}
-
-.v-enter-from,
-.v-leave-to {
-  opacity: 0;
 }
 </style>

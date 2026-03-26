@@ -197,7 +197,7 @@ const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 // Use local HTTP URL — Craft webview loads directly, no proxy needed
 const baseRoute = `${dashboardLocalUrl}/pages`
 const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels)
-const initialUrl = `http://localhost:${dashboardPort}/app?native-sidebar=1`
+const initialUrl = `http://localhost:${dashboardPort}/?native-sidebar=1`
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
@@ -271,7 +271,7 @@ try {
 catch (err: any) {
   const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
   // eslint-disable-next-line no-console
-  console.log(`  ${dim('Dashboard available at:')} ${cyan(`${fallbackUrl}/app`)}\n`)
+  console.log(`  ${dim('Dashboard available at:')} ${cyan(fallbackUrl)}\n`)
 
   // Keep the process running since we're serving via STX
   await new Promise(() => {})

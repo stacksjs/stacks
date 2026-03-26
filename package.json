@@ -65,7 +65,10 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "stacks": "workspace:*"
+    "stacks": "workspace:*",
+    "perfect-debounce": "latest",
+    "pretty-bytes": "latest",
+    "ofetch": "latest"
   },
   "devDependencies": {
     "bun-git-hooks": "^0.3.1"
