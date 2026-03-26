@@ -984,7 +984,7 @@
         "@stacksjs/storage": "workspace:*"
       }
     },
-    "storage/framework/libs/components/vue": {
+    "storage/framework/libs/components/stx": {
       "name": "@stacksjs/hello-world-vue",
       "version": "0.70.23",
       "devDependencies": {
@@ -1031,12 +1031,12 @@
     }
   },
   "packages": {
-    "@anthropic-ai/claude-agent-sdk@0.2.83": {
+    "@anthropic-ai/claude-agent-sdk@0.2.84": {
       "name": "@anthropic-ai/claude-agent-sdk",
-      "version": "0.2.83",
+      "version": "0.2.84",
       "source": "npm",
-      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.2.83.tgz",
-      "integrity": "sha512-O8g56htGMxrwbjCbqUqRBMNC0O98B7SkPnfQC7vmo3w2DVnUrBj3qat/IBLB8SI4sjVSZHeJrcK7+ozsCzStSw==",
+      "resolved": "https://registry.npmjs.org/@anthropic-ai/claude-agent-sdk/-/claude-agent-sdk-0.2.84.tgz",
+      "integrity": "sha512-rvp3kZJM4IgDBE1zwj30H3N0bI3pYRF28tDJoyAVuWTLiWls7diNVCyFz7GeXZEAYYD87lCBE3vnQplLLluNHg==",
       "peerDependencies": {
         "zod": "^4.0.0"
       }

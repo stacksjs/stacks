@@ -1,11 +1,17 @@
-import type { HeadwindOptions } from 'headwind'
+import type { StxOptions as UiOptions } from '@stacksjs/stx'
+
+/**
+ * STX Configuration for Stacks
+ * Note: Dashboard mode overrides these settings via serve() options
+ */
 
 export default {
-  content: [
-    './resources/**/*.{html,js,ts,jsx,tsx,stx}',
-    './storage/framework/defaults/**/*.{html,js,ts,jsx,tsx,stx}',
-    './storage/framework/views/**/*.{html,js,ts,jsx,tsx,stx}',
-  ],
-  output: './storage/framework/assets/headwind.css',
-  minify: false,
-} satisfies HeadwindOptions
+  // Components directory - for user-defined components
+  componentsDir: 'resources/components',
+
+  // Layouts directory - for layout templates
+  layoutsDir: 'resources/layouts',
+
+  // Partials directory - for partial templates
+  partialsDir: 'resources/partials',
+} satisfies UiOptions
