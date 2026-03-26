@@ -101,7 +101,7 @@ const getStatusDotClass = (status) => {
     @foreach(stats as stat)
       <StatsCard
         title="{{ stat.title }}"
-        value="{{ stat }}"
+        value="{{ stat.value }}"
         trend="{{ stat.trend }}"
         trendLabel="{{ stat.trendLabel }}"
         icon="{{ stat.icon }}"

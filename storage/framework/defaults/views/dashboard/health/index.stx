@@ -99,7 +99,7 @@ let healthMetrics = [
       { label: 'URLs Crawled', value: '20' },
     ],
   },
-])
+]
 
 const getStatusVariant = (status) => {
   const map = {
