@@ -1,3 +1,78 @@
+<script client>
+// Bridge: connect Stacks sidebar navigation to stx router
+// The sidebar fires craft._sidebarSelectHandler which we route
+// through stx's navigate() for proper SPA navigation
+const routeMap = {
+  'home': '/',
+  'dependencies': '/home/dependencies',
+  'services': '/home/services',
+  'components': '/library/components',
+  'functions': '/library/functions',
+  'releases': '/library/releases',
+  'packages': '/library/packages',
+  'content-dashboard': '/content/dashboard',
+  'files': '/content/files',
+  'pages': '/content/pages',
+  'posts': '/content/posts',
+  'categories': '/content/categories',
+  'tags': '/content/tags',
+  'comments': '/content/comments',
+  'authors': '/content/authors',
+  'seo': '/content/seo',
+  'deployments': '/app/deployments',
+  'requests': '/app/requests',
+  'realtime': '/app/realtime',
+  'actions': '/app/actions',
+  'commands': '/app/commands',
+  'queue': '/app/queue',
+  'jobs': '/app/jobs',
+  'queries': '/app/queries',
+  'notifications': '/app/notifications',
+  'data-dashboard': '/data/dashboard',
+  'activity': '/data/activity',
+  'users': '/data/users',
+  'teams': '/data/teams',
+  'subscribers': '/data/subscribers',
+  'commerce-dashboard': '/commerce/dashboard',
+  'pos': '/commerce/pos',
+  'customers': '/commerce/customers',
+  'orders': '/commerce/orders',
+  'products': '/commerce/products',
+  'coupons': '/commerce/coupons',
+  'gift-cards': '/commerce/gift-cards',
+  'payments': '/commerce/payments',
+  'delivery': '/commerce/delivery',
+  'taxes': '/commerce/taxes',
+  'lists': '/marketing/lists',
+  'social-posts': '/marketing/social-posts',
+  'campaigns': '/marketing/campaigns',
+  'marketing-reviews': '/marketing/reviews',
+  'analytics-web': '/analytics/web',
+  'analytics-blog': '/analytics/blog',
+  'analytics-goals': '/analytics/goals',
+  'analytics-commerce': '/analytics/commerce',
+  'analytics-sales': '/analytics/sales',
+  'analytics-marketing': '/analytics/marketing',
+  'cloud': '/management/cloud',
+  'servers': '/management/servers',
+  'serverless': '/management/serverless',
+  'dns': '/management/dns',
+  'permissions': '/management/permissions',
+  'mailboxes': '/management/mailboxes',
+  'logs': '/management/logs',
+  'buddy': '/utilities/buddy',
+  'environment': '/utilities/environment',
+  'access-tokens': '/utilities/access-tokens',
+  'settings': '/utilities/settings',
+}
+
+window.craft = window.craft || {}
+window.craft._sidebarSelectHandler = (event) => {
+  const url = routeMap[event.itemId]
+  if (url) navigate(url)
+}
+</script>
+
 <main>
   @slot('content')
 </main>
