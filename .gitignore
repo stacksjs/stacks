@@ -1,53 +1,57 @@
-node_modules
+# Dev tooling
+# (put individual local dev tooling stuff here)
 
-.DS_Store
-.DS_STORE
-.cache
-temp
-.temp
 # Environment files
 .env
 .env.local
 .env.keys
 *.local
+.env.keys
 
-# Encrypted environment files (safe to commit)
-# These can be committed because they're encrypted
+# Encrypted, safe to commit
 !.env.production
 !.env.staging
 !.env.ci
-updates
+
+# Dependencies
+node_modules
+/pantry
+
+# QA
+test-results
 tests/unit/coverage
 dist*
 
-data.ms
+# IDE files
+.fleet
+.idea
+.vscode
+.cursor
+.zed
+
+# Git files
 !.gitkeep
+
+# Database files
 database/stacks_testing.sqlite
 database/stacks.sqlite
 database/*.sqlite-wal
 database/*.sqlite-shm
-custom-cli
-*bun-build
 
-.fleet
-.idea
-.stacks
-.stacks-channel
-.tmp-upgrade
-.vscode
-.cursor
-.zed
-./test.ts
+# OS files
+.DS_Store
+.DS_STORE
+
+# Build files
+.cache
+temp
+.temp
+data.ms
 generated/*
-resources/assets/fonts/*.woff
-resources/assets/fonts/*.woff2
-stacks.log
-/pantry_modules
 .stx
 .stx-serve
-.env.keys
-/storage/framework/frontend-dist
-/.qb
+custom-cli
+*bun-build
 
 # Stub workspace packages (temporary)
 /ts-auth
@@ -60,4 +64,4 @@ stacks.log
 /bun-queue
 /headwind
 /bun-plugin-stx
-/pantry
+
