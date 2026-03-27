@@ -35,11 +35,11 @@ let authors = []
         @endforeach
       </div>
 
+      @if (topPosts.length > 0 || categories.length > 0 || authors.length > 0)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Top Posts</span>
         </div>
-        @if (topPosts.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -64,11 +64,6 @@ let authors = []
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -106,6 +101,15 @@ let authors = []
           </div>
         </div>
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F4DD;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No blog analytics yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Publish posts and analytics will appear here.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

@@ -8,8 +8,14 @@
  * Manage content tags.
  */
 
-// Data available when full dev server runs (buddy dev)
 let tags = []
+
+try {
+  // Tags table does not exist yet — leave empty
+  tags = []
+} catch (e) {
+  // DB not seeded
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -23,17 +29,8 @@ let tags = []
     </div>
 
     <div class="flex flex-col gap-6">
-      @if (tags.length === 0)
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A2 2 0 013 12V7a4 4 0 014-4z"></path>
-          </svg>
-          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No tags yet</h3>
-          <p class="mt-2 text-gray-500 dark:text-gray-400">Get started by creating your first tag.</p>
-          <button class="mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Tag</button>
-        </div>
-      @else
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+      @if (tags.length > 0)
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
           <div class="flex gap-2 flex-wrap">
             @foreach (tags as tag)
               <span class="px-4 py-2 text-sm font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">
@@ -42,6 +39,14 @@ let tags = []
             @endforeach
           </div>
         </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F3F7;&#xFE0F;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No tags yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Tags will be available after running migrations.</p>
+      </div>
       @endif
     </div>
   </div>

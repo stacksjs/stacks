@@ -31,8 +31,8 @@ const statusClass = (s) => {
     </div>
 
     <div class="flex flex-col gap-6">
+      @if (releases.length > 0)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        @if (releases.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -50,9 +50,7 @@ const statusClass = (s) => {
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="font-semibold">{{ release.version }}</span>
-                    @if (release.breaking)
-                      <span class="ml-2 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Breaking</span>
-
+                    <span class="ml-2 px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400" style="{{ release.breaking ? '' : 'display:none' }}">Breaking</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(release.type) }}">{{ release.type }}</span>
@@ -70,12 +68,16 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F3F7;&#xFE0F;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No releases yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Releases will appear here after you publish your first version.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

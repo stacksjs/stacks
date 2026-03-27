@@ -2,9 +2,20 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
 let teams = []
 let stats = []
+
+try {
+  // Team table does not exist yet — leave empty
+  teams = []
+  stats = [
+    { value: '0', label: 'Total Teams' },
+    { value: '0', label: 'Total Members' },
+    { value: '0', label: 'Active Projects' },
+  ]
+} catch (e) {
+  // DB not seeded
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -27,6 +38,7 @@ let stats = []
         @endforeach
       </div>
 
+      @if (teams.length > 0)
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
         @foreach (teams as team)
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
@@ -54,6 +66,15 @@ let stats = []
           </div>
         @endforeach
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F465;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No teams created</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Teams will be available after running migrations.</p>
+      </div>
+      @endif
     </div>
   </div>
 <style>

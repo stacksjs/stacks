@@ -87,6 +87,7 @@ function formatName(n) {
     @endforeach
   </div>
 
+  @if (infra.length > 0 || systemDeps.length > 0 || orderedApiGroups.length > 0)
   <!-- Infrastructure Services -->
   <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
@@ -99,15 +100,9 @@ function formatName(n) {
           <div class="flex items-center justify-between">
             <span class="font-medium text-sm text-gray-900 dark:text-white">{{ svc.name }}</span>
             <div class="flex items-center gap-2">
-              @if(svc.status === 'running')
-                <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">
-                  <span class="w-1.5 h-1.5 rounded-full bg-green-500"></span> running
-                </span>
-              @elseif(svc.status === 'configured')
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">configured</span>
-              @else
-                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
-              @endif
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium {{ svc.status === 'running' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : svc.status === 'configured' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' }}">
+                {{ svc.status || 'not set' }}
+              </span>
               <button onclick="_toggleEdit('infra-{{ svc.name }}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Edit</button>
             </div>
           </div>
@@ -143,7 +138,6 @@ function formatName(n) {
   </div>
 
   <!-- System Dependencies (Pantry) -->
-  @if(systemDeps.length > 0)
   <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
       <span class="font-semibold text-gray-900 dark:text-white">System Dependencies</span>
@@ -158,7 +152,6 @@ function formatName(n) {
       @endforeach
     </div>
   </div>
-  @endif
 
   <!-- Third-Party API Services -->
   <div class="flex flex-col gap-6">
@@ -179,11 +172,7 @@ function formatName(n) {
                   <span class="font-medium text-sm text-gray-900 dark:text-white">{{ formatName(svc.name) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  @if(svc.configured)
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">configured</span>
-                  @else
-                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400">not set</span>
-                  @endif
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ svc.configured ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' }}">{{ svc.configured ? 'configured' : 'not set' }}</span>
                   <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Edit</button>
                 </div>
               </div>
@@ -196,9 +185,6 @@ function formatName(n) {
                     <input type="{{ field.key === 'apiKey' || field.key === 'secretKey' || field.key === 'password' || field.key === 'privateKey' || field.key === 'botToken' ? 'password' : 'text' }}" data-config-key="{{ field.key }}" value="{{ field.value }}" placeholder="{{ field.env ? 'env.' + field.env : '' }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono" />
                   </div>
                 @endforeach
-                @if(svc.fields.length === 0)
-                  <p class="text-xs text-gray-400 dark:text-gray-500 mb-2">No editable fields found.</p>
-                @endif
                 <div class="flex justify-end gap-2 mt-2">
                   <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-gray-400">Cancel</button>
                   <button data-save-btn onclick="_saveConfig('services.ts', 'api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">Save</button>
@@ -210,5 +196,14 @@ function formatName(n) {
       </div>
     @endforeach
   </div>
+  @else
+  <div class="flex flex-col items-center justify-center py-16 px-4">
+    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+      <span class="text-2xl text-gray-400">&#x1F527;</span>
+    </div>
+    <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Service information available with full dev server</h3>
+    <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Run buddy dev to see all service statuses.</p>
+  </div>
+  @endif
 </div>
 @endsection

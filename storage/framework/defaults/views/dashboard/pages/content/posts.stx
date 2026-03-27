@@ -63,7 +63,6 @@ try {
 
     <!-- Posts Table -->
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
-      @if (posts.length > 0)
       <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -81,15 +80,7 @@ try {
               <tr class="post-row hover:bg-gray-50 dark:hover:bg-gray-700/30 border-t border-gray-100 dark:border-gray-700" data-status="{{ post.status }}" data-id="{{ post.id }}">
                 <td class="px-4 py-3 font-medium text-gray-900 dark:text-white">{{ post.title }}</td>
                 <td class="px-4 py-3">
-                  @if (post.status === 'published')
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Published</span>
-                  @elseif (post.status === 'draft')
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">Draft</span>
-                  @elseif (post.status === 'scheduled')
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Scheduled</span>
-
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ post.status }}</span>
-
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ post.status === 'published' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : post.status === 'draft' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : post.status === 'scheduled' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ post.status }}</span>
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ post.author }}</td>
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ post.date }}</td>
@@ -105,22 +96,6 @@ try {
           </tbody>
         </table>
       </div>
-      @else
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-        </div>
-      @endif
-
-      @if (posts.length === 0)
-        <div class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
-          </svg>
-          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No posts yet</h3>
-          <p class="mt-2 text-gray-500 dark:text-gray-400">Get started by creating your first blog post.</p>
-          <button id="emptyStateNewPost" class="mt-4 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Post</button>
-        </div>
-      @endif
     </div>
   </div>
 </div>

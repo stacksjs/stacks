@@ -2,9 +2,31 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
+const { Log } = await import('@stacksjs/orm')
+
 let queries = []
 let stats = []
+
+try {
+  const allLogs = await Log.orderBy('created_at', 'desc').get()
+  const total = allLogs.length
+  const recent = allLogs.slice(0, 50)
+
+  queries = recent.map(l => ({
+    query: String(l.get('message') || l.get('action') || ''),
+    time: String(l.get('duration') || l.get('time') || '-'),
+    rows: String(l.get('rows') || l.get('count') || '-'),
+    timestamp: String(l.get('created_at') || ''),
+  }))
+
+  stats = [
+    { value: String(total), label: 'Total Queries Logged' },
+    { value: String(recent.length), label: 'Showing Recent' },
+    { value: '-', label: 'Avg Response Time' },
+  ]
+} catch (e) {
+  // DB not seeded
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -28,7 +50,6 @@ let stats = []
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Recent Queries</span>
         </div>
-        @if (queries.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -55,11 +76,6 @@ let stats = []
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
     </div>
   </div>

@@ -107,7 +107,6 @@ const statusClass = (s) => {
           <span class="font-semibold text-gray-900 dark:text-white">Environment Variables</span>
           <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" placeholder="Search variables..." />
         </div>
-        @if (variables.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -123,12 +122,7 @@ const statusClass = (s) => {
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ variable.key }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    @if (variable.sensitive)
-                      <span class="text-gray-500 dark:text-gray-400">••••••••</span>
-                      <button class="ml-2 px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Reveal</button>
-
                       <code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ variable.value }}</code>
-
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-1">
@@ -148,11 +142,6 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
     </div>
   </div>

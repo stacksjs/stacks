@@ -2,9 +2,32 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
 let notifications = []
 let stats = []
+
+try {
+  const { Notification } = await import('@stacksjs/orm')
+  const allNotifs = await Notification.orderBy('created_at', 'desc').get()
+  const total = allNotifs.length
+  const sent = allNotifs.filter(n => String(n.get('status') || '').toLowerCase() === 'sent').length
+  const pending = allNotifs.filter(n => String(n.get('status') || '').toLowerCase() === 'pending').length
+
+  notifications = allNotifs.slice(0, 50).map(n => ({
+    type: String(n.get('type') || 'Email'),
+    recipient: String(n.get('recipient') || n.get('email') || ''),
+    subject: String(n.get('subject') || n.get('title') || ''),
+    status: String(n.get('status') || 'Sent'),
+    time: String(n.get('created_at') || ''),
+  }))
+
+  stats = [
+    { value: String(total), label: 'Total Sent' },
+    { value: String(sent), label: 'Delivered' },
+    { value: String(pending), label: 'Pending' },
+  ]
+} catch (e) {
+  // Notification table may not exist
+}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -41,11 +64,11 @@ const statusClass = (s) => {
         @endforeach
       </div>
 
+      @if (notifications.length > 0)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Recent Notifications</span>
         </div>
-        @if (notifications.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -72,12 +95,16 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F514;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No notifications</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Notifications will appear here when events are triggered.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

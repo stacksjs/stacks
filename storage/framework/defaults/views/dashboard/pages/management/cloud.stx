@@ -29,6 +29,7 @@ let resources = []
         @endforeach
       </div>
 
+      @if (providers.length > 0 || resources.length > 0)
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         @foreach (providers as provider)
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
@@ -59,7 +60,6 @@ let resources = []
           <span class="font-semibold text-gray-900 dark:text-white">All Resources</span>
           <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" placeholder="Search resources..." />
         </div>
-        @if (resources.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -90,12 +90,16 @@ let resources = []
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x2601;&#xFE0F;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No cloud resources configured</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Deploy your application to see cloud infrastructure.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

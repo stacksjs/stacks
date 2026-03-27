@@ -8,9 +8,45 @@
  * File browser and media management.
  */
 
-// Data available when full dev server runs (buddy dev)
 let files = []
 let storage = { used: 0, total: 0, percentage: 0 }
+
+try {
+  const { Glob } = await import('bun')
+  const path = await import('path')
+  const fs = await import('fs')
+  const glob = new Glob('**/*')
+  const storageDir = path.resolve(process.cwd(), 'storage')
+  const entries = []
+  let totalBytes = 0
+
+  for await (const filePath of glob.scan({ cwd: storageDir, onlyFiles: true })) {
+    try {
+      const fullPath = path.join(storageDir, filePath)
+      const stat = fs.statSync(fullPath)
+      const ext = path.extname(filePath).toLowerCase()
+      const isImage = ['.png', '.jpg', '.jpeg', '.gif', '.svg', '.webp', '.ico'].indexOf(ext) >= 0
+      const isDoc = ['.md', '.txt', '.pdf', '.csv', '.json', '.yaml', '.yml'].indexOf(ext) >= 0
+      const fileType = isImage ? 'image' : isDoc ? 'document' : 'file'
+      totalBytes += stat.size
+      entries.push({
+        name: path.basename(filePath),
+        type: fileType,
+        size: stat.size < 1024 ? String(stat.size) + ' B' : stat.size < 1048576 ? String((stat.size / 1024).toFixed(1)) + ' KB' : String((stat.size / 1048576).toFixed(1)) + ' MB',
+        modified: String(stat.mtime.toISOString().split('T')[0]),
+      })
+    } catch (e) {
+      // skip unreadable files
+    }
+  }
+
+  files = entries.slice(0, 50)
+  const usedGB = Number((totalBytes / 1073741824).toFixed(2))
+  const totalGB = 10
+  storage = { used: usedGB, total: totalGB, percentage: Math.min(100, Math.round((usedGB / totalGB) * 100)) }
+} catch (e) {
+  // filesystem scan failed
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -37,8 +73,8 @@ let storage = { used: 0, total: 0, percentage: 0 }
       </div>
 
       <!-- Files Table -->
+      @if (files.length > 0)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        @if (files.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -56,15 +92,7 @@ let storage = { used: 0, total: 0, percentage: 0 }
                   <td class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
                     <div class="flex items-center gap-3">
                       <div class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                        @if (file.type === 'folder')
-                          F
-                        @elseif (file.type === 'image')
-                          I
-                        @elseif (file.type === 'document')
-                          D
-
-                          V
-
+                        {{ file.type === 'folder' ? 'F' : file.type === 'image' ? 'I' : file.type === 'document' ? 'D' : 'V' }}
                       </div>
                       <span class="font-medium text-gray-900 dark:text-white">{{ file.name }}</span>
                     </div>
@@ -73,11 +101,7 @@ let storage = { used: 0, total: 0, percentage: 0 }
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ file.type }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
-                    @if (file.items)
-                      {{ file.items }} items
-
-                      {{ file.size }}
-
+                    {{ file.items ? file.items + ' items' : file.size }}
                   </td>
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ file.modified }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
@@ -88,12 +112,16 @@ let storage = { used: 0, total: 0, percentage: 0 }
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F4C1;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No files uploaded</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Upload files to manage your media library.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

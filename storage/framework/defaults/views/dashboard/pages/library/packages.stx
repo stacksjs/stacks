@@ -71,7 +71,6 @@ const statusClass = (s) => {
           <span class="font-semibold text-gray-900 dark:text-white">Dependencies</span>
           <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Update All</button>
         </div>
-        @if (packages.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -97,22 +96,14 @@ const statusClass = (s) => {
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(pkg.status) }}">{{ pkg.status === 'up-to-date' ? 'Up to date' : 'Update available' }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    @if (pkg.status === 'update-available')
                       <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Update</button>
-
                       <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Details</button>
-
                   </td>
                 </tr>
               @endforeach
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
     </div>
   </div>

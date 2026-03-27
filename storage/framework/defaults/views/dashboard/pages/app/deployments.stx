@@ -31,8 +31,8 @@ const statusClass = (s) => {
     </div>
 
     <div class="flex flex-col gap-6">
+      @if (deployments.length > 0)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        @if (deployments.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -63,22 +63,16 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
-
-        @if (deployments.length === 0)
-          <div class="text-center py-12">
-            <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path>
-            </svg>
-            <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No deployments yet</h3>
-            <p class="mt-2 text-gray-500 dark:text-gray-400">Deploy your application to see deployment history here.</p>
-          </div>
-        @endif
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F680;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No deployments yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Deploy your application using buddy deploy to see deployment history.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

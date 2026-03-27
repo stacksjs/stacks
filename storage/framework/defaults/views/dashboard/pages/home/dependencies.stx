@@ -66,7 +66,6 @@ try {
       <span class="font-semibold text-gray-900 dark:text-white">Third-Party Packages</span>
       <span class="text-xs text-gray-500 dark:text-gray-400">{{ thirdPartyCount }} declared</span>
     </div>
-    @if (thirdParty.length > 0)
     <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -85,11 +84,6 @@ try {
         </tbody>
       </table>
     </div>
-    @else
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-        <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-      </div>
-    @endif
   </div>
 
   <!-- Workspace Packages (declared) -->
@@ -98,7 +92,6 @@ try {
       <span class="font-semibold text-gray-900 dark:text-white">Workspace Packages</span>
       <span class="text-xs text-gray-500 dark:text-gray-400">{{ workspaceCount }} packages</span>
     </div>
-    @if (workspace.length > 0)
     <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -117,11 +110,6 @@ try {
         </tbody>
       </table>
     </div>
-    @else
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-        <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-      </div>
-    @endif
   </div>
 
   <!-- Transitive Dependencies -->
@@ -130,7 +118,6 @@ try {
       <span class="font-semibold text-gray-900 dark:text-white">Transitive Dependencies</span>
       <span class="text-xs text-gray-500 dark:text-gray-400">{{ transitiveCount }} packages</span>
     </div>
-    @if (transitive.length > 0)
     <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
       <table class="w-full text-sm">
         <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -149,11 +136,6 @@ try {
         </tbody>
       </table>
     </div>
-    @else
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-        <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-      </div>
-    @endif
   </div>
 </div>
 @endsection

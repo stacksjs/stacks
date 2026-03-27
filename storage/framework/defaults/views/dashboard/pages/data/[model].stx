@@ -92,8 +92,7 @@ const statusClass = (s) => {
       </div>
     </div>
 
-    @if(error)
-      <!-- Error State -->
+    <!-- Error State -->
       <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
         <div class="flex items-center gap-3">
           <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
@@ -215,7 +214,6 @@ const statusClass = (s) => {
           <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
             <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
           </div>
-        @endif
 
         <!-- Pagination -->
         <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">

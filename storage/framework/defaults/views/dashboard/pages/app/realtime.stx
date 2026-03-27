@@ -30,6 +30,7 @@ let stats = { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }
         </div>
       </div>
 
+      @if (channels.length > 0)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Active Channels</span>
@@ -46,6 +47,15 @@ let stats = { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }
           @endforeach
         </div>
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F4E1;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No realtime connections</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">WebSocket connections will appear here when clients connect.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

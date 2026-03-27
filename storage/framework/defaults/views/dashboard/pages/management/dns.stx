@@ -63,7 +63,6 @@ let stats = []
           <span class="font-semibold text-gray-900 dark:text-white">DNS Records - stacks.dev</span>
           <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Record</button>
         </div>
-        @if (records.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -84,11 +83,7 @@ let stats = []
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ record.value }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ record.ttl }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    @if (record.proxied)
-                      <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Proxied</span>
-
-                      <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">DNS Only</span>
-
+                      <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ record.proxied ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ record.proxied ? 'Proxied' : 'DNS Only' }}</span>
                   </td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
                     <div class="flex gap-2">
@@ -101,11 +96,6 @@ let stats = []
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
     </div>
   </div>

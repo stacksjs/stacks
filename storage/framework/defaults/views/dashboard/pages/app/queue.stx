@@ -2,10 +2,41 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
+const { Job } = await import('@stacksjs/orm')
+
 let queues = []
 let stats = { totalQueues: 0, totalJobs: 0, activeJobs: 0, completedJobs: 0, failedJobs: 0, throughputPerMinute: 0 }
 let queueConnected = false
+
+try {
+  const allJobs = await Job.orderBy('created_at', 'desc').get()
+  const total = allJobs.length
+  const completed = allJobs.filter(j => String(j.get('status') || '').toLowerCase() === 'completed').length
+  const failed = allJobs.filter(j => String(j.get('status') || '').toLowerCase() === 'failed').length
+  const active = allJobs.filter(j => String(j.get('status') || '').toLowerCase() === 'running').length
+  const pending = total - completed - failed - active
+
+  stats = {
+    totalQueues: 1,
+    totalJobs: total,
+    activeJobs: active,
+    completedJobs: completed,
+    failedJobs: failed,
+    throughputPerMinute: 0,
+  }
+
+  queues = [{
+    name: 'default',
+    status: total > 0 ? 'Active' : 'Idle',
+    pending: pending,
+    active: active,
+    failed: failed,
+    completed: completed,
+  }]
+  queueConnected = true
+} catch (e) {
+  // DB not seeded
+}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -47,53 +78,35 @@ const statusClass = (s) => {
     </div>
   </div>
 
-  @if (!queueConnected)
-    <div class="bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 p-12 text-center">
-      <svg class="mx-auto h-12 w-12 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
-      </svg>
-      <h3 class="mt-4 text-lg font-medium text-yellow-900 dark:text-yellow-200">Queue Not Connected</h3>
-      <p class="mt-2 text-yellow-700 dark:text-yellow-300">The bun-queue devtools API is not running on port 4400. Start your queue worker to see queue data here.</p>
-    </div>
-  @elseif (queues.length === 0)
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-      <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4"></path>
-      </svg>
-      <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No Queues Found</h3>
-      <p class="mt-2 text-gray-500 dark:text-gray-400">Start a queue worker to see queue data here.</p>
-    </div>
-  @else
-    <!-- Queue Cards -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
-      @foreach (queues as queue)
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">{{ queue.name }}</span>
-            <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(queue.status) }}">{{ queue.status }}</span>
+  <!-- Queue Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+    @foreach (queues as queue)
+      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        <div class="flex items-center justify-between mb-4">
+          <span class="font-semibold text-gray-900 dark:text-white">{{ queue.name }}</span>
+          <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(queue.status) }}">{{ queue.status }}</span>
+        </div>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <div class="text-2xl font-semibold text-gray-900 dark:text-white">{{ queue.pending }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Pending</div>
           </div>
-          <div class="grid grid-cols-2 gap-4 mt-4">
-            <div>
-              <div class="text-2xl font-semibold text-gray-900 dark:text-white">{{ queue.pending }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Pending</div>
-            </div>
-            <div>
-              <div class="text-2xl font-semibold text-blue-600 dark:text-blue-400">{{ queue.active }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Active</div>
-            </div>
-            <div>
-              <div class="text-2xl font-semibold text-red-600 dark:text-red-400">{{ queue.failed }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Failed</div>
-            </div>
-            <div>
-              <div class="text-2xl font-semibold text-green-600 dark:text-green-400">{{ queue.completed }}</div>
-              <div class="text-sm text-gray-500 dark:text-gray-400">Completed</div>
-            </div>
+          <div>
+            <div class="text-2xl font-semibold text-blue-600 dark:text-blue-400">{{ queue.active }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Active</div>
+          </div>
+          <div>
+            <div class="text-2xl font-semibold text-red-600 dark:text-red-400">{{ queue.failed }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Failed</div>
+          </div>
+          <div>
+            <div class="text-2xl font-semibold text-green-600 dark:text-green-400">{{ queue.completed }}</div>
+            <div class="text-sm text-gray-500 dark:text-gray-400">Completed</div>
           </div>
         </div>
-      @endforeach
-    </div>
-  @endif
+      </div>
+    @endforeach
+  </div>
 
 </div>
 @endsection

@@ -13,11 +13,13 @@ let authors = []
 try {
   const allAuthors = await Author.orderBy('created_at', 'desc').get()
   authors = allAuthors.map(a => ({
+    id: String(a.get('id') || ''),
     name: String(a.get('name') || ''),
     email: String(a.get('email') || ''),
+    bio: String(a.get('bio') || ''),
     avatar: String(a.get('name') || '').charAt(0).toUpperCase(),
     role: String(a.get('role') || 'Author'),
-    posts: String(a.get('posts_count') || '0'),
+    posts: '0',
   }))
 } catch (e) {
   // DB not seeded

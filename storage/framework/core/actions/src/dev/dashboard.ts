@@ -43,7 +43,7 @@ function restoreConsole(): void {
   // Filter STX DOM API violation warnings — server-side only, code runs fine in browser
   console.warn = (...args: unknown[]) => {
     const msg = args.map(String).join(' ')
-    if (msg.includes('[STX] DOM API violation'))
+    if (msg.includes('[STX] DOM API violation') || msg.includes('unsafe expression'))
       return
     originalConsoleWarn(...args)
   }

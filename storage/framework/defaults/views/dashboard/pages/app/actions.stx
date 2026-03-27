@@ -2,8 +2,42 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
 let actions = []
+
+try {
+  const { Glob } = await import('bun')
+  const path = await import('path')
+  const cwd = process.cwd()
+  const dirs = [
+    path.resolve(cwd, 'app/Actions'),
+    path.resolve(cwd, 'storage/framework/defaults/actions'),
+  ]
+  const seen = new Set()
+  for (const dir of dirs) {
+    try {
+      const glob = new Glob('**/*.ts')
+      for await (const filePath of glob.scan({ cwd: dir, onlyFiles: true })) {
+        const name = path.basename(filePath, '.ts')
+        if (!seen.has(name)) {
+          seen.add(name)
+          const parts = filePath.split('/')
+          const type = parts.length > 1 ? parts[0] : 'General'
+          actions.push({
+            name: name,
+            type: type,
+            runs: 0,
+            avgTime: '-',
+            status: 'Active',
+          })
+        }
+      }
+    } catch (e) {
+      // directory not found
+    }
+  }
+} catch (e) {
+  // filesystem scan failed
+}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -32,7 +66,6 @@ const statusClass = (s) => {
 
     <div class="flex flex-col gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        @if (actions.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -61,11 +94,6 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
     </div>
   </div>

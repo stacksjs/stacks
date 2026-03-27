@@ -8,8 +8,22 @@
  * Manage static pages.
  */
 
-// Data available when full dev server runs (buddy dev)
+const { Post } = await import('@stacksjs/orm')
+
 let pages = []
+
+try {
+  const allPosts = await Post.orderBy('created_at', 'desc').get()
+  pages = allPosts.map(p => ({
+    id: String(p.get('id') || ''),
+    title: String(p.get('title') || ''),
+    status: String(p.get('status') || 'Draft'),
+    slug: String(p.get('slug') || ''),
+    updated: String(p.get('updated_at') || p.get('created_at') || ''),
+  }))
+} catch (e) {
+  // DB not seeded
+}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
@@ -38,7 +52,6 @@ const statusClass = (s) => {
 
     <div class="flex flex-col gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        @if (pages.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -67,11 +80,6 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
-        @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-          </div>
-        @endif
       </div>
     </div>
   </div>

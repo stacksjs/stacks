@@ -87,7 +87,6 @@ let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
 
     <!-- Comments Table -->
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
-      @if (comments.length > 0)
       <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -112,33 +111,21 @@ let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ comment.postTitle }}</td>
                 <td class="px-4 py-3">
-                  @if (comment.status === 'approved')
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Approved</span>
-                  @elseif (comment.status === 'pending')
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">Pending</span>
-                  @elseif (comment.status === 'spam')
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400">Spam</span>
-
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ comment.status }}</span>
-
+                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ comment.status === 'approved' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : comment.status === 'pending' ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' : comment.status === 'spam' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ comment.status }}</span>
                 </td>
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ comment.date }}</td>
                 <td class="px-4 py-3">
                   <div class="flex items-center gap-1">
-                    @if (comment.status !== 'approved')
                       <button class="approve-btn p-1.5 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20 rounded transition-colors" data-id="{{ comment.id }}" title="Approve">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
                         </svg>
                       </button>
-
-                    @if (comment.status !== 'spam')
                       <button class="spam-btn p-1.5 text-orange-600 hover:bg-orange-50 dark:hover:bg-orange-900/20 rounded transition-colors" data-id="{{ comment.id }}" title="Mark as Spam">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"></path>
                         </svg>
                       </button>
-
                     <button class="view-btn p-1.5 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded transition-colors" data-id="{{ comment.id }}" data-author="{{ comment.author }}" data-email="{{ comment.email }}" data-content="{{ comment.content }}" data-post="{{ comment.postTitle }}" data-date="{{ comment.date }}" data-ip="{{ comment.ip }}" title="View">
                       <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
@@ -157,21 +144,6 @@ let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
           </tbody>
         </table>
       </div>
-      @else
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-          <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
-        </div>
-      @endif
-
-      @if (comments.length === 0)
-        <div class="text-center py-12">
-          <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"></path>
-          </svg>
-          <h3 class="mt-4 text-lg font-medium text-gray-900 dark:text-white">No comments yet</h3>
-          <p class="mt-2 text-gray-500 dark:text-gray-400">Comments will appear here when readers engage with your content.</p>
-        </div>
-      @endif
     </div>
   </div>
 </div>

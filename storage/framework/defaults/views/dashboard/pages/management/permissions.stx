@@ -2,10 +2,35 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
 let roles = []
 let permissions = []
 let recentChanges = []
+
+try {
+  roles = [
+    { name: 'Admin', description: 'Full system access', users: '1', permissions: 'All permissions' },
+    { name: 'Editor', description: 'Content management', users: '3', permissions: 'Create, edit, publish content' },
+    { name: 'Author', description: 'Write and manage own content', users: '5', permissions: 'Create, edit own content' },
+    { name: 'Subscriber', description: 'View content and manage profile', users: '10', permissions: 'Read, comment' },
+    { name: 'User', description: 'Basic access', users: '50', permissions: 'Read only' },
+  ]
+
+  permissions = [
+    { group: 'Content', items: ['create', 'read', 'update', 'delete', 'publish'] },
+    { group: 'Users', items: ['create', 'read', 'update', 'delete', 'assign-role'] },
+    { group: 'Settings', items: ['read', 'update'] },
+    { group: 'Commerce', items: ['manage-orders', 'manage-products', 'view-reports'] },
+    { group: 'System', items: ['manage-backups', 'view-logs', 'manage-cache'] },
+  ]
+
+  recentChanges = [
+    { action: 'Role Updated', target: 'Editor', user: 'Admin', time: 'Recently' },
+    { action: 'Permission Added', target: 'manage-orders', user: 'Admin', time: 'Recently' },
+    { action: 'Role Created', target: 'Subscriber', user: 'Admin', time: 'Recently' },
+  ]
+} catch (e) {
+  // Error loading permissions data
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

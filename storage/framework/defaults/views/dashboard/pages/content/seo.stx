@@ -8,8 +8,22 @@
  * Configure search engine optimization.
  */
 
-// Data available when full dev server runs (buddy dev)
 let seoData = { title: '', description: '', keywords: [], ogImage: '' }
+
+try {
+  const fs = await import('fs')
+  const path = await import('path')
+  const pkgPath = path.resolve(process.cwd(), 'package.json')
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+  seoData = {
+    title: String(pkg.name || ''),
+    description: String(pkg.description || ''),
+    keywords: pkg.keywords && Array.isArray(pkg.keywords) ? pkg.keywords : [],
+    ogImage: '',
+  }
+} catch (e) {
+  // package.json not found
+}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">
@@ -23,6 +37,7 @@ let seoData = { title: '', description: '', keywords: [], ogImage: '' }
     </div>
 
     <div class="flex flex-col gap-6">
+      @if (seoData.title || seoData.description || seoData.keywords.length > 0 || seoData.ogImage)
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Default Meta Tags</span>
@@ -46,6 +61,15 @@ let seoData = { title: '', description: '', keywords: [], ogImage: '' }
           </div>
         </div>
       </div>
+      @else
+      <div class="flex flex-col items-center justify-center py-16 px-4">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+          <span class="text-2xl text-gray-400">&#x1F50D;</span>
+        </div>
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No SEO data yet</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">SEO insights will appear once your site has indexed pages.</p>
+      </div>
+      @endif
     </div>
   </div>
 @endsection

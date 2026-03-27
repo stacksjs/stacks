@@ -64,13 +64,7 @@ const statusClass = (s) => {
             @foreach (generalSettings as setting)
               <div class="flex justify-between items-center py-3 border-b last:border-0">
                 <label class="font-medium">{{ setting.key }}</label>
-                @if (setting.type === 'text' || setting.type === 'email')
-                  <input type="{{ setting.type }}" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" value="{{ setting.value }}" />
-                @else
-                  <select class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64">
-                    <option>{{ setting.value }}</option>
-                  </select>
-                @endif
+                  <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" value="{{ setting.value }}" />
               </div>
             @endforeach
           </div>
@@ -84,16 +78,10 @@ const statusClass = (s) => {
             @foreach (securitySettings as setting)
               <div class="flex justify-between items-center py-3 border-b last:border-0">
                 <label class="font-medium">{{ setting.key }}</label>
-                @if (setting.type === 'toggle')
-                  <label class="switch">
+                <label class="switch">
                     <input type="checkbox" {{ setting.value ? 'checked' : '' }} />
                     <span class="slider"></span>
                   </label>
-                @else
-                  <select class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-48">
-                    <option>{{ setting.value }}</option>
-                  </select>
-                @endif
               </div>
             @endforeach
           </div>
