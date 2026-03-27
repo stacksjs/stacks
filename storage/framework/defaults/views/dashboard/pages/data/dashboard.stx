@@ -53,6 +53,7 @@ try {
             <span class="font-semibold text-gray-900 dark:text-white">Tables</span>
             <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
           </div>
+          @if (tables.length > 0)
           <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
             <table class="w-full text-sm">
               <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -75,6 +76,11 @@ try {
               </tbody>
             </table>
           </div>
+          @else
+            <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+              <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+            </div>
+          @endif
         </div>
 
         <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">

@@ -7,6 +7,26 @@ export * from './types'
 export * from './utils'
 export * from './define-model'
 
+// Auto-configure the ORM database connection from project config.
+// This ensures model queries work without manual configureOrm() calls.
+import { configureOrm } from 'bun-query-builder'
+
+function autoConfigureOrm(): void {
+  try {
+    const dbPath = process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
+    const dialect = process.env.DB_CONNECTION || 'sqlite'
+
+    if (dialect === 'sqlite') {
+      configureOrm({ database: dbPath })
+    }
+  }
+  catch {
+    // Config not available yet — will be configured on first query via @stacksjs/database
+  }
+}
+
+autoConfigureOrm()
+
 // Re-export all model instances so Actions can use: import { User } from '@stacksjs/orm'
 export * from '../../../auto-imports/models'
 

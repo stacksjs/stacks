@@ -128,6 +128,7 @@ const statusClass = (s) => {
 
       <!-- Data Table -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+        @if (items.length > 0)
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -160,18 +161,17 @@ const statusClass = (s) => {
                       @elseif(col.name.startsWith('is_') || col.name.startsWith('has_'))
                         @if(item[col.name])
                           <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Yes</span>
-                        @else
+
                           <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">No</span>
-                        @endif
+
                       @elseif(col.name.includes('_url') || col.name.includes('url'))
                         @if(item[col.name])
                           <a href="{{ item[col.name] }}" class="text-blue-600 dark:text-blue-400 hover:underline text-xs" target="_blank">Link</a>
-                        @else
+
                           <span class="text-gray-400">-</span>
-                        @endif
-                      @else
+
                         {{ item[col.name] !== null && item[col.name] !== undefined ? item[col.name] : '-' }}
-                      @endif
+
                     </td>
                   @endforeach
                   <td class="px-4 py-3 text-right">
@@ -197,6 +197,11 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
+        @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+          </div>
+        @endif
 
         <!-- Pagination -->
         <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">

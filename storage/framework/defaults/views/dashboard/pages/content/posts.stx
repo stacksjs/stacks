@@ -61,6 +61,7 @@ try {
 
     <!-- Posts Table -->
     <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 shadow-sm">
+      @if (posts.length > 0)
       <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
         <table class="w-full text-sm">
           <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -84,9 +85,9 @@ try {
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400">Draft</span>
                   @elseif (post.status === 'scheduled')
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">Scheduled</span>
-                  @else
+
                     <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ post.status }}</span>
-                  @endif
+
                 </td>
                 <td class="px-4 py-3 text-gray-600 dark:text-gray-400">{{ post.author }}</td>
                 <td class="px-4 py-3 text-gray-500 dark:text-gray-400">{{ post.date }}</td>
@@ -102,6 +103,11 @@ try {
           </tbody>
         </table>
       </div>
+      @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+          <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+        </div>
+      @endif
 
       @if (posts.length === 0)
         <div class="text-center py-12">

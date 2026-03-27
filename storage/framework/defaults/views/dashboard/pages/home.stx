@@ -101,6 +101,7 @@ try {
         <span class="font-semibold text-gray-900 dark:text-white">Recent Activity</span>
         <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">View All</button>
       </div>
+      @if (activities.length > 0)
       <div class="overflow-x-auto">
         <table class="w-full">
           <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -127,6 +128,11 @@ try {
           </tbody>
         </table>
       </div>
+      @else
+        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+          <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+        </div>
+      @endif
     </div>
 </div>
 </DashboardLayout>

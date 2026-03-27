@@ -50,6 +50,7 @@ try {
 
       <!-- Files Table -->
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        @if (files.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -73,9 +74,9 @@ try {
                           I
                         @elseif (file.type === 'document')
                           D
-                        @else
+
                           V
-                        @endif
+
                       </div>
                       <span class="font-medium text-gray-900 dark:text-white">{{ file.name }}</span>
                     </div>
@@ -86,9 +87,9 @@ try {
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
                     @if (file.items)
                       {{ file.items }} items
-                    @else
+
                       {{ file.size }}
-                    @endif
+
                   </td>
                   <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ file.modified }}</td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
@@ -99,6 +100,11 @@ try {
             </tbody>
           </table>
         </div>
+        @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+          </div>
+        @endif
       </div>
     </div>
   </div>

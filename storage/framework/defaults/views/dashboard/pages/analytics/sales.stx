@@ -55,6 +55,7 @@ try {
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">Daily Sales</span>
         </div>
+        @if (dailySales.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -77,6 +78,11 @@ try {
             </tbody>
           </table>
         </div>
+        @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+          </div>
+        @endif
       </div>
 
       <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">

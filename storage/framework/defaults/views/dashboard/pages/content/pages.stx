@@ -49,6 +49,7 @@ const statusClass = (s) => {
 
     <div class="flex flex-col gap-6">
       <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
+        @if (pages.length > 0)
         <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
           <table class="w-full text-sm">
             <thead class="bg-gray-50 dark:bg-gray-700/50">
@@ -77,6 +78,11 @@ const statusClass = (s) => {
             </tbody>
           </table>
         </div>
+        @else
+          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
+            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+          </div>
+        @endif
       </div>
     </div>
   </div>
