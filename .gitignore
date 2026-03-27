@@ -52,6 +52,7 @@ generated/*
 .stx-serve
 custom-cli
 *bun-build
+discovered-packages.json
 
 # Stub workspace packages (temporary)
 /ts-auth
