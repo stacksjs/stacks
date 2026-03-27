@@ -120,12 +120,33 @@ export function buildManifest(models: DiscoveredModel[]): Array<{ id: string, na
   }))
 }
 
+/** Check if a port is available by attempting to listen on it */
+export async function isPortAvailable(port: number): Promise<boolean> {
+  try {
+    const server = Bun.serve({ port, fetch: () => new Response() })
+    server.stop(true)
+    return true
+  }
+  catch {
+    return false
+  }
+}
+
+/** Find an available port starting from the preferred port */
+export async function findAvailablePort(preferred: number, maxAttempts = 20): Promise<number> {
+  for (let i = 0; i < maxAttempts; i++) {
+    const port = preferred + i
+    if (await isPortAvailable(port)) return port
+  }
+  return preferred
+}
+
 /** Wait for STX server to accept connections */
 export async function waitForServer(port: number, maxWait = 500): Promise<boolean> {
   const start = Date.now()
   while (Date.now() - start < maxWait) {
     try {
-      const res = await fetch(`http://localhost:${port}/app`, { method: 'HEAD' })
+      const res = await fetch(`http://localhost:${port}/home`, { method: 'HEAD' })
       if (res.ok || res.status === 404) return true
     }
     catch {
@@ -144,7 +165,7 @@ export function buildSidebarConfig(baseRoute: string, discoveredModels: Discover
         id: 'home',
         title: 'Home',
         items: [
-          { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/index` },
+          { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/home` },
           { id: 'dependencies', label: 'Dependencies', icon: 'shippingbox.fill', url: `${baseRoute}/home/dependencies` },
           { id: 'services', label: 'Services', icon: 'square.stack.3d.up.fill', url: `${baseRoute}/home/services` },
         ],
@@ -267,5 +288,5 @@ export function buildSidebarConfig(baseRoute: string, discoveredModels: Discover
 
 /** Build the initial URL with native-sidebar flag */
 export function buildDashboardUrl(port: number): string {
-  return `http://localhost:${port}/app?native-sidebar=1`
+  return `http://localhost:${port}/home?native-sidebar=1`
 }

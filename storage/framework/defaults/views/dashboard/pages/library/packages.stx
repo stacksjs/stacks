@@ -2,20 +2,30 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const fs = await import('fs')
+const path = await import('path')
 
 let packages = []
 let stats = []
 
 try {
-  const res = await fetch(API_URL + '/library/packages')
-  if (res.ok) {
-    const json = await res.json()
-    packages = json.packages || []
-    stats = json.stats || []
-  }
+  const pkgPath = path.resolve(process.cwd(), 'package.json')
+  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+  const deps = { ...(pkgJson.dependencies || {}), ...(pkgJson.devDependencies || {}) }
+  packages = Object.entries(deps).map(([name, version]) => ({
+    name,
+    version: String(version),
+    status: String(version).includes('workspace:') ? 'Workspace' : 'Published',
+    type: name.startsWith('@stacksjs/') ? 'Framework' : 'Third-Party',
+  }))
+  stats = [
+    { value: String(packages.length), label: 'Total Packages' },
+    { value: String(packages.filter(p => p.status === 'Published').length), label: 'Published' },
+    { value: String(packages.filter(p => p.status === 'Workspace').length), label: 'Workspace' },
+    { value: String(packages.filter(p => p.type === 'Framework').length), label: 'Framework' },
+  ]
 } catch (e) {
-  // API not available
+  // package.json not available
 }
 
 const statusClass = (s) => {

@@ -170,6 +170,7 @@ export function buddyOptions(options?: string[] | Record<string, any>): string {
 
   if (typeof options === 'object' && options !== null) {
     return Object.entries(options)
+      .filter(([, value]) => value !== false && value !== undefined && value !== null)
       .map(([key, value]) => {
         if (value === true)
           return `--${key}`

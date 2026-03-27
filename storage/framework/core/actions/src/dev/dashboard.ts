@@ -2,10 +2,12 @@ import process from 'node:process'
 import { readFileSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
-import { createApp } from '@craft-native/ts'
-import { buildDashboardUrl, buildManifest, buildSidebarConfig, discoverModels, waitForServer } from './dashboard-utils'
+import { buildDashboardUrl, buildManifest, buildSidebarConfig, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
 
-const verbose = process.argv.includes('--verbose')
+// buddyOptions serializes `verbose: false` as `--verbose false`, so
+// process.argv.includes('--verbose') would always match. Check the value too.
+const verboseIdx = process.argv.indexOf('--verbose')
+const verbose = verboseIdx !== -1 && process.argv[verboseIdx + 1] !== 'false'
 const startTime = Bun.nanoseconds()
 
 // Buffer all dependency console output (STX serve, Crosswind, bun-router)
@@ -22,8 +24,12 @@ console.warn = (...args: unknown[]) => {
 }
 
 const dashboardPath = storagePath('framework/defaults/views/dashboard')
+const dashboardPagesPath = `${dashboardPath}/pages`
 const userDashboardPath = projectPath('resources/views/dashboard')
-const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
+const userDashboardPagesPath = `${userDashboardPath}/pages`
+const preferredPort = Number(process.env.PORT_ADMIN) || 3002
+// eslint-disable-next-line ts/no-top-level-await
+const dashboardPort = await findAvailablePort(preferredPort)
 
 // Determine if we have a custom domain (like stacks.localhost)
 const appUrl = process.env.APP_URL || ''
@@ -34,7 +40,13 @@ const sslBasePath = `${process.env.HOME}/.stacks/ssl`
 
 function restoreConsole(): void {
   console.log = originalConsoleLog
-  console.warn = originalConsoleWarn
+  // Filter STX DOM API violation warnings — server-side only, code runs fine in browser
+  console.warn = (...args: unknown[]) => {
+    const msg = args.map(String).join(' ')
+    if (msg.includes('[STX] DOM API violation'))
+      return
+    originalConsoleWarn(...args)
+  }
 }
 
 async function startStxServer(): Promise<void> {
@@ -48,17 +60,21 @@ async function startStxServer(): Promise<void> {
     serve = mod.serve
   }
 
+  // serve() starts a long-lived server — do NOT await it.
+  // It resolves only when the server stops, which is never during dev.
   const serverPromise = serve({
-    patterns: [userDashboardPath, dashboardPath],
+    patterns: [userDashboardPagesPath, dashboardPagesPath],
     port: dashboardPort,
     componentsDir: storagePath('framework/defaults/components/Dashboard'),
-    layoutsDir: `${dashboardPath}/layouts`,
+    layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
     quiet: true,
   })
 
   serverPromise.catch((err: Error) => {
-    console.error(`[Dashboard] STX server failed to start: ${err.message}`)
+    restoreConsole()
+    console.error(`\n  Failed to start dashboard server: ${err?.message || err}\n`)
+    process.exit(1)
   })
 }
 
@@ -95,7 +111,7 @@ async function startReverseProxy(): Promise<boolean> {
 }
 
 // Config API server for dashboard editing
-const configApiPort = dashboardPort + 1 // 3457
+const configApiPort = dashboardPort + 1
 function jsonResponse(data: unknown, status = 200, extraHeaders: Record<string, string> = {}): Response {
   return new Response(JSON.stringify(data), {
     status,
@@ -195,9 +211,9 @@ const dashboardHttpsUrl = dashboardDomain ? `https://${dashboardDomain}` : null
 const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 
 // Use local HTTP URL — Craft webview loads directly, no proxy needed
-const baseRoute = `${dashboardLocalUrl}/pages`
+const baseRoute = dashboardLocalUrl
 const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels)
-const initialUrl = `http://localhost:${dashboardPort}/pages/home?native-sidebar=1`
+const initialUrl = `http://localhost:${dashboardPort}/home?native-sidebar=1`
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
@@ -215,6 +231,9 @@ else {
 }
 console.log(`  ${green('➜')}  ${bold('Window')}:  ${dim('Stacks Dashboard')} ${dim('1400×900')}`)
 console.log(`  ${green('➜')}  ${bold('Models')}:  ${dim(`${discoveredModels.length} discovered`)}`)
+if (dashboardPort !== preferredPort) {
+  console.log(`  ${dim('➜')}  ${dim(`Port ${preferredPort} in use, using ${dashboardPort}`)}`)
+}
 if (!serverReady) {
   console.log(`  ${dim('⚠')}  ${dim('Dev server may not be ready yet')}`)
 }
@@ -239,6 +258,10 @@ if (verbose) {
 }
 console.log()
 /* eslint-enable no-console */
+
+// Import @craft-native/ts dynamically — its static import triggers bun-router
+// config loading which prints warnings before our console.log override is active.
+const { createApp } = await import('@craft-native/ts')
 
 const app = createApp({
   url: initialUrl,

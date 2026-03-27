@@ -2,22 +2,31 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { GiftCard } = await import('@stacksjs/orm')
 
 let giftCards = []
 let stats = []
 let denominations = ['$25', '$50', '$75', '$100', '$150', '$200', 'Custom']
 
 try {
-  const res = await fetch(API_URL + '/dashboard/commerce/gift-cards')
-  if (res.ok) {
-    const json = await res.json()
-    giftCards = json.giftCards || []
-    stats = json.stats || []
-    denominations = json.denominations || denominations
-  }
+  const allCards = await GiftCard.orderBy('created_at', 'desc').get()
+  giftCards = allCards.map(c => ({
+    code: String(c.get('code') || ''),
+    balance: '$' + String(c.get('balance') || c.get('remaining_balance') || '0.00'),
+    initial: '$' + String(c.get('initial_balance') || c.get('amount') || '0.00'),
+    recipient: String(c.get('recipient_email') || c.get('recipient') || ''),
+    status: String(c.get('status') || 'Active'),
+    created: String(c.get('created_at') || ''),
+  }))
+  const totalValue = allCards.reduce((sum, c) => sum + Number(c.get('balance') || c.get('remaining_balance') || 0), 0)
+  stats = [
+    { value: String(allCards.length), label: 'Total Gift Cards' },
+    { value: '$' + totalValue.toFixed(2), label: 'Outstanding Balance' },
+    { value: String(allCards.filter(c => String(c.get('status') || '').toLowerCase() === 'active').length), label: 'Active' },
+    { value: String(allCards.filter(c => String(c.get('status') || '').toLowerCase() === 'redeemed' || Number(c.get('balance') || c.get('remaining_balance') || 0) === 0).length), label: 'Redeemed' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

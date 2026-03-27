@@ -2,25 +2,11 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let shipments = []
 let stats = []
 let carriers = []
 let zones = []
-
-try {
-  const res = await fetch(API_URL + '/dashboard/commerce/delivery')
-  if (res.ok) {
-    const json = await res.json()
-    shipments = json.shipments || []
-    stats = json.stats || []
-    carriers = json.carriers || []
-    zones = json.zones || []
-  }
-} catch (e) {
-  // API not available
-}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'

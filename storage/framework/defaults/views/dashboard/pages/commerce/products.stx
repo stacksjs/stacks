@@ -2,22 +2,30 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Product } = await import('@stacksjs/orm')
 
 let products = []
 let stats = []
 let categories = ['All Categories', 'Electronics', 'Clothing', 'Books', 'General']
 
 try {
-  const res = await fetch(API_URL + '/dashboard/commerce/products')
-  if (res.ok) {
-    const json = await res.json()
-    products = json.products || []
-    stats = json.stats || []
-    categories = json.categories || categories
-  }
+  const allProducts = await Product.orderBy('created_at', 'desc').get()
+  products = allProducts.map(p => ({
+    name: String(p.get('name') || ''),
+    sku: String(p.get('sku') || p.get('key') || ''),
+    category: String(p.get('category') || 'General'),
+    price: '$' + String(p.get('price') || p.get('unit_price') || '0.00'),
+    stock: String(p.get('stock') || p.get('quantity') || '0'),
+    status: String(p.get('status') || 'Active'),
+  }))
+  stats = [
+    { value: String(allProducts.length), label: 'Total Products' },
+    { value: String(allProducts.filter(p => String(p.get('status') || '').toLowerCase() === 'active').length), label: 'Active' },
+    { value: String(allProducts.filter(p => Number(p.get('stock') || p.get('quantity') || 0) === 0).length), label: 'Out of Stock' },
+    { value: String(allProducts.filter(p => String(p.get('status') || '').toLowerCase() === 'draft').length), label: 'Draft' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

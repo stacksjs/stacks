@@ -1,7 +1,7 @@
 <script client>
 // Map Craft sidebar itemIds to stx page routes
 const sidebarRoutes = {
-  'home': '/',
+  'home': '/home',
   'dependencies': '/home/dependencies',
   'services': '/home/services',
   'components': '/library/components',
@@ -68,16 +68,20 @@ const sidebarRoutes = {
 window.craft = window.craft || {}
 window.craft._sidebarSelectHandler = (event) => {
   const url = sidebarRoutes[event.itemId]
-  if (url) navigate(url)
+    || (event.itemId && event.itemId.startsWith('model-') ? '/data/' + event.itemId.slice(6) : null)
+  if (url) window.location.assign(url)
 }
 </script>
 
-<main>
-  @slot('content')
-</main>
-
-<style>
-body {
-  @apply bg-neutral-100 dark:bg-neutral-950;
-}
-</style>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stacks Dashboard</title>
+</head>
+<body class="bg-neutral-100 dark:bg-neutral-950">
+  <main>
+    @slot('content')
+  </main>
+</body>
+</html>

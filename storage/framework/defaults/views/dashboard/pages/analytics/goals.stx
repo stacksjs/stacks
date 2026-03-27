@@ -2,23 +2,10 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let goals = []
 let stats = []
 let conversions = []
-
-try {
-  const res = await fetch(API_URL + '/analytics/events')
-  if (res.ok) {
-    const json = await res.json()
-    goals = json.goals || []
-    stats = json.stats || []
-    conversions = json.conversions || []
-  }
-} catch (e) {
-  // API not available
-}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'

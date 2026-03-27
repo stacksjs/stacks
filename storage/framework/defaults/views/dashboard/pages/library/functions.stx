@@ -2,18 +2,24 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const fs = await import('fs')
+const path = await import('path')
 
 let functions = []
 
 try {
-  const res = await fetch(API_URL + '/library/functions')
-  if (res.ok) {
-    const json = await res.json()
-    functions = json.functions || []
+  const functionsDir = path.resolve(process.cwd(), 'resources/functions')
+  if (fs.existsSync(functionsDir)) {
+    const files = fs.readdirSync(functionsDir, { recursive: true })
+    functions = files
+      .filter(f => String(f).endsWith('.ts') || String(f).endsWith('.js'))
+      .map(f => {
+        const name = path.basename(String(f), path.extname(String(f)))
+        return { name, path: String(f), type: path.extname(String(f)).slice(1) }
+      })
   }
 } catch (e) {
-  // API not available
+  // resources/functions not available
 }
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

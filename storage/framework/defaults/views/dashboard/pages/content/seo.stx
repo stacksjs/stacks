@@ -8,19 +8,8 @@
  * Configure search engine optimization.
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let seoData = { title: '', description: '', keywords: [], ogImage: '' }
-
-try {
-  const res = await fetch(API_URL + '/cms/seo')
-  if (res.ok) {
-    const json = await res.json()
-    seoData = json.seoData || { title: '', description: '', keywords: [], ogImage: '' }
-  }
-} catch (e) {
-  // API not available
-}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

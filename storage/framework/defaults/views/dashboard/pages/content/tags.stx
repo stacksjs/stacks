@@ -8,19 +8,8 @@
  * Manage content tags.
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let tags = []
-
-try {
-  const res = await fetch(API_URL + '/dashboard/cms/tags')
-  if (res.ok) {
-    const json = await res.json()
-    tags = json.tags || []
-  }
-} catch (e) {
-  // API not available
-}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

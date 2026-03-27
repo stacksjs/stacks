@@ -104,12 +104,13 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   }
 
   // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath
-  const opts = buddyOptions(options) || ''
   const path = p.relativeActionsPath(`src/${action}.ts`)
 
   // Use --watch for dev actions to enable hot reloading
   const isDevAction = action.startsWith('dev/')
   const watchFlag = isDevAction ? '--watch' : ''
+  // Dev actions manage their own config — don't pass CLI flags that trigger dep loading
+  const opts = isDevAction ? '' : (buddyOptions(options) || '')
   const cmd = `bun ${watchFlag} ${path} ${opts}`.trimEnd()
 
   // Ensure pantry packages are resolvable via NODE_PATH
@@ -119,16 +120,16 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
   const existingNodePath = process.env.NODE_PATH
   const nodePath = existingNodePath ? `${pantryNodePath}:${existingNodePath}` : pantryNodePath
 
+  // Dev actions manage their own output (buffered banners, etc.), so inherit
+  // stdout/stderr by default. Suppress with quiet (used by multi-server mode).
+  const shouldInherit = options?.verbose || (isDevAction && !options?.quiet)
+
   const optionsWithCwd: CliOptions = {
     cwd: options?.cwd || p.projectPath(),
     ...options,
-    // Explicitly set stdout/stderr to 'inherit' when verbose so subprocess
-    // output (including log.info which writes to stderr) is always visible
-    stdout: options?.verbose ? 'inherit' : undefined,
-    stderr: options?.verbose ? 'inherit' : undefined,
+    stdout: shouldInherit ? 'inherit' : undefined,
+    stderr: shouldInherit ? 'inherit' : undefined,
     env: { ...options?.env, NODE_PATH: nodePath },
-    // Suppress stdout for dev actions (output handled by unified dev output)
-    ...(isDevAction && !options?.verbose && { quiet: true }),
   }
 
   return await runCommand(cmd, optionsWithCwd)

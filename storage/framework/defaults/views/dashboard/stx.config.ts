@@ -8,4 +8,5 @@ export default {
   router: {
     container: 'main',
   },
+  strict: false,
 }

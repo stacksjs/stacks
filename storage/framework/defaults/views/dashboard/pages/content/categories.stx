@@ -6,18 +6,21 @@
  * Categories Page
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Category } = await import('@stacksjs/orm')
 
 let categories = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/cms/categories')
-  if (res.ok) {
-    const json = await res.json()
-    categories = json.categories || []
-  }
+  const allCategories = await Category.orderBy('created_at', 'desc').get()
+  categories = allCategories.map(c => ({
+    id: String(c.get('id') || ''),
+    name: String(c.get('name') || ''),
+    slug: String(c.get('slug') || ''),
+    description: String(c.get('description') || ''),
+    postCount: String(c.get('posts_count') || '0'),
+  }))
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 </script>
 

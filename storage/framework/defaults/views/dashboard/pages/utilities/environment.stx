@@ -2,22 +2,40 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const fs = await import('fs')
+const path = await import('path')
 
 let environments = []
 let variables = []
 let stats = []
 
 try {
-  const res = await fetch(API_URL + '/infrastructure/environment')
-  if (res.ok) {
-    const json = await res.json()
-    environments = json.environments || []
-    variables = json.variables || []
-    stats = json.stats || []
+  const envPath = path.resolve(process.cwd(), '.env')
+  if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf-8')
+    const lines = envContent.split('\n').filter(l => l.trim() && !l.trim().startsWith('#'))
+    variables = lines.map(line => {
+      const [key, ...rest] = line.split('=')
+      const value = rest.join('=').trim()
+      const isSecret = /secret|password|key|token/i.test(key || '')
+      return { key: String(key || '').trim(), value: isSecret ? '••••••••' : value, secret: isSecret }
+    })
+    environments = [
+      { name: 'Development', file: '.env', variables: variables.length, status: 'Active' },
+    ]
+    const envProdPath = path.resolve(process.cwd(), '.env.production')
+    if (fs.existsSync(envProdPath)) {
+      const prodLines = fs.readFileSync(envProdPath, 'utf-8').split('\n').filter(l => l.trim() && !l.trim().startsWith('#'))
+      environments.push({ name: 'Production', file: '.env.production', variables: prodLines.length, status: 'Configured' })
+    }
+    stats = [
+      { value: String(variables.length), label: 'Variables' },
+      { value: String(variables.filter(v => v.secret).length), label: 'Secrets' },
+      { value: String(environments.length), label: 'Environments' },
+    ]
   }
 } catch (e) {
-  // API not available
+  // .env not available
 }
 
 const statusClass = (s) => {

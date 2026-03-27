@@ -6,7 +6,7 @@
  * Posts Page
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Post } = await import('@stacksjs/orm')
 
 let posts = []
 let categories = []
@@ -16,18 +16,20 @@ let draftCount = 0
 let scheduledCount = 0
 
 try {
-  const res = await fetch(API_URL + '/dashboard/cms/posts')
-  if (res.ok) {
-    const json = await res.json()
-    posts = json.posts || []
-    categories = json.categories || []
-    tags = json.tags || []
-    publishedCount = json.publishedCount || 0
-    draftCount = json.draftCount || 0
-    scheduledCount = json.scheduledCount || 0
-  }
+  const allPosts = await Post.orderBy('created_at', 'desc').get()
+  posts = allPosts.map(p => ({
+    id: String(p.get('id') || ''),
+    title: String(p.get('title') || ''),
+    status: String(p.get('status') || 'draft'),
+    author: String(p.get('author') || p.get('author_name') || ''),
+    date: String(p.get('published_at') || p.get('created_at') || ''),
+    views: Number(p.get('views') || 0),
+  }))
+  publishedCount = allPosts.filter(p => String(p.get('status') || '').toLowerCase() === 'published').length
+  draftCount = allPosts.filter(p => String(p.get('status') || '').toLowerCase() === 'draft').length
+  scheduledCount = allPosts.filter(p => String(p.get('status') || '').toLowerCase() === 'scheduled').length
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 </script>
 

@@ -2,22 +2,32 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Order } = await import('@stacksjs/orm')
 
 let orders = []
 let stats = []
 let filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 
 try {
-  const res = await fetch(API_URL + '/dashboard/commerce/orders')
-  if (res.ok) {
-    const json = await res.json()
-    orders = json.orders || []
-    stats = json.stats || []
-    filters = json.filters || filters
-  }
+  const allOrders = await Order.orderBy('created_at', 'desc').get()
+  orders = allOrders.map(o => ({
+    id: String(o.get('id') || ''),
+    customer: String(o.get('customer_name') || o.get('name') || ''),
+    items: String(o.get('items_count') || o.get('quantity') || '0'),
+    total: '$' + String(o.get('total') || o.get('amount') || '0.00'),
+    payment: String(o.get('payment_status') || 'Pending'),
+    status: String(o.get('status') || 'Pending'),
+    date: String(o.get('created_at') || ''),
+  }))
+  const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.get('total') || o.get('amount') || 0), 0)
+  stats = [
+    { value: String(allOrders.length), label: 'Total Orders' },
+    { value: '$' + totalRevenue.toFixed(2), label: 'Revenue' },
+    { value: String(allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'pending').length), label: 'Pending' },
+    { value: String(allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'processing').length), label: 'Processing' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

@@ -2,20 +2,30 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Coupon } = await import('@stacksjs/orm')
 
 let coupons = []
 let stats = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/commerce/coupons')
-  if (res.ok) {
-    const json = await res.json()
-    coupons = json.coupons || []
-    stats = json.stats || []
-  }
+  const allCoupons = await Coupon.orderBy('created_at', 'desc').get()
+  coupons = allCoupons.map(c => ({
+    code: String(c.get('code') || ''),
+    type: String(c.get('type') || c.get('discount_type') || 'Percentage'),
+    value: String(c.get('value') || c.get('discount') || c.get('amount') || '0'),
+    uses: String(c.get('uses') || c.get('times_used') || '0'),
+    limit: String(c.get('max_uses') || c.get('usage_limit') || ''),
+    expires: String(c.get('expires_at') || c.get('expiry_date') || ''),
+    status: String(c.get('status') || 'Active'),
+  }))
+  stats = [
+    { value: String(allCoupons.length), label: 'Total Coupons' },
+    { value: String(allCoupons.filter(c => String(c.get('status') || '').toLowerCase() === 'active').length), label: 'Active' },
+    { value: String(allCoupons.reduce((sum, c) => sum + Number(c.get('uses') || c.get('times_used') || 0), 0)), label: 'Total Uses' },
+    { value: String(allCoupons.filter(c => String(c.get('status') || '').toLowerCase() === 'expired').length), label: 'Expired' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

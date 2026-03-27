@@ -2,23 +2,10 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let tokens = []
 let stats = []
 let scopes = []
-
-try {
-  const res = await fetch(API_URL + '/data/access-tokens')
-  if (res.ok) {
-    const json = await res.json()
-    tokens = json.tokens || []
-    stats = json.stats || []
-    scopes = json.scopes || []
-  }
-} catch (e) {
-  // API not available
-}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'

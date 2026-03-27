@@ -2,7 +2,8 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const fs = await import('fs')
+const path = await import('path')
 
 let declared = []
 let transitive = []
@@ -15,21 +16,30 @@ let workspaceCount = 0
 let thirdPartyCount = 0
 
 try {
-  const res = await fetch(API_URL + '/library/dependencies')
-  if (res.ok) {
-    const json = await res.json()
-    declared = json.declared || []
-    transitive = json.transitive || []
-    thirdParty = json.thirdParty || []
-    workspace = json.workspace || []
-    stats = json.stats || []
-    totalCount = json.totalCount || 0
-    transitiveCount = json.transitiveCount || 0
-    workspaceCount = json.workspaceCount || 0
-    thirdPartyCount = json.thirdPartyCount || 0
-  }
+  const pkgPath = path.resolve(process.cwd(), 'package.json')
+  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
+  const deps = pkgJson.dependencies || {}
+  const devDeps = pkgJson.devDependencies || {}
+  const allDeps = { ...deps, ...devDeps }
+  thirdParty = Object.entries(allDeps)
+    .filter(([name]) => !name.startsWith('workspace:') && !name.startsWith('@stacksjs/'))
+    .map(([name, version]) => ({ name, version: String(version) }))
+  workspace = Object.entries(allDeps)
+    .filter(([name, version]) => String(version).includes('workspace:') || name.startsWith('@stacksjs/'))
+    .map(([name, version]) => ({ name, version: String(version) }))
+  declared = [...thirdParty, ...workspace]
+  thirdPartyCount = thirdParty.length
+  workspaceCount = workspace.length
+  totalCount = declared.length
+  transitiveCount = 0
+  stats = [
+    { value: String(totalCount), label: 'Total Declared' },
+    { value: String(thirdPartyCount), label: 'Third-Party' },
+    { value: String(workspaceCount), label: 'Workspace' },
+    { value: String(Object.keys(deps).length), label: 'Production' },
+  ]
 } catch (e) {
-  // API not available
+  // package.json not available
 }
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

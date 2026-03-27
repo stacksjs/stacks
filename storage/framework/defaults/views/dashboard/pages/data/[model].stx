@@ -2,8 +2,6 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
 let modelSlug = typeof model !== 'undefined' ? model : 'unknown'
 let tableName = modelSlug.replace(/-/g, '_').replace(/[^a-z0-9_]/gi, '') + 's'
 let modelName = modelSlug.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join(' ')
@@ -17,21 +15,37 @@ let statusBreakdown = {}
 let statusKeys = []
 
 try {
-  const res = await fetch(API_URL + '/models/' + encodeURIComponent(modelSlug))
-  if (res.ok) {
-    const json = await res.json()
-    items = json.items || []
-    columns = json.columns || []
-    totalCount = json.totalCount || 0
-    recentCount = json.recentCount || 0
-    statusBreakdown = json.statusBreakdown || {}
-    statusKeys = Object.keys(statusBreakdown)
-    if (json.tableName) tableName = json.tableName
-    if (json.modelName) modelName = json.modelName
-    if (json.error) error = json.error
+  const orm = await import('@stacksjs/orm')
+  const pascalName = modelSlug.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('')
+  const ModelClass = orm[pascalName]
+  if (ModelClass) {
+    const allItems = await ModelClass.orderBy('created_at', 'desc').get()
+    totalCount = allItems.length
+    if (allItems.length > 0) {
+      const first = allItems[0]
+      const attrs = first.getAttributes ? first.getAttributes() : {}
+      columns = Object.keys(attrs).filter(k => !['password', 'token', 'secret'].includes(k))
+      items = allItems.map(item => {
+        const row = {}
+        columns.forEach(col => { row[col] = String(item.get(col) || '') })
+        return row
+      })
+      const now = new Date()
+      recentCount = allItems.filter(item => {
+        const d = new Date(String(item.get('created_at') || ''))
+        return (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000
+      }).length
+      allItems.forEach(item => {
+        const s = String(item.get('status') || 'N/A')
+        statusBreakdown[s] = (statusBreakdown[s] || 0) + 1
+      })
+      statusKeys = Object.keys(statusBreakdown)
+    }
+  } else {
+    error = 'Model not found: ' + pascalName
   }
 } catch (e) {
-  error = 'API not available'
+  error = 'DB not seeded'
 }
 
 const statusClass = (s) => {

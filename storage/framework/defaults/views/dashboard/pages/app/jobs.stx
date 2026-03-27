@@ -2,20 +2,25 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Job } = await import('@stacksjs/orm')
 
 let jobs = []
 let queueConnected = false
 
 try {
-  const res = await fetch(API_URL + '/jobs/')
-  if (res.ok) {
-    const json = await res.json()
-    jobs = json.jobs || []
-    queueConnected = json.queueConnected || false
-  }
+  const allJobs = await Job.orderBy('created_at', 'desc').get()
+  jobs = allJobs.map(j => ({
+    name: String(j.get('name') || j.get('job_name') || ''),
+    queue: String(j.get('queue') || 'default'),
+    attempts: Number(j.get('attempts') || 0),
+    maxAttempts: Number(j.get('max_attempts') || 3),
+    duration: String(j.get('duration') || j.get('processing_time') || '-'),
+    createdAt: String(j.get('created_at') || ''),
+    status: String(j.get('status') || 'pending'),
+  }))
+  queueConnected = allJobs.length > 0
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

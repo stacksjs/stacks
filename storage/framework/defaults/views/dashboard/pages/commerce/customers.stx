@@ -2,20 +2,29 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Customer } = await import('@stacksjs/orm')
 
 let customers = []
 let stats = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/commerce/customers')
-  if (res.ok) {
-    const json = await res.json()
-    customers = json.customers || []
-    stats = json.stats || []
-  }
+  const allCustomers = await Customer.orderBy('created_at', 'desc').get()
+  customers = allCustomers.map(c => ({
+    name: String(c.get('name') || ''),
+    email: String(c.get('email') || ''),
+    orders: String(c.get('orders_count') || '0'),
+    spent: '$' + String(c.get('total_spent') || '0.00'),
+    lastOrder: String(c.get('last_order_date') || c.get('updated_at') || ''),
+    status: String(c.get('status') || 'Active'),
+  }))
+  stats = [
+    { value: String(allCustomers.length), label: 'Total Customers' },
+    { value: String(allCustomers.filter(c => String(c.get('status') || '').toLowerCase() === 'active').length), label: 'Active' },
+    { value: String(allCustomers.filter(c => Number(c.get('orders_count') || 0) > 0).length), label: 'With Orders' },
+    { value: String(allCustomers.filter(c => Number(c.get('orders_count') || 0) === 0).length), label: 'No Orders' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

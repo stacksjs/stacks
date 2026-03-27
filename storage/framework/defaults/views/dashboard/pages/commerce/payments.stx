@@ -2,22 +2,35 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Payment } = await import('@stacksjs/orm')
 
 let payments = []
 let stats = []
 let paymentMethods = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/commerce/payments')
-  if (res.ok) {
-    const json = await res.json()
-    payments = json.payments || []
-    stats = json.stats || []
-    paymentMethods = json.paymentMethods || []
-  }
+  const allPayments = await Payment.orderBy('created_at', 'desc').get()
+  payments = allPayments.map(p => ({
+    id: String(p.get('id') || ''),
+    order: String(p.get('order_id') || ''),
+    amount: '$' + String(p.get('amount') || '0.00'),
+    method: String(p.get('method') || p.get('payment_method') || ''),
+    status: String(p.get('status') || 'Pending'),
+    date: String(p.get('created_at') || ''),
+  }))
+  const totalAmount = allPayments.reduce((sum, p) => sum + Number(p.get('amount') || 0), 0)
+  stats = [
+    { value: String(allPayments.length), label: 'Total Transactions' },
+    { value: '$' + totalAmount.toFixed(2), label: 'Total Processed' },
+    { value: String(allPayments.filter(p => String(p.get('status') || '').toLowerCase() === 'completed' || String(p.get('status') || '').toLowerCase() === 'success').length), label: 'Successful' },
+    { value: String(allPayments.filter(p => String(p.get('status') || '').toLowerCase() === 'failed').length), label: 'Failed' },
+  ]
+  paymentMethods = [
+    { name: 'Credit Card', provider: 'Stripe', volume: String(allPayments.filter(p => String(p.get('method') || '').toLowerCase().includes('card') || String(p.get('method') || '').toLowerCase().includes('stripe')).length) + ' txns', status: 'Active' },
+    { name: 'PayPal', provider: 'PayPal', volume: String(allPayments.filter(p => String(p.get('method') || '').toLowerCase().includes('paypal')).length) + ' txns', status: 'Active' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

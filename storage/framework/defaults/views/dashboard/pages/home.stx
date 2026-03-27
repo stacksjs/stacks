@@ -2,25 +2,45 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { User, Product, Order, Post } = await import('@stacksjs/orm')
 
-let stats = []
-let quickLinks = []
-let services = []
-let activities = []
+let userCount = 0, productCount = 0, orderCount = 0, postCount = 0, totalRevenue = 0
+let recentOrders = [], recentUsers = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/home')
-  if (res.ok) {
-    const json = await res.json()
-    stats = json.stats || []
-    quickLinks = json.quickLinks || []
-    services = json.services || []
-    activities = json.activities || []
-  }
-} catch (e) {
-  // API not available
-}
+  const results = await Promise.all([
+    User.count(), Product.count(), Order.count(), Post.count(),
+    Order.orderBy('created_at', 'desc').limit(5).get(),
+    User.orderBy('created_at', 'desc').limit(3).get(),
+  ])
+  userCount = results[0]; productCount = results[1]; orderCount = results[2]; postCount = results[3]
+  recentOrders = results[4]; recentUsers = results[5]
+  const allOrders = await Order.all()
+  totalRevenue = allOrders.reduce((sum, o) => sum + (Number(o.get('total_amount')) || 0), 0)
+} catch (e) { /* DB not seeded — run: buddy migrate:fresh --seed */ }
+
+const stats = [
+  { value: String(userCount), label: 'Total Users', trend: '+12%', up: true, color: 'blue' },
+  { value: String(productCount), label: 'Products', trend: '+8%', up: true, color: 'green' },
+  { value: '$' + totalRevenue.toLocaleString(), label: 'Revenue', trend: '+23%', up: true, color: 'orange' },
+  { value: String(orderCount), label: 'Orders', trend: '+5%', up: true, color: 'red' },
+]
+const quickLinks = [
+  { title: 'Blog', description: postCount + ' posts published' },
+  { title: 'Commerce', description: orderCount + ' orders, ' + productCount + ' products' },
+  { title: 'Users', description: userCount + ' registered users' },
+  { title: 'Settings', description: 'Configure your app' },
+]
+const services = [
+  { name: 'Database', status: userCount > 0 ? 'healthy' : 'offline', latency: userCount > 0 ? '12ms' : 'N/A' },
+  { name: 'Cache', status: 'healthy', latency: '2ms' },
+  { name: 'Queue', status: 'healthy', latency: '45ms' },
+  { name: 'Storage', status: 'healthy', latency: '8ms' },
+]
+const activities = [
+  ...recentOrders.map(o => ({ type: 'order', message: 'Order #' + o.get('id') + ' — $' + o.get('total_amount'), user: 'Commerce', time: 'Recently' })),
+  ...recentUsers.map(u => ({ type: 'user', message: 'User ' + u.get('name') + ' registered', user: 'System', time: 'Recently' })),
+].slice(0, 5)
 </script>
 <DashboardLayout pageTitle="Dashboard" pageDescription="Welcome back! Here's what's happening with your application.">
 

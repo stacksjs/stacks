@@ -2,20 +2,28 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Request } = await import('@stacksjs/orm')
 
 let requests = []
 let stats = []
 
 try {
-  const res = await fetch(API_URL + '/infrastructure/requests')
-  if (res.ok) {
-    const json = await res.json()
-    requests = json.requests || []
-    stats = json.stats || []
-  }
+  const allRequests = await Request.orderBy('created_at', 'desc').get()
+  requests = allRequests.map(r => ({
+    method: String(r.get('method') || 'GET'),
+    path: String(r.get('path') || r.get('url') || ''),
+    status: Number(r.get('status') || r.get('status_code') || 200),
+    time: String(r.get('duration') || r.get('response_time') || ''),
+    timestamp: String(r.get('created_at') || ''),
+  }))
+  stats = [
+    { value: String(allRequests.length), label: 'Total Requests' },
+    { value: String(allRequests.filter(r => Number(r.get('status') || r.get('status_code') || 200) < 400).length), label: 'Successful' },
+    { value: String(allRequests.filter(r => Number(r.get('status') || r.get('status_code') || 200) >= 400).length), label: 'Errors' },
+    { value: String(allRequests.filter(r => Number(r.get('status') || r.get('status_code') || 200) >= 500).length), label: 'Server Errors' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const methodClass = (m) => {

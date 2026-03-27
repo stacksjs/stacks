@@ -6,18 +6,21 @@
  * Authors Page
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Author } = await import('@stacksjs/orm')
 
 let authors = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/cms/authors')
-  if (res.ok) {
-    const json = await res.json()
-    authors = json.authors || []
-  }
+  const allAuthors = await Author.orderBy('created_at', 'desc').get()
+  authors = allAuthors.map(a => ({
+    name: String(a.get('name') || ''),
+    email: String(a.get('email') || ''),
+    avatar: String(a.get('name') || '').charAt(0).toUpperCase(),
+    role: String(a.get('role') || 'Author'),
+    posts: String(a.get('posts_count') || '0'),
+  }))
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

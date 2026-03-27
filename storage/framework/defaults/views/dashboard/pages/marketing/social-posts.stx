@@ -2,23 +2,10 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let posts = []
 let stats = []
 let platforms = ['All', 'Twitter', 'LinkedIn', 'Instagram', 'Facebook']
-
-try {
-  const res = await fetch(API_URL + '/marketing/social-posts')
-  if (res.ok) {
-    const json = await res.json()
-    posts = json.posts || []
-    stats = json.stats || []
-    platforms = json.platforms || platforms
-  }
-} catch (e) {
-  // API not available
-}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'

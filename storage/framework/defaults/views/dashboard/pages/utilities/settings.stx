@@ -2,7 +2,8 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const fs = await import('fs')
+const path = await import('path')
 
 let generalSettings = []
 let securitySettings = []
@@ -10,16 +11,21 @@ let notificationSettings = []
 let integrations = []
 
 try {
-  const res = await fetch(API_URL + '/dashboard/settings')
-  if (res.ok) {
-    const json = await res.json()
-    generalSettings = json.generalSettings || []
-    securitySettings = json.securitySettings || []
-    notificationSettings = json.notificationSettings || []
-    integrations = json.integrations || []
+  const configDir = path.resolve(process.cwd(), 'config')
+  if (fs.existsSync(configDir)) {
+    const configFiles = fs.readdirSync(configDir).filter(f => f.endsWith('.ts') || f.endsWith('.js'))
+    generalSettings = configFiles.slice(0, 5).map(f => ({
+      label: path.basename(f, path.extname(f)).replace(/-/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+      value: f,
+      type: 'file',
+    }))
   }
+  securitySettings = []
+  notificationSettings = []
+  integrations = []
+  // Full settings available when dev server runs (buddy dev)
 } catch (e) {
-  // API not available
+  // config/ not available
 }
 
 const statusClass = (s) => {

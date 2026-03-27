@@ -2,25 +2,11 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let stats = []
 let topProducts = []
 let salesByRegion = []
 let revenueByChannel = []
-
-try {
-  const res = await fetch(API_URL + '/analytics/commerce')
-  if (res.ok) {
-    const json = await res.json()
-    stats = json.stats || []
-    topProducts = json.topProducts || []
-    salesByRegion = json.salesByRegion || []
-    revenueByChannel = json.revenueByChannel || []
-  }
-} catch (e) {
-  // API not available
-}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

@@ -2,7 +2,7 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Log } = await import('@stacksjs/orm')
 
 let logs = []
 let stats = []
@@ -10,16 +10,22 @@ let levels = ['All', 'Error', 'Warning', 'Info', 'Debug']
 let sources = ['All Sources']
 
 try {
-  const res = await fetch(API_URL + '/infrastructure/logs')
-  if (res.ok) {
-    const json = await res.json()
-    logs = json.logs || []
-    stats = json.stats || []
-    levels = json.levels || levels
-    sources = json.sources || sources
-  }
+  const allLogs = await Log.orderBy('created_at', 'desc').get()
+  logs = allLogs.map(l => ({
+    id: String(l.get('id') || ''),
+    level: String(l.get('level') || 'info'),
+    message: String(l.get('message') || ''),
+    source: String(l.get('source') || l.get('channel') || ''),
+    timestamp: String(l.get('created_at') || ''),
+  }))
+  stats = [
+    { value: String(allLogs.length), label: 'Total Logs' },
+    { value: String(allLogs.filter(l => String(l.get('level') || '').toLowerCase() === 'error').length), label: 'Errors' },
+    { value: String(allLogs.filter(l => String(l.get('level') || '').toLowerCase() === 'warning').length), label: 'Warnings' },
+    { value: String(allLogs.filter(l => String(l.get('level') || '').toLowerCase() === 'info').length), label: 'Info' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

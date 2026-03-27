@@ -6,21 +6,9 @@
  * Comments Moderation Page
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let comments = []
 let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
-
-try {
-  const res = await fetch(API_URL + '/dashboard/cms/comments')
-  if (res.ok) {
-    const json = await res.json()
-    comments = json.comments || []
-    stats = json.stats || { total: 0, pending: 0, approved: 0, spam: 0 }
-  }
-} catch (e) {
-  // API not available
-}
 </script>
 
 <div ref="pageRoot">

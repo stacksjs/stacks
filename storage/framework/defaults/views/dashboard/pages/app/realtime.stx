@@ -2,21 +2,9 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let channels = []
 let stats = { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }
-
-try {
-  const res = await fetch(API_URL + '/realtime/stats')
-  if (res.ok) {
-    const json = await res.json()
-    channels = json.channels || []
-    stats = json.stats || { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }
-  }
-} catch (e) {
-  // API not available
-}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

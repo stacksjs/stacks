@@ -2,20 +2,25 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const fs = await import('fs')
+const path = await import('path')
 
 let components = []
 let categories = ['All', 'Forms', 'Layout', 'Overlay', 'Data', 'Display', 'Navigation']
 
 try {
-  const res = await fetch(API_URL + '/library/components')
-  if (res.ok) {
-    const json = await res.json()
-    components = json.components || []
-    categories = json.categories || categories
+  const componentsDir = path.resolve(process.cwd(), 'resources/components')
+  if (fs.existsSync(componentsDir)) {
+    const files = fs.readdirSync(componentsDir, { recursive: true })
+    components = files
+      .filter(f => String(f).endsWith('.stx') || String(f).endsWith('.vue'))
+      .map(f => {
+        const name = path.basename(String(f), path.extname(String(f)))
+        return { name, path: String(f), category: 'General' }
+      })
   }
 } catch (e) {
-  // API not available
+  // resources/components not available
 }
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

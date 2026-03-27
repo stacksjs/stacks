@@ -2,22 +2,30 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Subscriber } = await import('@stacksjs/orm')
 
 let subscribers = []
 let stats = []
 let plans = ['All Plans', 'Basic', 'Pro', 'Enterprise']
 
 try {
-  const res = await fetch(API_URL + '/data/subscribers')
-  if (res.ok) {
-    const json = await res.json()
-    subscribers = json.subscribers || []
-    stats = json.stats || []
-    plans = json.plans || plans
-  }
+  const allSubscribers = await Subscriber.orderBy('created_at', 'desc').get()
+  subscribers = allSubscribers.map(s => ({
+    id: String(s.get('id') || ''),
+    name: String(s.get('name') || ''),
+    email: String(s.get('email') || ''),
+    plan: String(s.get('plan') || s.get('subscription_type') || 'Basic'),
+    status: String(s.get('status') || 'Active'),
+    subscribed: String(s.get('subscribed_at') || s.get('created_at') || ''),
+  }))
+  stats = [
+    { value: String(allSubscribers.length), label: 'Total Subscribers' },
+    { value: String(allSubscribers.filter(s => String(s.get('status') || '').toLowerCase() === 'active').length), label: 'Active' },
+    { value: String(allSubscribers.filter(s => { const d = new Date(String(s.get('created_at') || '')); const now = new Date(); return (now.getTime() - d.getTime()) < 30 * 24 * 60 * 60 * 1000 }).length), label: 'New (30d)' },
+    { value: String(allSubscribers.filter(s => String(s.get('status') || '').toLowerCase() === 'cancelled' || String(s.get('status') || '').toLowerCase() === 'inactive').length), label: 'Churned' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

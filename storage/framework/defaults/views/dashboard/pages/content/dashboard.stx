@@ -8,22 +8,29 @@
  * Overview of blog and content performance.
  */
 
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { Post } = await import('@stacksjs/orm')
 
 let stats = []
 let topPosts = []
 let recentComments = []
 
 try {
-  const res = await fetch(API_URL + '/cms/dashboard')
-  if (res.ok) {
-    const json = await res.json()
-    stats = json.stats || []
-    topPosts = json.topPosts || []
-    recentComments = json.recentComments || []
-  }
+  const allPosts = await Post.orderBy('created_at', 'desc').get()
+  const publishedPosts = allPosts.filter(p => String(p.get('status') || '').toLowerCase() === 'published')
+  topPosts = publishedPosts.slice(0, 5).map(p => ({
+    title: String(p.get('title') || ''),
+    views: Number(p.get('views') || 0),
+    comments: String(p.get('comments_count') || '0'),
+    date: String(p.get('published_at') || p.get('created_at') || ''),
+  }))
+  stats = [
+    { value: String(allPosts.length), label: 'Total Posts', trend: '' },
+    { value: String(publishedPosts.length), label: 'Published', trend: '' },
+    { value: String(allPosts.filter(p => String(p.get('status') || '').toLowerCase() === 'draft').length), label: 'Drafts', trend: '' },
+    { value: String(allPosts.reduce((sum, p) => sum + Number(p.get('views') || 0), 0)), label: 'Total Views', trend: '' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">

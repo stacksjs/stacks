@@ -2,21 +2,9 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let queries = []
 let stats = []
-
-try {
-  const res = await fetch(API_URL + '/queries/dashboard')
-  if (res.ok) {
-    const json = await res.json()
-    queries = json.queries || []
-    stats = json.stats || []
-  }
-} catch (e) {
-  // API not available
-}
 </script>
 <div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
     <div class="flex items-start justify-between mb-8">

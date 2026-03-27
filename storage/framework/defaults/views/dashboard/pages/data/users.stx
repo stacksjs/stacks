@@ -2,22 +2,31 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
+const { User } = await import('@stacksjs/orm')
 
 let users = []
 let stats = []
 let roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
 
 try {
-  const res = await fetch(API_URL + '/data/users')
-  if (res.ok) {
-    const json = await res.json()
-    users = json.users || []
-    stats = json.stats || []
-    roles = json.roles || roles
-  }
+  const allUsers = await User.orderBy('created_at', 'desc').get()
+  users = allUsers.map(u => ({
+    id: String(u.get('id') || ''),
+    name: String(u.get('name') || ''),
+    email: String(u.get('email') || ''),
+    role: String(u.get('role') || 'User'),
+    status: String(u.get('status') || 'Active'),
+    lastLogin: String(u.get('last_login_at') || u.get('updated_at') || ''),
+    created: String(u.get('created_at') || ''),
+  }))
+  stats = [
+    { value: String(allUsers.length), label: 'Total Users' },
+    { value: String(allUsers.filter(u => String(u.get('status') || '').toLowerCase() === 'active').length), label: 'Active' },
+    { value: String(allUsers.filter(u => String(u.get('role') || '').toLowerCase() === 'admin').length), label: 'Admins' },
+    { value: String(allUsers.filter(u => { const d = new Date(String(u.get('created_at') || '')); const now = new Date(); return (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000 }).length), label: 'New (7d)' },
+  ]
 } catch (e) {
-  // API not available
+  // DB not seeded
 }
 
 const statusClass = (s) => {

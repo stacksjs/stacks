@@ -1,20 +1,17 @@
 import type { CLI, DevOptions } from '@stacksjs/types'
 import process from 'node:process'
-import {
-  runAction,
-  runApiDevServer,
-  runComponentsDevServer,
-  runDashboardDevServer,
-  runDesktopDevServer,
-  runDocsDevServer,
-  runFrontendDevServer,
-  runSystemTrayDevServer,
-} from '@stacksjs/actions'
 import { bold, cyan, dim, green, intro, log, outro, prompts, runCommand } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
+
+// Lazy-load @stacksjs/actions to avoid triggering bun-router config warnings at CLI startup
+let _actions: typeof import('@stacksjs/actions') | undefined
+async function actions(): Promise<typeof import('@stacksjs/actions')> {
+  if (!_actions) _actions = await import('@stacksjs/actions')
+  return _actions
+}
 
 export function dev(buddy: CLI): void {
   const descriptions = {
@@ -71,32 +68,29 @@ export function dev(buddy: CLI): void {
         || (options.docs ? 'docs' : undefined)
 
       if (target) {
-        // Run only the requested server (pass verbose to prevent output suppression)
-        const serverOptions = { ...options, verbose: true }
+        const serverOptions = { ...options }
+        const a = await actions()
         switch (target) {
           case 'frontend':
-            await runFrontendDevServer(serverOptions)
+            await a.runFrontendDevServer(serverOptions)
             break
           case 'api':
-            await runApiDevServer(serverOptions)
+            await a.runApiDevServer(serverOptions)
             break
           case 'components':
-            await runComponentsDevServer(serverOptions)
+            await a.runComponentsDevServer(serverOptions)
             break
           case 'dashboard':
-            await runDashboardDevServer(serverOptions)
+            await a.runDashboardDevServer(serverOptions)
             break
           case 'desktop':
-            await runDesktopDevServer(serverOptions)
+            await a.runDesktopDevServer(serverOptions)
             break
           case 'system-tray':
-            await runSystemTrayDevServer(serverOptions)
+            await a.runSystemTrayDevServer(serverOptions)
             break
-          // case 'email':
-          //   await runEmailDevServer(serverOptions)
-          //   break
           case 'docs':
-            await runDocsDevServer(serverOptions)
+            await a.runDocsDevServer(serverOptions)
             break
           default:
             log.error(`Unknown server: ${target}`)
@@ -123,18 +117,18 @@ export function dev(buddy: CLI): void {
         const selectedValue: string = answer.value
 
         if (selectedValue === 'components') {
-          await runComponentsDevServer(options)
+          await (await actions()).runComponentsDevServer(options)
         }
         else if (selectedValue === 'api') {
-          await runApiDevServer(options)
+          await (await actions()).runApiDevServer(options)
         }
         else if (selectedValue === 'dashboard') {
-          await runDashboardDevServer(options)
+          await (await actions()).runDashboardDevServer(options)
         }
         // else if (selectedValue === 'email')
         //   await runEmailDevServer(options)
         else if (selectedValue === 'docs') {
-          await runDocsDevServer(options)
+          await (await actions()).runDocsDevServer(options)
         }
         else {
           log.error('Invalid option during interactive mode')
@@ -186,7 +180,7 @@ export function dev(buddy: CLI): void {
     .action(async (options: DevOptions) => {
 
       const perf = await intro('buddy dev:docs')
-      const result = await runAction(Action.DevDocs, options)
+      const result = await (await actions()).runAction(Action.DevDocs, options)
 
       if (result.isErr) {
         await outro(
@@ -209,7 +203,7 @@ export function dev(buddy: CLI): void {
     .action(async (options: DevOptions) => {
 
       const perf = await intro('buddy dev:desktop')
-      const result = await runAction(Action.DevDesktop, options)
+      const result = await (await actions()).runAction(Action.DevDesktop, options)
 
       if (result.isErr) {
         await outro(
@@ -231,7 +225,7 @@ export function dev(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
 
-      await runApiDevServer(options)
+      await (await actions()).runApiDevServer(options)
     })
 
   // buddy
@@ -249,7 +243,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await runFrontendDevServer(options)
+      await (await actions()).runFrontendDevServer(options)
     })
 
   buddy
@@ -258,7 +252,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await runDashboardDevServer(options)
+      await (await actions()).runDashboardDevServer(options)
     })
 
   buddy
@@ -267,7 +261,7 @@ export function dev(buddy: CLI): void {
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: DevOptions) => {
-      await runSystemTrayDevServer(options)
+      await (await actions()).runSystemTrayDevServer(options)
     })
 
   buddy.on('dev:*', () => {
@@ -328,21 +322,23 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   process.on('SIGINT', cleanup)
   process.on('SIGTERM', cleanup)
 
-  // Start all servers silently — output is handled above
+  // Start all servers silently — unified banner above handles output
+  const quietOpts = { ...options, quiet: true }
+  const a = await actions()
   await Promise.all([
-    runFrontendDevServer(options).catch((error) => {
+    a.runFrontendDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`Frontend: ${error}`)
     }),
-    runApiDevServer(options).catch((error) => {
+    a.runApiDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`API: ${error}`)
     }),
-    runDocsDevServer(options).catch((error) => {
+    a.runDocsDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`Docs: ${error}`)
     }),
-    runDashboardDevServer(options).catch((error) => {
+    a.runDashboardDevServer(quietOpts).catch((error) => {
       if (options.verbose)
         log.error(`Dashboard: ${error}`)
     }),

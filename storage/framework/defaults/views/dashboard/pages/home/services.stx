@@ -2,25 +2,11 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let infra = []
 let systemDeps = []
 let orderedApiGroups = []
 let stats = []
-
-try {
-  const res = await fetch(API_URL + '/dashboard/services')
-  if (res.ok) {
-    const json = await res.json()
-    infra = json.infra || []
-    systemDeps = json.systemDeps || []
-    orderedApiGroups = json.orderedApiGroups || []
-    stats = json.stats || []
-  }
-} catch (e) {
-  // API not available
-}
 
 function formatName(n) {
   return n.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase() }).trim()

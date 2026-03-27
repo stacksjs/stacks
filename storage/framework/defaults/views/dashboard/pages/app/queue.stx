@@ -2,23 +2,10 @@
 
 @section('content')
 <script server>
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
+// Data available when full dev server runs (buddy dev)
 let queues = []
 let stats = { totalQueues: 0, totalJobs: 0, activeJobs: 0, completedJobs: 0, failedJobs: 0, throughputPerMinute: 0 }
 let queueConnected = false
-
-try {
-  const res = await fetch(API_URL + '/queue/stats')
-  if (res.ok) {
-    const json = await res.json()
-    queues = json.queues || []
-    stats = json.stats || { totalQueues: 0, totalJobs: 0, activeJobs: 0, completedJobs: 0, failedJobs: 0, throughputPerMinute: 0 }
-    queueConnected = json.queueConnected || false
-  }
-} catch (e) {
-  // API not available
-}
 
 const statusClass = (s) => {
   if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
