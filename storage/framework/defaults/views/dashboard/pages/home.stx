@@ -2,22 +2,21 @@
 
 @section('content')
 <script server>
-const { User, Product, Order, Post } = await import('@stacksjs/orm')
+const orm = await import('@stacksjs/orm')
 
-let userCount = 0, productCount = 0, orderCount = 0, postCount = 0, totalRevenue = 0
-let recentOrders = [], recentUsers = []
+const allUsers = await orm.User.all().catch(() => [])
+const allProducts = await orm.Product.all().catch(() => [])
+const allOrders = await orm.Order.all().catch(() => [])
+const allPosts = await orm.Post.all().catch(() => [])
 
-try {
-  const results = await Promise.all([
-    User.count(), Product.count(), Order.count(), Post.count(),
-    Order.orderBy('created_at', 'desc').limit(5).get(),
-    User.orderBy('created_at', 'desc').limit(3).get(),
-  ])
-  userCount = results[0]; productCount = results[1]; orderCount = results[2]; postCount = results[3]
-  recentOrders = results[4]; recentUsers = results[5]
-  const allOrders = await Order.all()
-  totalRevenue = allOrders.reduce((sum, o) => sum + (Number(o.get('total_amount')) || 0), 0)
-} catch (e) { /* DB not seeded — run: buddy migrate:fresh --seed */ }
+const userCount = allUsers.length
+const productCount = allProducts.length
+const orderCount = allOrders.length
+const postCount = allPosts.length
+let totalRevenue = 0
+for (const o of allOrders) { totalRevenue += Number(o.total_amount) || 0 }
+const recentOrders = allOrders.slice(0, 5)
+const recentUsers = allUsers.slice(0, 3)
 
 const activities = [
   ...recentOrders.map(o => ({ type: 'order', message: 'Order #' + o.get('id') + ' — $' + o.get('total_amount'), user: 'Commerce', time: 'Recently' })),
@@ -37,58 +36,196 @@ const services = [
   { name: 'Queue', status: 'healthy', latency: '45ms' },
   { name: 'Storage', status: 'healthy', latency: '8ms' },
 ]
+
+const revenueFormatted = '$' + totalRevenue.toLocaleString()
+
+function statusVariant(s) {
+  if (s === 'healthy') return 'success'
+  if (s === 'offline') return 'danger'
+  return 'warning'
+}
+
+const allHealthy = services.every(s => s.status === 'healthy')
 </script>
 
 <div class="p-6 space-y-6">
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <StatsCard
-        title="Total Users"
-        value="{{ userCount }}"
-        trend="{{ 12 }}"
-        trendLabel="from last month"
-        icon="i-hugeicons-user-group"
-        iconBg="primary"
-      />
-      <StatsCard
-        title="Products"
-        value="{{ productCount }}"
-        trend="{{ 8 }}"
-        trendLabel="from last month"
-        icon="i-hugeicons-package"
-        iconBg="success"
-      />
-      <StatsCard
-        title="Revenue"
-        value="${{ totalRevenue.toLocaleString() }}"
-        trend="{{ 23 }}"
-        trendLabel="from last month"
-        icon="i-hugeicons-dollar-circle"
-        iconBg="warning"
-      />
-      <StatsCard
-        title="Orders"
-        value="{{ orderCount }}"
-        trend="{{ 5 }}"
-        trendLabel="from last month"
-        icon="i-hugeicons-shopping-cart-01"
-        iconBg="danger"
-      />
+  <!-- Stats Grid -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">Total Users</p>
+          <p class="mt-1.5 text-[22px] font-semibold text-neutral-900 dark:text-white">{{ String(userCount) }}</p>
+          <div class="mt-1 flex items-center gap-1">
+            <span class="text-[12px] font-medium text-green-500">
+              <svg class="inline h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>12%
+            </span>
+            <span class="text-[12px] text-neutral-500">from last month</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400">
+          <div class="i-hugeicons-user-group h-5 w-5"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Two Column Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      <QuickLinks
-        title="Quick Links"
-        :links="{{ JSON.stringify(quickLinks) }}"
-      />
-      <ServiceHealth :services="{{ JSON.stringify(services) }}" />
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">Products</p>
+          <p class="mt-1.5 text-[22px] font-semibold text-neutral-900 dark:text-white">{{ String(productCount) }}</p>
+          <div class="mt-1 flex items-center gap-1">
+            <span class="text-[12px] font-medium text-green-500">
+              <svg class="inline h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>8%
+            </span>
+            <span class="text-[12px] text-neutral-500">from last month</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400">
+          <div class="i-hugeicons-package h-5 w-5"></div>
+        </div>
+      </div>
     </div>
 
-    <!-- Recent Activity -->
-    <ActivityTable
-      title="Recent Activity"
-      :activities="{{ JSON.stringify(activities) }}"
-    />
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">Revenue</p>
+          <p class="mt-1.5 text-[22px] font-semibold text-neutral-900 dark:text-white">{{ revenueFormatted }}</p>
+          <div class="mt-1 flex items-center gap-1">
+            <span class="text-[12px] font-medium text-green-500">
+              <svg class="inline h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>23%
+            </span>
+            <span class="text-[12px] text-neutral-500">from last month</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400">
+          <div class="i-hugeicons-dollar-circle h-5 w-5"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 hover:shadow-md transition-shadow">
+      <div class="flex items-start justify-between">
+        <div>
+          <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400">Orders</p>
+          <p class="mt-1.5 text-[22px] font-semibold text-neutral-900 dark:text-white">{{ String(orderCount) }}</p>
+          <div class="mt-1 flex items-center gap-1">
+            <span class="text-[12px] font-medium text-green-500">
+              <svg class="inline h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path></svg>5%
+            </span>
+            <span class="text-[12px] text-neutral-500">from last month</span>
+          </div>
+        </div>
+        <div class="p-2.5 rounded-lg bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400">
+          <div class="i-hugeicons-shopping-cart-01 h-5 w-5"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Two Column Layout -->
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Quick Links -->
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+      <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">
+        <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">Quick Links</h3>
+      </div>
+      <div class="divide-y divide-neutral-100 dark:divide-white/5">
+        @foreach(quickLinks as link)
+          <a href="{{ link.href }}" class="flex items-center gap-3.5 px-5 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+            <div class="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0">
+              <div class="{{ link.icon }} w-4 h-4 text-neutral-500 dark:text-neutral-400"></div>
+            </div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ link.title }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400 truncate">{{ link.description }}</div>
+            </div>
+            <div class="i-hugeicons-arrow-right-01 w-4 h-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-400 transition-colors flex-shrink-0"></div>
+          </a>
+        @endforeach
+      </div>
+    </div>
+
+    <!-- System Health -->
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+      <div class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
+        <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">System Health</h3>
+        @if(allHealthy)
+          <span class="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full font-medium bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400">
+            <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-green-500 dark:bg-green-400"></span>
+            All Systems Operational
+          </span>
+        @else
+          <span class="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full font-medium bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400">
+            <span class="w-1.5 h-1.5 rounded-full mr-1.5 bg-orange-500 dark:bg-orange-400"></span>
+            Degraded
+          </span>
+        @endif
+      </div>
+      <div class="divide-y divide-neutral-100 dark:divide-white/5">
+        @foreach(services as service)
+          <div class="flex items-center justify-between px-5 py-3">
+            <div>
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ service.name }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ service.latency }}</div>
+            </div>
+            <span class="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full font-medium {{ statusVariant(service.status) === 'success' ? 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400' : statusVariant(service.status) === 'danger' ? 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400' : 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400' }}">
+              <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ statusVariant(service.status) === 'success' ? 'bg-green-500' : statusVariant(service.status) === 'danger' ? 'bg-red-500' : 'bg-orange-500' }}"></span>
+              {{ service.status }}
+            </span>
+          </div>
+        @endforeach
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Activity -->
+  @if(activities.length > 0)
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+      <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">
+        <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">Recent Activity</h3>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full">
+          <thead>
+            <tr class="border-b border-neutral-200/60 dark:border-white/5">
+              <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Type</th>
+              <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Activity</th>
+              <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Source</th>
+              <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Time</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-100 dark:divide-white/5">
+            @foreach(activities as activity)
+              <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+                <td class="px-5 py-3.5">
+                  <span class="inline-flex items-center text-[11px] px-2 py-0.5 rounded-full font-medium {{ activity.type === 'order' ? 'bg-blue-500/15 text-blue-600' : 'bg-green-500/15 text-green-600' }}">
+                    {{ activity.type }}
+                  </span>
+                </td>
+                <td class="px-5 py-3.5 text-[13px] text-neutral-900 dark:text-white">{{ activity.message }}</td>
+                <td class="px-5 py-3.5 text-[13px] text-neutral-500 dark:text-neutral-400">{{ activity.user }}</td>
+                <td class="px-5 py-3.5 text-[12px] text-neutral-400 dark:text-neutral-500">{{ activity.time }}</td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    </div>
+  @else
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+      <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">
+        <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">Recent Activity</h3>
+      </div>
+      <div class="py-12 text-center">
+        <div class="mb-3 inline-flex p-3 rounded-full bg-neutral-100 dark:bg-neutral-800">
+          <div class="i-hugeicons-activity-01 w-6 h-6 text-neutral-400 dark:text-neutral-500"></div>
+        </div>
+        <p class="text-sm font-medium text-neutral-900 dark:text-white">No recent activity</p>
+        <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">Activity will appear here as your app is used</p>
+      </div>
+    </div>
+  @endif
 </div>
 @endsection

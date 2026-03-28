@@ -21,6 +21,7 @@ import type {
   SecurityConfig,
   ServicesConfig,
   StacksConfig,
+  StorageConfig,
   UiConfig,
 } from '@stacksjs/types'
 import { config } from '.'
@@ -204,6 +205,10 @@ export function defineServices(config: ServicesConfig): ServicesConfig {
 }
 
 export function defineSms(config: any): any {
+  return config
+}
+
+export function defineStorage(config: StorageConfig): StorageConfig {
   return config
 }
 
