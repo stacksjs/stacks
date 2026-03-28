@@ -950,7 +950,7 @@ function updateCharts() {
         <div class="mt-4 flex space-x-3 sm:mt-0">
           <button
             type="button"
-            @click="openAddEntryModal"
+            onclick="openAddEntryModal"
             class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
@@ -958,8 +958,8 @@ function updateCharts() {
           </button>
           <button
             type="button"
-            @click="exportWaitlist"
-            class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700"
+            onclick="exportWaitlist"
+            class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700"
           >
             <div class="i-hugeicons-download-01 h-5 w-5 mr-1"></div>
             Export
@@ -968,7 +968,7 @@ function updateCharts() {
       </div>
 
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Waitlist</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
             {{ totalEntries }}
@@ -979,7 +979,7 @@ function updateCharts() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Notified</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ notifiedEntries }}</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -988,7 +988,7 @@ function updateCharts() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Purchased</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ purchasedEntries }}</dd>
           <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
@@ -997,7 +997,7 @@ function updateCharts() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
             {{ conversionRate }}%
@@ -1010,7 +1010,7 @@ function updateCharts() {
       </dl>
 
       <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Waitlist Entries</h3>
             <div class="mt-2 h-80">
@@ -1019,7 +1019,7 @@ function updateCharts() {
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Order Quantities</h3>
             <div class="mt-2 h-80">
@@ -1028,7 +1028,7 @@ function updateCharts() {
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Source Distribution</h3>
             <div class="mt-2 h-80">
@@ -1037,7 +1037,7 @@ function updateCharts() {
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Current Status</h3>
             <div class="mt-2 h-80">
@@ -1053,17 +1053,17 @@ function updateCharts() {
             <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
           <input
-            v-model="searchQuery"
+            value="{{ searchQuery }}"
             type="text"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
             placeholder="Search waitlist..."
           />
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4">
           <select
-            v-model="partySizeFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ partySizeFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Party Sizes</option>
             <option value="1-2">1-2 People</option>
@@ -1073,24 +1073,24 @@ function updateCharts() {
           </select>
 
           <select
-            v-model="statusFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ statusFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Statuses</option>
             @foreach(statuses.slice(1) as status)
-              <option :key="status" :value="status">
+              <option value="{{ status }}">
                 {{ status }}
               </option>
             @endforeach
           </select>
 
           <select
-            v-model="tablePreferenceFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ tablePreferenceFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Table Types</option>
             @foreach(tablePreferences.slice(1) as preference)
-              <option :key="preference" :value="preference">
+              <option value="{{ preference }}">
                 {{ preference }}
               </option>
             @endforeach
@@ -1101,9 +1101,9 @@ function updateCharts() {
       <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
         <span class="mr-2">Sort by:</span>
         <button
-          @click="toggleSort('name')"
+          onclick="toggleSort('name')"
           class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-          :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
+          class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' } }}"
         >
           Name
           @if(sortBy === 'name')
@@ -1117,9 +1117,9 @@ function updateCharts() {
           @endif
         </button>
         <button
-          @click="toggleSort('dateAdded')"
+          onclick="toggleSort('dateAdded')"
           class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-          :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' }"
+          class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'dateAdded' } }}"
         >
           Date Added
           @if(sortBy === 'dateAdded')
@@ -1133,9 +1133,9 @@ function updateCharts() {
           @endif
         </button>
         <button
-          @click="toggleSort('quantity')"
+          onclick="toggleSort('quantity')"
           class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-          :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'quantity' }"
+          class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'quantity' } }}"
         >
           Quantity
           @if(sortBy === 'quantity')
@@ -1158,21 +1158,21 @@ function updateCharts() {
             </div>
             <div class="flex space-x-3">
               <button
-                @click="openNotificationModal"
+                onclick="openNotificationModal"
                 class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
               >
                 <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
                 Send Updates
               </button>
               <button
-                @click="bulkChangeStatus('Notified')"
+                onclick="bulkChangeStatus('Notified')"
                 class="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
               >
                 <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                 Mark as Notified
               </button>
               <button
-                @click="bulkChangeStatus('Purchased')"
+                onclick="bulkChangeStatus('Purchased')"
                 class="inline-flex items-center rounded-md bg-purple-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-purple-500"
               >
                 <div class="i-hugeicons-shopping-cart-02 h-4 w-4 mr-1"></div>
@@ -1185,13 +1185,13 @@ function updateCharts() {
 
       <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
         <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-          <thead class="bg-gray-50 dark:bg-blue-gray-900">
+          <thead class="bg-gray-50 dark:bg-neutral-900">
             <tr>
               <th scope="col" class="relative py-3.5 pl-4 pr-3 sm:pl-6">
                 <input
                   type="checkbox"
-                  :checked="selectAll"
-                  @change="toggleSelectAll"
+                  checked="{{ selectAll }}"
+                  onchange="toggleSelectAll"
                   class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
                 />
               </th>
@@ -1215,7 +1215,7 @@ function updateCharts() {
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
             @if(paginatedEntries.length === 0)
               <tr class="text-center">
                 <td colspan="7" class="py-10 text-gray-500 dark:text-gray-400">
@@ -1224,12 +1224,12 @@ function updateCharts() {
               </tr>
             @endif
             @foreach(paginatedEntries as entry)
-              <tr :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <input
                     type="checkbox"
-                    :checked="selectedEntries.includes(entry.id)"
-                    @change="toggleEntrySelection(entry.id)"
+                    checked="{{ selectedEntries.includes(entry.id) }}"
+                    onchange="toggleEntrySelection(entry.id)"
                     class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
                   />
                 </td>
@@ -1264,7 +1264,7 @@ function updateCharts() {
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <div class="flex justify-end space-x-2">
                     <button
-                      @click="openEditEntryModal(entry)"
+                      onclick="openEditEntryModal(entry)"
                       class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                     >
                       <div class="i-hugeicons-edit-01 h-5 w-5"></div>
@@ -1272,7 +1272,7 @@ function updateCharts() {
                     </button>
                     @if(entry.status === 'Waiting')
                       <button
-                        @click="markAsNotified(entry.id)"
+                        onclick="markAsNotified(entry.id)"
                         class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors"
                       >
                         <div class="i-hugeicons-notification-square h-5 w-5"></div>
@@ -1281,7 +1281,7 @@ function updateCharts() {
                     @endif
                     @if(entry.status === 'Notified')
                       <button
-                        @click="markAsPurchased(entry.id)"
+                        onclick="markAsPurchased(entry.id)"
                         class="text-gray-400 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition-colors"
                       >
                         <div class="i-hugeicons-shopping-cart-02 h-5 w-5"></div>
@@ -1299,22 +1299,22 @@ function updateCharts() {
       <div class="mt-5 flex items-center justify-between">
         <div class="flex flex-1 justify-between sm:hidden">
           <button
-            @click="prevPage"
-            :disabled="currentPage === 1"
-            :class="[
-              currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-              'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
-            ]"
+            onclick="prevPage"
+            disabled="{{ currentPage === 1 }}"
+            class="{{ [
+              currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
+              'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white'
+            ] }}"
           >
             Previous
           </button>
           <button
-            @click="nextPage"
-            :disabled="currentPage === totalPages"
-            :class="[
-              currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-              'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
-            ]"
+            onclick="nextPage"
+            disabled="{{ currentPage === totalPages }}"
+            class="{{ [
+              currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
+              'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white'
+            ] }}"
           >
             Next
           </button>
@@ -1330,37 +1330,36 @@ function updateCharts() {
           <div>
             <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
               <button
-                @click="goToPage(currentPage - 1)"
-                :disabled="currentPage === 1"
-                :class="[
-                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+                onclick="goToPage(currentPage - 1)"
+                disabled="{{ currentPage === 1 }}"
+                class="{{ [
+                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
                   'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
-                ]"
+                ] }}"
               >
                 <span class="sr-only">Previous</span>
                 <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
               </button>
               @foreach(totalPages as page)
                 <button
-                  :key="page"
-                  @click="goToPage(page)"
-                  :class="[
+                  onclick="goToPage(page)"
+                  class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700',
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700',
                     'focus:z-20'
-                  ]"
+                  ] }}"
                 >
                   {{ page }}
                 </button>
               @endforeach
               <button
-                @click="goToPage(currentPage + 1)"
-                :disabled="currentPage === totalPages"
-                :class="[
-                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+                onclick="goToPage(currentPage + 1)"
+                disabled="{{ currentPage === totalPages }}"
+                class="{{ [
+                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
                   'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
-                ]"
+                ] }}"
               >
                 <span class="sr-only">Next</span>
                 <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
@@ -1376,7 +1375,7 @@ function updateCharts() {
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
@@ -1391,7 +1390,7 @@ function updateCharts() {
           </div>
 
           <div class="mt-5 sm:mt-6">
-            <form @submit.prevent="saveEntry">
+            <form onsubmit="saveEntry; return false">
               <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <div class="sm:col-span-3">
                   <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
@@ -1400,10 +1399,10 @@ function updateCharts() {
                   <div class="mt-1">
                     <input
                       id="name"
-                      v-model="entryName"
+                      value="{{ entryName }}"
                       type="text"
                       required
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1415,10 +1414,10 @@ function updateCharts() {
                   <div class="mt-1">
                     <input
                       id="email"
-                      v-model="entryEmail"
+                      value="{{ entryEmail }}"
                       type="email"
                       required
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1430,9 +1429,9 @@ function updateCharts() {
                   <div class="mt-1">
                     <input
                       id="phone"
-                      v-model="entryPhone"
+                      value="{{ entryPhone }}"
                       type="tel"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1444,9 +1443,9 @@ function updateCharts() {
                   <div class="mt-1">
                     <input
                       id="quantity"
-                      v-model="entryQuantity"
+                      value="{{ entryQuantity }}"
                       type="number"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1458,11 +1457,11 @@ function updateCharts() {
                   <div class="mt-1">
                     <select
                       id="notificationPreference"
-                      v-model="entryNotificationPreference"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      value="{{ entryNotificationPreference }}"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     >
                       @foreach(notificationPreferences as preference)
-                        <option :key="preference" :value="preference">
+                        <option value="{{ preference }}">
                           {{ preference }}
                         </option>
                       @endforeach
@@ -1477,9 +1476,9 @@ function updateCharts() {
                   <div class="mt-1">
                     <input
                       id="source"
-                      v-model="entrySource"
+                      value="{{ entrySource }}"
                       type="text"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1491,9 +1490,9 @@ function updateCharts() {
                   <div class="mt-1">
                     <textarea
                       id="notes"
-                      v-model="entryNotes"
+                      value="{{ entryNotes }}"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     ></textarea>
                   </div>
                 </div>
@@ -1508,8 +1507,8 @@ function updateCharts() {
                 </button>
                 <button
                   type="button"
-                  @click="showEntryModal = false"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+                  onclick="showEntryModal = false"
+                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
                 >
                   Cancel
                 </button>
@@ -1525,7 +1524,7 @@ function updateCharts() {
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
@@ -1536,17 +1535,17 @@ function updateCharts() {
                   Subject:
                 </p>
                 <input
-                  v-model="notificationSubject"
+                  value="{{ notificationSubject }}"
                   type="text"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                 />
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Message:
                 </p>
                 <textarea
-                  v-model="notificationMessage"
+                  value="{{ notificationMessage }}"
                   rows="3"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                 ></textarea>
               </div>
             </div>
@@ -1554,7 +1553,7 @@ function updateCharts() {
 
           <div class="mt-5 sm:mt-6">
             <button
-              @click="sendNotifications"
+              onclick="sendNotifications"
               class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
               Send Notification

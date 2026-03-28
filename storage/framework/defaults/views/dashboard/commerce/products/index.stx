@@ -250,7 +250,7 @@ async function addProduct(): Promise<void> {
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">Products</h2>
           <button
-            @click="openAddProductModal"
+            onclick="openAddProductModal"
             type="button"
             class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
@@ -267,12 +267,12 @@ async function addProduct(): Promise<void> {
           <div class="flex flex-col sm:flex-row gap-4">
             <!-- Category filter -->
             <select
-              v-model="categoryFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ categoryFilter }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Categories</option>
               @foreach(categoriesForFilter as category)
-                <option :value="category.name">
+                <option value="{{ category.name }}">
                   {{ category.name }} ({{ category.count }})
                 </option>
               @endforeach
@@ -282,38 +282,28 @@ async function addProduct(): Promise<void> {
             <div class="flex rounded-md shadow-sm">
               <button
                 type="button"
-                @click="viewMode = 'grid'"
-                :class="[
-                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'grid'
-                    ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                ]"
+                onclick="viewMode = 'grid'"
+                class="{{ viewMode === 'grid' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10"
               >
                 <div class="i-hugeicons-grid h-5 w-5"></div>
               </button>
               <button
                 type="button"
-                @click="viewMode = 'list'"
-                :class="[
-                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'list'
-                    ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:hover:bg-blue-gray-700'
-                ]"
+                onclick="viewMode = 'list'"
+                class="{{ viewMode === 'list' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700' }} relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10"
               >
                 <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
               </button>
             </div>
 
             <select
-              v-model="itemsPerPage"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ itemsPerPage }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
-              <option :value="5">5 per page</option>
-              <option :value="10">10 per page</option>
-              <option :value="25">25 per page</option>
-              <option :value="50">50 per page</option>
+              <option value="{{ 5 }}">5 per page</option>
+              <option value="{{ 10 }}">10 per page</option>
+              <option value="{{ 25 }}">25 per page</option>
+              <option value="{{ 50 }}">50 per page</option>
             </select>
           </div>
         </div>
@@ -356,12 +346,12 @@ async function addProduct(): Promise<void> {
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
-              @click="closeProductModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-500 dark:hover:text-gray-400"
+              onclick="closeProductModal"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-can h-6 w-6"></div>
@@ -373,15 +363,15 @@ async function addProduct(): Promise<void> {
                 Add New Product
               </h3>
               <div class="mt-4">
-                <form @submit.prevent="addProduct" class="space-y-4">
+                <form onsubmit="addProduct; return false" class="space-y-4">
                   <!-- Product name -->
                   <div>
                     <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
                     <input
                       type="text"
                       id="product-name"
-                      v-model="newProduct.name"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      value="{{ newProduct.name }}"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                       required
                     />
                   </div>
@@ -391,9 +381,9 @@ async function addProduct(): Promise<void> {
                     <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                     <textarea
                       id="product-description"
-                      v-model="newProduct.description"
+                      value="{{ newProduct.description }}"
                       rows="3"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                     ></textarea>
                   </div>
 
@@ -404,10 +394,10 @@ async function addProduct(): Promise<void> {
                       <input
                         type="number"
                         id="product-price"
-                        v-model="newProduct.price"
+                        value="{{ newProduct.price }}"
                         min="0"
                         step="0.01"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                         required
                       />
                     </div>
@@ -416,10 +406,10 @@ async function addProduct(): Promise<void> {
                       <input
                         type="number"
                         id="product-sale-price"
-                        v-model="newProduct.salePrice"
+                        value="{{ newProduct.salePrice }}"
                         min="0"
                         step="0.01"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                       />
                     </div>
                   </div>
@@ -430,13 +420,13 @@ async function addProduct(): Promise<void> {
                       <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                       <select
                         id="product-category"
-                        v-model="newProduct.category_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        value="{{ newProduct.category_id }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                         required
                       >
                         <option value="">Select a category</option>
                         @foreach(categories as category)
-                          <option :value="category.id">{{ category.name }}</option>
+                          <option value="{{ category.id }}">{{ category.name }}</option>
                         @endforeach
                       </select>
                     </div>
@@ -444,13 +434,13 @@ async function addProduct(): Promise<void> {
                       <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
                       <select
                         id="product-manufacturer"
-                        v-model="newProduct.manufacturer_id"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        value="{{ newProduct.manufacturer_id }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                         required
                       >
                         <option value="">Select a manufacturer</option>
                         @foreach(manufacturers as manufacturer)
-                          <option :value="manufacturer.id">{{ manufacturer.name }}</option>
+                          <option value="{{ manufacturer.id }}">{{ manufacturer.name }}</option>
                         @endforeach
                       </select>
                     </div>
@@ -463,9 +453,9 @@ async function addProduct(): Promise<void> {
                       <input
                         type="number"
                         id="product-inventory"
-                        v-model="newProduct.inventory"
+                        value="{{ newProduct.inventory }}"
                         min="0"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                         required
                       />
                     </div>
@@ -473,11 +463,11 @@ async function addProduct(): Promise<void> {
                       <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                       <select
                         id="product-status"
-                        v-model="newProduct.status"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                        value="{{ newProduct.status }}"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                       >
                         @foreach(statuses.slice(1) as status)
-                          <option :value="status">{{ status }}</option>
+                          <option value="{{ status }}">{{ status }}</option>
                         @endforeach
                       </select>
                     </div>
@@ -489,7 +479,7 @@ async function addProduct(): Promise<void> {
                       <input
                         id="product-featured"
                         type="checkbox"
-                        v-model="newProduct.featured"
+                        value="{{ newProduct.featured }}"
                         class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
                       />
                       <label for="product-featured" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Featured product</label>
@@ -502,8 +492,8 @@ async function addProduct(): Promise<void> {
                     <input
                       type="text"
                       id="product-image"
-                      v-model="newProduct.imageUrl"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600 dark:text-white"
+                      value="{{ newProduct.imageUrl }}"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
                     />
                   </div>
 
@@ -516,8 +506,8 @@ async function addProduct(): Promise<void> {
                     </button>
                     <button
                       type="button"
-                      @click="closeProductModal"
-                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+                      onclick="closeProductModal"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
                     >
                       Cancel
                     </button>

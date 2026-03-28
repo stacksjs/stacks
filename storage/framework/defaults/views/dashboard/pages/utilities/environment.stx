@@ -18,7 +18,7 @@ try {
       const [key, ...rest] = line.split('=')
       const value = rest.join('=').trim()
       const isSecret = /secret|password|key|token/i.test(key || '')
-      return { key: String(key || '').trim(), value: isSecret ? '••••••••' : value, secret: isSecret }
+      return { key: String(key || '').trim(), value: isSecret ? '--------' : value, secret: isSecret }
     })
     environments = [
       { name: 'Development', file: '.env', variables: variables.length, status: 'Active' },
@@ -38,111 +38,108 @@ try {
   // .env not available
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'configured'].includes(s)) return 'success'
+  if (['pending', 'warning'].includes(s)) return 'warning'
+  if (['error', 'missing'].includes(s)) return 'danger'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Environment</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Environment configuration and variables</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Sync</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Variable</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="Environment" description="Environment configuration and variables">
+    <template #actions>
+      <Button variant="secondary">Sync</Button>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Add Variable
+      </Button>
+    </template>
+  </PageHeader>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (environments as env)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-              <span class="font-semibold text-gray-900 dark:text-white capitalize">{{ env.name }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(env.status) }}">{{ env.status }}</span>
-            </div>
-            <div class="mt-4">
-              <div class="flex justify-between mb-2">
-                <span class="text-gray-500 dark:text-gray-400">URL</span>
-                <a href="{{ env.url }}" class="text-blue-600 dark:text-blue-400 hover:underline text-sm">{{ env.url }}</a>
-              </div>
-              <div class="flex justify-between mb-2">
-                <span class="text-gray-500 dark:text-gray-400">Version</span>
-                <code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ env.version }}</code>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-500 dark:text-gray-400">Last Deploy</span>
-                <span>{{ env.lastDeploy }}</span>
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t">
-              <button class="w-full px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Configure</button>
-            </div>
-          </div>
-        @endforeach
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">Environment Variables</span>
-          <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-64" placeholder="Search variables..." />
-        </div>
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Key</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Environments</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (variables as variable)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ variable.key }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                      <code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ variable.value }}</code>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <div class="flex gap-1">
-                      @foreach (variable.environments as env)
-                        <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ env }}</span>
-                      @endforeach
-                    </div>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <div class="flex gap-2">
-                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
-                      <button class="px-3 py-1.5 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <StatsCard title="Variables" value="{{ stats[0]?.value || '0' }}" icon="i-hugeicons-settings-02" iconBg="primary" />
+    <StatsCard title="Secrets" value="{{ stats[1]?.value || '0' }}" icon="i-hugeicons-lock" iconBg="danger" />
+    <StatsCard title="Environments" value="{{ stats[2]?.value || '0' }}" icon="i-hugeicons-layers-01" iconBg="info" />
   </div>
+
+  <!-- Environment Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach (environments as env)
+      <Card>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[14px] font-semibold text-neutral-900 dark:text-white capitalize">{{ env.name }}</span>
+            <Badge variant="{{ statusVariant(env.status) }}" size="xs" dot>{{ env.status }}</Badge>
+          </div>
+          <div class="space-y-2 text-[13px]">
+            <div class="flex justify-between">
+              <span class="text-neutral-500 dark:text-neutral-400">URL</span>
+              <a href="{{ env.url }}" class="text-blue-600 dark:text-blue-400 hover:underline text-[12px]">{{ env.url }}</a>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-500 dark:text-neutral-400">Version</span>
+              <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ env.version }}</code>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-500 dark:text-neutral-400">Last Deploy</span>
+              <span class="text-neutral-600 dark:text-neutral-300">{{ env.lastDeploy }}</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-neutral-200/60 dark:border-white/5">
+            <Button variant="outline" size="xs" class="w-full">Configure</Button>
+          </div>
+        </div>
+      </Card>
+    @endforeach
+  </div>
+
+  <!-- Variables Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
+      <FilterBar searchPlaceholder="Search variables..." />
+    </div>
+
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'key', label: 'Key' },
+        { key: 'value', label: 'Value' },
+        { key: 'environments', label: 'Environments' },
+        { key: 'actions', label: '' }
+      ]) }}"
+      :data="variables"
+      emptyTitle="No environment variables"
+      emptyDescription="Add a .env file to see variables here"
+      emptyIcon="i-hugeicons-settings-02"
+    >
+      @foreach (variables as variable)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ variable.key }}</code>
+          </td>
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ variable.value }}</code>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex flex-wrap gap-1">
+              @foreach (variable.environments as env)
+                <Badge variant="default" size="xs">{{ env }}</Badge>
+              @endforeach
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1">
+              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+              <Button variant="danger" size="xs" iconOnly><div class="i-hugeicons-delete-02 w-4 h-4"></div></Button>
+            </div>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+</DashboardLayout>
 @endsection

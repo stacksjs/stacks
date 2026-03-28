@@ -682,7 +682,7 @@ const getEventTypeIcon = (type: string) => {
 </script>
 
 @title('Dashboard - Serverless')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
     <div class="mb-8">
@@ -697,8 +697,8 @@ const getEventTypeIcon = (type: string) => {
         </div>
         <div class="flex items-center space-x-2">
           <button
-            @click="downloadSVG"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            onclick="downloadSVG"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
           >
             <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -706,8 +706,8 @@ const getEventTypeIcon = (type: string) => {
             SVG
           </button>
           <button
-            @click="downloadPNG"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            onclick="downloadPNG"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
           >
             <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -719,7 +719,7 @@ const getEventTypeIcon = (type: string) => {
     </div>
 
     <!-- Services Diagram -->
-    <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+    <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
@@ -730,22 +730,22 @@ const getEventTypeIcon = (type: string) => {
           </div>
           <div class="flex items-center gap-2">
             <button
-              @click="zoomIn"
-              class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              onclick="zoomIn"
+              class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
             >
               <span class="sr-only">Zoom In</span>
               <div class="i-hugeicons-plus-sign w-5 h-5" />
             </button>
             <button
-              @click="zoomOut"
-              class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              onclick="zoomOut"
+              class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
             >
               <span class="sr-only">Zoom Out</span>
               <div class="i-hugeicons-minus w-5 h-5" />
             </button>
             <button
-              @click="resetZoom"
-              class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              onclick="resetZoom"
+              class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
             >
               Reset
             </button>
@@ -753,12 +753,12 @@ const getEventTypeIcon = (type: string) => {
         </div>
 
         <div class="relative">
-          <div ref="diagramContainer" class="w-full h-[600px] bg-blue-gray-800 rounded-lg" />
+          <div ref="diagramContainer" class="w-full h-[600px] bg-neutral-800 rounded-lg" />
 
           <!-- Service Details Panel -->
           @if(selectedNode)
             <div
-              class="absolute top-4 right-4 w-80 bg-white dark:bg-blue-gray-700 rounded-lg shadow-lg p-4"
+              class="absolute top-4 right-4 w-80 bg-white dark:bg-neutral-700 rounded-lg shadow-lg p-4"
               @click.stop
             >
               <div class="flex items-center justify-between mb-4">
@@ -766,7 +766,7 @@ const getEventTypeIcon = (type: string) => {
                   {{ selectedNode.name }}
                 </h5>
                 <button
-                  @click="selectedNode = null"
+                  onclick="selectedNode = null"
                   class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
                 >
                   <span class="sr-only">Close</span>
@@ -778,7 +778,7 @@ const getEventTypeIcon = (type: string) => {
                 <div class="flex items-center gap-2">
                   <div
                     class="w-8 h-8 rounded-full flex items-center justify-center"
-                    :style="{ backgroundColor: selectedNode.color + '20', color: selectedNode.color }"
+                    style="{{ { backgroundColor: selectedNode.color + '20', color: selectedNode.color } }}"
                   >
                     <div :class="[selectedNode.icon, 'w-5 h-5']" />
                   </div>
@@ -816,7 +816,7 @@ const getEventTypeIcon = (type: string) => {
       <div class="inline-block min-w-full align-middle">
         <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-            <thead class="bg-gray-50 dark:bg-blue-gray-600">
+            <thead class="bg-gray-50 dark:bg-neutral-600">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Service</th>
@@ -824,9 +824,9 @@ const getEventTypeIcon = (type: string) => {
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-700">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-700">
               @foreach(serverEvents as event)
-                <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                     <div class="flex items-center">
                       <div :class="[getEventTypeIcon(event.type), getEventTypeColor(event.type), 'w-5 h-5']" />

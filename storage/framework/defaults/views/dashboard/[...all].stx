@@ -28,7 +28,7 @@
         <div class="mt-16">
           <h2 class="text-base font-semibold leading-6 text-gray-900 dark:text-white text-center">You might be looking for</h2>
           <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
-            <a href="/dashboard" class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 hover:shadow-md transition-shadow duration-200">
+            <a href="/dashboard" class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800 hover:shadow-md transition-shadow duration-200">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="bg-blue-500 flex-shrink-0 rounded-md p-3">
@@ -45,7 +45,7 @@
                 </div>
               </div>
             </a>
-            <a href="/content/dashboard" class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 hover:shadow-md transition-shadow duration-200">
+            <a href="/content/dashboard" class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800 hover:shadow-md transition-shadow duration-200">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="bg-green-500 flex-shrink-0 rounded-md p-3">
@@ -62,7 +62,7 @@
                 </div>
               </div>
             </a>
-            <a href="/settings" class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800 hover:shadow-md transition-shadow duration-200">
+            <a href="/settings" class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800 hover:shadow-md transition-shadow duration-200">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="bg-gray-500 flex-shrink-0 rounded-md p-3">

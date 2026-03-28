@@ -1,0 +1,50 @@
+<script server>
+const activities = props.activities || [] // Array of { type, message, user, time }
+const title = props.title || 'Recent Activity'
+</script>
+<div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
+    <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">{{ title }}</h3>
+    <slot name="actions" />
+  </div>
+
+  @if(activities.length > 0)
+    <div class="overflow-x-auto">
+      <table class="min-w-full">
+        <thead>
+          <tr class="border-b border-neutral-200/60 dark:border-white/5">
+            <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Type</th>
+            <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Activity</th>
+            <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Source</th>
+            <th class="px-5 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Time</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-neutral-100 dark:divide-white/5">
+          @foreach(activities as activity)
+            <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+              <td class="px-5 py-3.5">
+                <Badge
+                  variant="{{ activity.type === 'error' ? 'danger' : activity.type === 'order' ? 'primary' : activity.type === 'user' ? 'success' : 'default' }}"
+                  size="xs"
+                >
+                  {{ activity.type }}
+                </Badge>
+              </td>
+              <td class="px-5 py-3.5 text-[13px] text-neutral-900 dark:text-white">{{ activity.message }}</td>
+              <td class="px-5 py-3.5 text-[13px] text-neutral-500 dark:text-neutral-400">{{ activity.user }}</td>
+              <td class="px-5 py-3.5 text-[12px] text-neutral-400 dark:text-neutral-500">{{ activity.time }}</td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  @else
+    <div class="py-12 text-center">
+      <div class="mb-3 inline-flex p-3 rounded-full bg-neutral-100 dark:bg-neutral-800">
+        <div class="i-hugeicons-activity-01 w-6 h-6 text-neutral-400 dark:text-neutral-500"></div>
+      </div>
+      <p class="text-sm font-medium text-neutral-900 dark:text-white">No recent activity</p>
+      <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">Activity will appear here as your app is used</p>
+    </div>
+  @endif
+</div>

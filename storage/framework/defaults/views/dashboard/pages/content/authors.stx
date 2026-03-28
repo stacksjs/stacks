@@ -25,35 +25,45 @@ try {
   // DB not seeded
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Authors</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage content authors</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Author</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (authors as author)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-            <div class="flex items-center gap-4">
-              <div class="w-12 h-12 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 flex items-center justify-center font-semibold text-sm">{{ author.avatar }}</div>
-              <div>
-                <div class="font-semibold text-gray-900 dark:text-white">{{ author.name }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">{{ author.email }}</div>
-              </div>
-            </div>
-            <div class="mt-4 flex justify-between items-center">
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ author.role }}</span>
-              <span class="text-gray-500 dark:text-gray-400">{{ author.posts }} posts</span>
-            </div>
+  <PageHeader title="Authors" description="Manage content authors">
+    <template #actions>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Add Author
+      </Button>
+    </template>
+  </PageHeader>
+
+  <!-- Authors Grid -->
+  @if (authors.length > 0)
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach(authors as author)
+      <Card>
+        <div class="flex items-center gap-4">
+          <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">{{ author.avatar }}</div>
+          <div>
+            <div class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ author.name }}</div>
+            <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ author.email }}</div>
           </div>
-        @endforeach
-      </div>
-    </div>
+        </div>
+        <div class="mt-4 flex justify-between items-center">
+          <Badge variant="default" size="xs">{{ author.role }}</Badge>
+          <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ author.posts }} posts</span>
+        </div>
+      </Card>
+    @endforeach
   </div>
+  @else
+  <EmptyState
+    icon="i-hugeicons-user-edit-01"
+    title="No authors found"
+    description="Authors will appear here once they are added"
+    actionLabel="Add Author"
+  />
+  @endif
+</div>
+</DashboardLayout>
 @endsection

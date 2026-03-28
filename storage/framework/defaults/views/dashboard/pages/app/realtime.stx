@@ -5,57 +5,54 @@
 // Data available when full dev server runs (buddy dev)
 let channels = []
 let stats = { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }
+
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'success', 'healthy', 'completed', 'running', 'published'].includes(s)) return 'success'
+  if (['pending', 'scheduled', 'warning', 'draft'].includes(s)) return 'warning'
+  if (['failed', 'error', 'inactive', 'cancelled'].includes(s)) return 'danger'
+  if (['processing', 'info'].includes(s)) return 'primary'
+  return 'default'
+}
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Realtime</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">WebSocket connections and channels</p>
-      </div>
+<DashboardLayout pageTitle="Realtime" pageDescription="WebSocket connections and channels">
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Realtime" description="WebSocket connections and channels" />
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <StatsCard title="Active Connections" value="{{ stats.activeConnections }}" icon="i-hugeicons-wifi-connected-01" iconBg="primary" />
+    <StatsCard title="Messages/min" value="{{ stats.messagesPerMinute }}" icon="i-hugeicons-message-01" iconBg="success" />
+    <StatsCard title="Avg Latency" value="{{ stats.avgLatency }}" icon="i-hugeicons-time-01" iconBg="warning" />
+  </div>
+
+  @if (channels.length > 0)
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5">
+    <div class="flex items-center justify-between mb-4">
+      <span class="font-semibold text-neutral-900 dark:text-white">Active Channels</span>
     </div>
-
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.activeConnections }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Active Connections</div>
+    <div class="divide-y divide-neutral-100 dark:divide-neutral-700">
+      @foreach (channels as channel)
+        <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex-1 min-w-0">
+            <div class="font-medium text-neutral-900 dark:text-white">{{ channel.name }}</div>
+            <div class="text-sm text-neutral-500 dark:text-neutral-400">{{ channel.messages }}</div>
+          </div>
+          <Badge variant="success" size="sm" dot>{{ channel.connections }} connected</Badge>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.messagesPerMinute }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Messages/min</div>
-        </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stats.avgLatency }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Avg Latency</div>
-        </div>
-      </div>
-
-      @if (channels.length > 0)
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">Active Channels</span>
-        </div>
-        <div class="divide-y divide-gray-100 dark:divide-gray-700">
-          @foreach (channels as channel)
-            <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-              <div class="flex-1 min-w-0">
-                <div class="font-medium text-gray-900 dark:text-white">{{ channel.name }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">{{ channel.messages }}</div>
-              </div>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ channel.connections }} connected</span>
-            </div>
-          @endforeach
-        </div>
-      </div>
-      @else
-      <div class="flex flex-col items-center justify-center py-16 px-4">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <span class="text-2xl text-gray-400">&#x1F4E1;</span>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No realtime connections</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">WebSocket connections will appear here when clients connect.</p>
-      </div>
-      @endif
+      @endforeach
     </div>
   </div>
+  @else
+  <div class="flex flex-col items-center justify-center py-16 px-4">
+    <div class="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+      <span class="text-2xl text-neutral-400">&#x1F4E1;</span>
+    </div>
+    <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">No realtime connections</h3>
+    <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center max-w-sm">WebSocket connections will appear here when clients connect.</p>
+  </div>
+  @endif
+</div>
+</DashboardLayout>
 @endsection

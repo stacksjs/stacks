@@ -31,7 +31,7 @@
                     type="text"
                     name="nameservers"
                     value="{{ nameservers }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -93,7 +93,7 @@
                       type="text"
                       name="a-record-name"
                       value=""
-                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                     >
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
@@ -101,7 +101,7 @@
                       type="text"
                       name="a-record-address"
                       value=""
-                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                     >
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
@@ -110,7 +110,7 @@
                       name="a-record-ttl"
                       placeholder="auto"
                       value=""
-                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                     >
                   </td>
                   <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
@@ -147,13 +147,13 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr>
                   <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="aaaa-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="aaaa-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="aaaa-record-address" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="aaaa-record-address" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="aaaa-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="aaaa-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
                     <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-aaaa-record">Add</button>
@@ -187,13 +187,13 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr>
                   <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="cname-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="cname-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="cname-record-target" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="cname-record-target" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="cname-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="cname-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
                     <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-cname-record">Add</button>
@@ -228,16 +228,16 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr>
                   <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="mx-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="mx-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="mx-record-server" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="mx-record-server" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="mx-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="mx-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="mx-record-priority" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="mx-record-priority" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
                     <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-mx-record">Add</button>
@@ -271,13 +271,13 @@
               <tbody class="bg-white divide-y divide-gray-200">
                 <tr>
                   <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="txt-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="txt-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="txt-record-content" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="txt-record-content" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="txt-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                    <input type="text" name="txt-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                   </td>
                   <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
                     <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-txt-record">Add</button>

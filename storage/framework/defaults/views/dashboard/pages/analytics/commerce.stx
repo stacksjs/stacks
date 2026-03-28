@@ -8,112 +8,96 @@ let topProducts = []
 let salesByRegion = []
 let revenueByChannel = []
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Commerce Analytics</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Sales and revenue insights</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <select class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 w-40">
-          <option>Last 7 days</option>
-          <option>Last 30 days</option>
-          <option>Last 90 days</option>
-          <option>This year</option>
-        </select>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Export</button>
-      </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Commerce Analytics" description="Sales and revenue insights">
+    <template #actions>
+      <Select :options="{{ JSON.stringify([
+        { value: '7d', label: 'Last 7 days' },
+        { value: '30d', label: 'Last 30 days' },
+        { value: '90d', label: 'Last 90 days' },
+        { value: '1y', label: 'This year' },
+      ]) }}" size="sm" />
+      <Button variant="primary">Export</Button>
+    </template>
+  </PageHeader>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    @foreach (stats as stat)
+      <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.change }}" />
+    @endforeach
+  </div>
+
+  @if (topProducts.length > 0 || salesByRegion.length > 0 || revenueByChannel.length > 0)
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Top Products -->
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+      <DataTable
+        :columns="{{ JSON.stringify([
+          { key: 'name', label: 'Product' },
+          { key: 'revenue', label: 'Revenue' },
+          { key: 'units', label: 'Units' },
+          { key: 'growth', label: 'Growth' },
+        ]) }}"
+        :data="topProducts"
+        emptyTitle="No product data"
+        emptyDescription="Product analytics will appear once sales are recorded"
+        emptyIcon="i-hugeicons-package"
+      >
+        @foreach (topProducts as product)
+          <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ product.name }}</td>
+            <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ product.revenue }}</td>
+            <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ product.units }}</td>
+            <td class="px-4 py-3 text-[13px] text-green-600 dark:text-green-400">{{ product.growth }}</td>
+          </tr>
+        @endforeach
+      </DataTable>
     </div>
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-            <div class="text-sm font-medium {{ stat.change.startsWith('+') ? 'text-green-600 dark:text-green-400' : stat.change.startsWith('-') ? 'text-red-600 dark:text-red-400' : 'text-gray-500 dark:text-gray-400' }}">{{ stat.change }}</div>
+    <!-- Sales by Region -->
+    <Card title="Sales by Region">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+        @foreach (salesByRegion as region)
+          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ region.region }}</div>
+              <div class="w-32 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden mt-1">
+                <div class="h-full bg-blue-500 rounded-full" style="width: {{ region.percentage }}%;"></div>
+              </div>
+            </div>
+            <div class="text-right">
+              <div class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ region.revenue }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ region.orders }} orders</div>
+            </div>
           </div>
         @endforeach
       </div>
-
-      @if (topProducts.length > 0 || salesByRegion.length > 0 || revenueByChannel.length > 0)
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Top Products</span>
-          </div>
-          <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-            <table class="w-full text-sm">
-              <thead class="bg-gray-50 dark:bg-gray-700/50">
-                <tr>
-                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Product</th>
-                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Revenue</th>
-                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Units</th>
-                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Growth</th>
-                </tr>
-              </thead>
-              <tbody>
-                @foreach (topProducts as product)
-                  <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                    <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ product.name }}</td>
-                    <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ product.revenue }}</td>
-                    <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ product.units }}</td>
-                    <td class="px-4 py-3 text-green-600 dark:text-green-400 border-t border-gray-100 dark:border-gray-700">{{ product.growth }}</td>
-                  </tr>
-                @endforeach
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Sales by Region</span>
-          </div>
-          <div class="divide-y divide-gray-100 dark:divide-gray-700">
-            @foreach (salesByRegion as region)
-              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ region.region }}</div>
-                  <div class="w-32 h-2 bg-gray-200 rounded-full overflow-hidden mt-1">
-                    <div class="h-full bg-blue-500 rounded-full" style="width: {{ region.percentage }}%;"></div>
-                  </div>
-                </div>
-                <div class="text-right">
-                  <div class="font-semibold">{{ region.revenue }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ region.orders }} orders</div>
-                </div>
-              </div>
-            @endforeach
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">Revenue by Channel</span>
-        </div>
-        <div class="p-6">
-          <div class="flex justify-around">
-            @foreach (revenueByChannel as channel)
-              <div class="text-center">
-                <div class="text-3xl font-bold">{{ channel.percentage }}%</div>
-                <div class="text-gray-500 dark:text-gray-400 mt-1">{{ channel.channel }}</div>
-                <div class="font-semibold text-success mt-2">{{ channel.revenue }}</div>
-              </div>
-            @endforeach
-          </div>
-        </div>
-      </div>
-      @else
-      <div class="flex flex-col items-center justify-center py-16 px-4">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <span class="text-2xl text-gray-400">&#x1F6D2;</span>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No commerce analytics yet</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Sales data will appear once orders start coming in.</p>
-      </div>
-      @endif
-    </div>
+    </Card>
   </div>
+
+  <!-- Revenue by Channel -->
+  <Card title="Revenue by Channel">
+    <div class="p-6 flex justify-around">
+      @foreach (revenueByChannel as channel)
+        <div class="text-center">
+          <div class="text-3xl font-bold text-neutral-900 dark:text-white">{{ channel.percentage }}%</div>
+          <div class="text-[13px] text-neutral-500 dark:text-neutral-400 mt-1">{{ channel.channel }}</div>
+          <div class="text-[13px] font-semibold text-green-600 dark:text-green-400 mt-2">{{ channel.revenue }}</div>
+        </div>
+      @endforeach
+    </div>
+  </Card>
+  @else
+  <EmptyState
+    icon="i-hugeicons-shopping-cart-01"
+    title="No commerce analytics yet"
+    description="Sales data will appear once orders start coming in."
+  />
+  @endif
+
+</div>
+</DashboardLayout>
 @endsection

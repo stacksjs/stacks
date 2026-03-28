@@ -150,7 +150,7 @@ function deleteProduct(): void {
         <!-- Header with back button and actions -->
         <div class="flex justify-between items-center p-6 border-b border-gray-200 dark:border-gray-700">
           <div class="flex items-center">
-            <button @click="goBack" class="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <button onclick="goBack" class="mr-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
               </svg>
@@ -158,10 +158,10 @@ function deleteProduct(): void {
             <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ product.name }}</h1>
           </div>
           <div class="flex space-x-2">
-            <button @click="editProduct" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+            <button onclick="editProduct" class="px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
               Edit
             </button>
-            <button @click="deleteProduct" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors">
+            <button onclick="deleteProduct" class="px-4 py-2 bg-red-500 text-white rounded-md hover:bg-red-600 transition-colors">
               Delete
             </button>
           </div>
@@ -180,18 +180,18 @@ function deleteProduct(): void {
             <div class="grid grid-cols-5 gap-2">
               @foreach(product.images as image, index)
                 <div
-                  @click="selectImage(index)"
+                  onclick="selectImage(index)"
                   class="cursor-pointer rounded-md overflow-hidden aspect-square"
-                  :class="{ 'ring-2 ring-primary': activeImageIndex === index }"
+                  class="{{ { 'ring-2 ring-primary': activeImageIndex === index } }}"
                 >
-                  <img :src="image" :alt="`${product.name} thumbnail ${index + 1}`" class="w-full h-full object-cover">
+                  <img :src="image" alt="{{ `${product.name} thumbnail ${index + 1}` }}" class="w-full h-full object-cover">
                 </div>
               @endforeach
 
               <!-- Video thumbnails -->
               @foreach(product.videos as video, index)
                 <div
-                  @click="openVideoModal(video)"
+                  onclick="openVideoModal(video)"
                   class="cursor-pointer rounded-md overflow-hidden aspect-square bg-gray-200 dark:bg-gray-600 flex items-center justify-center"
                 >
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500 dark:text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -208,11 +208,11 @@ function deleteProduct(): void {
             <div class="mb-6">
               <div class="flex justify-between items-center mb-2">
                 <h2 class="text-3xl font-bold text-gray-900 dark:text-white">{{ product.name }}</h2>
-                <span class="px-3 py-1 text-sm rounded-full" :class="{
+                <span class="px-3 py-1 text-sm rounded-full" class="{{ {
                   'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100': product.status === 'Active',
                   'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100': product.status === 'Low Stock',
                   'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100': product.status === 'Out of Stock'
-                }">
+                } }}">
                   {{ product.status }}
                 </span>
               </div>
@@ -282,7 +282,7 @@ function deleteProduct(): void {
               <div class="flex justify-between items-center mb-2">
                 <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Similar Products</h3>
                 <button
-                  @click="openSimilarProductsDialog"
+                  onclick="openSimilarProductsDialog"
                   class="text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                 >
                   Manage
@@ -318,7 +318,7 @@ function deleteProduct(): void {
     @else
       <div class="text-center p-8">
         <p class="text-xl text-gray-600 dark:text-gray-400">Product not found</p>
-        <button @click="goBack" class="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
+        <button onclick="goBack" class="mt-4 px-4 py-2 bg-primary text-white rounded-md hover:bg-primary-dark transition-colors">
           Back to Products
         </button>
       </div>
@@ -330,7 +330,7 @@ function deleteProduct(): void {
         <div class="relative bg-white dark:bg-gray-800 rounded-lg shadow-xl max-w-4xl w-full">
           <div class="p-4 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center">
             <h3 class="text-lg font-semibold text-gray-900 dark:text-white">Product Video</h3>
-            <button @click="closeVideoModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+            <button onclick="closeVideoModal" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
               <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
               </svg>
@@ -363,7 +363,7 @@ function deleteProduct(): void {
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Product</h3>
                 <button
                   class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
-                  @click="showEditDialog = false"
+                  onclick="showEditDialog = false"
                 >
                   <div class="i-hugeicons-cancel-01 h-5 w-5"></div>
                 </button>
@@ -377,7 +377,7 @@ function deleteProduct(): void {
                       <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
                       <input
                         id="product-name"
-                        v-model="editingProduct.name"
+                        value="{{ editingProduct.name }}"
                         type="text"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
@@ -396,7 +396,7 @@ function deleteProduct(): void {
                       <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
                       <input
                         id="product-category"
-                        v-model="editingProduct.category"
+                        value="{{ editingProduct.category }}"
                         type="text"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
@@ -414,7 +414,7 @@ function deleteProduct(): void {
                       <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
                       <select
                         id="product-status"
-                        v-model="editingProduct.status"
+                        value="{{ editingProduct.status }}"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         <option value="Active">Active</option>
@@ -426,7 +426,7 @@ function deleteProduct(): void {
                       <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
                       <input
                         id="product-manufacturer"
-                        v-model="editingProduct.manufacturer"
+                        value="{{ editingProduct.manufacturer }}"
                         type="text"
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
@@ -437,7 +437,7 @@ function deleteProduct(): void {
                     <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
                     <textarea
                       id="product-description"
-                      v-model="editingProduct.description"
+                      value="{{ editingProduct.description }}"
                       rows="4"
                       class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     ></textarea>
@@ -445,13 +445,13 @@ function deleteProduct(): void {
 
                   <div class="flex justify-end space-x-3 mt-6">
                     <button
-                      @click="showEditDialog = false"
+                      onclick="showEditDialog = false"
                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
                     >
                       Cancel
                     </button>
                     <button
-                      @click="saveProduct"
+                      onclick="saveProduct"
                       class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                       Save Changes
@@ -477,7 +477,7 @@ function deleteProduct(): void {
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Manage Similar Products</h3>
                 <button
                   class="text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-full p-1 dark:text-gray-300 dark:hover:text-gray-100"
-                  @click="showSimilarProductsDialog = false"
+                  onclick="showSimilarProductsDialog = false"
                 >
                   <div class="i-hugeicons-cancel-01 h-5 w-5"></div>
                 </button>
@@ -496,13 +496,13 @@ function deleteProduct(): void {
                           class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700"
                         >
                           <input
-                            :id="`similar-product-${similarProduct.id}`"
+                            id="{{ `similar-product-${similarProduct.id}` }}"
                             type="checkbox"
-                            :value="similarProduct.id"
-                            v-model="editingProduct.similarProducts"
+                            value="{{ similarProduct.id }}"
+                            value="{{ editingProduct.similarProducts }}"
                             class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded dark:border-gray-600"
                           />
-                          <label :for="`similar-product-${similarProduct.id}`" class="ml-3 flex items-center cursor-pointer">
+                          <label for="{{ `similar-product-${similarProduct.id}` }}" class="ml-3 flex items-center cursor-pointer">
                             <img :src="similarProduct.images[0]" alt="" class="h-10 w-10 flex-shrink-0 rounded-md object-cover">
                             <div class="ml-3">
                               <p class="text-sm font-medium text-gray-900 dark:text-white">{{ similarProduct.name }}</p>
@@ -516,13 +516,13 @@ function deleteProduct(): void {
 
                   <div class="flex justify-end space-x-3 mt-6">
                     <button
-                      @click="showSimilarProductsDialog = false"
+                      onclick="showSimilarProductsDialog = false"
                       class="px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:border-gray-600 dark:hover:bg-gray-600"
                     >
                       Cancel
                     </button>
                     <button
-                      @click="saveSimilarProducts"
+                      onclick="saveSimilarProducts"
                       class="px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
                       Save Changes

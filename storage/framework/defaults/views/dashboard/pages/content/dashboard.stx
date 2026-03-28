@@ -33,69 +33,55 @@ try {
   // DB not seeded
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Content Dashboard</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Overview of your blog and content performance</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Post</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <!-- Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-            <div class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ stat.trend }}</div>
+  <PageHeader title="Content Dashboard" description="Overview of your blog and content performance">
+    <template #actions>
+      <Button variant="primary">New Post</Button>
+    </template>
+  </PageHeader>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    @foreach (stats as stat)
+      <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.trend }}" icon="i-hugeicons-note-01" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Top Performing Posts -->
+    <Card title="Top Performing Posts">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+        @foreach (topPosts as post)
+          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ post.title }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ post.views.toLocaleString() }} views &middot; {{ post.comments }} comments</div>
+            </div>
+            <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ post.date }}</span>
           </div>
         @endforeach
       </div>
+    </Card>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <!-- Top Posts -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Top Performing Posts</span>
-            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
+    <!-- Recent Comments -->
+    <Card title="Recent Comments">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+        @foreach (recentComments as comment)
+          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">{{ comment.author.charAt(0) }}</div>
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ comment.author }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400 truncate">{{ comment.content }}</div>
+            </div>
+            <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ comment.time }}</span>
           </div>
-          <div class="divide-y divide-gray-100 dark:divide-gray-700">
-            @foreach (topPosts as post)
-              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ post.title }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ post.views.toLocaleString() }} views &middot; {{ post.comments }} comments</div>
-                </div>
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ post.date }}</span>
-              </div>
-            @endforeach
-          </div>
-        </div>
-
-        <!-- Recent Comments -->
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Recent Comments</span>
-            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
-          </div>
-          <div class="divide-y divide-gray-100 dark:divide-gray-700">
-            @foreach (recentComments as comment)
-              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">{{ comment.author.charAt(0) }}</div>
-                <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ comment.author }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400 truncate">{{ comment.content }}</div>
-                </div>
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ comment.time }}</span>
-              </div>
-            @endforeach
-          </div>
-        </div>
+        @endforeach
       </div>
-    </div>
+    </Card>
   </div>
+
+</div>
+</DashboardLayout>
 @endsection

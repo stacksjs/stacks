@@ -56,7 +56,7 @@ function truncateMessage(message, maxLength = 60) {
 </script>
 <div class="overflow-hidden">
   <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-    <thead class="bg-gray-50 dark:bg-blue-gray-700">
+    <thead class="bg-gray-50 dark:bg-neutral-700">
       <tr>
         <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
           <button class="group inline-flex items-center" data-action="sort" data-column="type">
@@ -102,9 +102,9 @@ function truncateMessage(message, maxLength = 60) {
         </th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+    <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
       @foreach(errors as error)
-        <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700 cursor-pointer" data-action="view" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+        <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer" data-action="view" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
           <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
             <div class="flex flex-col">
               <div class="flex items-center gap-2">

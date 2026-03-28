@@ -48,80 +48,76 @@ try {
   // filesystem scan failed
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Files</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage your media and documents</p>
+<DashboardLayout>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Files" description="Manage your media and documents">
+    <template #actions>
+      <Button variant="secondary">New Folder</Button>
+      <Button variant="primary">Upload</Button>
+    </template>
+  </PageHeader>
+
+  <!-- Storage Info -->
+  <Card title="Storage">
+    <div class="p-4">
+      <div class="flex justify-between items-center mb-3">
+        <span class="text-[13px] text-neutral-500 dark:text-neutral-400">{{ storage.used }} GB of {{ storage.total }} GB used</span>
       </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">New Folder</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Upload</button>
+      <div class="h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+        <div class="h-full bg-blue-600 rounded-full" style="width: {{ storage.percentage }}%"></div>
       </div>
     </div>
+  </Card>
 
-    <div class="flex flex-col gap-6">
-      <!-- Storage Info -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex justify-between items-center mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">Storage</span>
-          <span class="text-gray-500 dark:text-gray-400">{{ storage.used }} GB of {{ storage.total }} GB used</span>
-        </div>
-        <div class="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
-          <div class="h-full bg-blue-600 rounded-full" style="width: {{ storage.percentage }}%"></div>
-        </div>
-      </div>
-
-      <!-- Files Table -->
-      @if (files.length > 0)
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Size</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Modified</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (files as file)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
-                    <div class="flex items-center gap-3">
-                      <div class="w-9 h-9 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                        {{ file.type === 'folder' ? 'F' : file.type === 'image' ? 'I' : file.type === 'document' ? 'D' : 'V' }}
-                      </div>
-                      <span class="font-medium text-gray-900 dark:text-white">{{ file.name }}</span>
-                    </div>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ file.type }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">
-                    {{ file.items ? file.items + ' items' : file.size }}
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ file.modified }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Open</button>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-      @else
-      <div class="flex flex-col items-center justify-center py-16 px-4">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <span class="text-2xl text-gray-400">&#x1F4C1;</span>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No files uploaded</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Upload files to manage your media library.</p>
-      </div>
-      @endif
-    </div>
+  <!-- Files Table -->
+  @if (files.length > 0)
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'name', label: 'Name' },
+        { key: 'type', label: 'Type' },
+        { key: 'size', label: 'Size' },
+        { key: 'modified', label: 'Modified' },
+        { key: 'actions', label: '' },
+      ]) }}"
+      :data="files"
+      emptyTitle="No files"
+      emptyDescription="Upload files to get started"
+      emptyIcon="i-hugeicons-folder-01"
+    >
+      @foreach (files as file)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-3">
+              <div class="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
+                <div class="{{ file.type === 'image' ? 'i-hugeicons-image-01' : file.type === 'document' ? 'i-hugeicons-file-01' : 'i-hugeicons-folder-01' }} w-5 h-5 text-neutral-500 dark:text-neutral-400"></div>
+              </div>
+              <span class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ file.name }}</span>
+            </div>
+          </td>
+          <td class="px-4 py-3">
+            <Badge variant="default" size="xs">{{ file.type }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">
+            {{ file.items ? file.items + ' items' : file.size }}
+          </td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ file.modified }}</td>
+          <td class="px-4 py-3">
+            <Button variant="ghost" size="xs">Open</Button>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
   </div>
+  @else
+  <EmptyState
+    icon="i-hugeicons-folder-01"
+    title="No files uploaded"
+    description="Upload files to manage your media library."
+  />
+  @endif
+
+</div>
+</DashboardLayout>
 @endsection

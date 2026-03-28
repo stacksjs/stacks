@@ -78,7 +78,7 @@
               <div class="sm:col-span-3">
                 <label for="driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="driver" type="text" name="driver" value="{{ driver }}" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-blue-gray-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="driver" type="text" name="driver" value="{{ driver }}" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-neutral-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
@@ -191,32 +191,32 @@
               <div class="col-span-full">
                 <label for="api-description" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Description</label>
                 <div class="mt-2">
-                  <input id="api-description" type="text" value="{{ apiDescription }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="api-description" type="text" value="{{ apiDescription }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
 
               <div class="col-span-2">
                 <label for="api-prefix" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Prefix</label>
                 <div class="mt-2">
-                  <input id="api-prefix" name="prefix" type="text" value="{{ apiPrefix }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="api-prefix" name="prefix" type="text" value="{{ apiPrefix }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
                 <label for="api-memory-size" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Memory Size(MB)</label>
                 <div class="mt-2">
-                  <input id="api-memory-size" name="memory-size" type="text" value="{{ apiMemorySize }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="api-memory-size" name="memory-size" type="text" value="{{ apiMemorySize }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
                 <label for="api-prewarm" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Prewarn</label>
                 <div class="mt-2">
-                  <input id="api-prewarm" name="prewarm" type="text" value="{{ apiPrewarm }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="api-prewarm" name="prewarm" type="text" value="{{ apiPrewarm }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
                 <label for="api-timeout" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Timeout</label>
                 <div class="mt-2">
-                  <input id="api-timeout" name="timeout" type="text" value="{{ apiTimeout }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="api-timeout" name="timeout" type="text" value="{{ apiTimeout }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-full">
@@ -286,13 +286,13 @@
               <div class="col-span-2">
                 <label for="firewall-rate-limit" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Rate Limit per minute</label>
                 <div class="mt-2">
-                  <input id="firewall-rate-limit" name="limit-per-minute" type="text" value="{{ firewallRateLimit }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="firewall-rate-limit" name="limit-per-minute" type="text" value="{{ firewallRateLimit }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
                 <label for="firewall-country-codes" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Country Codes</label>
                 <div class="mt-2">
-                  <input id="firewall-country-codes" name="country-codes" type="text" value="{{ firewallCountryCodes }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="firewall-country-codes" name="country-codes" type="text" value="{{ firewallCountryCodes }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-full">
@@ -356,25 +356,25 @@
               <div class="sm:col-span-3">
                 <label for="cdn-origin-shield" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Origin Shield Region</label>
                 <div class="mt-2">
-                  <input id="cdn-origin-shield" name="origin-shield" type="text" value="{{ cdnOriginShieldRegion }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-origin-shield" name="origin-shield" type="text" value="{{ cdnOriginShieldRegion }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
                 <label for="cdn-default-ttl" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Default TTL</label>
                 <div class="mt-2">
-                  <input id="cdn-default-ttl" name="default-ttl" type="text" value="{{ cdnDefaultTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-default-ttl" name="default-ttl" type="text" value="{{ cdnDefaultTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
                 <label for="cdn-min-ttl" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Min TTL</label>
                 <div class="mt-2">
-                  <input id="cdn-min-ttl" name="min-ttl" type="text" value="{{ cdnMinTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-min-ttl" name="min-ttl" type="text" value="{{ cdnMinTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
                 <label for="cdn-max-ttl" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Max TTL</label>
                 <div class="mt-2">
-                  <input id="cdn-max-ttl" name="max-ttl" type="text" value="{{ cdnMaxTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-max-ttl" name="max-ttl" type="text" value="{{ cdnMaxTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
@@ -394,19 +394,19 @@
               <div class="sm:col-span-2">
                 <label for="cdn-cookies" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Cookies</label>
                 <div class="mt-2">
-                  <input id="cdn-cookies" name="cookies" type="text" value="{{ cdnCookies }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-cookies" name="cookies" type="text" value="{{ cdnCookies }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-2">
                 <label for="cdn-headers" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Headers</label>
                 <div class="mt-2">
-                  <input id="cdn-headers" name="headers" type="text" value="{{ cdnHeaders }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-headers" name="headers" type="text" value="{{ cdnHeaders }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-2">
                 <label for="cdn-query-strings" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Query Strings</label>
                 <div class="mt-2">
-                  <input id="cdn-query-strings" name="query-strings" type="text" value="{{ cdnQueryStrings }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-query-strings" name="query-strings" type="text" value="{{ cdnQueryStrings }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
 
@@ -425,7 +425,7 @@
               <div class="sm:col-span-2">
                 <label for="cdn-sampling-rate" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Sampling Rate</label>
                 <div class="mt-2">
-                  <input id="cdn-sampling-rate" name="sampling-rate" type="text" value="{{ cdnSamplingRate }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
+                  <input id="cdn-sampling-rate" name="sampling-rate" type="text" value="{{ cdnSamplingRate }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
             </div>

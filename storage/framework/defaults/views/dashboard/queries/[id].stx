@@ -153,12 +153,12 @@ const queryTypeBadges = {
 
 </script>
 <div class="min-h-screen">
-  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
+  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-neutral-900 sm:px-6 lg:px-8">
     <div>
       <div class="flex items-center gap-2">
         <button
-          @click="router.back()"
-          class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-blue-gray-800 transition-colors"
+          onclick="router.back()"
+          class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
         >
           <div class="i-hugeicons-arrow-left h-5 w-5 text-gray-500 dark:text-gray-400"></div>
         </button>
@@ -190,7 +190,7 @@ const queryTypeBadges = {
     @elseif(query)
       <div class="space-y-6">
         <!-- Query header section -->
-        <div class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
+        <div class="bg-white shadow dark:bg-neutral-900 sm:rounded-lg overflow-hidden">
           <div class="px-4 py-5 sm:px-6">
             <div class="flex flex-wrap justify-between items-start gap-4">
               <div>
@@ -225,35 +225,35 @@ const queryTypeBadges = {
             </div>
           </div>
 
-          <div class="border-t border-gray-200 dark:border-blue-gray-700">
+          <div class="border-t border-gray-200 dark:border-neutral-700">
             <dl>
-              <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Query</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <pre class="font-mono text-xs bg-gray-800 text-gray-100 p-3 rounded-md overflow-x-auto">{{ query.query }}</pre>
                 </dd>
               </div>
-              <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Normalized Query</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
-                  <pre class="font-mono text-xs bg-gray-100 dark:bg-blue-gray-800 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ query.normalized_query }}</pre>
+                  <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ query.normalized_query }}</pre>
                 </dd>
               </div>
-              <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bindings</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   @if(query.bindings && query.bindings.length)
-                    <pre class="font-mono text-xs bg-gray-100 dark:bg-blue-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ formatBindings(query.bindings) }}</pre>
+                    <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ formatBindings(query.bindings) }}</pre>
                   @else
                     <p class="text-sm text-gray-500 dark:text-gray-400">No bindings</p>
                   @endif
                 </dd>
               </div>
-              <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Connection</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">{{ query.connection }}</dd>
               </div>
-              <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Affected Tables</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <div class="flex flex-wrap gap-2">
@@ -265,7 +265,7 @@ const queryTypeBadges = {
                   </div>
                 </dd>
               </div>
-              <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Indexes</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <div class="space-y-4">
@@ -305,29 +305,29 @@ const queryTypeBadges = {
         </div>
 
         <!-- Performance section -->
-        <div class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
+        <div class="bg-white shadow dark:bg-neutral-900 sm:rounded-lg overflow-hidden">
           <div class="px-4 py-5 sm:px-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Performance Details</h3>
             <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">Execution metrics and optimization information.</p>
           </div>
-          <div class="border-t border-gray-200 dark:border-blue-gray-700">
+          <div class="border-t border-gray-200 dark:border-neutral-700">
             <dl>
-              <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Memory Usage</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">{{ query.memory_usage }} MB</dd>
               </div>
-              <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rows Affected</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">{{ query.rows_affected }}</dd>
               </div>
-              <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+              <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                 <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Explain Plan</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
-                  <pre class="font-mono text-xs bg-gray-100 dark:bg-blue-gray-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto whitespace-pre-wrap">{{ query.explain_plan }}</pre>
+                  <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto whitespace-pre-wrap">{{ query.explain_plan }}</pre>
                 </dd>
               </div>
               @if(query.optimization_suggestions && query.optimization_suggestions.length)
-                <div class="bg-white dark:bg-blue-gray-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
                   <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Optimization Suggestions</dt>
                   <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                     <ul class="space-y-2">
@@ -346,14 +346,14 @@ const queryTypeBadges = {
         </div>
 
         <!-- Tags section -->
-        <div class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
+        <div class="bg-white shadow dark:bg-neutral-900 sm:rounded-lg overflow-hidden">
           <div class="px-4 py-5 sm:px-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Tags</h3>
           </div>
-          <div class="border-t border-gray-200 dark:border-blue-gray-700 px-4 py-5 sm:px-6">
+          <div class="border-t border-gray-200 dark:border-neutral-700 px-4 py-5 sm:px-6">
             <div class="flex flex-wrap gap-2">
               @foreach(query.tags as tag)
-                <span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-blue-gray-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700">
+                <span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-neutral-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700">
                   {{ tag }}
                 </span>
               @endforeach
@@ -363,7 +363,7 @@ const queryTypeBadges = {
       </div>
     @else
       <!-- Error state -->
-      <div class="bg-white shadow dark:bg-blue-gray-900 sm:rounded-lg overflow-hidden">
+      <div class="bg-white shadow dark:bg-neutral-900 sm:rounded-lg overflow-hidden">
         <div class="px-4 py-5 sm:p-6 text-center">
           <div class="i-hugeicons-file-broken h-12 w-12 text-gray-400 mx-auto mb-4"></div>
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Query not found</h3>

@@ -1,0 +1,32 @@
+<script server>
+const title = props.title || ''
+const subtitle = props.subtitle || ''
+const height = props.height || '300px'
+const loading = props.loading || false
+</script>
+<div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  @if(title)
+    <div class="flex items-center justify-between p-5 border-b border-neutral-200/60 dark:border-white/5">
+      <div>
+        <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">{{ title }}</h3>
+        @if(subtitle)
+          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">{{ subtitle }}</p>
+        @endif
+      </div>
+      <div class="flex items-center gap-2">
+        <slot name="controls" />
+      </div>
+    </div>
+  @endif
+  <div class="p-5 relative" style="height: {{ height }}">
+    @if(loading)
+      <div class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-b-xl z-10">
+        <svg class="animate-spin h-6 w-6 text-blue-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+        </svg>
+      </div>
+    @endif
+    <slot />
+  </div>
+</div>

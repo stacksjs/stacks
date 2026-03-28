@@ -22,7 +22,7 @@ function getNavbarClasses() {
 }
 </script>
 <div
-  class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:bg-blue-gray-900 lg:px-8 sm:px-6 transition-all duration-300 {{ getNavbarClasses() }}"
+  class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-gray-600 dark:bg-neutral-900 lg:px-8 sm:px-6 transition-all duration-300 {{ getNavbarClasses() }}"
 >
   <button type="button" class="p-2.5 text-gray-700 -m-2.5 lg:hidden" title="Open sidebar">
     <span class="sr-only">Open sidebar</span>
@@ -43,7 +43,7 @@ function getNavbarClasses() {
       <div class="i-hugeicons-search-01 pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"></div>
       <input
         id="search-field"
-        class="block h-full w-full border-none py-0 pl-8 pr-0 text-gray-900 dark:bg-blue-gray-900 sm:text-sm dark:text-gray-100 placeholder:text-gray-400 focus:ring-0"
+        class="block h-full w-full border-none py-0 pl-8 pr-0 text-gray-900 dark:bg-neutral-900 sm:text-sm dark:text-gray-100 placeholder:text-gray-400 focus:ring-0"
         placeholder="Search..."
         type="search"
         name="search"
@@ -126,7 +126,7 @@ function getNavbarClasses() {
         </div>
 
         @if(showDropdown)
-          <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-blue-gray-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+          <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-neutral-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
             <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Your Profile</a>
             <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Documentation</a>
             <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700" role="menuitem" tabindex="-1">Billing</a>
@@ -135,7 +135,7 @@ function getNavbarClasses() {
             <a
               id="user-menu-item-4"
               href="#"
-              class="my-1 flex justify-between px-4 py-2 text-sm text-gray-500 dark:text-gray-400 leading-6 hover:bg-blue-gray-50 hover:text-blue-gray-600 dark:hover:bg-gray-700 dark:hover:text-gray-200"
+              class="my-1 flex justify-between px-4 py-2 text-sm text-gray-500 dark:text-gray-400 leading-6 hover:bg-neutral-50 hover:text-neutral-600 dark:hover:bg-gray-700 dark:hover:text-gray-200"
               role="menuitem"
               tabindex="-1"
             >
@@ -145,7 +145,7 @@ function getNavbarClasses() {
 
               <select
                 id="small"
-                class="border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-500 dark:border-gray-600 focus:border-blue-500 dark:bg-blue-gray-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
+                class="border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-500 dark:border-gray-600 focus:border-blue-500 dark:bg-neutral-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
                 data-model="theme"
               >
                 <option value="light">Light</option>
@@ -165,7 +165,7 @@ function getNavbarClasses() {
 }
 
 .header-link {
-  @apply text-gray-400 hover:text-blue-gray-500 transition-colors duration-150;
+  @apply text-gray-400 hover:text-neutral-500 transition-colors duration-150;
 }
 
 .header-link div {

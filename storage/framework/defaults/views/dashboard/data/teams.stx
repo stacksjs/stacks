@@ -1,4 +1,4 @@
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
         <h3 class="text-base text-gray-900 font-semibold leading-6">
@@ -36,7 +36,7 @@
 
     <!-- Growth Chart -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -45,8 +45,8 @@
             </div>
             <div class="flex items-center space-x-4">
               <select
-                v-model="timeRange"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                value="{{ timeRange }}"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -56,7 +56,8 @@
             </div>
           </div>
           <div class="h-[400px] relative">
-            <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+            @if(isLoading)
+<div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
             <Line :data="chartData" :options="chartOptions" />
@@ -66,7 +67,7 @@
     </div>
 
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -79,7 +80,8 @@
               <!-- D3 diagram will be rendered here -->
             </div>
 
-            <div v-if="selectedModel" class="w-64 ml-6 p-4 bg-gray-50 dark:bg-blue-gray-600 rounded-lg">
+            @if(selectedModel)
+<div class="w-64 ml-6 p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
               <div class="flex items-center mb-4">
                 <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
@@ -92,7 +94,8 @@
               <div class="mb-4">
                 <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
                 <ul class="space-y-1">
-                  <li v-for="prop in selectedModel.properties" :key="prop" class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                  @foreach(selectedModel.properties as prop)
+<li class="text-sm text-gray-600 dark:text-gray-400 font-mono">
                     {{ prop }}
                   </li>
                 </ul>
@@ -101,7 +104,8 @@
               <div class="mb-6">
                 <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
                 <ul class="space-y-1">
-                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm font-mono">
+                  @foreach(selectedModel.relationships as rel)
+<li class="text-sm font-mono">
                     <router-link
                       :to="getModelRoute(rel.toLowerCase())"
                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
@@ -112,8 +116,7 @@
                 </ul>
               </div>
 
-              <router-link
-                v-if="selectedModel.id !== 'team'"
+              <router-link 
                 :to="getModelRoute(selectedModel.id)"
                 class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
               >

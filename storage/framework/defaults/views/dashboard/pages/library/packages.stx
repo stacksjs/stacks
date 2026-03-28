@@ -28,83 +28,81 @@ try {
   // package.json not available
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['published', 'up-to-date'].includes(s)) return 'success'
+  if (['workspace', 'update-available'].includes(s)) return 'warning'
+  if (['failed', 'error'].includes(s)) return 'danger'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Packages</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage project dependencies</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Check Updates</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Package</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <!-- Stats -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="Packages" description="Manage project dependencies">
+    <template #actions>
+      <Button variant="secondary">Check Updates</Button>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Add Package
+      </Button>
+    </template>
+  </PageHeader>
 
-      <!-- Packages Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">Dependencies</span>
-          <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Update All</button>
-        </div>
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Package</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Current</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Latest</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (packages as pkg)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ pkg.name }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ pkg.version }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ pkg.latest }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ pkg.type }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(pkg.status) }}">{{ pkg.status === 'up-to-date' ? 'Up to date' : 'Update available' }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                      <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Update</button>
-                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Details</button>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <StatsCard title="Total Packages" value="{{ stats[0]?.value || '0' }}" icon="i-hugeicons-package" iconBg="primary" />
+    <StatsCard title="Published" value="{{ stats[1]?.value || '0' }}" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
+    <StatsCard title="Workspace" value="{{ stats[2]?.value || '0' }}" icon="i-hugeicons-folder-links" iconBg="warning" />
+    <StatsCard title="Framework" value="{{ stats[3]?.value || '0' }}" icon="i-hugeicons-code" iconBg="info" />
   </div>
+
+  <!-- Packages Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5 flex items-center justify-between">
+      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Dependencies</span>
+      <Button variant="ghost" size="xs">Update All</Button>
+    </div>
+
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'name', label: 'Package' },
+        { key: 'version', label: 'Current' },
+        { key: 'latest', label: 'Latest' },
+        { key: 'type', label: 'Type' },
+        { key: 'status', label: 'Status' },
+        { key: 'actions', label: '' }
+      ]) }}"
+      :data="packages"
+      emptyTitle="No packages found"
+      emptyDescription="Dependencies will appear here from package.json"
+      emptyIcon="i-hugeicons-package"
+    >
+      @foreach (packages as pkg)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ pkg.name }}</td>
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ pkg.version }}</code>
+          </td>
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ pkg.latest }}</code>
+          </td>
+          <td class="px-4 py-3">
+            <Badge variant="default" size="xs">{{ pkg.type }}</Badge>
+          </td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(pkg.status) }}" size="xs" dot>{{ pkg.status }}</Badge>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1">
+              <Button variant="primary" size="xs">Update</Button>
+              <Button variant="ghost" size="xs">Details</Button>
+            </div>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+</DashboardLayout>
 @endsection

@@ -181,7 +181,7 @@ function formatName(n) {
               <div id="edit-api-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
                 @foreach (svc.fields as field)
                   <div class="flex items-center gap-2 mb-2">
-                    <label class="text-xs text-gray-500 dark:text-gray-400 w-24 shrink-0 truncate" title="{{ field.key }}">{{ field.label }}</label>
+                    <label class="text-xs text-gray-500 dark:text-gray-400 w-24 shrink-0 truncate" :title="field.key">{{ field.label }}</label>
                     <input type="{{ field.key === 'apiKey' || field.key === 'secretKey' || field.key === 'password' || field.key === 'privateKey' || field.key === 'botToken' ? 'password' : 'text' }}" data-config-key="{{ field.key }}" value="{{ field.value }}" placeholder="{{ field.env ? 'env.' + field.env : '' }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono" />
                   </div>
                 @endforeach

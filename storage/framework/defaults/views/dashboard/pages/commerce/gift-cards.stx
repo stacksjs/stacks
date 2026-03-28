@@ -29,129 +29,101 @@ try {
   // DB not seeded
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'valid'].includes(s)) return 'success'
+  if (['pending', 'partial'].includes(s)) return 'warning'
+  if (['expired', 'inactive', 'cancelled'].includes(s)) return 'danger'
+  if (['redeemed'].includes(s)) return 'info'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Gift Cards</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage gift card inventory</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Bulk Create</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Gift Card</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="Gift Cards" description="Manage gift card inventory">
+    <template #actions>
+      <Button variant="secondary">Bulk Create</Button>
+      <Button variant="primary">Create Gift Card</Button>
+    </template>
+  </PageHeader>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Quick Create</span>
-          </div>
-          <div class="p-4">
-            <div class="mb-4">
-              <label class="text-sm text-gray-500 dark:text-gray-400 mb-2 block">Select Amount</label>
-              <div class="flex flex-wrap gap-2">
-                @foreach (denominations as denom)
-                  <button class="px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">{{ denom }}</button>
-                @endforeach
-              </div>
-            </div>
-            <div class="mb-4">
-              <label class="text-sm text-gray-500 dark:text-gray-400 mb-2 block">Recipient Email (optional)</label>
-              <input type="email" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="email@example.com" />
-            </div>
-            <button class="w-full px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Gift Card</button>
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Check Balance</span>
-          </div>
-          <div class="p-4">
-            <div class="mb-4">
-              <label class="text-sm text-gray-500 dark:text-gray-400 mb-2 block">Gift Card Code</label>
-              <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="GC-XXXX-XXXX" />
-            </div>
-            <button class="w-full px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Check Balance</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">Recent Gift Cards</span>
-        </div>
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Code</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Balance</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Initial</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Recipient</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (giftCards as card)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ card.code }}</code></td>
-                  <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ card.balance }}</td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ card.initial }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ card.recipient || '—' }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(card.status) }}">{{ card.status }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ card.created }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    @foreach (stats as stat)
+      <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-gift" iconBg="primary" />
+    @endforeach
   </div>
-<style>
-.p-4 {
-  padding: 1rem;
-}
-.w-full {
-  width: 100%;
-}
-.flex-wrap {
-  flex-wrap: wrap;
-}
-.block {
-  display: block;
-}
-</style>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Quick Create -->
+    <Card title="Quick Create">
+      <div class="p-4">
+        <div class="mb-4">
+          <label class="text-[12px] text-neutral-500 dark:text-neutral-400 mb-2 block">Select Amount</label>
+          <div class="flex flex-wrap gap-2">
+            @foreach (denominations as denom)
+              <Button variant="outline" size="xs">{{ denom }}</Button>
+            @endforeach
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="text-[12px] text-neutral-500 dark:text-neutral-400 mb-2 block">Recipient Email (optional)</label>
+          <input type="email" class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="email@example.com" />
+        </div>
+        <Button variant="primary" class="w-full">Create Gift Card</Button>
+      </div>
+    </Card>
+
+    <!-- Check Balance -->
+    <Card title="Check Balance">
+      <div class="p-4">
+        <div class="mb-4">
+          <label class="text-[12px] text-neutral-500 dark:text-neutral-400 mb-2 block">Gift Card Code</label>
+          <input type="text" class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="GC-XXXX-XXXX" />
+        </div>
+        <Button variant="secondary" class="w-full">Check Balance</Button>
+      </div>
+    </Card>
+  </div>
+
+  <!-- Recent Gift Cards -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'code', label: 'Code' },
+        { key: 'balance', label: 'Balance' },
+        { key: 'initial', label: 'Initial' },
+        { key: 'recipient', label: 'Recipient' },
+        { key: 'status', label: 'Status' },
+        { key: 'created', label: 'Created' },
+        { key: 'actions', label: '' },
+      ]) }}"
+      :data="giftCards"
+      emptyTitle="No gift cards yet"
+      emptyDescription="Create your first gift card to get started"
+      emptyIcon="i-hugeicons-gift"
+    >
+      @foreach (giftCards as card)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ card.code }}</code>
+          </td>
+          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ card.balance }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ card.initial }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ card.recipient || '--' }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(card.status) }}" size="xs" dot>{{ card.status }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ card.created }}</td>
+          <td class="px-4 py-3">
+            <Button variant="ghost" size="xs">View</Button>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+
+</div>
+</DashboardLayout>
 @endsection

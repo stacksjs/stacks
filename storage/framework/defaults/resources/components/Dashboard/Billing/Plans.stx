@@ -100,7 +100,7 @@
       <div class="flex justify-end pt-8">
         <button
           type="button"
-          class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          class="rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-neutral-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
           @if(!hasPaymentMethods) disabled @endif
           data-action="subscribe"
         >
@@ -121,7 +121,7 @@
 
         <button
           type="button"
-          class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+          class="ml-4 rounded-md bg-blue-600 px-2.5 py-1.5 text-sm text-white font-semibold shadow-sm disabled:bg-gray-600 hover:bg-neutral-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
           @if(!hasPaymentMethods) disabled @endif
           data-action="update-plan"
         >

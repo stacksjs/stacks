@@ -10,7 +10,7 @@ try {
   const cwd = process.cwd()
   const dirs = [
     path.resolve(cwd, 'app/Actions'),
-    path.resolve(cwd, 'storage/framework/defaults/actions'),
+    path.resolve(cwd, 'storage/framework/defaults/app/Actions'),
   ]
   const seen = new Set()
   for (const dir of dirs) {
@@ -39,62 +39,60 @@ try {
   // filesystem scan failed
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'success', 'healthy', 'running'].includes(s)) return 'success'
+  if (['pending', 'scheduled', 'warning'].includes(s)) return 'warning'
+  if (['failed', 'error', 'inactive'].includes(s)) return 'danger'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Actions</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Application actions and automations</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Action</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Runs (30d)</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Avg Time</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (actions as action)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ action.name }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ action.type }}</span></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ action.runs.toLocaleString() }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ action.avgTime }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(action.status) }}">{{ action.status }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button></td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <PageHeader title="Actions" description="Application actions and automations">
+    <template #actions>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        New Action
+      </Button>
+    </template>
+  </PageHeader>
+
+  <!-- Actions Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'name', label: 'Action' },
+        { key: 'type', label: 'Type' },
+        { key: 'runs', label: 'Runs (30d)' },
+        { key: 'avgTime', label: 'Avg Time' },
+        { key: 'status', label: 'Status' },
+        { key: 'actions', label: '' }
+      ]) }}"
+      :data="actions"
+      emptyTitle="No actions found"
+      emptyDescription="Actions will appear here once they are created"
+      emptyIcon="i-hugeicons-zap"
+    >
+      @foreach(actions as action)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ action.name }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="default" size="xs">{{ action.type }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ action.runs.toLocaleString() }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ action.avgTime }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(action.status) }}" size="xs" dot>{{ action.status }}</Badge>
+          </td>
+          <td class="px-4 py-3">
+            <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
   </div>
+</div>
+</DashboardLayout>
 @endsection

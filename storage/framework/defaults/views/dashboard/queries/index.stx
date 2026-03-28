@@ -330,7 +330,7 @@ function filteredQueries() {
 
 @title('Dashboard - Queries')
 <div class="min-h-screen">
-  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
+  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-neutral-900 sm:px-6 lg:px-8">
     <div>
       <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
         Queries Dashboard
@@ -344,24 +344,24 @@ function filteredQueries() {
         <button
           type="button"
           class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'hour' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-          @click="timeRange = 'hour'"
+          :class="timeRange === 'hour' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          onclick="timeRange = 'hour'"
         >
           Hour
         </button>
         <button
           type="button"
           class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-          @click="timeRange = 'day'"
+          :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          onclick="timeRange = 'day'"
         >
           Day
         </button>
         <button
           type="button"
           class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-          @click="timeRange = 'week'"
+          :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          onclick="timeRange = 'week'"
         >
           Week
         </button>
@@ -370,8 +370,8 @@ function filteredQueries() {
         <select
           id="connection"
           name="connection"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-          v-model="selectedConnection"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+          value="{{ selectedConnection }}"
         >
           <option value="all">All connections</option>
           <option value="mysql">MySQL</option>
@@ -384,8 +384,8 @@ function filteredQueries() {
         <select
           id="type"
           name="type"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-          v-model="selectedType"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+          value="{{ selectedType }}"
         >
           <option value="all">All types</option>
           <option value="SELECT">SELECT</option>
@@ -401,27 +401,27 @@ function filteredQueries() {
   <main class="px-4 py-8 sm:px-6 lg:px-8">
     <!-- Stats section -->
     <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-6">
-      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-blue-gray-800 sm:p-6">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Queries</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ stats.total }}</dd>
       </div>
-      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-blue-gray-800 sm:p-6">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">SELECT Queries</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-blue-600 dark:text-blue-400">{{ stats.select }}</dd>
       </div>
-      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-blue-gray-800 sm:p-6">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">INSERT Queries</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-green-600 dark:text-green-400">{{ stats.insert }}</dd>
       </div>
-      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-blue-gray-800 sm:p-6">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">UPDATE Queries</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-amber-600 dark:text-amber-400">{{ stats.update }}</dd>
       </div>
-      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-blue-gray-800 sm:p-6">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">DELETE Queries</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-red-600 dark:text-red-400">{{ stats.delete }}</dd>
       </div>
-      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-blue-gray-800 sm:p-6">
+      <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
         <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Slow Queries</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-yellow-600 dark:text-yellow-400">{{ stats.slow }}</dd>
       </div>
@@ -429,13 +429,13 @@ function filteredQueries() {
 
     <!-- Charts section -->
     <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
         <div class="p-6">
           <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Query Volume</h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Number of queries by type over time</p>
           <div class="relative mt-6 h-80">
             @if(isLoading)
-              <div class="absolute inset-0 flex items-center justify-center bg-gray-100/50 dark:bg-blue-gray-800/50">
+              <div class="absolute inset-0 flex items-center justify-center bg-gray-100/50 dark:bg-neutral-800/50">
                 <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
               </div>
             @endif
@@ -443,13 +443,13 @@ function filteredQueries() {
           </div>
         </div>
       </div>
-      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+      <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
         <div class="p-6">
           <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Query Duration</h3>
           <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">Average query execution time over time</p>
           <div class="relative mt-6 h-80">
             @if(isLoading)
-              <div class="absolute inset-0 flex items-center justify-center bg-gray-100/50 dark:bg-blue-gray-800/50">
+              <div class="absolute inset-0 flex items-center justify-center bg-gray-100/50 dark:bg-neutral-800/50">
                 <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
               </div>
             @endif
@@ -463,8 +463,8 @@ function filteredQueries() {
     <div class="mt-8">
       <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Queries</h3>
       <div class="mt-6 overflow-hidden rounded-lg shadow ring-1 ring-black ring-opacity-5">
-        <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-700">
-          <thead class="bg-gray-50 dark:bg-blue-gray-800">
+        <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-800">
             <tr>
               <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
                 Query
@@ -489,7 +489,7 @@ function filteredQueries() {
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-gray-200 bg-white dark:divide-blue-gray-700 dark:bg-blue-gray-900">
+          <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-900">
             @foreach(filteredQueries as query)
               <tr>
                 <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">

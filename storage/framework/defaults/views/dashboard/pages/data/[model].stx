@@ -48,18 +48,13 @@ try {
   error = 'DB not seeded'
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'success', 'healthy', 'completed', 'running', 'published'].includes(s)) return 'success'
+  if (['pending', 'scheduled', 'warning', 'draft'].includes(s)) return 'warning'
+  if (['failed', 'error', 'inactive', 'cancelled'].includes(s)) return 'danger'
+  if (['processing', 'info'].includes(s)) return 'primary'
+  return 'default'
 }
 </script>
 <DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">
@@ -83,12 +78,8 @@ const statusClass = (s) => {
         </p>
       </div>
       <div class="flex gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-          Export
-        </button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-          Add New
-        </button>
+        <Button variant="outline" size="sm">Export</Button>
+        <Button variant="primary" size="sm">Add New</Button>
       </div>
     </div>
 
@@ -112,9 +103,7 @@ const statusClass = (s) => {
         </div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {{ modelName }} Found</h3>
         <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating your first {{ modelName }}.</p>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-          Create {{ modelName }}
-        </button>
+        <Button variant="primary" size="sm">Create {{ modelName }}</Button>
       </div>
     @else
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
@@ -166,16 +155,16 @@ const statusClass = (s) => {
                       @elseif(col.name.includes('_at') || col.name.includes('date'))
                         <span class="text-gray-500 dark:text-gray-400">{{ item[col.name] ? new Date(item[col.name]).toLocaleDateString() : '-' }}</span>
                       @elseif(col.name === 'status')
-                        <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(item[col.name]) }}">{{ item[col.name] }}</span>
+                        <Badge variant="{{ statusVariant(item[col.name]) }}" size="sm" dot>{{ item[col.name] }}</Badge>
                       @elseif(col.name === 'email')
                         <a href="mailto:{{ item[col.name] }}" class="text-blue-600 dark:text-blue-400 hover:underline">{{ item[col.name] }}</a>
                       @elseif(col.name === 'price' || col.name === 'amount' || col.name === 'total' || col.name === 'cost')
                         <span class="font-mono">${{ typeof item[col.name] === 'number' ? item[col.name].toFixed(2) : (item[col.name] || '0.00') }}</span>
                       @elseif(col.name.startsWith('is_') || col.name.startsWith('has_'))
                         @if(item[col.name])
-                          <span class="px-2 py-1 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">Yes</span>
+                          <Badge variant="success" size="sm">Yes</Badge>
 
-                          <span class="px-2 py-1 text-xs font-medium rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">No</span>
+                          <Badge variant="default" size="sm">No</Badge>
 
                       @elseif(col.name.includes('_url') || col.name.includes('url'))
                         @if(item[col.name])

@@ -268,7 +268,7 @@ const getStatusVariant = (status) => {
           <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
         </div>
         <Select
-          v-model="timeRange"
+          value="{{ timeRange }}"
           :options="timeRangeOptions"
           size="sm"
           class="w-36"

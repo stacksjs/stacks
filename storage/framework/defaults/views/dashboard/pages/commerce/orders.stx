@@ -5,8 +5,10 @@
 const { Order } = await import('@stacksjs/orm')
 
 let orders = []
-let stats = []
-let filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
+let totalCount = 0
+let totalRevenue = '$0.00'
+let pendingCount = 0
+let processingCount = 0
 
 try {
   const allOrders = await Order.orderBy('created_at', 'desc').get()
@@ -19,97 +21,94 @@ try {
     status: String(o.get('status') || 'Pending'),
     date: String(o.get('created_at') || ''),
   }))
-  const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.get('total') || o.get('amount') || 0), 0)
-  stats = [
-    { value: String(allOrders.length), label: 'Total Orders' },
-    { value: '$' + totalRevenue.toFixed(2), label: 'Revenue' },
-    { value: String(allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'pending').length), label: 'Pending' },
-    { value: String(allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'processing').length), label: 'Processing' },
-  ]
+  totalCount = allOrders.length
+  const revenue = allOrders.reduce((sum, o) => sum + Number(o.get('total') || o.get('amount') || 0), 0)
+  totalRevenue = '$' + revenue.toFixed(2)
+  pendingCount = allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'pending').length
+  processingCount = allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'processing').length
 } catch (e) {
   // DB not seeded
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'success', 'delivered', 'paid', 'shipped'].includes(s)) return 'success'
+  if (['pending', 'scheduled', 'warning'].includes(s)) return 'warning'
+  if (['failed', 'error', 'cancelled', 'refunded'].includes(s)) return 'danger'
+  if (['info', 'completed', 'processing'].includes(s)) return 'info'
+  return 'default'
 }
+
+const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Orders</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage customer orders</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Export</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Order</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="Orders" description="Manage customer orders">
+    <template #actions>
+      <Button variant="secondary">Export</Button>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        New Order
+      </Button>
+    </template>
+  </PageHeader>
 
-      <div class="flex gap-2 mb-4">
-        @foreach (filters as filter)
-          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ filter === 'All' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">{{ filter }}</button>
-        @endforeach
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Order ID</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Customer</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Items</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Total</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Payment</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (orders as order)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ order.id }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.customer }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.items }}</td>
-                  <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ order.total }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(order.payment) }}">{{ order.payment }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(order.status) }}">{{ order.status }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ order.date }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    <StatsCard title="Total Orders" value="{{ totalCount }}" icon="i-hugeicons-shopping-cart-01" iconBg="primary" />
+    <StatsCard title="Revenue" value="{{ totalRevenue }}" icon="i-hugeicons-dollar-circle" iconBg="success" />
+    <StatsCard title="Pending" value="{{ pendingCount }}" icon="i-hugeicons-clock-02" iconBg="warning" />
+    <StatsCard title="Processing" value="{{ processingCount }}" icon="i-hugeicons-loading-02" iconBg="info" />
   </div>
+
+  <!-- Filter Tabs -->
+  <div class="flex gap-2">
+    @foreach(filters as filter)
+      <Button variant="{{ filter === 'All' ? 'primary' : 'ghost' }}" size="xs">{{ filter }}</Button>
+    @endforeach
+  </div>
+
+  <!-- Orders Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'id', label: 'Order ID' },
+        { key: 'customer', label: 'Customer' },
+        { key: 'items', label: 'Items' },
+        { key: 'total', label: 'Total' },
+        { key: 'payment', label: 'Payment' },
+        { key: 'status', label: 'Status' },
+        { key: 'date', label: 'Date' },
+        { key: 'actions', label: '' }
+      ]) }}"
+      :data="orders"
+      emptyTitle="No orders found"
+      emptyDescription="Orders will appear here once customers place them"
+      emptyIcon="i-hugeicons-shopping-cart-01"
+    >
+      @foreach(orders as order)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ order.id }}</code>
+          </td>
+          <td class="px-4 py-3 text-[13px] text-neutral-900 dark:text-white">{{ order.customer }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ order.items }}</td>
+          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ order.total }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(order.payment) }}" size="xs" dot>{{ order.payment }}</Badge>
+          </td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(order.status) }}" size="xs" dot>{{ order.status }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ order.date }}</td>
+          <td class="px-4 py-3">
+            <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-view w-4 h-4"></div></Button>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+</DashboardLayout>
 @endsection

@@ -1,0 +1,44 @@
+<script server>
+const searchPlaceholder = props.searchPlaceholder || 'Search...'
+const searchValue = props.searchValue || ''
+const showItemsPerPage = props.showItemsPerPage !== false
+const itemsPerPage = props.itemsPerPage || 10
+const itemsPerPageOptions = props.itemsPerPageOptions || [10, 25, 50, 100]
+</script>
+<div class="flex flex-col sm:flex-row sm:items-center gap-3">
+  <!-- Search -->
+  <div class="relative flex-1 max-w-sm">
+    <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+      <div class="i-hugeicons-search-01 w-4 h-4 text-neutral-400 dark:text-neutral-500"></div>
+    </div>
+    <input
+      type="search"
+      value="{{ searchValue }}"
+      placeholder="{{ searchPlaceholder }}"
+      class="block w-full rounded-lg border border-black/10 dark:border-white/15 bg-white dark:bg-white/10 pl-9 pr-3 py-1.5 text-[13px] text-neutral-900 dark:text-neutral-100 placeholder:text-neutral-400 dark:placeholder:text-neutral-500 transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-400 hover:border-black/20 dark:hover:border-white/25"
+      data-filter-search
+    >
+  </div>
+
+  <!-- Filter slots -->
+  <div class="flex items-center gap-2 flex-wrap">
+    <slot />
+  </div>
+
+  <!-- Items per page -->
+  @if(showItemsPerPage)
+    <div class="flex items-center gap-2 ml-auto text-[12px] text-neutral-500 dark:text-neutral-400">
+      <span>Show</span>
+      <select
+        class="rounded-md border border-black/10 dark:border-white/15 bg-white dark:bg-white/10 text-neutral-700 dark:text-neutral-200 text-[12px] px-2 h-7 focus:ring-blue-500/40 focus:border-blue-500/50"
+        data-items-per-page
+      >
+        @foreach(itemsPerPageOptions as option)
+          <option value="{{ option }}" @if(option == itemsPerPage) selected @endif>
+            {{ option }}
+          </option>
+        @endforeach
+      </select>
+    </div>
+  @endif
+</div>

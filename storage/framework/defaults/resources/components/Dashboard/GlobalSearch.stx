@@ -1,5 +1,5 @@
 <script server>
-import { useGlobalSearch } from '../../functions/search'
+import { useGlobalSearch } from '../../../functions/search'
 
 const { query, results, isSearching, isOpen, selectedIndex, modelIcons, search, open, close, moveUp, moveDown, selectCurrent, flatResults } = useGlobalSearch()
 

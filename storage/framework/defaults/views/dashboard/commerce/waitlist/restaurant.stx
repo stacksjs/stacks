@@ -1083,7 +1083,7 @@ function updateCharts(): void {
           <div class="mt-4 flex space-x-3 sm:mt-0">
             <button
               type="button"
-              @click="openAddEntryModal"
+              onclick="openAddEntryModal"
               class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
               <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
@@ -1091,8 +1091,8 @@ function updateCharts(): void {
             </button>
             <button
               type="button"
-              @click="exportWaitlist"
-              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700"
+              onclick="exportWaitlist"
+              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700"
             >
               <div class="i-hugeicons-download-01 h-5 w-5 mr-1"></div>
               Export
@@ -1102,7 +1102,7 @@ function updateCharts(): void {
 
         <!-- Stats Cards -->
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Current Wait</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {{ waitTimeStats?.averageWait || 0 }}min
@@ -1113,7 +1113,7 @@ function updateCharts(): void {
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Seated Today</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ seatedEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -1122,7 +1122,7 @@ function updateCharts(): void {
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">No Shows</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ noShowEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
@@ -1131,7 +1131,7 @@ function updateCharts(): void {
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Seating Rate</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {{ Math.round((seatedEntries / (totalEntries || 1)) * 100) }}%
@@ -1146,7 +1146,7 @@ function updateCharts(): void {
         <!-- Charts -->
         <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
           <!-- Wait Time Trend Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Wait Time Trend</h3>
               <div class="mt-2 h-80">
@@ -1156,7 +1156,7 @@ function updateCharts(): void {
           </div>
 
           <!-- Party Size Distribution Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Party Sizes</h3>
               <div class="mt-2 h-80">
@@ -1166,7 +1166,7 @@ function updateCharts(): void {
           </div>
 
           <!-- Table Preference Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Table Preferences</h3>
               <div class="mt-2 h-80">
@@ -1176,7 +1176,7 @@ function updateCharts(): void {
           </div>
 
           <!-- Status Distribution Chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Current Status</h3>
               <div class="mt-2 h-80">
@@ -1193,9 +1193,9 @@ function updateCharts(): void {
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
             </div>
             <input
-              v-model="searchQuery"
+              value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
               placeholder="Search waitlist..."
             />
           </div>
@@ -1203,8 +1203,8 @@ function updateCharts(): void {
           <div class="flex flex-col sm:flex-row gap-4">
             <!-- Party Size filter -->
             <select
-              v-model="partySizeFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ partySizeFilter }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Party Sizes</option>
               <option value="1-2">1-2 People</option>
@@ -1215,22 +1215,24 @@ function updateCharts(): void {
 
             <!-- Status filter -->
             <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ statusFilter }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Statuses</option>
-              <option v-for="status in statuses.slice(1)" :key="status" :value="status">
+              @foreach(statuses.slice(1) as status)
+<option value="{{ status }}">
                 {{ status }}
               </option>
             </select>
 
             <!-- Table Preference filter -->
             <select
-              v-model="tablePreferenceFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ tablePreferenceFilter }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Table Types</option>
-              <option v-for="preference in tablePreferences.slice(1)" :key="preference" :value="preference">
+              @foreach(tablePreferences.slice(1) as preference)
+<option value="{{ preference }}">
                 {{ preference }}
               </option>
             </select>
@@ -1241,63 +1243,73 @@ function updateCharts(): void {
         <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
           <span class="mr-2">Sort by:</span>
           <button
-            @click="toggleSort('name')"
+            onclick="toggleSort('name')"
             class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' }"
+            class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'name' } }}"
           >
             Name
-            <span v-if="sortBy === 'name'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'name')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+<div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
-            @click="toggleSort('checkInTime')"
+            onclick="toggleSort('checkInTime')"
             class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'checkInTime' }"
+            class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'checkInTime' } }}"
           >
             Check-in Time
-            <span v-if="sortBy === 'checkInTime'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'checkInTime')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+<div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
           <button
-            @click="toggleSort('estimatedWaitMinutes')"
+            onclick="toggleSort('estimatedWaitMinutes')"
             class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            :class="{ 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'estimatedWaitMinutes' }"
+            class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'estimatedWaitMinutes' } }}"
           >
             Wait Time
-            <span v-if="sortBy === 'estimatedWaitMinutes'" class="ml-1">
-              <div v-if="sortOrder === 'asc'" class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
-              <div v-else class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+            @if(sortBy === 'estimatedWaitMinutes')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+              @else
+<div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
             </span>
           </button>
         </div>
 
         <!-- Bulk actions toolbar -->
-        <div v-if="selectedEntries.length > 0" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/30">
+        @if(selectedEntries.length > 0)
+<div class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/30">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <span class="text-sm font-medium text-blue-700 dark:text-blue-300">{{ selectedEntries.length }} parties selected</span>
             </div>
             <div class="flex space-x-3">
               <button
-                @click="openNotificationModal"
+                onclick="openNotificationModal"
                 class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
               >
                 <div class="i-hugeicons-notification-square h-4 w-4 mr-1"></div>
                 Send Updates
               </button>
               <button
-                @click="bulkChangeStatus('Seated')"
+                onclick="bulkChangeStatus('Seated')"
                 class="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500"
               >
                 <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                 Mark as Seated
               </button>
               <button
-                @click="bulkChangeStatus('No Show')"
+                onclick="bulkChangeStatus('No Show')"
                 class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
               >
                 <div class="i-hugeicons-cancel-circle h-4 w-4 mr-1"></div>
@@ -1310,13 +1322,13 @@ function updateCharts(): void {
         <!-- Waitlist table -->
         <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-900">
+            <thead class="bg-gray-50 dark:bg-neutral-900">
               <tr>
                 <th scope="col" class="relative py-3.5 pl-4 pr-3 sm:pl-6">
                   <input
                     type="checkbox"
-                    :checked="selectAll"
-                    @change="toggleSelectAll"
+                    checked="{{ selectAll }}"
+                    onchange="toggleSelectAll"
                     class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
                   />
                 </th>
@@ -1343,18 +1355,20 @@ function updateCharts(): void {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
-              <tr v-if="paginatedEntries.length === 0" class="text-center">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+              @if(paginatedEntries.length === 0)
+<tr class="text-center">
                 <td colspan="8" class="py-10 text-gray-500 dark:text-gray-400">
                   No parties currently on the waitlist.
                 </td>
               </tr>
-              <tr v-for="entry in paginatedEntries" :key="entry.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+              @foreach(paginatedEntries as entry)
+<tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <input
                     type="checkbox"
-                    :checked="selectedEntries.includes(entry.id)"
-                    @change="toggleEntrySelection(entry.id)"
+                    checked="{{ selectedEntries.includes(entry.id) }}"
+                    onchange="toggleEntrySelection(entry.id)"
                     class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
                   />
                 </td>
@@ -1388,29 +1402,31 @@ function updateCharts(): void {
                   {{ entry.tablePreference || 'No Preference' }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
-                  <span v-if="entry.status === 'Waiting'" class="font-medium text-gray-900 dark:text-white">#{{ entry.queuePosition }}</span>
-                  <span v-else class="text-gray-500 dark:text-gray-400">-</span>
+                  @if(entry.status === 'Waiting')
+<span class="font-medium text-gray-900 dark:text-white">#{{ entry.queuePosition }}</span>
+                  @else
+<span class="text-gray-500 dark:text-gray-400">-</span>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <div class="flex justify-end space-x-2">
                     <button
-                      @click="openEditEntryModal(entry)"
+                      onclick="openEditEntryModal(entry)"
                       class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-colors"
                     >
                       <div class="i-hugeicons-edit-01 h-5 w-5"></div>
                       <span class="sr-only">Edit</span>
                     </button>
-                    <button
-                      v-if="entry.status === 'Waiting'"
-                      @click="markAsSeated(entry.id)"
+                    @if(entry.status === 'Waiting')
+<button
+                      onclick="markAsSeated(entry.id)"
                       class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-colors"
                     >
                       <div class="i-hugeicons-checkmark-circle-02 h-5 w-5"></div>
                       <span class="sr-only">Seat</span>
                     </button>
-                    <button
-                      v-if="entry.status === 'Waiting'"
-                      @click="markAsNoShow(entry.id)"
+                    @if(entry.status === 'Waiting')
+<button
+                      onclick="markAsNoShow(entry.id)"
                       class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-colors"
                     >
                       <div class="i-hugeicons-cancel-circle h-5 w-5"></div>
@@ -1427,22 +1443,22 @@ function updateCharts(): void {
         <div class="mt-5 flex items-center justify-between">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
-              @click="prevPage"
-              :disabled="currentPage === 1"
-              :class="[
-                currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
-              ]"
+              onclick="prevPage"
+              disabled="{{ currentPage === 1 }}"
+              class="{{ [
+                currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white'
+              ] }}"
             >
               Previous
             </button>
             <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages"
-              :class="[
-                currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-white'
-              ]"
+              onclick="nextPage"
+              disabled="{{ currentPage === totalPages }}"
+              class="{{ [
+                currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white'
+              ] }}"
             >
               Next
             </button>
@@ -1458,36 +1474,35 @@ function updateCharts(): void {
             <div>
               <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button
-                  @click="goToPage(currentPage - 1)"
-                  :disabled="currentPage === 1"
-                  :class="[
-                    currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+                  onclick="goToPage(currentPage - 1)"
+                  disabled="{{ currentPage === 1 }}"
+                  class="{{ [
+                    currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
                     'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
-                  ]"
+                  ] }}"
                 >
                   <span class="sr-only">Previous</span>
                   <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
-                <button
-                  v-for="page in totalPages"
-                  :key="page"
-                  @click="goToPage(page)"
-                  :class="[
+                @foreach(totalPages as page)
+<button
+                  onclick="goToPage(page)"
+                  class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-700',
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700',
                     'focus:z-20'
-                  ]"
+                  ] }}"
                 >
                   {{ page }}
                 </button>
                 <button
-                  @click="goToPage(currentPage + 1)"
-                  :disabled="currentPage === totalPages"
-                  :class="[
-                    currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-blue-gray-700',
+                  onclick="goToPage(currentPage + 1)"
+                  disabled="{{ currentPage === totalPages }}"
+                  class="{{ [
+                    currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
                     'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
-                  ]"
+                  ] }}"
                 >
                   <span class="sr-only">Next</span>
                   <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
@@ -1500,10 +1515,11 @@ function updateCharts(): void {
     </div>
 
     <!-- Entry modal -->
-    <div v-if="showEntryModal" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showEntryModal)
+<div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
@@ -1518,7 +1534,7 @@ function updateCharts(): void {
           </div>
 
           <div class="mt-5 sm:mt-6">
-            <form @submit.prevent="saveEntry">
+            <form onsubmit="saveEntry; return false">
               <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <!-- Name field -->
                 <div class="sm:col-span-3">
@@ -1528,10 +1544,10 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <input
                       id="name"
-                      v-model="entryName"
+                      value="{{ entryName }}"
                       type="text"
                       required
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1544,10 +1560,10 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <input
                       id="email"
-                      v-model="entryEmail"
+                      value="{{ entryEmail }}"
                       type="email"
                       required
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1560,9 +1576,9 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <input
                       id="phone"
-                      v-model="entryPhone"
+                      value="{{ entryPhone }}"
                       type="tel"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1575,9 +1591,9 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <input
                       id="partySize"
-                      v-model="entryPartySize"
+                      value="{{ entryPartySize }}"
                       type="number"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
@@ -1590,10 +1606,11 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <select
                       id="notificationPreference"
-                      v-model="entryNotificationPreference"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      value="{{ entryNotificationPreference }}"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     >
-                      <option v-for="preference in notificationPreferences" :key="preference" :value="preference">
+                      @foreach(notificationPreferences as preference)
+<option value="{{ preference }}">
                         {{ preference }}
                       </option>
                     </select>
@@ -1608,10 +1625,11 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <select
                       id="tablePreference"
-                      v-model="entryTablePreference"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      value="{{ entryTablePreference }}"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     >
-                      <option v-for="preference in tablePreferences" :key="preference" :value="preference">
+                      @foreach(tablePreferences as preference)
+<option value="{{ preference }}">
                         {{ preference }}
                       </option>
                     </select>
@@ -1626,9 +1644,9 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <textarea
                       id="specialRequests"
-                      v-model="entrySpecialRequests"
+                      value="{{ entrySpecialRequests }}"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     ></textarea>
                   </div>
                 </div>
@@ -1641,9 +1659,9 @@ function updateCharts(): void {
                   <div class="mt-1">
                     <textarea
                       id="notes"
-                      v-model="entryNotes"
+                      value="{{ entryNotes }}"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                     ></textarea>
                   </div>
                 </div>
@@ -1658,8 +1676,8 @@ function updateCharts(): void {
                 </button>
                 <button
                   type="button"
-                  @click="showEntryModal = false"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+                  onclick="showEntryModal = false"
+                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
                 >
                   Cancel
                 </button>
@@ -1671,10 +1689,11 @@ function updateCharts(): void {
     </div>
 
     <!-- Notification modal -->
-    <div v-if="showNotificationModal" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showNotificationModal)
+<div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-lg font-semibold leading-6 text-gray-900 dark:text-white">
@@ -1685,17 +1704,17 @@ function updateCharts(): void {
                   Subject:
                 </p>
                 <input
-                  v-model="notificationSubject"
+                  value="{{ notificationSubject }}"
                   type="text"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                 />
                 <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
                   Message:
                 </p>
                 <textarea
-                  v-model="notificationMessage"
+                  value="{{ notificationMessage }}"
                   rows="3"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-blue-gray-700 dark:text-white"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
                 ></textarea>
               </div>
             </div>
@@ -1703,7 +1722,7 @@ function updateCharts(): void {
 
           <div class="mt-5 sm:mt-6">
             <button
-              @click="sendNotifications"
+              onclick="sendNotifications"
               class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
               Send Notification

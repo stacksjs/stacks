@@ -13,10 +13,10 @@
     attachment: false
   }
 </script>
-<div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-blue-gray-700 flex flex-col">
-    <div class="py-2 px-4 border-b border-gray-200 dark:border-blue-gray-600 flex items-center justify-between">
+<div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700 flex flex-col">
+    <div class="py-2 px-4 border-b border-gray-200 dark:border-neutral-600 flex items-center justify-between">
       <div class="flex items-center space-x-2">
-        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600" data-action="close">
+        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600" data-action="close">
           <i class="i-hugeicons-arrow-left-02 text-gray-500 dark:text-gray-400 text-lg"></i>
         </button>
         <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
@@ -24,7 +24,7 @@
         </h2>
       </div>
       <div class="flex space-x-2">
-        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600" data-action="toggle-star" data-email-id="{{ email.id }}">
+        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600" data-action="toggle-star" data-email-id="{{ email.id }}">
           @if(email.starred)
             <span class="text-yellow-400 text-lg">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
@@ -35,16 +35,16 @@
             <i class="i-hugeicons-star text-gray-500 dark:text-gray-400 text-lg"></i>
           @endif
         </button>
-        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
+        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600">
           <i class="i-hugeicons-inbox text-gray-500 dark:text-gray-400 text-lg"></i>
         </button>
-        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-blue-gray-600">
+        <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600">
           <i class="i-hugeicons-waste text-gray-500 dark:text-gray-400 text-lg"></i>
         </button>
       </div>
     </div>
 
-    <div class="px-4 py-3 border-b border-gray-200 dark:border-blue-gray-600">
+    <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-600">
       <div class="flex justify-between items-start">
         <div>
           <div class="flex items-center">
@@ -72,7 +72,7 @@
       </div>
 
       @if(email.attachment)
-        <div class="mt-4 border border-gray-200 dark:border-blue-gray-600 rounded p-3">
+        <div class="mt-4 border border-gray-200 dark:border-neutral-600 rounded p-3">
           <div class="flex items-center">
             <i class="i-hugeicons-file-01 text-gray-500 dark:text-gray-400 text-xl"></i>
             <div class="ml-3">
@@ -87,12 +87,12 @@
       @endif
     </div>
 
-    <div class="p-4 border-t border-gray-200 dark:border-blue-gray-600">
+    <div class="p-4 border-t border-gray-200 dark:border-neutral-600">
       <div class="flex space-x-2">
         <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
           Reply
         </button>
-        <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-600 font-medium text-sm">
+        <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-600 font-medium text-sm">
           Forward
         </button>
       </div>

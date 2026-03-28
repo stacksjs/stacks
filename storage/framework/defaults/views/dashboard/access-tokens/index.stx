@@ -30,7 +30,7 @@ const tokens = [
 ]
 </script>
 
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
       <h3 class="text-base text-gray-900 font-semibold leading-6">
@@ -139,12 +139,7 @@ const tokens = [
 
                     <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
                       <span
-                        :class="[
-                          'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset',
-                          token.status === 'active'
-                            ? 'bg-green-50 text-green-700 ring-green-600/20'
-                            : 'bg-red-50 text-red-700 ring-red-600/20'
-                        ]"
+                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset {{ token.status === 'active' ? 'bg-green-50 text-green-700 ring-green-600/20' : 'bg-red-50 text-red-700 ring-red-600/20' }}"
                       >
                         {{ token.status }}
                       </span>
@@ -161,7 +156,7 @@ const tokens = [
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                       <button
                         class="text-blue-600 hover:text-blue-900 mr-4"
-                        :disabled="token.status === 'revoked'"
+                        disabled="{{ token.status === 'revoked' }}"
                       >
                         {{ token.status === 'active' ? 'Revoke' : 'Revoked' }}
                       </button>

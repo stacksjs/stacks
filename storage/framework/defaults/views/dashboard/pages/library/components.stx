@@ -6,7 +6,15 @@ const fs = await import('fs')
 const path = await import('path')
 
 let components = []
-let categories = ['All', 'Forms', 'Layout', 'Overlay', 'Data', 'Display', 'Navigation']
+let categoryOptions = [
+  { value: 'all', label: 'All' },
+  { value: 'forms', label: 'Forms' },
+  { value: 'layout', label: 'Layout' },
+  { value: 'overlay', label: 'Overlay' },
+  { value: 'data', label: 'Data' },
+  { value: 'display', label: 'Display' },
+  { value: 'navigation', label: 'Navigation' },
+]
 
 try {
   const componentsDir = path.resolve(process.cwd(), 'resources/components')
@@ -23,46 +31,56 @@ try {
   // resources/components not available
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Components</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Browse and manage your UI component library</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Import</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Component</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <!-- Filter Tabs -->
-      <div class="flex gap-2">
-        @foreach (categories as category)
-          <button class="px-3 py-1.5 text-xs font-medium rounded-lg {{ category === 'All' ? 'text-white bg-blue-600 hover:bg-blue-700' : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700' }}">
-            {{ category }}
-          </button>
-        @endforeach
-      </div>
+  <PageHeader title="Components" description="Browse and manage your UI component library">
+    <template #actions>
+      <Button variant="secondary">Import</Button>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        New Component
+      </Button>
+    </template>
+  </PageHeader>
 
-      <!-- Components Grid -->
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (components as component)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-              <span class="font-semibold text-gray-900 dark:text-white">{{ component.name }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400">{{ component.category }}</span>
-            </div>
-            <div class="text-gray-600 dark:text-gray-400">
-              <p class="text-gray-500 dark:text-gray-400">{{ component.description }}</p>
-              <div class="mt-4 flex justify-between items-center">
-                <span class="text-sm text-gray-500 dark:text-gray-400">{{ component.instances }} instances</span>
-                <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View</button>
-              </div>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    </div>
+  <!-- Filter -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-4">
+    <FilterBar searchPlaceholder="Search components...">
+      <Select
+        placeholder="All Categories"
+        :options="{{ JSON.stringify(categoryOptions) }}"
+        size="sm"
+      />
+    </FilterBar>
   </div>
+
+  <!-- Components Grid -->
+  @if (components.length > 0)
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach (components as component)
+      <Card>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">{{ component.name }}</span>
+            <Badge variant="info" size="xs">{{ component.category }}</Badge>
+          </div>
+          <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">{{ component.description }}</p>
+          <div class="flex items-center justify-between">
+            <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ component.instances }} instances</span>
+            <Button variant="ghost" size="xs">View</Button>
+          </div>
+        </div>
+      </Card>
+    @endforeach
+  </div>
+  @else
+  <EmptyState
+    icon="i-hugeicons-puzzle"
+    title="No components found"
+    description="Components will appear here when added to resources/components"
+  />
+  @endif
+</div>
+</DashboardLayout>
 @endsection

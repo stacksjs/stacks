@@ -129,7 +129,7 @@ const commonPorts = [
 </script>
 
 @title('Server Details')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
     <div class="mb-8">
@@ -158,7 +158,7 @@ const commonPorts = [
     </div>
 
     <!-- Server Details -->
-    <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow mb-8">
+    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow mb-8">
       <div class="px-4 py-5 sm:p-6">
         <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Server Information</h4>
         <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
@@ -209,7 +209,7 @@ const commonPorts = [
     </div>
 
     <!-- Firewall Rules -->
-    <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="px-4 py-5 sm:p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -219,7 +219,7 @@ const commonPorts = [
             </p>
           </div>
           <button
-            @click="isAddingRule = true"
+            onclick="isAddingRule = true"
             type="button"
             class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3.5 py-2.5 text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
           >
@@ -230,43 +230,44 @@ const commonPorts = [
 
         <!-- Add Rule Form -->
         @if(isAddingRule)
-        <div class="mb-6 bg-gray-50 dark:bg-blue-gray-600 rounded-lg p-4">
+        <div class="mb-6 bg-gray-50 dark:bg-neutral-600 rounded-lg p-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
             <div class="lg:col-span-1">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
               <select
-                v-model="newRule.port"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-blue-gray-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                value="{{ newRule.port }}"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
                 <option value="" disabled>Select a port</option>
-                <option v-for="port in commonPorts" :key="port.port" :value="port.port">
+                @foreach(commonPorts as port)
+<option value="{{ port.port }}">
                   {{ port.port }} ({{ port.name }})
                 </option>
                 <option value="custom">Custom Port</option>
               </select>
               @if(newRule.port === 'custom')
               <input
-                v-model="newRule.port"
+                value="{{ newRule.port }}"
                 type="text"
                 placeholder="Enter port number"
-                class="mt-2 block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-blue-gray-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="mt-2 block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
               @endif
             </div>
             <div class="lg:col-span-1">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From IP</label>
               <input
-                v-model="newRule.from"
+                value="{{ newRule.from }}"
                 type="text"
                 placeholder="0.0.0.0"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-blue-gray-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
             </div>
             <div class="lg:col-span-1">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Protocol</label>
               <select
-                v-model="newRule.protocol"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-blue-gray-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                value="{{ newRule.protocol }}"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
                 <option value="tcp">TCP</option>
                 <option value="udp">UDP</option>
@@ -276,8 +277,8 @@ const commonPorts = [
             <div class="lg:col-span-1">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action</label>
               <select
-                v-model="newRule.action"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-blue-gray-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                value="{{ newRule.action }}"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
                 <option value="ALLOW">Allow</option>
                 <option value="DENY">Deny</option>
@@ -286,23 +287,23 @@ const commonPorts = [
             <div class="lg:col-span-2">
               <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
               <input
-                v-model="newRule.description"
+                value="{{ newRule.description }}"
                 type="text"
                 placeholder="Rule description"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-blue-gray-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
             </div>
           </div>
           <div class="mt-4 flex justify-end gap-3">
             <button
-              @click="isAddingRule = false"
+              onclick="isAddingRule = false"
               type="button"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-blue-gray-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
             >
               Cancel
             </button>
             <button
-              @click="addRule"
+              onclick="addRule"
               type="button"
               class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
             >
@@ -318,26 +319,27 @@ const commonPorts = [
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
               <thead>
                 <tr>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-blue-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Port</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-blue-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-blue-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Protocol</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-blue-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-blue-gray-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-blue-gray-600 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Port</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Protocol</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
-                <tr v-for="rule in ufwRules" :key="rule.id">
+              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+                @foreach(ufwRules as rule)
+<tr>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ rule.port }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ rule.from }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ rule.protocol.toUpperCase() }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
-                      :class="{
+                      class="{{ {
                         'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': rule.action === 'ALLOW',
                         'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': rule.action === 'DENY'
-                      }"
+                      } }}"
                     >
                       {{ rule.action }}
                     </span>
@@ -345,7 +347,7 @@ const commonPorts = [
                   <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ rule.description }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
-                      @click="removeRule(rule.id)"
+                      onclick="removeRule(rule.id)"
                       class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                     >
                       Remove

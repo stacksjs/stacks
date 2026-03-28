@@ -532,7 +532,7 @@ function handleComparisonTypeChange() {
             <button
               type="button"
               class="text-sm font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 flex items-center"
-              @click="isDateRangeOpen = !isDateRangeOpen"
+              onclick="isDateRangeOpen = !isDateRangeOpen"
             >
               {{ dateRangeDisplay }}
               <div class="i-hugeicons-arrow-down-01 h-4 w-4 ml-1"></div>
@@ -541,7 +541,7 @@ function handleComparisonTypeChange() {
             <!-- Date range dropdown -->
             @if(isDateRangeOpen)
             <div
-              class="absolute left-0 z-10 mt-2 w-72 origin-top-left rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-blue-gray-800 dark:ring-gray-700"
+              class="absolute left-0 z-10 mt-2 w-72 origin-top-left rounded-md bg-white py-2 shadow-lg ring-1 ring-gray-900/5 focus:outline-none dark:bg-neutral-800 dark:ring-gray-700"
             >
               <div class="px-4 py-2 border-b border-gray-100 dark:border-gray-700">
                 <h3 class="text-sm font-medium text-gray-900 dark:text-gray-100">Select Date Range</h3>
@@ -550,18 +550,18 @@ function handleComparisonTypeChange() {
               <div class="py-2">
                 @foreach(dateRanges as range)
                 <div
-                  class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 cursor-pointer"
-                  :class="{ 'bg-gray-50 dark:bg-blue-gray-700': selectedDateRange === range.id }"
-                  @click="selectedDateRange = range.id; handleDateRangeChange(); isDateRangeOpen = false"
+                  class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer"
+                  class="{{ { 'bg-gray-50 dark:bg-neutral-700': selectedDateRange === range.id } }}"
+                  onclick="selectedDateRange = range.id; handleDateRangeChange(); isDateRangeOpen = false"
                 >
                   {{ range.name }}
                 </div>
                 @endforeach
 
                 <div
-                  class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 cursor-pointer"
-                  :class="{ 'bg-gray-50 dark:bg-blue-gray-700': selectedDateRange === 'all-time' }"
-                  @click="selectedDateRange = 'all-time'; handleDateRangeChange(); isDateRangeOpen = false"
+                  class="px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer"
+                  class="{{ { 'bg-gray-50 dark:bg-neutral-700': selectedDateRange === 'all-time' } }}"
+                  onclick="selectedDateRange = 'all-time'; handleDateRangeChange(); isDateRangeOpen = false"
                 >
                   All Time
                 </div>
@@ -576,8 +576,8 @@ function handleComparisonTypeChange() {
                     <input
                       type="date"
                       id="customStartDate"
-                      v-model="customStartDate"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600"
+                      value="{{ customStartDate }}"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600"
                     />
                   </div>
                   <div>
@@ -585,15 +585,15 @@ function handleComparisonTypeChange() {
                     <input
                       type="date"
                       id="customEndDate"
-                      v-model="customEndDate"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-blue-gray-700 dark:border-gray-600"
+                      value="{{ customEndDate }}"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600"
                     />
                   </div>
                   <button
                     type="button"
                     class="mt-2 w-full inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
-                    @click="handleDateRangeChange(); isDateRangeOpen = false"
-                    :disabled="!customStartDate || !customEndDate"
+                    onclick="handleDateRangeChange(); isDateRangeOpen = false"
+                    disabled="{{ !customStartDate || !customEndDate }}"
                   >
                     Apply
                   </button>
@@ -610,9 +610,9 @@ function handleComparisonTypeChange() {
 
           <div class="relative">
             <select
-              v-model="comparisonType"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
-              @change="handleComparisonTypeChange"
+              value="{{ comparisonType }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              onchange="handleComparisonTypeChange"
             >
               <option value="no-comparison">No comparison</option>
               <option value="previous-period">Previous period</option>
@@ -622,11 +622,11 @@ function handleComparisonTypeChange() {
 
           <button
             type="button"
-            class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset hover:bg-gray-50 dark:hover:bg-blue-gray-600"
-            :class="isAutoDateRange ?
+            class="inline-flex items-center rounded-md px-3 py-1.5 text-sm font-semibold shadow-sm ring-1 ring-inset hover:bg-gray-50 dark:hover:bg-neutral-600"
+            class="{{ isAutoDateRange ?
               'bg-blue-600 text-white ring-blue-600 dark:bg-blue-600 dark:text-white dark:ring-blue-500' :
-              'bg-white text-gray-900 ring-gray-300 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600'"
-            @click="toggleAutoDateRange"
+              'bg-white text-gray-900 ring-gray-300 dark:bg-neutral-700 dark:text-white dark:ring-gray-600' }}"
+            onclick="toggleAutoDateRange"
           >
             <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
             Auto
@@ -641,7 +641,7 @@ function handleComparisonTypeChange() {
 
           <div class="mt-2 sm:mt-0 flex items-center space-x-2">
             <button
-              @click="openCreateEventModal"
+              onclick="openCreateEventModal"
               class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
             >
               <div class="i-hugeicons-plus-sign h-4 w-4 mr-1"></div>
@@ -651,7 +651,7 @@ function handleComparisonTypeChange() {
         </div>
 
         <!-- Conversion calculation type selector -->
-        <div class="mb-6 bg-gray-50 dark:bg-blue-gray-800 p-4 rounded-lg">
+        <div class="mb-6 bg-gray-50 dark:bg-neutral-800 p-4 rounded-lg">
           <div class="flex flex-col sm:flex-row sm:items-center gap-4">
             <span class="text-sm font-medium text-gray-700 dark:text-gray-300">Calculate conversion rates using:</span>
 
@@ -659,10 +659,10 @@ function handleComparisonTypeChange() {
               <label class="inline-flex items-center">
                 <input
                   type="radio"
-                  v-model="conversionCalculationType"
+                  value="{{ conversionCalculationType }}"
                   value="pageviews"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
-                  @change="updateConversionCalculationType"
+                  onchange="updateConversionCalculationType"
                 >
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">Page views</span>
               </label>
@@ -670,10 +670,10 @@ function handleComparisonTypeChange() {
               <label class="inline-flex items-center">
                 <input
                   type="radio"
-                  v-model="conversionCalculationType"
+                  value="{{ conversionCalculationType }}"
                   value="people"
                   class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 dark:border-gray-600"
-                  @change="updateConversionCalculationType"
+                  onchange="updateConversionCalculationType"
                 >
                 <span class="ml-2 text-sm text-gray-700 dark:text-gray-300">People</span>
               </label>
@@ -694,9 +694,9 @@ function handleComparisonTypeChange() {
         </div>
 
         <!-- Events Table -->
-        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-neutral-800">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Event Name
@@ -730,8 +730,8 @@ function handleComparisonTypeChange() {
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
               @foreach(activeEvents as event)
               <tr
-                class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 cursor-pointer"
-                @click="viewEventDetails(event)"
+                class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 cursor-pointer"
+                onclick="viewEventDetails(event)"
               >
                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                   {{ event.name }}
@@ -765,7 +765,7 @@ function handleComparisonTypeChange() {
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300">
                   <button
-                    @click.stop="confirmDeleteEvent(event)"
+                    onclick="confirmDeleteEvent(event); event.stopPropagation()"
                     class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                   >
                     <div class="i-hugeicons-waste h-4 w-4"></div>
@@ -792,7 +792,7 @@ function handleComparisonTypeChange() {
       </div>
 
       <!-- Implementation Guide -->
-      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-6 shadow">
+      <div class="mb-8 bg-white dark:bg-neutral-800 rounded-lg p-6 shadow">
         <div class="mb-4">
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">Event Implementation Guide</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -898,9 +898,9 @@ window.addEventListener('load', () => {
           <h3 class="text-lg font-medium text-gray-900 dark:text-white">Blocked Events</h3>
         </div>
 
-        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-neutral-800">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Event Name
@@ -919,7 +919,7 @@ window.addEventListener('load', () => {
             <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
               @foreach(blockedEvents as event)
               <tr
-                class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50"
+                class="hover:bg-gray-50 dark:hover:bg-neutral-700/50"
               >
                 <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-500 dark:text-gray-400">
                   <div class="flex items-center">
@@ -936,13 +936,13 @@ window.addEventListener('load', () => {
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right">
                   <div class="flex justify-end space-x-2">
                     <button
-                      @click="unblockEvent(event.id)"
+                      onclick="unblockEvent(event.id)"
                       class="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300"
                     >
                       Unblock
                     </button>
                     <button
-                      @click="confirmDeleteEvent(event)"
+                      onclick="confirmDeleteEvent(event)"
                       class="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300"
                     >
                       Delete
@@ -961,14 +961,14 @@ window.addEventListener('load', () => {
       @if(showEventDetails)
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEventDetails"></div>
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEventDetails"></div>
 
-          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6">
+          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6">
             <div class="absolute right-0 top-0 pr-4 pt-4">
               <button
                 type="button"
-                class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
-                @click="closeEventDetails"
+                class="rounded-md bg-white dark:bg-neutral-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
+                onclick="closeEventDetails"
               >
                 <span class="sr-only">Close</span>
                 <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -988,7 +988,7 @@ window.addEventListener('load', () => {
 
               <!-- Event Stats -->
               <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
-                <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
+                <div class="bg-gray-50 dark:bg-neutral-700 p-4 rounded-lg">
                   <div class="text-sm text-gray-500 dark:text-gray-400">Completions</div>
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatNumber(selectedEvent.completions) }}</div>
                   @if(isComparing && comparisonData[selectedEvent.id])
@@ -998,7 +998,7 @@ window.addEventListener('load', () => {
                   @endif
                 </div>
 
-                <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
+                <div class="bg-gray-50 dark:bg-neutral-700 p-4 rounded-lg">
                   <div class="text-sm text-gray-500 dark:text-gray-400">Conversion Rate</div>
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ selectedEvent.conversionRate }}%</div>
                   @if(isComparing && comparisonData[selectedEvent.id])
@@ -1008,7 +1008,7 @@ window.addEventListener('load', () => {
                   @endif
                 </div>
 
-                <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
+                <div class="bg-gray-50 dark:bg-neutral-700 p-4 rounded-lg">
                   <div class="text-sm text-gray-500 dark:text-gray-400">Value</div>
                   <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ formatCurrency(selectedEvent) }}</div>
                   @if(isComparing && comparisonData[selectedEvent.id] && selectedEvent > 0)
@@ -1020,7 +1020,7 @@ window.addEventListener('load', () => {
               </div>
 
               <!-- Event Chart -->
-              <div class="mb-6 bg-white dark:bg-blue-gray-700 rounded-lg p-4 shadow">
+              <div class="mb-6 bg-white dark:bg-neutral-700 rounded-lg p-4 shadow">
                 <div class="mb-2 flex justify-between items-center">
                   <h4 class="text-md font-medium text-gray-900 dark:text-white">Recent Activity</h4>
                   @if(isComparing)
@@ -1052,15 +1052,15 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
               <div class="mt-6 flex justify-end">
                 <button
                   type="button"
-                  class="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600 mr-2"
-                  @click="closeEventDetails"
+                  class="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600 mr-2"
+                  onclick="closeEventDetails"
                 >
                   Close
                 </button>
                 <button
                   type="button"
                   class="inline-flex justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
-                  @click="confirmDeleteEvent(selectedEvent)"
+                  onclick="confirmDeleteEvent(selectedEvent)"
                 >
                   Delete Event
                 </button>
@@ -1076,14 +1076,14 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
       @if(showCreateEventModal)
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeCreateEventModal"></div>
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeCreateEventModal"></div>
 
-          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
             <div class="absolute right-0 top-0 pr-4 pt-4">
               <button
                 type="button"
-                class="rounded-md bg-white dark:bg-blue-gray-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
-                @click="closeCreateEventModal"
+                class="rounded-md bg-white dark:bg-neutral-800 text-gray-400 hover:text-gray-500 dark:hover:text-gray-300 focus:outline-none"
+                onclick="closeCreateEventModal"
               >
                 <span class="sr-only">Close</span>
                 <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -1100,7 +1100,7 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
                 </p>
               </div>
 
-              <form @submit.prevent="createNewEvent">
+              <form onsubmit="createNewEvent; return false">
                 <div class="mb-4">
                   <label for="eventName" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                     Event Name
@@ -1108,8 +1108,8 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
                   <input
                     type="text"
                     id="eventName"
-                    v-model="newEvent.name"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                    value="{{ newEvent.name }}"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                     placeholder="e.g., Newsletter Signup"
                     required
                   />
@@ -1123,7 +1123,7 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
                     <input
                       id="hasValue"
                       type="checkbox"
-                      v-model="newEvent.hasValue"
+                      value="{{ newEvent.hasValue }}"
                       class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
                     />
                     <label for="hasValue" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
@@ -1139,8 +1139,8 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
                   </label>
                   <select
                     id="currency"
-                    v-model="newEvent.currency"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                    value="{{ newEvent.currency }}"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                   >
                     <option value="USD">USD - US Dollar</option>
                     <option value="EUR">EUR - Euro</option>
@@ -1154,15 +1154,15 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
                 <div class="mt-6 flex justify-end">
                   <button
                     type="button"
-                    class="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600 mr-2"
-                    @click="closeCreateEventModal"
+                    class="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600 mr-2"
+                    onclick="closeCreateEventModal"
                   >
                     Cancel
                   </button>
                   <button
                     type="submit"
                     class="inline-flex justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
-                    :disabled="!newEvent.name"
+                    disabled="{{ !newEvent.name }}"
                   >
                     Create Event
                   </button>
@@ -1178,9 +1178,9 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
       @if(showDeleteConfirmModal)
       <div class="fixed inset-0 z-10 overflow-y-auto">
         <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="cancelDeleteEvent"></div>
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="cancelDeleteEvent"></div>
 
-          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
             <div>
               <div class="mb-6">
                 <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900">
@@ -1204,15 +1204,15 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
               <div class="mt-6 flex justify-end">
                 <button
                   type="button"
-                  class="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600 mr-2"
-                  @click="cancelDeleteEvent"
+                  class="inline-flex justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600 mr-2"
+                  onclick="cancelDeleteEvent"
                 >
                   Cancel
                 </button>
                 <button
                   type="button"
                   class="inline-flex justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500"
-                  @click="deleteEvent"
+                  onclick="deleteEvent"
                 >
                   {{ eventToDelete?.status === 'active' ? 'Block Event' : 'Delete Event' }}
                 </button>

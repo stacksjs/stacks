@@ -509,10 +509,10 @@ let timeRange = 'day'
 </script>
 
 @title('Dashboard - Logs')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Log Volume Chart -->
-    <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -520,8 +520,8 @@ let timeRange = 'day'
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Distribution of log types over time</p>
           </div>
           <select
-            v-model="timeRange"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            value="{{ timeRange }}"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="day">Last 24 Hours</option>
             <option value="week">Last 7 Days</option>
@@ -531,7 +531,7 @@ let timeRange = 'day'
         </div>
         <div class="h-[300px] relative">
           @if(isLoading)
-            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           @endif
@@ -557,7 +557,7 @@ let timeRange = 'day'
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex-1 min-w-[200px]">
             <input
-              v-model="searchTerm"
+              value="{{ searchTerm }}"
               type="text"
               placeholder="Search logs..."
               class="w-full px-4 py-2 border rounded-lg"
@@ -565,7 +565,7 @@ let timeRange = 'day'
           </div>
 
           <select
-            v-model="filter"
+            value="{{ filter }}"
             class="px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 min-w-[140px]"
           >
             <option value="all">All Sources</option>
@@ -577,7 +577,7 @@ let timeRange = 'day'
           </select>
 
           <select
-            v-model="logTypeFilter"
+            value="{{ logTypeFilter }}"
             class="px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 min-w-[140px]"
           >
             <option value="all">All Types</option>
@@ -591,11 +591,11 @@ let timeRange = 'day'
           <button
             class="flex items-center gap-2 px-4 py-2 rounded-lg"
             :class="autoRefresh ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
-            @click="toggleAutoRefresh"
+            onclick="toggleAutoRefresh"
           >
             <i
               class="i-hugeicons-refresh h-4 w-4"
-              :class="{ 'animate-spin': autoRefresh }"
+              :class="autoRefresh ? 'animate-spin' : ''"
               aria-hidden="true"
             />
             {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
@@ -604,7 +604,7 @@ let timeRange = 'day'
           @if(searchTerm || filter !== 'all' || logTypeFilter !== 'all' || selectedProjects.length > 0)
             <button
               class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
-              @click="resetFilters"
+              onclick="resetFilters"
             >
               <i class="i-hugeicons-cancel-01 h-4 w-4" aria-hidden="true" />
               Reset Filters
@@ -615,14 +615,9 @@ let timeRange = 'day'
         <div class="flex flex-wrap gap-2">
           @foreach(project in projects)
             <button
-              :key="project.id"
-              @click="toggleProject(project.id)"
+              onclick="toggleProject(project.id)"
               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors"
-              :class="[
-                selectedProjects.includes(project.id)
-                  ? [...Object.values(getProjectClasses(project.id)), 'ring-2']
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              ]"
+              :class="selectedProjects.includes(project.id) ? getProjectClasses(project.id).bg + ' ' + getProjectClasses(project.id).text + ' ring-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
             >
               {{ project.name }}
               @if(selectedProjects.includes(project.id))
@@ -650,9 +645,8 @@ let timeRange = 'day'
               <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
                 @foreach(log in paginatedLogs)
                   <tr
-                    :key="log.id"
-                    :class="[getLogRowClass(log.type), 'hover:bg-gray-50 cursor-pointer']"
-                    @click="selectedLog = log"
+                    class="{{ getLogRowClass(log.type) }} hover:bg-gray-50 cursor-pointer"
+                    onclick="selectedLog = log"
                   >
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="text-sm text-gray-900">
@@ -666,7 +660,7 @@ let timeRange = 'day'
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <i
-                          :class="[getLogIcon(log.type), getLogIconColor(log.type), 'h-5 w-5']"
+                          class="{{ getLogIcon(log.type) }} {{ getLogIconColor(log.type) }} h-5 w-5"
                           aria-hidden="true"
                         />
                       </div>
@@ -688,7 +682,7 @@ let timeRange = 'day'
                       @if(log.project)
                         <span
                           class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          :class="[getProjectClasses(log.project).bg, getProjectClasses(log.project).text]"
+                          class="{{ getProjectClasses(log.project).bg }} {{ getProjectClasses(log.project).text }}"
                         >
                           {{ projects.find(p => p.id === log.project)?.name }}
                         </span>
@@ -716,20 +710,20 @@ let timeRange = 'day'
         </div>
         <div class="flex items-center space-x-2">
           <select
-            v-model="itemsPerPage"
+            value="{{ itemsPerPage }}"
             class="px-2 py-1 text-sm border rounded-md"
-            @change="currentPage = 1"
+            onchange="currentPage = 1"
           >
-            <option :value="10">10 per page</option>
-            <option :value="25">25 per page</option>
-            <option :value="50">50 per page</option>
-            <option :value="100">100 per page</option>
+            <option value="{{ 10 }}">10 per page</option>
+            <option value="{{ 25 }}">25 per page</option>
+            <option value="{{ 50 }}">50 per page</option>
+            <option value="{{ 100 }}">100 per page</option>
           </select>
 
           <div class="flex items-center space-x-1">
             <button
-              @click="prevPage"
-              :disabled="currentPage === 1"
+              onclick="prevPage"
+              disabled="{{ currentPage === 1 }}"
               class="px-2 py-1 text-sm border rounded-md"
               :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
             >
@@ -738,8 +732,7 @@ let timeRange = 'day'
 
             @foreach(page in Math.min(5, totalPages))
               <button
-                :key="page"
-                @click="goToPage(page)"
+                onclick="goToPage(page)"
                 class="px-3 py-1 text-sm border rounded-md"
                 :class="currentPage === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'"
               >
@@ -753,7 +746,7 @@ let timeRange = 'day'
 
             @if(totalPages > 5)
               <button
-                @click="goToPage(totalPages)"
+                onclick="goToPage(totalPages)"
                 class="px-3 py-1 text-sm border rounded-md"
                 :class="currentPage === totalPages ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'"
               >
@@ -762,8 +755,8 @@ let timeRange = 'day'
             @endif
 
             <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages || totalPages === 0"
+              onclick="nextPage"
+              disabled="{{ currentPage === totalPages || totalPages === 0 }}"
               class="px-2 py-1 text-sm border rounded-md"
               :class="currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
             >
@@ -783,7 +776,7 @@ let timeRange = 'day'
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold">Log Details</h3>
                 <button
-                  @click="selectedLog = null"
+                  onclick="selectedLog = null"
                   class="text-gray-500 hover:text-gray-700"
                 >
                   <i
@@ -803,7 +796,7 @@ let timeRange = 'day'
                   <label class="block text-sm font-medium text-gray-700">Type</label>
                   <div class="mt-1 flex items-center">
                     <i
-                      :class="[getLogIcon(selectedLog.type), getLogIconColor(selectedLog.type), 'h-5 w-5 mr-2']"
+                      class="{{ getLogIcon(selectedLog.type) }} {{ getLogIconColor(selectedLog.type) }} h-5 w-5 mr-2"
                       aria-hidden="true"
                     />
                     <span class="text-sm text-gray-900 capitalize">{{ selectedLog.type }}</span>
@@ -872,7 +865,6 @@ let timeRange = 'day'
                         <div class="mt-2 flex flex-wrap gap-2">
                           @foreach(attachment, index in selectedLog.email.attachments)
                             <div
-                              :key="index"
                               class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
                             >
                               <i class="i-hugeicons-attachment-01 h-4 w-4 mr-1" aria-hidden="true" />
@@ -888,30 +880,15 @@ let timeRange = 'day'
                       <div class="mt-4">
                         <label class="block text-sm font-medium text-gray-700">Authentication Results</label>
                         <div class="mt-2 grid grid-cols-3 gap-2">
-                          <div class="px-3 py-1 rounded-md text-sm font-medium"
-                            :class="{
-                              'bg-green-100 text-green-800': selectedLog.email.authResults.spf === 'pass',
-                              'bg-red-100 text-red-800': selectedLog.email.authResults.spf === 'fail',
-                              'bg-gray-100 text-gray-800': selectedLog.email.authResults.spf === 'neutral'
-                            }"
+                          <div class="px-3 py-1 rounded-md text-sm font-medium {{ selectedLog.email.authResults.spf === 'pass' ? 'bg-green-100 text-green-800' : selectedLog.email.authResults.spf === 'fail' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}"
                           >
                             SPF: {{ selectedLog.email.authResults.spf }}
                           </div>
-                          <div class="px-3 py-1 rounded-md text-sm font-medium"
-                            :class="{
-                              'bg-green-100 text-green-800': selectedLog.email.authResults.dkim === 'pass',
-                              'bg-red-100 text-red-800': selectedLog.email.authResults.dkim === 'fail',
-                              'bg-gray-100 text-gray-800': selectedLog.email.authResults.dkim === 'neutral'
-                            }"
+                          <div class="px-3 py-1 rounded-md text-sm font-medium {{ selectedLog.email.authResults.dkim === 'pass' ? 'bg-green-100 text-green-800' : selectedLog.email.authResults.dkim === 'fail' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}"
                           >
                             DKIM: {{ selectedLog.email.authResults.dkim }}
                           </div>
-                          <div class="px-3 py-1 rounded-md text-sm font-medium"
-                            :class="{
-                              'bg-green-100 text-green-800': selectedLog.email.authResults.dmarc === 'pass',
-                              'bg-red-100 text-red-800': selectedLog.email.authResults.dmarc === 'fail',
-                              'bg-gray-100 text-gray-800': selectedLog.email.authResults.dmarc === 'neutral'
-                            }"
+                          <div class="px-3 py-1 rounded-md text-sm font-medium {{ selectedLog.email.authResults.dmarc === 'pass' ? 'bg-green-100 text-green-800' : selectedLog.email.authResults.dmarc === 'fail' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}"
                           >
                             DMARC: {{ selectedLog.email.authResults.dmarc }}
                           </div>
@@ -939,10 +916,7 @@ let timeRange = 'day'
                           <div class="p-2 bg-gray-50 rounded-md">
                             <div class="flex items-center">
                               <i
-                                :class="[
-                                  selectedLog.email.userInteraction.opened ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-circle text-red-500',
-                                  'h-5 w-5 mr-2'
-                                ]"
+                                class="{{ selectedLog.email.userInteraction.opened ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-circle text-red-500' }} h-5 w-5 mr-2"
                                 aria-hidden="true"
                               />
                               <span class="text-sm font-medium">{{ selectedLog.email.userInteraction.opened ? 'Opened' : 'Not opened' }}</span>
@@ -957,10 +931,7 @@ let timeRange = 'day'
                           <div class="p-2 bg-gray-50 rounded-md">
                             <div class="flex items-center">
                               <i
-                                :class="[
-                                  selectedLog.email.userInteraction.clicked ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-01-circle text-red-500',
-                                  'h-5 w-5 mr-2'
-                                ]"
+                                class="{{ selectedLog.email.userInteraction.clicked ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-01-circle text-red-500' }} h-5 w-5 mr-2"
                                 aria-hidden="true"
                               />
                               <span class="text-sm font-medium">{{ selectedLog.email.userInteraction.clicked ? 'Clicked' : 'No clicks' }}</span>
@@ -978,7 +949,7 @@ let timeRange = 'day'
                             <p class="text-xs text-gray-700 font-medium">Clicked links:</p>
                             <ul class="mt-1 pl-7 list-disc">
                               @foreach(link, index in selectedLog.email.userInteraction.links)
-                                <li :key="index" class="text-xs text-blue-600">
+                                <li class="text-xs text-blue-600">
                                   {{ link }}
                                 </li>
                               @endforeach

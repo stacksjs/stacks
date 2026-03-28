@@ -65,7 +65,7 @@ try {
                 <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded truncate max-w-[400px] inline-block">{{ query.query }}</code></td>
                   <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="{{ query.time.includes('ms') && parseInt(query.time) > 100 ? 'text-warning' : '' }}">
+                    <span :class="query.time.includes('ms') && parseInt(query.time) > 100 ? 'text-warning' : ''">
                       {{ query.time }}
                     </span>
                   </td>

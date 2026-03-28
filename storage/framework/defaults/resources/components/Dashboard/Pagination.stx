@@ -5,7 +5,7 @@
   const from = props.from || 1
   const to = props.to || 20
 </script>
-<div class="flex items-center justify-between border-t border-gray-200 rounded-bl-lg rounded-br-lg bg-white px-4 py-3 dark:border-gray-600 dark:bg-blue-gray-800 sm:px-6">
+<div class="flex items-center justify-between border-t border-gray-200 rounded-bl-lg rounded-br-lg bg-white px-4 py-3 dark:border-gray-600 dark:bg-neutral-800 sm:px-6">
     <div class="flex flex-1 justify-between sm:hidden">
       <a
         href="#"
@@ -29,14 +29,14 @@
         >
           <a
             href="#"
-            class="relative inline-flex items-center border border-gray-300 rounded-l-md bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
+            class="relative inline-flex items-center border border-gray-300 rounded-l-md bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-neutral-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">First</span>
             <div class="i-hugeicons-chevron-double-left-20-solid h-5 w-5"></div>
           </a>
           <a
             href="#"
-            class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
+            class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-neutral-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">Previous</span>
             <div class="i-hugeicons-chevron-left-20-solid h-5 w-5"></div>
@@ -44,38 +44,38 @@
           <a
             href="#"
             aria-current="page"
-            class="relative z-20 inline-flex items-center border border-blue-gray-400 bg-blue-gray-50 px-4 py-2 text-sm text-blue-600 font-medium dark:border-gray-600 dark:bg-blue-gray-600 hover:bg-blue-gray-50 dark:text-teal-50"
+            class="relative z-20 inline-flex items-center border border-neutral-400 bg-neutral-50 px-4 py-2 text-sm text-blue-600 font-medium dark:border-gray-600 dark:bg-neutral-600 hover:bg-neutral-50 dark:text-teal-50"
           >1</a>
           <a
             href="#"
             aria-current="page"
-            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-blue-gray-50 dark:text-teal-50 dark-hover:bg-gray-600"
+            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 dark:text-teal-50 dark-hover:bg-gray-600"
           >2</a>
           <a
             href="#"
             aria-current="page"
-            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-blue-gray-50 dark:text-teal-50 dark-hover:bg-gray-600"
+            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 dark:text-teal-50 dark-hover:bg-gray-600"
           >3</a>
           <a
             href="#"
             aria-current="page"
-            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-blue-gray-50 dark:text-teal-50 dark-hover:bg-gray-600"
+            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 dark:text-teal-50 dark-hover:bg-gray-600"
           >4</a>
           <a
             href="#"
             aria-current="page"
-            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-blue-gray-50 dark:text-teal-50 dark-hover:bg-gray-600"
+            class="relative inline-flex items-center border px-4 py-2 text-sm font-medium dark:border-gray-600 dark:bg-neutral-700 hover:bg-neutral-50 dark:text-teal-50 dark-hover:bg-gray-600"
           >5</a>
           <a
             href="#"
-            class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
+            class="relative inline-flex items-center border border-gray-300 bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-neutral-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">Next</span>
             <div class="i-hugeicons-chevron-right-20-solid h-5 w-5"></div>
           </a>
           <a
             href="#"
-            class="relative inline-flex items-center border border-gray-300 rounded-r-md bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-blue-gray-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
+            class="relative inline-flex items-center border border-gray-300 rounded-r-md bg-white px-2 py-2 text-sm text-gray-500 font-medium focus:z-20 dark:border-gray-600 dark:bg-neutral-700 hover:bg-gray-50 dark:text-gray-300 dark:text-gray-400"
           >
             <span class="sr-only">Last</span>
             <div class="i-hugeicons-chevron-double-right-20-solid h-5 w-5"></div>

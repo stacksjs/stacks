@@ -220,7 +220,7 @@ export default {
         <div class="mt-4 sm:mt-0">
           <button
             type="button"
-            @click="openAddModal"
+            onclick="openAddModal"
             class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
@@ -236,27 +236,27 @@ export default {
             <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
           <input
-            v-model="searchQuery"
+            value="{{ searchQuery }}"
             type="text"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
             placeholder="Search units..."
           />
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4">
           <select
-            v-model="typeFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ typeFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Types</option>
             @foreach(unitTypes as type)
-              <option :value="type">{{ type }}</option>
+              <option value="{{ type }}">{{ type }}</option>
             @endforeach
           </select>
 
           <select
-            v-model="defaultFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ defaultFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Units</option>
             <option value="default">Default Units</option>
@@ -271,17 +271,17 @@ export default {
           <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
-                      <button @click="toggleSort('name')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('name')" class="group inline-flex items-center">
                         Name
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'name')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -289,14 +289,14 @@ export default {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('abbreviation')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('abbreviation')" class="group inline-flex items-center">
                         Abbreviation
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'abbreviation')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -304,14 +304,14 @@ export default {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('type')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('type')" class="group inline-flex items-center">
                         Type
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'type')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -321,14 +321,14 @@ export default {
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Description</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Default</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200 text-right">
-                      <button @click="toggleSort('createdAt')" class="group inline-flex items-center text-right">
+                      <button onclick="toggleSort('createdAt')" class="group inline-flex items-center text-right">
                         Created
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'createdAt')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -340,7 +340,7 @@ export default {
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
                   @foreach(filteredUnits as unit)
                     <tr>
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
@@ -397,9 +397,9 @@ export default {
   @if(showAddModal)
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
 
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Unit</h3>
@@ -412,8 +412,8 @@ export default {
                         <input
                           type="text"
                           id="unit-name"
-                          v-model="newUnit.name"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          value="{{ newUnit.name }}"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
                     </div>
@@ -423,8 +423,8 @@ export default {
                         <input
                           type="text"
                           id="unit-abbreviation"
-                          v-model="newUnit.abbreviation"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          value="{{ newUnit.abbreviation }}"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
                     </div>
@@ -434,12 +434,12 @@ export default {
                     <div class="mt-2">
                       <select
                         id="unit-type"
-                        v-model="newUnit.type"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        value="{{ newUnit.type }}"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                       >
                         <option value="">Select a type</option>
                         @foreach(unitTypes as type)
-                          <option :value="type">{{ type }}</option>
+                          <option value="{{ type }}">{{ type }}</option>
                         @endforeach
                         <option value="Other">Other</option>
                       </select>
@@ -450,9 +450,9 @@ export default {
                     <div class="mt-2">
                       <textarea
                         id="unit-description"
-                        v-model="newUnit.description"
+                        value="{{ newUnit.description }}"
                         rows="2"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                       ></textarea>
                     </div>
                   </div>
@@ -460,8 +460,8 @@ export default {
                     <input
                       id="unit-default"
                       type="checkbox"
-                      v-model="newUnit.isDefault"
-                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700"
+                      value="{{ newUnit.isDefault }}"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700"
                     />
                     <label for="unit-default" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">Set as default for this type</label>
                   </div>
@@ -472,15 +472,15 @@ export default {
           <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
-              @click="addUnit"
+              onclick="addUnit"
               class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
             >
               Add
             </button>
             <button
               type="button"
-              @click="closeAddModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+              onclick="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>

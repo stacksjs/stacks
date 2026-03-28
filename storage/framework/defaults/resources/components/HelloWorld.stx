@@ -8,7 +8,7 @@ console.log('HelloWorld component mounted & the greeting is', greeting)
 </script>
 
 <div class="font-sans antialiased">
-  <div class="items-top relative min-h-screen flex justify-center bg-gray-50 py-4 sm:items-center dark:bg-blue-gray-900 sm:pt-0">
+  <div class="items-top relative min-h-screen flex justify-center bg-gray-50 py-4 sm:items-center dark:bg-neutral-900 sm:pt-0">
     <div class="mx-auto max-w-6xl lg:px-8 sm:px-6">
       <div class="flex items-center justify-center pt-8 sm:justify-between sm:pt-0">
         <Logo />
@@ -21,7 +21,7 @@ console.log('HelloWorld component mounted & the greeting is', greeting)
         @endif
       </div>
 
-      <div class="mt-8 overflow-hidden bg-white shadow sm:rounded-lg dark:bg-blue-gray-800">
+      <div class="mt-8 overflow-hidden bg-white shadow sm:rounded-lg dark:bg-neutral-800">
         <div class="grid grid-cols-1 md:grid-cols-2">
           <div class="p-6">
             <div class="flex items-center">

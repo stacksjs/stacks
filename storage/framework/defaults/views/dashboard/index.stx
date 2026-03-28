@@ -100,7 +100,7 @@ const getStatusDotClass = (status) => {
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
     @foreach(stats as stat)
       <StatsCard
-        title="{{ stat.title }}"
+        :title="stat.title"
         value="{{ stat.value }}"
         trend="{{ stat.trend }}"
         trendLabel="{{ stat.trendLabel }}"

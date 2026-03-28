@@ -23,7 +23,7 @@
                 <div class="flex justify-end space-x-4">
                   <button
                     type="button"
-                    class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                    class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
                     data-action="make-default"
                     data-method-id="{{ method.id }}"
                   >
@@ -32,7 +32,7 @@
 
                   <button
                     type="button"
-                    class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-blue-gray-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
+                    class="border rounded-md bg-white px-2 py-1 text-sm text-white font-semibold shadow-sm hover:bg-neutral-50 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline"
                     data-action="delete"
                     data-method-id="{{ method.id }}"
                   >

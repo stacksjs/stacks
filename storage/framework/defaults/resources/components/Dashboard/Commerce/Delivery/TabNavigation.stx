@@ -8,7 +8,7 @@
       <select
         id="tabs"
         name="tabs"
-        class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-blue-gray-800 dark:text-white"
+        class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-neutral-800 dark:text-white"
       >
         @foreach(tabs as tab)
           <option value="{{ tab }}" {{ tab == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>

@@ -305,7 +305,7 @@ workers = workers.map(worker => ({
 }))
 </script>
 
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
     <div class="px-4 lg:px-8 sm:px-6">
       <!-- Stats Overview -->
     <div class="mb-8">
@@ -315,7 +315,7 @@ workers = workers.map(worker => ({
         </h3>
 
         <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-hugeicons-queue-02 h-6 w-6 text-white" />
@@ -336,7 +336,7 @@ workers = workers.map(worker => ({
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
@@ -357,7 +357,7 @@ workers = workers.map(worker => ({
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-hugeicons-energy h-6 w-6 text-white" />
@@ -391,9 +391,10 @@ workers = workers.map(worker => ({
       </div>
 
       <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 sm:grid-cols-2">
-        <div v-for="(stats, name) in queues" :key="name" class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+        @foreach(queues as name => stats)
+<div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-4">
-            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-blue-gray-600 dark:text-gray-200">
+            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-neutral-600 dark:text-gray-200">
               {{ name }}
             </h4>
           </div>
@@ -401,23 +402,24 @@ workers = workers.map(worker => ({
           <div class="space-y-4">
             <!-- Queue Stats -->
             <div class="grid grid-cols-3 gap-4">
-              <div v-for="(value, status) in stats" :key="status" class="text-center">
-                <div class="text-2xl font-semibold font-mono" :class="{
+              @foreach(stats as status => value)
+<div class="text-center">
+                <div class="text-2xl font-semibold font-mono" class="{{ {
                   'text-blue-600 dark:text-blue-400': status === 'queued',
                   'text-yellow-600 dark:text-yellow-400': status === 'processing',
                   'text-green-600 dark:text-green-400': status === 'processed',
                   'text-purple-600 dark:text-purple-400': status === 'released',
                   'text-red-600 dark:text-red-400': status === 'failed'
-                }">{{ value }}</div>
+                } }}">{{ value }}</div>
                 <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
               </div>
             </div>
 
             <!-- Queue Progress -->
-            <div class="h-2 bg-gray-100 dark:bg-blue-gray-600 rounded-full overflow-hidden">
+            <div class="h-2 bg-gray-100 dark:bg-neutral-600 rounded-full overflow-hidden">
               <div class="flex h-full">
-                <div class="bg-green-500 h-full" :style="{ width: `${(stats.processed / (stats.processed + stats.failed)) * 100}%` }" />
-                <div class="bg-red-500 h-full" :style="{ width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` }" />
+                <div class="bg-green-500 h-full" style="{{ { width: `${(stats.processed / (stats.processed + stats.failed)) * 100}%` } }}" />
+                <div class="bg-red-500 h-full" style="{{ { width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` } }}" />
               </div>
             </div>
             <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
@@ -430,24 +432,25 @@ workers = workers.map(worker => ({
     </div>
 
       <!-- Queue Statistics -->
-      <div class="my-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="my-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h4>
             <div class="flex items-center gap-4">
               <select
-                v-model="selectedQueue"
-                class="block h-9 w-32 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                value="{{ selectedQueue }}"
+                class="block h-9 w-32 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="all">All Queues</option>
-                <option v-for="(_, queue) in queues" :key="queue" :value="queue">
+                @foreach(queues as queue => _)
+<option value="{{ queue }}">
                   {{ queue }}
                 </option>
               </select>
 
               <select
-                v-model="timeRange"
-                class="block h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                value="{{ timeRange }}"
+                class="block h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="hour">Last Hour</option>
                 <option value="day">Last 24 Hours</option>
@@ -471,7 +474,7 @@ workers = workers.map(worker => ({
       </div>
 
       <!-- Workers -->
-      <div class="mb-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -480,15 +483,15 @@ workers = workers.map(worker => ({
             </div>
             <div class="flex items-center gap-4">
               <button
-                @click="retryFailedJobs"
+                onclick="retryFailedJobs"
                 class="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
               >
                 <div class="i-hugeicons-arrow-path h-5 w-5 mr-1" />
                 Retry Failed Jobs
               </button>
               <button
-                @click="clearFailedJobs"
-                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 bg-white dark:bg-blue-gray-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500"
+                onclick="clearFailedJobs"
+                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
               >
                 <div class="i-hugeicons-trash h-5 w-5 mr-1" />
                 Clear Failed Jobs
@@ -497,9 +500,8 @@ workers = workers.map(worker => ({
           </div>
 
           <div class="space-y-6">
-            <div
-              v-for="worker in workers"
-              :key="worker.id"
+            @foreach(workers as worker)
+<div
               class="relative border dark:border-gray-600 rounded-lg p-6 transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-500"
             >
               <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -512,36 +514,36 @@ workers = workers.map(worker => ({
                   <div class="flex items-center gap-2">
                     <div
                       class="w-2 h-2 rounded-full"
-                      :class="{
+                      class="{{ {
                         'bg-green-500': worker.status === 'running',
                         'bg-yellow-500': worker.status === 'paused',
                         'bg-red-500': worker.status === 'stopped',
-                      }"
+                      } }}"
                     ></div>
                     <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
                       {{ worker.status.charAt(0).toUpperCase() + worker.status.slice(1) }}
                     </span>
                   </div>
                   <div class="flex items-center gap-2 mt-2">
-                    <button
-                      v-if="worker.status !== 'running'"
-                      @click="restartWorker(worker.id)"
+                    @if(worker.status !== 'running')
+<button
+                      onclick="restartWorker(worker.id)"
                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 rounded-md hover:bg-green-100 dark:hover:bg-green-900"
                     >
                       <div class="i-hugeicons-play h-4 w-4 mr-1" />
                       Start
                     </button>
-                    <button
-                      v-if="worker.status === 'running'"
-                      @click="pauseWorker(worker.id)"
+                    @if(worker.status === 'running')
+<button
+                      onclick="pauseWorker(worker.id)"
                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900"
                     >
                       <div class="i-hugeicons-pause h-4 w-4 mr-1" />
                       Pause
                     </button>
-                    <button
-                      v-if="worker.status === 'running'"
-                      @click="stopWorker(worker.id)"
+                    @if(worker.status === 'running')
+<button
+                      onclick="stopWorker(worker.id)"
                       class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 rounded-md hover:bg-red-100 dark:hover:bg-red-900"
                     >
                       <div class="i-hugeicons-stop h-4 w-4 mr-1" />
@@ -584,7 +586,8 @@ workers = workers.map(worker => ({
                       </div>
                     </div>
 
-                    <div v-if="worker.memory_usage / worker.memory_limit > 0.9" class="rounded-md bg-yellow-50 dark:bg-yellow-900/50 p-3">
+                    @if(worker.memory_usage / worker.memory_limit > 0.9)
+<div class="rounded-md bg-yellow-50 dark:bg-yellow-900/50 p-3">
                       <div class="flex">
                         <div class="i-hugeicons-exclamation-triangle h-5 w-5 text-yellow-400" />
                         <div class="ml-3">

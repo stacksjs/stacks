@@ -28,83 +28,72 @@ try {
   // DB not seeded
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'valid'].includes(s)) return 'success'
+  if (['pending', 'scheduled'].includes(s)) return 'warning'
+  if (['expired', 'inactive', 'cancelled'].includes(s)) return 'danger'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Coupons</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage discount codes</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Coupon</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="Coupons" description="Manage discount codes">
+    <template #actions>
+      <Button variant="primary">Create Coupon</Button>
+    </template>
+  </PageHeader>
 
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <input type="text" class="px-3 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="Search coupons..."  />
-        </div>
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Code</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Uses</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Limit</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Expires</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (coupons as coupon)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ coupon.code }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ coupon.type }}</td>
-                  <td class="px-4 py-3 font-semibold text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ coupon.value }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ coupon.uses }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ coupon.limit || '∞' }}</td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ coupon.expires }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(coupon.status) }}">{{ coupon.status }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <div class="flex gap-2">
-                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
-                      <button class="px-3 py-1.5 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    @foreach (stats as stat)
+      <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-discount" iconBg="primary" />
+    @endforeach
   </div>
+
+  <!-- Coupons Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'code', label: 'Code' },
+        { key: 'type', label: 'Type' },
+        { key: 'value', label: 'Value' },
+        { key: 'uses', label: 'Uses' },
+        { key: 'limit', label: 'Limit' },
+        { key: 'expires', label: 'Expires' },
+        { key: 'status', label: 'Status' },
+        { key: 'actions', label: '' },
+      ]) }}"
+      :data="coupons"
+      emptyTitle="No coupons yet"
+      emptyDescription="Create your first coupon to get started"
+      emptyIcon="i-hugeicons-discount"
+    >
+      @foreach (coupons as coupon)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ coupon.code }}</code>
+          </td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ coupon.type }}</td>
+          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ coupon.value }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ coupon.uses }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ coupon.limit || 'Unlimited' }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ coupon.expires }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(coupon.status) }}" size="xs" dot>{{ coupon.status }}</Badge>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1">
+              <Button variant="ghost" size="xs">Edit</Button>
+              <Button variant="ghost" size="xs"><span class="text-red-500">Delete</span></Button>
+            </div>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+
+</div>
+</DashboardLayout>
 @endsection

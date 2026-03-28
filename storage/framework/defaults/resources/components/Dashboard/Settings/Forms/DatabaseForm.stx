@@ -35,7 +35,7 @@
                     type="text"
                     name="mysql-host"
                     value="{{ mysqlHost }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -48,7 +48,7 @@
                     type="text"
                     name="mysql-port"
                     value="{{ mysqlPort }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -61,7 +61,7 @@
                     type="text"
                     name="mysql-username"
                     value="{{ mysqlUsername }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -74,7 +74,7 @@
                     type="password"
                     name="mysql-password"
                     value="{{ mysqlPassword }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -87,7 +87,7 @@
                     type="text"
                     name="mysql-database"
                     value="{{ mysqlDatabase }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -115,7 +115,7 @@
                     type="text"
                     name="sqlite-host"
                     value="{{ sqliteHost }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -128,7 +128,7 @@
                     type="text"
                     name="sqlite-prefix"
                     value="{{ sqlitePrefix }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
@@ -141,7 +141,7 @@
                     type="text"
                     name="sqlite-database"
                     value="{{ sqliteDatabase }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-blue-gray-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>

@@ -165,7 +165,7 @@ const barChartOptions = {
 </script>
 
 @title('Dashboard - Requests')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
       <h3 class="text-base text-gray-900 font-semibold leading-6 dark:text-gray-100">
@@ -173,7 +173,7 @@ const barChartOptions = {
       </h3>
 
       <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6 dark:bg-blue-gray-700">
+        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6 dark:bg-neutral-700">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-global h-6 w-6 text-white" />
@@ -199,7 +199,7 @@ const barChartOptions = {
           </dd>
         </div>
 
-        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6 dark:bg-blue-gray-700">
+        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6 dark:bg-neutral-700">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
@@ -224,7 +224,7 @@ const barChartOptions = {
           </dd>
         </div>
 
-        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6 dark:bg-blue-gray-700">
+        <div class="relative overflow-hidden rounded-lg bg-white px-4 pt-5 shadow sm:px-6 sm:pt-6 dark:bg-neutral-700">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-white" />
@@ -263,11 +263,11 @@ const barChartOptions = {
   <div class="px-4 lg:px-8 sm:px-6">
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
       <!-- Request Volume Graph -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Request Volume</h3>
           <div class="flex items-center space-x-4">
-            <select class="text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600">
+            <select class="text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600">
               <option>Last 24 hours</option>
               <option>Last 7 days</option>
               <option>Last 30 days</option>
@@ -280,7 +280,7 @@ const barChartOptions = {
       </div>
 
       <!-- Response Time Graph -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Response Time</h3>
         </div>
@@ -290,7 +290,7 @@ const barChartOptions = {
       </div>
 
       <!-- Success Rate Graph -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Success Rate</h3>
         </div>
@@ -300,7 +300,7 @@ const barChartOptions = {
       </div>
 
       <!-- Status Code Distribution -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow p-6">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
         <div class="flex items-center justify-between mb-4">
           <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Status Codes</h3>
         </div>
@@ -334,7 +334,7 @@ const barChartOptions = {
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-              <thead class="bg-gray-50 dark:bg-blue-gray-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700">
                 <tr>
                   <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6">
                     When
@@ -366,7 +366,7 @@ const barChartOptions = {
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
+              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
                 <tr>
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
                     05/04/2024 11:02:34<span class="text-gray-400 dark:text-gray-500">:123</span> AM UTC <em class="text-gray-400 dark:text-gray-500">(2 mins ago)</em>

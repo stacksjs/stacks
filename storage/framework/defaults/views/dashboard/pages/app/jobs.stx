@@ -5,7 +5,9 @@
 const { Job } = await import('@stacksjs/orm')
 
 let jobs = []
-let queueConnected = false
+let totalJobs = 0
+let failedCount = 0
+let completedCount = 0
 
 try {
   const allJobs = await Job.orderBy('created_at', 'desc').get()
@@ -18,64 +20,64 @@ try {
     createdAt: String(j.get('created_at') || ''),
     status: String(j.get('status') || 'pending'),
   }))
-  queueConnected = allJobs.length > 0
-} catch (e) {
-  // DB not seeded
-}
+  totalJobs = allJobs.length
+  failedCount = jobs.filter(j => j.status === 'failed' || j.status === 'error').length
+  completedCount = jobs.filter(j => j.status === 'completed' || j.status === 'success').length
+} catch (e) { /* DB not seeded */ }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (s === 'active' || s === 'processing')
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  if (s === 'completed' || s === 'success')
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (s === 'pending' || s === 'waiting')
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (s === 'failed' || s === 'error')
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (s === 'active' || s === 'processing') return 'primary'
+  if (s === 'completed' || s === 'success') return 'success'
+  if (s === 'pending' || s === 'waiting') return 'warning'
+  if (s === 'failed' || s === 'error') return 'danger'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-  <div class="flex items-start justify-between mb-8">
-    <div>
-      <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Jobs</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Background job management powered by bun-queue</p>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Jobs" description="Background job management powered by bun-queue" />
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+    <StatsCard title="Total Jobs" value="{{ totalJobs }}" icon="i-hugeicons-task-01" iconBg="primary" />
+    <StatsCard title="Completed" value="{{ completedCount }}" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
+    <StatsCard title="Failed" value="{{ failedCount }}" icon="i-hugeicons-alert-02" iconBg="danger" />
   </div>
 
-  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-    <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-      <table class="w-full text-sm">
-        <thead class="bg-gray-50 dark:bg-gray-700/50">
-          <tr>
-            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Job</th>
-            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Queue</th>
-            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Attempts</th>
-            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
-            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Created</th>
-            <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-          </tr>
-        </thead>
-        <tbody>
-          @foreach (jobs as job)
-            <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-              <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.name }}</td>
-              <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ job.queue }}</span>
-              </td>
-              <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ job.attempts }}/{{ job.maxAttempts }}</td>
-              <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 font-mono text-xs">{{ job.duration }}</td>
-              <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700 text-xs">{{ job.createdAt }}</td>
-              <td class="px-4 py-3 border-t border-gray-100 dark:border-gray-700">
-                <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(job.status) }}">{{ job.status }}</span>
-              </td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
-    </div>
+  <!-- Jobs Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'name', label: 'Job' },
+        { key: 'queue', label: 'Queue' },
+        { key: 'attempts', label: 'Attempts' },
+        { key: 'duration', label: 'Duration' },
+        { key: 'createdAt', label: 'Created' },
+        { key: 'status', label: 'Status' }
+      ]) }}"
+      :data="jobs"
+      emptyTitle="No jobs found"
+      emptyDescription="Jobs will appear here when dispatched"
+      emptyIcon="i-hugeicons-task-01"
+    >
+      @foreach(jobs as job)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ job.name }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="default" size="xs">{{ job.queue }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ job.attempts }}/{{ job.maxAttempts }}</td>
+          <td class="px-4 py-3 text-[12px] font-mono text-neutral-500 dark:text-neutral-400">{{ job.duration }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ job.createdAt }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ statusVariant(job.status) }}" size="sm" dot>{{ job.status }}</Badge>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
   </div>
 </div>
+</DashboardLayout>
 @endsection

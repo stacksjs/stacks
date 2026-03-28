@@ -532,10 +532,11 @@ function commentStats() {
         <div class="mt-6 flex justify-end">
           <div class="relative inline-block w-full sm:w-auto">
             <select
-              v-model="selectedTimeRange"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ selectedTimeRange }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
-              <option v-for="range in timeRanges" :key="range.value" :value="range.value">{{ range.label }}</option>
+              @foreach(timeRanges as range)
+<option value="{{ range.value }}">{{ range.label }}</option>
             </select>
           </div>
         </div>
@@ -697,17 +698,17 @@ function commentStats() {
               <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
             </div>
             <input
-              v-model="searchQuery"
+              value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
               placeholder="Search comments..."
             />
           </div>
 
           <div class="flex flex-col sm:flex-row gap-4">
             <select
-              v-model="statusFilter"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ statusFilter }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -716,8 +717,8 @@ function commentStats() {
             </select>
 
             <select
-              v-model="sortBy"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ sortBy }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="createdAt">Sort by Date</option>
               <option value="author">Sort by Author</option>
@@ -725,27 +726,28 @@ function commentStats() {
             </select>
 
             <select
-              v-model="sortOrder"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ sortOrder }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
             </select>
 
             <select
-              v-model="itemsPerPage"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ itemsPerPage }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
-              <option :value="5">5 per page</option>
-              <option :value="10">10 per page</option>
-              <option :value="25">25 per page</option>
-              <option :value="50">50 per page</option>
+              <option value="{{ 5 }}">5 per page</option>
+              <option value="{{ 10 }}">10 per page</option>
+              <option value="{{ 25 }}">25 per page</option>
+              <option value="{{ 50 }}">50 per page</option>
             </select>
           </div>
         </div>
 
         <!-- Bulk actions -->
-        <div v-if="hasSelectedComments" class="mt-4 bg-blue-50 p-4 rounded-lg shadow-sm dark:bg-blue-900/20">
+        @if(hasSelectedComments)
+<div class="mt-4 bg-blue-50 p-4 rounded-lg shadow-sm dark:bg-blue-900/20">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
               <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-blue-400 mr-2"></div>
@@ -753,29 +755,29 @@ function commentStats() {
             </div>
             <div class="flex space-x-2">
               <button
-                @click="bulkUpdateStatus('approved')"
-                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-green-600 shadow-sm ring-1 ring-inset ring-green-300 hover:bg-green-50 dark:bg-blue-gray-800 dark:text-green-400 dark:ring-green-500/30 dark:hover:bg-green-500/10"
+                onclick="bulkUpdateStatus('approved')"
+                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-green-600 shadow-sm ring-1 ring-inset ring-green-300 hover:bg-green-50 dark:bg-neutral-800 dark:text-green-400 dark:ring-green-500/30 dark:hover:bg-green-500/10"
               >
                 <div class="i-hugeicons-check h-4 w-4 mr-1"></div>
                 Approve
               </button>
               <button
-                @click="bulkUpdateStatus('pending')"
-                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-yellow-600 shadow-sm ring-1 ring-inset ring-yellow-300 hover:bg-yellow-50 dark:bg-blue-gray-800 dark:text-yellow-400 dark:ring-yellow-500/30 dark:hover:bg-yellow-500/10"
+                onclick="bulkUpdateStatus('pending')"
+                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-yellow-600 shadow-sm ring-1 ring-inset ring-yellow-300 hover:bg-yellow-50 dark:bg-neutral-800 dark:text-yellow-400 dark:ring-yellow-500/30 dark:hover:bg-yellow-500/10"
               >
                 <div class="i-hugeicons-clock-01 h-4 w-4 mr-1"></div>
                 Mark as Pending
               </button>
               <button
-                @click="bulkUpdateStatus('spam')"
-                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-orange-600 shadow-sm ring-1 ring-inset ring-orange-300 hover:bg-orange-50 dark:bg-blue-gray-800 dark:text-orange-400 dark:ring-orange-500/30 dark:hover:bg-orange-500/10"
+                onclick="bulkUpdateStatus('spam')"
+                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-orange-600 shadow-sm ring-1 ring-inset ring-orange-300 hover:bg-orange-50 dark:bg-neutral-800 dark:text-orange-400 dark:ring-orange-500/30 dark:hover:bg-orange-500/10"
               >
                 <div class="i-hugeicons-flag h-4 w-4 mr-1"></div>
                 Mark as Spam
               </button>
               <button
-                @click="confirmDeleteSelected"
-                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 dark:bg-blue-gray-800 dark:text-red-400 dark:ring-red-500/30 dark:hover:bg-red-500/10"
+                onclick="confirmDeleteSelected"
+                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-red-600 shadow-sm ring-1 ring-inset ring-red-300 hover:bg-red-50 dark:bg-neutral-800 dark:text-red-400 dark:ring-red-500/30 dark:hover:bg-red-500/10"
               >
                 <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                 Delete
@@ -795,14 +797,14 @@ function commentStats() {
           <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow">
             <div class="overflow-hidden">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+                <thead class="bg-gray-50 dark:bg-neutral-700/50">
                   <tr>
                     <th scope="col" class="relative px-4 sm:px-6 py-3.5">
                       <input
                         type="checkbox"
-                        :checked="selectAll"
-                        @change="toggleSelectAll"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-blue-gray-800"
+                        checked="{{ selectAll }}"
+                        onchange="toggleSelectAll"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </th>
                     <th scope="col" class="px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
@@ -825,15 +827,16 @@ function commentStats() {
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
-                  <tr v-for="comment in paginatedComments" :key="comment.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700">
+                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+                  @foreach(paginatedComments as comment)
+<tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                     <td class="relative px-4 sm:px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <input
                           type="checkbox"
-                          :checked="selectedCommentIds.includes(comment.id)"
-                          @change="toggleCommentSelection(comment.id)"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-blue-gray-700 dark:checked:bg-blue-600 dark:focus:ring-offset-blue-gray-800"
+                          checked="{{ selectedCommentIds.includes(comment.id) }}"
+                          onchange="toggleCommentSelection(comment.id)"
+                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
                         />
                       </div>
                     </td>
@@ -859,12 +862,12 @@ function commentStats() {
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
                       <span
-                        :class="[
+                        class="{{ [
                           'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium',
                           comment.status === 'approved' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30' :
                           comment.status === 'pending' ? 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-500/30' :
                           'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-500/30'
-                        ]"
+                        ] }}"
                       >
                         {{ comment.status.charAt(0).toUpperCase() + comment.status.slice(1) }}
                       </span>
@@ -876,27 +879,27 @@ function commentStats() {
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
                       <div class="flex justify-end space-x-2">
-                        <button
-                          v-if="comment.status !== 'approved'"
-                          @click="updateCommentStatus(comment, 'approved')"
+                        @if(comment.status !== 'approved')
+<button
+                          onclick="updateCommentStatus(comment, 'approved')"
                           class="text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300"
                           title="Approve"
                         >
                           <div class="i-hugeicons-check h-5 w-5"></div>
                           <span class="sr-only">Approve</span>
                         </button>
-                        <button
-                          v-if="comment.status !== 'pending'"
-                          @click="updateCommentStatus(comment, 'pending')"
+                        @if(comment.status !== 'pending')
+<button
+                          onclick="updateCommentStatus(comment, 'pending')"
                           class="text-gray-400 transition-colors duration-150 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300"
                           title="Mark as Pending"
                         >
                           <div class="i-hugeicons-clock-01 h-5 w-5"></div>
                           <span class="sr-only">Mark as Pending</span>
                         </button>
-                        <button
-                          v-if="comment.status !== 'spam'"
-                          @click="updateCommentStatus(comment, 'spam')"
+                        @if(comment.status !== 'spam')
+<button
+                          onclick="updateCommentStatus(comment, 'spam')"
                           class="text-gray-400 transition-colors duration-150 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300"
                           title="Mark as Spam"
                         >
@@ -904,7 +907,7 @@ function commentStats() {
                           <span class="sr-only">Mark as Spam</span>
                         </button>
                         <button
-                          @click="openEditModal(comment)"
+                          onclick="openEditModal(comment)"
                           class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                           title="Edit"
                         >
@@ -912,7 +915,7 @@ function commentStats() {
                           <span class="sr-only">Edit</span>
                         </button>
                         <button
-                          @click="confirmDeleteComment(comment)"
+                          onclick="confirmDeleteComment(comment)"
                           class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300"
                           title="Delete"
                         >
@@ -922,7 +925,8 @@ function commentStats() {
                       </div>
                     </td>
                   </tr>
-                  <tr v-if="paginatedComments.length === 0">
+                  @if(paginatedComments.length === 0)
+<tr>
                     <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
                       No comments found. Try adjusting your search or filters.
                     </td>
@@ -934,19 +938,20 @@ function commentStats() {
         </div>
 
         <!-- Pagination -->
-        <div v-if="totalPages > 1" class="mt-6 flex items-center justify-between">
+        @if(totalPages > 1)
+<div class="mt-6 flex items-center justify-between">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
-              @click="currentPage = Math.max(1, currentPage - 1)"
-              :disabled="currentPage === 1"
-              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700"
+              onclick="currentPage = Math.max(1, currentPage - 1)"
+              disabled="{{ currentPage === 1 }}"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-neutral-800 dark:text-gray-200 dark:hover:bg-neutral-700"
             >
               Previous
             </button>
             <button
-              @click="currentPage = Math.min(totalPages, currentPage + 1)"
-              :disabled="currentPage === totalPages"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700"
+              onclick="currentPage = Math.min(totalPages, currentPage + 1)"
+              disabled="{{ currentPage === totalPages }}"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-neutral-800 dark:text-gray-200 dark:hover:bg-neutral-700"
             >
               Next
             </button>
@@ -960,29 +965,28 @@ function commentStats() {
             <div>
               <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button
-                  @click="currentPage = Math.max(1, currentPage - 1)"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-500 dark:hover:bg-blue-gray-700"
+                  onclick="currentPage = Math.max(1, currentPage - 1)"
+                  disabled="{{ currentPage === 1 }}"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-500 dark:hover:bg-neutral-700"
                 >
                   <span class="sr-only">Previous</span>
                   <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
                 </button>
-                <button
-                  v-for="page in paginationRange"
-                  :key="page"
-                  @click="currentPage = page"
-                  :class="[
+                @foreach(paginationRange as page)
+<button
+                  onclick="currentPage = page"
+                  class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-700'
-                  ]"
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-700'
+                  ] }}"
                 >
                   {{ page }}
                 </button>
                 <button
-                  @click="currentPage = Math.min(totalPages, currentPage + 1)"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-500 dark:hover:bg-blue-gray-700"
+                  onclick="currentPage = Math.min(totalPages, currentPage + 1)"
+                  disabled="{{ currentPage === totalPages }}"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-500 dark:hover:bg-neutral-700"
                 >
                   <span class="sr-only">Next</span>
                   <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
@@ -996,17 +1000,18 @@ function commentStats() {
   </main>
 
   <!-- Edit Comment Modal -->
-  <div v-if="showEditModal" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  @if(showEditModal)
+<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
             <button
               type="button"
-              @click="closeEditModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+              onclick="closeEditModal"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-300 dark:hover:text-gray-200"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -1025,16 +1030,17 @@ function commentStats() {
               </div>
             </div>
           </div>
-          <div v-if="commentToEdit" class="mt-5 sm:mt-4">
+          @if(commentToEdit)
+<div class="mt-5 sm:mt-4">
             <div class="space-y-4">
               <div>
                 <label for="edit-comment-content" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Content</label>
                 <div class="mt-2">
                   <textarea
                     id="edit-comment-content"
-                    v-model="commentToEdit.content"
+                    value="{{ commentToEdit.content }}"
                     rows="4"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
                   ></textarea>
                 </div>
               </div>
@@ -1044,8 +1050,8 @@ function commentStats() {
                   <input
                     type="text"
                     id="edit-comment-author"
-                    v-model="commentToEdit.author"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                    value="{{ commentToEdit.author }}"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
                   />
                 </div>
               </div>
@@ -1055,8 +1061,8 @@ function commentStats() {
                   <input
                     type="email"
                     id="edit-comment-email"
-                    v-model="commentToEdit.email"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                    value="{{ commentToEdit.email }}"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
                   />
                 </div>
               </div>
@@ -1065,8 +1071,8 @@ function commentStats() {
                 <div class="mt-2">
                   <select
                     id="edit-comment-status"
-                    v-model="commentToEdit.status"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                    value="{{ commentToEdit.status }}"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                   >
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
@@ -1079,16 +1085,16 @@ function commentStats() {
           <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
-              @click="updateComment"
+              onclick="updateComment"
               class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
-              :disabled="!commentToEdit"
+              disabled="{{ !commentToEdit }}"
             >
               Update
             </button>
             <button
               type="button"
-              @click="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+              onclick="closeEditModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -1099,17 +1105,18 @@ function commentStats() {
   </div>
 
   <!-- Delete Confirmation Modal -->
-  <div v-if="showDeleteModal" class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+  @if(showDeleteModal)
+<div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
 
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
             <button
               type="button"
-              @click="closeDeleteModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-blue-gray-800 dark:text-gray-300 dark:hover:text-gray-200"
+              onclick="closeDeleteModal"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-300 dark:hover:text-gray-200"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -1130,14 +1137,17 @@ function commentStats() {
                     : 'Are you sure you want to delete this comment? This action cannot be undone.'
                   }}
                 </p>
-                <div v-if="selectedCommentIds.length > 1" class="mt-4 max-h-40 overflow-y-auto">
+                @if(selectedCommentIds.length > 1)
+<div class="mt-4 max-h-40 overflow-y-auto">
                   <ul class="space-y-2">
-                    <li v-for="id in selectedCommentIds" :key="id" class="text-sm text-gray-700 dark:text-gray-300">
+                    @foreach(selectedCommentIds as id)
+<li class="text-sm text-gray-700 dark:text-gray-300">
                       {{ truncateText(comments.find((c: Comment) => c.id === id)?.content || '', 50) }}
                     </li>
                   </ul>
                 </div>
-                <div v-else-if="commentToDelete" class="mt-4">
+                @elseif(commentToDelete)
+<div class="mt-4">
                   <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ truncateText(commentToDelete.content, 100) }}</p>
                   <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">by {{ commentToDelete.author }}</p>
                 </div>
@@ -1147,15 +1157,15 @@ function commentStats() {
           <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
             <button
               type="button"
-              @click="deleteSelectedComments"
+              onclick="deleteSelectedComments"
               class="inline-flex w-full justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 sm:ml-3 sm:w-auto"
             >
               Delete
             </button>
             <button
               type="button"
-              @click="closeDeleteModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+              onclick="closeDeleteModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>

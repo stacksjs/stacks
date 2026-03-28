@@ -2,101 +2,109 @@
 
 @section('content')
 <script server>
-// Data available when full dev server runs (buddy dev)
 let domains = []
 let records = []
 let stats = []
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">DNS Management</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Domain and DNS configuration</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Import Zone</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Domain</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="DNS Management" description="Domain and DNS configuration">
+    <template #actions>
+      <Button variant="secondary">Import Zone</Button>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Add Domain
+      </Button>
+    </template>
+  </PageHeader>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (domains as domain)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-              <span class="font-semibold text-gray-900 dark:text-white">{{ domain.domain }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ domain.status }}</span>
-            </div>
-            <div class="mt-4">
-              <div class="flex justify-between mb-2">
-                <span class="text-gray-500 dark:text-gray-400">Records</span>
-                <span>{{ domain.records }}</span>
-              </div>
-              <div class="flex justify-between mb-2">
-                <span class="text-gray-500 dark:text-gray-400">SSL</span>
-                <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ domain.ssl }}</span>
-              </div>
-              <div class="flex justify-between">
-                <span class="text-gray-500 dark:text-gray-400">Expires</span>
-                <span>{{ domain.expires }}</span>
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t flex gap-2">
-              <button class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Manage</button>
-              <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">SSL</button>
-            </div>
-          </div>
-        @endforeach
-      </div>
-
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="flex items-center justify-between mb-4">
-          <span class="font-semibold text-gray-900 dark:text-white">DNS Records - stacks.dev</span>
-          <button class="px-3 py-1.5 text-xs font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Add Record</button>
-        </div>
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Name</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Value</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">TTL</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Proxied</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (records as record)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">{{ record.type }}</span></td>
-                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ record.name }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ record.value }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ record.ttl }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                      <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ record.proxied ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">{{ record.proxied ? 'Proxied' : 'DNS Only' }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <div class="flex gap-2">
-                      <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
-                      <button class="px-3 py-1.5 text-xs font-medium text-red-500 hover:text-red-700 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg">Delete</button>
-                    </div>
-                  </td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+    @foreach (stats as stat)
+      <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-global" iconBg="primary" />
+    @endforeach
   </div>
+
+  <!-- Domain Cards -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach (domains as domain)
+      <Card>
+        <div class="p-5">
+          <div class="flex items-center justify-between mb-4">
+            <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">{{ domain.domain }}</span>
+            <Badge variant="success" size="xs" dot>{{ domain.status }}</Badge>
+          </div>
+          <div class="space-y-2 text-[13px]">
+            <div class="flex justify-between">
+              <span class="text-neutral-500 dark:text-neutral-400">Records</span>
+              <span class="text-neutral-600 dark:text-neutral-300">{{ domain.records }}</span>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-500 dark:text-neutral-400">SSL</span>
+              <Badge variant="success" size="xs">{{ domain.ssl }}</Badge>
+            </div>
+            <div class="flex justify-between">
+              <span class="text-neutral-500 dark:text-neutral-400">Expires</span>
+              <span class="text-neutral-600 dark:text-neutral-300">{{ domain.expires }}</span>
+            </div>
+          </div>
+          <div class="mt-4 pt-4 border-t border-neutral-200/60 dark:border-white/5 flex gap-2">
+            <Button variant="outline" size="xs" class="flex-1">Manage</Button>
+            <Button variant="ghost" size="xs">SSL</Button>
+          </div>
+        </div>
+      </Card>
+    @endforeach
+  </div>
+
+  <!-- DNS Records Table -->
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5 flex items-center justify-between">
+      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">DNS Records</span>
+      <Button variant="primary" size="xs">
+        <div class="i-hugeicons-plus-sign h-3.5 w-3.5"></div>
+        Add Record
+      </Button>
+    </div>
+
+    <DataTable
+      :columns="{{ JSON.stringify([
+        { key: 'type', label: 'Type' },
+        { key: 'name', label: 'Name' },
+        { key: 'value', label: 'Value' },
+        { key: 'ttl', label: 'TTL' },
+        { key: 'proxied', label: 'Proxied' },
+        { key: 'actions', label: '' }
+      ]) }}"
+      :data="records"
+      emptyTitle="No DNS records"
+      emptyDescription="Add DNS records for your domains"
+      emptyIcon="i-hugeicons-global"
+    >
+      @foreach (records as record)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3">
+            <Badge variant="default" size="xs">{{ record.type }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ record.name }}</td>
+          <td class="px-4 py-3">
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ record.value }}</code>
+          </td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ record.ttl }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ record.proxied ? 'info' : 'default' }}" size="xs">{{ record.proxied ? 'Proxied' : 'DNS Only' }}</Badge>
+          </td>
+          <td class="px-4 py-3">
+            <div class="flex items-center gap-1">
+              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+              <Button variant="danger" size="xs" iconOnly><div class="i-hugeicons-delete-02 w-4 h-4"></div></Button>
+            </div>
+          </td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+</DashboardLayout>
 @endsection

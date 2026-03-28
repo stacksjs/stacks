@@ -77,7 +77,7 @@ const handleRetry = async (jobId) => {
 </script>
 
 @title('Dashboard - Jobs History')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
@@ -97,11 +97,11 @@ const handleRetry = async (jobId) => {
             <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
           </div>
           <input
-            v-model="searchQuery"
+            value="{{ searchQuery }}"
             type="search"
             name="search"
             id="search"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
             placeholder="Search jobs..."
           >
         </div>
@@ -109,11 +109,11 @@ const handleRetry = async (jobId) => {
 
       <div class="sm:flex-shrink-0">
         <select
-          v-model="selectedQueue"
-          class="h-9 w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
+          value="{{ selectedQueue }}"
+          class="h-9 w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
         >
           @foreach(queues as queue)
-            <option :value="queue">
+            <option value="{{ queue }}">
               {{ queue.charAt(0).toUpperCase() + queue.slice(1) }} Queue
             </option>
           @endforeach
@@ -122,11 +122,11 @@ const handleRetry = async (jobId) => {
 
       <div class="sm:flex-shrink-0">
         <select
-          v-model="selectedStatus"
-          class="h-9 w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
+          value="{{ selectedStatus }}"
+          class="h-9 w-full rounded-md border-0 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
         >
           @foreach(statuses as status)
-            <option :value="status">
+            <option value="{{ status }}">
               {{ status.charAt(0).toUpperCase() + status.slice(1) }}
             </option>
           @endforeach
@@ -140,7 +140,7 @@ const handleRetry = async (jobId) => {
         <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-opacity-20 rounded-lg">
             <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-              <thead class="bg-gray-50 dark:bg-blue-gray-600">
+              <thead class="bg-gray-50 dark:bg-neutral-600">
                 <tr>
                   <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Job</th>
                   <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Queue</th>
@@ -153,7 +153,7 @@ const handleRetry = async (jobId) => {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-blue-gray-700">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-neutral-700">
                 @if(isLoading)
                   <tr class="animate-pulse">
                     <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
@@ -161,14 +161,14 @@ const handleRetry = async (jobId) => {
                     </td>
                   </tr>
                 @elseif(paginatedJobs.length === 0)
-                  <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
+                  <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                     <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
                       No jobs found matching your criteria
                     </td>
                   </tr>
                 @else
                   @foreach(paginatedJobs as job)
-                    <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
+                    <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                         <div class="font-medium text-gray-900 dark:text-gray-100">{{ job.name }}</div>
                         <div class="text-gray-500 dark:text-gray-400 font-mono text-xs">{{ job.id }}</div>
@@ -197,7 +197,7 @@ const handleRetry = async (jobId) => {
                             <button
                               type="button"
                               class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
-                              @click="handleRetry(job.id)"
+                              onclick="handleRetry(job.id)"
                             >
                               Retry
                             </button>
@@ -230,17 +230,17 @@ const handleRetry = async (jobId) => {
       <div class="flex items-center space-x-2">
         <button
           type="button"
-          class="relative inline-flex items-center rounded-md bg-white dark:bg-blue-gray-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 focus:z-10"
-          :disabled="currentPage === 1"
-          @click="currentPage--"
+          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
+          disabled="{{ currentPage === 1 }}"
+          onclick="currentPage--"
         >
           Previous
         </button>
         <button
           type="button"
-          class="relative inline-flex items-center rounded-md bg-white dark:bg-blue-gray-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 focus:z-10"
-          :disabled="currentPage === totalPages"
-          @click="currentPage++"
+          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
+          disabled="{{ currentPage === totalPages }}"
+          onclick="currentPage++"
         >
           Next
         </button>

@@ -491,7 +491,7 @@ function starsData() { return ({
 </script>
 
 @title('Dashboard - Packages')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <!-- Stats Section -->
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
@@ -503,10 +503,10 @@ function starsData() { return ({
         @if(useCompactMode)
           <div class="flex items-center space-x-2">
             <div class="relative w-64">
-              <Listbox v-model="selectedPackages" multiple>
+              <Listbox value="{{ selectedPackages }}" multiple>
                 <div class="relative">
                   <ListboxButton
-                    class="relative w-full cursor-default h-9 bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-10 text-left text-sm text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-inset transition-all duration-200"
+                    class="relative w-full cursor-default h-9 bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-10 text-left text-sm text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-inset transition-all duration-200"
                   >
                     <span class="block truncate">
                       {{ selectedPackages.length === 0 ? 'Select packages...' : `${selectedPackages.length} selected` }}
@@ -525,26 +525,25 @@ function starsData() { return ({
                     leave-to-class="transform scale-95 opacity-0"
                   >
                     <ListboxOptions
-                      class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-blue-gray-600 py-1 text-sm shadow-lg ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-10"
+                      class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white dark:bg-neutral-600 py-1 text-sm shadow-lg ring-1 ring-black/5 dark:ring-white/5 focus:outline-none z-10"
                     >
                       @foreach(packages as pkg)
                         <ListboxOption
-                          :key="pkg.name"
-                          :value="pkg.name"
+                          value="{{ pkg.name }}"
                           v-slot="{ active, selected }"
                           as="template"
                         >
                           <li
-                            :class="[
+                            class="{{ [
                               active ? 'bg-blue-50 dark:bg-blue-700/50 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-gray-100',
                               'relative cursor-default select-none py-2 pl-10 pr-4 transition-colors duration-150',
-                            ]"
+                            ] }}"
                           >
                             <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
                               {{ pkg.name }}
                             </span>
-                            <span
-                              v-if="selected"
+                            @if(selected)
+<span
                               class="absolute inset-y-0 left-0 flex items-center pl-3 text-blue-600 dark:text-blue-400"
                             >
                               <div class="i-hugeicons-check h-5 w-5" aria-hidden="true" />
@@ -558,8 +557,8 @@ function starsData() { return ({
               </Listbox>
             </div>
             <button
-              @click="selectedPackages = []"
-              class="h-9 px-3 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-blue-gray-500 transition-colors duration-200"
+              onclick="selectedPackages = []"
+              class="h-9 px-3 text-sm text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-500 transition-colors duration-200"
             >
               Clear
             </button>
@@ -568,7 +567,7 @@ function starsData() { return ({
       </div>
 
       <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-cloud-download h-6 w-6 text-white" />
@@ -584,7 +583,7 @@ function starsData() { return ({
           </dd>
         </div>
 
-        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-user-multiple-02 h-6 w-6 text-white" />
@@ -600,7 +599,7 @@ function starsData() { return ({
           </dd>
         </div>
 
-        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+        <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
           <dt>
             <div class="absolute rounded-md bg-blue-500 p-3">
               <div class="i-hugeicons-bug-02 h-6 w-6 text-white" />
@@ -623,7 +622,7 @@ function starsData() { return ({
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div class="grid grid-cols-1 gap-8 lg:grid-cols-2">
       <!-- Downloads Chart -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -632,8 +631,8 @@ function starsData() { return ({
             </div>
             <div class="flex items-center space-x-4">
               <select
-                v-model="timeRange"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                value="{{ timeRange }}"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -642,24 +641,24 @@ function starsData() { return ({
               </select>
               <div class="flex rounded-md shadow-sm h-9">
                 <button
-                  @click="displayMode = 'line'"
-                  :class="[
+                  onclick="displayMode = 'line'"
+                  class="{{ [
                     'px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors',
                     displayMode === 'line'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-blue-gray-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-500'
-                  ]"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-500'
+                  ] }}"
                 >
                   Line
                 </button>
                 <button
-                  @click="displayMode = 'bar'"
-                  :class="[
+                  onclick="displayMode = 'bar'"
+                  class="{{ [
                     'px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px',
                     displayMode === 'bar'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-blue-gray-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-500'
-                  ]"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-500'
+                  ] }}"
                 >
                   Bar
                 </button>
@@ -668,7 +667,7 @@ function starsData() { return ({
           </div>
           <div class="h-[400px] relative">
             @if(isLoading)
-              <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             @endif
@@ -682,7 +681,7 @@ function starsData() { return ({
       </div>
 
       <!-- Star Growth Chart -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -691,8 +690,8 @@ function starsData() { return ({
             </div>
             <div class="flex items-center space-x-4">
               <select
-                v-model="timeRange"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                value="{{ timeRange }}"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -701,24 +700,24 @@ function starsData() { return ({
               </select>
               <div class="flex rounded-md shadow-sm h-9">
                 <button
-                  @click="displayMode = 'line'"
-                  :class="[
+                  onclick="displayMode = 'line'"
+                  class="{{ [
                     'px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors',
                     displayMode === 'line'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-blue-gray-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-500'
-                  ]"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-500'
+                  ] }}"
                 >
                   Line
                 </button>
                 <button
-                  @click="displayMode = 'bar'"
-                  :class="[
+                  onclick="displayMode = 'bar'"
+                  class="{{ [
                     'px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px',
                     displayMode === 'bar'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-blue-gray-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-500'
-                  ]"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-500'
+                  ] }}"
                 >
                   Bar
                 </button>
@@ -736,7 +735,7 @@ function starsData() { return ({
       </div>
 
       <!-- Contributors Chart -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="mb-6">
             <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Package Contributors</h3>
@@ -749,7 +748,7 @@ function starsData() { return ({
       </div>
 
       <!-- Issues Chart -->
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="mb-6">
             <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Open Issues</h3>
@@ -840,7 +839,7 @@ function starsData() { return ({
                       {{ pkg.createdAt }}
                     </td>
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <a :href="getPackageUrl(pkg.name)" class="text-blue-600 hover:text-blue-900">
+                      <a href="{{ getPackageUrl(pkg.name) }}" class="text-blue-600 hover:text-blue-900">
                         View<span class="sr-only">, {{ pkg.name }} package</span>
                       </a>
                     </td>

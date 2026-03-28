@@ -1,0 +1,70 @@
+<script server>
+const isOpen = props.isOpen || false
+const title = props.title || 'Are you sure?'
+const description = props.description || 'This action cannot be undone.'
+const confirmLabel = props.confirmLabel || 'Delete'
+const cancelLabel = props.cancelLabel || 'Cancel'
+const variant = props.variant || 'danger' // 'danger' | 'warning'
+
+const iconClasses = {
+  danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+  warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400'
+}
+
+const iconNames = {
+  danger: 'i-hugeicons-alert-02',
+  warning: 'i-hugeicons-alert-circle'
+}
+</script>
+@if(isOpen)
+  <div ref="pageRoot" class="fixed inset-0 z-50 overflow-y-auto">
+    <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
+
+    <div class="flex min-h-full p-4 items-center justify-center">
+      <div class="relative w-full max-w-md rounded-xl bg-white dark:bg-neutral-900 shadow-2xl p-6">
+        <div class="flex items-start gap-4">
+          <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconClasses[variant] }}">
+            <div class="{{ iconNames[variant] }} w-5 h-5"></div>
+          </div>
+          <div class="flex-1 min-w-0">
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">
+              {{ title }}
+            </h3>
+            <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
+              {{ description }}
+            </p>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-end gap-2 mt-6">
+          <button
+            type="button"
+            class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 text-[13px] px-3 py-1.5 rounded-lg bg-white/80 dark:bg-white/10 text-neutral-800 dark:text-neutral-100 border border-black/10 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-white/15"
+            data-modal-close
+          >
+            {{ cancelLabel }}
+          </button>
+          <button
+            type="button"
+            class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 text-[13px] px-3 py-1.5 rounded-lg bg-gradient-to-b from-red-500 to-red-600 text-white shadow-sm shadow-red-600/25 hover:from-red-400 hover:to-red-500"
+            data-confirm-action
+          >
+            {{ confirmLabel }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+@endif
+<script client>
+var _root = useRef('pageRoot')
+onMount(function() {
+  var el = _root.current
+  if (!el) return
+  el.querySelectorAll('[data-modal-overlay], [data-modal-close]').forEach(function(item) {
+    item.addEventListener('click', function() {
+      item.closest('.fixed.inset-0')?.remove()
+    })
+  })
+})
+</script>

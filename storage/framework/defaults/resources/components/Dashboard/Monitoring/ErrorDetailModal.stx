@@ -67,7 +67,7 @@ function formatTimeAgo(dateString) {
     <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75" data-action="close"></div>
 
     <!-- Modal panel -->
-    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl dark:bg-blue-gray-800">
+    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl dark:bg-neutral-800">
       <!-- Header -->
       <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
         <div class="flex items-start justify-between">
@@ -188,7 +188,7 @@ function formatTimeAgo(dateString) {
           @else
             <div class="space-y-3">
               @foreach(errorInstances as instance)
-                <div class="bg-gray-50 dark:bg-blue-gray-700 rounded-lg p-4">
+                <div class="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <div class="flex items-center gap-2 text-sm">
@@ -214,7 +214,7 @@ function formatTimeAgo(dateString) {
       <!-- Footer -->
       <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
         <div class="flex justify-end">
-          <button type="button" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600" data-action="close">
+          <button type="button" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600" data-action="close">
             Close
           </button>
         </div>

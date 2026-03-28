@@ -242,8 +242,8 @@ let topPagesChart: Chart | null = null
 
           <div class="relative">
             <select
-              v-model="comparisonType"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ comparisonType }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="no-comparison">No comparison</option>
               <option value="previous-period">Previous period</option>
@@ -253,7 +253,7 @@ let topPagesChart: Chart | null = null
 
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
           >
             <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
             Auto
@@ -270,7 +270,7 @@ let topPagesChart: Chart | null = null
       </div>
 
       <!-- Page Views Trend Chart -->
-      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+      <div class="mb-8 bg-white dark:bg-neutral-800 rounded-lg p-4 shadow">
         <div class="mb-4">
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Page Views Trend</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -284,7 +284,7 @@ let topPagesChart: Chart | null = null
       </div>
 
       <!-- Top Pages Chart -->
-      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+      <div class="mb-8 bg-white dark:bg-neutral-800 rounded-lg p-4 shadow">
         <div class="mb-4">
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Top Pages</h3>
           <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -305,7 +305,7 @@ let topPagesChart: Chart | null = null
 
         <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Page
@@ -330,11 +330,11 @@ let topPagesChart: Chart | null = null
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
               @foreach(pagesData as page)
-              <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: page.percentage + '%' }"></div>
+                  <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="{{ { width: page.percentage + '%' } }}"></div>
                   <span class="relative z-10">{{ page.path }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
@@ -373,7 +373,7 @@ let topPagesChart: Chart | null = null
 
         <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Page
@@ -395,9 +395,9 @@ let topPagesChart: Chart | null = null
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
               @foreach(pagePerformanceData as page)
-              <tr class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                   {{ page.path }}
                 </td>

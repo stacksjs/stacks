@@ -14,7 +14,7 @@ const props = defineProps({
   data: { type: Object, required: true },
   options: { type: Object, default: {} },
   height: { type: String, default: '300px' },
-}
+})
 </script>
 <div class="dashboard-chart" style="height: {{ props.height }};">
     <div class="chart-placeholder">

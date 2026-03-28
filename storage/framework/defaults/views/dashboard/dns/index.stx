@@ -119,11 +119,11 @@ let dnsRecordsData = getDNSRecordsData()
 </script>
 
 @title('Dashboard - DNS')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- DNS Records Chart -->
     <div class="mb-8">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -131,8 +131,8 @@ let dnsRecordsData = getDNSRecordsData()
               <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Distribution of DNS record types</p>
             </div>
             <select
-              v-model="timeRange"
-              class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              value="{{ timeRange }}"
+              class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
             >
               <option value="day">Last 24 Hours</option>
               <option value="week">Last 7 Days</option>
@@ -142,7 +142,7 @@ let dnsRecordsData = getDNSRecordsData()
           </div>
           <div class="h-[300px] relative">
             @if(isLoading)
-              <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+              <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
                 <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
               </div>
             @endif

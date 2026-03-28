@@ -34,83 +34,67 @@ try {
   // DB not seeded
 }
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'success', 'delivered', 'paid', 'shipped'].includes(s)) return 'success'
+  if (['pending', 'scheduled', 'warning'].includes(s)) return 'warning'
+  if (['failed', 'error', 'cancelled', 'refunded'].includes(s)) return 'danger'
+  if (['info', 'completed', 'processing'].includes(s)) return 'info'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Commerce Dashboard</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Sales overview and analytics</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">Export Report</button>
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">New Order</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-            <div class="text-sm text-green-600 dark:text-green-400 font-medium">{{ stat.change }}</div>
+  <PageHeader title="Commerce Dashboard" description="Sales overview and analytics">
+    <template #actions>
+      <Button variant="secondary">Export Report</Button>
+      <Button variant="primary">New Order</Button>
+    </template>
+  </PageHeader>
+
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    @foreach (stats as stat)
+      <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.change }}" icon="i-hugeicons-dollar-circle" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <!-- Recent Orders -->
+    <Card title="Recent Orders">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+        @foreach (recentOrders as order)
+          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ order.id }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ order.customer }} &middot; {{ order.time }}</div>
+            </div>
+            <div class="flex items-center gap-3">
+              <span class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ order.total }}</span>
+              <Badge variant="{{ statusVariant(order.status) }}" size="xs" dot>{{ order.status }}</Badge>
+            </div>
           </div>
         @endforeach
       </div>
+    </Card>
 
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Recent Orders</span>
-            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
+    <!-- Top Products -->
+    <Card title="Top Products">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+        @foreach (topProducts as product)
+          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <div class="flex-1 min-w-0">
+              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ product.name }}</div>
+              <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ product.sales }} sales</div>
+            </div>
+            <span class="text-[13px] font-semibold text-green-600 dark:text-green-400">{{ product.revenue }}</span>
           </div>
-          <div class="divide-y divide-gray-100 dark:divide-gray-700">
-            @foreach (recentOrders as order)
-              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ order.id }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ order.customer }} &middot; {{ order.time }}</div>
-                </div>
-                <div class="flex items-center gap-3">
-                  <span class="font-semibold">{{ order.total }}</span>
-                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(order.status) }}">{{ order.status }}</span>
-                </div>
-              </div>
-            @endforeach
-          </div>
-        </div>
-
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-          <div class="flex items-center justify-between mb-4">
-            <span class="font-semibold text-gray-900 dark:text-white">Top Products</span>
-            <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">View All</button>
-          </div>
-          <div class="divide-y divide-gray-100 dark:divide-gray-700">
-            @foreach (topProducts as product)
-              <div class="flex items-center gap-3 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
-                <div class="flex-1 min-w-0">
-                  <div class="font-medium text-gray-900 dark:text-white">{{ product.name }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">{{ product.sales }} sales</div>
-                </div>
-                <span class="font-semibold text-green-600 dark:text-green-400">{{ product.revenue }}</span>
-              </div>
-            @endforeach
-          </div>
-        </div>
+        @endforeach
       </div>
-    </div>
+    </Card>
   </div>
+
+</div>
+</DashboardLayout>
 @endsection

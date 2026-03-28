@@ -719,7 +719,7 @@ const getRoleBadgeClass = (role: string): string => {
 }
 </script>
 
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
     <!-- Stats section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
@@ -728,7 +728,7 @@ const getRoleBadgeClass = (role: string): string => {
         </h3>
 
         <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -753,7 +753,7 @@ const getRoleBadgeClass = (role: string): string => {
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-green-500 p-3">
                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -778,7 +778,7 @@ const getRoleBadgeClass = (role: string): string => {
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-purple-500 p-3">
                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -808,7 +808,7 @@ const getRoleBadgeClass = (role: string): string => {
 
     <!-- Growth Chart -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -817,8 +817,8 @@ const getRoleBadgeClass = (role: string): string => {
             </div>
             <div class="flex items-center space-x-4">
               <select
-                v-model="timeRange"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                value="{{ timeRange }}"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -828,7 +828,8 @@ const getRoleBadgeClass = (role: string): string => {
             </div>
           </div>
           <div class="h-[400px] relative">
-            <div v-if="isLoading" class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+            @if(isLoading)
+<div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
             <Line :data="chartData" :options="chartOptions" />
@@ -839,7 +840,7 @@ const getRoleBadgeClass = (role: string): string => {
 
     <!-- Model Relationships Diagram -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
-      <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
@@ -848,8 +849,8 @@ const getRoleBadgeClass = (role: string): string => {
             </div>
             <div class="flex items-center space-x-2">
               <button
-                @click="downloadSVG"
-                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+                onclick="downloadSVG"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
               >
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -857,8 +858,8 @@ const getRoleBadgeClass = (role: string): string => {
                 SVG
               </button>
               <button
-                @click="downloadPNG"
-                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+                onclick="downloadPNG"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
               >
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -872,7 +873,8 @@ const getRoleBadgeClass = (role: string): string => {
               <!-- D3 diagram will be rendered here -->
             </div>
 
-            <div v-if="selectedModel" class="w-64 ml-6 p-4 bg-gray-50 dark:bg-blue-gray-600 rounded-lg">
+            @if(selectedModel)
+<div class="w-64 ml-6 p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
               <div class="flex items-center mb-4">
                 <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
                 <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
@@ -885,7 +887,8 @@ const getRoleBadgeClass = (role: string): string => {
               <div class="mb-4">
                 <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
                 <ul class="space-y-1">
-                  <li v-for="prop in selectedModel.properties" :key="prop" class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+                  @foreach(selectedModel.properties as prop)
+<li class="text-sm text-gray-600 dark:text-gray-400 font-mono">
                     {{ prop }}
                   </li>
                 </ul>
@@ -894,7 +897,8 @@ const getRoleBadgeClass = (role: string): string => {
               <div class="mb-6">
                 <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
                 <ul class="space-y-1">
-                  <li v-for="rel in selectedModel.relationships" :key="rel" class="text-sm font-mono">
+                  @foreach(selectedModel.relationships as rel)
+<li class="text-sm font-mono">
                     <router-link
                       :to="getModelRoute(rel.toLowerCase())"
                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
@@ -905,8 +909,7 @@ const getRoleBadgeClass = (role: string): string => {
                 </ul>
               </div>
 
-              <router-link
-                v-if="selectedModel.id !== 'author'"
+              <router-link 
                 :to="getModelRoute(selectedModel.id)"
                 class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
               >
@@ -933,7 +936,7 @@ const getRoleBadgeClass = (role: string): string => {
         <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
           <button
             type="button"
-            @click="openNewAuthorModal"
+            onclick="openNewAuthorModal"
             class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline">
             Add Author
           </button>
@@ -949,17 +952,17 @@ const getRoleBadgeClass = (role: string): string => {
             </svg>
           </div>
           <input
-            v-model="searchQuery"
+            value="{{ searchQuery }}"
             type="search"
             placeholder="Search authors..."
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-100 dark:bg-blue-gray-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
           />
         </div>
 
         <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-3">
           <select
-            v-model="roleFilter"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            value="{{ roleFilter }}"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -968,25 +971,26 @@ const getRoleBadgeClass = (role: string): string => {
           </select>
 
           <select
-            v-model="itemsPerPage"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            value="{{ itemsPerPage }}"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
           >
-            <option :value="5">5 per page</option>
-            <option :value="10">10 per page</option>
-            <option :value="20">20 per page</option>
-            <option :value="50">50 per page</option>
+            <option value="{{ 5 }}">5 per page</option>
+            <option value="{{ 10 }}">10 per page</option>
+            <option value="{{ 20 }}">20 per page</option>
+            <option value="{{ 50 }}">50 per page</option>
           </select>
         </div>
       </div>
 
       <!-- Bulk actions -->
-      <div v-if="hasSelectedAuthors" class="mt-4 bg-gray-50 dark:bg-blue-gray-600 p-3 rounded-md flex items-center justify-between">
+      @if(hasSelectedAuthors)
+<div class="mt-4 bg-gray-50 dark:bg-neutral-600 p-3 rounded-md flex items-center justify-between">
         <div class="text-sm text-gray-700 dark:text-gray-300">
           <span class="font-medium">{{ selectedAuthorIds.length }}</span> author{{ selectedAuthorIds.length > 1 ? 's' : '' }} selected
         </div>
         <div class="flex space-x-2">
           <button
-            @click="confirmDeleteSelected"
+            onclick="confirmDeleteSelected"
             class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm"
           >
             <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -1002,23 +1006,24 @@ const getRoleBadgeClass = (role: string): string => {
           <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600 authors-table">
-                <thead class="bg-gray-50 dark:bg-blue-gray-600">
+                <thead class="bg-gray-50 dark:bg-neutral-600">
                   <tr>
                     <th scope="col" class="relative px-3 py-3.5">
                       <input
                         type="checkbox"
-                        :checked="selectAll"
-                        @change="toggleSelectAll"
+                        checked="{{ selectAll }}"
+                        onchange="toggleSelectAll"
                         class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600"
                       />
                     </th>
                     <th
                       scope="col"
                       class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6 cursor-pointer"
-                      @click="sortBy = 'id'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                      onclick="sortBy = 'id'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       ID
-                      <span v-if="sortBy === 'id'" class="ml-1">
+                      @if(sortBy === 'id')
+<span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
                     </th>
@@ -1026,10 +1031,11 @@ const getRoleBadgeClass = (role: string): string => {
                     <th
                       scope="col"
                       class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
-                      @click="sortBy = 'name'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                      onclick="sortBy = 'name'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       Name
-                      <span v-if="sortBy === 'name'" class="ml-1">
+                      @if(sortBy === 'name')
+<span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
                     </th>
@@ -1041,10 +1047,11 @@ const getRoleBadgeClass = (role: string): string => {
                     <th
                       scope="col"
                       class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
-                      @click="sortBy = 'postCount'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                      onclick="sortBy = 'postCount'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       Posts
-                      <span v-if="sortBy === 'postCount'" class="ml-1">
+                      @if(sortBy === 'postCount')
+<span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
                     </th>
@@ -1052,10 +1059,11 @@ const getRoleBadgeClass = (role: string): string => {
                     <th
                       scope="col"
                       class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
-                      @click="sortBy = 'createdAt'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+                      onclick="sortBy = 'createdAt'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       Created At
-                      <span v-if="sortBy === 'createdAt'" class="ml-1">
+                      @if(sortBy === 'createdAt')
+<span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
                     </th>
@@ -1066,13 +1074,14 @@ const getRoleBadgeClass = (role: string): string => {
                   </tr>
                 </thead>
 
-                <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
-                  <tr v-for="author in paginatedAuthors" :key="author.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600/50">
+                <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+                  @foreach(paginatedAuthors as author)
+<tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                     <td class="relative px-3 py-4">
                       <input
                         type="checkbox"
-                        :checked="selectedAuthorIds.includes(author.id)"
-                        @change="toggleAuthorSelection(author.id)"
+                        checked="{{ selectedAuthorIds.includes(author.id) }}"
+                        onchange="toggleAuthorSelection(author.id)"
                         class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600"
                       />
                     </td>
@@ -1116,10 +1125,10 @@ const getRoleBadgeClass = (role: string): string => {
                     </td>
 
                     <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                      <button @click="openEditModal(author)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
+                      <button onclick="openEditModal(author)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">
                         Edit
                       </button>
-                      <button @click="confirmDeleteAuthor(author)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
+                      <button onclick="confirmDeleteAuthor(author)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
                         Delete
                       </button>
                     </td>
@@ -1138,29 +1147,28 @@ const getRoleBadgeClass = (role: string): string => {
         </div>
         <div class="flex space-x-2">
           <button
-            @click="currentPage = Math.max(1, currentPage - 1)"
-            :disabled="currentPage === 1"
-            :class="{ 'opacity-50 cursor-not-allowed': currentPage === 1 }"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            onclick="currentPage = Math.max(1, currentPage - 1)"
+            disabled="{{ currentPage === 1 }}"
+            class="{{ { 'opacity-50 cursor-not-allowed': currentPage === 1 } }}"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
           >
             Previous
           </button>
           <div class="flex space-x-1">
-            <button
-              v-for="page in paginationRange"
-              :key="page"
-              @click="currentPage = page"
-              :class="{ 'bg-blue-600 text-white hover:bg-blue-500': currentPage === page, 'bg-white dark:bg-blue-gray-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-blue-gray-500': currentPage !== page }"
+            @foreach(paginationRange as page)
+<button
+              onclick="currentPage = page"
+              class="{{ { 'bg-blue-600 text-white hover:bg-blue-500': currentPage === page, 'bg-white dark:bg-neutral-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-500': currentPage !== page } }}"
               class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
             >
               {{ page }}
             </button>
           </div>
           <button
-            @click="currentPage = Math.min(totalPages, currentPage + 1)"
-            :disabled="currentPage === totalPages"
-            :class="{ 'opacity-50 cursor-not-allowed': currentPage === totalPages }"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-blue-gray-600 hover:bg-gray-50 dark:hover:bg-blue-gray-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            onclick="currentPage = Math.min(totalPages, currentPage + 1)"
+            disabled="{{ currentPage === totalPages }}"
+            class="{{ { 'opacity-50 cursor-not-allowed': currentPage === totalPages } }}"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
           >
             Next
           </button>
@@ -1169,14 +1177,15 @@ const getRoleBadgeClass = (role: string): string => {
     </div>
 
     <!-- New Author Modal -->
-    <div v-if="showNewAuthorModal" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showNewAuthorModal)
+<div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeNewAuthorModal"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeNewAuthorModal"></div>
 
         <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-          <div class="bg-white dark:bg-blue-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-neutral-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-white dark:bg-neutral-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
               <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
                 <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -1199,8 +1208,8 @@ const getRoleBadgeClass = (role: string): string => {
                 <input
                   type="text"
                   id="name"
-                  v-model="newAuthor.name"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ newAuthor.name }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                   placeholder="Enter full name"
                 />
               </div>
@@ -1210,8 +1219,8 @@ const getRoleBadgeClass = (role: string): string => {
                 <input
                   type="email"
                   id="email"
-                  v-model="newAuthor.email"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ newAuthor.email }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                   placeholder="email@example.com"
                 />
               </div>
@@ -1220,8 +1229,8 @@ const getRoleBadgeClass = (role: string): string => {
                 <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
                 <select
                   id="role"
-                  v-model="newAuthor.role"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ newAuthor.role }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 >
                   <option value="admin">Admin</option>
                   <option value="editor">Editor</option>
@@ -1233,27 +1242,27 @@ const getRoleBadgeClass = (role: string): string => {
                 <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
                 <textarea
                   id="bio"
-                  v-model="newAuthor.bio"
+                  value="{{ newAuthor.bio }}"
                   rows="3"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                   placeholder="Brief author biography"
                 ></textarea>
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+          <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
             <button
               type="button"
-              @click="createAuthor"
+              onclick="createAuthor"
               class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Create
             </button>
             <button
               type="button"
-              @click="closeNewAuthorModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              onclick="closeNewAuthorModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Cancel
             </button>
@@ -1263,14 +1272,15 @@ const getRoleBadgeClass = (role: string): string => {
     </div>
 
     <!-- Edit Author Modal -->
-    <div v-if="showEditModal" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showEditModal)
+<div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEditModal"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
 
         <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-          <div class="bg-white dark:bg-blue-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-neutral-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-white dark:bg-neutral-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
               <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 dark:bg-blue-900 sm:mx-0 sm:h-10 sm:w-10">
                 <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -1287,14 +1297,15 @@ const getRoleBadgeClass = (role: string): string => {
               </div>
             </div>
 
-            <div v-if="authorToEdit" class="mt-6 space-y-4">
+            @if(authorToEdit)
+<div class="mt-6 space-y-4">
               <div>
                 <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
                 <input
                   type="text"
                   id="edit-name"
-                  v-model="authorToEdit.name"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ authorToEdit.name }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 />
               </div>
 
@@ -1303,8 +1314,8 @@ const getRoleBadgeClass = (role: string): string => {
                 <input
                   type="email"
                   id="edit-email"
-                  v-model="authorToEdit.email"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ authorToEdit.email }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 />
               </div>
 
@@ -1312,8 +1323,8 @@ const getRoleBadgeClass = (role: string): string => {
                 <label for="edit-role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
                 <select
                   id="edit-role"
-                  v-model="authorToEdit.role"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ authorToEdit.role }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 >
                   <option value="admin">Admin</option>
                   <option value="editor">Editor</option>
@@ -1325,9 +1336,9 @@ const getRoleBadgeClass = (role: string): string => {
                 <label for="edit-bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
                 <textarea
                   id="edit-bio"
-                  v-model="authorToEdit.bio"
+                  value="{{ authorToEdit.bio }}"
                   rows="3"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 ></textarea>
               </div>
 
@@ -1336,25 +1347,25 @@ const getRoleBadgeClass = (role: string): string => {
                 <input
                   type="number"
                   id="edit-posts"
-                  v-model="authorToEdit.postCount"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-blue-gray-600 dark:text-white sm:text-sm"
+                  value="{{ authorToEdit.postCount }}"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 />
               </div>
             </div>
           </div>
 
-          <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+          <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
             <button
               type="button"
-              @click="updateAuthor"
+              onclick="updateAuthor"
               class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Save Changes
             </button>
             <button
               type="button"
-              @click="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              onclick="closeEditModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Cancel
             </button>
@@ -1364,14 +1375,15 @@ const getRoleBadgeClass = (role: string): string => {
     </div>
 
     <!-- Delete Confirmation Modal -->
-    <div v-if="showDeleteConfirmation" class="fixed inset-0 z-10 overflow-y-auto">
+    @if(showDeleteConfirmation)
+<div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeDeleteModal"></div>
 
         <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-blue-gray-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
-          <div class="bg-white dark:bg-blue-gray-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+        <div class="inline-block transform overflow-hidden rounded-lg bg-white dark:bg-neutral-700 text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:align-middle">
+          <div class="bg-white dark:bg-neutral-700 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
             <div class="sm:flex sm:items-start">
               <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
                 <svg class="h-6 w-6 text-red-600 dark:text-red-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -1393,18 +1405,18 @@ const getRoleBadgeClass = (role: string): string => {
             </div>
           </div>
 
-          <div class="bg-gray-50 dark:bg-blue-gray-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+          <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
             <button
               type="button"
-              @click="deleteSelectedAuthors"
+              onclick="deleteSelectedAuthors"
               class="inline-flex w-full justify-center rounded-md border border-transparent bg-red-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Delete
             </button>
             <button
               type="button"
-              @click="closeDeleteModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-blue-gray-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-blue-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              onclick="closeDeleteModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Cancel
             </button>

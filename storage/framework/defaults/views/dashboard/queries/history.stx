@@ -314,7 +314,7 @@ const refreshData = () => {
 
 @title('Queries - History')
 <div class="min-h-screen">
-  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-blue-gray-900 sm:px-6 lg:px-8">
+  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-neutral-900 sm:px-6 lg:px-8">
     <div>
       <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
         Query History
@@ -328,24 +328,24 @@ const refreshData = () => {
         <button
           type="button"
           class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-          @click="timeRange = 'day'"
+          :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          onclick="timeRange = 'day'"
         >
           Day
         </button>
         <button
           type="button"
           class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-          @click="timeRange = 'week'"
+          :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          onclick="timeRange = 'week'"
         >
           Week
         </button>
         <button
           type="button"
           class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-800 dark:text-gray-200 dark:ring-blue-gray-700 dark:hover:bg-blue-gray-700'"
-          @click="timeRange = 'month'"
+          :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          onclick="timeRange = 'month'"
         >
           Month
         </button>
@@ -354,8 +354,8 @@ const refreshData = () => {
         <select
           id="connection"
           name="connection"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-          v-model="selectedConnection"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+          value="{{ selectedConnection }}"
         >
           <option value="all">All connections</option>
           <option value="mysql">MySQL</option>
@@ -368,8 +368,8 @@ const refreshData = () => {
         <select
           id="status"
           name="status"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-          v-model="selectedStatus"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+          value="{{ selectedStatus }}"
         >
           <option value="all">All statuses</option>
           <option value="completed">Completed</option>
@@ -381,8 +381,8 @@ const refreshData = () => {
         <select
           id="type"
           name="type"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
-          v-model="selectedType"
+          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+          value="{{ selectedType }}"
         >
           <option value="all">All types</option>
           <option value="SELECT">SELECT</option>
@@ -398,8 +398,8 @@ const refreshData = () => {
         </div>
         <input
           type="text"
-          v-model="searchQuery"
-          class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-blue-gray-800 dark:border-blue-gray-700 dark:text-gray-200"
+          value="{{ searchQuery }}"
+          class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
           placeholder="Search queries..."
         />
       </div>
@@ -411,13 +411,13 @@ const refreshData = () => {
     <div class="mt-4">
       <div class="relative">
         @if(isLoading)
-          <div class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-blue-gray-900/50 z-10">
+          <div class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-neutral-900/50 z-10">
             <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
           </div>
         @endif
         <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-blue-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-800">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-800">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
                   Query
@@ -442,7 +442,7 @@ const refreshData = () => {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-blue-gray-700 dark:bg-blue-gray-900">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-900">
               @foreach(filteredQueries as query)
                 <tr>
                   <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">

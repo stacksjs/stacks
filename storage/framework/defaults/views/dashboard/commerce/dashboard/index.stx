@@ -119,9 +119,9 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             Overview of your store's performance
           </p>
           <div class="relative">
-            <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+            <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
               @foreach(timeRanges as range)
-                <option :value="range">{{ range }}</option>
+                <option value="{{ range }}">{{ range }}</option>
               @endforeach
             </select>
           </div>
@@ -129,7 +129,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 
         <!-- Stats -->
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">$548,290</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -138,7 +138,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Orders</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">2,456</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -147,7 +147,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Average Order Value</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">$223.25</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -156,7 +156,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
             <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">3.6%</dd>
             <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
@@ -168,7 +168,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 
         <!-- Charts -->
         <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
               <div class="mt-2 h-80">
@@ -177,7 +177,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Orders</h3>
               <div class="mt-2 h-80">
@@ -189,13 +189,13 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 
         <!-- Top Products -->
         <div class="mt-8">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="px-4 py-5 sm:px-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Top Selling Products</h3>
             </div>
             <div class="border-t border-gray-200 dark:border-gray-700">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Product</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Price</th>
@@ -203,7 +203,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Stock</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-blue-gray-800 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
                   @foreach(topProducts as product)
                     <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</td>
@@ -220,13 +220,13 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 
         <!-- Recent Orders -->
         <div class="mt-8">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
             <div class="px-4 py-5 sm:px-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Orders</h3>
             </div>
             <div class="border-t border-gray-200 dark:border-gray-700">
               <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Order ID</th>
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Customer</th>
@@ -235,7 +235,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
                     <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Status</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-blue-gray-800 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
                   @foreach(recentOrders as order)
                     <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ order.id }}</td>
@@ -244,11 +244,11 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ order.total }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                              :class="{
+                              class="{{ {
                                 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': order.status === 'Completed',
                                 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300': order.status === 'Processing',
                                 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': order.status === 'Shipped'
-                              }">
+                              } }}">
                           {{ order.status }}
                         </span>
                       </td>

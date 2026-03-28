@@ -735,7 +735,7 @@ const getEventTypeIcon = (type) => {
 </script>
 
 @title('Dashboard - Servers')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Header -->
     <div class="mb-8">
@@ -768,10 +768,10 @@ const getEventTypeIcon = (type) => {
               <div class="i-hugeicons-search-01 w-5 h-5 text-gray-400"></div>
             </div>
             <input
-              v-model="searchQuery"
+              value="{{ searchQuery }}"
               type="text"
               placeholder="Search servers..."
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-blue-gray-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-neutral-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
           </div>
         </div>
@@ -779,17 +779,16 @@ const getEventTypeIcon = (type) => {
     </div>
 
     <!-- Servers Table -->
-    <div class="bg-white dark:bg-blue-gray-700 shadow rounded-lg overflow-hidden">
+    <div class="bg-white dark:bg-neutral-700 shadow rounded-lg overflow-hidden">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
-          <thead class="bg-gray-50 dark:bg-blue-gray-800">
+          <thead class="bg-gray-50 dark:bg-neutral-800">
             <tr>
-              <th
-                v-for="header in ['Name', 'Type', 'Region', 'Size', 'OS', 'Database', 'Search']"
-                :key="header"
+              @foreach(['Name', 'Type', 'Region', 'Size', 'OS', 'Database', 'Search'] as header)
+<th
                 scope="col"
                 class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
-                @click="setSorting(header.toLowerCase() as keyof ServerConfig)"
+                onclick="setSorting(header.toLowerCase() as keyof ServerConfig)"
               >
                 <div class="flex items-center gap-1">
                   {{ header }}
@@ -806,8 +805,8 @@ const getEventTypeIcon = (type) => {
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-blue-gray-700 divide-y divide-gray-200 dark:divide-gray-600">
-            <tr v-for="[key, server] in filteredServers" :key="key" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
+          <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+            <tr v-for="[key, server] in filteredServers" class="hover:bg-gray-50 dark:hover:bg-neutral-600">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
                   <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
@@ -817,14 +816,14 @@ const getEventTypeIcon = (type) => {
               </td>
               <td class="px-6 py-4 whitespace-nowrap">
                 <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                  :class="{
+                  class="{{ {
                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': server.type === 'app',
                     'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300': server.type === 'web',
                     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': server.type === 'worker',
                     'bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300': server.type === 'cache',
                     'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': server.type === 'database',
                     'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-300': server.type === 'search',
-                  }"
+                  } }}"
                 >
                   {{ server.type }}
                 </span>
@@ -867,7 +866,7 @@ const getEventTypeIcon = (type) => {
     </div>
 
     <!-- Infrastructure Diagram -->
-    <div class="my-8 bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+    <div class="my-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
@@ -882,12 +881,12 @@ const getEventTypeIcon = (type) => {
           </div>
         </div>
         <div class="relative">
-          <div ref="diagramContainer" class="w-full h-[400px] bg-blue-gray-800 rounded-lg"></div>
+          <div ref="diagramContainer" class="w-full h-[400px] bg-neutral-800 rounded-lg"></div>
 
           <!-- Node Details Panel -->
           @if(selectedNode)
           <div
-            class="absolute top-4 right-4 w-80 bg-white dark:bg-blue-gray-700 rounded-lg shadow-lg p-4 z-10"
+            class="absolute top-4 right-4 w-80 bg-white dark:bg-neutral-700 rounded-lg shadow-lg p-4 z-10"
             @click.stop
           >
             <div class="flex items-center justify-between mb-4">
@@ -895,7 +894,7 @@ const getEventTypeIcon = (type) => {
                 {{ selectedNode.label }}
               </h5>
               <button
-                @click="selectedNode = null"
+                onclick="selectedNode = null"
                 class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150"
               >
                 <span class="sr-only">Close</span>
@@ -909,12 +908,12 @@ const getEventTypeIcon = (type) => {
               <div class="flex items-center gap-2">
                 <div
                   class="w-8 h-8 rounded-full flex items-center justify-center"
-                  :class="{
+                  class="{{ {
                     'bg-pink-100 text-pink-600 dark:bg-pink-900 dark:text-pink-300': selectedNode.type === 'user',
                     'bg-blue-100 text-blue-600 dark:bg-blue-900 dark:text-blue-300': selectedNode.type === 'loadbalancer',
                     'bg-green-100 text-green-600 dark:bg-green-900 dark:text-green-300': selectedNode.type === 'server',
                     'bg-yellow-100 text-yellow-600 dark:bg-yellow-900 dark:text-yellow-300': selectedNode.type === 'worker',
-                  }"
+                  } }}"
                 >
                   <span class="text-lg">
                     {{ selectedNode.type === 'user' ? '👤' : selectedNode.type === 'loadbalancer' ? '⚖️' : selectedNode.type === 'server' ? '🖥️' : '⚙️' }}
@@ -929,9 +928,8 @@ const getEventTypeIcon = (type) => {
               </div>
 
               @if(selectedNode.config)
-                <div
-                  v-for="(value, key) in formatConfigDetails(selectedNode.config)"
-                  :key="key"
+                @foreach(formatConfigDetails(selectedNode.config) as key => value)
+<div
                   class="flex justify-between py-2 border-t border-gray-100 dark:border-gray-600"
                 >
                   <span class="text-sm text-gray-500 dark:text-gray-400">{{ key }}</span>
@@ -972,7 +970,7 @@ const getEventTypeIcon = (type) => {
       <div class="inline-block min-w-full align-middle">
         <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
           <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
-            <thead class="bg-gray-50 dark:bg-blue-gray-600">
+            <thead class="bg-gray-50 dark:bg-neutral-600">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Service</th>
@@ -980,8 +978,9 @@ const getEventTypeIcon = (type) => {
                 <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-700">
-              <tr v-for="event in serverEvents" :key="event.id" class="hover:bg-gray-50 dark:hover:bg-blue-gray-600">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-700">
+              @foreach(serverEvents as event)
+<tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <div class="flex items-center">
                     <div :class="[getEventTypeIcon(event.type), getEventTypeColor(event.type), 'w-5 h-5']" />

@@ -297,7 +297,7 @@ async function addGiftCard() {
         <div class="mt-4 sm:mt-0">
           <button
             type="button"
-            @click="openAddModal"
+            onclick="openAddModal"
             class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
           >
             <div class="i-hugeicons-plus-sign h-5 w-5 mr-1"></div>
@@ -312,9 +312,9 @@ async function addGiftCard() {
           Overview of your gift card performance
         </p>
         <div class="relative">
-          <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+          <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
             @foreach(timeRanges as range)
-              <option :key="range" :value="range">{{ range }}</option>
+              <option value="{{ range }}">{{ range }}</option>
             @endforeach
           </select>
         </div>
@@ -322,7 +322,7 @@ async function addGiftCard() {
 
       <!-- Stats -->
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Active Gift Cards</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ giftCardStats.activeGiftCards }}</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -331,7 +331,7 @@ async function addGiftCard() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Value</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(giftCardStats.totalInitialValue).toLocaleString() }}</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -340,7 +340,7 @@ async function addGiftCard() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Current Balance</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(giftCardStats.totalCurrentBalance).toLocaleString() }}</dd>
           <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
@@ -349,7 +349,7 @@ async function addGiftCard() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Redemption Rate</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ giftCardStats.redemptionRate }}%</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -361,7 +361,7 @@ async function addGiftCard() {
 
       <!-- Charts -->
       <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Gift Card Sales</h3>
             <div class="mt-2 h-80">
@@ -370,7 +370,7 @@ async function addGiftCard() {
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Gift Card Revenue</h3>
             <div class="mt-2 h-80">
@@ -387,21 +387,21 @@ async function addGiftCard() {
             <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
           <input
-            v-model="searchQuery"
+            value="{{ searchQuery }}"
             type="text"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
             placeholder="Search gift cards..."
           />
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4">
           <select
-            v-model="statusFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ statusFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Statuses</option>
             @foreach(statuses.slice(1) as status)
-              <option :key="status" :value="status">
+              <option value="{{ status }}">
                 {{ status }}
               </option>
             @endforeach
@@ -421,21 +421,18 @@ async function addGiftCard() {
           <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
                       Code
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Recipient</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('initialValue')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('initialValue')" class="group inline-flex items-center">
                         Initial Value
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'initialValue')
-                            <div :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -443,14 +440,11 @@ async function addGiftCard() {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('currentBalance')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('currentBalance')" class="group inline-flex items-center">
                         Balance
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'currentBalance')
-                            <div :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -458,14 +452,11 @@ async function addGiftCard() {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('purchaseDate')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('purchaseDate')" class="group inline-flex items-center">
                         Purchase Date
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'purchaseDate')
-                            <div :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -473,14 +464,11 @@ async function addGiftCard() {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('expiryDate')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('expiryDate')" class="group inline-flex items-center">
                         Expiry Date
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'expiryDate')
-                            <div :class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ]"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -493,9 +481,9 @@ async function addGiftCard() {
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
                   @foreach(filteredGiftCards as card)
-                    <tr :key="card.id">
+                    <tr>
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
                         {{ card.code }}
                       </td>
@@ -516,7 +504,7 @@ async function addGiftCard() {
                         {{ card.expiry_date }}
                       </td>
                       <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(card.status)">
+                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ getStatusClass(card.status) }}">
                           {{ card.status }}
                         </span>
                       </td>
@@ -552,9 +540,9 @@ async function addGiftCard() {
   @if(showAddModal)
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
 
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-blue-gray-800">
+        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div>
             <div class="mt-3 text-center sm:mt-5">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Create New Gift Card</h3>
@@ -566,9 +554,9 @@ async function addGiftCard() {
                       <input
                         type="text"
                         id="gift-card-code"
-                        v-model="newGiftCard.code"
+                        value="{{ newGiftCard.code }}"
                         readonly
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 bg-gray-50 dark:bg-blue-gray-900"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 bg-gray-50 dark:bg-neutral-900"
                       />
                       <p class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-left">Auto-generated code</p>
                     </div>
@@ -584,8 +572,8 @@ async function addGiftCard() {
                         <input
                           type="number"
                           id="gift-card-value"
-                          v-model="newGiftCard.initialValue"
-                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                          value="{{ newGiftCard.initialValue }}"
+                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                         />
                       </div>
                     </div>
@@ -597,8 +585,8 @@ async function addGiftCard() {
                       <input
                         type="text"
                         id="recipient-name"
-                        v-model="newGiftCard.recipient"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        value="{{ newGiftCard.recipient }}"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                         placeholder="Enter recipient name"
                       />
                     </div>
@@ -610,8 +598,8 @@ async function addGiftCard() {
                       <input
                         type="email"
                         id="recipient-email"
-                        v-model="newGiftCard.email"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        value="{{ newGiftCard.email }}"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                         placeholder="Enter recipient email"
                       />
                     </div>
@@ -623,8 +611,8 @@ async function addGiftCard() {
                       <input
                         type="date"
                         id="expiry-date"
-                        v-model="newGiftCard.expiryDate"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600"
+                        value="{{ newGiftCard.expiryDate }}"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
                       />
                     </div>
                   </div>
@@ -635,15 +623,15 @@ async function addGiftCard() {
           <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
             <button
               type="button"
-              @click="addGiftCard"
+              onclick="addGiftCard"
               class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
             >
               Create
             </button>
             <button
               type="button"
-              @click="closeAddModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+              onclick="closeAddModal"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>

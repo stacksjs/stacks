@@ -3,83 +3,74 @@
 @section('content')
 <script server>
 let teams = []
-let stats = []
+let totalTeams = 0
+let totalMembers = 0
+let activeProjects = 0
 
 try {
-  // Team table does not exist yet — leave empty
+  // Team table does not exist yet -- leave empty
   teams = []
-  stats = [
-    { value: '0', label: 'Total Teams' },
-    { value: '0', label: 'Total Members' },
-    { value: '0', label: 'Active Projects' },
-  ]
+  totalTeams = 0
+  totalMembers = 0
+  activeProjects = 0
 } catch (e) {
   // DB not seeded
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Teams</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Manage team organization</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Create Team</button>
-      </div>
-    </div>
+<DashboardLayout>
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (stats as stat)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          </div>
-        @endforeach
-      </div>
+  <PageHeader title="Teams" description="Manage team organization">
+    <template #actions>
+      <Button variant="primary">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Create Team
+      </Button>
+    </template>
+  </PageHeader>
 
-      @if (teams.length > 0)
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        @foreach (teams as team)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-            <div class="flex items-center justify-between mb-4">
-              <span class="font-semibold text-gray-900 dark:text-white">{{ team.name }}</span>
-              <span class="px-2.5 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ team.status }}</span>
-            </div>
-            <div class="mt-4">
-              <div class="text-gray-500 dark:text-gray-400 text-sm mb-2">Team Lead: {{ team.lead }}</div>
-              <div class="grid grid-2 gap-4 mt-4">
-                <div>
-                  <div class="text-2xl font-semibold">{{ team.members }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">Members</div>
-                </div>
-                <div>
-                  <div class="text-2xl font-semibold">{{ team.projects }}</div>
-                  <div class="text-sm text-gray-500 dark:text-gray-400">Projects</div>
-                </div>
-              </div>
-            </div>
-            <div class="mt-4 pt-4 border-t flex gap-2">
-              <button class="flex-1 px-3 py-1.5 text-xs font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">View</button>
-              <button class="px-3 py-1.5 text-xs font-medium text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg">Edit</button>
-            </div>
-          </div>
-        @endforeach
-      </div>
-      @else
-      <div class="flex flex-col items-center justify-center py-16 px-4">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <span class="text-2xl text-gray-400">&#x1F465;</span>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No teams created</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Teams will be available after running migrations.</p>
-      </div>
-      @endif
-    </div>
+  <!-- Stats -->
+  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+    <StatsCard title="Total Teams" value="{{ totalTeams }}" icon="i-hugeicons-user-group" iconBg="primary" />
+    <StatsCard title="Total Members" value="{{ totalMembers }}" icon="i-hugeicons-users-01" iconBg="success" />
+    <StatsCard title="Active Projects" value="{{ activeProjects }}" icon="i-hugeicons-folder-02" iconBg="info" />
   </div>
-<style>
-.border-t {
-  border-top: 1px solid var(--color-border);
-}
-</style>
+
+  <!-- Teams Grid -->
+  @if (teams.length > 0)
+  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    @foreach(teams as team)
+      <Card>
+        <div class="flex items-center justify-between mb-4">
+          <span class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ team.name }}</span>
+          <Badge variant="success" size="xs" dot>{{ team.status }}</Badge>
+        </div>
+        <div class="text-neutral-500 dark:text-neutral-400 text-[13px] mb-3">Team Lead: {{ team.lead }}</div>
+        <div class="grid grid-cols-2 gap-4 mt-4">
+          <div>
+            <div class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ team.members }}</div>
+            <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Members</div>
+          </div>
+          <div>
+            <div class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ team.projects }}</div>
+            <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Projects</div>
+          </div>
+        </div>
+        <div class="mt-4 pt-4 border-t border-neutral-200/60 dark:border-white/5 flex gap-2">
+          <Button variant="outline" size="xs" class="flex-1">View</Button>
+          <Button variant="ghost" size="xs">Edit</Button>
+        </div>
+      </Card>
+    @endforeach
+  </div>
+  @else
+  <EmptyState
+    icon="i-hugeicons-user-group"
+    title="No teams created"
+    description="Teams will be available after running migrations."
+    actionLabel="Create Team"
+  />
+  @endif
+</div>
+</DashboardLayout>
 @endsection

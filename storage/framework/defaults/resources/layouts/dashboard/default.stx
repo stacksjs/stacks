@@ -6,7 +6,7 @@
     <div class="lg:pl-64">
       <Navbar />
 
-      <main class="bg-blue-gray-50 dark:bg-blue-gray-900">
+      <main class="bg-neutral-50 dark:bg-neutral-900">
         <slot />
       </main>
 
@@ -15,6 +15,6 @@
   </div>
 <style>
 body {
-  @apply dark:bg-blue-gray-900 bg-blue-gray-50;
+  @apply dark:bg-neutral-900 bg-neutral-50;
 }
 </style>

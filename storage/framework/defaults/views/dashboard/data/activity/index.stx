@@ -751,10 +751,10 @@ let timeRange = 'day'
 </script>
 
 @title('Dashboard - Activity Log')
-<div class="min-h-screen py-4 dark:bg-blue-gray-800 lg:py-8">
+<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Log Volume Chart -->
-    <div class="bg-white dark:bg-blue-gray-700 rounded-lg shadow">
+    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
@@ -762,8 +762,8 @@ let timeRange = 'day'
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Distribution of activity types over time</p>
           </div>
           <select
-            v-model="timeRange"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-blue-gray-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            value="{{ timeRange }}"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="day">Last 24 Hours</option>
             <option value="week">Last 7 Days</option>
@@ -773,7 +773,7 @@ let timeRange = 'day'
         </div>
         <div class="h-[300px] relative">
           @if(isLoading)
-          <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+          <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
           @endif
@@ -799,24 +799,25 @@ let timeRange = 'day'
         <div class="flex flex-wrap items-center gap-4">
           <div class="flex-1 min-w-[200px]">
             <input
-              v-model="searchTerm"
+              value="{{ searchTerm }}"
               type="text"
               placeholder="Search activities..."
-              class="w-full px-4 py-2 border rounded-lg dark:bg-blue-gray-700 dark:border-blue-gray-600 dark:text-gray-100"
+              class="w-full px-4 py-2 border rounded-lg dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-100"
             >
           </div>
 
           <select
-            v-model="logNameFilter"
-            class="px-4 py-2 border rounded-lg bg-white min-w-[140px] dark:bg-blue-gray-700 dark:border-blue-gray-600 dark:text-gray-100"
+            value="{{ logNameFilter }}"
+            class="px-4 py-2 border rounded-lg bg-white min-w-[140px] dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-100"
           >
             <option value="all">All Logs</option>
-            <option v-for="log in logNames" :key="log.id" :value="log.id">{{ log.name }}</option>
+            @foreach(logNames as log)
+<option value="{{ log.id }}">{{ log.name }}</option>
           </select>
 
           <select
-            v-model="eventFilter"
-            class="px-4 py-2 border rounded-lg bg-white min-w-[140px] dark:bg-blue-gray-700 dark:border-blue-gray-600 dark:text-gray-100"
+            value="{{ eventFilter }}"
+            class="px-4 py-2 border rounded-lg bg-white min-w-[140px] dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-100"
           >
             <option value="all">All Events</option>
             <option value="created">Created</option>
@@ -832,21 +833,22 @@ let timeRange = 'day'
           </select>
 
           <select
-            v-model="subjectTypeFilter"
-            class="px-4 py-2 border rounded-lg bg-white min-w-[140px] dark:bg-blue-gray-700 dark:border-blue-gray-600 dark:text-gray-100"
+            value="{{ subjectTypeFilter }}"
+            class="px-4 py-2 border rounded-lg bg-white min-w-[140px] dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-100"
           >
             <option value="all">All Models</option>
-            <option v-for="subject in subjectTypes" :key="subject.type" :value="subject.type">{{ subject.name }}</option>
+            @foreach(subjectTypes as subject)
+<option value="{{ subject.type }}">{{ subject.name }}</option>
           </select>
 
           <button
             class="flex items-center gap-2 px-4 py-2 rounded-lg"
             :class="autoRefresh ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300'"
-            @click="toggleAutoRefresh"
+            onclick="toggleAutoRefresh"
           >
             <i
               class="i-hugeicons-refresh h-4 w-4"
-              :class="{ 'animate-spin': autoRefresh }"
+              :class="autoRefresh ? 'animate-spin' : ''"
               aria-hidden="true"
             />
             {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
@@ -855,7 +857,7 @@ let timeRange = 'day'
           @if(searchTerm || logNameFilter !== 'all' || eventFilter !== 'all' || subjectTypeFilter !== 'all')
           <button
             class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600"
-            @click="resetFilters"
+            onclick="resetFilters"
           >
             <i class="i-hugeicons-cancel-01 h-4 w-4" aria-hidden="true" />
             Reset Filters
@@ -868,7 +870,7 @@ let timeRange = 'day'
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-blue-gray-800">
+              <thead class="bg-gray-50 dark:bg-neutral-800">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Time</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Caused By</th>
@@ -878,12 +880,11 @@ let timeRange = 'day'
                   <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Details</th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200 dark:bg-blue-gray-700 dark:divide-gray-600">
-                <tr
-                  v-for="log in paginatedLogs"
-                  :key="log.id"
-                  :class="[getLogRowClass(log.event), 'hover:bg-gray-50 dark:hover:bg-blue-gray-600 cursor-pointer']"
-                  @click="selectedLog = log"
+              <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-700 dark:divide-gray-600">
+                @foreach(paginatedLogs as log)
+<tr
+                  class="{{ getLogRowClass(log.event) }} hover:bg-gray-50 dark:hover:bg-neutral-600 cursor-pointer"
+                  onclick="selectedLog = log"
                 >
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-gray-200">
@@ -935,7 +936,7 @@ let timeRange = 'day'
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="flex items-center">
                       <i
-                        :class="[log.icon, log.color, 'h-5 w-5 mr-2']"
+                        class="{{ log.icon }} {{ log.color }} h-5 w-5 mr-2"
                         aria-hidden="true"
                       />
                       <span class="text-sm text-gray-900 dark:text-gray-200 capitalize">{{ log.event }}</span>
@@ -944,7 +945,7 @@ let timeRange = 'day'
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span
                       class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                      :class="[getLogNameClasses(log.log_name).bg, getLogNameClasses(log.log_name).text]"
+                      class="{{ getLogNameClasses(log.log_name).bg }} {{ getLogNameClasses(log.log_name).text }}"
                     >
                       {{ logNames.find(l => l.id === log.log_name)?.name || log.log_name }}
                     </span>
@@ -976,32 +977,31 @@ let timeRange = 'day'
         </div>
         <div class="flex items-center space-x-2">
           <select
-            v-model="itemsPerPage"
-            class="px-2 py-1 text-sm border rounded-md dark:bg-blue-gray-700 dark:border-blue-gray-600 dark:text-gray-200"
-            @change="currentPage = 1"
+            value="{{ itemsPerPage }}"
+            class="px-2 py-1 text-sm border rounded-md dark:bg-neutral-700 dark:border-neutral-600 dark:text-gray-200"
+            onchange="currentPage = 1"
           >
-            <option :value="10">10 per page</option>
-            <option :value="25">25 per page</option>
-            <option :value="50">50 per page</option>
-            <option :value="100">100 per page</option>
+            <option value="{{ 10 }}">10 per page</option>
+            <option value="{{ 25 }}">25 per page</option>
+            <option value="{{ 50 }}">50 per page</option>
+            <option value="{{ 100 }}">100 per page</option>
           </select>
 
           <div class="flex items-center space-x-1">
             <button
-              @click="prevPage"
-              :disabled="currentPage === 1"
-              class="px-2 py-1 text-sm border rounded-md dark:border-blue-gray-600 dark:text-gray-300"
-              :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-blue-gray-600'"
+              onclick="prevPage"
+              disabled="{{ currentPage === 1 }}"
+              class="px-2 py-1 text-sm border rounded-md dark:border-neutral-600 dark:text-gray-300"
+              :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-neutral-600'"
             >
               <i class="i-hugeicons-arrow-left-01 h-4 w-4" aria-hidden="true" />
             </button>
 
-            <button
-              v-for="page in Math.min(5, totalPages)"
-              :key="page"
-              @click="goToPage(page)"
-              class="px-3 py-1 text-sm border rounded-md dark:border-blue-gray-600"
-              :class="currentPage === page ? 'bg-blue-600 text-white dark:bg-blue-700' : 'hover:bg-gray-100 dark:hover:bg-blue-gray-600 dark:text-gray-300'"
+            @foreach(Math.min(5, totalPages) as page)
+<button
+              onclick="goToPage(page)"
+              class="px-3 py-1 text-sm border rounded-md dark:border-neutral-600"
+              :class="currentPage === page ? 'bg-blue-600 text-white dark:bg-blue-700' : 'hover:bg-gray-100 dark:hover:bg-neutral-600 dark:text-gray-300'"
             >
               {{ page }}
             </button>
@@ -1012,19 +1012,19 @@ let timeRange = 'day'
 
             @if(totalPages > 5)
             <button
-              @click="goToPage(totalPages)"
-              class="px-3 py-1 text-sm border rounded-md dark:border-blue-gray-600 dark:text-gray-300"
-              :class="currentPage === totalPages ? 'bg-blue-600 text-white dark:bg-blue-700' : 'hover:bg-gray-100 dark:hover:bg-blue-gray-600'"
+              onclick="goToPage(totalPages)"
+              class="px-3 py-1 text-sm border rounded-md dark:border-neutral-600 dark:text-gray-300"
+              :class="currentPage === totalPages ? 'bg-blue-600 text-white dark:bg-blue-700' : 'hover:bg-gray-100 dark:hover:bg-neutral-600'"
             >
               {{ totalPages }}
             </button>
             @endif
 
             <button
-              @click="nextPage"
-              :disabled="currentPage === totalPages || totalPages === 0"
-              class="px-2 py-1 text-sm border rounded-md dark:border-blue-gray-600 dark:text-gray-300"
-              :class="currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-blue-gray-600'"
+              onclick="nextPage"
+              disabled="{{ currentPage === totalPages || totalPages === 0 }}"
+              class="px-2 py-1 text-sm border rounded-md dark:border-neutral-600 dark:text-gray-300"
+              :class="currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100 dark:hover:bg-neutral-600'"
             >
               <i class="i-hugeicons-arrow-right-01 h-4 w-4" aria-hidden="true" />
             </button>
@@ -1039,11 +1039,11 @@ let timeRange = 'day'
           class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50"
           @click.self="selectedLog = null"
         >
-          <div class="bg-white dark:bg-blue-gray-800 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div class="bg-white dark:bg-neutral-800 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
             <div class="flex justify-between items-center mb-4">
               <h3 class="text-lg font-semibold dark:text-white">Activity Details</h3>
               <button
-                @click="selectedLog = null"
+                onclick="selectedLog = null"
                 class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
               >
                 <i
@@ -1086,7 +1086,7 @@ let timeRange = 'day'
                     </div>
                     <div class="flex items-center">
                       <i
-                        :class="[selectedLog.icon, selectedLog.color, 'h-5 w-5 mr-2']"
+                        class="{{ selectedLog.icon }} {{ selectedLog.color }} h-5 w-5 mr-2"
                         aria-hidden="true"
                       />
                       <span class="text-sm font-medium capitalize">{{ selectedLog.event }}</span>
@@ -1100,14 +1100,14 @@ let timeRange = 'day'
               </div>
 
               <!-- Activity details -->
-              <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
+              <div class="bg-gray-50 dark:bg-neutral-700 p-4 rounded-lg">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Log Channel</label>
                     <div class="mt-1">
                       <span
                         class="px-2 py-1 inline-flex text-xs leading-5 font-semibold rounded-full"
-                        :class="[getLogNameClasses(selectedLog.log_name).bg, getLogNameClasses(selectedLog.log_name).text]"
+                        class="{{ getLogNameClasses(selectedLog.log_name).bg }} {{ getLogNameClasses(selectedLog.log_name).text }}"
                       >
                         {{ logNames.find(l => l.id === selectedLog.log_name)?.name || selectedLog.log_name }}
                       </span>
@@ -1138,8 +1138,8 @@ let timeRange = 'day'
               <div>
                 <h4 class="text-base font-medium text-gray-900 dark:text-white mb-2">Changed Attributes</h4>
 
-                <div class="bg-gray-50 dark:bg-blue-gray-700 rounded-lg overflow-hidden">
-                  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-blue-gray-600">
+                <div class="bg-gray-50 dark:bg-neutral-700 rounded-lg overflow-hidden">
+                  <div class="px-4 py-3 border-b border-gray-200 dark:border-gray-600 bg-gray-100 dark:bg-neutral-600">
                     <div class="grid grid-cols-3 text-xs font-medium text-gray-500 dark:text-gray-300 uppercase">
                       <div>Attribute</div>
                       @if(selectedLog.properties?.old)
@@ -1151,9 +1151,8 @@ let timeRange = 'day'
 
                   <div class="divide-y divide-gray-200 dark:divide-gray-600">
                     @if(selectedLog.properties?.attributes)
-                    <div
-                      v-for="(value, key) in selectedLog.properties.attributes"
-                      :key="key"
+                    @foreach(selectedLog.properties.attributes as key => value)
+<div
                       class="px-4 py-3 grid grid-cols-3 text-sm"
                       v-show="key !== 'created_at' && key !== 'updated_at'"
                     >
@@ -1166,9 +1165,8 @@ let timeRange = 'day'
                       <div class="text-gray-900 dark:text-white">{{ value }}</div>
                     </div>
                     @elseif(selectedLog.properties?.old)
-                    <div
-                      v-for="(value, key) in selectedLog.properties.old"
-                      :key="key"
+                    @foreach(selectedLog.properties.old as key => value)
+<div
                       class="px-4 py-3 grid grid-cols-3 text-sm"
                       v-show="key !== 'created_at' && key !== 'updated_at'"
                     >
@@ -1186,10 +1184,9 @@ let timeRange = 'day'
               @if(selectedLog.properties && Object.keys(selectedLog.properties).some(key => key !== 'attributes' && key !== 'old'))
               <div>
                 <h4 class="text-base font-medium text-gray-900 dark:text-white mb-2">Additional Metadata</h4>
-                <div class="bg-gray-50 dark:bg-blue-gray-700 p-4 rounded-lg">
-                  <div
-                    v-for="(value, key) in selectedLog.properties"
-                    :key="key"
+                <div class="bg-gray-50 dark:bg-neutral-700 p-4 rounded-lg">
+                  @foreach(selectedLog.properties as key => value)
+<div
                     v-show="key !== 'attributes' && key !== 'old'"
                     class="mb-3 last:mb-0"
                   >
@@ -1200,7 +1197,7 @@ let timeRange = 'day'
                         {{ value }}
                       </span>
                       @else
-                      <pre class="text-sm text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-blue-gray-600 p-2 rounded overflow-x-auto">{{ JSON.stringify(value, null, 2) }}</pre>
+                      <pre class="text-sm text-gray-900 dark:text-gray-200 bg-gray-100 dark:bg-neutral-600 p-2 rounded overflow-x-auto">{{ JSON.stringify(value, null, 2) }}</pre>
                       @endif
                     </div>
                   </div>

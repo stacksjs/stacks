@@ -1,5 +1,5 @@
 <script server>
-  import { isCraftNative, useWindowControls } from '../../functions/craft'
+  import { isCraftNative, useWindowControls } from '../../../../functions/craft'
 
   const variant = props.variant || 'macos' // 'macos' | 'windows'
   const size = props.size || 'md' // 'sm' | 'md' | 'lg'

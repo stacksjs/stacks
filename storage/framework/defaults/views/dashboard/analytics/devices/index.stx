@@ -236,8 +236,8 @@ let deviceTrendChart: Chart | null = null
 
           <div class="relative">
             <select
-              v-model="comparisonType"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ comparisonType }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="no-comparison">No comparison</option>
               <option value="previous-period">Previous period</option>
@@ -247,7 +247,7 @@ let deviceTrendChart: Chart | null = null
 
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
           >
             <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
             Auto
@@ -265,7 +265,7 @@ let deviceTrendChart: Chart | null = null
 
       <!-- Device Distribution Chart -->
       <div class="mb-8 grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <div class="bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+        <div class="bg-white dark:bg-neutral-800 rounded-lg p-4 shadow">
           <div class="mb-4">
             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Device Distribution</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -279,7 +279,7 @@ let deviceTrendChart: Chart | null = null
         </div>
 
         <!-- Device Trend Chart -->
-        <div class="bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+        <div class="bg-white dark:bg-neutral-800 rounded-lg p-4 shadow">
           <div class="mb-4">
             <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Device Trends</h3>
             <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
@@ -301,7 +301,7 @@ let deviceTrendChart: Chart | null = null
 
         <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Device Type
@@ -314,11 +314,11 @@ let deviceTrendChart: Chart | null = null
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
               @foreach(deviceData as device, index)
-              <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="{ width: device.percentage + '%' }"></div>
+                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="{{ { width: device.percentage + '%' } }}"></div>
                   <span class="relative z-10">{{ device.name }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
@@ -345,7 +345,7 @@ let deviceTrendChart: Chart | null = null
 
         <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Device Type
@@ -364,11 +364,11 @@ let deviceTrendChart: Chart | null = null
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
               @foreach(detailedDeviceData as device, index)
-              <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="{ width: device.percentage + '%' }"></div>
+                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="{{ { width: device.percentage + '%' } }}"></div>
                   <span class="relative z-10">{{ device.name }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white relative">
@@ -401,7 +401,7 @@ let deviceTrendChart: Chart | null = null
 
         <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Screen Resolution
@@ -414,11 +414,11 @@ let deviceTrendChart: Chart | null = null
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
               @foreach(screenSizeData as screen, index)
-              <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <div class="absolute inset-0 bg-indigo-100/50 dark:bg-indigo-900/50" :style="{ width: screen.percentage + '%' }"></div>
+                  <div class="absolute inset-0 bg-indigo-100/50 dark:bg-indigo-900/50" style="{{ { width: screen.percentage + '%' } }}"></div>
                   <span class="relative z-10">{{ screen.size }}</span>
                 </td>
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">

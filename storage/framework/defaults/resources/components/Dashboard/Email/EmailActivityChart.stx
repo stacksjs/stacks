@@ -52,13 +52,13 @@
     },
   }
 </script>
-<div ref="pageRoot" class="bg-white dark:bg-blue-gray-700 border-b border-gray-200 dark:border-blue-gray-600 p-4">
+<div ref="pageRoot" class="bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600 p-4">
     <div class="flex items-center justify-between mb-2">
       <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Email Activity</h3>
     </div>
     <div class="h-[120px] relative">
       @if(isLoading)
-        <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-blue-gray-700 dark:bg-opacity-75 z-10">
+        <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
           <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
         </div>
       @endif

@@ -14,9 +14,9 @@
     return unreadCounts[folderId] || 0
   }
 </script>
-<div class="w-64 flex flex-col border-r border-gray-200 dark:border-blue-gray-600 bg-white dark:bg-blue-gray-800">
+<div class="w-64 flex flex-col border-r border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-800">
     <!-- User dropdown -->
-    <div class="p-3 border-b border-gray-200 dark:border-blue-gray-600">
+    <div class="p-3 border-b border-gray-200 dark:border-neutral-600">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-2">
           <div class="flex items-center justify-center w-8 h-8 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded">
@@ -37,7 +37,7 @@
           @foreach(folders as folder)
             <li class="mb-1">
               <button
-                class="w-full flex items-center justify-between px-4 py-2 text-sm {{ activeFolder == folder.id ? 'bg-gray-100 dark:bg-blue-gray-700 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700' }}"
+                class="w-full flex items-center justify-between px-4 py-2 text-sm {{ activeFolder == folder.id ? 'bg-gray-100 dark:bg-neutral-700 text-gray-900 dark:text-white font-medium' : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700' }}"
                 data-action="set-folder"
                 data-folder-id="{{ folder.id }}"
               >
@@ -60,7 +60,7 @@
                   <span>{{ folder.name }}</span>
                 </div>
                 @if(getUnreadCount(folder.id) > 0)
-                  <span class="bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                  <span class="bg-gray-200 dark:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
                     {{ getUnreadCount(folder.id) }}
                   </span>
                 @endif
@@ -78,46 +78,46 @@
         <nav class="mt-2">
           <ul>
             <li class="mb-1">
-              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded">
                 <i class="i-hugeicons-user text-lg mr-3"></i>
                 <span>Social</span>
-                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                <span class="ml-auto bg-gray-200 dark:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
                   972
                 </span>
               </button>
             </li>
             <li class="mb-1">
-              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded">
                 <i class="i-hugeicons-notification-03 text-lg mr-3"></i>
                 <span>Updates</span>
-                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                <span class="ml-auto bg-gray-200 dark:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
                   342
                 </span>
               </button>
             </li>
             <li class="mb-1">
-              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded">
                 <i class="i-hugeicons-chatting-01 text-lg mr-3"></i>
                 <span>Forums</span>
-                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                <span class="ml-auto bg-gray-200 dark:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
                   128
                 </span>
               </button>
             </li>
             <li class="mb-1">
-              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded">
                 <i class="i-hugeicons-shopping-cart-02 text-lg mr-3"></i>
                 <span>Shopping</span>
-                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                <span class="ml-auto bg-gray-200 dark:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
                   8
                 </span>
               </button>
             </li>
             <li class="mb-1">
-              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-blue-gray-700 rounded">
+              <button class="w-full flex items-center px-2 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 rounded">
                 <i class="i-hugeicons-tag-01 text-lg mr-3"></i>
                 <span>Promotions</span>
-                <span class="ml-auto bg-gray-200 dark:bg-blue-gray-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
+                <span class="ml-auto bg-gray-200 dark:bg-neutral-600 text-gray-800 dark:text-gray-200 text-xs font-medium px-2 rounded-full">
                   21
                 </span>
               </button>

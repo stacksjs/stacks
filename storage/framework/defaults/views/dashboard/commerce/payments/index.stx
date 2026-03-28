@@ -378,9 +378,9 @@ function totalAmount() {
           Overview of your payment transactions
         </p>
         <div class="relative">
-          <select v-model="timeRange" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700">
+          <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
             @foreach(timeRanges as range)
-              <option :value="range">{{ range }}</option>
+              <option value="{{ range }}">{{ range }}</option>
             @endforeach
           </select>
         </div>
@@ -388,7 +388,7 @@ function totalAmount() {
 
       <!-- Stats -->
       <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Transactions</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.totalTransactions }}</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -397,7 +397,7 @@ function totalAmount() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Success Rate</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ paymentStats.successRate }}%</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -406,7 +406,7 @@ function totalAmount() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ parseFloat(paymentStats.totalAmount).toLocaleString() }}</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -415,7 +415,7 @@ function totalAmount() {
           </dd>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
           <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Transaction</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">${{ paymentStats.avgTransactionValue }}</dd>
           <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
@@ -427,7 +427,7 @@ function totalAmount() {
 
       <!-- Charts -->
       <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Transaction Count</h3>
             <div class="mt-2 h-80">
@@ -436,7 +436,7 @@ function totalAmount() {
           </div>
         </div>
 
-        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-blue-gray-800">
+        <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
             <div class="mt-2 h-80">
@@ -453,33 +453,33 @@ function totalAmount() {
             <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
           </div>
           <input
-            v-model="searchQuery"
+            value="{{ searchQuery }}"
             type="text"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
             placeholder="Search transactions..."
           />
         </div>
 
         <div class="flex flex-col sm:flex-row gap-4">
           <select
-            v-model="statusFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ statusFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Statuses</option>
             @foreach(statuses.slice(1) as status)
-              <option :value="status">
+              <option value="{{ status }}">
                 {{ status }}
               </option>
             @endforeach
           </select>
 
           <select
-            v-model="methodFilter"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+            value="{{ methodFilter }}"
+            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
           >
             <option value="all">All Payment Methods</option>
             @foreach(methods.slice(1) as method)
-              <option :value="method">
+              <option value="{{ method }}">
                 {{ method }}
               </option>
             @endforeach
@@ -499,17 +499,17 @@ function totalAmount() {
           <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
-                <thead class="bg-gray-50 dark:bg-blue-gray-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
-                      <button @click="toggleSort('orderId')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('orderId')" class="group inline-flex items-center">
                         Order ID
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'orderId')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -517,14 +517,14 @@ function totalAmount() {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('customer')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('customer')" class="group inline-flex items-center">
                         Customer
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'customer')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -532,14 +532,14 @@ function totalAmount() {
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('amount')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('amount')" class="group inline-flex items-center">
                         Amount
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'amount')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -549,14 +549,14 @@ function totalAmount() {
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Method</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">Status</th>
                     <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
-                      <button @click="toggleSort('date')" class="group inline-flex items-center">
+                      <button onclick="toggleSort('date')" class="group inline-flex items-center">
                         Date
                         <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
                           @if(sortBy === 'date')
-                            <div :class="[
+                            <div class="{{ [
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ]"></div>
+                            ] }}"></div>
                           @else
                             <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
                           @endif
@@ -568,7 +568,7 @@ function totalAmount() {
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-blue-gray-800">
+                <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
                   @foreach(paginatedTransactions as transaction)
                     <tr>
                       <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
@@ -631,22 +631,22 @@ function totalAmount() {
         <div class="mt-6 flex items-center justify-between">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
-              @click="changePage(Math.max(1, currentPage - 1))"
-              :disabled="currentPage === 1"
-              :class="[
+              onclick="changePage(Math.max(1, currentPage - 1))"
+              disabled="{{ currentPage === 1 }}"
+              class="{{ [
                 currentPage === 1 ? 'cursor-not-allowed opacity-50' : '',
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700'
-              ]"
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-800 dark:text-gray-200 dark:hover:bg-neutral-700'
+              ] }}"
             >
               Previous
             </button>
             <button
-              @click="changePage(Math.min(totalPages, currentPage + 1))"
-              :disabled="currentPage === totalPages"
-              :class="[
+              onclick="changePage(Math.min(totalPages, currentPage + 1))"
+              disabled="{{ currentPage === totalPages }}"
+              class="{{ [
                 currentPage === totalPages ? 'cursor-not-allowed opacity-50' : '',
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-blue-gray-800 dark:text-gray-200 dark:hover:bg-blue-gray-700'
-              ]"
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-800 dark:text-gray-200 dark:hover:bg-neutral-700'
+              ] }}"
             >
               Next
             </button>
@@ -660,10 +660,10 @@ function totalAmount() {
             <div>
               <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
                 <button
-                  @click="changePage(Math.max(1, currentPage - 1))"
-                  :disabled="currentPage === 1"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700"
-                  :class="{ 'cursor-not-allowed opacity-50': currentPage === 1 }"
+                  onclick="changePage(Math.max(1, currentPage - 1))"
+                  disabled="{{ currentPage === 1 }}"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-neutral-700"
+                  class="{{ { 'cursor-not-allowed opacity-50': currentPage === 1 } }}"
                 >
                   <span class="sr-only">Previous</span>
                   <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
@@ -672,12 +672,12 @@ function totalAmount() {
                 @foreach(Array.from({ length: totalPages }, (_, i) => i + 1) as page)
                   @if(page === currentPage || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1))
                     <button
-                      @click="changePage(page)"
-                      :class="[
+                      onclick="changePage(page)"
+                      class="{{ [
                         page === currentPage
                           ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                          : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-blue-gray-700',
-                      ]"
+                          : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-700',
+                      ] }}"
                     >
                       {{ page }}
                     </button>
@@ -691,10 +691,10 @@ function totalAmount() {
                 @endforeach
 
                 <button
-                  @click="changePage(Math.min(totalPages, currentPage + 1))"
-                  :disabled="currentPage === totalPages"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-blue-gray-700"
-                  :class="{ 'cursor-not-allowed opacity-50': currentPage === totalPages }"
+                  onclick="changePage(Math.min(totalPages, currentPage + 1))"
+                  disabled="{{ currentPage === totalPages }}"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-neutral-700"
+                  class="{{ { 'cursor-not-allowed opacity-50': currentPage === totalPages } }}"
                 >
                   <span class="sr-only">Next</span>
                   <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>

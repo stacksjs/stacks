@@ -5,74 +5,63 @@
 // Data available when full dev server runs (buddy dev)
 let deployments = []
 
-const statusClass = (s) => {
-  if (!s) return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
-  s = String(s).toLowerCase()
-  if (['active','success','healthy','connected','running','published','approved','valid','up-to-date'].indexOf(s) >= 0)
-    return 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400'
-  if (['pending','scheduled','warning','low-stock','draft','update-available'].indexOf(s) >= 0)
-    return 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
-  if (['failed','error','inactive','cancelled','spam','rejected','out-of-stock'].indexOf(s) >= 0)
-    return 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400'
-  if (['info','completed','processing'].indexOf(s) >= 0)
-    return 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400'
-  return 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
+function statusVariant(s) {
+  s = String(s || '').toLowerCase()
+  if (['active', 'success', 'healthy', 'completed', 'running', 'published'].includes(s)) return 'success'
+  if (['pending', 'scheduled', 'warning', 'draft'].includes(s)) return 'warning'
+  if (['failed', 'error', 'inactive', 'cancelled'].includes(s)) return 'danger'
+  if (['processing', 'info'].includes(s)) return 'primary'
+  return 'default'
 }
 </script>
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
-    <div class="flex items-start justify-between mb-8">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Deployments</h1>
-        <p class="text-gray-500 dark:text-gray-400 mt-1">Monitor and manage deployments</p>
-      </div>
-      <div class="flex items-center gap-3">
-        <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">Deploy Now</button>
-      </div>
-    </div>
+<DashboardLayout pageTitle="Deployments" pageDescription="Monitor and manage deployments">
+<div class="p-6 space-y-6">
 
-    <div class="flex flex-col gap-6">
-      @if (deployments.length > 0)
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 hover:shadow-lg transition-shadow">
-        <div class="overflow-x-auto border border-gray-200 dark:border-gray-700 rounded-xl">
-          <table class="w-full text-sm">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
-              <tr>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deployment</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Branch</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Commit</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Author</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
-                <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
-              </tr>
-            </thead>
-            <tbody>
-              @foreach (deployments as deploy)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                  <td class="px-4 py-3 font-medium text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ deploy.id }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">
-                    <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ statusClass(deploy.status) }}">{{ deploy.status }}</span>
-                  </td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ deploy.branch }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700"><code class="text-xs font-mono px-1.5 py-0.5 bg-gray-100 dark:bg-gray-700 rounded">{{ deploy.commit }}</code></td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ deploy.author }}</td>
-                  <td class="px-4 py-3 text-gray-900 dark:text-white border-t border-gray-100 dark:border-gray-700">{{ deploy.duration }}</td>
-                  <td class="px-4 py-3 text-gray-500 dark:text-gray-400 border-t border-gray-100 dark:border-gray-700">{{ deploy.time }}</td>
-                </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-      </div>
-      @else
-      <div class="flex flex-col items-center justify-center py-16 px-4">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
-          <span class="text-2xl text-gray-400">&#x1F680;</span>
-        </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No deployments yet</h3>
-        <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Deploy your application using buddy deploy to see deployment history.</p>
-      </div>
-      @endif
+  <PageHeader title="Deployments" description="Monitor and manage deployments">
+    <Button variant="primary" size="sm">Deploy Now</Button>
+  </PageHeader>
+
+    @if (deployments.length > 0)
+    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+      <DataTable
+        :columns="{{ JSON.stringify([
+          { key: 'id', label: 'Deployment' },
+          { key: 'status', label: 'Status' },
+          { key: 'branch', label: 'Branch' },
+          { key: 'commit', label: 'Commit' },
+          { key: 'author', label: 'Author' },
+          { key: 'duration', label: 'Duration' },
+          { key: 'time', label: 'Time' }
+        ]) }}"
+        :data="deployments"
+        emptyTitle="No deployments yet"
+        emptyDescription="Deploy your application using buddy deploy to see deployment history."
+        emptyIcon="i-hugeicons-rocket-01"
+      >
+        @foreach (deployments as deploy)
+          <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ deploy.id }}</td>
+            <td class="px-4 py-3">
+              <Badge variant="{{ statusVariant(deploy.status) }}" size="sm" dot>{{ deploy.status }}</Badge>
+            </td>
+            <td class="px-4 py-3"><code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ deploy.branch }}</code></td>
+            <td class="px-4 py-3"><code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ deploy.commit }}</code></td>
+            <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ deploy.author }}</td>
+            <td class="px-4 py-3 text-[12px] font-mono text-neutral-500 dark:text-neutral-400">{{ deploy.duration }}</td>
+            <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ deploy.time }}</td>
+          </tr>
+        @endforeach
+      </DataTable>
     </div>
-  </div>
+    @else
+    <div class="flex flex-col items-center justify-center py-16 px-4">
+      <div class="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+        <span class="text-2xl text-neutral-400">&#x1F680;</span>
+      </div>
+      <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">No deployments yet</h3>
+      <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center max-w-sm">Deploy your application using buddy deploy to see deployment history.</p>
+    </div>
+    @endif
+</div>
+</DashboardLayout>
 @endsection

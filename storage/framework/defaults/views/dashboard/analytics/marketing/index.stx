@@ -269,8 +269,8 @@ let marketingChart: Chart | null = null
 
           <div class="relative">
             <select
-              v-model="comparisonType"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-blue-gray-800 dark:text-white dark:ring-gray-700"
+              value="{{ comparisonType }}"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
             >
               <option value="no-comparison">No comparison</option>
               <option value="previous-period">Previous period</option>
@@ -280,7 +280,7 @@ let marketingChart: Chart | null = null
 
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-blue-gray-700 dark:text-white dark:ring-gray-600 dark:hover:bg-blue-gray-600"
+            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
           >
             <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
             Auto
@@ -289,7 +289,7 @@ let marketingChart: Chart | null = null
       </div>
 
       <!-- Overview Cards -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8 bg-black dark:bg-blue-gray-900 rounded-lg p-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4 mb-8 bg-black dark:bg-neutral-900 rounded-lg p-4">
         <!-- Total Spend -->
         <div class="flex flex-col items-center justify-center">
           <div class="text-4xl font-bold text-white">$125k</div>
@@ -328,7 +328,7 @@ let marketingChart: Chart | null = null
       </div>
 
       <!-- Marketing Chart -->
-      <div class="mb-8 bg-white dark:bg-blue-gray-800 rounded-lg p-4 shadow">
+      <div class="mb-8 bg-white dark:bg-neutral-800 rounded-lg p-4 shadow">
         <!-- Chart header -->
         <div class="mb-4">
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Marketing Performance</h3>
@@ -353,7 +353,7 @@ let marketingChart: Chart | null = null
 
           <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
                   <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     Campaign
@@ -372,11 +372,11 @@ let marketingChart: Chart | null = null
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
                 @foreach(campaignsData as campaign)
-                <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" :style="{ width: campaign.percentage + '%' }"></div>
+                    <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" style="{{ { width: campaign.percentage + '%' } }}"></div>
                     <span class="relative z-10">{{ campaign.name }}</span>
                     <span class="relative z-10 text-xs text-gray-500 dark:text-gray-400 block">{{ campaign.id }}</span>
                   </td>
@@ -413,7 +413,7 @@ let marketingChart: Chart | null = null
 
           <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
                   <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                     Channel
@@ -432,11 +432,11 @@ let marketingChart: Chart | null = null
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
                 @foreach(channelsData as channel)
-                <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                    <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="{ width: channel.percentage + '%' }"></div>
+                    <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="{{ { width: channel.percentage + '%' } }}"></div>
                     <span class="relative z-10">{{ channel.name }}</span>
                   </td>
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
@@ -473,7 +473,7 @@ let marketingChart: Chart | null = null
 
         <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
           <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-            <thead class="bg-gray-50 dark:bg-blue-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
                   Ad
@@ -498,11 +498,11 @@ let marketingChart: Chart | null = null
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-blue-gray-800">
+            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
               @foreach(adsData as ad)
-              <tr :key="index" class="hover:bg-gray-50 dark:hover:bg-blue-gray-700/50 relative">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                 <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
-                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="{ width: ad.percentage + '%' }"></div>
+                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="{{ { width: ad.percentage + '%' } }}"></div>
                   <span class="relative z-10">{{ ad.name }}</span>
                   <span class="relative z-10 text-xs text-gray-500 dark:text-gray-400 block">{{ ad.id }}</span>
                 </td>

@@ -153,11 +153,11 @@ function isActive() { return (id } => activeConversation === id)
     <div class="flex-1 overflow-y-auto">
       @foreach(conversations as chat)
         <div
-             @click="selectConversation(chat.id)"
-             :class="[
+             onclick="selectConversation(chat.id)"
+             class="{{ [
                'p-4 cursor-pointer border-b border-gray-200',
                isActive(chat.id) ? 'bg-blue-50' : 'hover:bg-gray-50'
-             ]">
+             ] }}">
           <div class="flex justify-between items-start">
             <div class="flex items-center space-x-3">
               <div class="relative">
@@ -207,20 +207,20 @@ function isActive() { return (id } => activeConversation === id)
       <div class="flex flex-col space-y-4 max-w-3xl mx-auto">
         @foreach(messages as message)
           <div
-               :class="[
+               class="{{ [
                  'flex items-start space-x-4',
                  message.type === 'ai' ? '' : 'justify-end'
-               ]">
+               ] }}">
             @if(message.type === 'ai')
               <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
                 <span class="text-white text-sm font-medium">AI</span>
               </div>
             @endif
 
-            <div :class="[
+            <div class="{{ [
                    'rounded-lg p-4 shadow max-w-lg',
                    message.type === 'ai' ? 'bg-white dark:bg-gray-800' : 'bg-blue-500 text-white'
-                 ]">
+                 ] }}">
               <div class="mb-1 flex items-center justify-between">
                 <span class="font-medium">{{ message.user.name }}</span>
                 <span class="text-sm opacity-75">{{ message.timestamp }}</span>
@@ -248,12 +248,12 @@ function isActive() { return (id } => activeConversation === id)
     <div class="flex-none bg-white dark:bg-gray-800 border-t border-gray-200 p-4">
       <div class="max-w-3xl mx-auto">
         <div class="flex items-center space-x-4">
-          <input v-model="newMessage"
+          <input value="{{ newMessage }}"
                  type="text"
                  placeholder="Ask anything about your project..."
                  @keyup.enter="sendMessage"
                  class="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:border-blue-500 focus:ring-1 focus:ring-blue-500 focus:outline-none" />
-          <button @click="sendMessage"
+          <button onclick="sendMessage"
                   class="rounded-lg bg-blue-500 px-6 py-2 text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
             Send
           </button>
