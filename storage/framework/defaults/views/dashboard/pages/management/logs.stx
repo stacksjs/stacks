@@ -41,7 +41,6 @@ function statusVariant(s) {
 
 const timeFilters = ['Last hour', 'Last 24h', 'Last 7d']
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Logs" description="Application and system logs">
@@ -117,5 +116,4 @@ const timeFilters = ['Last hour', 'Last 24h', 'Last 7d']
     </div>
   </div>
 </div>
-</DashboardLayout>
 @endsection

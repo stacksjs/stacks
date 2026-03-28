@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -183,8 +186,8 @@ const tabs = [
       :tabs="tabs"
     />
 
-    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="mt-6 bg-white dark:bg-neutral-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">Digital Delivery Methods</h2>
           <button
@@ -211,7 +214,7 @@ const tabs = [
         @delete="handleDeleteDigitalMethod"
       />
 
-      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
         <Pagination
           :current-page="currentPage"
           :total-items="filteredDigitalDeliveries.length"
@@ -237,26 +240,26 @@ const tabs = [
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="delivery-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Name</label>
+                    <label for="delivery-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Name</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="delivery-name"
                         value="{{ newDigitalDelivery.name }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="Enter delivery method name"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="delivery-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Description</label>
+                    <label for="delivery-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Description</label>
                     <div class="mt-2">
                       <textarea
                         id="delivery-description"
                         value="{{ newDigitalDelivery.description }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="Enter description"
                       />
                     </div>
@@ -264,26 +267,26 @@ const tabs = [
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="delivery-download-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Download Limit</label>
+                      <label for="delivery-download-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Download Limit</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="delivery-download-limit"
                           value="{{ newDigitalDelivery.download_limit }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="Leave empty for unlimited"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label for="delivery-expiry-days" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Expiry Days</label>
+                      <label for="delivery-expiry-days" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Expiry Days</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="delivery-expiry-days"
                           value="{{ newDigitalDelivery.expiry_days }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="Leave empty for no expiry"
                         />
                       </div>
@@ -296,9 +299,9 @@ const tabs = [
                         id="delivery-requires-login"
                         value="{{ newDigitalDelivery.requires_login }}"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700"
                       />
-                      <label for="delivery-requires-login" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">
+                      <label for="delivery-requires-login" class="ml-2 block text-sm text-gray-900 dark:text-neutral-200">
                         Requires Login
                       </label>
                     </div>
@@ -308,21 +311,21 @@ const tabs = [
                         id="delivery-automatic-delivery"
                         value="{{ newDigitalDelivery.automatic_delivery }}"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700"
                       />
-                      <label for="delivery-automatic-delivery" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">
+                      <label for="delivery-automatic-delivery" class="ml-2 block text-sm text-gray-900 dark:text-neutral-200">
                         Automatic Delivery
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label for="delivery-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <label for="delivery-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Status</label>
                     <div class="mt-2">
                       <select
                         id="delivery-status"
                         value="{{ newDigitalDelivery.status }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
@@ -344,7 +347,7 @@ const tabs = [
             <button
               type="button"
               onclick="closeAddModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -367,26 +370,26 @@ const tabs = [
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="edit-delivery-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Name</label>
+                    <label for="edit-delivery-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Name</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="edit-delivery-name"
                         value="{{ newDigitalDelivery.name }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="Enter delivery method name"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="edit-delivery-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Description</label>
+                    <label for="edit-delivery-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Description</label>
                     <div class="mt-2">
                       <textarea
                         id="edit-delivery-description"
                         value="{{ newDigitalDelivery.description }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="Enter description"
                       />
                     </div>
@@ -394,26 +397,26 @@ const tabs = [
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="edit-delivery-download-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Download Limit</label>
+                      <label for="edit-delivery-download-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Download Limit</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="edit-delivery-download-limit"
                           value="{{ newDigitalDelivery.download_limit }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="Leave empty for unlimited"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label for="edit-delivery-expiry-days" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Expiry Days</label>
+                      <label for="edit-delivery-expiry-days" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Expiry Days</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="edit-delivery-expiry-days"
                           value="{{ newDigitalDelivery.expiry_days }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="Leave empty for no expiry"
                         />
                       </div>
@@ -426,9 +429,9 @@ const tabs = [
                         id="edit-delivery-requires-login"
                         value="{{ newDigitalDelivery.requires_login }}"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700"
                       />
-                      <label for="edit-delivery-requires-login" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">
+                      <label for="edit-delivery-requires-login" class="ml-2 block text-sm text-gray-900 dark:text-neutral-200">
                         Requires Login
                       </label>
                     </div>
@@ -438,21 +441,21 @@ const tabs = [
                         id="edit-delivery-automatic-delivery"
                         value="{{ newDigitalDelivery.automatic_delivery }}"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700"
                       />
-                      <label for="edit-delivery-automatic-delivery" class="ml-2 block text-sm text-gray-900 dark:text-gray-200">
+                      <label for="edit-delivery-automatic-delivery" class="ml-2 block text-sm text-gray-900 dark:text-neutral-200">
                         Automatic Delivery
                       </label>
                     </div>
                   </div>
 
                   <div>
-                    <label for="edit-delivery-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <label for="edit-delivery-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Status</label>
                     <div class="mt-2">
                       <select
                         id="edit-delivery-status"
                         value="{{ newDigitalDelivery.status }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
@@ -474,7 +477,7 @@ const tabs = [
             <button
               type="button"
               onclick="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -491,3 +494,5 @@ onMount(async () => {
   await fetchDigitalDeliveries()
 })
 </script>
+
+@endsection

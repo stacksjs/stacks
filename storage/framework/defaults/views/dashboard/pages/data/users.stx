@@ -37,7 +37,6 @@ function statusVariant(s) {
 
 const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Users" description="Manage user accounts">
@@ -113,5 +112,4 @@ const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

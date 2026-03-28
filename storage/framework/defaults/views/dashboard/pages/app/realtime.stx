@@ -15,7 +15,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout pageTitle="Realtime" pageDescription="WebSocket connections and channels">
 <div class="p-6 space-y-6">
 
   <PageHeader title="Realtime" description="WebSocket connections and channels" />
@@ -54,5 +53,4 @@ function statusVariant(s) {
   </div>
   @endif
 </div>
-</DashboardLayout>
 @endsection

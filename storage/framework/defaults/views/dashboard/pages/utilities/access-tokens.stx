@@ -14,7 +14,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Access Tokens" description="API keys and authentication tokens">
@@ -109,5 +108,4 @@ function statusVariant(s) {
   />
   @endif
 </div>
-</DashboardLayout>
 @endsection

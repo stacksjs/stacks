@@ -34,7 +34,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Jobs" description="Background job management powered by bun-queue" />
@@ -79,5 +78,4 @@ function statusVariant(s) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

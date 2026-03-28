@@ -6,7 +6,6 @@ let functions = []
 let stats = []
 let edges = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Serverless" description="Functions and edge computing">
@@ -94,5 +93,4 @@ let edges = []
   />
   @endif
 </div>
-</DashboardLayout>
 @endsection

@@ -16,7 +16,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Goals & Conversions" description="Track goal progress and conversion funnels">
@@ -106,5 +105,4 @@ function statusVariant(s) {
   @endif
 
 </div>
-</DashboardLayout>
 @endsection

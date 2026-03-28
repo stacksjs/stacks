@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -217,3 +220,5 @@ const getStatusIconBg = (status) => {
     @endforeach
   </div>
 </div>
+
+@endsection

@@ -42,7 +42,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Payments" description="Transaction history and payment methods">
@@ -136,5 +135,4 @@ function statusVariant(s) {
   </div>
 
 </div>
-</DashboardLayout>
 @endsection

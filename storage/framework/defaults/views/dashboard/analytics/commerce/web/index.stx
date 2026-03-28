@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -271,17 +274,17 @@ let trafficChart: Chart | null = null
       <!-- Header with date range selector -->
       <div class="mb-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div class="flex items-center space-x-2">
-          <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-gray-400"></div>
-          <span class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ dateRangeDisplay }}</span>
+          <div class="i-hugeicons-calendar-03 h-5 w-5 text-gray-500 dark:text-neutral-400"></div>
+          <span class="text-sm font-medium text-gray-700 dark:text-neutral-300">{{ dateRangeDisplay }}</span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2">
-          <span class="text-sm text-gray-500 dark:text-gray-400">compared to</span>
+          <span class="text-sm text-gray-500 dark:text-neutral-400">compared to</span>
 
           <div class="relative">
             <select
               value="{{ comparisonType }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="no-comparison">No comparison</option>
               <option value="previous-period">Previous period</option>
@@ -291,7 +294,7 @@ let trafficChart: Chart | null = null
 
           <button
             type="button"
-            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+            class="inline-flex items-center rounded-md bg-white px-3 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
           >
             <div class="i-hugeicons-settings-01 h-4 w-4 mr-1"></div>
             Auto
@@ -343,7 +346,7 @@ let trafficChart: Chart | null = null
         <!-- Chart header -->
         <div class="mb-4">
           <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white">Traffic Overview</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+          <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
             Daily page views and unique visitors
           </p>
         </div>
@@ -362,44 +365,44 @@ let trafficChart: Chart | null = null
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Pages</h3>
           </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-neutral-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Pages
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Entries
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Visitors
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Views
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     %
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
                 @foreach(pagesData as page)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="{{ { width: page.percentage + '%' } }}"></div>
                     <span class="relative z-10">{{ page.path }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ page.entries }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ page.visitors }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ page.views }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ page.percentage }}%</span>
                   </td>
                 </tr>
@@ -421,38 +424,38 @@ let trafficChart: Chart | null = null
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Referrers</h3>
           </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-neutral-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Sources
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Visitors
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Views
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     %
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
                 @foreach(referrersData as referrer)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="{{ { width: referrer.percentage + '%' } }}"></div>
                     <span class="relative z-10">{{ referrer.name }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ referrer.visitors }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ referrer.views }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ referrer.percentage }}%</span>
                   </td>
                 </tr>
@@ -477,32 +480,32 @@ let trafficChart: Chart | null = null
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Device Types</h3>
           </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-neutral-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Device Types
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Visitors
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     %
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
                 @foreach(deviceData as device)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="{{ { width: device.percentage + '%' } }}"></div>
                     <span class="relative z-10">{{ device.name }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ device.visitors }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ device.percentage }}%</span>
                   </td>
                 </tr>
@@ -524,32 +527,32 @@ let trafficChart: Chart | null = null
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Browsers</h3>
           </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-neutral-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Browsers
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Visitors
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     %
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
                 @foreach(browserData as browser)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" style="{{ { width: browser.percentage + '%' } }}"></div>
                     <span class="relative z-10">{{ browser.name }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ browser.visitors }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ browser.percentage }}%</span>
                   </td>
                 </tr>
@@ -571,32 +574,32 @@ let trafficChart: Chart | null = null
             <h3 class="text-lg font-medium text-gray-900 dark:text-white">Countries</h3>
           </div>
 
-          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-gray-700">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-neutral-700">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-left text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Countries
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     Visitors
                   </th>
-                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-gray-300">
+                  <th scope="col" class="px-4 py-3 text-right text-xs font-medium uppercase tracking-wider text-gray-500 dark:text-neutral-300">
                     %
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+              <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
                 @foreach(countriesData as country)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 relative">
                   <td class="px-4 py-3 whitespace-nowrap text-sm text-gray-900 dark:text-white">
                     <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" style="{{ { width: country.percentage + '%' } }}"></div>
                     <span class="relative z-10"><span class="mr-2">{{ country.flag }}</span>{{ country.name }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ formatNumber(country.visitors) }}</span>
                   </td>
-                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-gray-300 relative">
+                  <td class="px-4 py-3 whitespace-nowrap text-sm text-right text-gray-500 dark:text-neutral-300 relative">
                     <span class="relative z-10">{{ country.percentage }}%</span>
                   </td>
                 </tr>
@@ -632,3 +635,5 @@ onMount(async () => {
 }
 </style>
 
+
+@endsection

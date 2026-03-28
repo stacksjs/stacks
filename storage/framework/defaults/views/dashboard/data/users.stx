@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
     <!-- Stats section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
@@ -7,7 +10,7 @@
         </h3>
 
         <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
@@ -32,7 +35,7 @@
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-gray-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
             <dt>
               <div class="absolute rounded-md bg-green-500 p-3">
                 <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
@@ -66,13 +69,13 @@
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">User Growth & Activity</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Track user registrations and active sessions over time</p>
+              <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">User Growth & Activity</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Track user registrations and active sessions over time</p>
             </div>
             <div class="flex items-center space-x-4">
               <select
                 value="{{ timeRange }}"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -98,13 +101,13 @@
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">User Model Relationships</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing User model relationships. Click on any model to view details.</p>
+              <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">User Model Relationships</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Interactive diagram showing User model relationships. Click on any model to view details.</p>
             </div>
             <div class="flex items-center space-x-2">
               <button
                 onclick="downloadSVG"
-                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
               >
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -113,7 +116,7 @@
               </button>
               <button
                 onclick="downloadPNG"
-                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
               >
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -131,44 +134,43 @@
 <div class="w-64 ml-6 p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
               <div class="flex items-center mb-4">
                 <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
-                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-neutral-100">{{ selectedModel.name }}</h4>
               </div>
 
               <div class="mb-4">
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedModel.description }}</p>
+                <p class="text-sm text-gray-600 dark:text-neutral-400">{{ selectedModel.description }}</p>
               </div>
 
               <div class="mb-4">
-                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
+                <h5 class="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Properties</h5>
                 <ul class="space-y-1">
                   @foreach(selectedModel.properties as prop)
-<li class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+<li class="text-sm text-gray-600 dark:text-neutral-400 font-mono">
                     {{ prop }}
                   </li>
                 </ul>
               </div>
 
               <div class="mb-6">
-                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
+                <h5 class="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Relationships</h5>
                 <ul class="space-y-1">
                   @foreach(selectedModel.relationships as rel)
 <li class="text-sm font-mono">
-                    <router-link
-                      :to="getModelRoute(rel.toLowerCase())"
+                    <a                       :href="getModelRoute(rel.toLowerCase())"
                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
                     >
                       {{ rel }}
-                    </router-link>
+                    </a>
                   </li>
                 </ul>
               </div>
 
-              <router-link 
-                :to="getModelRoute(selectedModel.id)"
+              <a 
+                :href="getModelRoute(selectedModel.id)"
                 class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
               >
                 View Details
-              </router-link>
+              </a>
             </div>
           </div>
         </div>
@@ -199,7 +201,7 @@
           <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
               <table class="min-w-full divide-y divide-gray-300">
-                <thead class="bg-gray-50 dark:bg-gray-700/50">
+                <thead class="bg-gray-50 dark:bg-neutral-700/50">
                   <tr>
                     <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
                       ID
@@ -223,7 +225,7 @@
                   </tr>
                 </thead>
 
-                <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+                <tbody class="bg-white dark:bg-neutral-800 divide-y divide-gray-200">
                   <tr>
                     <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
                       1
@@ -240,10 +242,10 @@
                         </div>
 
                         <div class="ml-4">
-                          <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
+                          <div class="flex items-center text-sm text-gray-900 font-medium dark:text-neutral-100">
                             Chris Breuer
                           </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-300 dark:text-gray-400">
+                          <div class="text-sm text-gray-500 dark:text-neutral-300 dark:text-neutral-400">
                             chris@stacksjs.com
                           </div>
                         </div>
@@ -632,3 +634,5 @@ const downloadPNG = () => {
 
 /* ... existing styles ... */
 </style>
+
+@endsection

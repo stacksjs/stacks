@@ -36,7 +36,6 @@ function methodVariant(m) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Requests" description="Monitor API requests and responses" />
@@ -87,5 +86,4 @@ function methodVariant(m) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 /**
  * Dynamic Model Page
@@ -101,24 +104,16 @@ const displayColumns = columns.filter(col =>
   !col.startsWith('_')
 )
 </script>
-<div class="space-y-6">
-  <!-- Page Header -->
-  <div class="flex items-center justify-between">
-    <div>
-      <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">
-        {{ modelName }}
-      </h1>
-      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
-        {{ totalCount }} records in {{ tableName }}
-      </p>
-    </div>
-    <div class="flex items-center gap-3">
-      <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 transition-colors">
-        <span class="i-hugeicons-add-01 w-4 h-4 mr-2 inline-block"></span>
+<div class="p-6 space-y-6">
+
+  <PageHeader :title="modelName" :description="`${totalCount} records in ${tableName}`">
+    <template #actions>
+      <Button variant="primary">
+        <div class="i-hugeicons-add-01 w-4 h-4"></div>
         New {{ modelName }}
-      </button>
-    </div>
-  </div>
+      </Button>
+    </template>
+  </PageHeader>
 
   @if(error)
     <!-- Error State -->
@@ -207,3 +202,5 @@ const displayColumns = columns.filter(col =>
   -webkit-overflow-scrolling: touch;
 }
 </style>
+
+@endsection

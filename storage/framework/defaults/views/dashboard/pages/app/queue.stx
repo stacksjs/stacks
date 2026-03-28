@@ -32,7 +32,6 @@ function queueStatusVariant(s) {
   return 'primary'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Queue" description="Monitor job queues powered by bun-queue" />
@@ -83,5 +82,4 @@ function queueStatusVariant(s) {
     />
   @endif
 </div>
-</DashboardLayout>
 @endsection

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -151,11 +154,11 @@ const averageEngagement = '4.2%'
 
         <!-- Time range selector -->
         <div class="mt-4 flex items-center justify-between">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-gray-500 dark:text-neutral-400">
             Overview of your blog's performance
           </p>
           <div class="relative">
-            <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
+            <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700">
               @foreach(timeRanges as range)
                 <option value="{{ range }}">{{ range }}</option>
               @endforeach
@@ -166,7 +169,7 @@ const averageEngagement = '4.2%'
         <!-- Stats -->
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Posts</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Posts</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalPosts }}</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -175,7 +178,7 @@ const averageEngagement = '4.2%'
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Views</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Views</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalViews.toLocaleString() }}</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -184,7 +187,7 @@ const averageEngagement = '4.2%'
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Comments</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Comments</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalComments.toLocaleString() }}</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -193,7 +196,7 @@ const averageEngagement = '4.2%'
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Avg. Engagement</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Avg. Engagement</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ averageEngagement }}</dd>
             <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
               <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
@@ -233,29 +236,29 @@ const averageEngagement = '4.2%'
                 New Post
               </button>
             </div>
-            <div class="border-t border-gray-200 dark:border-gray-700">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div class="border-t border-gray-200 dark:border-neutral-700">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                 <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Title</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Category</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Views</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Comments</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Published</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Title</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Category</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Views</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Comments</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Published</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Status</th>
                     <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
                       <span class="sr-only">Actions</span>
                     </th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
                   @foreach(topPosts as post)
                     <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ post.title }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ post.category }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ post.views.toLocaleString() }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ post.comments }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ post.published }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ post.category }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ post.views.toLocaleString() }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ post.comments }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ post.published }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300">
                           {{ post.status }}
@@ -290,28 +293,28 @@ const averageEngagement = '4.2%'
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Comments</h3>
               <div class="flex space-x-2">
                 <div class="relative">
-                  <select class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
+                  <select class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700">
                     <option>All comments</option>
                     <option>Approved</option>
                     <option>Pending</option>
                     <option>Spam</option>
                   </select>
                 </div>
-                <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600">
+                <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
                   <div class="i-hugeicons-refresh h-4 w-4 mr-1"></div>
                   Refresh
                 </button>
               </div>
             </div>
-            <div class="border-t border-gray-200 dark:border-gray-700">
-              <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+            <div class="border-t border-gray-200 dark:border-neutral-700">
+              <ul role="list" class="divide-y divide-gray-200 dark:divide-neutral-700 max-h-[500px] overflow-y-auto">
                 @foreach(recentComments as comment)
                   <li class="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-neutral-700 transition duration-150">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center">
                         <div class="flex-shrink-0">
-                          <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
-                            <div class="i-hugeicons-user-01 h-6 w-6 text-gray-500 dark:text-gray-400"></div>
+                          <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-neutral-700 flex items-center justify-center">
+                            <div class="i-hugeicons-user-01 h-6 w-6 text-gray-500 dark:text-neutral-400"></div>
                           </div>
                         </div>
                         <div class="ml-4">
@@ -321,7 +324,7 @@ const averageEngagement = '4.2%'
                               <span class="ml-2 inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/30">New</span>
                             @endif
                           </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400">{{ comment.email }}</div>
+                          <div class="text-sm text-gray-500 dark:text-neutral-400">{{ comment.email }}</div>
                         </div>
                       </div>
                       <div>
@@ -335,25 +338,25 @@ const averageEngagement = '4.2%'
                         </span>
                       </div>
                     </div>
-                    <div class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+                    <div class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
                       <p>{{ comment.content }}</p>
                     </div>
-                    <div class="mt-2 text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                    <div class="mt-2 text-sm text-gray-500 dark:text-neutral-400 flex items-center">
                       <div class="i-hugeicons-document-text h-4 w-4 mr-1"></div>
                       <p>On: <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">{{ comment.post }}</a> • <span class="whitespace-nowrap">{{ comment.date }}</span></p>
                     </div>
                     <div class="mt-2 flex space-x-2">
                       @if(comment.status !== 'Approved')
-                        <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600">
+                        <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
                           <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
                           Approve
                         </button>
                       @endif
-                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600">
+                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
                         <div class="i-hugeicons-edit-01 h-4 w-4 mr-1"></div>
                         Reply
                       </button>
-                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600">
+                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
                         <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                         Delete
                       </button>
@@ -363,7 +366,7 @@ const averageEngagement = '4.2%'
               </ul>
               <div class="bg-gray-50 px-4 py-4 sm:px-6 dark:bg-neutral-700 flex justify-between items-center">
                 <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View all comments<span aria-hidden="true"> &rarr;</span></a>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Showing 5 of 42 comments</div>
+                <div class="text-sm text-gray-500 dark:text-neutral-400">Showing 5 of 42 comments</div>
               </div>
             </div>
           </div>
@@ -377,8 +380,8 @@ const averageEngagement = '4.2%'
                 New Draft
               </button>
             </div>
-            <div class="border-t border-gray-200 dark:border-gray-700">
-              <ul role="list" class="divide-y divide-gray-200 dark:divide-gray-700 max-h-[500px] overflow-y-auto">
+            <div class="border-t border-gray-200 dark:border-neutral-700">
+              <ul role="list" class="divide-y divide-gray-200 dark:divide-neutral-700 max-h-[500px] overflow-y-auto">
                 @foreach(draftPosts as post)
                   <li class="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-neutral-700 transition duration-150">
                     <div class="flex items-center justify-between">
@@ -389,7 +392,7 @@ const averageEngagement = '4.2%'
                             <span class="ml-2 inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400 dark:ring-green-500/30">Updated today</span>
                           @endif
                         </div>
-                        <div class="mt-1 flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <div class="mt-1 flex items-center text-sm text-gray-500 dark:text-neutral-400">
                           <div class="i-hugeicons-folder-01 h-4 w-4 mr-1"></div>
                           <span>{{ post.category }}</span>
                           <span class="mx-2">&middot;</span>
@@ -400,23 +403,23 @@ const averageEngagement = '4.2%'
                           @endif
                         </div>
                       </div>
-                      <div class="text-sm text-gray-500 dark:text-gray-400 flex items-center">
+                      <div class="text-sm text-gray-500 dark:text-neutral-400 flex items-center">
                         <div class="i-hugeicons-calendar h-4 w-4 mr-1"></div>
                         Last edited: {{ post.lastEdited }}
                       </div>
                     </div>
-                    <div class="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-gray-700">
+                    <div class="mt-3 w-full bg-gray-200 rounded-full h-1.5 dark:bg-neutral-700">
                       <div class="bg-blue-600 h-1.5 rounded-full" style="{{ {width: post.id === 6 ? '90%' : post.id === 7 ? '65%' : '40%'} }}"></div>
                     </div>
-                    <div class="mt-1 text-xs text-gray-500 dark:text-gray-400 text-right">
+                    <div class="mt-1 text-xs text-gray-500 dark:text-neutral-400 text-right">
                       {{ post.id === 6 ? 'Almost ready' : post.id === 7 ? 'In progress' : 'Just started' }}
                     </div>
                     <div class="mt-2 flex space-x-2">
-                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600">
+                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
                         <div class="i-hugeicons-edit-01 h-4 w-4 mr-1"></div>
                         Edit
                       </button>
-                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600">
+                      <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
                         <div class="i-hugeicons-view h-4 w-4 mr-1"></div>
                         Preview
                       </button>
@@ -430,7 +433,7 @@ const averageEngagement = '4.2%'
               </ul>
               <div class="bg-gray-50 px-4 py-4 sm:px-6 dark:bg-neutral-700 flex justify-between items-center">
                 <a href="#" class="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View all drafts<span aria-hidden="true"> &rarr;</span></a>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Showing 3 of 12 drafts</div>
+                <div class="text-sm text-gray-500 dark:text-neutral-400">Showing 3 of 12 drafts</div>
               </div>
             </div>
           </div>
@@ -439,3 +442,5 @@ const averageEngagement = '4.2%'
     </div>
   </div>
 </main>
+
+@endsection

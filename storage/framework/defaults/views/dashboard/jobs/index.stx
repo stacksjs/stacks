@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -334,7 +337,7 @@ const getStatusVariant = (status) => {
         </thead>
         <tbody class="divide-y divide-black/5 dark:divide-white/5">
           @foreach(recentJobs as job)
-            <tr class="hover:bg-black/[0.02] dark:hover:bg-white dark:bg-gray-800/[0.02] transition-colors">
+            <tr class="hover:bg-black/[0.02] dark:hover:bg-white dark:bg-neutral-800/[0.02] transition-colors">
               <td class="whitespace-nowrap py-3.5 pl-5 pr-3">
                 <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ job.name }}</div>
                 <div class="mt-1 flex items-center gap-1">
@@ -372,8 +375,8 @@ const getStatusVariant = (status) => {
               </td>
               <td class="relative whitespace-nowrap py-3.5 pl-3 pr-5 text-right">
                 <Button
-                  as="router-link"
-                  :to="`/jobs/${job.id}`"
+                  
+                  :href="`/jobs/${job.id}`"
                   variant="ghost"
                   size="sm"
                 >
@@ -397,3 +400,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

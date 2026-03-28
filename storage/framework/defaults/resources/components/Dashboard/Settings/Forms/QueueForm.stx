@@ -17,7 +17,7 @@
       <div class="divide-y divide-gray-900/10">
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Default Queue Settings
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -44,7 +44,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Sync Queue
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -66,7 +66,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Database Queue
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -102,7 +102,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Redis Queue
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -138,7 +138,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               SQS Queue
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">

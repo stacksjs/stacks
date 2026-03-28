@@ -29,7 +29,7 @@
       <div class="divide-y divide-gray-900/10">
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Default File System Settings
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -57,7 +57,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Local Disk
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -86,7 +86,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Public Disk
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -137,7 +137,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Private Disk
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -188,7 +188,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               EFS Disk
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -217,7 +217,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               S3 Disk
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">

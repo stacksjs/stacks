@@ -8,7 +8,6 @@ let campaigns = []
 let channels = []
 let attribution = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Marketing Analytics" description="Campaign performance and ROI">
@@ -114,5 +113,4 @@ let attribution = []
   @endif
 
 </div>
-</DashboardLayout>
 @endsection

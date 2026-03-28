@@ -37,14 +37,14 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="coupon-code" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Coupon Code</label>
+                    <label for="coupon-code" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Coupon Code</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="coupon-code"
                         name="code"
                         value="{{ coupon ? coupon.code : formData.code }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="e.g. SUMMER20"
                       >
                     </div>
@@ -52,12 +52,12 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="coupon-type" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Type</label>
+                      <label for="coupon-type" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Type</label>
                       <div class="mt-2">
                         <select
                           id="coupon-type"
                           name="discount_type"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         >
                           <option value="Percentage" {{ (coupon ? coupon.discount_type : formData.discount_type) == 'Percentage' ? 'selected' : '' }}>Percentage</option>
                           <option value="Fixed" {{ (coupon ? coupon.discount_type : formData.discount_type) == 'Fixed' ? 'selected' : '' }}>Fixed Amount</option>
@@ -66,7 +66,7 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
                     </div>
 
                     <div>
-                      <label for="coupon-value" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Value</label>
+                      <label for="coupon-value" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Value</label>
                       <div class="mt-2">
                         <div class="relative rounded-md shadow-sm">
                           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -77,7 +77,7 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
                             id="coupon-value"
                             name="discount_value"
                             value="{{ coupon ? coupon.discount_value : formData.discount_value }}"
-                            class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                            class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           >
                         </div>
                       </div>
@@ -86,7 +86,7 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="min-order-amount" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Min Order Amount</label>
+                      <label for="min-order-amount" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Min Order Amount</label>
                       <div class="mt-2">
                         <div class="relative rounded-md shadow-sm">
                           <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
@@ -97,21 +97,21 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
                             id="min-order-amount"
                             name="min_order_amount"
                             value="{{ coupon ? coupon.min_order_amount : formData.min_order_amount }}"
-                            class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                            class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           >
                         </div>
                       </div>
                     </div>
 
                     <div>
-                      <label for="usage-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Usage Limit</label>
+                      <label for="usage-limit" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Usage Limit</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="usage-limit"
                           name="usage_limit"
                           value="{{ coupon ? coupon.usage_limit : formData.usage_limit }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         >
                       </div>
                     </div>
@@ -119,39 +119,39 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="start-date" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Start Date</label>
+                      <label for="start-date" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Start Date</label>
                       <div class="mt-2">
                         <input
                           type="date"
                           id="start-date"
                           name="start_date"
                           value="{{ coupon ? coupon.start_date : formData.start_date }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         >
                       </div>
                     </div>
 
                     <div>
-                      <label for="end-date" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">End Date</label>
+                      <label for="end-date" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">End Date</label>
                       <div class="mt-2">
                         <input
                           type="date"
                           id="end-date"
                           name="end_date"
                           value="{{ coupon ? coupon.end_date : formData.end_date }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         >
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label for="coupon-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Status</label>
+                    <label for="coupon-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Status</label>
                     <div class="mt-2">
                       <select
                         id="coupon-status"
                         name="status"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="Active" {{ (coupon ? coupon.status : formData.status) == 'Active' ? 'selected' : '' }}>Active</option>
                         <option value="Scheduled" {{ (coupon ? coupon.status : formData.status) == 'Scheduled' ? 'selected' : '' }}>Scheduled</option>
@@ -175,7 +175,7 @@ const submitButtonText = mode == 'add' ? 'Add' : 'Update'
             </button>
             <button
               type="button"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
               data-action="close"
             >
               Cancel

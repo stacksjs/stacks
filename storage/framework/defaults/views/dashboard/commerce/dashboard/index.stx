@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -115,11 +118,11 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 
         <!-- Time range selector -->
         <div class="mt-4 flex items-center justify-between">
-          <p class="text-sm text-gray-500 dark:text-gray-400">
+          <p class="text-sm text-gray-500 dark:text-neutral-400">
             Overview of your store's performance
           </p>
           <div class="relative">
-            <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
+            <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700">
               @foreach(timeRanges as range)
                 <option value="{{ range }}">{{ range }}</option>
               @endforeach
@@ -130,7 +133,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
         <!-- Stats -->
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Revenue</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Revenue</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">$548,290</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -139,7 +142,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Orders</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Orders</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">2,456</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -148,7 +151,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Average Order Value</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Average Order Value</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">$223.25</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -157,7 +160,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Conversion Rate</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Conversion Rate</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">3.6%</dd>
             <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
               <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
@@ -193,23 +196,23 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             <div class="px-4 py-5 sm:px-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Top Selling Products</h3>
             </div>
-            <div class="border-t border-gray-200 dark:border-gray-700">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div class="border-t border-gray-200 dark:border-neutral-700">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                 <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Product</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Price</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Sales</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Stock</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Product</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Price</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Sales</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Stock</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
                   @foreach(topProducts as product)
                     <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ product.name }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ product.price }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ product.sales }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ product.stock }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ product.price }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ product.sales }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ product.stock }}</td>
                     </tr>
                   @endforeach
                 </tbody>
@@ -224,24 +227,24 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             <div class="px-4 py-5 sm:px-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Orders</h3>
             </div>
-            <div class="border-t border-gray-200 dark:border-gray-700">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+            <div class="border-t border-gray-200 dark:border-neutral-700">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                 <thead class="bg-gray-50 dark:bg-neutral-700">
                   <tr>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Order ID</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Customer</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Date</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Total</th>
-                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Status</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Order ID</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Customer</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Date</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Total</th>
+                    <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Status</th>
                   </tr>
                 </thead>
-                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
+                <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
                   @foreach(recentOrders as order)
                     <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ order.id }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ order.customer }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ order.date }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ order.total }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ order.customer }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ order.date }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ order.total }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
                               class="{{ {
@@ -263,3 +266,5 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
     </div>
   </div>
 </main>
+
+@endsection

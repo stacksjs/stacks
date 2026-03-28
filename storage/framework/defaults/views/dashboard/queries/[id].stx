@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -131,7 +134,7 @@ const statusColors = {
 }
 
 const getStatusColor = (status) => {
-  return statusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
+  return statusColors[status] || 'text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/50 ring-gray-600/20'
 }
 
 const getQueryType = (query) => {
@@ -148,7 +151,7 @@ const queryTypeBadges = {
   INSERT: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 ring-green-700/10 dark:ring-green-400/30',
   UPDATE: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 ring-amber-700/10 dark:ring-amber-400/30',
   DELETE: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 ring-red-700/10 dark:ring-red-400/30',
-  OTHER: 'bg-gray-50 dark:bg-gray-900/20 text-gray-700 dark:text-gray-300 ring-gray-700/10 dark:ring-gray-400/30'
+  OTHER: 'bg-gray-50 dark:bg-neutral-900/20 text-gray-700 dark:text-neutral-300 ring-gray-700/10 dark:ring-neutral-400/30'
 }
 
 </script>
@@ -160,24 +163,23 @@ const queryTypeBadges = {
           onclick="router.back()"
           class="p-1 rounded-md hover:bg-gray-100 dark:hover:bg-neutral-800 transition-colors"
         >
-          <div class="i-hugeicons-arrow-left h-5 w-5 text-gray-500 dark:text-gray-400"></div>
+          <div class="i-hugeicons-arrow-left h-5 w-5 text-gray-500 dark:text-neutral-400"></div>
         </button>
         <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
           Query Details
         </h1>
       </div>
-      <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-gray-400 pl-7">
+      <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-neutral-400 pl-7">
         Detailed information about the database query
       </p>
     </div>
     <div class="flex-shrink-0">
-      <router-link
-        to="/queries"
+      <a         to="/queries"
         class="inline-flex items-center gap-x-1.5 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
       >
         <div class="i-hugeicons-apps-04 h-5 w-5 -ml-0.5" aria-hidden="true"></div>
         Dashboard
-      </router-link>
+      </a>
     </div>
   </header>
 
@@ -214,12 +216,12 @@ const queryTypeBadges = {
                 <h3 class="text-sm font-medium text-gray-900 dark:text-white">
                   {{ query.model ? `${query.model}.${query.method}` : 'Unknown Source' }}
                 </h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">
+                <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-neutral-400">
                   {{ query.file }}:{{ query.line }}
                 </p>
               </div>
               <div class="text-right">
-                <p class="text-sm text-gray-500 dark:text-gray-400">Executed</p>
+                <p class="text-sm text-gray-500 dark:text-neutral-400">Executed</p>
                 <p class="text-sm font-medium text-gray-900 dark:text-white">{{ query.executed_at }}</p>
               </div>
             </div>
@@ -228,33 +230,33 @@ const queryTypeBadges = {
           <div class="border-t border-gray-200 dark:border-neutral-700">
             <dl>
               <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Query</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Query</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <pre class="font-mono text-xs bg-gray-800 text-gray-100 p-3 rounded-md overflow-x-auto">{{ query.query }}</pre>
                 </dd>
               </div>
               <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Normalized Query</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Normalized Query</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
-                  <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ query.normalized_query }}</pre>
+                  <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-800 text-gray-800 dark:text-neutral-200 p-3 rounded-md overflow-x-auto">{{ query.normalized_query }}</pre>
                 </dd>
               </div>
               <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bindings</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Bindings</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   @if(query.bindings && query.bindings.length)
-                    <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto">{{ formatBindings(query.bindings) }}</pre>
+                    <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 p-3 rounded-md overflow-x-auto">{{ formatBindings(query.bindings) }}</pre>
                   @else
-                    <p class="text-sm text-gray-500 dark:text-gray-400">No bindings</p>
+                    <p class="text-sm text-gray-500 dark:text-neutral-400">No bindings</p>
                   @endif
                 </dd>
               </div>
               <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Connection</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Connection</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">{{ query.connection }}</dd>
               </div>
               <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Affected Tables</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Affected Tables</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <div class="flex flex-wrap gap-2">
                     @foreach(query.affected_tables as table)
@@ -266,11 +268,11 @@ const queryTypeBadges = {
                 </dd>
               </div>
               <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Indexes</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Indexes</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                   <div class="space-y-4">
                     <div>
-                      <h4 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Used Indexes</h4>
+                      <h4 class="text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Used Indexes</h4>
                       @if(query.indexes_used && query.indexes_used.length)
                         <div class="flex flex-wrap gap-2">
                           @foreach(query.indexes_used as index)
@@ -280,11 +282,11 @@ const queryTypeBadges = {
                           @endforeach
                         </div>
                       @else
-                        <p class="text-xs text-gray-500 dark:text-gray-400">No indexes used</p>
+                        <p class="text-xs text-gray-500 dark:text-neutral-400">No indexes used</p>
                       @endif
                     </div>
                     <div>
-                      <h4 class="text-xs font-medium text-gray-600 dark:text-gray-400 mb-1">Missing Indexes</h4>
+                      <h4 class="text-xs font-medium text-gray-600 dark:text-neutral-400 mb-1">Missing Indexes</h4>
                       @if(query.missing_indexes && query.missing_indexes.length)
                         <div class="flex flex-wrap gap-2">
                           @foreach(query.missing_indexes as index)
@@ -294,7 +296,7 @@ const queryTypeBadges = {
                           @endforeach
                         </div>
                       @else
-                        <p class="text-xs text-gray-500 dark:text-gray-400">No missing indexes identified</p>
+                        <p class="text-xs text-gray-500 dark:text-neutral-400">No missing indexes identified</p>
                       @endif
                     </div>
                   </div>
@@ -308,33 +310,33 @@ const queryTypeBadges = {
         <div class="bg-white shadow dark:bg-neutral-900 sm:rounded-lg overflow-hidden">
           <div class="px-4 py-5 sm:px-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Performance Details</h3>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-gray-400">Execution metrics and optimization information.</p>
+            <p class="mt-1 max-w-2xl text-sm text-gray-500 dark:text-neutral-400">Execution metrics and optimization information.</p>
           </div>
           <div class="border-t border-gray-200 dark:border-neutral-700">
             <dl>
               <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Memory Usage</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Memory Usage</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">{{ query.memory_usage }} MB</dd>
               </div>
               <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Rows Affected</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Rows Affected</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">{{ query.rows_affected }}</dd>
               </div>
               <div class="bg-gray-50 dark:bg-neutral-800 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Explain Plan</dt>
+                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Explain Plan</dt>
                 <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
-                  <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-gray-200 p-3 rounded-md overflow-x-auto whitespace-pre-wrap">{{ query.explain_plan }}</pre>
+                  <pre class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 text-gray-800 dark:text-neutral-200 p-3 rounded-md overflow-x-auto whitespace-pre-wrap">{{ query.explain_plan }}</pre>
                 </dd>
               </div>
               @if(query.optimization_suggestions && query.optimization_suggestions.length)
                 <div class="bg-white dark:bg-neutral-900 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
-                  <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Optimization Suggestions</dt>
+                  <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Optimization Suggestions</dt>
                   <dd class="mt-1 text-sm text-gray-900 dark:text-white sm:col-span-2 sm:mt-0">
                     <ul class="space-y-2">
                       @foreach(query.optimization_suggestions as suggestion)
                         <li class="flex items-start">
                           <div class="i-hugeicons-lightbulb-02 h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5"></div>
-                          <span class="text-sm text-gray-800 dark:text-gray-200">{{ suggestion }}</span>
+                          <span class="text-sm text-gray-800 dark:text-neutral-200">{{ suggestion }}</span>
                         </li>
                       @endforeach
                     </ul>
@@ -353,7 +355,7 @@ const queryTypeBadges = {
           <div class="border-t border-gray-200 dark:border-neutral-700 px-4 py-5 sm:px-6">
             <div class="flex flex-wrap gap-2">
               @foreach(query.tags as tag)
-                <span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-neutral-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-gray-300 ring-1 ring-inset ring-gray-300 dark:ring-gray-700">
+                <span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-neutral-800 px-2 py-1 text-xs font-medium text-gray-700 dark:text-neutral-300 ring-1 ring-inset ring-gray-300 dark:ring-neutral-700">
                   {{ tag }}
                 </span>
               @endforeach
@@ -367,14 +369,13 @@ const queryTypeBadges = {
         <div class="px-4 py-5 sm:p-6 text-center">
           <div class="i-hugeicons-file-broken h-12 w-12 text-gray-400 mx-auto mb-4"></div>
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Query not found</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">The requested query could not be found or has been deleted.</p>
+          <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">The requested query could not be found or has been deleted.</p>
           <div class="mt-6">
-            <router-link
-              to="/queries"
+            <a               to="/queries"
               class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500"
             >
               Return to Dashboard
-            </router-link>
+            </a>
           </div>
         </div>
       </div>
@@ -389,3 +390,5 @@ onMount(async () => {
   fetchQuery(id)
 })
 </script>
+
+@endsection

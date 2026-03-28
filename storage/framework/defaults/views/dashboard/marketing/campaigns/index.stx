@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 // Define campaign type
 interface Campaign {
@@ -569,9 +572,9 @@ const getStatusClass = (status: string): string => {
     case 'Draft':
       return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
     case 'Completed':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -786,9 +789,9 @@ const getCampaignTypeColor = (type: string): string => {
     case 'PPC':
       return 'text-red-600 dark:text-red-400'
     case 'SEO':
-      return 'text-gray-600 dark:text-gray-400'
+      return 'text-gray-600 dark:text-neutral-400'
     default:
-      return 'text-gray-600 dark:text-gray-400'
+      return 'text-gray-600 dark:text-neutral-400'
   }
 }
 
@@ -879,7 +882,7 @@ const removeCondition = (index: number) => {
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Campaigns</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
               Manage your marketing campaigns across different channels
             </p>
           </div>
@@ -908,7 +911,7 @@ const removeCondition = (index: number) => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Active Campaigns</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Active Campaigns</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalActiveCampaigns }}</div>
                     </dd>
@@ -929,7 +932,7 @@ const removeCondition = (index: number) => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Scheduled Campaigns</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Scheduled Campaigns</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalScheduledCampaigns }}</div>
                     </dd>
@@ -950,7 +953,7 @@ const removeCondition = (index: number) => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Email Campaigns</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Email Campaigns</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalEmailCampaigns }}</div>
                     </dd>
@@ -971,7 +974,7 @@ const removeCondition = (index: number) => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">SMS Campaigns</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">SMS Campaigns</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalSmsCampaigns }}</div>
                     </dd>
@@ -991,7 +994,7 @@ const removeCondition = (index: number) => {
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
               placeholder="Search campaigns..."
             />
           </div>
@@ -1000,7 +1003,7 @@ const removeCondition = (index: number) => {
             <!-- Status filter -->
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Statuses</option>
               <option value="Active">Active</option>
@@ -1012,7 +1015,7 @@ const removeCondition = (index: number) => {
             <!-- Type filter -->
             <select
               value="{{ typeFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Types</option>
               <option value="Email">Email</option>
@@ -1028,7 +1031,7 @@ const removeCondition = (index: number) => {
                   'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-grid h-5 w-5"></div>
@@ -1040,7 +1043,7 @@ const removeCondition = (index: number) => {
                   'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-list-view h-5 w-5"></div>
@@ -1050,7 +1053,7 @@ const removeCondition = (index: number) => {
         </div>
 
         <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
           <span class="mr-2">Sort by:</span>
           <button
             onclick="toggleSort('name')"
@@ -1113,7 +1116,7 @@ const removeCondition = (index: number) => {
         <!-- Compact view (table) -->
         @if(viewMode === 'compact')
 <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-700">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Campaign</th>
@@ -1126,10 +1129,10 @@ const removeCondition = (index: number) => {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
               @if(paginatedCampaigns.length === 0)
 <tr>
-                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
                   No campaigns found. Try adjusting your search or filter.
                 </td>
               </tr>
@@ -1139,11 +1142,11 @@ const removeCondition = (index: number) => {
                   <div class="flex items-center">
                     <div class="ml-4">
                       <div class="font-medium text-gray-900 dark:text-white">{{ campaign.name }}</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">{{ campaign.audience }}</div>
+                      <div class="text-xs text-gray-500 dark:text-neutral-400">{{ campaign.audience }}</div>
                     </div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   <div class="flex items-center">
                     <div :class="getCampaignTypeIcon(campaign.type) + ' h-4 w-4 mr-2 ' + getCampaignTypeColor(campaign.type)"></div>
                     {{ campaign.type }}
@@ -1154,11 +1157,11 @@ const removeCondition = (index: number) => {
                     {{ campaign.status }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   <div>{{ formatDate(campaign.startDate) }}</div>
                   <div class="text-xs">to {{ formatDate(campaign.endDate) }}</div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   <div class="space-y-1">
                     @foreach(getCampaignMetrics(campaign) as metric)
 <div class="flex items-center">
@@ -1215,9 +1218,9 @@ const removeCondition = (index: number) => {
 <div class="mt-6">
           @if(paginatedCampaigns.length === 0)
 <div class="flex flex-col items-center justify-center py-12 text-center">
-            <div class="i-hugeicons-search-magnifying-glass h-12 w-12 text-gray-400 dark:text-gray-600"></div>
+            <div class="i-hugeicons-search-magnifying-glass h-12 w-12 text-gray-400 dark:text-neutral-600"></div>
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No campaigns found</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filters.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Try adjusting your search or filters.</p>
           </div>
 
           @else
@@ -1231,16 +1234,16 @@ const removeCondition = (index: number) => {
                     {{ campaign.status }}
                   </span>
                 </div>
-                <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ campaign.type }}</div>
-                <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">{{ campaign.audience }}</div>
+                <div class="mt-1 text-sm text-gray-500 dark:text-neutral-400">{{ campaign.type }}</div>
+                <div class="mt-1 text-sm text-gray-500 dark:text-neutral-400">{{ campaign.audience }}</div>
 
                 <div class="mt-4">
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">Start date:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Start date:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ formatDate(campaign.startDate) }}</span>
                   </div>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">End date:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">End date:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ formatDate(campaign.endDate) }}</span>
                   </div>
                 </div>
@@ -1250,10 +1253,10 @@ const removeCondition = (index: number) => {
                   @foreach(getCampaignMetrics(campaign) as metric)
 <div class="col-span-1">
                     <div class="flex items-center">
-                      <div :class="metric.icon + ' h-5 w-5 mr-2 text-gray-400 dark:text-gray-500'"></div>
+                      <div :class="metric.icon + ' h-5 w-5 mr-2 text-gray-400 dark:text-neutral-500'"></div>
                       <div>
                         <div class="text-sm font-medium text-gray-900 dark:text-white">{{ metric }}</div>
-                        <div class="text-xs text-gray-500 dark:text-gray-400">{{ metric.label }}</div>
+                        <div class="text-xs text-gray-500 dark:text-neutral-400">{{ metric.label }}</div>
                       </div>
                     </div>
                   </div>
@@ -1261,57 +1264,57 @@ const removeCondition = (index: number) => {
 
                 <!-- Email campaign details -->
                 @if(campaign.type === 'Email')
-<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+<div class="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Email Details</h4>
                   <div class="flex justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">Subject:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Subject:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailSubject }}</span>
                   </div>
                   <div class="flex justify-between text-sm mt-1">
-                    <span class="text-gray-500 dark:text-gray-400">Sender:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Sender:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailSender }}</span>
                   </div>
                   <div class="flex justify-between text-sm mt-1">
-                    <span class="text-gray-500 dark:text-gray-400">Recipients:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Recipients:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailList }}</span>
                   </div>
                   <div class="flex justify-between text-sm mt-1">
-                    <span class="text-gray-500 dark:text-gray-400">Template:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Template:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailTemplate }}</span>
                   </div>
                 </div>
 
                 <!-- SMS campaign details -->
                 @if(campaign.type === 'SMS')
-<div class="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
+<div class="mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
                   <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Text Message Campaign Details</h4>
 
                   <div class="text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">Message:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Message:</span>
                     <p class="mt-1 font-medium text-gray-900 dark:text-white">{{ campaign.smsContent }}</p>
                   </div>
                   <div class="flex justify-between text-sm mt-2">
-                    <span class="text-gray-500 dark:text-gray-400">Recipients:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Recipients:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsPhoneList }}</span>
                   </div>
                   <div class="flex justify-between text-sm mt-1">
-                    <span class="text-gray-500 dark:text-gray-400">Schedule:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Schedule:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsSchedule }}</span>
                   </div>
                   <div class="flex justify-between text-sm mt-1">
-                    <span class="text-gray-500 dark:text-gray-400">Characters:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">Characters:</span>
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsCharacterCount }}/160</span>
                   </div>
                 </div>
 
                 <div class="mt-4">
                   <div class="mb-1 flex justify-between text-sm">
-                    <span class="text-gray-500 dark:text-gray-400">{{ campaign.goal }}:</span>
+                    <span class="text-gray-500 dark:text-neutral-400">{{ campaign.goal }}:</span>
                     <span class="font-medium text-gray-900 dark:text-white">
                       {{ campaign.goalProgress }} / {{ campaign.goalTarget }}
                     </span>
                   </div>
-                  <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-gray-700">
+                  <div class="w-full bg-gray-200 rounded-full h-2.5 dark:bg-neutral-700">
                     <div
                       class="bg-blue-600 h-2.5 rounded-full dark:bg-blue-500"
                       style="{{ { width: `${calculateProgress(campaign.goalProgress, campaign.goalTarget)}%` } }}"
@@ -1324,7 +1327,7 @@ const removeCondition = (index: number) => {
                   @if(campaign.status === 'draft' || campaign.status === 'scheduled')
 <button
                     onclick="sendTestCampaign(campaign)"
-                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                   >
                     <div class="i-hugeicons-paper-plane -ml-0.5 mr-2 h-4 w-4"></div>
                     Test
@@ -1332,21 +1335,21 @@ const removeCondition = (index: number) => {
                   @if(campaign.status === 'draft')
 <button
                     onclick="sendCampaign(campaign)"
-                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                   >
                     <div class="i-hugeicons-send -ml-0.5 mr-2 h-4 w-4"></div>
                     Send
                   </button>
                   <button
                     onclick="openEditCampaignModal(campaign)"
-                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                   >
                     <div class="i-hugeicons-edit-01 -ml-0.5 mr-2 h-4 w-4"></div>
                     Edit
                   </button>
                   <button
                     onclick="deleteCampaign(campaign.id)"
-                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium leading-4 text-gray-700 shadow-sm hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                   >
                     <div class="i-hugeicons-waste -ml-0.5 mr-2 h-4 w-4"></div>
                     Delete
@@ -1359,12 +1362,12 @@ const removeCondition = (index: number) => {
 
         <!-- Pagination -->
         @if(totalPages > 1)
-<div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 dark:bg-neutral-800 sm:px-6">
+<div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-neutral-700 dark:bg-neutral-800 sm:px-6">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               onclick="prevPage"
               disabled="{{ currentPage === 1 }}"
-              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
               class="{{ { 'opacity-50 cursor-not-allowed': currentPage === 1 } }}"
             >
               Previous
@@ -1372,7 +1375,7 @@ const removeCondition = (index: number) => {
             <button
               onclick="nextPage"
               disabled="{{ currentPage === totalPages }}"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
               class="{{ { 'opacity-50 cursor-not-allowed': currentPage === totalPages } }}"
             >
               Next
@@ -1380,7 +1383,7 @@ const removeCondition = (index: number) => {
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-gray-700 dark:text-neutral-300">
                 Showing
                 <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
                 to
@@ -1395,7 +1398,7 @@ const removeCondition = (index: number) => {
                 <button
                   onclick="prevPage"
                   disabled="{{ currentPage === 1 }}"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-500 dark:ring-gray-600 dark:hover:bg-neutral-700"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-500 dark:ring-neutral-600 dark:hover:bg-neutral-700"
                   class="{{ { 'opacity-50 cursor-not-allowed': currentPage === 1 } }}"
                 >
                   <span class="sr-only">Previous</span>
@@ -1407,7 +1410,7 @@ const removeCondition = (index: number) => {
                   class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700',
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
                   ] }}"
                 >
                   {{ page }}
@@ -1415,7 +1418,7 @@ const removeCondition = (index: number) => {
                 <button
                   onclick="nextPage"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-500 dark:ring-gray-600 dark:hover:bg-neutral-700"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-500 dark:ring-neutral-600 dark:hover:bg-neutral-700"
                   class="{{ { 'opacity-50 cursor-not-allowed': currentPage === totalPages } }}"
                 >
                   <span class="sr-only">Next</span>
@@ -1433,7 +1436,7 @@ const removeCondition = (index: number) => {
 <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-screen items-end justify-center px-4 pb-20 pt-4 text-center sm:block sm:p-0">
         <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-          <div class="absolute inset-0 bg-gray-500 opacity-75 dark:bg-gray-900"></div>
+          <div class="absolute inset-0 bg-gray-500 opacity-75 dark:bg-neutral-900"></div>
         </div>
 
         <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
@@ -1442,7 +1445,7 @@ const removeCondition = (index: number) => {
             <button
               onclick="showCampaignModal = false"
               type="button"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-500 dark:hover:text-gray-400"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -1458,7 +1461,7 @@ const removeCondition = (index: number) => {
                 <form onsubmit="saveCampaign; return false">
                   <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                     <div class="sm:col-span-6">
-                      <label for="campaign-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label for="campaign-name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                         Campaign Name
                       </label>
                       <div class="mt-1">
@@ -1467,21 +1470,21 @@ const removeCondition = (index: number) => {
                           value="{{ currentCampaign.name }}"
                           type="text"
                           placeholder="e.g. Summer Sale 2024"
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                           required
                         />
                       </div>
                     </div>
 
                     <div class="sm:col-span-3">
-                      <label for="campaign-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label for="campaign-type" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                         Type
                       </label>
                       <div class="mt-1">
                         <select
                           id="campaign-type"
                           value="{{ currentCampaign.type }}"
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                           required
                         >
                           <option value="Email">Email</option>
@@ -1491,14 +1494,14 @@ const removeCondition = (index: number) => {
                     </div>
 
                     <div class="sm:col-span-3">
-                      <label for="campaign-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label for="campaign-status" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                         Status
                       </label>
                       <div class="mt-1">
                         <select
                           id="campaign-status"
                           value="{{ currentCampaign.status }}"
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                           required
                         >
                           <option value="Draft">Draft</option>
@@ -1510,7 +1513,7 @@ const removeCondition = (index: number) => {
                     </div>
 
                     <div class="sm:col-span-6">
-                      <label for="campaign-audience" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label for="campaign-audience" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                         Target Audience
                       </label>
                       <div class="mt-1">
@@ -1519,27 +1522,27 @@ const removeCondition = (index: number) => {
                           value="{{ currentCampaign.audience }}"
                           type="text"
                           placeholder="e.g. All Customers, Premium Members, New Users"
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                         />
                       </div>
                     </div>
 
                     <!-- Goal Definition Section -->
                     <div class="sm:col-span-6 pt-8">
-                      <div class="border-b border-gray-200 pb-4 dark:border-gray-700">
+                      <div class="border-b border-gray-200 pb-4 dark:border-neutral-700">
                         <h3 class="text-base font-semibold text-gray-900 dark:text-white">Goal Definition</h3>
-                        <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Define what constitutes a successful conversion for this campaign.</p>
+                        <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Define what constitutes a successful conversion for this campaign.</p>
                       </div>
 
                       <div class="mt-4 space-y-4">
                         <div>
-                          <label for="goal-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                          <label for="goal-type" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                             Goal Type
                           </label>
                           <select
                             id="goal-type"
                             value="{{ currentCampaign.goal }}"
-                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                            class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                             required
                           >
                             <option value="Sales">Sales</option>
@@ -1554,7 +1557,7 @@ const removeCondition = (index: number) => {
                         @if(currentCampaign.goal === 'Custom')
 <div class="space-y-4">
                           <div>
-                            <label for="custom-goal-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label for="custom-goal-name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                               Custom Goal Name
                             </label>
                             <input
@@ -1562,20 +1565,20 @@ const removeCondition = (index: number) => {
                               value="{{ currentCampaign.customGoalName }}"
                               type="text"
                               placeholder="e.g. Product Demo Requests"
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                             />
                           </div>
                         </div>
 
                         <div class="space-y-4">
                           <div>
-                            <label for="goal-trigger" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label for="goal-trigger" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                               Trigger
                             </label>
                             <select
                               id="goal-trigger"
                               value="{{ currentCampaign.goalTrigger }}"
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                             >
                               <option value="page_visit">Page Visit</option>
                               <option value="button_click">Button Click</option>
@@ -1589,7 +1592,7 @@ const removeCondition = (index: number) => {
 
                           @if(currentCampaign.goalTrigger === 'page_visit')
 <div>
-                            <label for="trigger-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label for="trigger-url" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                               Target URL
                             </label>
                             <input
@@ -1597,13 +1600,13 @@ const removeCondition = (index: number) => {
                               value="{{ currentCampaign.triggerUrl }}"
                               type="text"
                               placeholder="e.g. /thank-you or https://example.com/success"
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                             />
                           </div>
 
                           @if(currentCampaign.goalTrigger === 'button_click')
 <div>
-                            <label for="trigger-selector" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label for="trigger-selector" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                               Button Selector
                             </label>
                             <input
@@ -1611,13 +1614,13 @@ const removeCondition = (index: number) => {
                               value="{{ currentCampaign.triggerSelector }}"
                               type="text"
                               placeholder="e.g. #submit-button or .buy-now"
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                             />
                           </div>
 
                           @if(currentCampaign.goalTrigger === 'custom_event')
 <div>
-                            <label for="trigger-event" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                            <label for="trigger-event" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                               Event Name
                             </label>
                             <input
@@ -1625,13 +1628,13 @@ const removeCondition = (index: number) => {
                               value="{{ currentCampaign.triggerEvent }}"
                               type="text"
                               placeholder="e.g. productView, checkoutComplete"
-                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                              class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                             />
                           </div>
 
                           <!-- Model Event Configuration -->
                           @if(currentCampaign.goalTrigger === 'model_event')
-<div class="space-y-6 border-t border-gray-200 pt-4 dark:border-gray-700">
+<div class="space-y-6 border-t border-gray-200 pt-4 dark:border-neutral-700">
                             <h4 class="text-sm font-medium text-gray-900 dark:text-white">Model Event Settings</h4>
 
                             <!-- Initialize modelTrigger if not exists -->
@@ -1640,7 +1643,7 @@ const removeCondition = (index: number) => {
                               <button
                                 type="button"
                                 onclick="addCondition"
-                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                                class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                               >
                                 <div class="i-hugeicons-plus-circle h-4 w-4 mr-2"></div>
                                 Initialize Model Event
@@ -1651,13 +1654,13 @@ const removeCondition = (index: number) => {
 <template>
                               <!-- Model Selection -->
                               <div>
-                                <label for="model-select" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="model-select" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Select Model
                                 </label>
                                 <select
                                   id="model-select"
                                   value="{{ currentCampaign.modelTrigger.model }}"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                 >
                                   @foreach(availableModels as model)
 <option value="{{ model }}">{{ model }}</option>
@@ -1666,13 +1669,13 @@ const removeCondition = (index: number) => {
 
                                <!-- Event Type -->
                               <div>
-                                <label for="event-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="event-type" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Event Type
                                 </label>
                                 <select
                                   id="event-type"
                                   value="{{ currentCampaign.modelTrigger.event }}"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                 >
                                   @foreach(standardModelEvents as event)
 <option value="{{ event }}">
@@ -1684,7 +1687,7 @@ const removeCondition = (index: number) => {
                               <!-- Custom Event Name (if custom selected) -->
                               @if(currentCampaign.modelTrigger.event === 'custom')
 <div>
-                                <label for="custom-event-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="custom-event-name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Custom Event Name
                                 </label>
                                 <input
@@ -1692,20 +1695,20 @@ const removeCondition = (index: number) => {
                                   value="{{ currentCampaign.modelTrigger.customEvent }}"
                                   type="text"
                                   placeholder="e.g. subscription_renewed"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                 />
                               </div>
 
                               <!-- Conditions -->
                               <div>
                                 <div class="flex items-center justify-between">
-                                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                     Conditions
                                   </label>
                                   <button
                                     type="button"
                                     onclick="addCondition"
-                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                                    class="inline-flex items-center rounded-md border border-gray-300 bg-white px-2.5 py-1.5 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                                   >
                                     <div class="i-hugeicons-plus-sign-circle h-4 w-4 mr-2"></div>
                                     Add Condition
@@ -1718,7 +1721,7 @@ const removeCondition = (index: number) => {
                                   <div class="col-span-4">
                                     <select
                                       value="{{ condition.field }}"
-                                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                     >
                                       @foreach(modelFields[currentCampaign.modelTrigger.model] as field)
 <option value="{{ field }}">
@@ -1731,7 +1734,7 @@ const removeCondition = (index: number) => {
                                   <div class="col-span-3">
                                     <select
                                       value="{{ condition.operator }}"
-                                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                     >
                                       <option value="equals">Equals</option>
                                       <option value="not_equals">Not Equals</option>
@@ -1751,7 +1754,7 @@ const removeCondition = (index: number) => {
                                       value="{{ condition.value }}"
                                       type="text"
                                       placeholder="Value"
-                                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                     />
                                   </div>
 
@@ -1760,7 +1763,7 @@ const removeCondition = (index: number) => {
                                     <button
                                       type="button"
                                       onclick="removeCondition(index)"
-                                      class="inline-flex items-center rounded-md border border-gray-300 bg-white p-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600"
+                                      class="inline-flex items-center rounded-md border border-gray-300 bg-white p-2 text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600"
                                     >
                                       <div class="i-hugeicons-cancel-01 h-4 w-4"></div>
                                     </button>
@@ -1773,20 +1776,20 @@ const removeCondition = (index: number) => {
                           <!-- Email List Selection -->
                           @if(currentCampaign.type === 'Email')
 <div class="sm:col-span-6 pt-8">
-                            <div class="border-b border-gray-200 pb-4 dark:border-gray-700">
+                            <div class="border-b border-gray-200 pb-4 dark:border-neutral-700">
                               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Email Campaign Settings</h3>
-                              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure your email campaign details.</p>
+                              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Configure your email campaign details.</p>
                             </div>
 
                             <div class="mt-4 space-y-4">
                               <div>
-                                <label for="email-list" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="email-list" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Email List
                                 </label>
                                 <select
                                   id="email-list"
                                   value="{{ currentCampaign.emailList }}"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                   required
                                 >
                                   <option value="All Subscribers">All Subscribers</option>
@@ -1798,41 +1801,41 @@ const removeCondition = (index: number) => {
                               </div>
 
                               <div>
-                                <label for="email-subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="email-subject" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Email Subject
                                 </label>
                                 <input
                                   id="email-subject"
                                   value="{{ currentCampaign.emailSubject }}"
                                   type="text"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                   placeholder="Enter email subject"
                                   required
                                 />
                               </div>
 
                               <div>
-                                <label for="email-sender" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="email-sender" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Sender Email
                                 </label>
                                 <input
                                   id="email-sender"
                                   value="{{ currentCampaign.emailSender }}"
                                   type="email"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                   placeholder="noreply@example.com"
                                   required
                                 />
                               </div>
 
                               <div>
-                                <label for="email-template" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="email-template" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Email Template
                                 </label>
                                 <select
                                   id="email-template"
                                   value="{{ currentCampaign.emailTemplate }}"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                   required
                                 >
                                   <option value="default">Default Template</option>
@@ -1843,14 +1846,14 @@ const removeCondition = (index: number) => {
                               </div>
 
                               <div>
-                                <label for="email-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                                <label for="email-content" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                                   Email Content
                                 </label>
                                 <textarea
                                   id="email-content"
                                   value="{{ currentCampaign.emailContent }}"
                                   rows="6"
-                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-gray-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+                                  class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
                                   placeholder="Enter your email content here..."
                                   required
                                 ></textarea>
@@ -1890,7 +1893,7 @@ const removeCondition = (index: number) => {
                             <button
                               type="button"
                               onclick="showCampaignModal = false"
-                              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-gray-600 dark:bg-neutral-700 dark:text-gray-200 dark:hover:bg-neutral-600 sm:col-start-1 sm:mt-0 sm:text-sm"
+                              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:border-neutral-600 dark:bg-neutral-700 dark:text-neutral-200 dark:hover:bg-neutral-600 sm:col-start-1 sm:mt-0 sm:text-sm"
                             >
                               Cancel
                             </button>
@@ -1908,3 +1911,5 @@ const removeCondition = (index: number) => {
     </div>
   </main>
 
+
+@endsection

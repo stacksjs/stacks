@@ -38,7 +38,6 @@ const services = [
   { name: 'Storage', status: 'healthy', latency: '8ms' },
 ]
 </script>
-<DashboardLayout pageTitle="Dashboard" pageDescription="Welcome back! Here's what's happening with your application.">
 
 <div class="p-6 space-y-6">
     <!-- Stats Grid -->
@@ -92,5 +91,4 @@ const services = [
       :activities="{{ JSON.stringify(activities) }}"
     />
 </div>
-</DashboardLayout>
 @endsection

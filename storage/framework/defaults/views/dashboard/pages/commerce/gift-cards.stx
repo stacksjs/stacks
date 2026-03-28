@@ -38,7 +38,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Gift Cards" description="Manage gift card inventory">
@@ -125,5 +124,4 @@ function statusVariant(s) {
   </div>
 
 </div>
-</DashboardLayout>
 @endsection

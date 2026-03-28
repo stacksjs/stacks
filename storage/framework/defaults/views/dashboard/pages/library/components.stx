@@ -31,7 +31,6 @@ try {
   // resources/components not available
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Components" description="Browse and manage your UI component library">
@@ -82,5 +81,4 @@ try {
   />
   @endif
 </div>
-</DashboardLayout>
 @endsection

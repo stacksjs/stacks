@@ -9,7 +9,7 @@
     <div class="my-8 p-4 text-center sm:items-center sm:p-0 {{ position == 'center' ? 'flex justify-center h-full' : '' }} {{ position == 'top' ? 'flex justify-center' : '' }} {{ position == 'top-right' ? 'flex justify-end mt-4' : '' }} {{ position == 'top-left' ? 'flex justify-start' : '' }}">
       <div aria-live="assertive" class="pointer-events-none fixed inset-0 flex items-end px-4 py-6 sm:items-start sm:p-6">
         <div class="w-full flex flex-col items-center sm:items-end space-y-4">
-          <div class="pointer-events-auto max-w-sm w-full overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-gray-700">
+          <div class="pointer-events-auto max-w-sm w-full overflow-hidden rounded-lg bg-white shadow-lg ring-1 ring-black ring-opacity-5 dark:bg-neutral-700">
             <div class="p-4">
               <div class="flex items-center">
                 <slot name="body" />

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -136,23 +139,22 @@ const commonPorts = [
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <div>
-            <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+            <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
               {{ server.name }}
             </h3>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-400">
               Server details and firewall rules.
             </p>
           </div>
         </div>
 
         <div class="flex items-center gap-4">
-          <router-link
-            to="/servers"
+          <a             to="/servers"
             class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
           >
             <div class="i-hugeicons-arrow-left w-4 h-4"></div>
             Back to Servers
-          </router-link>
+          </a>
         </div>
       </div>
     </div>
@@ -160,48 +162,48 @@ const commonPorts = [
     <!-- Server Details -->
     <div class="bg-white dark:bg-neutral-700 rounded-lg shadow mb-8">
       <div class="px-4 py-5 sm:p-6">
-        <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100 mb-4">Server Information</h4>
+        <h4 class="text-lg font-medium text-gray-900 dark:text-neutral-100 mb-4">Server Information</h4>
         <dl class="grid grid-cols-1 gap-x-4 gap-y-6 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Domain</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.domain }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Domain</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.domain }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Region</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.region }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Region</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.region }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Type</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.type }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Type</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.type }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Size</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.size }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Size</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.size }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Operating System</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.serverOS }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Operating System</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.serverOS }}</dd>
           </div>
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Disk Size</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.diskSize }}GB</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Disk Size</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.diskSize }}GB</dd>
           </div>
           @if(server.bunVersion)
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Bun Version</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.bunVersion }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Bun Version</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.bunVersion }}</dd>
           </div>
           @endif
           @if(server.database)
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Database</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.database }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Database</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.database }}</dd>
           </div>
           @endif
           @if(server.searchEngine)
           <div>
-            <dt class="text-sm font-medium text-gray-500 dark:text-gray-400">Search Engine</dt>
-            <dd class="mt-1 text-sm text-gray-900 dark:text-gray-100">{{ server.searchEngine }}</dd>
+            <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Search Engine</dt>
+            <dd class="mt-1 text-sm text-gray-900 dark:text-neutral-100">{{ server.searchEngine }}</dd>
           </div>
           @endif
         </dl>
@@ -213,8 +215,8 @@ const commonPorts = [
       <div class="px-4 py-5 sm:p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h4 class="text-lg font-medium text-gray-900 dark:text-gray-100">Firewall Rules (UFW)</h4>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <h4 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Firewall Rules (UFW)</h4>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
               Manage incoming and outgoing traffic to your server.
             </p>
           </div>
@@ -233,10 +235,10 @@ const commonPorts = [
         <div class="mb-6 bg-gray-50 dark:bg-neutral-600 rounded-lg p-4">
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-6">
             <div class="lg:col-span-1">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Port</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Port</label>
               <select
                 value="{{ newRule.port }}"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
                 <option value="" disabled>Select a port</option>
                 @foreach(commonPorts as port)
@@ -250,24 +252,24 @@ const commonPorts = [
                 value="{{ newRule.port }}"
                 type="text"
                 placeholder="Enter port number"
-                class="mt-2 block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="mt-2 block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
               @endif
             </div>
             <div class="lg:col-span-1">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From IP</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">From IP</label>
               <input
                 value="{{ newRule.from }}"
                 type="text"
                 placeholder="0.0.0.0"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
             </div>
             <div class="lg:col-span-1">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Protocol</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Protocol</label>
               <select
                 value="{{ newRule.protocol }}"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
                 <option value="tcp">TCP</option>
                 <option value="udp">UDP</option>
@@ -275,22 +277,22 @@ const commonPorts = [
               </select>
             </div>
             <div class="lg:col-span-1">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Action</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Action</label>
               <select
                 value="{{ newRule.action }}"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
                 <option value="ALLOW">Allow</option>
                 <option value="DENY">Deny</option>
               </select>
             </div>
             <div class="lg:col-span-2">
-              <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
+              <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Description</label>
               <input
                 value="{{ newRule.description }}"
                 type="text"
                 placeholder="Rule description"
-                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                class="block w-full h-10 text-sm border-0 rounded-md bg-white dark:bg-neutral-700 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
               >
             </div>
           </div>
@@ -298,7 +300,7 @@ const commonPorts = [
             <button
               onclick="isAddingRule = false"
               type="button"
-              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
+              class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline transition-colors duration-200"
             >
               Cancel
             </button>
@@ -316,23 +318,23 @@ const commonPorts = [
         <!-- Rules Table -->
         <div class="mt-4">
           <div class="overflow-x-auto">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-600">
               <thead>
                 <tr>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Port</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">From</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Protocol</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Action</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Description</th>
-                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-right text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Port</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">From</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Protocol</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Action</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-left text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Description</th>
+                  <th class="px-6 py-3 bg-gray-50 dark:bg-neutral-600 text-right text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider">Actions</th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-neutral-600">
                 @foreach(ufwRules as rule)
 <tr>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-gray-100">{{ rule.port }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ rule.from }}</td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ rule.protocol.toUpperCase() }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900 dark:text-neutral-100">{{ rule.port }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">{{ rule.from }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">{{ rule.protocol.toUpperCase() }}</td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <span
                       class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium"
@@ -344,7 +346,7 @@ const commonPorts = [
                       {{ rule.action }}
                     </span>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ rule.description }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">{{ rule.description }}</td>
                   <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                     <button
                       onclick="removeRule(rule.id)"
@@ -362,3 +364,5 @@ const commonPorts = [
     </div>
   </div>
 </div>
+
+@endsection

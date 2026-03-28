@@ -25,7 +25,6 @@ try {
 </script>
 
 <div ref="pageRoot">
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Categories" description="Organize your content with categories">
@@ -78,7 +77,6 @@ try {
   @endif
 
 </div>
-</DashboardLayout>
 
 <!-- Category Modal -->
 <div id="categoryModal" role="dialog" aria-modal="true" aria-label="Category editor" class="fixed inset-0 bg-black/50 hidden items-center justify-center z-50" style="display: none;">

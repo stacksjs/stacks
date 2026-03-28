@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -9,3 +12,5 @@ definePageMeta({
 <DeploymentList />
 
 <!-- <ActivityFeed /> -->
+
+@endsection

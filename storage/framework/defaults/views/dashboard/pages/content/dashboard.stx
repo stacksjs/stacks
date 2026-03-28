@@ -33,7 +33,6 @@ try {
   // DB not seeded
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Content Dashboard" description="Overview of your blog and content performance">
@@ -83,5 +82,4 @@ try {
   </div>
 
 </div>
-</DashboardLayout>
 @endsection

@@ -48,7 +48,6 @@ try {
   // filesystem scan failed
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Files" description="Manage your media and documents">
@@ -119,5 +118,4 @@ try {
   @endif
 
 </div>
-</DashboardLayout>
 @endsection

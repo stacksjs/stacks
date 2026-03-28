@@ -14,7 +14,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout pageTitle="Deployments" pageDescription="Monitor and manage deployments">
 <div class="p-6 space-y-6">
 
   <PageHeader title="Deployments" description="Monitor and manage deployments">
@@ -63,5 +62,4 @@ function statusVariant(s) {
     </div>
     @endif
 </div>
-</DashboardLayout>
 @endsection

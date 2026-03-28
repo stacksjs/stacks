@@ -46,7 +46,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Environment" description="Environment configuration and variables">
@@ -141,5 +140,4 @@ function statusVariant(s) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

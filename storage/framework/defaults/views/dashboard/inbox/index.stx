@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -455,7 +458,7 @@ function inboxUnreadCount() {
 </script>
 
 @title('Mail - Your Inbox')
-<div class="min-h-screen bg-white dark:bg-neutral-800">
+<div class="bg-white dark:bg-neutral-800">
   <div class="flex h-screen">
     <!-- Sidebar -->
     <EmailSidebar
@@ -489,27 +492,27 @@ function inboxUnreadCount() {
               </button>
             </div>
 
-            <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+            <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
               <i class="i-hugeicons-waste text-lg"></i>
             </button>
-            <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+            <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
               <i class="i-hugeicons-archive text-lg"></i>
             </button>
-            <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+            <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
               <i class="i-hugeicons-spam text-lg"></i>
             </button>
 
             <div class="flex items-center ml-2">
-              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
                 <i class="i-hugeicons-clock-circle text-lg"></i>
               </button>
-              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
                 <i class="i-hugeicons-arrow-left-01 text-lg"></i>
               </button>
-              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
                 <i class="i-hugeicons-arrow-right-01 text-lg"></i>
               </button>
-              <button class="p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-white">
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
                 <i class="i-hugeicons-more-vertical-circle text-lg"></i>
               </button>
             </div>
@@ -532,7 +535,7 @@ function inboxUnreadCount() {
                 value="{{ searchQuery }}"
                 type="text"
                 placeholder="Search"
-                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-gray-50 dark:bg-neutral-600 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-gray-50 dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
               />
             </div>
           </div>
@@ -549,7 +552,7 @@ function inboxUnreadCount() {
                     <p class="text-sm font-medium text-gray-900 dark:text-white">
                       {{ email.from }}
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">
+                    <p class="text-xs text-gray-500 dark:text-neutral-400">
                       {{ formatDate(email.date) }}
                     </p>
                   </div>
@@ -557,7 +560,7 @@ function inboxUnreadCount() {
                     <p class="text-sm text-gray-900 dark:text-white">
                       {{ email.subject }}
                     </p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400 mt-1 truncate">
+                    <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1 truncate">
                       {{ email.preview }}
                     </p>
                   </div>
@@ -588,7 +591,7 @@ function inboxUnreadCount() {
         <div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700 flex flex-col">
           <div class="py-2 px-4 border-b border-gray-200 dark:border-neutral-600 flex items-center justify-between">
             <div class="flex items-center space-x-2">
-              <button onclick="closeEmail" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+              <button onclick="closeEmail" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
                 <i class="i-hugeicons-arrow-left-02 text-lg"></i>
               </button>
               <h2 class="text-lg font-medium text-gray-900 dark:text-white">
@@ -604,13 +607,13 @@ function inboxUnreadCount() {
                   </svg>
                 </span>
                 @else
-                <i class="i-hugeicons-star text-gray-500 dark:text-gray-400 text-lg"></i>
+                <i class="i-hugeicons-star text-gray-500 dark:text-neutral-400 text-lg"></i>
                 @endif
               </button>
-              <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+              <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
                 <i class="i-hugeicons-inbox text-lg"></i>
               </button>
-              <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+              <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
                 <i class="i-hugeicons-waste text-lg"></i>
               </button>
             </div>
@@ -621,16 +624,16 @@ function inboxUnreadCount() {
             <div class="flex justify-between items-start">
               <div>
                 <div class="flex items-center">
-                  <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-gray-500 flex items-center justify-center text-gray-700 dark:text-white font-medium">
+                  <div class="h-10 w-10 rounded-full bg-gray-200 dark:bg-neutral-500 flex items-center justify-center text-gray-700 dark:text-white font-medium">
                     {{ selectedEmail?.from.charAt(0) }}
                   </div>
                   <div class="ml-3">
                     <p class="text-sm font-medium text-gray-900 dark:text-white">{{ selectedEmail?.from }}</p>
-                    <p class="text-xs text-gray-500 dark:text-gray-400">{{ selectedEmail?.email }}</p>
+                    <p class="text-xs text-gray-500 dark:text-neutral-400">{{ selectedEmail?.email }}</p>
                   </div>
                 </div>
               </div>
-              <div class="text-xs text-gray-500 dark:text-gray-400">
+              <div class="text-xs text-gray-500 dark:text-neutral-400">
                 {{ selectedEmail?.date ? new Date(selectedEmail.date).toLocaleString() : '' }}
               </div>
             </div>
@@ -648,10 +651,10 @@ function inboxUnreadCount() {
             @if(selectedEmail?.attachment)
             <div class="mt-4 border border-gray-200 dark:border-neutral-600 rounded p-3">
               <div class="flex items-center">
-                <i class="i-hugeicons-file-01 text-gray-500 dark:text-gray-400 text-xl"></i>
+                <i class="i-hugeicons-file-01 text-gray-500 dark:text-neutral-400 text-xl"></i>
                 <div class="ml-3">
                   <p class="text-sm font-medium text-gray-900 dark:text-white">Document.pdf</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400">1.2 MB</p>
+                  <p class="text-xs text-gray-500 dark:text-neutral-400">1.2 MB</p>
                 </div>
                 <button class="ml-auto p-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800">
                   <i class="i-hugeicons-download text-lg"></i>
@@ -672,8 +675,8 @@ function inboxUnreadCount() {
             </div>
             <div class="flex justify-between mt-2">
               <div class="flex items-center">
-                <label class="inline-flex items-center text-gray-500 dark:text-gray-400 text-sm">
-                  <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-gray-500 bg-white dark:bg-neutral-600">
+                <label class="inline-flex items-center text-gray-500 dark:text-neutral-400 text-sm">
+                  <input type="checkbox" class="form-checkbox h-4 w-4 text-blue-600 rounded border-gray-300 dark:border-neutral-500 bg-white dark:bg-neutral-600">
                   <span class="ml-2">Mute this thread</span>
                 </label>
               </div>
@@ -693,7 +696,7 @@ function inboxUnreadCount() {
               <i class="i-hugeicons-mail-02 text-blue-600 dark:text-blue-400 text-5xl"></i>
             </div>
             <h3 class="text-xl font-medium text-gray-900 dark:text-white mb-2">No message selected</h3>
-            <p class="text-gray-500 dark:text-gray-400 mb-6 max-w-md">
+            <p class="text-gray-500 dark:text-neutral-400 mb-6 max-w-md">
               Select an email from your inbox to view its contents here, or start a new conversation by clicking the compose button.
             </p>
             <button
@@ -714,7 +717,7 @@ function inboxUnreadCount() {
             <h2 class="text-lg font-medium text-gray-900 dark:text-white">
               New Message
             </h2>
-            <button onclick="cancelCompose" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+            <button onclick="cancelCompose" class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
               <i class="i-hugeicons-cancel-circle text-lg"></i>
             </button>
           </div>
@@ -722,33 +725,33 @@ function inboxUnreadCount() {
           <div class="flex-1 p-4 overflow-y-auto">
             <div class="space-y-4">
               <div>
-                <label for="to" class="block text-sm font-medium text-gray-700 dark:text-gray-300">To</label>
+                <label for="to" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">To</label>
                 <input
                   id="to"
                   value="{{ newEmail.to }}"
                   type="text"
                   placeholder="recipient@example.com"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
               </div>
               <div>
-                <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Subject</label>
+                <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Subject</label>
                 <input
                   id="subject"
                   value="{{ newEmail.subject }}"
                   type="text"
                   placeholder="Enter email subject"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 />
               </div>
               <div>
-                <label for="body" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
+                <label for="body" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Message</label>
                 <textarea
                   id="body"
                   value="{{ newEmail.body }}"
                   rows="15"
                   placeholder="Write your message here..."
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                 ></textarea>
               </div>
             </div>
@@ -756,13 +759,13 @@ function inboxUnreadCount() {
 
           <div class="p-4 border-t border-gray-200 dark:border-neutral-600 flex justify-between">
             <div class="flex space-x-2">
-              <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+              <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
                 <i class="i-hugeicons-attachment-01 text-lg"></i>
               </button>
-              <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+              <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
                 <i class="i-hugeicons-image-01 text-lg"></i>
               </button>
-              <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-gray-400">
+              <button class="p-2 rounded hover:bg-gray-100 dark:hover:bg-neutral-600 text-gray-500 dark:text-neutral-400">
                 <i class="i-hugeicons-smile text-lg"></i>
               </button>
             </div>
@@ -800,3 +803,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

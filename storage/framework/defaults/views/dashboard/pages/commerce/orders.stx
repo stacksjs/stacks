@@ -41,7 +41,6 @@ function statusVariant(s) {
 
 const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancelled']
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Orders" description="Manage customer orders">
@@ -110,5 +109,4 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

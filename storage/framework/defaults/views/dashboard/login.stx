@@ -1,3 +1,6 @@
+@extends('layouts/guest')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: [],
@@ -44,3 +47,5 @@ async function handleLogin(credentials) {
   isLoading="{{ isLoading }}"
   error="{{ error }}"
 />
+
+@endsection

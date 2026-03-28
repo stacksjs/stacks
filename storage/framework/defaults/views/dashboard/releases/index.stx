@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script>
 import {
   Chart as ChartJS,
@@ -229,12 +232,12 @@ const releaseTimeOptions = {
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
       <div class="flex items-center justify-between">
-        <h3 class="text-base text-gray-900 font-semibold leading-6 dark:text-gray-100">
+        <h3 class="text-base text-gray-900 font-semibold leading-6 dark:text-neutral-100">
           {{ timeRangeOptions[timeRange] }}
         </h3>
         <select
           value="{{ timeRange }}"
-          class="text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+          class="text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
         >
           <option value="7">Last 7 days</option>
           <option value="30">Last 30 days</option>
@@ -250,13 +253,13 @@ const releaseTimeOptions = {
               <div class="i-hugeicons-cloud-download h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Total Downloads
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 font-semibold dark:text-gray-100">
+            <p class="text-2xl text-gray-900 font-semibold dark:text-neutral-100">
               71,897
             </p>
 
@@ -277,13 +280,13 @@ const releaseTimeOptions = {
               <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Avg. Release Time
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 font-semibold dark:text-gray-100">
+            <p class="text-2xl text-gray-900 font-semibold dark:text-neutral-100">
               3.65 mins
             </p>
 
@@ -303,13 +306,13 @@ const releaseTimeOptions = {
               <div class="i-hugeicons-rocket-01 h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Releases
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 font-semibold dark:text-gray-100">
+            <p class="text-2xl text-gray-900 font-semibold dark:text-neutral-100">
               420
             </p>
 
@@ -333,8 +336,8 @@ const releaseTimeOptions = {
       <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="mb-6">
-            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Download Activity</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Release download trends over time</p>
+            <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Download Activity</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Release download trends over time</p>
           </div>
           <div class="h-[300px] relative">
             @if(isLoading)
@@ -351,8 +354,8 @@ const releaseTimeOptions = {
       <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="mb-6">
-            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Release Times</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Average time to complete releases</p>
+            <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Release Times</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Average time to complete releases</p>
           </div>
           <div class="h-[300px] relative">
             @if(isLoading)
@@ -370,10 +373,10 @@ const releaseTimeOptions = {
   <div class="px-4 pt-12 lg:px-8 sm:px-6">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
           Releases
         </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
           A list of all the releases in your library.
         </p>
       </div>
@@ -388,27 +391,27 @@ const releaseTimeOptions = {
     <div class="mt-8 flow-root">
       <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-neutral-600 sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-700">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6">
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold sm:pl-6">
                     Version
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Codename
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Size
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Path
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Created At
                   </th>
 
@@ -418,25 +421,25 @@ const releaseTimeOptions = {
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-neutral-600">
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v1.0.0
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                     Playa Vista
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -446,21 +449,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v1.0.0-rc.1
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -470,21 +473,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v1.0.0-beta.1
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -494,21 +497,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v1.0.0-alpha.1
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -518,21 +521,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v0.60.3
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -542,21 +545,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v0.60.2
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -566,21 +569,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v0.60.1
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -590,21 +593,21 @@ const releaseTimeOptions = {
                 </tr>
 
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     v0.60.0
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300" />
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300" />
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     5kb
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./storage/framework/libs/dist/*
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -620,3 +623,5 @@ const releaseTimeOptions = {
     </div>
   </div>
 </div>
+
+@endsection

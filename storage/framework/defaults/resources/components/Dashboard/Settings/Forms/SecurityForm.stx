@@ -14,7 +14,7 @@
       <div class="divide-y divide-gray-900/10">
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Firewall
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -25,7 +25,7 @@
           <div class="md:col-span-2">
             <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="col-span-2">
-                <label for="firewall-enabled" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Enabled</label>
+                <label for="firewall-enabled" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Enabled</label>
                 <div class="mt-2">
                   <button
                     type="button"
@@ -43,7 +43,7 @@
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="ip-reputation" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Use Ip Reputation Lists</label>
+                <label for="ip-reputation" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Use Ip Reputation Lists</label>
                 <div class="mt-2">
                   <button
                     type="button"
@@ -61,7 +61,7 @@
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="bad-inputs" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Use Known Bad Inputs Rule Set</label>
+                <label for="bad-inputs" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Use Known Bad Inputs Rule Set</label>
                 <div class="mt-2">
                   <button
                     type="button"
@@ -79,26 +79,26 @@
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="rate-limit" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Rate Limit per minute</label>
+                <label for="rate-limit" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Rate Limit per minute</label>
                 <div class="mt-2">
                   <input
                     id="rate-limit"
                     name="rate-limit"
                     type="text"
                     value="{{ rateLimitPerMinute }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="country-codes" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-gray-100">Country Codes</label>
+                <label for="country-codes" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Country Codes</label>
                 <div class="mt-2">
                   <input
                     id="country-codes"
                     name="country-codes"
                     type="text"
                     value="{{ countryCodes }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-gray-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-gray-100 dark:text-gray-200 focus:ring-2 focus:ring-blue-500"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>

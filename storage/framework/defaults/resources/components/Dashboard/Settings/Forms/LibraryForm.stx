@@ -34,7 +34,7 @@
       <div class="divide-y divide-gray-900/10">
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Library Base Configurations
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -121,7 +121,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Library Functions
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -185,7 +185,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Vue Components Configurations
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -219,7 +219,7 @@
               <div class="sm:col-span-full">
                 <div class="mb-4 flex justify-between">
                   <div>
-                    <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+                    <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
                       Vue Components Tags
                     </h2>
                     <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -279,7 +279,7 @@
 
         <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Web Components Configurations
             </h2>
             <p class="mt-1 text-sm text-gray-600 leading-6">
@@ -313,7 +313,7 @@
               <div class="sm:col-span-full">
                 <div class="mb-4 flex justify-between">
                   <div>
-                    <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-gray-100">
+                    <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
                       Web Components Tags
                     </h2>
                     <p class="mt-1 text-sm text-gray-600 leading-6">

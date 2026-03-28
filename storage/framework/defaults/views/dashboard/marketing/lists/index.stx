@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -289,9 +292,9 @@ const getStatusClass = (status) => {
     case 'Draft':
       return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
     case 'Archived':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -305,7 +308,7 @@ const getTypeClass = (type) => {
     case 'both':
       return 'bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/20 dark:bg-indigo-900/30 dark:text-indigo-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -539,7 +542,7 @@ function bulkChangeStatus(status) {
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Marketing Lists</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
               Manage your email and SMS subscriber lists
             </p>
           </div>
@@ -568,7 +571,7 @@ function bulkChangeStatus(status) {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Lists</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Total Lists</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalLists }}</div>
                     </dd>
@@ -589,7 +592,7 @@ function bulkChangeStatus(status) {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Email Lists</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Email Lists</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalEmailLists }}</div>
                     </dd>
@@ -610,7 +613,7 @@ function bulkChangeStatus(status) {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">SMS Lists</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">SMS Lists</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalSmsLists }}</div>
                     </dd>
@@ -631,7 +634,7 @@ function bulkChangeStatus(status) {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Subscribers</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Total Subscribers</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalSubscribers }}</div>
                     </dd>
@@ -647,18 +650,18 @@ function bulkChangeStatus(status) {
         <div class="mt-6 bg-white p-4 shadow rounded-lg dark:bg-neutral-800">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <span class="text-sm text-gray-700 dark:text-gray-300">{{ selectedLists.length }} lists selected</span>
+              <span class="text-sm text-gray-700 dark:text-neutral-300">{{ selectedLists.length }} lists selected</span>
             </div>
             <div class="flex space-x-2">
               <div class="relative inline-block text-left">
                 <button
                   type="button"
-                  class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                  class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                 >
                   Change status
                   <div class="i-hugeicons-chevron-down h-5 w-5 ml-1"></div>
                 </button>
-                <div class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-neutral-700 dark:ring-gray-600" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1" style="display: none;">
+                <div class="absolute right-0 z-10 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none dark:bg-neutral-700 dark:ring-neutral-600" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1" style="display: none;">
                   <div class="py-1" role="none">
                     <button onclick="bulkChangeStatus('Active')" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 dark:text-white dark:hover:bg-neutral-600" role="menuitem">Mark as Active</button>
                     <button onclick="bulkChangeStatus('Draft')" class="text-gray-700 block px-4 py-2 text-sm hover:bg-gray-100 dark:text-white dark:hover:bg-neutral-600" role="menuitem">Mark as Draft</button>
@@ -687,7 +690,7 @@ function bulkChangeStatus(status) {
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
               placeholder="Search lists..."
             />
           </div>
@@ -696,7 +699,7 @@ function bulkChangeStatus(status) {
             <!-- Type filter -->
             <select
               value="{{ typeFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Types</option>
               <option value="email">Email Only</option>
@@ -707,7 +710,7 @@ function bulkChangeStatus(status) {
             <!-- Status filter -->
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Statuses</option>
               @foreach(statuses.slice(1) as status)
@@ -726,7 +729,7 @@ function bulkChangeStatus(status) {
                   'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'grid'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-grid h-5 w-5"></div>
@@ -738,7 +741,7 @@ function bulkChangeStatus(status) {
                   'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'list'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
@@ -748,7 +751,7 @@ function bulkChangeStatus(status) {
         </div>
 
         <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
           <span class="mr-2">Sort by:</span>
           <button
             onclick="toggleSort('name')"
@@ -819,13 +822,13 @@ function bulkChangeStatus(status) {
         <!-- List view -->
         @if(viewMode === 'list')
         <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-700">
               <tr>
                 <th scope="col" class="relative px-7 sm:w-12 sm:px-6">
                   <input
                     type="checkbox"
-                    class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                    class="absolute left-4 top-1/2 -mt-2 h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600"
                     checked="{{ selectAll }}"
                     onchange="toggleSelectAll"
                   />
@@ -841,10 +844,10 @@ function bulkChangeStatus(status) {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
               @if(paginatedLists().length === 0)
               <tr>
-                <td colspan="8" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colspan="8" class="py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
                   No lists found. Try adjusting your search or filter.
                 </td>
               </tr>
@@ -855,7 +858,7 @@ function bulkChangeStatus(status) {
                   <div class="absolute left-4 top-1/2 -mt-2">
                     <input
                       type="checkbox"
-                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600"
                       checked="{{ selectedLists.includes(list.id) }}"
                       onchange="toggleListSelection(list.id)"
                     />
@@ -863,7 +866,7 @@ function bulkChangeStatus(status) {
                 </td>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                   <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center dark:bg-gray-700">
+                    <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center dark:bg-neutral-700">
                       @if(list.type === 'email')
                       <div class="i-hugeicons-mail h-6 w-6 text-blue-600 dark:text-blue-400"></div>
                       @elseif(list.type === 'sms')
@@ -881,7 +884,7 @@ function bulkChangeStatus(status) {
                         </span>
                         @endif
                       </div>
-                      <div class="text-gray-500 dark:text-gray-400 line-clamp-1">{{ list.description }}</div>
+                      <div class="text-gray-500 dark:text-neutral-400 line-clamp-1">{{ list.description }}</div>
                     </div>
                   </div>
                 </td>
@@ -895,13 +898,13 @@ function bulkChangeStatus(status) {
                     {{ list.status }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                   {{ list.subscriberCount }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                   {{ list.openRate !== undefined ? `${list.openRate}%` : 'N/A' }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                   {{ list.lastSent || 'Never' }}
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -962,20 +965,20 @@ function bulkChangeStatus(status) {
           <div class="py-12 text-center">
             <div class="i-hugeicons-list-check mx-auto h-12 w-12 text-gray-400"></div>
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No lists found</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Try adjusting your search or filter to find what you're looking for.</p>
           </div>
           @else
           <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <!-- List card -->
             @foreach(paginatedLists as list)
             <div
-              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-gray-700 dark:bg-neutral-800"
+              class="group relative overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm transition hover:shadow-md dark:border-neutral-700 dark:bg-neutral-800"
             >
               <!-- List header with type icon -->
-              <div class="relative p-4 border-b border-gray-200 dark:border-gray-700">
+              <div class="relative p-4 border-b border-gray-200 dark:border-neutral-700">
                 <div class="flex items-center justify-between">
                   <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center dark:bg-gray-700">
+                    <div class="h-10 w-10 flex-shrink-0 bg-gray-100 rounded-md flex items-center justify-center dark:bg-neutral-700">
                       @if(list.type === 'email')
                       <div class="i-hugeicons-mail h-6 w-6 text-blue-600 dark:text-blue-400"></div>
                       @elseif(list.type === 'sms')
@@ -1006,23 +1009,23 @@ function bulkChangeStatus(status) {
 
               <!-- List info -->
               <div class="p-4">
-                <p class="text-sm text-gray-500 dark:text-gray-400 line-clamp-2">{{ list.description }}</p>
+                <p class="text-sm text-gray-500 dark:text-neutral-400 line-clamp-2">{{ list.description }}</p>
 
                 <div class="mt-4 grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Subscribers</div>
+                    <div class="text-gray-500 dark:text-neutral-400">Subscribers</div>
                     <div class="font-medium text-gray-900 dark:text-white">{{ list.subscriberCount }}</div>
                   </div>
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Open Rate</div>
+                    <div class="text-gray-500 dark:text-neutral-400">Open Rate</div>
                     <div class="font-medium text-gray-900 dark:text-white">{{ list.openRate !== undefined ? `${list.openRate}%` : 'N/A' }}</div>
                   </div>
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Last Sent</div>
+                    <div class="text-gray-500 dark:text-neutral-400">Last Sent</div>
                     <div class="font-medium text-gray-900 dark:text-white">{{ list.lastSent || 'Never' }}</div>
                   </div>
                   <div>
-                    <div class="text-gray-500 dark:text-gray-400">Created</div>
+                    <div class="text-gray-500 dark:text-neutral-400">Created</div>
                     <div class="font-medium text-gray-900 dark:text-white">{{ list.dateCreated }}</div>
                   </div>
                 </div>
@@ -1031,11 +1034,11 @@ function bulkChangeStatus(status) {
                   <div class="flex items-center">
                     <input
                       type="checkbox"
-                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600"
                       checked="{{ selectedLists.includes(list.id) }}"
                       onchange="toggleListSelection(list.id)"
                     />
-                    <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">Select</span>
+                    <span class="ml-2 text-xs text-gray-500 dark:text-neutral-400">Select</span>
                   </div>
                   <div class="flex space-x-2">
                     <button
@@ -1064,13 +1067,13 @@ function bulkChangeStatus(status) {
 
         <!-- Pagination -->
         @if(totalPages > 1)
-        <div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
+        <div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-neutral-700 sm:px-6">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               onclick="previousPage"
               disabled="{{ currentPage === 1 }}"
               class="{{ [
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white',
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
                 currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
               ] }}"
             >
@@ -1080,7 +1083,7 @@ function bulkChangeStatus(status) {
               onclick="nextPage"
               disabled="{{ currentPage === totalPages }}"
               class="{{ [
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white',
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
                 currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
               ] }}"
             >
@@ -1089,7 +1092,7 @@ function bulkChangeStatus(status) {
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-gray-700 dark:text-neutral-300">
                 Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
                 <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredLists.length) }}</span> of
                 <span class="font-medium">{{ filteredLists.length }}</span> results
@@ -1100,7 +1103,7 @@ function bulkChangeStatus(status) {
                 <button
                   onclick="previousPage"
                   disabled="{{ currentPage === 1 }}"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-neutral-700 dark:text-gray-500"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:text-neutral-500"
                   class="{{ { 'opacity-50 cursor-not-allowed': currentPage === 1 } }}"
                 >
                   <span class="sr-only">Previous</span>
@@ -1110,7 +1113,7 @@ function bulkChangeStatus(status) {
                 <button
                   onclick="changePage(page)"
                   class="{{ [
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-gray-600',
+                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600',
                     page === currentPage
                       ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
                       : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700'
@@ -1122,7 +1125,7 @@ function bulkChangeStatus(status) {
                 <button
                   onclick="nextPage"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-neutral-700 dark:text-gray-500"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:text-neutral-500"
                   class="{{ { 'opacity-50 cursor-not-allowed': currentPage === totalPages } }}"
                 >
                   <span class="sr-only">Next</span>
@@ -1140,14 +1143,14 @@ function bulkChangeStatus(status) {
     @if(showListModal)
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
 
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeListModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-500 dark:hover:text-gray-400"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-can h-6 w-6"></div>
@@ -1162,34 +1165,34 @@ function bulkChangeStatus(status) {
                 <form onsubmit="saveList; return false" class="space-y-4">
                   <!-- List name -->
                   <div>
-                    <label for="list-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                    <label for="list-name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Name</label>
                     <input
                       type="text"
                       id="list-name"
                       value="{{ listName }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       required
                     />
                   </div>
 
                   <!-- List description -->
                   <div>
-                    <label for="list-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                    <label for="list-description" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Description</label>
                     <textarea
                       id="list-description"
                       value="{{ listDescription }}"
                       rows="3"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     ></textarea>
                   </div>
 
                   <!-- List type -->
                   <div>
-                    <label for="list-type" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Type</label>
+                    <label for="list-type" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Type</label>
                     <select
                       id="list-type"
                       value="{{ listType }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     >
                       <option value="email">Email Only</option>
                       <option value="sms">SMS Only</option>
@@ -1199,23 +1202,23 @@ function bulkChangeStatus(status) {
 
                   <!-- List tags -->
                   <div>
-                    <label for="list-tags" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags (comma separated)</label>
+                    <label for="list-tags" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Tags (comma separated)</label>
                     <input
                       type="text"
                       id="list-tags"
                       value="{{ listTags }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       placeholder="newsletter, promo, vip"
                     />
                   </div>
 
                   <!-- List status -->
                   <div>
-                    <label for="list-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                    <label for="list-status" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Status</label>
                     <select
                       id="list-status"
                       value="{{ listStatus }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     >
                       <option value="Active">Active</option>
                       <option value="Draft">Draft</option>
@@ -1230,12 +1233,12 @@ function bulkChangeStatus(status) {
                         id="list-default"
                         type="checkbox"
                         value="{{ listIsDefault }}"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600"
                       />
-                      <label for="list-default" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Set as default list</label>
+                      <label for="list-default" class="ml-2 block text-sm font-medium text-gray-700 dark:text-neutral-300">Set as default list</label>
                     </div>
                     @if(listIsDefault)
-                    <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
                       This will unset any other default list. New subscribers will be added to this list by default.
                     </p>
                     @endif
@@ -1251,7 +1254,7 @@ function bulkChangeStatus(status) {
                     <button
                       type="button"
                       onclick="closeListModal"
-                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                     >
                       Cancel
                     </button>
@@ -1269,14 +1272,14 @@ function bulkChangeStatus(status) {
     @if(showImportModal)
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
 
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeImportModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-500 dark:hover:text-gray-400"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-can h-6 w-6"></div>
@@ -1289,23 +1292,23 @@ function bulkChangeStatus(status) {
             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Import Subscribers</h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-500 dark:text-neutral-400">
                   Upload a CSV file with subscriber data to import into this list.
                 </p>
               </div>
               <div class="mt-4">
                 <div class="flex items-center justify-center w-full">
-                  <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-neutral-700 dark:bg-neutral-700 hover:bg-gray-100 dark:border-gray-600">
+                  <label for="dropzone-file" class="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 dark:hover:bg-neutral-700 dark:bg-neutral-700 hover:bg-gray-100 dark:border-neutral-600">
                     <div class="flex flex-col items-center justify-center pt-5 pb-6">
-                      <div class="i-hugeicons-upload-01 mb-3 h-10 w-10 text-gray-400 dark:text-gray-500"></div>
-                      <p class="mb-2 text-sm text-gray-500 dark:text-gray-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
-                      <p class="text-xs text-gray-500 dark:text-gray-400">CSV file (MAX. 10MB)</p>
+                      <div class="i-hugeicons-upload-01 mb-3 h-10 w-10 text-gray-400 dark:text-neutral-500"></div>
+                      <p class="mb-2 text-sm text-gray-500 dark:text-neutral-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                      <p class="text-xs text-gray-500 dark:text-neutral-400">CSV file (MAX. 10MB)</p>
                     </div>
                     <input id="dropzone-file" type="file" class="hidden" accept=".csv" />
                   </label>
                 </div>
                 <div class="mt-4">
-                  <p class="text-xs text-gray-500 dark:text-gray-400">
+                  <p class="text-xs text-gray-500 dark:text-neutral-400">
                     Your CSV should include the following columns: email, phone (optional), first_name (optional), last_name (optional)
                   </p>
                 </div>
@@ -1323,7 +1326,7 @@ function bulkChangeStatus(status) {
             <button
               type="button"
               onclick="closeImportModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -1333,3 +1336,5 @@ function bulkChangeStatus(status) {
     </div>
     @endif
   </main>
+
+@endsection

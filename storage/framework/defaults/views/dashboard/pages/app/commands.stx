@@ -32,7 +32,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Commands" description="CLI commands and artisan tasks" />
@@ -70,5 +69,4 @@ function statusVariant(s) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

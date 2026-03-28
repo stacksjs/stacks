@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -341,7 +344,7 @@ const handleCompose = () => {
                 'px-3 py-1.5 text-sm font-medium rounded-md',
                 timeRange === 'day'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-600'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-600'
               ] }}"
             >
               Day
@@ -352,7 +355,7 @@ const handleCompose = () => {
                 'px-3 py-1.5 text-sm font-medium rounded-md',
                 timeRange === 'week'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-600'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-600'
               ] }}"
             >
               Week
@@ -363,7 +366,7 @@ const handleCompose = () => {
                 'px-3 py-1.5 text-sm font-medium rounded-md',
                 timeRange === 'month'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-600'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-600'
               ] }}"
             >
               Month
@@ -374,7 +377,7 @@ const handleCompose = () => {
                 'px-3 py-1.5 text-sm font-medium rounded-md',
                 timeRange === 'year'
                   ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                  : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-600'
+                  : 'text-gray-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-600'
               ] }}"
             >
               Year
@@ -392,7 +395,7 @@ const handleCompose = () => {
               <i :class="stat.icon + ' text-xl'"></i>
             </div>
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-500 dark:text-gray-400">{{ stat.name }}</p>
+              <p class="text-sm font-medium text-gray-500 dark:text-neutral-400">{{ stat.name }}</p>
               <div class="flex items-baseline">
                 <p class="text-2xl font-semibold text-gray-900 dark:text-white">{{ stat }}</p>
                 <p class="{{ [
@@ -413,7 +416,7 @@ const handleCompose = () => {
         <!-- Email Activity Chart -->
         <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Email Volume</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Email Volume</h2>
           </div>
           <div class="h-80 relative">
             @if(isLoading)
@@ -428,7 +431,7 @@ const handleCompose = () => {
         <!-- Response Time Chart -->
         <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4">
           <div class="flex items-center justify-between mb-4">
-            <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Average Response Time</h2>
+            <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Average Response Time</h2>
           </div>
           <div class="h-64 relative">
             @if(isLoading)
@@ -445,7 +448,7 @@ const handleCompose = () => {
           <!-- Email Categories -->
           <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Email Categories</h2>
+              <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Email Categories</h2>
             </div>
             <div class="h-64 relative">
               <Doughnut :data="emailCategoryData" :options="doughnutChartOptions" />
@@ -455,7 +458,7 @@ const handleCompose = () => {
           <!-- Device Usage -->
           <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-4">
             <div class="flex items-center justify-between mb-4">
-              <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">Device Usage</h2>
+              <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Device Usage</h2>
             </div>
             <div class="h-64 relative">
               <Doughnut :data="deviceUsageData" :options="doughnutChartOptions" />
@@ -466,22 +469,22 @@ const handleCompose = () => {
         <!-- Recent Activity Table -->
         <div class="bg-white dark:bg-neutral-700 rounded-lg shadow overflow-hidden">
           <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-600">
-            <h3 class="text-lg font-medium text-gray-900 dark:text-gray-100">Recent Activity</h3>
+            <h3 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Recent Activity</h3>
           </div>
           <div class="overflow-x-auto">
             <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-600">
                 <tr>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-300 uppercase tracking-wider">
                     Action
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-300 uppercase tracking-wider">
                     Email
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-300 uppercase tracking-wider">
                     Time
                   </th>
-                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">
+                  <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-300 uppercase tracking-wider">
                     Status
                   </th>
                 </tr>
@@ -500,9 +503,9 @@ const handleCompose = () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-white">New Project Roadmap</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">From: Chris Breuer</div>
+                    <div class="text-xs text-gray-500 dark:text-neutral-400">From: Chris Breuer</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                     10 minutes ago
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -524,9 +527,9 @@ const handleCompose = () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-white">Re: Design Review Scheduled</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">To: Blake</div>
+                    <div class="text-xs text-gray-500 dark:text-neutral-400">To: Blake</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                     1 hour ago
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -548,9 +551,9 @@ const handleCompose = () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-white">Special Offer: Limited Time</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">From: marketing@example.com</div>
+                    <div class="text-xs text-gray-500 dark:text-neutral-400">From: marketing@example.com</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                     3 hours ago
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -572,9 +575,9 @@ const handleCompose = () => {
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
                     <div class="text-sm text-gray-900 dark:text-white">Weekly Team Update</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">From: Sarah Johnson</div>
+                    <div class="text-xs text-gray-500 dark:text-neutral-400">From: Sarah Johnson</div>
                   </td>
-                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                     Yesterday
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
@@ -601,3 +604,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

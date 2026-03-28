@@ -12,7 +12,7 @@ function getStatusClass(status) {
     case 'resolved':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
     case 'ignored':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
     case 'unresolved':
     default:
       return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
@@ -64,12 +64,12 @@ function formatTimeAgo(dateString) {
 <div class="fixed inset-0 z-50 overflow-y-auto">
   <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75" data-action="close"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75" data-action="close"></div>
 
     <!-- Modal panel -->
     <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl dark:bg-neutral-800">
       <!-- Header -->
-      <div class="border-b border-gray-200 dark:border-gray-700 px-6 py-4">
+      <div class="border-b border-gray-200 dark:border-neutral-700 px-6 py-4">
         <div class="flex items-start justify-between">
           <div class="flex-1">
             <div class="flex items-center gap-3">
@@ -83,7 +83,7 @@ function formatTimeAgo(dateString) {
             <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white break-words">
               {{ error.message }}
             </h3>
-            <div class="mt-1 flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400">
+            <div class="mt-1 flex items-center gap-4 text-sm text-gray-500 dark:text-neutral-400">
               <span class="flex items-center">
                 <div class="i-hugeicons-time-02 h-4 w-4 mr-1"></div>
                 First seen: {{ formatTimeAgo(error.first_seen) }}
@@ -131,12 +131,12 @@ function formatTimeAgo(dateString) {
       </div>
 
       <!-- Tabs -->
-      <div class="border-b border-gray-200 dark:border-gray-700">
+      <div class="border-b border-gray-200 dark:border-neutral-700">
         <nav class="flex -mb-px">
-          <button class="px-6 py-3 text-sm font-medium border-b-2 transition-colors {{ activeTab == 'details' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-action="tab" data-tab="details">
+          <button class="px-6 py-3 text-sm font-medium border-b-2 transition-colors {{ activeTab == 'details' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-neutral-400 dark:hover:text-gray-300' }}" data-action="tab" data-tab="details">
             Details
           </button>
-          <button class="px-6 py-3 text-sm font-medium border-b-2 transition-colors {{ activeTab == 'events' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-gray-400 dark:hover:text-gray-300' }}" data-action="tab" data-tab="events">
+          <button class="px-6 py-3 text-sm font-medium border-b-2 transition-colors {{ activeTab == 'events' ? 'border-blue-500 text-blue-600 dark:text-blue-400' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300 dark:text-neutral-400 dark:hover:text-gray-300' }}" data-action="tab" data-tab="events">
             Events ({{ error.count }})
           </button>
         </nav>
@@ -158,19 +158,19 @@ function formatTimeAgo(dateString) {
           <div class="grid grid-cols-2 gap-4">
             <div>
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Error Type</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ error.type }}</p>
+              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ error.type }}</p>
             </div>
             <div>
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Total Occurrences</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ error.count }}</p>
+              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ error.count }}</p>
             </div>
             <div>
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">First Occurrence</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ formatDate(error.first_seen) }}</p>
+              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ formatDate(error.first_seen) }}</p>
             </div>
             <div>
               <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Last Occurrence</h4>
-              <p class="text-sm text-gray-600 dark:text-gray-300">{{ formatDate(error.last_seen) }}</p>
+              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ formatDate(error.last_seen) }}</p>
             </div>
           </div>
         @endif
@@ -182,7 +182,7 @@ function formatTimeAgo(dateString) {
               <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-500"></div>
             </div>
           @elseif(errorInstances.length == 0)
-            <div class="text-center py-8 text-gray-500 dark:text-gray-400">
+            <div class="text-center py-8 text-gray-500 dark:text-neutral-400">
               No individual events found
             </div>
           @else
@@ -192,13 +192,13 @@ function formatTimeAgo(dateString) {
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
                       <div class="flex items-center gap-2 text-sm">
-                        <span class="text-gray-500 dark:text-gray-400">Event #{{ instance.id }}</span>
+                        <span class="text-gray-500 dark:text-neutral-400">Event #{{ instance.id }}</span>
                         <span class="text-gray-400">|</span>
-                        <span class="text-gray-600 dark:text-gray-300">{{ formatDate(instance.created_at) }}</span>
+                        <span class="text-gray-600 dark:text-neutral-300">{{ formatDate(instance.created_at) }}</span>
                       </div>
                       <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ instance.message }}</p>
                       @if(instance.additional_info)
-                        <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">
+                        <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
                           {{ instance.additional_info }}
                         </p>
                       @endif
@@ -212,9 +212,9 @@ function formatTimeAgo(dateString) {
       </div>
 
       <!-- Footer -->
-      <div class="border-t border-gray-200 dark:border-gray-700 px-6 py-4">
+      <div class="border-t border-gray-200 dark:border-neutral-700 px-6 py-4">
         <div class="flex justify-end">
-          <button type="button" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600" data-action="close">
+          <button type="button" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600" data-action="close">
             Close
           </button>
         </div>

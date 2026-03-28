@@ -8,7 +8,6 @@ let topPages = []
 let sources = []
 let devices = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Web Analytics" description="Website traffic and engagement">
@@ -101,5 +100,4 @@ let devices = []
   @endif
 
 </div>
-</DashboardLayout>
 @endsection

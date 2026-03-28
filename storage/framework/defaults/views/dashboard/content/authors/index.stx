@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import {
   Chart as ChartJS,
@@ -714,16 +717,26 @@ const getRoleBadgeClass = (role: string): string => {
     case 'contributor':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/20 dark:text-gray-400 dark:ring-gray-500/30'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/20 dark:text-neutral-400 dark:ring-neutral-500/30'
   }
 }
 </script>
 
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Authors" description="Manage your blog authors">
+    <template #actions>
+      <Button variant="primary" onclick="openNewAuthorModal">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Add Author
+      </Button>
+    </template>
+  </PageHeader>
+
     <!-- Stats section -->
     <div class="mb-8 px-4 lg:px-8 sm:px-6">
       <div>
-        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
           Last 30 days
         </h3>
 
@@ -735,12 +748,12 @@ const getRoleBadgeClass = (role: string): string => {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
                 </svg>
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
                 Total Authors
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
                 {{ authors.length }}
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
@@ -760,12 +773,12 @@ const getRoleBadgeClass = (role: string): string => {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
                 </svg>
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
                 Total Posts
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
                 {{ authors.reduce((sum, author) => sum + author.postCount, 0) }}
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
@@ -785,12 +798,12 @@ const getRoleBadgeClass = (role: string): string => {
                   <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
                 </svg>
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
                 Admin Authors
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
                 {{ authors.filter(author => author.role === 'admin').length }}
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
@@ -812,13 +825,13 @@ const getRoleBadgeClass = (role: string): string => {
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Author Growth & Activity</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Track author registrations and post activity over time</p>
+              <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Author Growth & Activity</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Track author registrations and post activity over time</p>
             </div>
             <div class="flex items-center space-x-4">
               <select
                 value="{{ timeRange }}"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="7">Last 7 days</option>
                 <option value="30">Last 30 days</option>
@@ -844,13 +857,13 @@ const getRoleBadgeClass = (role: string): string => {
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Author Model Relationships</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Interactive diagram showing Author model relationships. Click on any model to view details.</p>
+              <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Author Model Relationships</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Interactive diagram showing Author model relationships. Click on any model to view details.</p>
             </div>
             <div class="flex items-center space-x-2">
               <button
                 onclick="downloadSVG"
-                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
               >
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -859,7 +872,7 @@ const getRoleBadgeClass = (role: string): string => {
               </button>
               <button
                 onclick="downloadPNG"
-                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+                class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
               >
                 <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
@@ -877,44 +890,43 @@ const getRoleBadgeClass = (role: string): string => {
 <div class="w-64 ml-6 p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
               <div class="flex items-center mb-4">
                 <span class="text-2xl mr-2">{{ selectedModel.emoji }}</span>
-                <h4 class="text-lg font-semibold text-gray-900 dark:text-gray-100">{{ selectedModel.name }}</h4>
+                <h4 class="text-lg font-semibold text-gray-900 dark:text-neutral-100">{{ selectedModel.name }}</h4>
               </div>
 
               <div class="mb-4">
-                <p class="text-sm text-gray-600 dark:text-gray-400">{{ selectedModel.description }}</p>
+                <p class="text-sm text-gray-600 dark:text-neutral-400">{{ selectedModel.description }}</p>
               </div>
 
               <div class="mb-4">
-                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Properties</h5>
+                <h5 class="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Properties</h5>
                 <ul class="space-y-1">
                   @foreach(selectedModel.properties as prop)
-<li class="text-sm text-gray-600 dark:text-gray-400 font-mono">
+<li class="text-sm text-gray-600 dark:text-neutral-400 font-mono">
                     {{ prop }}
                   </li>
                 </ul>
               </div>
 
               <div class="mb-6">
-                <h5 class="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Relationships</h5>
+                <h5 class="text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Relationships</h5>
                 <ul class="space-y-1">
                   @foreach(selectedModel.relationships as rel)
 <li class="text-sm font-mono">
-                    <router-link
-                      :to="getModelRoute(rel.toLowerCase())"
+                    <a                       :href="getModelRoute(rel.toLowerCase())"
                       class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-150"
                     >
                       {{ rel }}
-                    </router-link>
+                    </a>
                   </li>
                 </ul>
               </div>
 
-              <router-link 
-                :to="getModelRoute(selectedModel.id)"
+              <a 
+                :href="getModelRoute(selectedModel.id)"
                 class="block w-full text-center px-4 py-2 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm transition-colors duration-150"
               >
                 View Details
-              </router-link>
+              </a>
             </div>
           </div>
         </div>
@@ -923,25 +935,6 @@ const getRoleBadgeClass = (role: string): string => {
 
     <!-- Authors Table -->
     <div class="px-4 pt-12 lg:px-8 sm:px-6">
-      <div class="sm:flex sm:items-center">
-        <div class="sm:flex-auto">
-          <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
-            Authors
-          </h1>
-          <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-            A list of all your blog authors.
-          </p>
-        </div>
-
-        <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-          <button
-            type="button"
-            onclick="openNewAuthorModal"
-            class="block rounded-md bg-blue-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-blue-500 focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus-visible:outline">
-            Add Author
-          </button>
-        </div>
-      </div>
 
       <!-- Search and filters -->
       <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
@@ -955,14 +948,14 @@ const getRoleBadgeClass = (role: string): string => {
             value="{{ searchQuery }}"
             type="search"
             placeholder="Search authors..."
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 dark:placeholder:text-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 placeholder:text-gray-400 dark:placeholder:text-neutral-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
           />
         </div>
 
         <div class="mt-4 sm:mt-0 flex flex-col sm:flex-row sm:items-center gap-3">
           <select
             value="{{ roleFilter }}"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="all">All Roles</option>
             <option value="admin">Admin</option>
@@ -972,7 +965,7 @@ const getRoleBadgeClass = (role: string): string => {
 
           <select
             value="{{ itemsPerPage }}"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="{{ 5 }}">5 per page</option>
             <option value="{{ 10 }}">10 per page</option>
@@ -985,7 +978,7 @@ const getRoleBadgeClass = (role: string): string => {
       <!-- Bulk actions -->
       @if(hasSelectedAuthors)
 <div class="mt-4 bg-gray-50 dark:bg-neutral-600 p-3 rounded-md flex items-center justify-between">
-        <div class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="text-sm text-gray-700 dark:text-neutral-300">
           <span class="font-medium">{{ selectedAuthorIds.length }}</span> author{{ selectedAuthorIds.length > 1 ? 's' : '' }} selected
         </div>
         <div class="flex space-x-2">
@@ -1005,7 +998,7 @@ const getRoleBadgeClass = (role: string): string => {
         <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
           <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
             <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-              <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600 authors-table">
+              <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600 authors-table">
                 <thead class="bg-gray-50 dark:bg-neutral-600">
                   <tr>
                     <th scope="col" class="relative px-3 py-3.5">
@@ -1013,12 +1006,12 @@ const getRoleBadgeClass = (role: string): string => {
                         type="checkbox"
                         checked="{{ selectAll }}"
                         onchange="toggleSelectAll"
-                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600"
+                        class="h-4 w-4 rounded border-gray-300 dark:border-neutral-600 text-blue-600 focus:ring-blue-600"
                       />
                     </th>
                     <th
                       scope="col"
-                      class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6 cursor-pointer"
+                      class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold sm:pl-6 cursor-pointer"
                       onclick="sortBy = 'id'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       ID
@@ -1030,7 +1023,7 @@ const getRoleBadgeClass = (role: string): string => {
 
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
+                      class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold cursor-pointer"
                       onclick="sortBy = 'name'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       Name
@@ -1040,13 +1033,13 @@ const getRoleBadgeClass = (role: string): string => {
                       </span>
                     </th>
 
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                    <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                       Role
                     </th>
 
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
+                      class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-neutral-100 font-semibold cursor-pointer"
                       onclick="sortBy = 'postCount'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       Posts
@@ -1058,7 +1051,7 @@ const getRoleBadgeClass = (role: string): string => {
 
                     <th
                       scope="col"
-                      class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-gray-100 font-semibold cursor-pointer"
+                      class="px-3 py-3.5 text-right text-sm text-gray-900 dark:text-neutral-100 font-semibold cursor-pointer"
                       onclick="sortBy = 'createdAt'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
                     >
                       Created At
@@ -1074,7 +1067,7 @@ const getRoleBadgeClass = (role: string): string => {
                   </tr>
                 </thead>
 
-                <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+                <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-neutral-600">
                   @foreach(paginatedAuthors as author)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                     <td class="relative px-3 py-4">
@@ -1082,14 +1075,14 @@ const getRoleBadgeClass = (role: string): string => {
                         type="checkbox"
                         checked="{{ selectedAuthorIds.includes(author.id) }}"
                         onchange="toggleAuthorSelection(author.id)"
-                        class="h-4 w-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-600"
+                        class="h-4 w-4 rounded border-gray-300 dark:border-neutral-600 text-blue-600 focus:ring-blue-600"
                       />
                     </td>
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                       {{ author.id }}
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                       <div class="flex items-center">
                         <div class="h-10 w-10 flex-shrink-0">
                           <img
@@ -1100,27 +1093,27 @@ const getRoleBadgeClass = (role: string): string => {
                         </div>
 
                         <div class="ml-4">
-                          <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
+                          <div class="flex items-center text-sm text-gray-900 font-medium dark:text-neutral-100">
                             {{ author.name }}
                           </div>
-                          <div class="text-sm text-gray-500 dark:text-gray-400">
+                          <div class="text-sm text-gray-500 dark:text-neutral-400">
                             {{ author.email }}
                           </div>
                         </div>
                       </div>
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                       <span :class="getRoleBadgeClass(author.role)" class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium">
                         {{ author.role }}
                       </span>
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                       {{ author.postCount }}
                     </td>
 
-                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                    <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                       {{ formatDateString(author.createdAt) }}
                     </td>
 
@@ -1142,7 +1135,7 @@ const getRoleBadgeClass = (role: string): string => {
 
       <!-- Pagination -->
       <div class="mt-6 flex items-center justify-between">
-        <div class="text-sm text-gray-700 dark:text-gray-300">
+        <div class="text-sm text-gray-700 dark:text-neutral-300">
           Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredAuthors.length) }}</span> of <span class="font-medium">{{ filteredAuthors.length }}</span> authors
         </div>
         <div class="flex space-x-2">
@@ -1150,7 +1143,7 @@ const getRoleBadgeClass = (role: string): string => {
             onclick="currentPage = Math.max(1, currentPage - 1)"
             disabled="{{ currentPage === 1 }}"
             class="{{ { 'opacity-50 cursor-not-allowed': currentPage === 1 } }}"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
           >
             Previous
           </button>
@@ -1158,8 +1151,8 @@ const getRoleBadgeClass = (role: string): string => {
             @foreach(paginationRange as page)
 <button
               onclick="currentPage = page"
-              class="{{ { 'bg-blue-600 text-white hover:bg-blue-500': currentPage === page, 'bg-white dark:bg-neutral-600 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-neutral-500': currentPage !== page } }}"
-              class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+              class="{{ { 'bg-blue-600 text-white hover:bg-blue-500': currentPage === page, 'bg-white dark:bg-neutral-600 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-500': currentPage !== page } }}"
+              class="inline-flex items-center px-3 py-1.5 text-sm font-medium rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
             >
               {{ page }}
             </button>
@@ -1168,7 +1161,7 @@ const getRoleBadgeClass = (role: string): string => {
             onclick="currentPage = Math.min(totalPages, currentPage + 1)"
             disabled="{{ currentPage === totalPages }}"
             class="{{ { 'opacity-50 cursor-not-allowed': currentPage === totalPages } }}"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600"
+            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
           >
             Next
           </button>
@@ -1193,9 +1186,9 @@ const getRoleBadgeClass = (role: string): string => {
                 </svg>
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Add New Author</h3>
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-neutral-100">Add New Author</h3>
                 <div class="mt-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">
                     Create a new author account. Authors can create and manage blog content.
                   </p>
                 </div>
@@ -1204,33 +1197,33 @@ const getRoleBadgeClass = (role: string): string => {
 
             <div class="mt-6 space-y-4">
               <div>
-                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <label for="name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Name</label>
                 <input
                   type="text"
                   id="name"
                   value="{{ newAuthor.name }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                   placeholder="Enter full name"
                 />
               </div>
 
               <div>
-                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <label for="email" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Email</label>
                 <input
                   type="email"
                   id="email"
                   value="{{ newAuthor.email }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                   placeholder="email@example.com"
                 />
               </div>
 
               <div>
-                <label for="role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                <label for="role" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Role</label>
                 <select
                   id="role"
                   value="{{ newAuthor.role }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 >
                   <option value="admin">Admin</option>
                   <option value="editor">Editor</option>
@@ -1239,12 +1232,12 @@ const getRoleBadgeClass = (role: string): string => {
               </div>
 
               <div>
-                <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+                <label for="bio" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Bio</label>
                 <textarea
                   id="bio"
                   value="{{ newAuthor.bio }}"
                   rows="3"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                   placeholder="Brief author biography"
                 ></textarea>
               </div>
@@ -1262,7 +1255,7 @@ const getRoleBadgeClass = (role: string): string => {
             <button
               type="button"
               onclick="closeNewAuthorModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-neutral-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Cancel
             </button>
@@ -1288,9 +1281,9 @@ const getRoleBadgeClass = (role: string): string => {
                 </svg>
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Edit Author</h3>
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-neutral-100">Edit Author</h3>
                 <div class="mt-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">
                     Update author information and permissions.
                   </p>
                 </div>
@@ -1300,31 +1293,31 @@ const getRoleBadgeClass = (role: string): string => {
             @if(authorToEdit)
 <div class="mt-6 space-y-4">
               <div>
-                <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                <label for="edit-name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Name</label>
                 <input
                   type="text"
                   id="edit-name"
                   value="{{ authorToEdit.name }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 />
               </div>
 
               <div>
-                <label for="edit-email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email</label>
+                <label for="edit-email" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Email</label>
                 <input
                   type="email"
                   id="edit-email"
                   value="{{ authorToEdit.email }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 />
               </div>
 
               <div>
-                <label for="edit-role" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Role</label>
+                <label for="edit-role" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Role</label>
                 <select
                   id="edit-role"
                   value="{{ authorToEdit.role }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 >
                   <option value="admin">Admin</option>
                   <option value="editor">Editor</option>
@@ -1333,22 +1326,22 @@ const getRoleBadgeClass = (role: string): string => {
               </div>
 
               <div>
-                <label for="edit-bio" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Bio</label>
+                <label for="edit-bio" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Bio</label>
                 <textarea
                   id="edit-bio"
                   value="{{ authorToEdit.bio }}"
                   rows="3"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 ></textarea>
               </div>
 
               <div>
-                <label for="edit-posts" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Post Count</label>
+                <label for="edit-posts" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Post Count</label>
                 <input
                   type="number"
                   id="edit-posts"
                   value="{{ authorToEdit.postCount }}"
-                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-gray-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
+                  class="mt-1 block w-full rounded-md border-gray-300 dark:border-neutral-600 shadow-sm focus:border-blue-500 focus:ring-blue-500 dark:bg-neutral-600 dark:text-white sm:text-sm"
                 />
               </div>
             </div>
@@ -1365,7 +1358,7 @@ const getRoleBadgeClass = (role: string): string => {
             <button
               type="button"
               onclick="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-neutral-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Cancel
             </button>
@@ -1391,9 +1384,9 @@ const getRoleBadgeClass = (role: string): string => {
                 </svg>
               </div>
               <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-gray-100">Delete Confirmation</h3>
+                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-neutral-100">Delete Confirmation</h3>
                 <div class="mt-2">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">
                     {{ selectedAuthorIds.length > 1
                       ? `Are you sure you want to delete ${selectedAuthorIds.length} authors? This action cannot be undone.`
                       : authorToDelete
@@ -1416,7 +1409,7 @@ const getRoleBadgeClass = (role: string): string => {
             <button
               type="button"
               onclick="closeDeleteModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-gray-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 dark:border-neutral-600 bg-white dark:bg-neutral-700 px-4 py-2 text-base font-medium text-gray-700 dark:text-neutral-200 shadow-sm hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
             >
               Cancel
             </button>
@@ -1517,3 +1510,5 @@ const getRoleBadgeClass = (role: string): string => {
   color: rgb(252, 211, 77);
 }
 </style>
+
+@endsection

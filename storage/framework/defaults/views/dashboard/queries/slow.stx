@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 interface SlowQueryRecord {
   id: string
@@ -248,7 +251,7 @@ const copyQuery = (queryId: string, queryText: string) => {
         <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
           Slow Queries
         </h1>
-        <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-gray-400">
+        <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-neutral-400">
           Identify and optimize slow database queries
         </p>
       </div>
@@ -257,7 +260,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <button
             type="button"
             class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium"
-            :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+            :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
             onclick="timeRange = 'day'"
           >
             Day
@@ -265,7 +268,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <button
             type="button"
             class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-medium"
-            :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+            :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
             onclick="timeRange = 'week'"
           >
             Week
@@ -273,7 +276,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <button
             type="button"
             class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium"
-            :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-gray-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+            :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
             onclick="timeRange = 'month'"
           >
             Month
@@ -283,7 +286,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <select
             id="connection"
             name="connection"
-            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+            class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
             value="{{ selectedConnection }}"
           >
             <option value="all">All connections</option>
@@ -295,15 +298,15 @@ const copyQuery = (queryId: string, queryText: string) => {
         </div>
         <div>
           <div class="flex items-center rounded-md border-gray-300 dark:border-neutral-700">
-            <span class="pl-3 pr-1 text-sm text-gray-600 dark:text-gray-400">Threshold:</span>
+            <span class="pl-3 pr-1 text-sm text-gray-600 dark:text-neutral-400">Threshold:</span>
             <input
               type="number"
               v-model.number="thresholdMs"
               min="1"
               step="5"
-              class="w-20 rounded-md border-gray-300 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+              class="w-20 rounded-md border-gray-300 py-2 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
             />
-            <span class="pl-1 pr-3 text-sm text-gray-600 dark:text-gray-400">ms</span>
+            <span class="pl-1 pr-3 text-sm text-gray-600 dark:text-neutral-400">ms</span>
           </div>
         </div>
         <div class="relative w-full sm:w-auto">
@@ -313,7 +316,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <input
             type="text"
             value="{{ searchQuery }}"
-            class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-gray-200"
+            class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
             placeholder="Search queries..."
           />
         </div>
@@ -324,23 +327,23 @@ const copyQuery = (queryId: string, queryText: string) => {
       <!-- Summary Stats -->
       <div class="grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4">
         <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Slow Queries</dt>
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Total Slow Queries</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-yellow-600 dark:text-yellow-400">{{ filteredQueries.length }}</dd>
         </div>
         <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Avg Duration</dt>
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Avg Duration</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
             {{ filteredQueries.length ? formatDuration(filteredQueries.reduce((sum, q) => sum + q.duration, 0) / filteredQueries.length) : '0 ms' }}
           </dd>
         </div>
         <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Max Duration</dt>
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Max Duration</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-red-600 dark:text-red-400">
             {{ filteredQueries.length ? formatDuration(Math.max(...filteredQueries.map(q => q.duration))) : '0 ms' }}
           </dd>
         </div>
         <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow dark:bg-neutral-800 sm:p-6">
-          <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Most Affected Table</dt>
+          <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Most Affected Table</dt>
           <dd class="mt-1 text-3xl font-semibold tracking-tight text-blue-600 dark:text-blue-400">
             {{
               filteredQueries.length
@@ -388,11 +391,11 @@ const copyQuery = (queryId: string, queryText: string) => {
                   </div>
                   <div class="mt-2 sm:flex sm:justify-between">
                     <div class="sm:flex">
-                      <p class="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                      <p class="flex items-center text-sm text-gray-500 dark:text-neutral-400">
                         <span class="truncate font-mono text-xs">{{ formatQuery(query.query) }}</span>
                       </p>
                     </div>
-                    <div class="mt-2 flex items-center text-sm text-gray-500 dark:text-gray-400 sm:mt-0">
+                    <div class="mt-2 flex items-center text-sm text-gray-500 dark:text-neutral-400 sm:mt-0">
                       <div class="i-hugeicons-calendar h-4 w-4 mr-1.5"></div>
                       <p>{{ query.executed_at }}</p>
                     </div>
@@ -429,14 +432,14 @@ const copyQuery = (queryId: string, queryText: string) => {
                       <h4 class="text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Bindings</h4>
                       <div class="mt-1 bg-gray-100 dark:bg-neutral-700 p-3 rounded-md">
                         @if(query.bindings && query.bindings.length)
-<pre class="text-xs font-mono text-gray-800 dark:text-gray-200 overflow-x-auto">{{ JSON.stringify(query.bindings, null, 2) }}</pre>
+<pre class="text-xs font-mono text-gray-800 dark:text-neutral-200 overflow-x-auto">{{ JSON.stringify(query.bindings, null, 2) }}</pre>
                         @else
-<p class="text-xs text-gray-500 dark:text-gray-400">No bindings</p>
+<p class="text-xs text-gray-500 dark:text-neutral-400">No bindings</p>
                       </div>
 
                       <h4 class="text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Explain Plan</h4>
                       <div class="mt-1 bg-gray-100 dark:bg-neutral-700 p-3 rounded-md">
-                        <pre class="text-xs font-mono text-gray-800 dark:text-gray-200 overflow-x-auto">{{ query.explain_plan }}</pre>
+                        <pre class="text-xs font-mono text-gray-800 dark:text-neutral-200 overflow-x-auto">{{ query.explain_plan }}</pre>
                       </div>
                     </div>
 
@@ -447,19 +450,19 @@ const copyQuery = (queryId: string, queryText: string) => {
                         @foreach(query.optimization_suggestions as i => suggestion)
 <li class="flex items-start">
                           <div class="i-hugeicons-lightbulb-02 h-5 w-5 text-yellow-500 mr-2 flex-shrink-0 mt-0.5"></div>
-                          <span class="text-sm text-gray-700 dark:text-gray-300">{{ suggestion }}</span>
+                          <span class="text-sm text-gray-700 dark:text-neutral-300">{{ suggestion }}</span>
                         </li>
                       </ul>
 
                       <h4 class="text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Source</h4>
                       <div class="mt-1">
-                        <p class="text-sm text-gray-700 dark:text-gray-300">{{ query.file }}:{{ query.line }}</p>
+                        <p class="text-sm text-gray-700 dark:text-neutral-300">{{ query.file }}:{{ query.line }}</p>
                       </div>
 
                       <h4 class="text-sm font-medium text-gray-900 dark:text-white mt-4 mb-2">Index Information</h4>
                       <div class="mt-1">
                         <div class="mb-2">
-                          <h5 class="text-xs font-medium text-gray-600 dark:text-gray-400">Used Indexes</h5>
+                          <h5 class="text-xs font-medium text-gray-600 dark:text-neutral-400">Used Indexes</h5>
                           @if(query.indexes_used && query.indexes_used.length)
 <div class="mt-1">
                             @foreach(query.indexes_used as index)
@@ -468,11 +471,11 @@ const copyQuery = (queryId: string, queryText: string) => {
                             </span>
                           </div>
                           @else
-<p class="text-xs text-gray-500 dark:text-gray-400">No indexes used</p>
+<p class="text-xs text-gray-500 dark:text-neutral-400">No indexes used</p>
                         </div>
 
                         <div>
-                          <h5 class="text-xs font-medium text-gray-600 dark:text-gray-400">Missing Indexes</h5>
+                          <h5 class="text-xs font-medium text-gray-600 dark:text-neutral-400">Missing Indexes</h5>
                           @if(query.missing_indexes && query.missing_indexes.length)
 <div class="mt-1">
                             @foreach(query.missing_indexes as index)
@@ -481,7 +484,7 @@ const copyQuery = (queryId: string, queryText: string) => {
                             </span>
                           </div>
                           @else
-<p class="text-xs text-gray-500 dark:text-gray-400">No missing indexes identified</p>
+<p class="text-xs text-gray-500 dark:text-neutral-400">No missing indexes identified</p>
                         </div>
                       </div>
                     </div>
@@ -489,7 +492,7 @@ const copyQuery = (queryId: string, queryText: string) => {
                 </div>
               </li>
               @if(filteredQueries.length === 0)
-<li class="px-4 py-6 sm:px-6 text-center text-sm text-gray-500 dark:text-gray-400">
+<li class="px-4 py-6 sm:px-6 text-center text-sm text-gray-500 dark:text-neutral-400">
                 No slow queries found matching your criteria.
               </li>
             </ul>
@@ -498,3 +501,5 @@ const copyQuery = (queryId: string, queryText: string) => {
       </div>
     </main>
   </div>
+
+@endsection

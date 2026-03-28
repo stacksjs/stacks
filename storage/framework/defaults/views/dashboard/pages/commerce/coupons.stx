@@ -36,7 +36,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Coupons" description="Manage discount codes">
@@ -95,5 +94,4 @@ function statusVariant(s) {
   </div>
 
 </div>
-</DashboardLayout>
 @endsection

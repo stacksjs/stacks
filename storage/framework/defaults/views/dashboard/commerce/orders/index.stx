@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import { useOrders } from '../../../../functions/commerce/orders'
 import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.stx'
@@ -68,7 +71,6 @@ async function confirmDelete() {
 }
 </script>
 
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Orders" description="Manage commerce orders">
@@ -146,7 +148,6 @@ async function confirmDelete() {
     variant="danger"
   />
 </div>
-</DashboardLayout>
 <script client>
 import { onMount } from 'stx'
 
@@ -154,3 +155,5 @@ onMount(async () => {
   await fetchOrders()
 })
 </script>
+
+@endsection

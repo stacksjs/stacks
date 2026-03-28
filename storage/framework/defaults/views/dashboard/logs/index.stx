@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -509,19 +512,21 @@ let timeRange = 'day'
 </script>
 
 @title('Dashboard - Logs')
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
-  <div class="px-4 lg:px-8 sm:px-6">
+<div class="p-6 space-y-6">
+
+  <PageHeader title="System Logs" description="A list of all system logs. Monitor system activities and events in real-time." />
+
     <!-- Log Volume Chart -->
     <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Log Volume</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Distribution of log types over time</p>
+            <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Log Volume</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Distribution of log types over time</p>
           </div>
           <select
             value="{{ timeRange }}"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="day">Last 24 Hours</option>
             <option value="week">Last 7 Days</option>
@@ -540,17 +545,6 @@ let timeRange = 'day'
       </div>
     </div>
 
-    <div class="mt-8 sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 font-semibold leading-6">
-          System Logs
-        </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
-          A list of all system logs. Monitor system activities and events in real-time.
-        </p>
-      </div>
-    </div>
-
     <!-- Control Panel -->
     <div class="mt-8 flow-root">
       <div class="mb-6 space-y-4">
@@ -566,7 +560,7 @@ let timeRange = 'day'
 
           <select
             value="{{ filter }}"
-            class="px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 min-w-[140px]"
+            class="px-4 py-2 border rounded-lg bg-white dark:bg-neutral-800 min-w-[140px]"
           >
             <option value="all">All Sources</option>
             <option value="cli">CLI</option>
@@ -578,7 +572,7 @@ let timeRange = 'day'
 
           <select
             value="{{ logTypeFilter }}"
-            class="px-4 py-2 border rounded-lg bg-white dark:bg-gray-800 min-w-[140px]"
+            class="px-4 py-2 border rounded-lg bg-white dark:bg-neutral-800 min-w-[140px]"
           >
             <option value="all">All Types</option>
             <option value="info">Info</option>
@@ -631,8 +625,8 @@ let timeRange = 'day'
       <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
-              <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
                   <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
@@ -642,7 +636,7 @@ let timeRange = 'day'
                   <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-gray-800 divide-y divide-gray-200">
+              <tbody class="bg-white dark:bg-neutral-800 divide-y divide-gray-200">
                 @foreach(log in paginatedLogs)
                   <tr
                     class="{{ getLogRowClass(log.type) }} hover:bg-gray-50 cursor-pointer"
@@ -704,7 +698,7 @@ let timeRange = 'day'
       <!-- Pagination Controls -->
       <div class="mt-4 flex items-center justify-between">
         <div class="flex items-center">
-          <span class="text-sm text-gray-700 dark:text-gray-400">
+          <span class="text-sm text-gray-700 dark:text-neutral-400">
             Showing <span class="font-medium">{{ paginatedLogs.length }}</span> of <span class="font-medium">{{ totalItems }}</span> results
           </span>
         </div>
@@ -772,7 +766,7 @@ let timeRange = 'day'
             class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
             @click.self="selectedLog = null"
           >
-            <div class="bg-white dark:bg-gray-800 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
+            <div class="bg-white dark:bg-neutral-800 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
               <div class="flex justify-between items-center mb-4">
                 <h3 class="text-lg font-semibold">Log Details</h3>
                 <button
@@ -981,7 +975,6 @@ let timeRange = 'day'
         @endif
       </Teleport>
     </div>
-  </div>
 </div>
 <script client>
 import { onMount } from 'stx'
@@ -992,3 +985,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

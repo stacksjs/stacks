@@ -57,7 +57,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout pageTitle="{{ modelName }}" pageDescription="View and manage {{ modelName }} data">
   <div ref="pageRoot" class="p-6">
     <div class="mb-4">
       <a href="/app#data-dashboard" class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
@@ -69,7 +68,7 @@ function statusVariant(s) {
     <div class="flex items-center justify-between mb-6">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ modelName }}</h1>
-        <p class="text-sm text-gray-500 dark:text-gray-400 mt-1">
+        <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1">
           @if(error)
             Table "{{ tableName }}" not found or error occurred
           @else
@@ -97,63 +96,63 @@ function statusVariant(s) {
       </div>
     @elseif(items.length === 0)
       <!-- Empty State -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-12 text-center">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center mx-auto mb-4">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-12 text-center">
+        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-neutral-700 flex items-center justify-center mx-auto mb-4">
           <span class="text-gray-400 text-2xl">0</span>
         </div>
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {{ modelName }} Found</h3>
-        <p class="text-gray-500 dark:text-gray-400 mb-6">Get started by creating your first {{ modelName }}.</p>
+        <p class="text-gray-500 dark:text-neutral-400 mb-6">Get started by creating your first {{ modelName }}.</p>
         <Button variant="primary" size="sm">Create {{ modelName }}</Button>
       </div>
     @else
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
           <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalCount }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Total Records</div>
+          <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">Total Records</div>
         </div>
-        <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+        <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
           <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ recentCount }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">Added This Week</div>
+          <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">Added This Week</div>
         </div>
         @foreach(statusKeys as sk)
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+          <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
             <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ statusBreakdown[sk] }}</div>
-            <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ sk }}</div>
+            <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">{{ sk }}</div>
           </div>
         @endforeach
       </div>
 
       <div class="mb-4">
         <input type="text" id="modelSearch" placeholder="Search {{ modelName }}..."
-          class="px-4 py-2 text-sm border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" >
+          class="px-4 py-2 text-sm border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" >
       </div>
 
       <!-- Data Table -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 overflow-hidden">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-hidden">
         @if (items.length > 0)
         <div class="overflow-x-auto">
           <table class="w-full">
-            <thead class="bg-gray-50 dark:bg-gray-700/50">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 @foreach(columns as col)
-                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">
                     {{ col.label }}
                   </th>
                 @endforeach
-                <th scope="col" class="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
+                <th scope="col" class="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody id="modelTableBody" class="divide-y divide-gray-100 dark:divide-gray-700">
+            <tbody id="modelTableBody" class="divide-y divide-gray-100 dark:divide-neutral-700">
               @foreach(items as item)
-                <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/30">
                   @foreach(columns as col)
                     <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
                       @if(col.name === 'id')
-                        <span class="font-mono text-xs bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded">{{ item[col.name] }}</span>
+                        <span class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 px-2 py-1 rounded">{{ item[col.name] }}</span>
                       @elseif(col.name.includes('_at') || col.name.includes('date'))
-                        <span class="text-gray-500 dark:text-gray-400">{{ item[col.name] ? new Date(item[col.name]).toLocaleDateString() : '-' }}</span>
+                        <span class="text-gray-500 dark:text-neutral-400">{{ item[col.name] ? new Date(item[col.name]).toLocaleDateString() : '-' }}</span>
                       @elseif(col.name === 'status')
                         <Badge variant="{{ statusVariant(item[col.name]) }}" size="sm" dot>{{ item[col.name] }}</Badge>
                       @elseif(col.name === 'email')
@@ -200,20 +199,20 @@ function statusVariant(s) {
           </table>
         </div>
         @else
-          <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-gray-400">No data available</p>
+          <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-8 text-center">
+            <p class="text-sm text-gray-500 dark:text-neutral-400">No data available</p>
           </div>
 
         <!-- Pagination -->
-        <div class="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex items-center justify-between">
-          <div class="text-sm text-gray-500 dark:text-gray-400">
+        <div class="px-4 py-3 border-t border-gray-200 dark:border-neutral-700 flex items-center justify-between">
+          <div class="text-sm text-gray-500 dark:text-neutral-400">
             Showing {{ items.length }} of {{ totalCount }} records
           </div>
           <div class="flex gap-2">
-            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50" disabled>
+            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded hover:bg-gray-50 dark:hover:bg-neutral-700 disabled:opacity-50" disabled>
               Previous
             </button>
-            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-50 dark:hover:bg-gray-700">
+            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded hover:bg-gray-50 dark:hover:bg-neutral-700">
               Next
             </button>
           </div>
@@ -221,7 +220,6 @@ function statusVariant(s) {
       </div>
     @endif
   </div>
-</DashboardLayout>
 <script client>
 const _root = useRef('pageRoot')
 onMount(function() {

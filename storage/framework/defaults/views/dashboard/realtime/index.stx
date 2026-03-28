@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -326,7 +329,7 @@ let activeConnections = [
   <div class="px-4 lg:px-8 sm:px-6">
     <!-- Last 30 Days Stats -->
     <div class="mb-8">
-      <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+      <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
         Last 30 days
       </h3>
 
@@ -337,13 +340,13 @@ let activeConnections = [
               <div class="i-hugeicons-link-03 h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Connections Triggered
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+            <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
               {{ stats.connectionsTriggered }}
             </p>
 
@@ -363,13 +366,13 @@ let activeConnections = [
               <div class="i-hugeicons-alarm-clock h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Average Latency
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+            <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
               {{ stats.avgLatency }}
             </p>
 
@@ -389,13 +392,13 @@ let activeConnections = [
               <div class="i-hugeicons-checkmark-circle-01 h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Success Rate
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+            <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
               {{ stats.successRate }}
             </p>
 
@@ -415,19 +418,19 @@ let activeConnections = [
     <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow p-4">
       <div class="flex items-center gap-4">
         <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-700 dark:text-gray-300">App:</label>
+          <label class="text-sm text-gray-700 dark:text-neutral-300">App:</label>
           <input
             value="{{ app }}"
             type="text"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
         </div>
         <div class="flex items-center gap-2">
-          <label class="text-sm text-gray-700 dark:text-gray-300">Port:</label>
+          <label class="text-sm text-gray-700 dark:text-neutral-300">Port:</label>
           <input
             value="{{ port }}"
             type="text"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
         </div>
         <button
@@ -442,7 +445,7 @@ let activeConnections = [
           {{ isConnected ? 'Disconnect' : 'Connect' }}
         </button>
       </div>
-      <div class="mt-4 text-sm text-gray-500 dark:text-gray-400">
+      <div class="mt-4 text-sm text-gray-500 dark:text-neutral-400">
         {{ channelState }}
       </div>
     </div>
@@ -452,8 +455,8 @@ let activeConnections = [
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Realtime Statistics</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Live monitoring of connections and messages</p>
+            <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Realtime Statistics</h3>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Live monitoring of connections and messages</p>
           </div>
         </div>
         <div class="h-[300px] relative">
@@ -470,33 +473,33 @@ let activeConnections = [
     <!-- Event Creator -->
     <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
-        <h3 class="text-base font-medium text-gray-900 dark:text-gray-100 mb-4">Event Creator</h3>
+        <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100 mb-4">Event Creator</h3>
         <div class="space-y-4">
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Channel</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Channel</label>
             <input
               value="{{ eventChannel }}"
               type="text"
               placeholder="chat.1"
-              class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Event</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Event</label>
             <input
               value="{{ eventName }}"
               type="text"
               placeholder="message.sent"
-              class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              class="block w-full h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
             >
           </div>
           <div>
-            <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Data</label>
+            <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Data</label>
             <textarea
               value="{{ eventData }}"
               rows="3"
               placeholder='{"message": "Hello World!", "user_id": 1}'
-              class="block w-full text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+              class="block w-full text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
             ></textarea>
           </div>
           <div class="flex justify-end">
@@ -516,13 +519,13 @@ let activeConnections = [
     <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Events</h3>
+          <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Events</h3>
           <div class="flex items-center gap-4">
             <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-700 dark:text-gray-300">Filter:</label>
+              <label class="text-sm text-gray-700 dark:text-neutral-300">Filter:</label>
               <select
                 value="{{ selectedEventType }}"
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="{{ null }}">All Events</option>
                 @foreach(eventTypes as type)
@@ -533,12 +536,12 @@ let activeConnections = [
               </select>
             </div>
             <div class="flex items-center gap-2">
-              <label class="text-sm text-gray-700 dark:text-gray-300">Search:</label>
+              <label class="text-sm text-gray-700 dark:text-neutral-300">Search:</label>
               <input
                 value="{{ searchQuery }}"
                 type="text"
                 placeholder="Search events..."
-                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
             </div>
             <button
@@ -551,16 +554,16 @@ let activeConnections = [
           </div>
         </div>
         <div class="overflow-x-auto">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
             <thead>
               <tr>
-                <th scope="col" class="py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold w-32">Type</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold w-48">Socket</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">Details</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold w-32">Time</th>
+                <th scope="col" class="py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold w-32">Type</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold w-48">Socket</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">Details</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold w-32">Time</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-600">
+            <tbody class="divide-y divide-gray-200 dark:divide-neutral-600">
               @foreach(filteredEvents as event)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
                   <td class="py-4 text-sm font-medium">
@@ -577,10 +580,10 @@ let activeConnections = [
                       {{ event.type }}
                     </span>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 font-mono">
                     {{ event.socket || '-' }}
                   </td>
-                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                     <div class="font-mono">{{ event.details }}</div>
                     @if(event.data)
                       <div class="mt-1 text-xs">
@@ -596,7 +599,7 @@ let activeConnections = [
                       </div>
                     @endif
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                     {{ event.time }}
                   </td>
                 </tr>
@@ -615,3 +618,5 @@ onMount(async () => {
   connect()
 })
 </script>
+
+@endsection

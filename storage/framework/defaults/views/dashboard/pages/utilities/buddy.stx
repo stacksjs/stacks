@@ -15,7 +15,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Buddy CLI" description="Command line interface for Stacks">
@@ -97,5 +96,4 @@ function statusVariant(s) {
     </div>
   </Card>
 </div>
-</DashboardLayout>
 @endsection

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import {
   Chart as ChartJS,
@@ -192,7 +195,7 @@ const workerStatusColors: Record<string, string> = {
 }
 
 const getWorkerStatusColor = (status: string): string => {
-  return workerStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
+  return workerStatusColors[status] || 'text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/50 ring-gray-600/20'
 }
 
 // Generate mock throughput data
@@ -310,7 +313,7 @@ workers = workers.map(worker => ({
       <!-- Stats Overview -->
     <div class="mb-8">
       <div>
-        <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
           Queue Overview
         </h3>
 
@@ -320,12 +323,12 @@ workers = workers.map(worker => ({
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-hugeicons-queue-02 h-6 w-6 text-white" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
                 Total Jobs
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
                 71,897
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
@@ -341,12 +344,12 @@ workers = workers.map(worker => ({
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
                 Average Processing Time
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
                 2.3s
               </p>
               <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
@@ -362,12 +365,12 @@ workers = workers.map(worker => ({
               <div class="absolute rounded-md bg-blue-500 p-3">
                 <div class="i-hugeicons-energy h-6 w-6 text-white" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-300 font-medium">
+              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
                 Jobs Per Minute
               </p>
             </dt>
             <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-gray-100 font-semibold">
+              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
                 42
               </p>
               <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
@@ -385,8 +388,8 @@ workers = workers.map(worker => ({
     <div class="mt-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-          <h3 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Detailed breakdown of jobs by queue and status</p>
+          <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Queue Statistics</h3>
+          <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Detailed breakdown of jobs by queue and status</p>
         </div>
       </div>
 
@@ -394,7 +397,7 @@ workers = workers.map(worker => ({
         @foreach(queues as name => stats)
 <div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
           <div class="flex items-center justify-between mb-4">
-            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-neutral-600 dark:text-gray-200">
+            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-neutral-600 dark:text-neutral-200">
               {{ name }}
             </h4>
           </div>
@@ -411,7 +414,7 @@ workers = workers.map(worker => ({
                   'text-purple-600 dark:text-purple-400': status === 'released',
                   'text-red-600 dark:text-red-400': status === 'failed'
                 } }}">{{ value }}</div>
-                <div class="text-xs text-gray-500 dark:text-gray-400 capitalize">{{ status }}</div>
+                <div class="text-xs text-gray-500 dark:text-neutral-400 capitalize">{{ status }}</div>
               </div>
             </div>
 
@@ -422,7 +425,7 @@ workers = workers.map(worker => ({
                 <div class="bg-red-500 h-full" style="{{ { width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` } }}" />
               </div>
             </div>
-            <div class="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <div class="flex justify-between text-xs text-gray-500 dark:text-neutral-400">
               <span>Success Rate: {{ ((stats.processed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
               <span>Failure Rate: {{ ((stats.failed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
             </div>
@@ -435,11 +438,11 @@ workers = workers.map(worker => ({
       <div class="my-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
-            <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Queue Statistics</h4>
+            <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Queue Statistics</h4>
             <div class="flex items-center gap-4">
               <select
                 value="{{ selectedQueue }}"
-                class="block h-9 w-32 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="block h-9 w-32 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="all">All Queues</option>
                 @foreach(queues as queue => _)
@@ -450,7 +453,7 @@ workers = workers.map(worker => ({
 
               <select
                 value="{{ timeRange }}"
-                class="block h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600"
+                class="block h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="hour">Last Hour</option>
                 <option value="day">Last 24 Hours</option>
@@ -478,8 +481,8 @@ workers = workers.map(worker => ({
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Workers</h4>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Monitor your queue workers and their performance.</p>
+              <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Workers</h4>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Monitor your queue workers and their performance.</p>
             </div>
             <div class="flex items-center gap-4">
               <button
@@ -491,7 +494,7 @@ workers = workers.map(worker => ({
               </button>
               <button
                 onclick="clearFailedJobs"
-                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
+                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
               >
                 <div class="i-hugeicons-trash h-5 w-5 mr-1" />
                 Clear Failed Jobs
@@ -502,12 +505,12 @@ workers = workers.map(worker => ({
           <div class="space-y-6">
             @foreach(workers as worker)
 <div
-              class="relative border dark:border-gray-600 rounded-lg p-6 transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-500"
+              class="relative border dark:border-neutral-600 rounded-lg p-6 transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-500"
             >
               <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ worker.name }}</h5>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Queue: {{ worker.queue }}</p>
+                  <h5 class="text-lg font-medium text-gray-900 dark:text-neutral-100">{{ worker.name }}</h5>
+                  <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Queue: {{ worker.queue }}</p>
                 </div>
 
                 <div>
@@ -520,7 +523,7 @@ workers = workers.map(worker => ({
                         'bg-red-500': worker.status === 'stopped',
                       } }}"
                     ></div>
-                    <span class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                    <span class="text-sm font-medium text-gray-900 dark:text-neutral-100">
                       {{ worker.status.charAt(0).toUpperCase() + worker.status.slice(1) }}
                     </span>
                   </div>
@@ -550,14 +553,14 @@ workers = workers.map(worker => ({
                       Stop
                     </button>
                   </div>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                     Last heartbeat: {{ worker.last_heartbeat }}
                   </p>
                 </div>
 
                 <div>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">Jobs Processed</p>
-                  <p class="mt-1 text-lg font-medium text-gray-900 dark:text-gray-100">
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">Jobs Processed</p>
+                  <p class="mt-1 text-lg font-medium text-gray-900 dark:text-neutral-100">
                     {{ worker.jobs_processed.toLocaleString() }}
                   </p>
                   <p class="mt-1 text-sm text-red-600 dark:text-red-400">
@@ -569,20 +572,20 @@ workers = workers.map(worker => ({
                   <div class="space-y-4">
                     <div>
                       <div class="flex items-center justify-between text-sm">
-                        <span class="text-gray-500 dark:text-gray-400">Connection</span>
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.connection }}</span>
+                        <span class="text-gray-500 dark:text-neutral-400">Connection</span>
+                        <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.connection }}</span>
                       </div>
                       <div class="flex items-center justify-between text-sm mt-2">
-                        <span class="text-gray-500 dark:text-gray-400">Memory Limit</span>
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.memory_limit }}MB</span>
+                        <span class="text-gray-500 dark:text-neutral-400">Memory Limit</span>
+                        <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.memory_limit }}MB</span>
                       </div>
                       <div class="flex items-center justify-between text-sm mt-2">
-                        <span class="text-gray-500 dark:text-gray-400">Timeout</span>
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.timeout }}s</span>
+                        <span class="text-gray-500 dark:text-neutral-400">Timeout</span>
+                        <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.timeout }}s</span>
                       </div>
                       <div class="flex items-center justify-between text-sm mt-2">
-                        <span class="text-gray-500 dark:text-gray-400">Supervisor</span>
-                        <span class="font-medium text-gray-900 dark:text-gray-100">{{ worker.supervisor_id }}</span>
+                        <span class="text-gray-500 dark:text-neutral-400">Supervisor</span>
+                        <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.supervisor_id }}</span>
                       </div>
                     </div>
 
@@ -609,3 +612,5 @@ workers = workers.map(worker => ({
       </div>
     </div>
   </div>
+
+@endsection

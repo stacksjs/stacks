@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import Chart from 'chart.js/auto'
 
@@ -414,11 +417,11 @@ const getStatusClass = (status: string): string => {
     case 'Seated':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
     case 'Cancelled':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
     case 'No Show':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -432,7 +435,7 @@ const getPriorityClass = (priority: number): string => {
     case 1:
       return 'text-blue-600 dark:text-blue-400'
     default:
-      return 'text-gray-600 dark:text-gray-400'
+      return 'text-gray-600 dark:text-neutral-400'
   }
 }
 
@@ -1076,7 +1079,7 @@ function updateCharts(): void {
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Waitlist</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
               Manage your product waitlist and notify customers when products become available
             </p>
           </div>
@@ -1092,7 +1095,7 @@ function updateCharts(): void {
             <button
               type="button"
               onclick="exportWaitlist"
-              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700"
+              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700"
             >
               <div class="i-hugeicons-download-01 h-5 w-5 mr-1"></div>
               Export
@@ -1103,7 +1106,7 @@ function updateCharts(): void {
         <!-- Stats Cards -->
         <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Current Wait</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Current Wait</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {{ waitTimeStats?.averageWait || 0 }}min
             </dd>
@@ -1114,7 +1117,7 @@ function updateCharts(): void {
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Seated Today</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Seated Today</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ seatedEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
               <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
@@ -1123,7 +1126,7 @@ function updateCharts(): void {
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">No Shows</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">No Shows</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ noShowEntries }}</dd>
             <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
               <div class="i-hugeicons-cancel-circle h-4 w-4 mr-1"></div>
@@ -1132,7 +1135,7 @@ function updateCharts(): void {
           </div>
 
           <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Seating Rate</dt>
+            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Seating Rate</dt>
             <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">
               {{ Math.round((seatedEntries / (totalEntries || 1)) * 100) }}%
             </dd>
@@ -1195,7 +1198,7 @@ function updateCharts(): void {
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
               placeholder="Search waitlist..."
             />
           </div>
@@ -1204,7 +1207,7 @@ function updateCharts(): void {
             <!-- Party Size filter -->
             <select
               value="{{ partySizeFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Party Sizes</option>
               <option value="1-2">1-2 People</option>
@@ -1216,7 +1219,7 @@ function updateCharts(): void {
             <!-- Status filter -->
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Statuses</option>
               @foreach(statuses.slice(1) as status)
@@ -1228,7 +1231,7 @@ function updateCharts(): void {
             <!-- Table Preference filter -->
             <select
               value="{{ tablePreferenceFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Table Types</option>
               @foreach(tablePreferences.slice(1) as preference)
@@ -1240,7 +1243,7 @@ function updateCharts(): void {
         </div>
 
         <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
           <span class="mr-2">Sort by:</span>
           <button
             onclick="toggleSort('name')"
@@ -1321,7 +1324,7 @@ function updateCharts(): void {
 
         <!-- Waitlist table -->
         <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-900">
               <tr>
                 <th scope="col" class="relative py-3.5 pl-4 pr-3 sm:pl-6">
@@ -1329,7 +1332,7 @@ function updateCharts(): void {
                     type="checkbox"
                     checked="{{ selectAll }}"
                     onchange="toggleSelectAll"
-                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600"
                   />
                 </th>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
@@ -1355,10 +1358,10 @@ function updateCharts(): void {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
               @if(paginatedEntries.length === 0)
 <tr class="text-center">
-                <td colspan="8" class="py-10 text-gray-500 dark:text-gray-400">
+                <td colspan="8" class="py-10 text-gray-500 dark:text-neutral-400">
                   No parties currently on the waitlist.
                 </td>
               </tr>
@@ -1369,7 +1372,7 @@ function updateCharts(): void {
                     type="checkbox"
                     checked="{{ selectedEntries.includes(entry.id) }}"
                     onchange="toggleEntrySelection(entry.id)"
-                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600"
+                    class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600"
                   />
                 </td>
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
@@ -1378,7 +1381,7 @@ function updateCharts(): void {
                       <div class="font-medium text-gray-900 dark:text-white">
                         {{ entry.name }} ({{ entry.partySize }} {{ entry.partySize === 1 ? 'person' : 'people' }})
                       </div>
-                      <div class="text-gray-500 dark:text-gray-400">
+                      <div class="text-gray-500 dark:text-neutral-400">
                         {{ entry.phone || entry.email }}
                       </div>
                     </div>
@@ -1388,24 +1391,24 @@ function updateCharts(): void {
                   <div class="font-medium text-gray-900 dark:text-white">
                     {{ entry.estimatedWaitMinutes }} min
                   </div>
-                  <div class="text-gray-500 dark:text-gray-400">Quoted: {{ entry.quotedWaitMinutes }} min</div>
+                  <div class="text-gray-500 dark:text-neutral-400">Quoted: {{ entry.quotedWaitMinutes }} min</div>
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
                   <span :class="getStatusClass(entry.status)" class="inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium">
                     {{ entry.status }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   {{ new Date(entry.checkInTime).toLocaleTimeString() }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   {{ entry.tablePreference || 'No Preference' }}
                 </td>
                 <td class="whitespace-nowrap px-3 py-4 text-sm">
                   @if(entry.status === 'Waiting')
 <span class="font-medium text-gray-900 dark:text-white">#{{ entry.queuePosition }}</span>
                   @else
-<span class="text-gray-500 dark:text-gray-400">-</span>
+<span class="text-gray-500 dark:text-neutral-400">-</span>
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
                   <div class="flex justify-end space-x-2">
@@ -1447,7 +1450,7 @@ function updateCharts(): void {
               disabled="{{ currentPage === 1 }}"
               class="{{ [
                 currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white'
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
               ] }}"
             >
               Previous
@@ -1457,7 +1460,7 @@ function updateCharts(): void {
               disabled="{{ currentPage === totalPages }}"
               class="{{ [
                 currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white'
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
               ] }}"
             >
               Next
@@ -1465,7 +1468,7 @@ function updateCharts(): void {
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-gray-700 dark:text-neutral-300">
                 Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
                 <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredEntries.length) }}</span> of
                 <span class="font-medium">{{ filteredEntries.length }}</span> results
@@ -1478,7 +1481,7 @@ function updateCharts(): void {
                   disabled="{{ currentPage === 1 }}"
                   class="{{ [
                     currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-                    'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
+                    'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600'
                   ] }}"
                 >
                   <span class="sr-only">Previous</span>
@@ -1490,7 +1493,7 @@ function updateCharts(): void {
                   class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700',
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
                     'focus:z-20'
                   ] }}"
                 >
@@ -1501,7 +1504,7 @@ function updateCharts(): void {
                   disabled="{{ currentPage === totalPages }}"
                   class="{{ [
                     currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-                    'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-gray-600'
+                    'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600'
                   ] }}"
                 >
                   <span class="sr-only">Next</span>
@@ -1526,7 +1529,7 @@ function updateCharts(): void {
                 {{ isEditMode ? 'Edit Waitlist Entry' : 'Add to Waitlist' }}
               </h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-500 dark:text-neutral-400">
                   {{ isEditMode ? 'Update the details for this waitlist entry.' : 'Fill in the details to add a new customer to the waitlist.' }}
                 </p>
               </div>
@@ -1538,7 +1541,7 @@ function updateCharts(): void {
               <div class="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
                 <!-- Name field -->
                 <div class="sm:col-span-3">
-                  <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Name
                   </label>
                   <div class="mt-1">
@@ -1547,14 +1550,14 @@ function updateCharts(): void {
                       value="{{ entryName }}"
                       type="text"
                       required
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <!-- Email field -->
                 <div class="sm:col-span-3">
-                  <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="email" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Email
                   </label>
                   <div class="mt-1">
@@ -1563,14 +1566,14 @@ function updateCharts(): void {
                       value="{{ entryEmail }}"
                       type="email"
                       required
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <!-- Phone field -->
                 <div class="sm:col-span-3">
-                  <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="phone" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Phone (optional)
                   </label>
                   <div class="mt-1">
@@ -1578,14 +1581,14 @@ function updateCharts(): void {
                       id="phone"
                       value="{{ entryPhone }}"
                       type="tel"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <!-- Party Size field -->
                 <div class="sm:col-span-3">
-                  <label for="partySize" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="partySize" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Party Size
                   </label>
                   <div class="mt-1">
@@ -1593,21 +1596,21 @@ function updateCharts(): void {
                       id="partySize"
                       value="{{ entryPartySize }}"
                       type="number"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     />
                   </div>
                 </div>
 
                 <!-- Notification Preference field -->
                 <div class="sm:col-span-3">
-                  <label for="notificationPreference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="notificationPreference" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Notification Preference
                   </label>
                   <div class="mt-1">
                     <select
                       id="notificationPreference"
                       value="{{ entryNotificationPreference }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     >
                       @foreach(notificationPreferences as preference)
 <option value="{{ preference }}">
@@ -1619,14 +1622,14 @@ function updateCharts(): void {
 
                 <!-- Table Preference field -->
                 <div class="sm:col-span-3">
-                  <label for="tablePreference" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="tablePreference" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Table Preference
                   </label>
                   <div class="mt-1">
                     <select
                       id="tablePreference"
                       value="{{ entryTablePreference }}"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     >
                       @foreach(tablePreferences as preference)
 <option value="{{ preference }}">
@@ -1638,7 +1641,7 @@ function updateCharts(): void {
 
                 <!-- Special Requests field -->
                 <div class="sm:col-span-6">
-                  <label for="specialRequests" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="specialRequests" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Special Requests (optional)
                   </label>
                   <div class="mt-1">
@@ -1646,14 +1649,14 @@ function updateCharts(): void {
                       id="specialRequests"
                       value="{{ entrySpecialRequests }}"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     ></textarea>
                   </div>
                 </div>
 
                 <!-- Notes field -->
                 <div class="sm:col-span-6">
-                  <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  <label for="notes" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">
                     Notes (optional)
                   </label>
                   <div class="mt-1">
@@ -1661,7 +1664,7 @@ function updateCharts(): void {
                       id="notes"
                       value="{{ entryNotes }}"
                       rows="3"
-                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                      class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                     ></textarea>
                   </div>
                 </div>
@@ -1677,7 +1680,7 @@ function updateCharts(): void {
                 <button
                   type="button"
                   onclick="showEntryModal = false"
-                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                  class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                 >
                   Cancel
                 </button>
@@ -1700,21 +1703,21 @@ function updateCharts(): void {
                 Send Notification
               </h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-500 dark:text-neutral-400">
                   Subject:
                 </p>
                 <input
                   value="{{ notificationSubject }}"
                   type="text"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                 />
-                <p class="text-sm text-gray-500 dark:text-gray-400 mt-2">
+                <p class="text-sm text-gray-500 dark:text-neutral-400 mt-2">
                   Message:
                 </p>
                 <textarea
                   value="{{ notificationMessage }}"
                   rows="3"
-                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-gray-600 dark:bg-neutral-700 dark:text-white"
+                  class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:border-neutral-600 dark:bg-neutral-700 dark:text-white"
                 ></textarea>
               </div>
             </div>
@@ -1732,3 +1735,5 @@ function updateCharts(): void {
       </div>
     </div>
   </main>
+
+@endsection

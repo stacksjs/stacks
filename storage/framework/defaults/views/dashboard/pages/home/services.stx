@@ -69,66 +69,66 @@ function formatName(n) {
 })();
 </script>
 
-<div class="min-h-screen bg-gray-50 dark:bg-gray-900 p-6">
+<div class="min-h-screen bg-gray-50 dark:bg-neutral-900 p-6">
   <div class="flex items-start justify-between mb-8">
     <div>
       <h1 class="text-3xl font-bold text-gray-900 dark:text-white">Services</h1>
-      <p class="text-gray-500 dark:text-gray-400 mt-1">Infrastructure, APIs, and system dependencies managed by Stacks & Pantry</p>
+      <p class="text-gray-500 dark:text-neutral-400 mt-1">Infrastructure, APIs, and system dependencies managed by Stacks & Pantry</p>
     </div>
   </div>
 
   <!-- Stats -->
   <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
     @foreach (stats as stat)
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
         <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-        <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
+        <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">{{ stat.label }}</div>
       </div>
     @endforeach
   </div>
 
   @if (infra.length > 0 || systemDeps.length > 0 || orderedApiGroups.length > 0)
   <!-- Infrastructure Services -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+  <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
       <span class="font-semibold text-gray-900 dark:text-white">Infrastructure</span>
-      <span class="text-xs text-gray-500 dark:text-gray-400">{{ infra.length }} services</span>
+      <span class="text-xs text-gray-500 dark:text-neutral-400">{{ infra.length }} services</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
       @foreach (infra as svc)
-        <div class="flex flex-col gap-1 p-4 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+        <div class="flex flex-col gap-1 p-4 rounded-lg border border-gray-100 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700/30">
           <div class="flex items-center justify-between">
             <span class="font-medium text-sm text-gray-900 dark:text-white">{{ svc.name }}</span>
             <div class="flex items-center gap-2">
-              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium {{ svc.status === 'running' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : svc.status === 'configured' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' }}">
+              <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium {{ svc.status === 'running' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : svc.status === 'configured' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400' : 'bg-gray-100 dark:bg-neutral-700 text-gray-500 dark:text-neutral-400' }}">
                 {{ svc.status || 'not set' }}
               </span>
               <button onclick="_toggleEdit('infra-{{ svc.name }}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Edit</button>
             </div>
           </div>
           <div class="flex items-center justify-between">
-            <span class="text-xs text-gray-500 dark:text-gray-400">{{ svc.driver }}</span>
-            <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ svc.detail }}</span>
+            <span class="text-xs text-gray-500 dark:text-neutral-400">{{ svc.driver }}</span>
+            <span class="text-xs text-gray-400 dark:text-neutral-500 font-mono">{{ svc.detail }}</span>
           </div>
 
           <!-- Inline edit panel -->
-          <div id="edit-infra-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+          <div id="edit-infra-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-neutral-700">
             @foreach (svc.fields as field)
               <div class="flex items-center gap-2 mb-2">
-                <label class="text-xs text-gray-500 dark:text-gray-400 w-16 shrink-0">{{ field.label }}</label>
+                <label class="text-xs text-gray-500 dark:text-neutral-400 w-16 shrink-0">{{ field.label }}</label>
                 @if(field.options)
-                  <select data-config-key="{{ field.key }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
+                  <select data-config-key="{{ field.key }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-gray-900 dark:text-white">
                     @foreach (field.options.split(',') as opt)
                       <option value="{{ opt }}" {{ opt === field.value ? 'selected' : '' }}>{{ opt }}</option>
                     @endforeach
                   </select>
                 @else
-                  <input type="text" data-config-key="{{ field.key }}" value="{{ field.value }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+                  <input type="text" data-config-key="{{ field.key }}" value="{{ field.value }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-gray-900 dark:text-white" />
                 @endif
               </div>
             @endforeach
             <div class="flex justify-end gap-2 mt-2">
-              <button onclick="_toggleEdit('infra-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-gray-400">Cancel</button>
+              <button onclick="_toggleEdit('infra-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-neutral-400">Cancel</button>
               <button data-save-btn onclick="_saveConfig('{{ svc.configFile }}', 'infra-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">Save</button>
             </div>
           </div>
@@ -138,16 +138,16 @@ function formatName(n) {
   </div>
 
   <!-- System Dependencies (Pantry) -->
-  <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5 mb-6">
+  <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5 mb-6">
     <div class="flex items-center justify-between mb-4">
       <span class="font-semibold text-gray-900 dark:text-white">System Dependencies</span>
-      <span class="text-xs text-gray-500 dark:text-gray-400">{{ systemDeps.length }} managed by Pantry</span>
+      <span class="text-xs text-gray-500 dark:text-neutral-400">{{ systemDeps.length }} managed by Pantry</span>
     </div>
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
       @foreach (systemDeps as dep)
-        <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-gray-700">
+        <div class="flex items-center justify-between p-3 rounded-lg border border-gray-100 dark:border-neutral-700">
           <span class="font-medium text-sm text-gray-900 dark:text-white">{{ dep.name }}</span>
-          <span class="text-xs text-gray-400 dark:text-gray-500 font-mono">{{ dep.version }}</span>
+          <span class="text-xs text-gray-400 dark:text-neutral-500 font-mono">{{ dep.version }}</span>
         </div>
       @endforeach
     </div>
@@ -156,37 +156,37 @@ function formatName(n) {
   <!-- Third-Party API Services -->
   <div class="flex flex-col gap-6">
     @foreach (orderedApiGroups as group)
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-5">
+      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
         <div class="flex items-center justify-between mb-4">
           <span class="font-semibold text-gray-900 dark:text-white">{{ group.label }}</span>
-          <span class="text-xs text-gray-500 dark:text-gray-400">{{ group.items.length }} services</span>
+          <span class="text-xs text-gray-500 dark:text-neutral-400">{{ group.items.length }} services</span>
         </div>
         <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
           @foreach (group.items as svc)
-            <div class="flex flex-col p-3 rounded-lg border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/30">
+            <div class="flex flex-col p-3 rounded-lg border border-gray-100 dark:border-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-700/30">
               <div class="flex items-center justify-between">
                 <div class="flex items-center gap-3">
-                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold {{ svc.configured ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-400 dark:text-gray-500' }}">
+                  <div class="w-8 h-8 rounded-lg flex items-center justify-center text-sm font-bold {{ svc.configured ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-gray-100 dark:bg-neutral-700 text-gray-400 dark:text-neutral-500' }}">
                     {{ svc.name.charAt(0).toUpperCase() }}
                   </div>
                   <span class="font-medium text-sm text-gray-900 dark:text-white">{{ formatName(svc.name) }}</span>
                 </div>
                 <div class="flex items-center gap-2">
-                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ svc.configured ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400' }}">{{ svc.configured ? 'configured' : 'not set' }}</span>
+                  <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {{ svc.configured ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-gray-100 dark:bg-neutral-700 text-gray-500 dark:text-neutral-400' }}">{{ svc.configured ? 'configured' : 'not set' }}</span>
                   <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 font-medium">Edit</button>
                 </div>
               </div>
 
               <!-- Inline edit panel for API service -->
-              <div id="edit-api-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-gray-700">
+              <div id="edit-api-{{ svc.name }}" data-edit-panel style="display: none;" class="mt-3 pt-3 border-t border-gray-100 dark:border-neutral-700">
                 @foreach (svc.fields as field)
                   <div class="flex items-center gap-2 mb-2">
-                    <label class="text-xs text-gray-500 dark:text-gray-400 w-24 shrink-0 truncate" :title="field.key">{{ field.label }}</label>
-                    <input type="{{ field.key === 'apiKey' || field.key === 'secretKey' || field.key === 'password' || field.key === 'privateKey' || field.key === 'botToken' ? 'password' : 'text' }}" data-config-key="{{ field.key }}" value="{{ field.value }}" placeholder="{{ field.env ? 'env.' + field.env : '' }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white font-mono" />
+                    <label class="text-xs text-gray-500 dark:text-neutral-400 w-24 shrink-0 truncate" :title="field.key">{{ field.label }}</label>
+                    <input type="{{ field.key === 'apiKey' || field.key === 'secretKey' || field.key === 'password' || field.key === 'privateKey' || field.key === 'botToken' ? 'password' : 'text' }}" data-config-key="{{ field.key }}" value="{{ field.value }}" placeholder="{{ field.env ? 'env.' + field.env : '' }}" class="flex-1 text-xs px-2 py-1.5 rounded border border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700 text-gray-900 dark:text-white font-mono" />
                   </div>
                 @endforeach
                 <div class="flex justify-end gap-2 mt-2">
-                  <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-gray-400">Cancel</button>
+                  <button onclick="_toggleEdit('api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded text-gray-500 hover:text-gray-700 dark:text-neutral-400">Cancel</button>
                   <button data-save-btn onclick="_saveConfig('services.ts', 'api-{{ svc.name }}')" class="text-xs px-3 py-1.5 rounded bg-blue-600 text-white hover:bg-blue-700 font-medium">Save</button>
                 </div>
               </div>
@@ -198,11 +198,11 @@ function formatName(n) {
   </div>
   @else
   <div class="flex flex-col items-center justify-center py-16 px-4">
-    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center mb-4">
+    <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
       <span class="text-2xl text-gray-400">&#x1F527;</span>
     </div>
     <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">Service information available with full dev server</h3>
-    <p class="text-sm text-gray-500 dark:text-gray-400 text-center max-w-sm">Run buddy dev to see all service statuses.</p>
+    <p class="text-sm text-gray-500 dark:text-neutral-400 text-center max-w-sm">Run buddy dev to see all service statuses.</p>
   </div>
   @endif
 </div>

@@ -35,7 +35,6 @@ try {
   // Mail configuration not available
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Mailboxes" description="Email accounts and forwarding">
@@ -141,5 +140,4 @@ try {
     </Card>
   </div>
 </div>
-</DashboardLayout>
 @endsection

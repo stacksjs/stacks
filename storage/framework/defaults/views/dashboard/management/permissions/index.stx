@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import {
   Chart as ChartJS,
@@ -235,19 +238,14 @@ const deleteRole = (roleId: number) => {
 }
 </script>
 
-<main>
-    <div class="relative isolate overflow-hidden">
-      <div class="px-6 py-6 sm:px-6 lg:px-8">
-        <div class="mx-auto max-w-7xl">
-          <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Permissions Management</h1>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Permissions Management" description="Overview of system permissions and roles" />
 
           <!-- Time range selector -->
-          <div class="mt-4 flex items-center justify-between">
-            <p class="text-sm text-gray-500 dark:text-gray-400">
-              Overview of system permissions and roles
-            </p>
+          <div class="flex items-center justify-end">
             <div class="relative">
-              <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700">
+              <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700">
                 @foreach(timeRanges as range)
 <option value="{{ range }}">{{ range }}</option>
               </select>
@@ -257,7 +255,7 @@ const deleteRole = (roleId: number) => {
           <!-- Stats -->
           <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-              <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Roles</dt>
+              <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Roles</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">5</dd>
               <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
                 <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -266,7 +264,7 @@ const deleteRole = (roleId: number) => {
             </div>
 
             <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-              <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Permissions</dt>
+              <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Permissions</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">105</dd>
               <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
                 <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -275,7 +273,7 @@ const deleteRole = (roleId: number) => {
             </div>
 
             <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-              <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Users with Roles</dt>
+              <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Users with Roles</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">95</dd>
               <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
                 <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
@@ -284,7 +282,7 @@ const deleteRole = (roleId: number) => {
             </div>
 
             <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-              <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Permission Changes</dt>
+              <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Permission Changes</dt>
               <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">145</dd>
               <dd class="mt-2 flex items-center text-sm text-red-600 dark:text-red-400">
                 <div class="i-hugeicons-analytics-down h-4 w-4 mr-1"></div>
@@ -319,31 +317,28 @@ const deleteRole = (roleId: number) => {
             <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
               <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Roles</h3>
-                <button
-                  onclick="addRole"
-                  class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
-                >
+                <Button variant="primary" onclick="addRole">
                   Add Role
-                </button>
+                </Button>
               </div>
-              <div class="border-t border-gray-200 dark:border-gray-700">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <div class="border-t border-gray-200 dark:border-neutral-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                   <thead class="bg-gray-50 dark:bg-neutral-700">
                     <tr>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Role Name</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Description</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Users</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Last Updated</th>
-                      <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Role Name</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Description</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Users</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Last Updated</th>
+                      <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Actions</th>
                     </tr>
                   </thead>
-                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
+                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
                     @foreach(roles as role)
 <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ role.name }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ role.description }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ role.users }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ role.lastUpdated }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ role.description }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ role.users }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ role.lastUpdated }}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button onclick="editRole(role)" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">Edit</button>
                         <button onclick="deleteRole(role.id)" class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
@@ -362,41 +357,38 @@ const deleteRole = (roleId: number) => {
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Permissions</h3>
                 <div class="flex items-center space-x-4">
                   <div class="flex items-center space-x-2">
-                    <label for="permission-filter" class="text-sm text-gray-500 dark:text-gray-400">Filter:</label>
+                    <label for="permission-filter" class="text-sm text-gray-500 dark:text-neutral-400">Filter:</label>
                     <input
                       id="permission-filter"
                       value="{{ permissionFilter }}"
                       type="text"
                       placeholder="Search permissions..."
-                      class="w-64 rounded-md border-0 py-1.5 pl-3 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+                      class="w-64 rounded-md border-0 py-1.5 pl-3 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
                     />
                   </div>
-                  <button
-                    onclick="addPermission"
-                    class="px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
-                  >
+                  <Button variant="primary" onclick="addPermission">
                     Add Permission
-                  </button>
+                  </Button>
                 </div>
               </div>
-              <div class="border-t border-gray-200 dark:border-gray-700">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <div class="border-t border-gray-200 dark:border-neutral-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                   <thead class="bg-gray-50 dark:bg-neutral-700">
                     <tr>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Name</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Description</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Created</th>
-                      <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Actions</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">ID</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Name</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Description</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Created</th>
+                      <th scope="col" class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Actions</th>
                     </tr>
                   </thead>
-                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
+                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
                     @foreach(filteredPermissions as permission)
 <tr>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ permission.id }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ permission.id }}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ permission.name }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ permission.description }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ permission.created_at }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ permission.description }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ permission.created_at }}</td>
                       <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 mr-3">Edit</button>
                         <button class="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">Delete</button>
@@ -414,40 +406,37 @@ const deleteRole = (roleId: number) => {
               <div class="px-4 py-5 sm:px-6">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Recent Permission Changes</h3>
               </div>
-              <div class="border-t border-gray-200 dark:border-gray-700">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <div class="border-t border-gray-200 dark:border-neutral-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                   <thead class="bg-gray-50 dark:bg-neutral-700">
                     <tr>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">ID</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">User</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Role</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Action</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Resource</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-300">Date</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">ID</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">User</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Role</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Action</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Resource</th>
+                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Date</th>
                     </tr>
                   </thead>
-                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-gray-700">
+                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
                     @foreach(recentPermissionChanges as change)
 <tr>
                       <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ change.id }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ change.user }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ change.role }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ change.user }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ change.role }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ change.action === 'Added' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : change.action === 'Removed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' }}">
                           {{ change.action }}
                         </span>
                       </td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ change.resource }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-300">{{ change.date }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ change.resource }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ change.date }}</td>
                     </tr>
                   </tbody>
                 </table>
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
 
     <!-- Role Modal -->
     @if(showRoleModal)
@@ -464,35 +453,35 @@ const deleteRole = (roleId: number) => {
               <div class="mt-6">
                 <form onsubmit="saveRole; return false" class="space-y-4">
                   <div>
-                    <label for="role-name" class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300">Role Name</label>
+                    <label for="role-name" class="block text-left text-sm font-medium text-gray-700 dark:text-neutral-300">Role Name</label>
                     <div class="mt-1">
                       <input
                         type="text"
                         id="role-name"
                         value="{{ roleForm.name }}"
                         required
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="e.g. editor"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="role-description" class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                    <label for="role-description" class="block text-left text-sm font-medium text-gray-700 dark:text-neutral-300">Description</label>
                     <div class="mt-1">
                       <input
                         type="text"
                         id="role-description"
                         value="{{ roleForm.description }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="Role description"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Permissions</label>
-                    <div class="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2 dark:border-gray-600">
+                    <label class="block text-left text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Permissions</label>
+                    <div class="max-h-60 overflow-y-auto border border-gray-300 rounded-md p-2 dark:border-neutral-600">
                       @foreach(permissions as permission)
 <div class="flex items-center py-1">
                         <input
@@ -500,9 +489,9 @@ const deleteRole = (roleId: number) => {
                           id="permission-{{ permission.id }}"
                           value="{{ permission.id }}"
                           value="{{ roleForm.permissions }}"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700"
+                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700"
                         />
-                        <label for="permission-{{ permission.id }}" class="ml-2 block text-sm text-gray-900 dark:text-gray-300">
+                        <label for="permission-{{ permission.id }}" class="ml-2 block text-sm text-gray-900 dark:text-neutral-300">
                           {{ permission.name }}
                         </label>
                       </div>
@@ -518,7 +507,7 @@ const deleteRole = (roleId: number) => {
                     </button>
                     <button
                       type="button"
-                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                       onclick="showRoleModal = false"
                     >
                       Cancel
@@ -547,30 +536,30 @@ const deleteRole = (roleId: number) => {
               <div class="mt-6">
                 <form onsubmit="savePermission; return false" class="space-y-4">
                   <div>
-                    <label for="permission-name" class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300">Permission Name</label>
+                    <label for="permission-name" class="block text-left text-sm font-medium text-gray-700 dark:text-neutral-300">Permission Name</label>
                     <div class="mt-1">
                       <input
                         type="text"
                         id="permission-name"
                         value="{{ permissionForm.name }}"
                         required
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="e.g. edit articles"
                       />
                     </div>
-                    <p class="mt-1 text-left text-xs text-gray-500 dark:text-gray-400">
+                    <p class="mt-1 text-left text-xs text-gray-500 dark:text-neutral-400">
                       Use verb-noun format (e.g., "edit articles", "view users")
                     </p>
                   </div>
 
                   <div>
-                    <label for="permission-description" class="block text-left text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                    <label for="permission-description" class="block text-left text-sm font-medium text-gray-700 dark:text-neutral-300">Description</label>
                     <div class="mt-1">
                       <input
                         type="text"
                         id="permission-description"
                         value="{{ permissionForm.description }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="Permission description"
                       />
                     </div>
@@ -585,7 +574,7 @@ const deleteRole = (roleId: number) => {
                     </button>
                     <button
                       type="button"
-                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                       onclick="showPermissionModal = false"
                     >
                       Cancel
@@ -598,5 +587,7 @@ const deleteRole = (roleId: number) => {
         </div>
       </div>
     </div>
-  </main>
+</div>
 
+
+@endsection

@@ -17,7 +17,6 @@ try {
   // DB not seeded
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Tags" description="Manage content tags">
@@ -45,5 +44,4 @@ try {
   @endif
 
 </div>
-</DashboardLayout>
 @endsection

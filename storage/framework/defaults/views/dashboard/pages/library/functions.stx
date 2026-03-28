@@ -22,7 +22,6 @@ try {
   // resources/functions not available
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Functions" description="Utility functions and helpers">
@@ -67,5 +66,4 @@ try {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

@@ -32,7 +32,6 @@ try {
   // Error loading permissions data
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Permissions" description="Roles and access control">
@@ -105,5 +104,4 @@ try {
     </div>
   </Card>
 </div>
-</DashboardLayout>
 @endsection

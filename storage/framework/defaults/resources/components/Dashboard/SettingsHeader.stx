@@ -1,7 +1,7 @@
 <script server>
   const currentPath = props.currentPath || '/settings/ai'
 </script>
-<header class="border-b border-gray-200 dark:border-gray-600">
+<header class="border-b border-gray-200 dark:border-neutral-600">
     <!-- Secondary navigation -->
     <nav class="flex overflow-x-auto py-4">
       <ul

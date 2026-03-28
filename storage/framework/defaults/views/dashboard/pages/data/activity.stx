@@ -22,7 +22,6 @@ function typeVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Activity Log" description="Track all database changes">
@@ -72,5 +71,4 @@ function typeVariant(s) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

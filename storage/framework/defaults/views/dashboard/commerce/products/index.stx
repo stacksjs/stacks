@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -243,21 +246,19 @@ async function addProduct(): Promise<void> {
 </script>
 
 @title('Dashboard - Commerce Products')
-<div class="py-6">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
-    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
-        <div class="flex justify-between items-center">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Products</h2>
-          <button
-            onclick="openAddProductModal"
-            type="button"
-            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
-          >
-            <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
-            Add Product
-          </button>
-        </div>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Products" description="Manage commerce products">
+    <template #actions>
+      <Button variant="primary" onclick="openAddProductModal">
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        Add Product
+      </Button>
+    </template>
+  </PageHeader>
+
+  <div class="bg-white dark:bg-neutral-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
         <div class="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
           <SearchFilter
             placeholder="Search products..."
@@ -268,7 +269,7 @@ async function addProduct(): Promise<void> {
             <!-- Category filter -->
             <select
               value="{{ categoryFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Categories</option>
               @foreach(categoriesForFilter as category)
@@ -283,14 +284,14 @@ async function addProduct(): Promise<void> {
               <button
                 type="button"
                 onclick="viewMode = 'grid'"
-                class="{{ viewMode === 'grid' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10"
+                class="{{ viewMode === 'grid' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10"
               >
                 <div class="i-hugeicons-grid h-5 w-5"></div>
               </button>
               <button
                 type="button"
                 onclick="viewMode = 'list'"
-                class="{{ viewMode === 'list' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700' }} relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10"
+                class="{{ viewMode === 'list' ? 'bg-blue-600 text-white ring-blue-600' : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }} relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10"
               >
                 <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
               </button>
@@ -298,7 +299,7 @@ async function addProduct(): Promise<void> {
 
             <select
               value="{{ itemsPerPage }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="{{ 5 }}">5 per page</option>
               <option value="{{ 10 }}">10 per page</option>
@@ -327,7 +328,7 @@ async function addProduct(): Promise<void> {
         @edit-product="editProduct"
       />
 
-      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
         <Pagination
           :current-page="currentPage"
           :total-items="filteredProducts().length"
@@ -338,20 +339,19 @@ async function addProduct(): Promise<void> {
         />
       </div>
     </div>
-  </div>
 
   <!-- Add/Edit Product Modal -->
   @if(showProductModal)
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
 
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeProductModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-500 dark:hover:text-gray-400"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-can h-6 w-6"></div>
@@ -366,50 +366,50 @@ async function addProduct(): Promise<void> {
                 <form onsubmit="addProduct; return false" class="space-y-4">
                   <!-- Product name -->
                   <div>
-                    <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Name</label>
+                    <label for="product-name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Name</label>
                     <input
                       type="text"
                       id="product-name"
                       value="{{ newProduct.name }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       required
                     />
                   </div>
 
                   <!-- Product description -->
                   <div>
-                    <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Description</label>
+                    <label for="product-description" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Description</label>
                     <textarea
                       id="product-description"
                       value="{{ newProduct.description }}"
                       rows="3"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     ></textarea>
                   </div>
 
                   <!-- Price and sale price -->
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="product-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Price ($)</label>
+                      <label for="product-price" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Price ($)</label>
                       <input
                         type="number"
                         id="product-price"
                         value="{{ newProduct.price }}"
                         min="0"
                         step="0.01"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                         required
                       />
                     </div>
                     <div>
-                      <label for="product-sale-price" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Sale Price ($)</label>
+                      <label for="product-sale-price" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Sale Price ($)</label>
                       <input
                         type="number"
                         id="product-sale-price"
                         value="{{ newProduct.salePrice }}"
                         min="0"
                         step="0.01"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       />
                     </div>
                   </div>
@@ -417,11 +417,11 @@ async function addProduct(): Promise<void> {
                   <!-- Category and manufacturer -->
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Category</label>
+                      <label for="product-category" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Category</label>
                       <select
                         id="product-category"
                         value="{{ newProduct.category_id }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                         required
                       >
                         <option value="">Select a category</option>
@@ -431,11 +431,11 @@ async function addProduct(): Promise<void> {
                       </select>
                     </div>
                     <div>
-                      <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Manufacturer</label>
+                      <label for="product-manufacturer" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Manufacturer</label>
                       <select
                         id="product-manufacturer"
                         value="{{ newProduct.manufacturer_id }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                         required
                       >
                         <option value="">Select a manufacturer</option>
@@ -449,22 +449,22 @@ async function addProduct(): Promise<void> {
                   <!-- Inventory and status -->
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="product-inventory" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Inventory</label>
+                      <label for="product-inventory" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Inventory</label>
                       <input
                         type="number"
                         id="product-inventory"
                         value="{{ newProduct.inventory }}"
                         min="0"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                         required
                       />
                     </div>
                     <div>
-                      <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                      <label for="product-status" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Status</label>
                       <select
                         id="product-status"
                         value="{{ newProduct.status }}"
-                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       >
                         @foreach(statuses.slice(1) as status)
                           <option value="{{ status }}">{{ status }}</option>
@@ -480,20 +480,20 @@ async function addProduct(): Promise<void> {
                         id="product-featured"
                         type="checkbox"
                         value="{{ newProduct.featured }}"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600"
                       />
-                      <label for="product-featured" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">Featured product</label>
+                      <label for="product-featured" class="ml-2 block text-sm font-medium text-gray-700 dark:text-neutral-300">Featured product</label>
                     </div>
                   </div>
 
                   <!-- Image URL -->
                   <div>
-                    <label for="product-image" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Image URL</label>
+                    <label for="product-image" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Image URL</label>
                     <input
                       type="text"
                       id="product-image"
                       value="{{ newProduct.imageUrl }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     />
                   </div>
 
@@ -507,7 +507,7 @@ async function addProduct(): Promise<void> {
                     <button
                       type="button"
                       onclick="closeProductModal"
-                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                     >
                       Cancel
                     </button>
@@ -532,3 +532,5 @@ onMount(async () => {
   ])
 })
 </script>
+
+@endsection

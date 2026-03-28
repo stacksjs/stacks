@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script>
 interface User {
   id: number
@@ -141,12 +144,12 @@ const selectConversation = (id) => {
 function isActive() { return (id } => activeConversation === id)
 </script>
 
-<div class="h-screen flex bg-gray-100 dark:bg-gray-900 overflow-hidden">
-  <div class="w-80 bg-white dark:bg-gray-800 border-r border-gray-200 flex flex-col">
+<div class="h-screen flex bg-gray-100 dark:bg-neutral-900 overflow-hidden">
+  <div class="w-80 bg-white dark:bg-neutral-800 border-r border-gray-200 flex flex-col">
     <!-- Sidebar Header -->
-    <div class="flex-none p-4 border-b border-gray-200 dark:border-gray-700">
+    <div class="flex-none p-4 border-b border-gray-200 dark:border-neutral-700">
       <h2 class="text-lg font-semibold text-gray-900 dark:text-white">Conversations</h2>
-      <p class="text-sm text-gray-500 dark:text-gray-400">Ask any question you may have.</p>
+      <p class="text-sm text-gray-500 dark:text-neutral-400">Ask any question you may have.</p>
     </div>
 
     <!-- Conversations List -->
@@ -188,7 +191,7 @@ function isActive() { return (id } => activeConversation === id)
   <!-- Main Content -->
   <div class="flex-1 flex flex-col">
     <!-- Chat Header -->
-    <div class="flex-none bg-white dark:bg-gray-800 border-b border-gray-200 p-4">
+    <div class="flex-none bg-white dark:bg-neutral-800 border-b border-gray-200 p-4">
       <div class="flex items-center justify-between">
         <div class="flex items-center space-x-4">
           <div class="h-10 w-10 rounded-full bg-gradient-to-r from-blue-400 to-blue-600 flex items-center justify-center">
@@ -203,7 +206,7 @@ function isActive() { return (id } => activeConversation === id)
     </div>
 
     <!-- Chat Area -->
-    <div class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900">
+    <div class="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-neutral-900">
       <div class="flex flex-col space-y-4 max-w-3xl mx-auto">
         @foreach(messages as message)
           <div
@@ -219,7 +222,7 @@ function isActive() { return (id } => activeConversation === id)
 
             <div class="{{ [
                    'rounded-lg p-4 shadow max-w-lg',
-                   message.type === 'ai' ? 'bg-white dark:bg-gray-800' : 'bg-blue-500 text-white'
+                   message.type === 'ai' ? 'bg-white dark:bg-neutral-800' : 'bg-blue-500 text-white'
                  ] }}">
               <div class="mb-1 flex items-center justify-between">
                 <span class="font-medium">{{ message.user.name }}</span>
@@ -245,7 +248,7 @@ function isActive() { return (id } => activeConversation === id)
     </div>
 
     <!-- Message Input -->
-    <div class="flex-none bg-white dark:bg-gray-800 border-t border-gray-200 p-4">
+    <div class="flex-none bg-white dark:bg-neutral-800 border-t border-gray-200 p-4">
       <div class="max-w-3xl mx-auto">
         <div class="flex items-center space-x-4">
           <input value="{{ newMessage }}"
@@ -277,3 +280,5 @@ function isActive() { return (id } => activeConversation === id)
 }
 </style>
 
+
+@endsection

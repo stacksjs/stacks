@@ -47,7 +47,6 @@ function statusVariant(s) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Actions" description="Application actions and automations">
@@ -94,5 +93,4 @@ function statusVariant(s) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

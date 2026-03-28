@@ -8,7 +8,6 @@ let dailySales = []
 let paymentMethods = []
 let salesTeam = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Sales Analytics" description="Detailed sales performance">
@@ -98,5 +97,4 @@ let salesTeam = []
   @endif
 
 </div>
-</DashboardLayout>
 @endsection

@@ -1,10 +1,13 @@
+@extends('layouts/default')
+
+@section('content')
 <script>
 </script>
 
 <div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
   <div class="mb-8 px-4 lg:px-8 sm:px-6">
     <div>
-      <h3 class="text-base text-gray-900 font-semibold leading-6 dark:text-gray-100">
+      <h3 class="text-base text-gray-900 font-semibold leading-6 dark:text-neutral-100">
         Last 30 days
       </h3>
 
@@ -15,13 +18,13 @@
               <div class="i-hugeicons-command-line h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Commands Triggered
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 font-semibold dark:text-gray-100">
+            <p class="text-2xl text-gray-900 font-semibold dark:text-neutral-100">
               71,897
             </p>
 
@@ -41,13 +44,13 @@
               <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Avg. Run Time
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 font-semibold dark:text-gray-100">
+            <p class="text-2xl text-gray-900 font-semibold dark:text-neutral-100">
               3.65 mins
             </p>
 
@@ -67,13 +70,13 @@
               <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-white" />
             </div>
 
-            <p class="ml-16 truncate text-sm text-gray-500 dark:text-gray-400 font-medium">
+            <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-400 font-medium">
               Success Rate
             </p>
           </dt>
 
           <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-            <p class="text-2xl text-gray-900 font-semibold dark:text-gray-100">
+            <p class="text-2xl text-gray-900 font-semibold dark:text-neutral-100">
               94.57%
             </p>
 
@@ -99,10 +102,10 @@
   <div class="px-4 pt-12 lg:px-8 sm:px-6">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
           Commands
         </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
           A list of all the Commands.
         </p>
       </div>
@@ -117,31 +120,31 @@
     <div class="mt-8 flow-root">
       <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-neutral-600 sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-700">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6">
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold sm:pl-6">
                     Signature
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Alias
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Path
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Options
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:text-right">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold sm:text-right">
                     Created At
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:text-right">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold sm:text-right">
                     Updated At
                   </th>
 
@@ -151,29 +154,29 @@
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-neutral-600">
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium font-mono sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium font-mono sm:pl-6">
                     buddy inspire
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     insp
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     ./app/Commands/Inspire.ts
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300 font-mono">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300 font-mono">
                     --two, -t
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     01-03-2023 08:23:15
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-right text-sm text-gray-500 dark:text-neutral-300">
                     04-19-2022 09:04:20
                   </td>
 
@@ -194,10 +197,10 @@
   <div class="px-4 pt-12 lg:px-8 sm:px-6">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+        <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
           Command History
         </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
           A list of all the command executions relating your project/s.
         </p>
       </div>
@@ -211,27 +214,27 @@
     <div class="mt-8 flow-root">
       <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
         <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-gray-600 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-neutral-600 sm:rounded-lg">
+            <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-700">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold sm:pl-6">
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold sm:pl-6">
                     Triggered By
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Command
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Duration
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Time
                   </th>
 
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-gray-100 font-semibold">
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 dark:text-neutral-100 font-semibold">
                     Status
                   </th>
 
@@ -241,9 +244,9 @@
                 </tr>
               </thead>
 
-              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+              <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-neutral-600">
                 <tr>
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-gray-100 font-medium sm:pl-6">
+                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 dark:text-neutral-100 font-medium sm:pl-6">
                     <div class="flex items-center">
                       <div class="h-10 w-10 flex-shrink-0">
                         <img
@@ -253,29 +256,29 @@
                         >
                       </div>
                       <div class="ml-4">
-                        <div class="flex items-center text-sm text-gray-900 font-medium dark:text-gray-100">
+                        <div class="flex items-center text-sm text-gray-900 font-medium dark:text-neutral-100">
                           Chris Breuer
                         </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-300 dark:text-gray-400">
+                        <div class="text-sm text-gray-500 dark:text-neutral-300 dark:text-neutral-400">
                           chris@stacksjs.com
                         </div>
                       </div>
                     </div>
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                     <span class="font-mono">buddy build:components</span>
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                     30s
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                     3 hours ago
                   </td>
 
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
                     Finished
                   </td>
 
@@ -291,3 +294,5 @@
     </div>
   </div>
 </div>
+
+@endsection

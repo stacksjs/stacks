@@ -6,7 +6,6 @@ let domains = []
 let records = []
 let stats = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="DNS Management" description="Domain and DNS configuration">
@@ -106,5 +105,4 @@ let stats = []
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import * as d3 from 'd3'
 
@@ -436,7 +439,7 @@ const getSentimentClass = (sentiment: string): string => {
     case 'negative':
       return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -452,7 +455,7 @@ const getStatusClass = (status: string): string => {
     case 'flagged':
       return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -489,7 +492,7 @@ const getSourceColor = (source: string): string => {
     case 'TripAdvisor':
       return 'text-green-600 dark:text-green-400'
     default:
-      return 'text-gray-600 dark:text-gray-400'
+      return 'text-gray-600 dark:text-neutral-400'
   }
 }
 
@@ -872,7 +875,7 @@ const renderSourceChart = () => {
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Customer Reviews</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
               Monitor and respond to customer reviews from Google, Yelp, and other platforms
             </p>
           </div>
@@ -901,7 +904,7 @@ const renderSourceChart = () => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Reviews</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Total Reviews</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalReviews }}</div>
                     </dd>
@@ -922,7 +925,7 @@ const renderSourceChart = () => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Average Rating</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Average Rating</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ averageRating }} / 5</div>
                     </dd>
@@ -943,7 +946,7 @@ const renderSourceChart = () => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Positive Reviews</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Positive Reviews</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ positiveReviews }}</div>
                     </dd>
@@ -964,7 +967,7 @@ const renderSourceChart = () => {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Negative Reviews</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Negative Reviews</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ negativeReviews }}</div>
                     </dd>
@@ -1011,7 +1014,7 @@ const renderSourceChart = () => {
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
               placeholder="Search reviews..."
             />
           </div>
@@ -1020,7 +1023,7 @@ const renderSourceChart = () => {
             <!-- Source filter -->
             <select
               value="{{ sourceFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Sources</option>
               @foreach(sources.filter(s => s !== 'all') as source)
@@ -1030,7 +1033,7 @@ const renderSourceChart = () => {
             <!-- Rating filter -->
             <select
               value="{{ ratingFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Ratings</option>
               @foreach(ratings.filter(r => r !== 'all') as rating)
@@ -1040,7 +1043,7 @@ const renderSourceChart = () => {
             <!-- Sentiment filter -->
             <select
               value="{{ sentimentFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Sentiments</option>
               <option value="positive">Positive</option>
@@ -1051,7 +1054,7 @@ const renderSourceChart = () => {
             <!-- Status filter -->
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Statuses</option>
               <option value="unread">Unread</option>
@@ -1069,7 +1072,7 @@ const renderSourceChart = () => {
                   'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-grid h-5 w-5"></div>
@@ -1081,7 +1084,7 @@ const renderSourceChart = () => {
                   'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-list-view h-5 w-5"></div>
@@ -1091,7 +1094,7 @@ const renderSourceChart = () => {
         </div>
 
         <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
           <span class="mr-2">Sort by:</span>
           <button
             onclick="toggleSort('date')"
@@ -1140,7 +1143,7 @@ const renderSourceChart = () => {
         <!-- Compact view (table) -->
         @if(viewMode === 'compact')
 <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-700">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Review</th>
@@ -1154,10 +1157,10 @@ const renderSourceChart = () => {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
               @if(paginatedReviews.length === 0)
 <tr>
-                <td colspan="7" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colspan="7" class="py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
                   No reviews found. Try adjusting your search or filter.
                 </td>
               </tr>
@@ -1175,24 +1178,24 @@ const renderSourceChart = () => {
                     </div>
                     <div class="ml-4">
                       <div class="font-medium text-gray-900 dark:text-white">{{ review.title }}</div>
-                      <div class="text-xs text-gray-500 dark:text-gray-400">{{ review.author }} - {{ review.location }}</div>
+                      <div class="text-xs text-gray-500 dark:text-neutral-400">{{ review.author }} - {{ review.location }}</div>
                     </div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   <div class="flex items-center">
                     <div :class="getSourceIcon(review.source) + ' h-4 w-4 mr-2 ' + getSourceColor(review.source)"></div>
                     {{ review.source }}
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   <div class="flex items-center">
                     @foreach(getRatingStars(review.rating) as index => star)
 <div class="mr-0.5">
                       @if(star === 'full')
 <div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
                       @else
-<div class="i-hugeicons-star h-4 w-4 text-gray-300 dark:text-gray-600"></div>
+<div class="i-hugeicons-star h-4 w-4 text-gray-300 dark:text-neutral-600"></div>
                     </div>
                     <span class="ml-1">{{ review.rating }}.0</span>
                   </div>
@@ -1207,7 +1210,7 @@ const renderSourceChart = () => {
                     {{ review.status.charAt(0).toUpperCase() + review.status.slice(1) }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   {{ formatDate(review.date) }}
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -1265,7 +1268,7 @@ const renderSourceChart = () => {
         @else
 <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
           @if(paginatedReviews.length === 0)
-<div class="col-span-full py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+<div class="col-span-full py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
             No reviews found. Try adjusting your search or filter.
           </div>
           @foreach(paginatedReviews as review)
@@ -1287,12 +1290,12 @@ const renderSourceChart = () => {
                   </div>
                   <div class="ml-3">
                     <div class="text-sm font-medium text-gray-900 dark:text-white">{{ review.author }}</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ review.location }}</div>
+                    <div class="text-xs text-gray-500 dark:text-neutral-400">{{ review.location }}</div>
                   </div>
                 </div>
                 <div class="flex items-center">
                   <div :class="getSourceIcon(review.source) + ' h-5 w-5 mr-2 ' + getSourceColor(review.source)"></div>
-                  <span class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(review.date) }}</span>
+                  <span class="text-xs text-gray-500 dark:text-neutral-400">{{ formatDate(review.date) }}</span>
                 </div>
               </div>
 
@@ -1304,10 +1307,10 @@ const renderSourceChart = () => {
                     @if(star === 'full')
 <div class="i-hugeicons-star h-5 w-5 text-yellow-400"></div>
                     @else
-<div class="i-hugeicons-star h-5 w-5 text-gray-300 dark:text-gray-600"></div>
+<div class="i-hugeicons-star h-5 w-5 text-gray-300 dark:text-neutral-600"></div>
                   </div>
                 </div>
-                <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ review.rating }}.0</span>
+                <span class="ml-2 text-sm text-gray-500 dark:text-neutral-400">{{ review.rating }}.0</span>
                 <span
                   :class="[getSentimentClass(review.sentiment), 'ml-auto inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']"
                 >
@@ -1323,7 +1326,7 @@ const renderSourceChart = () => {
               <!-- Review title and content -->
               <div class="mt-3">
                 <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ review.title }}</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400 line-clamp-3">{{ review.content }}</p>
+                <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400 line-clamp-3">{{ review.content }}</p>
                 @if(review.content.length > 150)
 <button
                   class="mt-1 text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
@@ -1337,7 +1340,7 @@ const renderSourceChart = () => {
 <div class="mt-3 flex flex-wrap gap-1">
                 @foreach(review.tags as tag)
 <span
-                  class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-neutral-700 dark:text-gray-300"
+                  class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-neutral-700 dark:text-neutral-300"
                 >
                   {{ tag }}
                 </span>
@@ -1352,14 +1355,14 @@ const renderSourceChart = () => {
                   </div>
                   <div class="ml-3">
                     <div class="text-sm font-medium text-gray-900 dark:text-white">Your Business</div>
-                    <div class="text-xs text-gray-500 dark:text-gray-400">{{ formatDate(review.response.date) }}</div>
+                    <div class="text-xs text-gray-500 dark:text-neutral-400">{{ formatDate(review.response.date) }}</div>
                   </div>
                 </div>
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">{{ review.response.content }}</p>
+                <p class="mt-2 text-sm text-gray-500 dark:text-neutral-400">{{ review.response.content }}</p>
               </div>
 
               <!-- Helpful metrics -->
-              <div class="mt-4 flex items-center text-xs text-gray-500 dark:text-gray-400">
+              <div class="mt-4 flex items-center text-xs text-gray-500 dark:text-neutral-400">
                 <div class="flex items-center">
                   <div class="i-hugeicons-thumb-up h-4 w-4 mr-1"></div>
                   <span>{{ review.helpful || 0 }} helpful</span>
@@ -1396,7 +1399,7 @@ const renderSourceChart = () => {
                 <div class="flex space-x-2">
                   <button
                     onclick="flagReview(review)"
-                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                     class="{{ { 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300': review.status === 'flagged' } }}"
                   >
                     <div class="i-hugeicons-flag-01 h-4 w-4 mr-1"></div>
@@ -1404,7 +1407,7 @@ const renderSourceChart = () => {
                   </button>
                   <button
                     onclick="highlightReview(review)"
-                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                     class="{{ { 'bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-300': review.isHighlighted } }}"
                   >
                     <div :class="review.isHighlighted ? 'i-hugeicons-star' : 'i-hugeicons-star'" class="h-4 w-4 mr-1"></div>
@@ -1412,7 +1415,7 @@ const renderSourceChart = () => {
                   </button>
                   <button
                     onclick="hideReview(review)"
-                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
                     class="{{ { 'bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300': review.isHidden } }}"
                   >
                     <div :class="review.isHidden ? 'i-hugeicons-eye-off' : 'i-hugeicons-eye'" class="h-4 w-4 mr-1"></div>
@@ -1425,26 +1428,26 @@ const renderSourceChart = () => {
         </div>
 
         <!-- Pagination -->
-        <div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-gray-700">
+        <div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-neutral-700">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               onclick="currentPage > 1 ? currentPage-- : null"
               disabled="{{ currentPage === 1 }}"
-              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
             >
               Previous
             </button>
             <button
               onclick="currentPage < totalPages ? currentPage++ : null"
               disabled="{{ currentPage === totalPages }}"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
             >
               Next
             </button>
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-gray-700 dark:text-neutral-300">
                 Showing
                 <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
                 to
@@ -1470,7 +1473,7 @@ const renderSourceChart = () => {
                   class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-700',
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
                     'focus:z-20 focus:outline-offset-0'
                   ] }}"
                 >
@@ -1479,7 +1482,7 @@ const renderSourceChart = () => {
                 <button
                   onclick="currentPage < totalPages ? currentPage++ : null"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-400 dark:hover:bg-neutral-700"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-neutral-600 dark:text-neutral-400 dark:hover:bg-neutral-700"
                 >
                   <span class="sr-only">Next</span>
                   <div class="i-hugeicons-chevron-right h-5 w-5"></div>
@@ -1502,7 +1505,7 @@ const renderSourceChart = () => {
           <button
             type="button"
             onclick="closeResponseModal"
-            class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-300 dark:hover:text-gray-200"
+            class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
           >
             <span class="sr-only">Close</span>
             <div class="i-hugeicons-x-mark h-6 w-6"></div>
@@ -1517,7 +1520,7 @@ const renderSourceChart = () => {
               {{ currentReview ? 'Respond to Review' : 'Create Response Template' }}
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-gray-500 dark:text-gray-400">
+              <p class="text-sm text-gray-500 dark:text-neutral-400">
                 {{ currentReview ? 'Write a thoughtful response to this customer review.' : 'Create a response template that can be used for future reviews.' }}
               </p>
             </div>
@@ -1544,24 +1547,24 @@ const renderSourceChart = () => {
                   @if(star === 'full')
 <div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
                   @else
-<div class="i-hugeicons-star h-4 w-4 text-gray-300 dark:text-gray-600"></div>
+<div class="i-hugeicons-star h-4 w-4 text-gray-300 dark:text-neutral-600"></div>
                 </div>
-                <span class="ml-2 text-xs text-gray-500 dark:text-gray-400">{{ formatDate(currentReview.date) }}</span>
+                <span class="ml-2 text-xs text-gray-500 dark:text-neutral-400">{{ formatDate(currentReview.date) }}</span>
               </div>
             </div>
           </div>
-          <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">{{ currentReview.content }}</p>
+          <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">{{ currentReview.content }}</p>
         </div>
 
         <!-- Response form -->
         <div class="mt-4">
-          <label for="response" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Your response</label>
+          <label for="response" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Your response</label>
           <div class="mt-1">
             <textarea
               id="response"
               value="{{ responseText }}"
               rows="4"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
               placeholder="Write your response here..."
             ></textarea>
           </div>
@@ -1569,25 +1572,25 @@ const renderSourceChart = () => {
 
         <!-- Response templates -->
         <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Response templates</label>
+          <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Response templates</label>
           <div class="mt-1 grid grid-cols-1 gap-2">
             <button
               onclick="responseText = 'Thank you for your positive feedback! We appreciate your kind words and are delighted that you had a great experience with us. We look forward to serving you again soon!'"
-              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
+              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
             >
               <span class="font-medium">Positive Review Response</span>
               <p class="mt-1 truncate">Thank you for your positive feedback! We appreciate your kind words...</p>
             </button>
             <button
               onclick="responseText = 'Thank you for bringing this to our attention. We apologize for your negative experience and would like to make things right. Please contact our customer service team directly so we can address your concerns personally.'"
-              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
+              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
             >
               <span class="font-medium">Negative Review Response</span>
               <p class="mt-1 truncate">Thank you for bringing this to our attention. We apologize for your negative experience...</p>
             </button>
             <button
               onclick="responseText = 'Thank you for your feedback. We appreciate you taking the time to share your thoughts with us. Your input helps us improve our services, and we hope to exceed your expectations on your next visit.'"
-              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-gray-300 dark:hover:bg-neutral-600"
+              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
             >
               <span class="font-medium">Neutral Review Response</span>
               <p class="mt-1 truncate">Thank you for your feedback. We appreciate you taking the time to share your thoughts...</p>
@@ -1606,7 +1609,7 @@ const renderSourceChart = () => {
           <button
             type="button"
             onclick="closeResponseModal"
-            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
           >
             Cancel
           </button>
@@ -1644,3 +1647,5 @@ onMount(() => {
   })
 })
 </script>
+
+@endsection

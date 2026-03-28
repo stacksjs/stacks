@@ -7,7 +7,6 @@ let taxRates = []
 let taxSummary = []
 let recentTaxes = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Taxes" description="Tax rates and compliance">
@@ -116,5 +115,4 @@ let recentTaxes = []
   </Card>
 
 </div>
-</DashboardLayout>
 @endsection

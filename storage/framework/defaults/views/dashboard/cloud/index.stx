@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -747,21 +750,20 @@ const updateServerDefaults = (server: ServerConfig) => {
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <div>
-            <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+            <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
               Cloud Infrastructure
             </h3>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-400">
               Design and manage your cloud infrastructure.
             </p>
           </div>
         </div>
 
-        <router-link
-          to="/settings/mail"
-          class="inline-flex items-center justify-center w-10 h-10 text-gray-500 dark:text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
+        <a           to="/settings/mail"
+          class="inline-flex items-center justify-center w-10 h-10 text-gray-500 dark:text-neutral-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors duration-200"
         >
           <div class="i-hugeicons-cog-6-tooth w-6 h-6"></div>
-        </router-link>
+        </a>
       </div>
     </div>
 
@@ -770,7 +772,7 @@ const updateServerDefaults = (server: ServerConfig) => {
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Cloud Diagram</h4>
+            <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Cloud Diagram</h4>
             <!-- AWS Icon -->
             <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
               <div class="i-hugeicons-amazon w-6 h-6"></div>
@@ -790,16 +792,16 @@ const updateServerDefaults = (server: ServerConfig) => {
             @click.stop
           >
             <div class="flex items-center justify-between mb-4">
-              <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <h5 class="text-sm font-medium text-gray-900 dark:text-neutral-100">
                 {{ selectedNode.label }}
               </h5>
               <button
                 onclick="selectedNode = null"
-                class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200"
+                class="text-gray-400 hover:text-gray-500 dark:text-neutral-300 dark:hover:text-gray-200"
               >
                 <span class="sr-only">Close</span>
                 <div class="h-5 w-5">
-                  <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200">×</span>
+                  <span class="text-gray-400 hover:text-gray-500 dark:text-neutral-300 dark:hover:text-gray-200">×</span>
                 </div>
               </button>
             </div>
@@ -820,8 +822,8 @@ const updateServerDefaults = (server: ServerConfig) => {
                   </span>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Type</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm font-medium text-gray-900 dark:text-neutral-100">Type</p>
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">
                     {{ selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1) }}
                   </p>
                 </div>
@@ -830,19 +832,19 @@ const updateServerDefaults = (server: ServerConfig) => {
               @if(selectedNode.config)
                 @foreach(formatConfigDetails(selectedNode.config) as key => value)
 <div
-                  class="flex justify-between py-2 border-t border-gray-100 dark:border-gray-600"
+                  class="flex justify-between py-2 border-t border-gray-100 dark:border-neutral-600"
                 >
-                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ key }}</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ value }}</span>
+                  <span class="text-sm text-gray-500 dark:text-neutral-400">{{ key }}</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-neutral-100">{{ value }}</span>
                 </div>
               @else
                 @if(selectedNode.type === 'user')
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-neutral-400">
                   Entry point for all incoming traffic to your infrastructure.
                 </div>
                 @endif
                 @if(selectedNode.type === 'loadbalancer')
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-neutral-400">
                   Distributes incoming traffic across multiple servers for improved reliability and performance.
                 </div>
                 @endif
@@ -862,17 +864,16 @@ const updateServerDefaults = (server: ServerConfig) => {
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Servers</h4>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Configure your application servers and their specifications.</p>
+              <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Servers</h4>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Configure your application servers and their specifications.</p>
             </div>
             <div class="flex items-center gap-4">
-              <router-link
-                to="servers"
+              <a                 to="servers"
                 class="inline-flex items-center gap-1 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200"
               >
                 View All
                 <div class="i-hugeicons-arrow-right-01  w-4 h-4"></div>
-              </router-link>
+              </a>
               <button
                 onclick="addServer"
                 type="button"
@@ -887,7 +888,7 @@ const updateServerDefaults = (server: ServerConfig) => {
           <div class="space-y-6">
             @foreach(cloudConfig.servers as key, server)
             <div
-              class="relative border dark:border-gray-600 rounded-lg p-6 transition-all duration-200"
+              class="relative border dark:border-neutral-600 rounded-lg p-6 transition-all duration-200"
               class="{{ { 'hover:border-blue-200 dark:hover:border-blue-500': editMode[key] } }}"
             >
               <div class="absolute top-4 right-4 flex items-center gap-2">
@@ -920,7 +921,7 @@ const updateServerDefaults = (server: ServerConfig) => {
               <!-- Server Header -->
               <div class="mb-6">
                 <div class="flex items-center gap-4 mb-2">
-                  <h5 class="text-lg font-medium text-gray-900 dark:text-gray-100">{{ server.name }}</h5>
+                  <h5 class="text-lg font-medium text-gray-900 dark:text-neutral-100">{{ server.name }}</h5>
                   <div class="flex flex-wrap gap-2">
                     @foreach(serverTypes.find((t: ServerType) => t === server.type)?.badges as badge)
 <span
@@ -930,11 +931,11 @@ const updateServerDefaults = (server: ServerConfig) => {
                     </span>
                   </div>
                 </div>
-                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400">
+                <div class="flex items-center gap-2 text-sm text-gray-500 dark:text-neutral-400">
                   <div class="i-hugeicons-link w-4 h-4"></div>
                   <p>{{ server.domain }}</p>
                 </div>
-                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                <p class="mt-2 text-sm text-gray-500 dark:text-neutral-400">
                   {{ serverTypes.find((t: ServerType) => t === server.type)?.description }}
                 </p>
               </div>
@@ -944,15 +945,15 @@ const updateServerDefaults = (server: ServerConfig) => {
               <div class="mt-4">
                 <div class="flex items-center gap-2">
                   <div class="i-hugeicons-server w-4 h-4 text-gray-400"></div>
-                  <span class="text-sm text-gray-900 dark:text-gray-100">
+                  <span class="text-sm text-gray-900 dark:text-neutral-100">
                     {{ (workerSizes[server.size as keyof typeof workerSizes].ram / 1024).toFixed(0) }}GB RAM ({{ server.size }})
                   </span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
-                  <span class="text-sm text-gray-900 dark:text-gray-100">
+                  <span class="text-sm text-gray-500 dark:text-neutral-400">•</span>
+                  <span class="text-sm text-gray-900 dark:text-neutral-100">
                     {{ workerSizes[server.size as keyof typeof workerSizes].vcpu }} vCPUs
                   </span>
-                  <span class="text-sm text-gray-500 dark:text-gray-400">•</span>
-                  <span class="text-sm text-gray-900 dark:text-gray-100">
+                  <span class="text-sm text-gray-500 dark:text-neutral-400">•</span>
+                  <span class="text-sm text-gray-900 dark:text-neutral-100">
                     64-bit {{ server.size.includes('g.') ? 'ARM' : 'x86' }}
                   </span>
                 </div>
@@ -963,12 +964,12 @@ const updateServerDefaults = (server: ServerConfig) => {
               @if(editMode[key])
               <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Name</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Name</label>
                   <div class="flex gap-2">
                     <input
                       value="{{ server.name }}"
                       type="text"
-                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     >
                     <button
                       onclick="server.name = generateServerName(server.type)"
@@ -980,18 +981,18 @@ const updateServerDefaults = (server: ServerConfig) => {
                   </div>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Domain</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Domain</label>
                   <input
                     value="{{ server.domain }}"
                     type="text"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Region</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Region</label>
                   <select
                     value="{{ server.region }}"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                     @foreach(regions as region)
 <option value="{{ region }}">
@@ -1000,13 +1001,13 @@ const updateServerDefaults = (server: ServerConfig) => {
                   </select>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Type</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Type</label>
                   <div class="relative">
                     <select
                       value="{{ server.type }}"
                       disabled="{{ !editMode[key] }}"
                       onchange="updateServerName(server, server.type)"
-                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+                      class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       @foreach(serverTypes as type)
 <option value="{{ type.value }}">
@@ -1017,10 +1018,10 @@ const updateServerDefaults = (server: ServerConfig) => {
                 </div>
                 @if(['app', 'web', 'worker'].includes(server.type))
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Bun Version</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Bun Version</label>
                   <select
                     value="{{ server.bunVersion }}"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                     <option value="" disabled>Select a version</option>
                     @foreach(bunVersions as version)
@@ -1032,10 +1033,10 @@ const updateServerDefaults = (server: ServerConfig) => {
                 @endif
                 @if(!['loadbalancer', 'cache', 'search', 'database'].includes(server.type))
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Database</label>
                   <select
                     value="{{ server.database }}"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                     @if(server.type !== 'database')
                     <option value="">None</option>
@@ -1048,20 +1049,20 @@ const updateServerDefaults = (server: ServerConfig) => {
                 @endif
                 @if(server.database && !['loadbalancer', 'cache', 'search'].includes(server.type))
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Database Name</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Database Name</label>
                   <input
                     value="{{ server.databaseName }}"
                     type="text"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                     placeholder="my_database"
                   >
                 </div>
                 @endif
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Operating System</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Operating System</label>
                   <select
                     value="{{ server.serverOS }}"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                     @foreach(operatingSystems as os)
 <option value="{{ os }}">
@@ -1070,20 +1071,20 @@ const updateServerDefaults = (server: ServerConfig) => {
                   </select>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Disk Size (GB)</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Disk Size (GB)</label>
                   <input
                     v-model.number="server.diskSize"
                     type="number"
                     min="1"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                 </div>
                 @if(!['loadbalancer', 'cache', 'search', 'database'].includes(server.type))
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search Engine</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">Search Engine</label>
                   <select
                     value="{{ server.searchEngine }}"
-                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+                    class="block w-full h-10 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
                   >
                     <option value="">None</option>
                     <option value="meilisearch">Meilisearch</option>
@@ -1092,11 +1093,11 @@ const updateServerDefaults = (server: ServerConfig) => {
                 </div>
                 @endif
                 <div class="sm:col-span-2 lg:col-span-3">
-                  <label class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">User Data Script</label>
+                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-1">User Data Script</label>
                   <textarea
                     value="{{ server.userData }}"
                     rows="3"
-                    class="block w-full text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 font-mono transition-colors duration-200"
+                    class="block w-full text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-2 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 font-mono transition-colors duration-200"
                     placeholder="#!/bin/bash"
                   ></textarea>
                 </div>
@@ -1120,3 +1121,5 @@ onMount(async () => {
   }
 })
 </script>
+
+@endsection

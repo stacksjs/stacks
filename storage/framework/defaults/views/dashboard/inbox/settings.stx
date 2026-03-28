@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -190,7 +193,7 @@ const saveSettings = () => {
                     'w-full flex items-center px-3 py-3 text-sm rounded-md',
                     section.active
                       ? 'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100'
-                      : 'text-gray-700 hover:bg-gray-100 dark:text-gray-200 dark:hover:bg-neutral-600'
+                      : 'text-gray-700 hover:bg-gray-100 dark:text-neutral-200 dark:hover:bg-neutral-600'
                   ] }}"
                 >
                   <i :class="[section.icon, 'text-lg']"></i>
@@ -212,11 +215,11 @@ const saveSettings = () => {
 
               <div class="space-y-4">
                 <div>
-                  <label for="displayDensity" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Display Density</label>
+                  <label for="displayDensity" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Display Density</label>
                   <select
                     id="displayDensity"
                     value="{{ settings.general.displayDensity }}"
-                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                     <option value="comfortable">Comfortable</option>
                     <option value="default">Default</option>
@@ -225,11 +228,11 @@ const saveSettings = () => {
                 </div>
 
                 <div>
-                  <label for="theme" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Theme</label>
+                  <label for="theme" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Theme</label>
                   <select
                     id="theme"
                     value="{{ settings.general.theme }}"
-                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                     <option value="light">Light</option>
                     <option value="dark">Dark</option>
@@ -238,11 +241,11 @@ const saveSettings = () => {
                 </div>
 
                 <div>
-                  <label for="language" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Language</label>
+                  <label for="language" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Language</label>
                   <select
                     id="language"
                     value="{{ settings.general.language }}"
-                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                     <option value="en">English</option>
                     <option value="fr">French</option>
@@ -259,11 +262,11 @@ const saveSettings = () => {
 
               <div class="space-y-4">
                 <div>
-                  <label for="defaultReplyBehavior" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Default Reply Behavior</label>
+                  <label for="defaultReplyBehavior" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Default Reply Behavior</label>
                   <select
                     id="defaultReplyBehavior"
                     value="{{ settings.general.defaultReplyBehavior }}"
-                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                     <option value="reply">Reply</option>
                     <option value="replyAll">Reply All</option>
@@ -271,11 +274,11 @@ const saveSettings = () => {
                 </div>
 
                 <div>
-                  <label for="autoAdvance" class="block text-sm font-medium text-gray-700 dark:text-gray-300">After archiving or deleting an email, show</label>
+                  <label for="autoAdvance" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">After archiving or deleting an email, show</label>
                   <select
                     id="autoAdvance"
                     value="{{ settings.general.autoAdvance }}"
-                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                     <option value="newer">Newer conversation</option>
                     <option value="older">Older conversation</option>
@@ -290,7 +293,7 @@ const saveSettings = () => {
                     value="{{ settings.general.sendAndArchive }}"
                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   >
-                  <label for="sendAndArchive" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  <label for="sendAndArchive" class="ml-2 block text-sm text-gray-700 dark:text-neutral-300">
                     Show "Send & Archive" button in reply
                   </label>
                 </div>
@@ -302,7 +305,7 @@ const saveSettings = () => {
                     value="{{ settings.general.desktopNotifications }}"
                     class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   >
-                  <label for="desktopNotifications" class="ml-2 block text-sm text-gray-700 dark:text-gray-300">
+                  <label for="desktopNotifications" class="ml-2 block text-sm text-gray-700 dark:text-neutral-300">
                     Enable desktop notifications
                   </label>
                 </div>
@@ -319,22 +322,22 @@ const saveSettings = () => {
 
               <div class="space-y-4">
                 <div>
-                  <label for="name" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Your Name</label>
+                  <label for="name" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Your Name</label>
                   <input
                     id="name"
                     type="text"
                     value="{{ settings.accounts.name }}"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                 </div>
 
                 <div>
-                  <label for="email" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Email Address</label>
+                  <label for="email" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Email Address</label>
                   <input
                     id="email"
                     type="email"
                     value="{{ settings.accounts.primaryEmail }}"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                 </div>
               </div>
@@ -344,16 +347,16 @@ const saveSettings = () => {
               <h2 class="text-lg font-medium text-gray-900 dark:text-white mb-4">Email Signature</h2>
 
               <div>
-                <label for="signature" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Signature</label>
-                <div class="border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 p-2">
+                <label for="signature" class="block text-sm font-medium text-gray-700 dark:text-neutral-300 mb-2">Signature</label>
+                <div class="border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 p-2">
                   <textarea
                     id="signature"
                     value="{{ settings.accounts.signature }}"
                     rows="4"
-                    class="block w-full px-3 py-2 border-0 bg-transparent text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-0 sm:text-sm"
+                    class="block w-full px-3 py-2 border-0 bg-transparent text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-0 sm:text-sm"
                   ></textarea>
                 </div>
-                <p class="mt-1 text-xs text-gray-500 dark:text-gray-400">HTML formatting is supported</p>
+                <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">HTML formatting is supported</p>
               </div>
             </div>
 
@@ -361,23 +364,23 @@ const saveSettings = () => {
               <div class="flex items-center justify-between mb-4">
                 <h2 class="text-lg font-medium text-gray-900 dark:text-white">Vacation Responder</h2>
                 <div class="flex items-center">
-                  <span class="text-sm text-gray-700 dark:text-gray-300 mr-2">Off</span>
+                  <span class="text-sm text-gray-700 dark:text-neutral-300 mr-2">Off</span>
                   <button
                     type="button"
                     onclick="settings.accounts.vacationResponder.enabled = !settings.accounts.vacationResponder.enabled"
                     class="{{ [
                       'relative inline-flex flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full cursor-pointer transition-colors ease-in-out duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500',
-                      settings.accounts.vacationResponder.enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
+                      settings.accounts.vacationResponder.enabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-neutral-700'
                     ] }}"
                   >
                     <span
                       class="{{ [
-                        'pointer-events-none inline-block h-5 w-5 rounded-full bg-white dark:bg-gray-800 shadow transform ring-0 transition ease-in-out duration-200',
+                        'pointer-events-none inline-block h-5 w-5 rounded-full bg-white dark:bg-neutral-800 shadow transform ring-0 transition ease-in-out duration-200',
                         settings.accounts.vacationResponder.enabled ? 'translate-x-5' : 'translate-x-0'
                       ] }}"
                     ></span>
                   </button>
-                  <span class="text-sm text-gray-700 dark:text-gray-300 ml-2">On</span>
+                  <span class="text-sm text-gray-700 dark:text-neutral-300 ml-2">On</span>
                 </div>
               </div>
 
@@ -385,42 +388,42 @@ const saveSettings = () => {
               <div class="space-y-4">
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Start Date</label>
+                    <label for="startDate" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Start Date</label>
                     <input
                       id="startDate"
                       type="date"
                       value="{{ settings.accounts.vacationResponder.startDate }}"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                   </div>
                   <div>
-                    <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-gray-300">End Date</label>
+                    <label for="endDate" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">End Date</label>
                     <input
                       id="endDate"
                       type="date"
                       value="{{ settings.accounts.vacationResponder.endDate }}"
-                      class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
                   </div>
                 </div>
 
                 <div>
-                  <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Subject</label>
+                  <label for="subject" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Subject</label>
                   <input
                     id="subject"
                     type="text"
                     value="{{ settings.accounts.vacationResponder.subject }}"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   >
                 </div>
 
                 <div>
-                  <label for="message" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Message</label>
+                  <label for="message" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Message</label>
                   <textarea
                     id="message"
                     value="{{ settings.accounts.vacationResponder.message }}"
                     rows="4"
-                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    class="mt-1 block w-full px-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-white dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                   ></textarea>
                 </div>
               </div>
@@ -439,7 +442,7 @@ const saveSettings = () => {
               <h2 class="text-xl font-medium text-gray-900 dark:text-white mb-2">
                 {{ settingsSections.find(s => s.id === activeSection)?.name }} Settings
               </h2>
-              <p class="text-gray-500 dark:text-gray-400 text-center max-w-md">
+              <p class="text-gray-500 dark:text-neutral-400 text-center max-w-md">
                 This section is under development. More settings will be available soon.
               </p>
             </div>
@@ -460,3 +463,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

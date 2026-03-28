@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import type { StorePost } from '../../../../types/defaults'
 import { usePosts } from '../../../../functions/cms/posts'
@@ -115,7 +118,6 @@ function statusVariant(status) {
 let showNewPostModal = false
 </script>
 
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <!-- Page Header -->
@@ -282,4 +284,5 @@ let showNewPostModal = false
     </form>
   </Modal>
 </div>
-</DashboardLayout>
+
+@endsection

@@ -80,8 +80,8 @@ window.craft._sidebarSelectHandler = (event) => {
   <title>Stacks Dashboard</title>
 </head>
 <body class="bg-neutral-100 dark:bg-neutral-950">
-  <main>
+  <DashboardLayout>
     @slot('content')
-  </main>
+  </DashboardLayout>
 </body>
 </html>

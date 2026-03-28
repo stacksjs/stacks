@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -47,7 +50,7 @@ const notificationStatusColors: Record<string, string> = {
 }
 
 const getStatusColor = (status: string): string => {
-  return notificationStatusColors[status] || 'text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-900/50 ring-gray-600/20'
+  return notificationStatusColors[status] || 'text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/50 ring-gray-600/20'
 }
 
 const getChannelIcon = (type: string): string => {
@@ -204,8 +207,8 @@ const closeErrorModal = () => {
     <!-- Header -->
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-gray-100">Notification History</h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+        <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Notification History</h1>
+        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
           A complete history of all notifications sent through the system
         </p>
       </div>
@@ -213,7 +216,7 @@ const closeErrorModal = () => {
         <button
           onclick="showFilters = !showFilters"
           type="button"
-          class="inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
+          class="inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
         >
           <div class="i-hugeicons-filter h-5 w-5 mr-2" />
           {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
@@ -236,7 +239,7 @@ const closeErrorModal = () => {
             type="search"
             name="search"
             id="search"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
             placeholder="Search notifications..."
           >
         </div>
@@ -246,7 +249,7 @@ const closeErrorModal = () => {
       <div>
         <select
           value="{{ selectedType }}"
-          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
+          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
         >
           @foreach(notificationTypes as type)
           <option value="{{ type }}">
@@ -260,7 +263,7 @@ const closeErrorModal = () => {
       <div>
         <select
           value="{{ selectedStatus }}"
-          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-gray-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
+          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
         >
           @foreach(statusTypes as status)
           <option value="{{ status }}">
@@ -275,7 +278,7 @@ const closeErrorModal = () => {
         <button
           onclick="resetFilters"
           type="button"
-          class="rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
+          class="rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
         >
           Reset Filters
         </button>
@@ -288,14 +291,14 @@ const closeErrorModal = () => {
       <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
         <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
           <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-opacity-20 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+            <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-600">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Recipient</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Subject</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Status</th>
-                  <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer" onclick="toggleSort('sent_at')">
+                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 sm:pl-6">Type</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Recipient</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Subject</th>
+                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Status</th>
+                  <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-neutral-100 cursor-pointer" onclick="toggleSort('sent_at')">
                     <div class="flex items-center justify-end">
                       Sent
                       @if(sortField === 'sent_at')
@@ -313,7 +316,7 @@ const closeErrorModal = () => {
                       @endif
                     </div>
                   </th>
-                  <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-gray-100 cursor-pointer" onclick="toggleSort('delivered_at')">
+                  <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-neutral-100 cursor-pointer" onclick="toggleSort('delivered_at')">
                     <div class="flex items-center justify-end">
                       Delivered
                       @if(sortField === 'delivered_at')
@@ -336,10 +339,10 @@ const closeErrorModal = () => {
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-gray-600 bg-white dark:bg-neutral-700">
+              <tbody class="divide-y divide-gray-200 dark:divide-neutral-600 bg-white dark:bg-neutral-700">
                 @if(isLoading)
                 <tr>
-                  <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                  <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-center">
                     <div class="flex justify-center">
                       <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
                     </div>
@@ -347,7 +350,7 @@ const closeErrorModal = () => {
                 </tr>
                 @elseif(paginatedNotifications.length === 0)
                 <tr>
-                  <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-center">
+                  <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-center">
                     No notifications found matching your criteria
                   </td>
                 </tr>
@@ -357,20 +360,20 @@ const closeErrorModal = () => {
                   <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
                     <div class="flex items-center">
                       <div :class="getChannelIcon(notification.type)" class="h-5 w-5 mr-2" />
-                      <span class="font-medium text-gray-900 dark:text-gray-100 capitalize">{{ notification.type }}</span>
+                      <span class="font-medium text-gray-900 dark:text-neutral-100 capitalize">{{ notification.type }}</span>
                     </div>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400">{{ notification.recipient }}</td>
-                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">{{ notification.recipient }}</td>
+                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                     <div class="max-w-xs truncate">{{ notification.subject }}</div>
                   </td>
                   <td class="whitespace-nowrap px-3 py-4 text-sm">
                     <NotificationStatusBadge :status="notification.status" />
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                     {{ formatDate(notification.sent_at) }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                     {{ notification.delivered_at ? formatDate(notification.delivered_at) : '-' }}
                   </td>
                   <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -387,7 +390,7 @@ const closeErrorModal = () => {
                       <button
                         onclick="openErrorModal(notification)"
                         type="button"
-                        class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-200"
+                        class="text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-gray-200"
                       >
                         View Logs
                       </button>
@@ -405,7 +408,7 @@ const closeErrorModal = () => {
     <!-- Pagination -->
     <div class="mt-4 flex items-center justify-between">
       <div class="flex items-center">
-        <p class="text-sm text-gray-700 dark:text-gray-300">
+        <p class="text-sm text-gray-700 dark:text-neutral-300">
           Showing
           <span class="font-medium">{{ (currentPage - 1) * perPage + 1 }}</span>
           to
@@ -419,7 +422,7 @@ const closeErrorModal = () => {
         @if(currentPage > 1)
         <button
           type="button"
-          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
+          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
           onclick="currentPage--"
         >
           Previous
@@ -427,7 +430,7 @@ const closeErrorModal = () => {
         @endif
         <button
           type="button"
-          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-gray-100 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
+          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
           disabled="{{ currentPage === totalPages }}"
           onclick="currentPage++"
         >
@@ -448,3 +451,5 @@ const closeErrorModal = () => {
   />
 </div>
 
+
+@endsection

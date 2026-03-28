@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script>
 </script>
 
@@ -7,11 +10,11 @@
       <div class="mx-auto max-w-7xl">
         <div class="text-center">
           <div class="flex justify-center">
-            <div class="i-hugeicons-alert-circle h-24 w-24 text-gray-400 dark:text-gray-500 mb-6"></div>
+            <div class="i-hugeicons-alert-circle h-24 w-24 text-gray-400 dark:text-neutral-500 mb-6"></div>
           </div>
           <h1 class="text-5xl font-bold text-gray-900 dark:text-white font-mono">404</h1>
           <p class="mt-2 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white sm:text-4xl font-mono">Page not found</p>
-          <p class="mt-4 text-base text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+          <p class="mt-4 text-base text-gray-500 dark:text-neutral-400 max-w-md mx-auto">
             Sorry, we couldn't find the page you're looking for. The page might have been moved or deleted.
           </p>
           <div class="mt-10 flex items-center justify-center gap-x-6">
@@ -37,7 +40,7 @@
                   <div class="ml-5 w-0 flex-1">
                     <dl>
                       <dt class="truncate text-sm font-medium text-gray-900 dark:text-white">Dashboard</dt>
-                      <dd class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <dd class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                         Return to the main dashboard
                       </dd>
                     </dl>
@@ -54,7 +57,7 @@
                   <div class="ml-5 w-0 flex-1">
                     <dl>
                       <dt class="truncate text-sm font-medium text-gray-900 dark:text-white">Blog</dt>
-                      <dd class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <dd class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                         Manage your blog posts and categories
                       </dd>
                     </dl>
@@ -71,7 +74,7 @@
                   <div class="ml-5 w-0 flex-1">
                     <dl>
                       <dt class="truncate text-sm font-medium text-gray-900 dark:text-white">Settings</dt>
-                      <dd class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <dd class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                         Configure your application settings
                       </dd>
                     </dl>
@@ -86,3 +89,5 @@
   </div>
 </main>
 
+
+@endsection

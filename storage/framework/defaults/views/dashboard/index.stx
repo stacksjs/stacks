@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -75,7 +78,6 @@ const getStatusDotClass = (status) => {
   return 'bg-gray-500'
 }
 </script>
-<DashboardLayout>
   <!-- Page Header -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
     <div>
@@ -281,7 +283,6 @@ const getStatusDotClass = (status) => {
       </div>
     </Card>
   </div>
-</DashboardLayout>
 <script client>
 import { onMount } from 'stx'
 
@@ -290,3 +291,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

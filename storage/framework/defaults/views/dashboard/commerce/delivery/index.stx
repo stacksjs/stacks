@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -27,3 +30,5 @@ onMount(async () => {
   router.replace('/commerce/delivery/shipping-methods')
 })
 </script>
+
+@endsection

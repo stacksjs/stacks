@@ -8,7 +8,7 @@
       <select
         id="tabs"
         name="tabs"
-        class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-gray-700 dark:bg-neutral-800 dark:text-white"
+        class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
       >
         @foreach(tabs as tab)
           <option value="{{ tab }}" {{ tab == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
@@ -16,12 +16,12 @@
       </select>
     </div>
     <div class="hidden sm:block">
-      <div class="border-b border-gray-200 dark:border-gray-700">
+      <div class="border-b border-gray-200 dark:border-neutral-700">
         <nav class="-mb-px flex space-x-8" aria-label="Tabs">
           @foreach(tabs as tab)
             <a
               href="{{ tab.href }}"
-              class="{{ tab == modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-gray-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
+              class="{{ tab == modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
             >
               {{ tab.name }}
             </a>

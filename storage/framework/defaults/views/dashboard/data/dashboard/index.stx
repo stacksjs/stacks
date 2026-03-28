@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth'],
@@ -1086,7 +1089,7 @@ onUnmounted(() => {
     <!-- Stats Cards -->
     <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4 mb-8">
       <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Models</dt>
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Models</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalModels }}</dd>
         <dd class="mt-2 flex items-center text-sm text-blue-600 dark:text-blue-400">
           <div class="i-hugeicons-database h-4 w-4 mr-1"></div>
@@ -1095,7 +1098,7 @@ onUnmounted(() => {
       </div>
 
       <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Properties</dt>
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Properties</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalProperties }}</dd>
         <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
           <div class="i-hugeicons-check-list h-4 w-4 mr-1"></div>
@@ -1104,7 +1107,7 @@ onUnmounted(() => {
       </div>
 
       <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Total Relationships</dt>
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Relationships</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelStats.totalRelationships }}</dd>
         <dd class="mt-2 flex items-center text-sm text-purple-600 dark:text-purple-400">
           <div class="i-hugeicons-link-01 h-4 w-4 mr-1"></div>
@@ -1113,7 +1116,7 @@ onUnmounted(() => {
       </div>
 
       <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-        <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-300">Model Categories</dt>
+        <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Model Categories</dt>
         <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ modelTypes.length - 1 }}</dd>
         <dd class="mt-2 flex items-center text-sm text-orange-600 dark:text-orange-400">
           <div class="i-hugeicons-tag-01 h-4 w-4 mr-1"></div>
@@ -1131,17 +1134,17 @@ onUnmounted(() => {
         <input
           value="{{ searchQuery }}"
           type="text"
-          class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-neutral-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-white"
+          class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md leading-5 bg-white dark:bg-neutral-700 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm text-gray-900 dark:text-white"
           placeholder="Search models or properties..."
         />
       </div>
 
       <div class="flex items-center gap-2 w-full sm:w-auto">
-        <label for="model-type" class="text-sm font-medium text-gray-700 dark:text-gray-300">Filter by type:</label>
+        <label for="model-type" class="text-sm font-medium text-gray-700 dark:text-neutral-300">Filter by type:</label>
         <select
           id="model-type"
           value="{{ selectedModelType }}"
-          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-gray-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700"
+          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-white ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700"
         >
           @foreach(modelTypes as type)
             <option value="{{ type }}">{{ type }}</option>
@@ -1156,14 +1159,14 @@ onUnmounted(() => {
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
             <h4 class="text-base font-medium text-gray-900 dark:text-white">Entity Relationship Diagram</h4>
-            <span class="text-sm text-gray-500 dark:text-gray-400">
+            <span class="text-sm text-gray-500 dark:text-neutral-400">
               (Drag nodes to rearrange)
             </span>
           </div>
           <div class="inline-flex rounded-md shadow-sm">
             <select
               value="{{ downloadFormat }}"
-              class="h-9 text-sm border-0 rounded-l-md bg-white dark:bg-neutral-600 py-1.5 pl-3 pr-7 text-gray-700 dark:text-gray-200 ring-1 ring-inset ring-gray-300 dark:ring-gray-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
+              class="h-9 text-sm border-0 rounded-l-md bg-white dark:bg-neutral-600 py-1.5 pl-3 pr-7 text-gray-700 dark:text-neutral-200 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:ring-2 focus:ring-blue-600 transition-colors duration-200"
             >
               <option value="svg">SVG</option>
               <option value="png">PNG</option>
@@ -1189,7 +1192,7 @@ onUnmounted(() => {
     <!-- Selected Model Details Panel -->
     @if(selectedModel)
       <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+        <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="text-2xl">{{ selectedModel.emoji }}</span>
@@ -1209,19 +1212,19 @@ onUnmounted(() => {
             <div>
               <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Properties</h4>
               <div class="bg-gray-50 dark:bg-neutral-800 rounded-md p-4">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                   <thead>
                     <tr>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Name</th>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Type</th>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Nullable</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-400">Name</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-400">Type</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-400">Nullable</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
                     @foreach(selectedModel.properties as prop)
                       <tr>
                         <td class="px-3 py-2 whitespace-nowrap text-sm font-medium" :class="prop.name === 'id' ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white'">{{ prop.name }}</td>
-                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">{{ prop.type }}</td>
+                        <td class="px-3 py-2 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">{{ prop.type }}</td>
                         <td class="px-3 py-2 whitespace-nowrap text-sm">
                           <span :class="prop.nullable ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'">
                             {{ prop.nullable ? 'Yes' : 'No' }}
@@ -1238,14 +1241,14 @@ onUnmounted(() => {
             <div>
               <h4 class="text-base font-medium text-gray-900 dark:text-white mb-4">Relationships</h4>
               <div class="bg-gray-50 dark:bg-neutral-800 rounded-md p-4">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                   <thead>
                     <tr>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Type</th>
-                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-gray-400">Related Model</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-400">Type</th>
+                      <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-400">Related Model</th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-200 dark:divide-gray-700">
+                  <tbody class="divide-y divide-gray-200 dark:divide-neutral-700">
                     @foreach(selectedModel.relationships as rel, index)
                       <tr>
                         <td class="px-3 py-2 whitespace-nowrap text-sm font-medium">
@@ -1282,3 +1285,5 @@ onMount(async () => {
 })
 </script>
 
+
+@endsection

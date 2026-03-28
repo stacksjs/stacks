@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -742,10 +745,10 @@ const getEventTypeIcon = (type) => {
       <div class="flex justify-between items-center">
         <div class="flex items-center gap-2">
           <div>
-            <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+            <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
               Servers
             </h3>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-400">
               Manage all your application servers.
             </p>
           </div>
@@ -771,7 +774,7 @@ const getEventTypeIcon = (type) => {
               value="{{ searchQuery }}"
               type="text"
               placeholder="Search servers..."
-              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-neutral-700 text-gray-900 dark:text-gray-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md leading-5 bg-white dark:bg-neutral-700 text-gray-900 dark:text-neutral-100 placeholder-gray-500 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
             >
           </div>
         </div>
@@ -781,13 +784,13 @@ const getEventTypeIcon = (type) => {
     <!-- Servers Table -->
     <div class="bg-white dark:bg-neutral-700 shadow rounded-lg overflow-hidden">
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-600">
+        <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-600">
           <thead class="bg-gray-50 dark:bg-neutral-800">
             <tr>
               @foreach(['Name', 'Type', 'Region', 'Size', 'OS', 'Database', 'Search'] as header)
 <th
                 scope="col"
-                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
+                class="px-6 py-3 text-left text-xs font-medium text-gray-500 dark:text-neutral-400 uppercase tracking-wider cursor-pointer hover:text-gray-700 dark:hover:text-gray-300"
                 onclick="setSorting(header.toLowerCase() as keyof ServerConfig)"
               >
                 <div class="flex items-center gap-1">
@@ -805,11 +808,11 @@ const getEventTypeIcon = (type) => {
               </th>
             </tr>
           </thead>
-          <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-gray-600">
+          <tbody class="bg-white dark:bg-neutral-700 divide-y divide-gray-200 dark:divide-neutral-600">
             <tr v-for="[key, server] in filteredServers" class="hover:bg-gray-50 dark:hover:bg-neutral-600">
               <td class="px-6 py-4 whitespace-nowrap">
                 <div class="flex items-center">
-                  <div class="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  <div class="text-sm font-medium text-gray-900 dark:text-neutral-100">
                     {{ server.name }}
                   </div>
                 </div>
@@ -828,35 +831,33 @@ const getEventTypeIcon = (type) => {
                   {{ server.type }}
                 </span>
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                 {{ server.region }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                 {{ server.size }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                 {{ server.serverOS }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                 {{ server.database || 'None' }}
               </td>
-              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
+              <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-400">
                 {{ server.searchEngine || 'None' }}
               </td>
               <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                 <div class="flex items-center justify-end gap-4">
-                  <router-link
-                    :to="`/servers/${key}`"
-                    class="text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-300"
+                  <a                     :href="`/servers/${key}`"
+                    class="text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-gray-300"
                   >
                     View
-                  </router-link>
-                  <router-link
-                    :to="`/servers/${key}`"
+                  </a>
+                  <a                     :href="`/servers/${key}`"
                     class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
                   >
                     Edit
-                  </router-link>
+                  </a>
                 </div>
               </td>
             </tr>
@@ -870,7 +871,7 @@ const getEventTypeIcon = (type) => {
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
           <div class="flex items-center gap-2">
-            <h4 class="text-base font-medium text-gray-900 dark:text-gray-100">Cloud Diagram</h4>
+            <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Cloud Diagram</h4>
             <!-- AWS Icon -->
             <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
               <div class="i-hugeicons-amazon w-6 h-6"></div>
@@ -890,16 +891,16 @@ const getEventTypeIcon = (type) => {
             @click.stop
           >
             <div class="flex items-center justify-between mb-4">
-              <h5 class="text-sm font-medium text-gray-900 dark:text-gray-100">
+              <h5 class="text-sm font-medium text-gray-900 dark:text-neutral-100">
                 {{ selectedNode.label }}
               </h5>
               <button
                 onclick="selectedNode = null"
-                class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150"
+                class="text-gray-400 hover:text-gray-500 dark:text-neutral-300 dark:hover:text-gray-200 transition-colors duration-150"
               >
                 <span class="sr-only">Close</span>
                 <div class="h-5 w-5">
-                  <span class="text-gray-400 hover:text-gray-500 dark:text-gray-300 dark:hover:text-gray-200 transition-colors duration-150">×</span>
+                  <span class="text-gray-400 hover:text-gray-500 dark:text-neutral-300 dark:hover:text-gray-200 transition-colors duration-150">×</span>
                 </div>
               </button>
             </div>
@@ -920,8 +921,8 @@ const getEventTypeIcon = (type) => {
                   </span>
                 </div>
                 <div>
-                  <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Type</p>
-                  <p class="text-sm text-gray-500 dark:text-gray-400">
+                  <p class="text-sm font-medium text-gray-900 dark:text-neutral-100">Type</p>
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">
                     {{ selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1) }}
                   </p>
                 </div>
@@ -930,19 +931,19 @@ const getEventTypeIcon = (type) => {
               @if(selectedNode.config)
                 @foreach(formatConfigDetails(selectedNode.config) as key => value)
 <div
-                  class="flex justify-between py-2 border-t border-gray-100 dark:border-gray-600"
+                  class="flex justify-between py-2 border-t border-gray-100 dark:border-neutral-600"
                 >
-                  <span class="text-sm text-gray-500 dark:text-gray-400">{{ key }}</span>
-                  <span class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ value }}</span>
+                  <span class="text-sm text-gray-500 dark:text-neutral-400">{{ key }}</span>
+                  <span class="text-sm font-medium text-gray-900 dark:text-neutral-100">{{ value }}</span>
                 </div>
               @else
                 @if(selectedNode.type === 'user')
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-neutral-400">
                   Entry point for all incoming traffic to your infrastructure.
                 </div>
                 @endif
                 @if(selectedNode.type === 'loadbalancer')
-                <div class="text-sm text-gray-500 dark:text-gray-400">
+                <div class="text-sm text-gray-500 dark:text-neutral-400">
                   Distributes incoming traffic across multiple servers for improved reliability and performance.
                 </div>
                 @endif
@@ -958,10 +959,10 @@ const getEventTypeIcon = (type) => {
     <div>
       <div class="flex justify-between items-center mb-8 mt-16">
         <div>
-          <h3 class="text-base text-gray-900 dark:text-gray-100 font-semibold leading-6">
+          <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
             Recent Events
           </h3>
-          <p class="mt-2 text-sm text-gray-700 dark:text-gray-400">
+          <p class="mt-2 text-sm text-gray-700 dark:text-neutral-400">
             Latest server events and notifications.
           </p>
         </div>
@@ -969,16 +970,16 @@ const getEventTypeIcon = (type) => {
 
       <div class="inline-block min-w-full align-middle">
         <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-600">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
             <thead class="bg-gray-50 dark:bg-neutral-600">
               <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 sm:pl-6">Type</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Service</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100">Message</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-100 text-right">Timestamp</th>
+                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 sm:pl-6">Type</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Service</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Message</th>
+                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 text-right">Timestamp</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-700">
+            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-700">
               @foreach(serverEvents as event)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
                 <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
@@ -986,13 +987,13 @@ const getEventTypeIcon = (type) => {
                     <div :class="[getEventTypeIcon(event.type), getEventTypeColor(event.type), 'w-5 h-5']" />
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-gray-100">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-neutral-100">
                   {{ event.service }}
                 </td>
-                <td class="px-3 py-4 text-sm text-gray-500 dark:text-gray-400">
+                <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
                   {{ event.message }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                   {{ event.timestamp }}
                 </td>
               </tr>
@@ -1012,3 +1013,5 @@ onMount(async () => {
   }
 })
 </script>
+
+@endsection

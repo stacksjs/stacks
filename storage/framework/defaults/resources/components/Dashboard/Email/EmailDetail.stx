@@ -17,9 +17,9 @@
     <div class="py-2 px-4 border-b border-gray-200 dark:border-neutral-600 flex items-center justify-between">
       <div class="flex items-center space-x-2">
         <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600" data-action="close">
-          <i class="i-hugeicons-arrow-left-02 text-gray-500 dark:text-gray-400 text-lg"></i>
+          <i class="i-hugeicons-arrow-left-02 text-gray-500 dark:text-neutral-400 text-lg"></i>
         </button>
-        <h2 class="text-lg font-medium text-gray-900 dark:text-gray-100">
+        <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">
           {{ email.subject }}
         </h2>
       </div>
@@ -32,14 +32,14 @@
               </svg>
             </span>
           @else
-            <i class="i-hugeicons-star text-gray-500 dark:text-gray-400 text-lg"></i>
+            <i class="i-hugeicons-star text-gray-500 dark:text-neutral-400 text-lg"></i>
           @endif
         </button>
         <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600">
-          <i class="i-hugeicons-inbox text-gray-500 dark:text-gray-400 text-lg"></i>
+          <i class="i-hugeicons-inbox text-gray-500 dark:text-neutral-400 text-lg"></i>
         </button>
         <button class="p-1 rounded hover:bg-gray-100 dark:hover:bg-neutral-600">
-          <i class="i-hugeicons-waste text-gray-500 dark:text-gray-400 text-lg"></i>
+          <i class="i-hugeicons-waste text-gray-500 dark:text-neutral-400 text-lg"></i>
         </button>
       </div>
     </div>
@@ -52,17 +52,17 @@
               {{ email.from.charAt(0) }}
             </div>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">{{ email.from }}</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">{{ email.email }}</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-neutral-100">{{ email.from }}</p>
+              <p class="text-xs text-gray-500 dark:text-neutral-400">{{ email.email }}</p>
             </div>
           </div>
         </div>
-        <div class="text-xs text-gray-500 dark:text-gray-400">
+        <div class="text-xs text-gray-500 dark:text-neutral-400">
           {{ email.date }}
         </div>
       </div>
       <div class="mt-2">
-        <p class="text-base font-medium text-gray-900 dark:text-gray-100">{{ email.subject }}</p>
+        <p class="text-base font-medium text-gray-900 dark:text-neutral-100">{{ email.subject }}</p>
       </div>
     </div>
 
@@ -74,10 +74,10 @@
       @if(email.attachment)
         <div class="mt-4 border border-gray-200 dark:border-neutral-600 rounded p-3">
           <div class="flex items-center">
-            <i class="i-hugeicons-file-01 text-gray-500 dark:text-gray-400 text-xl"></i>
+            <i class="i-hugeicons-file-01 text-gray-500 dark:text-neutral-400 text-xl"></i>
             <div class="ml-3">
-              <p class="text-sm font-medium text-gray-900 dark:text-gray-100">Document.pdf</p>
-              <p class="text-xs text-gray-500 dark:text-gray-400">1.2 MB</p>
+              <p class="text-sm font-medium text-gray-900 dark:text-neutral-100">Document.pdf</p>
+              <p class="text-xs text-gray-500 dark:text-neutral-400">1.2 MB</p>
             </div>
             <button class="ml-auto p-1 rounded bg-blue-100 text-blue-700 hover:bg-blue-200 dark:bg-blue-900 dark:text-blue-100 dark:hover:bg-blue-800">
               <i class="i-hugeicons-download-04 text-lg"></i>
@@ -92,7 +92,7 @@
         <button class="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-500 font-medium text-sm">
           Reply
         </button>
-        <button class="px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-600 font-medium text-sm">
+        <button class="px-4 py-2 border border-gray-300 dark:border-neutral-600 text-gray-700 dark:text-neutral-200 rounded-md hover:bg-gray-50 dark:hover:bg-neutral-600 font-medium text-sm">
           Forward
         </button>
       </div>

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
 
@@ -515,25 +518,18 @@ function commentStats() {
 }
 </script>
 
-<main>
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <!-- Header -->
-        <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Comments</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
-              Manage all your blog comments
-            </p>
-          </div>
-        </div>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Comments" description="Manage all your blog comments" />
+
+  <div class="mx-auto max-w-7xl">
 
         <!-- Time Range Selector -->
         <div class="mt-6 flex justify-end">
           <div class="relative inline-block w-full sm:w-auto">
             <select
               value="{{ selectedTimeRange }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               @foreach(timeRanges as range)
 <option value="{{ range.value }}">{{ range.label }}</option>
@@ -544,7 +540,7 @@ function commentStats() {
         <!-- Comment Statistics -->
         <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
           <!-- Total Comments -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <div class="flex items-center">
                 <div class="flex-shrink-0 bg-indigo-500 rounded-md p-3">
@@ -554,14 +550,14 @@ function commentStats() {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400 truncate">
                       Total Comments
                     </dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">
                         {{ commentStats.totalComments }}
                       </div>
-                      <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <div class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                         <span class="text-green-600 dark:text-green-400">{{ commentStats.approvedComments }}</span> approved,
                         <span class="text-yellow-600 dark:text-yellow-400">{{ commentStats.pendingComments }}</span> pending,
                         <span class="text-red-600 dark:text-red-400">{{ commentStats.spamComments }}</span> spam
@@ -574,7 +570,7 @@ function commentStats() {
           </div>
 
           <!-- Approval Rate -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <div class="flex items-center">
                 <div class="flex-shrink-0 bg-green-500 rounded-md p-3">
@@ -584,14 +580,14 @@ function commentStats() {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400 truncate">
                       Approval Rate
                     </dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">
                         {{ commentStats.approvalRate }}%
                       </div>
-                      <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <div class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                         <span>{{ commentStats.approvedComments }} of {{ commentStats.totalComments }} comments</span>
                       </div>
                     </dd>
@@ -602,7 +598,7 @@ function commentStats() {
           </div>
 
           <!-- Most Active Author -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <div class="flex items-center">
                 <div class="flex-shrink-0 bg-purple-500 rounded-md p-3">
@@ -612,7 +608,7 @@ function commentStats() {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400 truncate">
                       Most Active Author
                     </dt>
                     <dd>
@@ -630,7 +626,7 @@ function commentStats() {
           </div>
 
           <!-- Most Commented Post -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <div class="flex items-center">
                 <div class="flex-shrink-0 bg-blue-500 rounded-md p-3">
@@ -640,14 +636,14 @@ function commentStats() {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="text-sm font-medium text-gray-500 dark:text-gray-400 truncate">
+                    <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400 truncate">
                       Most Commented Post
                     </dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white line-clamp-1">
                         {{ commentStats.mostCommentedPost.title }}
                       </div>
-                      <div class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                      <div class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                         <span>{{ commentStats.mostCommentedPost.count }} comments</span>
                       </div>
                     </dd>
@@ -661,7 +657,7 @@ function commentStats() {
         <!-- Charts -->
         <div class="mt-6 grid grid-cols-1 gap-5 lg:grid-cols-3">
           <!-- Comments Over Time Chart -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments Over Time</h3>
               <div class="mt-4" style="height: 250px;">
@@ -671,7 +667,7 @@ function commentStats() {
           </div>
 
           <!-- Comments by Status Chart -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments by Status</h3>
               <div class="mt-4" style="height: 250px;">
@@ -681,7 +677,7 @@ function commentStats() {
           </div>
 
           <!-- Comments by Post Chart -->
-          <div class="bg-white dark:bg-gray-800 overflow-hidden shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-800 overflow-hidden shadow rounded-lg">
             <div class="px-4 py-5 sm:p-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Top Posts by Comments</h3>
               <div class="mt-4" style="height: 250px;">
@@ -700,7 +696,7 @@ function commentStats() {
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
               placeholder="Search comments..."
             />
           </div>
@@ -708,7 +704,7 @@ function commentStats() {
           <div class="flex flex-col sm:flex-row gap-4">
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Status</option>
               <option value="approved">Approved</option>
@@ -718,7 +714,7 @@ function commentStats() {
 
             <select
               value="{{ sortBy }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="createdAt">Sort by Date</option>
               <option value="author">Sort by Author</option>
@@ -727,7 +723,7 @@ function commentStats() {
 
             <select
               value="{{ sortOrder }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -735,7 +731,7 @@ function commentStats() {
 
             <select
               value="{{ itemsPerPage }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="{{ 5 }}">5 per page</option>
               <option value="{{ 10 }}">10 per page</option>
@@ -790,13 +786,13 @@ function commentStats() {
         <div class="mt-6 flow-root">
           <div class="sm:flex sm:items-center sm:justify-between mb-4">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Comments</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
               A list of all blog comments including content, author, post, status, and date.
             </p>
           </div>
-          <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-gray-700 shadow">
+          <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-neutral-700 shadow">
             <div class="overflow-hidden">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+              <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
                 <thead class="bg-gray-50 dark:bg-neutral-700/50">
                   <tr>
                     <th scope="col" class="relative px-4 sm:px-6 py-3.5">
@@ -804,7 +800,7 @@ function commentStats() {
                         type="checkbox"
                         checked="{{ selectAll }}"
                         onchange="toggleSelectAll"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </th>
                     <th scope="col" class="px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
@@ -827,7 +823,7 @@ function commentStats() {
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-gray-700 bg-white dark:bg-neutral-800">
+                <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
                   @foreach(paginatedComments as comment)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                     <td class="relative px-4 sm:px-6 py-4 whitespace-nowrap">
@@ -836,7 +832,7 @@ function commentStats() {
                           type="checkbox"
                           checked="{{ selectedCommentIds.includes(comment.id) }}"
                           onchange="toggleCommentSelection(comment.id)"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-gray-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
                         />
                       </div>
                     </td>
@@ -850,13 +846,13 @@ function commentStats() {
                         <div class="text-sm font-medium text-gray-900 dark:text-white">
                           {{ comment.author }}
                         </div>
-                        <div class="text-sm text-gray-500 dark:text-gray-400">
+                        <div class="text-sm text-gray-500 dark:text-neutral-400">
                           {{ comment.email }}
                         </div>
                       </div>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-500 dark:text-gray-300">
+                      <div class="text-sm text-gray-500 dark:text-neutral-300">
                         {{ comment.postTitle }}
                       </div>
                     </td>
@@ -873,7 +869,7 @@ function commentStats() {
                       </span>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-500 dark:text-gray-300">
+                      <div class="text-sm text-gray-500 dark:text-neutral-300">
                         {{ formatDate(comment.createdAt) }}
                       </div>
                     </td>
@@ -927,7 +923,7 @@ function commentStats() {
                   </tr>
                   @if(paginatedComments.length === 0)
 <tr>
-                    <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-gray-400">
+                    <td colspan="7" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-neutral-400">
                       No comments found. Try adjusting your search or filters.
                     </td>
                   </tr>
@@ -944,21 +940,21 @@ function commentStats() {
             <button
               onclick="currentPage = Math.max(1, currentPage - 1)"
               disabled="{{ currentPage === 1 }}"
-              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-neutral-800 dark:text-gray-200 dark:hover:bg-neutral-700"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
             >
               Previous
             </button>
             <button
               onclick="currentPage = Math.min(totalPages, currentPage + 1)"
               disabled="{{ currentPage === totalPages }}"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-gray-600 dark:bg-neutral-800 dark:text-gray-200 dark:hover:bg-neutral-700"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
             >
               Next
             </button>
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-gray-700 dark:text-neutral-300">
                 Showing <span class="font-medium">{{ ((currentPage - 1) * itemsPerPage) + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredComments.length) }}</span> of <span class="font-medium">{{ filteredComments.length }}</span> results
               </p>
             </div>
@@ -967,7 +963,7 @@ function commentStats() {
                 <button
                   onclick="currentPage = Math.max(1, currentPage - 1)"
                   disabled="{{ currentPage === 1 }}"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-500 dark:hover:bg-neutral-700"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-700"
                 >
                   <span class="sr-only">Previous</span>
                   <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
@@ -978,7 +974,7 @@ function commentStats() {
                   class="{{ [
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-gray-200 dark:ring-gray-600 dark:hover:bg-neutral-700'
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700'
                   ] }}"
                 >
                   {{ page }}
@@ -986,7 +982,7 @@ function commentStats() {
                 <button
                   onclick="currentPage = Math.min(totalPages, currentPage + 1)"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-gray-600 dark:text-gray-500 dark:hover:bg-neutral-700"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-700"
                 >
                   <span class="sr-only">Next</span>
                   <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
@@ -996,13 +992,11 @@ function commentStats() {
           </div>
         </div>
       </div>
-    </div>
-  </main>
 
   <!-- Edit Comment Modal -->
   @if(showEditModal)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
 
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -1011,7 +1005,7 @@ function commentStats() {
             <button
               type="button"
               onclick="closeEditModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-300 dark:hover:text-gray-200"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -1024,7 +1018,7 @@ function commentStats() {
             <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Edit Comment</h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-500 dark:text-neutral-400">
                   Update the comment details.
                 </p>
               </div>
@@ -1040,7 +1034,7 @@ function commentStats() {
                     id="edit-comment-content"
                     value="{{ commentToEdit.content }}"
                     rows="4"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
                   ></textarea>
                 </div>
               </div>
@@ -1051,7 +1045,7 @@ function commentStats() {
                     type="text"
                     id="edit-comment-author"
                     value="{{ commentToEdit.author }}"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
                   />
                 </div>
               </div>
@@ -1062,7 +1056,7 @@ function commentStats() {
                     type="email"
                     id="edit-comment-email"
                     value="{{ commentToEdit.email }}"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:placeholder:text-gray-500"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
                   />
                 </div>
               </div>
@@ -1072,7 +1066,7 @@ function commentStats() {
                   <select
                     id="edit-comment-status"
                     value="{{ commentToEdit.status }}"
-                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                    class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                   >
                     <option value="approved">Approved</option>
                     <option value="pending">Pending</option>
@@ -1094,7 +1088,7 @@ function commentStats() {
             <button
               type="button"
               onclick="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -1107,7 +1101,7 @@ function commentStats() {
   <!-- Delete Confirmation Modal -->
   @if(showDeleteModal)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
 
     <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
@@ -1116,7 +1110,7 @@ function commentStats() {
             <button
               type="button"
               onclick="closeDeleteModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-300 dark:hover:text-gray-200"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
@@ -1131,7 +1125,7 @@ function commentStats() {
                 {{ selectedCommentIds.length > 1 ? 'Delete Comments' : 'Delete Comment' }}
               </h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-gray-400">
+                <p class="text-sm text-gray-500 dark:text-neutral-400">
                   {{ selectedCommentIds.length > 1
                     ? `Are you sure you want to delete these ${selectedCommentIds.length} comments? This action cannot be undone.`
                     : 'Are you sure you want to delete this comment? This action cannot be undone.'
@@ -1141,15 +1135,15 @@ function commentStats() {
 <div class="mt-4 max-h-40 overflow-y-auto">
                   <ul class="space-y-2">
                     @foreach(selectedCommentIds as id)
-<li class="text-sm text-gray-700 dark:text-gray-300">
+<li class="text-sm text-gray-700 dark:text-neutral-300">
                       {{ truncateText(comments.find((c: Comment) => c.id === id)?.content || '', 50) }}
                     </li>
                   </ul>
                 </div>
                 @elseif(commentToDelete)
 <div class="mt-4">
-                  <p class="text-sm font-medium text-gray-700 dark:text-gray-300">{{ truncateText(commentToDelete.content, 100) }}</p>
-                  <p class="text-xs text-gray-500 dark:text-gray-400 mt-1">by {{ commentToDelete.author }}</p>
+                  <p class="text-sm font-medium text-gray-700 dark:text-neutral-300">{{ truncateText(commentToDelete.content, 100) }}</p>
+                  <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">by {{ commentToDelete.author }}</p>
                 </div>
               </div>
             </div>
@@ -1165,7 +1159,7 @@ function commentStats() {
             <button
               type="button"
               onclick="closeDeleteModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -1174,3 +1168,6 @@ function commentStats() {
       </div>
     </div>
   </div>
+</div>
+
+@endsection

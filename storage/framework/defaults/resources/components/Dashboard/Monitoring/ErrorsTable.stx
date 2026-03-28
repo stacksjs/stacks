@@ -13,7 +13,7 @@ function getStatusClass(status) {
     case 'resolved':
       return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
     case 'ignored':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
     case 'unresolved':
     default:
       return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
@@ -55,10 +55,10 @@ function truncateMessage(message, maxLength = 60) {
 }
 </script>
 <div class="overflow-hidden">
-  <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+  <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
     <thead class="bg-gray-50 dark:bg-neutral-700">
       <tr>
-        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-gray-200">
+        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-neutral-200">
           <button class="group inline-flex items-center" data-action="sort" data-column="type">
             Error
             <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
@@ -70,7 +70,7 @@ function truncateMessage(message, maxLength = 60) {
             </span>
           </button>
         </th>
-        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
           <button class="group inline-flex items-center" data-action="sort" data-column="count">
             Events
             <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
@@ -82,7 +82,7 @@ function truncateMessage(message, maxLength = 60) {
             </span>
           </button>
         </th>
-        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
           <button class="group inline-flex items-center" data-action="sort" data-column="last_seen">
             Last Seen
             <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
@@ -94,7 +94,7 @@ function truncateMessage(message, maxLength = 60) {
             </span>
           </button>
         </th>
-        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-gray-200">
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
           Status
         </th>
         <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
@@ -102,7 +102,7 @@ function truncateMessage(message, maxLength = 60) {
         </th>
       </tr>
     </thead>
-    <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+    <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
       @foreach(errors as error)
         <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer" data-action="view" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
           <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
@@ -115,19 +115,19 @@ function truncateMessage(message, maxLength = 60) {
               <div class="mt-1 text-gray-900 dark:text-white font-medium">
                 {{ truncateMessage(error.message) }}
               </div>
-              <div class="text-gray-500 dark:text-gray-400 text-xs mt-0.5">
+              <div class="text-gray-500 dark:text-neutral-400 text-xs mt-0.5">
                 First seen: {{ formatTimeAgo(error.first_seen) }}
               </div>
             </div>
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
             <div class="flex items-center">
-              <span class="inline-flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-medium text-xs">
+              <span class="inline-flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 font-medium text-xs">
                 {{ error.count }}
               </span>
             </div>
           </td>
-          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-300">
+          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
             {{ formatTimeAgo(error.last_seen) }}
           </td>
           <td class="whitespace-nowrap px-3 py-4 text-sm">
@@ -148,7 +148,7 @@ function truncateMessage(message, maxLength = 60) {
                 </button>
               @endif
               @if(error.status != 'ignored')
-                <button type="button" title="Ignore" class="text-gray-400 transition-colors duration-150 hover:text-gray-600 dark:text-gray-400 dark:hover:text-gray-300" data-action="ignore" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                <button type="button" title="Ignore" class="text-gray-400 transition-colors duration-150 hover:text-gray-600 dark:text-neutral-400 dark:hover:text-gray-300" data-action="ignore" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
                   <div class="i-hugeicons-eye-off h-5 w-5"></div>
                 </button>
               @endif
@@ -165,7 +165,7 @@ function truncateMessage(message, maxLength = 60) {
             <div class="flex flex-col items-center">
               <div class="i-hugeicons-checkmark-circle-02 h-12 w-12 text-green-400"></div>
               <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No errors found</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                 @if(searchQuery || statusFilter != 'all' || typeFilter != 'all')
                   Try adjusting your filters
                 @else

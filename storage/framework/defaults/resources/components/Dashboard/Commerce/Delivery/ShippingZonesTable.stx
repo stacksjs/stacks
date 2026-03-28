@@ -48,7 +48,7 @@
               {{ getPostalCodes(zone.postal_codes) }}
             </td>
             <td class="whitespace-nowrap px-4 py-3.5 text-sm">
-              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {{ zone.status == 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300' }}">
+              <span class="inline-flex items-center rounded-full px-3 py-1 text-xs font-medium {{ zone.status == 'active' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : 'bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-300' }}">
                 {{ zone.status }}
               </span>
             </td>

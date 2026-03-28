@@ -1,0 +1,10 @@
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Stacks Dashboard</title>
+</head>
+<body class="min-h-screen bg-neutral-100 dark:bg-neutral-950">
+  @yield('content')
+</body>
+</html>

@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 // Define post type
 interface SocialPost {
@@ -321,7 +324,7 @@ const getStatusClass = (status: string): string => {
     case 'Failed':
       return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
     default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-gray-900/30 dark:text-gray-400'
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
@@ -494,7 +497,7 @@ function truncateText(text: string, max: number): string {
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
             <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Social Media Posts</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-gray-300">
+            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
               Create, schedule, and manage your social media posts for Bluesky
             </p>
           </div>
@@ -522,7 +525,7 @@ function truncateText(text: string, max: number): string {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Total Posts</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Total Posts</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalPosts }}</div>
                     </dd>
@@ -543,7 +546,7 @@ function truncateText(text: string, max: number): string {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Published</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Published</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ publishedPosts }}</div>
                     </dd>
@@ -564,7 +567,7 @@ function truncateText(text: string, max: number): string {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Scheduled</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Scheduled</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ scheduledPosts }}</div>
                     </dd>
@@ -585,7 +588,7 @@ function truncateText(text: string, max: number): string {
                 </div>
                 <div class="ml-5 w-0 flex-1">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-gray-400">Drafts</dt>
+                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Drafts</dt>
                     <dd>
                       <div class="text-lg font-medium text-gray-900 dark:text-white">{{ draftPosts }}</div>
                     </dd>
@@ -605,7 +608,7 @@ function truncateText(text: string, max: number): string {
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:placeholder:text-gray-500"
+              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
               placeholder="Search posts..."
             />
           </div>
@@ -614,7 +617,7 @@ function truncateText(text: string, max: number): string {
             <!-- Status filter -->
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Statuses</option>
               @foreach(statuses.slice(1) as status)
@@ -626,7 +629,7 @@ function truncateText(text: string, max: number): string {
             <!-- Platform filter -->
             <select
               value="{{ platformFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Platforms</option>
               @foreach(platforms.slice(1) as platform)
@@ -638,7 +641,7 @@ function truncateText(text: string, max: number): string {
             <!-- Author filter -->
             <select
               value="{{ authorFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-gray-700"
+              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
             >
               <option value="all">All Authors</option>
               @foreach(authors.slice(1) as author)
@@ -656,7 +659,7 @@ function truncateText(text: string, max: number): string {
                   'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-grid h-5 w-5"></div>
@@ -668,7 +671,7 @@ function truncateText(text: string, max: number): string {
                   'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-gray-700 dark:hover:bg-neutral-700'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
                 ] }}"
               >
                 <div class="i-hugeicons-list-view h-5 w-5"></div>
@@ -678,7 +681,7 @@ function truncateText(text: string, max: number): string {
         </div>
 
         <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
           <span class="mr-2">Sort by:</span>
           <button
             onclick="toggleSort('scheduledDate')"
@@ -731,7 +734,7 @@ function truncateText(text: string, max: number): string {
 <div class="py-12 text-center">
             <div class="i-hugeicons-document-validation mx-auto h-12 w-12 text-gray-400"></div>
             <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-white">No posts found</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">Try adjusting your search or filter to find what you're looking for.</p>
+            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Try adjusting your search or filter to find what you're looking for.</p>
           </div>
 
           @else
@@ -739,7 +742,7 @@ function truncateText(text: string, max: number): string {
             <!-- Post card -->
             @foreach(paginatedPosts as post)
 <div
-              class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-neutral-800"
+              class="overflow-hidden rounded-lg border border-gray-200 bg-white shadow-sm dark:border-neutral-700 dark:bg-neutral-800"
             >
               <div class="p-6">
                 <div class="flex items-start justify-between">
@@ -758,7 +761,7 @@ function truncateText(text: string, max: number): string {
                         >
                           {{ post.platform }}
                         </span>
-                        <span class="ml-2 text-sm text-gray-500 dark:text-gray-400">{{ formatDate(post.scheduledDate) }}</span>
+                        <span class="ml-2 text-sm text-gray-500 dark:text-neutral-400">{{ formatDate(post.scheduledDate) }}</span>
                       </div>
                     </div>
                   </div>
@@ -781,7 +784,7 @@ function truncateText(text: string, max: number): string {
 
                 <!-- Post content -->
                 <div class="mt-4">
-                  <p class="text-sm text-gray-500 dark:text-gray-400">{{ post.content }}</p>
+                  <p class="text-sm text-gray-500 dark:text-neutral-400">{{ post.content }}</p>
                 </div>
 
                 <!-- Post images -->
@@ -806,7 +809,7 @@ function truncateText(text: string, max: number): string {
 <div class="mt-4 flex flex-wrap gap-2">
                   @foreach(post.tags as tag)
 <span
-                    class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-gray-800 dark:text-gray-300"
+                    class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-neutral-800 dark:text-neutral-300"
                   >
                     #{{ tag }}
                   </span>
@@ -814,7 +817,7 @@ function truncateText(text: string, max: number): string {
 
                 <!-- Engagement metrics (only for published posts) -->
                 @if(post.status === 'Published')
-<div class="mt-4 flex items-center text-sm text-gray-500 dark:text-gray-400">
+<div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
                   <div class="flex items-center">
                     <div class="i-hugeicons-heart h-4 w-4 mr-1"></div>
                     <span>{{ post.likes }} likes</span>
@@ -840,14 +843,14 @@ function truncateText(text: string, max: number): string {
                   </button>
                   <button
                     onclick="duplicatePost(post)"
-                    class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                   >
                     <div class="i-hugeicons-copy h-4 w-4 mr-1"></div>
                     Duplicate
                   </button>
                   <button
                     onclick="openEditPostModal(post)"
-                    class="rounded-md bg-white p-1.5 text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-gray-300 dark:ring-gray-600 dark:hover:bg-neutral-600"
+                    class="rounded-md bg-white p-1.5 text-gray-700 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-neutral-300 dark:ring-neutral-600 dark:hover:bg-neutral-600"
                     title="Edit post"
                   >
                     <div class="i-hugeicons-edit-01 h-4 w-4"></div>
@@ -855,7 +858,7 @@ function truncateText(text: string, max: number): string {
                   </button>
                   <button
                     onclick="deletePost(post.id)"
-                    class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                    class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                   >
                     <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
                     Delete
@@ -869,7 +872,7 @@ function truncateText(text: string, max: number): string {
         <!-- Compact view -->
         @if(viewMode === 'compact')
 <div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-gray-700">
+          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-700">
               <tr>
                 <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Content</th>
@@ -882,10 +885,10 @@ function truncateText(text: string, max: number): string {
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-gray-700 dark:bg-neutral-800">
+            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
               @if(paginatedPosts.length === 0)
 <tr>
-                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-gray-400">
+                <td colspan="6" class="py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
                   No posts found. Try adjusting your search or filter.
                 </td>
               </tr>
@@ -940,7 +943,7 @@ function truncateText(text: string, max: number): string {
                     </span>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-gray-400 text-right">
+                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
                   {{ formatDate(post.scheduledDate || post.publishedDate) }}
                 </td>
                 <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
@@ -970,13 +973,13 @@ function truncateText(text: string, max: number): string {
 
         <!-- Pagination -->
         @if(totalPages > 1)
-<div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-gray-700 sm:px-6">
+<div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 dark:border-neutral-700 sm:px-6">
           <div class="flex flex-1 justify-between sm:hidden">
             <button
               onclick="previousPage"
               disabled="{{ currentPage === 1 }}"
               class="{{ [
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white',
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
                 currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
               ] }}"
             >
@@ -986,7 +989,7 @@ function truncateText(text: string, max: number): string {
               onclick="nextPage"
               disabled="{{ currentPage === totalPages }}"
               class="{{ [
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-gray-600 dark:bg-neutral-800 dark:text-white',
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
                 currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
               ] }}"
             >
@@ -995,7 +998,7 @@ function truncateText(text: string, max: number): string {
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-gray-300">
+              <p class="text-sm text-gray-700 dark:text-neutral-300">
                 Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
                 <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredPosts.length) }}</span> of
                 <span class="font-medium">{{ filteredPosts.length }}</span> results
@@ -1006,7 +1009,7 @@ function truncateText(text: string, max: number): string {
                 <button
                   onclick="previousPage"
                   disabled="{{ currentPage === 1 }}"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-neutral-700 dark:text-gray-500"
+                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:text-neutral-500"
                   class="{{ { 'opacity-50 cursor-not-allowed': currentPage === 1 } }}"
                 >
                   <span class="sr-only">Previous</span>
@@ -1016,7 +1019,7 @@ function truncateText(text: string, max: number): string {
 <button
                   onclick="changePage(page)"
                   class="{{ [
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-gray-600',
+                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600',
                     page === currentPage
                       ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
                       : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700'
@@ -1027,7 +1030,7 @@ function truncateText(text: string, max: number): string {
                 <button
                   onclick="nextPage"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-gray-600 dark:hover:bg-neutral-700 dark:text-gray-500"
+                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:text-neutral-500"
                   class="{{ { 'opacity-50 cursor-not-allowed': currentPage === totalPages } }}"
                 >
                   <span class="sr-only">Next</span>
@@ -1044,14 +1047,14 @@ function truncateText(text: string, max: number): string {
     @if(showPostModal)
 <div class="fixed inset-0 z-10 overflow-y-auto">
       <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-gray-900 dark:bg-opacity-75"></div>
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
 
         <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
           <div class="absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closePostModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-gray-500 dark:hover:text-gray-400"
+              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-500 dark:hover:text-gray-400"
             >
               <span class="sr-only">Close</span>
               <div class="i-hugeicons-cancel-circle h-6 w-6"></div>
@@ -1066,11 +1069,11 @@ function truncateText(text: string, max: number): string {
                 <form onsubmit="savePost; return false" class="space-y-4">
                   <!-- Platform selection -->
                   <div>
-                    <label for="post-platform" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Platform</label>
+                    <label for="post-platform" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Platform</label>
                     <select
                       id="post-platform" 
                       value="{{ currentPost.platform }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     >
                       @foreach(platforms.slice(1) as platform)
 <option value="{{ platform }}">
@@ -1081,24 +1084,24 @@ function truncateText(text: string, max: number): string {
 
                   <!-- Post content -->
                   <div>
-                    <label for="post-content" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Content</label>
+                    <label for="post-content" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Content</label>
                     <textarea
                       id="post-content" 
                       value="{{ currentPost.content }}"
                       oninput="updateTags"
                       rows="4"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       placeholder="What's on your mind? Use #hashtags for better discoverability."
                       required
                     ></textarea>
-                    <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                    <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                       {{ currentPost?.content?.length || 0 }}/300 characters
                     </p>
                   </div>
 
                   <!-- Images -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Images</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Images</label>
                     @if(currentPost && currentPost.images.length > 0)
 <div class="mt-2 grid grid-cols-2 gap-2">
                       @foreach(currentPost.images as index => image)
@@ -1122,7 +1125,7 @@ function truncateText(text: string, max: number): string {
                     <div class="mt-2" >
                       <button
                         type="button"
-                        class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                        class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                       >
                         <div class="i-hugeicons-image-01 h-4 w-4 mr-1"></div>
                         Add Image
@@ -1132,7 +1135,7 @@ function truncateText(text: string, max: number): string {
 
                   <!-- Tags -->
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-gray-300">Tags</label>
+                    <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Tags</label>
                     @if(currentPost && currentPost.tags.length > 0)
 <div class="mt-2 flex flex-wrap gap-2">
                       @foreach(currentPost.tags as tag)
@@ -1143,30 +1146,30 @@ function truncateText(text: string, max: number): string {
                       </span>
                     </div>
                     @else
-<p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+<p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                       Add #hashtags in your content to automatically generate tags
                     </p>
                   </div>
 
                   <!-- Schedule date and time -->
                   <div>
-                    <label for="post-schedule" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Schedule Date & Time</label>
+                    <label for="post-schedule" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Schedule Date & Time</label>
                     <input
                       type="datetime-local"
                       id="post-schedule" 
                       value="{{ currentPost.scheduledDate }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                       required
                     />
                   </div>
 
                   <!-- Status -->
                   <div>
-                    <label for="post-status" class="block text-sm font-medium text-gray-700 dark:text-gray-300">Status</label>
+                    <label for="post-status" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Status</label>
                     <select
                       id="post-status" 
                       value="{{ currentPost.status }}"
-                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-gray-600 dark:text-white"
+                      class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
                     >
                       <option value="Draft">Draft</option>
                       <option value="Scheduled">Scheduled</option>
@@ -1180,9 +1183,9 @@ function truncateText(text: string, max: number): string {
                       <input
                         id="create-thread"
                         type="checkbox"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-gray-600"
+                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600"
                       />
-                      <label for="create-thread" class="ml-2 block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      <label for="create-thread" class="ml-2 block text-sm font-medium text-gray-700 dark:text-neutral-300">
                         Create as thread starter (for multi-post threads)
                       </label>
                     </div>
@@ -1198,7 +1201,7 @@ function truncateText(text: string, max: number): string {
                     <button
                       type="button"
                       onclick="closePostModal"
-                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+                      class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
                     >
                       Cancel
                     </button>
@@ -1212,3 +1215,5 @@ function truncateText(text: string, max: number): string {
     </div>
   </main>
 
+
+@endsection

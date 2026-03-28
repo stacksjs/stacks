@@ -21,7 +21,6 @@ function typeVariant(t) {
   return 'default'
 }
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Releases" description="Manage application versions and releases">
@@ -73,5 +72,4 @@ function typeVariant(t) {
     </DataTable>
   </div>
 </div>
-</DashboardLayout>
 @endsection

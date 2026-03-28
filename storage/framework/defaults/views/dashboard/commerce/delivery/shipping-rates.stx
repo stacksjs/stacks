@@ -1,3 +1,6 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
 definePageMeta({
   middleware: ['auth']
@@ -169,8 +172,8 @@ const tabs = [
       :tabs="tabs"
     />
 
-    <div class="mt-6 bg-white dark:bg-gray-800 shadow rounded-lg overflow-hidden">
-      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-gray-700">
+    <div class="mt-6 bg-white dark:bg-neutral-800 shadow rounded-lg overflow-hidden">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
         <div class="flex justify-between items-center">
           <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Rates</h2>
           <button
@@ -197,7 +200,7 @@ const tabs = [
         @delete="handleDeleteRate"
       />
 
-      <div class="px-4 py-3 bg-gray-50 dark:bg-gray-900 border-t border-gray-200 dark:border-gray-700">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
         <Pagination
           :current-page="currentPage"
           :total-items="filteredShippingRates.length"
@@ -223,12 +226,12 @@ const tabs = [
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Method</label>
+                    <label for="rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Method</label>
                     <div class="mt-2">
                       <select
                         id="rate-method"
                         value="{{ newShippingRate.shipping_method_id }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="">Select a shipping method</option>
                         @foreach(shippingMethods as method)
@@ -241,12 +244,12 @@ const tabs = [
                   </div>
 
                   <div>
-                    <label for="rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Zone</label>
+                    <label for="rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Zone</label>
                     <div class="mt-2">
                       <select
                         id="rate-zone"
                         value="{{ newShippingRate.shipping_zone_id }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="">Select a shipping zone</option>
                         @foreach(shippingZones as zone)
@@ -260,26 +263,26 @@ const tabs = [
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="rate-weight-from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight From</label>
+                      <label for="rate-weight-from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Weight From</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="rate-weight-from"
                           value="{{ newShippingRate.weight_from }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="0"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label for="rate-weight-to" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight To</label>
+                      <label for="rate-weight-to" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Weight To</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="rate-weight-to"
                           value="{{ newShippingRate.weight_to }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="10"
                         />
                       </div>
@@ -287,13 +290,13 @@ const tabs = [
                   </div>
 
                   <div>
-                    <label for="rate-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Rate (in cents)</label>
+                    <label for="rate-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Rate (in cents)</label>
                     <div class="mt-2">
                       <input
                         type="number"
                         id="rate-rate"
                         value="{{ newShippingRate.rate }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="599"
                       />
                     </div>
@@ -313,7 +316,7 @@ const tabs = [
             <button
               type="button"
               onclick="closeAddModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -336,12 +339,12 @@ const tabs = [
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="edit-rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Method</label>
+                    <label for="edit-rate-method" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Method</label>
                     <div class="mt-2">
                       <select
                         id="edit-rate-method"
                         value="{{ newShippingRate.method }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="">Select a shipping method</option>
                         @foreach(shippingMethods as method)
@@ -354,12 +357,12 @@ const tabs = [
                   </div>
 
                   <div>
-                    <label for="edit-rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Zone</label>
+                    <label for="edit-rate-zone" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Zone</label>
                     <div class="mt-2">
                       <select
                         id="edit-rate-zone"
                         value="{{ newShippingRate.zone }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                       >
                         <option value="">Select a shipping zone</option>
                         @foreach(shippingZones as zone)
@@ -373,26 +376,26 @@ const tabs = [
 
                   <div class="grid grid-cols-2 gap-4">
                     <div>
-                      <label for="edit-rate-weight-from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight From</label>
+                      <label for="edit-rate-weight-from" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Weight From</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="edit-rate-weight-from"
                           value="{{ newShippingRate.weight_from }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="0"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label for="edit-rate-weight-to" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Weight To</label>
+                      <label for="edit-rate-weight-to" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Weight To</label>
                       <div class="mt-2">
                         <input
                           type="number"
                           id="edit-rate-weight-to"
                           value="{{ newShippingRate.weight_to }}"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                           placeholder="10"
                         />
                       </div>
@@ -400,13 +403,13 @@ const tabs = [
                   </div>
 
                   <div>
-                    <label for="edit-rate-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-gray-200 text-left">Rate (in cents)</label>
+                    <label for="edit-rate-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Rate (in cents)</label>
                     <div class="mt-2">
                       <input
                         type="number"
                         id="edit-rate-rate"
                         value="{{ newShippingRate.rate }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-gray-600"
+                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
                         placeholder="599"
                       />
                     </div>
@@ -426,7 +429,7 @@ const tabs = [
             <button
               type="button"
               onclick="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-gray-600 dark:hover:bg-neutral-600"
+              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
             >
               Cancel
             </button>
@@ -447,3 +450,5 @@ onMount(async () => {
   ])
 })
 </script>
+
+@endsection

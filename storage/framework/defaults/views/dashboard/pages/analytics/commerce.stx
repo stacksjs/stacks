@@ -8,7 +8,6 @@ let topProducts = []
 let salesByRegion = []
 let revenueByChannel = []
 </script>
-<DashboardLayout>
 <div class="p-6 space-y-6">
 
   <PageHeader title="Commerce Analytics" description="Sales and revenue insights">
@@ -99,5 +98,4 @@ let revenueByChannel = []
   @endif
 
 </div>
-</DashboardLayout>
 @endsection
