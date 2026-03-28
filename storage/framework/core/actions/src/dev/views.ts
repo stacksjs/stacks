@@ -26,7 +26,7 @@ const preferredPort = Number(process.env.PORT) || 3000
 await serve({
   patterns: [userViewsPath, defaultViewsPath],
   port: preferredPort,
-  componentsDir: 'storage/framework/defaults/components/Dashboard',
+  componentsDir: 'storage/framework/defaults/resources/components/Dashboard',
   layoutsDir: userLayoutsPath,
   partialsDir: userViewsPath,
   // Additional fallback layouts from defaults

@@ -383,7 +383,7 @@ export async function getPivotTables(
 }
 
 export async function fetchOtherModelRelations(modelName?: string): Promise<RelationConfig[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
 
   const modelRelations = []
 
@@ -623,7 +623,7 @@ export async function extractAttributesFromModel(filePath: string): Promise<Attr
 }
 
 export function findCoreModel(modelName: string): string {
-  const rootPath = path.join(path.storagePath('framework/defaults/models'), '/')
+  const rootPath = path.join(path.storagePath('framework/defaults/app/Models'), '/')
 
   const directPath = path.join(rootPath, modelName)
   if (fs.existsSync(directPath))

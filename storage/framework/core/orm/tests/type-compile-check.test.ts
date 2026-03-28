@@ -19,7 +19,7 @@ const rootDir = resolve(import.meta.dir, '../../../../..')
 const coreOrmDir = join(rootDir, 'storage/framework/core/orm/src')
 const typesDir = join(rootDir, 'storage/framework/types')
 const frameworkModelsDir = join(rootDir, 'storage/framework/models')
-const defaultModelsDir = join(rootDir, 'storage/framework/defaults/models')
+const defaultModelsDir = join(rootDir, 'storage/framework/defaults/app/Models')
 const actionFile = join(rootDir, 'storage/framework/core/actions/src/action.ts')
 const requestFile = join(rootDir, 'storage/framework/core/types/src/request.ts')
 const routerDir = join(rootDir, 'storage/framework/core/router/src')
@@ -503,7 +503,7 @@ describe('model definition files use defineModel pattern', () => {
     ...defaultModels.map(f => ({ file: f, dir: defaultModelsDir })),
   ]
 
-  test('should have model files in framework/models or defaults/models', () => {
+  test('should have model files in framework/models or defaults/app/Models', () => {
     expect(allModels.length).toBeGreaterThan(30)
   })
 

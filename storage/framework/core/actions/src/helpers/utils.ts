@@ -46,7 +46,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       await serve({
         patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
         port,
-        componentsDir: 'storage/framework/defaults/components/Dashboard',
+        componentsDir: 'storage/framework/defaults/resources/components/Dashboard',
         layoutsDir: 'resources/layouts',
         partialsDir: 'resources/views',
         quiet: true,

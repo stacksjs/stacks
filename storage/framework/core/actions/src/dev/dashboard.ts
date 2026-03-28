@@ -65,7 +65,7 @@ async function startStxServer(): Promise<void> {
   const serverPromise = serve({
     patterns: [userDashboardPagesPath, dashboardPagesPath],
     port: dashboardPort,
-    componentsDir: storagePath('framework/defaults/components/Dashboard'),
+    componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),
     layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
     quiet: true,
@@ -187,7 +187,7 @@ startConfigApi()
 // eslint-disable-next-line ts/no-top-level-await
 const [, discoveredModels] = await Promise.all([
   startStxServer(),
-  discoverModels(projectPath('app/Models'), storagePath('framework/defaults/models')),
+  discoverModels(projectPath('app/Models'), storagePath('framework/defaults/app/Models')),
 ])
 
 // Write manifest

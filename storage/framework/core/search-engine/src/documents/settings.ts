@@ -10,7 +10,7 @@ import { snakeCase } from '@stacksjs/strings'
 
 export async function updateIndexSettings(): Promise<Ok<string, never> | Err<string, any>> {
   try {
-    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+    const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
     const { updateSettings } = useSearchEngine()
 
     for (const model of modelFiles) {

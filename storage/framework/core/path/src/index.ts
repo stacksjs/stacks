@@ -775,7 +775,7 @@ export function langPath(path?: string): string {
 export function layoutsPath(path?: string, options?: { relative?: boolean, defaults?: boolean }): string {
   let absolutePath
   if (options?.defaults)
-    absolutePath = frameworkPath(`defaults/layouts/${path || ''}`)
+    absolutePath = frameworkPath(`defaults/resources/layouts/${path || ''}`)
   else
     absolutePath = resourcesPath(`layouts/${path || ''}`)
 

@@ -39,7 +39,7 @@ export async function resetMysqlDatabase(): Promise<Ok<string, never>> {
 }
 
 export async function dropMysqlTables(): Promise<void> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
   for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS \`${table}\``).execute()

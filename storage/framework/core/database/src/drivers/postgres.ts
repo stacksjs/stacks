@@ -40,7 +40,7 @@ import {
 
 export async function dropPostgresTables(): Promise<void> {
   const tables = await fetchPostgresTables()
-  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
 
   await dropMigrationTables()
 
@@ -540,7 +540,7 @@ function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): stri
 }
 
 export async function fetchPostgresTables(): Promise<string[]> {
-  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/models/**/*.ts')], { absolute: true })
+  const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
 
   const tables: string[] = []
 

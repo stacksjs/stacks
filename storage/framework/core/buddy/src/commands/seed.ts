@@ -35,7 +35,7 @@ function countModelFiles(dir: string): number {
  */
 function validateModelsExist(): { valid: boolean, error?: string } {
   const userModelsPath = appPath('Models')
-  const defaultModelsPath = frameworkPath('defaults/models')
+  const defaultModelsPath = frameworkPath('defaults/app/Models')
 
   const userModelCount = countModelFiles(userModelsPath)
   const defaultModelCount = countModelFiles(defaultModelsPath)

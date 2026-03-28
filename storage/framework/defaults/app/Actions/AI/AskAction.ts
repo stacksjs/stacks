@@ -1,27 +1,40 @@
 import { Action } from '@stacksjs/actions'
+import { ask } from '@stacksjs/ai'
+import { schema } from '@stacksjs/validation'
+
+// TODO: this should have been auto-generated
+interface Request {
+  question: string
+}
 
 export default new Action({
-  name: 'AskAction',
-  description: 'Ask AI a question',
+  name: 'AiAskAction',
+  description: 'Ask AI',
   method: 'POST',
 
-  async handle(request: RequestInstance) {
-    const body = await request.json()
-    const { question, context } = body as { question?: string, context?: string }
+  validations: {
+    question: {
+      rule: schema.string().min(3).max(255),
+      message: 'The question must be between 3 and 255 characters long.',
+    },
+  },
 
-    if (!question) {
+  async handle(request: Request) {
+    try {
+      const question = request.question
+
+      console.log(`Question received: ${question}`)
+
       return {
-        success: false,
-        error: 'Question is required',
+        data: await ask(question),
       }
     }
+    catch (error) {
+      console.error('Error:', error)
 
-    // TODO: Implement actual AI integration
-    return {
-      success: true,
-      question,
-      context,
-      answer: `This is a placeholder response for: "${question}"`,
+      return {
+        error: 'An error occurred while processing your request.',
+      }
     }
   },
 })

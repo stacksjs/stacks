@@ -140,7 +140,7 @@ async function loadAutoImports() {
   const modelDirs = [
     path.userModelsPath(),
     path.storagePath('framework/models'),
-    path.storagePath('framework/defaults/models'),
+    path.storagePath('framework/defaults/app/Models'),
   ]
 
   const loadedModels = new Set<string>()

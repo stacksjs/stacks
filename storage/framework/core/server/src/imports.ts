@@ -83,7 +83,7 @@ export async function generateAutoImportFiles(): Promise<void> {
   // defineModel() model definition directories (user models take priority)
   const userModelsPath = path.userModelsPath()
   const frameworkModelsPath = path.storagePath('framework/models')
-  const defaultModelsPath = path.storagePath('framework/defaults/models')
+  const defaultModelsPath = path.storagePath('framework/defaults/app/Models')
 
   // Job definition directory
   const userJobsPath = path.userJobsPath()
@@ -143,7 +143,7 @@ export function initiateImports(): void {
   // defineModel() model definition directories (user models take priority)
   const userModelsPath = path.userModelsPath()
   const frameworkModelsPath = path.storagePath('framework/models')
-  const defaultModelsPath = path.storagePath('framework/defaults/models')
+  const defaultModelsPath = path.storagePath('framework/defaults/app/Models')
 
   // Job definition directory
   const userJobsPath = path.userJobsPath()

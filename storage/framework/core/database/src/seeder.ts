@@ -2,7 +2,7 @@
  * Database Seeder Module
  *
  * Provides model-based seeding using factory functions defined on model attributes.
- * This module reads models from both the framework defaults (storage/framework/defaults/models)
+ * This module reads models from both the framework defaults (storage/framework/defaults/app/Models)
  * and user-defined models (app/Models/), with user models taking precedence.
  * Generates fake data using the factory functions and faker instance from @stacksjs/faker.
  */
@@ -19,7 +19,7 @@ import { fs } from '@stacksjs/storage'
  * Returns the path to the framework default models directory
  */
 function defaultModelsPath(subpath?: string): string {
-  return path.frameworkPath(`defaults/models/${subpath || ''}`)
+  return path.frameworkPath(`defaults/app/Models/${subpath || ''}`)
 }
 
 /**
