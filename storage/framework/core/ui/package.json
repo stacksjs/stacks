@@ -58,6 +58,6 @@
     "@stacksjs/config": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/router": "workspace:*",
-    "@cwcss/crosswind": "^0.1.6"
+    "@cwcss/crosswind": "^0.2.0"
   }
 }
