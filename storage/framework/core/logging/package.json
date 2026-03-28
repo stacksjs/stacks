@@ -55,6 +55,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "typescript": "^5.9.3"
+    "typescript": "^6.0.2"
   }
 }
