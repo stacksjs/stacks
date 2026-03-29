@@ -52,11 +52,11 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.1.14"
+    "@stacksjs/ts-cloud": "^0.2.3"
   },
   "devDependencies": {
     "@stacksjs/config": "workspace:*",
     "@stacksjs/database": "workspace:*",
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.7"
   }
 }

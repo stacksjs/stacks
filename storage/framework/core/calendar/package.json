@@ -49,7 +49,7 @@
   },
   "devDependencies": {
     "@stacksjs/browser": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.7",
     "@stacksjs/security": "workspace:*"
   }
 }

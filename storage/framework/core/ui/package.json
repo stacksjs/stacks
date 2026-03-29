@@ -56,8 +56,8 @@
   "devDependencies": {
     "@stacksjs/build": "workspace:*",
     "@stacksjs/config": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.7",
     "@stacksjs/router": "workspace:*",
-    "@cwcss/crosswind": "^0.1.6"
+    "@cwcss/crosswind": "^0.2.0"
   }
 }
