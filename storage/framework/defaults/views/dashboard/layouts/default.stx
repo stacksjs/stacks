@@ -1,5 +1,8 @@
 <script client>
-// Map Craft sidebar itemIds to stx page routes
+import { dashboardStore } from '@stores'
+
+// Craft native sidebar integration
+// Maps sidebar itemIds to STX page routes for SPA navigation
 const sidebarRoutes = {
   'home': '/home',
   'dependencies': '/home/dependencies',
@@ -64,10 +67,11 @@ const sidebarRoutes = {
   'settings': '/utilities/settings',
 }
 
-// Handle Craft native sidebar navigation events
+// Handle Craft native sidebar selection events
 window.craft = window.craft || {}
 window.craft._sidebarSelectHandler = (event) => {
   const url = sidebarRoutes[event.itemId]
+<<<<<<< Updated upstream
     || (event.itemId && event.itemId.startsWith('model-') ? '/data/' + event.itemId.slice(6) : null)
   if (url) window.location.assign(url)
 }
@@ -85,3 +89,21 @@ window.craft._sidebarSelectHandler = (event) => {
   </DashboardLayout>
 </body>
 </html>
+=======
+  if (url) {
+    dashboardStore.navigate(event.itemId)
+    navigate(url)
+  }
+}
+</script>
+
+<main data-stx-content>
+  @slot('content')
+</main>
+
+<style>
+body {
+  @apply bg-neutral-100 dark:bg-neutral-950;
+}
+</style>
+>>>>>>> Stashed changes

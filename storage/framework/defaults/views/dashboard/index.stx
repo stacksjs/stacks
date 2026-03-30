@@ -2,74 +2,36 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
-
-import { useDashboard } from '../../functions/dashboard'
-
-// Dashboard data from composable
-const {
-  stats,
-  recentActivity,
-  systemHealth,
-  isLoading,
-  fetchAll,
-  fetchDashboardStats,
-} = useDashboard()
-
-// Time range filter
-const timeRange = '7d'
-const timeRangeOptions = [
-  { value: 'today', label: 'Today' },
-  { value: '7d', label: 'Last 7 days' },
-  { value: '30d', label: 'Last 30 days' },
-  { value: '90d', label: 'Last 90 days' },
-  { value: '1y', label: 'Last year' },
-  { value: 'all', label: 'All time' },
+// Server-side data — rendered at request time, no client JS needed
+const stats = [
+  { title: 'Total Users', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-user-group' },
+  { title: 'Active Projects', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-folder-02' },
+  { title: 'Cloud Uptime', value: '99.9%', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-cloud' },
+  { title: 'Response Time', value: '45ms', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-time-02' },
 ]
 
-// Quick links (static navigation)
+const recentActivity = [
+  { type: 'deployment', title: 'Production deployment completed', time: 'Just now', status: 'success' },
+  { type: 'blog', title: 'New blog post published', time: '2 hours ago', status: 'success' },
+  { type: 'error', title: 'Queue worker timeout', time: '5 hours ago', status: 'error' },
+  { type: 'commerce', title: 'New order received', time: '1 day ago', status: 'success' },
+]
+
+const systemHealth = [
+  { name: 'API', status: 'healthy', latency: '12ms', uptime: '99.9%' },
+  { name: 'Database', status: 'healthy', latency: '3ms', uptime: '99.9%' },
+  { name: 'Storage', status: 'healthy', latency: '8ms', uptime: '99.9%' },
+  { name: 'Cache', status: 'healthy', latency: '1ms', uptime: '99.9%' },
+  { name: 'Queue', status: 'healthy', latency: '45ms', uptime: '99.9%' },
+  { name: 'Notifications', status: 'healthy', latency: '120ms', uptime: '99.5%' },
+]
+
 const quickLinks = [
-  { name: 'Blog', description: 'Manage your blog posts and categories', icon: 'i-hugeicons-document-validation', href: '/content/dashboard', color: 'bg-blue-500' },
-  { name: 'Commerce', description: 'View orders and manage products', icon: 'i-hugeicons-shopping-cart-02', href: '/commerce/dashboard', color: 'bg-green-500' },
-  { name: 'Cloud', description: 'Monitor cloud performance and status', icon: 'i-hugeicons-cloud', href: '/cloud', color: 'bg-purple-500' },
-  { name: 'Settings', description: 'Configure your application settings', icon: 'i-hugeicons-settings-01', href: '/settings', color: 'bg-neutral-500' },
+  { name: 'Blog', description: 'Manage your blog posts', href: '/content/dashboard', color: 'bg-blue-500' },
+  { name: 'Commerce', description: 'View orders and products', href: '/commerce/dashboard', color: 'bg-green-500' },
+  { name: 'Cloud', description: 'Monitor infrastructure', href: '/cloud', color: 'bg-purple-500' },
+  { name: 'Settings', description: 'Configure your app', href: '/settings', color: 'bg-neutral-500' },
 ]
-
-// Get icon based on activity type
-function getActivityIcon(type) {
-  const icons = {
-    deployment: 'i-hugeicons-rocket-02',
-    blog: 'i-hugeicons-document-validation',
-    cloud: 'i-hugeicons-cloud',
-    error: 'i-hugeicons-alert-02',
-    commerce: 'i-hugeicons-shopping-cart-02',
-    server: 'i-hugeicons-server-01',
-  }
-  return icons[type] || 'i-hugeicons-information-circle'
-}
-
-// Get color based on activity status
-function getActivityStyles(status) {
-  const styles = {
-    success: 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30',
-    error: 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30',
-    warning: 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30',
-  }
-  return styles[status] || 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30'
-}
-
-// Get status badge variant
-function getStatusVariant(status) {
-  const variants = {
-    healthy: 'success',
-    degraded: 'warning',
-    critical: 'danger',
-  }
-  return variants[status] || 'default'
-}
 
 const getStatusDotClass = (status) => {
   if (status === 'healthy') return 'bg-green-500'
@@ -77,7 +39,15 @@ const getStatusDotClass = (status) => {
   if (status === 'critical') return 'bg-red-500'
   return 'bg-gray-500'
 }
+
+const getActivityStatusClass = (status) => {
+  if (status === 'success') return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30'
+  if (status === 'error') return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30'
+  if (status === 'warning') return 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30'
+  return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30'
+}
 </script>
+<<<<<<< Updated upstream
   <!-- Page Header -->
   <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
     <div>
@@ -96,11 +66,20 @@ const getStatusDotClass = (status) => {
         @endforeach
       </Select>
     </div>
+=======
+
+<div class="p-6 max-w-7xl mx-auto">
+  <!-- Header -->
+  <div class="mb-8">
+    <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Dashboard</h1>
+    <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Welcome back! Here's an overview of your system.</p>
+>>>>>>> Stashed changes
   </div>
 
-  <!-- Stats Cards -->
+  <!-- Stats Grid -->
   <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
     @foreach(stats as stat)
+<<<<<<< Updated upstream
       <StatsCard
         :title="stat.title"
         value="{{ stat.value }}"
@@ -109,6 +88,20 @@ const getStatusDotClass = (status) => {
         icon="{{ stat.icon }}"
         iconBg="{{ stat.iconBg }}"
       />
+=======
+      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5">
+        <div class="flex items-center justify-between">
+          <div>
+            <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">{{ stat.title }}</p>
+            <p class="mt-1 text-2xl font-semibold text-neutral-900 dark:text-white">{{ stat.value }}</p>
+            <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ stat.trendLabel }}</p>
+          </div>
+          <div class="flex-shrink-0 rounded-xl p-3 bg-neutral-100 dark:bg-neutral-700">
+            <div class="{{ stat.icon }} h-6 w-6 text-neutral-500 dark:text-neutral-400"></div>
+          </div>
+        </div>
+      </div>
+>>>>>>> Stashed changes
     @endforeach
   </div>
 
@@ -117,172 +110,84 @@ const getStatusDotClass = (status) => {
     <h2 class="text-base font-semibold text-neutral-900 dark:text-white mb-4">Quick Links</h2>
     <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       @foreach(quickLinks as link)
-        <a href="{{ link.href }}">
-          <Card hoverable class="h-full">
-            <div class="flex items-center gap-4">
-              <div class="{{ link.color }} flex-shrink-0 rounded-xl p-3">
-                <div class="{{ link.icon }} h-6 w-6 text-white"></div>
-              </div>
-              <div class="min-w-0 flex-1">
-                <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ link.name }}</p>
-                <p class="mt-0.5 text-sm text-neutral-500 dark:text-neutral-400 truncate">
-                  {{ link.description }}
-                </p>
-              </div>
-              <div class="i-hugeicons-arrow-right-01 h-5 w-5 text-neutral-400 flex-shrink-0"></div>
+        <a :href="link.href" data-stx-link class="block bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5 hover:shadow-md transition-shadow">
+          <div class="flex items-center gap-4">
+            <div class="{{ link.color }} flex-shrink-0 rounded-xl p-3">
+              <div class="h-5 w-5 text-white"></div>
             </div>
-          </Card>
+            <div class="min-w-0 flex-1">
+              <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ link.name }}</p>
+              <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{{ link.description }}</p>
+            </div>
+          </div>
         </a>
       @endforeach
     </div>
   </div>
 
-  <!-- System Health and Recent Activity -->
+  <!-- System Health + Recent Activity -->
   <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
     <!-- System Health -->
-    <Card>
-      <div slot="header" class="flex items-center justify-between">
+    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+      <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
         <h3 class="text-base font-semibold text-neutral-900 dark:text-white">System Health</h3>
-        <a href="/health">
-          <Button variant="ghost" size="sm">
-            View all
-            <div class="i-hugeicons-arrow-right-01 w-4 h-4 ml-1"></div>
-          </Button>
-        </a>
+        <a href="/health" data-stx-link class="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
       </div>
-
-      <div class="divide-y divide-neutral-200 dark:divide-neutral-700 -mx-6 -mb-6">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700">
         @foreach(systemHealth as service)
-          <div class="flex items-center justify-between px-6 py-3.5">
+          <div class="flex items-center justify-between px-5 py-3.5">
             <div class="flex items-center gap-3">
               <span class="h-2.5 w-2.5 rounded-full {{ getStatusDotClass(service.status) }}"></span>
-              <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
-                {{ service.name }}
-              </span>
+              <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">{{ service.name }}</span>
             </div>
             <div class="flex items-center gap-4">
-              <span class="text-sm text-neutral-500 dark:text-neutral-400">
-                {{ service.latency }}
-              </span>
-              <span class="text-sm text-neutral-500 dark:text-neutral-400 hidden sm:block">
-                {{ service.uptime }}
-              </span>
-              <Badge variant="{{ getStatusVariant(service.status) }}" size="sm">
-                {{ service.status }}
-              </Badge>
+              <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ service.latency }}</span>
+              <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ service.uptime }}</span>
+              <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ service.status }}</span>
             </div>
           </div>
         @endforeach
       </div>
-    </Card>
+    </div>
 
     <!-- Recent Activity -->
-    <Card>
-      <div slot="header" class="flex items-center justify-between">
+    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+      <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
         <h3 class="text-base font-semibold text-neutral-900 dark:text-white">Recent Activity</h3>
-        <a href="/data/activity">
-          <Button variant="ghost" size="sm">
-            View all
-            <div class="i-hugeicons-arrow-right-01 w-4 h-4 ml-1"></div>
-          </Button>
-        </a>
+        <a href="/data/activity" data-stx-link class="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
       </div>
-
-      <div class="divide-y divide-neutral-200 dark:divide-neutral-700 -mx-6 -mb-6">
+      <div class="divide-y divide-neutral-100 dark:divide-neutral-700">
         @foreach(recentActivity as activity)
-          <div class="flex items-center gap-4 px-6 py-3.5">
-            <div class="{{ getActivityStyles(activity.status) }} flex-shrink-0 rounded-lg p-2">
-              <div class="{{ getActivityIcon(activity.type) }} h-5 w-5"></div>
+          <div class="flex items-center gap-4 px-5 py-3.5">
+            <div class="{{ getActivityStatusClass(activity.status) }} flex-shrink-0 rounded-lg p-2">
+              <div class="h-4 w-4"></div>
             </div>
             <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-neutral-900 dark:text-white truncate">
-                {{ activity.title }}
-              </p>
-              <p class="text-sm text-neutral-500 dark:text-neutral-400">
-                {{ activity.time }}
-              </p>
+              <p class="text-sm font-medium text-neutral-900 dark:text-white truncate">{{ activity.title }}</p>
+              <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ activity.time }}</p>
             </div>
           </div>
         @endforeach
       </div>
-    </Card>
+    </div>
   </div>
 
-  <!-- Resources and Documentation -->
-  <div class="mt-8">
-    <Card>
-      <div slot="header">
-        <h3 class="text-base font-semibold text-neutral-900 dark:text-white">Resources & Documentation</h3>
-      </div>
-
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <div class="rounded-xl bg-blue-50 dark:bg-blue-900/20 p-5">
-          <div class="flex gap-4">
-            <div class="flex-shrink-0 p-2 bg-blue-100 dark:bg-blue-900/40 rounded-lg">
-              <div class="i-hugeicons-book-open-02 h-5 w-5 text-blue-600 dark:text-blue-400"></div>
-            </div>
-            <div>
-              <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200">Documentation</h4>
-              <p class="mt-1 text-sm text-blue-700 dark:text-blue-300">
-                Comprehensive guides and API references for developers.
-              </p>
-              <a
-                href="https://docs.stacksjs.org"
-                target="_blank"
-                class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-              >
-                View documentation
-                <div class="i-hugeicons-arrow-right-01 w-4 h-4"></div>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-xl bg-green-50 dark:bg-green-900/20 p-5">
-          <div class="flex gap-4">
-            <div class="flex-shrink-0 p-2 bg-green-100 dark:bg-green-900/40 rounded-lg">
-              <div class="i-hugeicons-video-01 h-5 w-5 text-green-600 dark:text-green-400"></div>
-            </div>
-            <div>
-              <h4 class="text-sm font-semibold text-green-900 dark:text-green-200">Video Tutorials</h4>
-              <p class="mt-1 text-sm text-green-700 dark:text-green-300">
-                Step-by-step video guides for common tasks and features.
-              </p>
-              <a
-                href="#"
-                class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-green-600 hover:text-green-500 dark:text-green-400"
-              >
-                Watch tutorials
-                <div class="i-hugeicons-arrow-right-01 w-4 h-4"></div>
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div class="rounded-xl bg-purple-50 dark:bg-purple-900/20 p-5">
-          <div class="flex gap-4">
-            <div class="flex-shrink-0 p-2 bg-purple-100 dark:bg-purple-900/40 rounded-lg">
-              <div class="i-hugeicons-user-group h-5 w-5 text-purple-600 dark:text-purple-400"></div>
-            </div>
-            <div>
-              <h4 class="text-sm font-semibold text-purple-900 dark:text-purple-200">Community</h4>
-              <p class="mt-1 text-sm text-purple-700 dark:text-purple-300">
-                Join our community forums for support and discussions.
-              </p>
-              <a
-                href="https://discord.gg/stacksjs"
-                target="_blank"
-                class="mt-3 inline-flex items-center gap-1 text-sm font-medium text-purple-600 hover:text-purple-500 dark:text-purple-400"
-              >
-                Join community
-                <div class="i-hugeicons-arrow-right-01 w-4 h-4"></div>
-              </a>
-            </div>
-          </div>
-        </div>
-      </div>
-    </Card>
+  <!-- Resources -->
+  <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
+    <a href="https://docs.stacksjs.org" target="_blank" class="rounded-xl bg-blue-50 dark:bg-blue-900/20 p-5 hover:shadow-md transition-shadow">
+      <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200">Documentation</h4>
+      <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">Guides and API references</p>
+    </a>
+    <a href="https://discord.gg/stacksjs" target="_blank" class="rounded-xl bg-purple-50 dark:bg-purple-900/20 p-5 hover:shadow-md transition-shadow">
+      <h4 class="text-sm font-semibold text-purple-900 dark:text-purple-200">Community</h4>
+      <p class="mt-1 text-xs text-purple-700 dark:text-purple-300">Join our Discord</p>
+    </a>
+    <a href="https://github.com/stacksjs/stacks" target="_blank" class="rounded-xl bg-green-50 dark:bg-green-900/20 p-5 hover:shadow-md transition-shadow">
+      <h4 class="text-sm font-semibold text-green-900 dark:text-green-200">GitHub</h4>
+      <p class="mt-1 text-xs text-green-700 dark:text-green-300">Star us on GitHub</p>
+    </a>
   </div>
+<<<<<<< Updated upstream
 <script client>
 import { onMount } from 'stx'
 
@@ -293,3 +198,6 @@ onMount(async () => {
 
 
 @endsection
+=======
+</div>
+>>>>>>> Stashed changes

@@ -2,6 +2,11 @@
   "version": "1.0.0",
   "lockfileVersion": 2,
   "packages": {
+    "chart.js@4.5.1": {
+      "name": "chart.js",
+      "version": "4.5.1",
+      "source": "npm"
+    },
     "ofetch@1.5.1": {
       "name": "ofetch",
       "version": "1.5.1",

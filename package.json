@@ -68,7 +68,8 @@
     "stacks": "workspace:*",
     "perfect-debounce": "latest",
     "pretty-bytes": "latest",
-    "ofetch": "latest"
+    "ofetch": "latest",
+    "chart.js": "latest"
   },
   "devDependencies": {
     "bun-git-hooks": "^0.3.1"
