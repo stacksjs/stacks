@@ -71,27 +71,8 @@ const sidebarRoutes = {
 window.craft = window.craft || {}
 window.craft._sidebarSelectHandler = (event) => {
   const url = sidebarRoutes[event.itemId]
-<<<<<<< Updated upstream
     || (event.itemId && event.itemId.startsWith('model-') ? '/data/' + event.itemId.slice(6) : null)
-  if (url) window.location.assign(url)
-}
-</script>
-
-<html>
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Stacks Dashboard</title>
-</head>
-<body class="bg-neutral-100 dark:bg-neutral-950">
-  <DashboardLayout>
-    @slot('content')
-  </DashboardLayout>
-</body>
-</html>
-=======
   if (url) {
-    dashboardStore.navigate(event.itemId)
     navigate(url)
   }
 }
@@ -106,4 +87,3 @@ body {
   @apply bg-neutral-100 dark:bg-neutral-950;
 }
 </style>
->>>>>>> Stashed changes

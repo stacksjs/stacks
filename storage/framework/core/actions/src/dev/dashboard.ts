@@ -213,11 +213,7 @@ const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 // Use local HTTP URL — Craft webview loads directly, no proxy needed
 const baseRoute = dashboardLocalUrl
 const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels)
-<<<<<<< Updated upstream
 const initialUrl = `http://localhost:${dashboardPort}/home?native-sidebar=1`
-=======
-const initialUrl = `http://localhost:${dashboardPort}/?native-sidebar=1`
->>>>>>> Stashed changes
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
