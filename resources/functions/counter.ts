@@ -1,10 +1,14 @@
-declare const state: any
-declare function now(): string
-// reactive state
+// Reactive counter — uses stx signals (globals from stx.d.ts)
 export const count = state(0)
 
-// functions that mutate state and trigger updates
 export function increment() {
-  console.log('increment() was last run:', now())
-  count.value++
+  count.update((n: number) => n + 1)
+}
+
+export function decrement() {
+  count.update((n: number) => n - 1)
+}
+
+export function reset() {
+  count.set(0)
 }

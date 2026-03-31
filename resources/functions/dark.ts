@@ -1,4 +1,5 @@
-// read the documentation for all the auto-imported APIs
+// Dark mode toggle — uses stx composables (globals from stx.d.ts)
 export const isDark = useDark()
-export const toggleDark = useToggle(isDark)
-export const preferredDark = usePreferredDark()
+export function toggleDark() {
+  isDark.set(!isDark())
+}
