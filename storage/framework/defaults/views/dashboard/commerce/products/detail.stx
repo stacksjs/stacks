@@ -6,9 +6,10 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import { toast } from '@stacksjs/notifications'
-// @ts-ignore
-import { Dialog, DialogPanel } from '@stacksjs/dialog'
+const toast = (opts: { message: string, type?: string }) => {
+  // Simple notification — will be replaced by proper toast system
+  console.log(`[${opts.type || 'success'}] ${opts.message}`)
+}
 
 // Define page metadata
 const pageTitle = 'Product Detail'
@@ -356,12 +357,10 @@ function deleteProduct(): void {
 
     <!-- Edit Product Dialog -->
     @if(showEditDialog)
-      <transition name="fade" appear>
-        <Dialog @close="showEditDialog = false" class="relative z-50">
-          <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-show="showEditDialog">
+        <div class="fixed inset-0" aria-hidden="true" onclick="showEditDialog = false"></div>
 
-          <div class="fixed inset-0 flex items-center justify-center p-4">
-            <DialogPanel class="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-800">
+        <div class="relative z-10 mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-800">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Edit Product</h3>
                 <button
@@ -462,20 +461,17 @@ function deleteProduct(): void {
                   </div>
                 </div>
               @endif
-            </DialogPanel>
+            </div>
           </div>
-        </Dialog>
-      </transition>
+        </div>
     @endif
 
     <!-- Similar Products Dialog -->
     @if(showSimilarProductsDialog)
-      <transition name="fade" appear>
-        <Dialog @close="showSimilarProductsDialog = false" class="relative z-50">
-          <div class="fixed inset-0 bg-black/30" aria-hidden="true" />
+      <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/50" x-show="showSimilarProductsDialog">
+        <div class="fixed inset-0" aria-hidden="true" onclick="showSimilarProductsDialog = false"></div>
 
-          <div class="fixed inset-0 flex items-center justify-center p-4">
-            <DialogPanel class="mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-800">
+        <div class="relative z-10 mx-auto max-w-2xl w-full rounded-xl bg-white p-6 shadow-xl dark:bg-neutral-800">
               <div class="flex items-center justify-between mb-4">
                 <h3 class="text-lg font-medium text-gray-900 dark:text-white">Manage Similar Products</h3>
                 <button
@@ -533,10 +529,9 @@ function deleteProduct(): void {
                   </div>
                 </div>
               @endif
-            </DialogPanel>
+            </div>
           </div>
-        </Dialog>
-      </transition>
+        </div>
     @endif
   </div>
 </main>
