@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -98,102 +95,6 @@ let pageViewsTrendData = [
   { date: '2024-07-01', views: 1800, visitors: 1400 }
 ]
 
-// Chart.js configuration for page views trend
-const trendChartConfig = reactive({
-  type: 'line' as keyof ChartTypeRegistry,
-  data: {
-    labels: pageViewsTrendData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Page Views',
-        data: pageViewsTrendData.map(item => item.views),
-        borderColor: 'rgba(59, 130, 246, 0.8)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: true
-      },
-      {
-        label: 'Visitors',
-        data: pageViewsTrendData.map(item => item.visitors),
-        borderColor: 'rgba(16, 185, 129, 0.8)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: false
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          borderDash: [2, 4],
-          color: 'rgba(160, 174, 192, 0.2)'
-        },
-        ticks: {
-          maxTicksLimit: 6
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top' as const
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false
-      }
-    }
-  }
-}
-
-// Top pages chart configuration
-const topPagesChartConfig = reactive({
-  type: 'bar' as keyof ChartTypeRegistry,
-  data: {
-    labels: pagesData.slice(0, 5).map(item => item.path),
-    datasets: [
-      {
-        label: 'Page Views',
-        data: pagesData.slice(0, 5).map(item => item.views),
-        backgroundColor: 'rgba(59, 130, 246, 0.8)',
-        borderColor: 'rgba(59, 130, 246, 1)',
-        borderWidth: 1
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          borderDash: [2, 4],
-          color: 'rgba(160, 174, 192, 0.2)'
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        display: false
-      }
-    }
-  }
-}
-
 // Format numbers with commas
 function formatNumber(number) {
   return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
@@ -223,9 +124,6 @@ function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
-// Initialize charts when component is mounted
-let pageViewsTrendChart: Chart | null = null
-let topPagesChart: Chart | null = null
 
 </script>
 
@@ -429,21 +327,45 @@ let topPagesChart: Chart | null = null
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  const trendCtx = document.getElementById('pageViewsTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    pageViewsTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
+const trendCtx = document.getElementById('pageViewsTrendChart')
+if (trendCtx) {
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: pageViewsTrendData.map(item => item.date),
+      datasets: [
+        { label: 'Page Views', data: pageViewsTrendData.map(item => item.views), borderColor: 'rgba(59, 130, 246, 0.8)', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.4, fill: true },
+        { label: 'Visitors', data: pageViewsTrendData.map(item => item.visitors), borderColor: 'rgba(16, 185, 129, 0.8)', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6 } } },
+      plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } }
+    }
+  })
+}
 
-  const topPagesCtx = document.getElementById('topPagesChart') as HTMLCanvasElement
-  if (topPagesCtx) {
-    topPagesChart = new Chart(topPagesCtx, topPagesChartConfig)
-  }
+const topPagesCtx = document.getElementById('topPagesChart')
+if (topPagesCtx) {
+  new Chart(topPagesCtx, {
+    type: 'bar',
+    data: {
+      labels: pagesData.slice(0, 5).map(item => item.path),
+      datasets: [{ label: 'Page Views', data: pagesData.slice(0, 5).map(item => item.views), backgroundColor: 'rgba(59, 130, 246, 0.8)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 1 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' } } },
+      plugins: { legend: { display: false } }
+    }
+  })
+}
 
-  updateDataForDateRange()
-})
+updateDataForDateRange()
 </script>
 
 @endsection

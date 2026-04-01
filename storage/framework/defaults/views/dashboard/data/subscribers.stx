@@ -2,31 +2,7 @@
 
 @section('content')
 <script server>
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  Scale,
-  CoreScaleOptions,
-} from 'chart.js'
 import * as d3 from 'd3'
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 let timeRange = '30'
 let isLoading = false
 
@@ -306,7 +282,7 @@ const getModelRoute = (modelId) => {
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
           @endif
-          <Line :data="chartData" :options="chartOptions" />
+          <canvas id="chart_1"></canvas>
         </div>
       </div>
     </div>
@@ -507,6 +483,18 @@ const getModelRoute = (modelId) => {
   </div>
 </div>
 <script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: chartData,
+    options: chartOptions,
+  })
+}
+
 import { onMount } from 'stx'
 
 onMount(async () => {

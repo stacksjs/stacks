@@ -6,29 +6,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  ArcElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  ArcElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-)
-
 // Sample data for the printers dashboard
 const printers = [
   { id: 1, username: 'Checkout-1', macAddress: '00:1B:44:11:3A:B7', location: 'Main Floor', terminal: 'POS-1', status: 'Online', lastPing: '2 mins ago', printCount: 1245, errorCount: 3 },
@@ -188,7 +165,7 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Printer Status</h3>
               <div class="mt-2 h-64">
-                <Pie :data="statusData" :options="chartOptions" />
+                <canvas id="chart_1"></canvas>
               </div>
             </div>
           </div>
@@ -197,7 +174,7 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Print Volume by Printer</h3>
               <div class="mt-2 h-64">
-                <Bar :data="printVolumeData" :options="barChartOptions" />
+                <canvas id="chart_2"></canvas>
               </div>
             </div>
           </div>
@@ -300,11 +277,44 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Error Count by Printer</h3>
               <div class="mt-2 h-64">
-                <Bar :data="errorRateData" :options="barChartOptions" />
+                <canvas id="chart_3"></canvas>
               </div>
             </div>
           </div>
         </div>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'pie',
+    data: statusData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: printVolumeData,
+    options: barChartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'bar',
+    data: errorRateData,
+    options: barChartOptions,
+  })
+}
+
+</script>
 
 @endsection

@@ -8,38 +8,11 @@ definePageMeta({
 })
 
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  Scale,
-  CoreScaleOptions,
-  Tick,
-} from 'chart.js'
-import {
   Listbox,
   ListboxButton,
   ListboxOptions,
   ListboxOption,
 } from '@stacksjs/stx'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
 
 const packages = [
   {
@@ -745,7 +718,7 @@ function starsData() { return ({
             <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Number of contributors per package</p>
           </div>
           <div class="h-[400px]">
-            <Bar :data="contributorsData" :options="contributorsOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
         </div>
       </div>
@@ -758,7 +731,7 @@ function starsData() { return ({
             <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Number of open issues per package</p>
           </div>
           <div class="h-[400px]">
-            <Bar :data="issuesData" :options="issuesOptions" />
+            <canvas id="chart_2"></canvas>
           </div>
         </div>
       </div>
@@ -856,5 +829,29 @@ function starsData() { return ({
     </div>
   </div>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'bar',
+    data: contributorsData,
+    options: contributorsOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: issuesData,
+    options: issuesOptions,
+  })
+}
+
+</script>
 
 @endsection

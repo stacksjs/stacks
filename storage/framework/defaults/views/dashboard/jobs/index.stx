@@ -7,33 +7,11 @@ definePageMeta({
   layout: 'default'
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import Badge from '../../../components/Dashboard/UI/Badge.stx'
 import Button from '../../../components/Dashboard/UI/Button.stx'
 import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
 import Select from '../../../components/Dashboard/UI/Select.stx'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
 
 interface Job {
   id: string
@@ -283,7 +261,7 @@ const getStatusVariant = (status) => {
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
           </div>
         @endif
-        <Line :data="throughputData" :options="chartOptions" />
+        <canvas id="chart_1"></canvas>
       </div>
     </Card>
 
@@ -301,7 +279,7 @@ const getStatusVariant = (status) => {
             <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
           </div>
         @endif
-        <Line :data="waitTimeData" :options="chartOptions" />
+        <canvas id="chart_2"></canvas>
       </div>
     </Card>
   </div>
@@ -391,6 +369,27 @@ const getStatusVariant = (status) => {
   </Card>
 </div>
 <script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: throughputData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'line',
+    data: waitTimeData,
+    options: chartOptions,
+  })
+}
+
 import { onMount } from 'stx'
 
 onMount(async () => {

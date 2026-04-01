@@ -5,33 +5,6 @@
 import type { Taggables } from '../../../../types/defaults'
 import { useTaggables } from '../../../../functions/cms/taggables'
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 const taggablesModule = useTaggables()
 
 // Chart options
@@ -605,7 +578,7 @@ function formatDate(dateString: string): string {
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Tag Growth</h3>
           <div class="mt-4" style="height: 250px;">
-            <Line :data="monthlyChartData.tagGrowthChartData" :options="chartOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
         </div>
       </div>
@@ -615,7 +588,7 @@ function formatDate(dateString: string): string {
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Posts Per Tag</h3>
           <div class="mt-4" style="height: 250px;">
-            <Bar :data="monthlyChartData.postsPerTagChartData" :options="chartOptions" />
+            <canvas id="chart_2"></canvas>
           </div>
         </div>
       </div>
@@ -625,7 +598,7 @@ function formatDate(dateString: string): string {
         <div class="px-4 py-5 sm:p-6">
           <h3 class="text-base font-semibold text-gray-900 dark:text-white">Tag Distribution</h3>
           <div class="mt-4" style="height: 250px;">
-            <Doughnut :data="monthlyChartData.tagDistributionChartData" :options="doughnutChartOptions" />
+            <canvas id="chart_3"></canvas>
           </div>
         </div>
       </div>
@@ -1133,6 +1106,36 @@ function formatDate(dateString: string): string {
     @endif
 </div>
 <script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: monthlyChartData.tagGrowthChartData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: monthlyChartData.postsPerTagChartData,
+    options: chartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'doughnut',
+    data: monthlyChartData.tagDistributionChartData,
+    options: doughnutChartOptions,
+  })
+}
+
 import { onMount } from 'stx'
 
 onMount(async () => {

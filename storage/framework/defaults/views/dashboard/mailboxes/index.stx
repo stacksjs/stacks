@@ -9,29 +9,6 @@ definePageMeta({
 
 const { ref, onMounted } = await import('@stacksjs/stx')
 const { useHead } = await import('@stacksjs/stx')
-const { Line } = await import('vue-chartjs')
-const {
-  Chart: ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} = await import('chart.js')
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
 
 let timeRange = 'day'
 let isLoading = false
@@ -148,7 +125,7 @@ let emailActivityData = getEmailActivityData()
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
           @endif
-          <Line :data="emailActivityData" :options="chartOptions" />
+          <canvas id="chart_1"></canvas>
         </div>
       </div>
     </div>
@@ -239,6 +216,18 @@ let emailActivityData = getEmailActivityData()
   </div>
 </div>
 <script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: emailActivityData,
+    options: chartOptions,
+  })
+}
+
 import { onMount } from 'stx'
 
 onMount(async () => {

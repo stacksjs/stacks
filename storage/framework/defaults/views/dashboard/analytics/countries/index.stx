@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -102,67 +99,6 @@ let languagesData = [
   { name: 'Spanish', code: 'es-ES', visitors: 42, percentage: 3 }
 ]
 
-// Chart.js configuration for country distribution
-const chartConfig = reactive({
-  type: 'bar' as keyof ChartTypeRegistry,
-  data: {
-    labels: countriesData.slice(0, 10).map(item => item.name),
-    datasets: [
-      {
-        label: 'Visitors',
-        data: countriesData.slice(0, 10).map(item => item.visitors),
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-          'rgba(139, 92, 246, 0.8)',
-          'rgba(236, 72, 153, 0.8)',
-          'rgba(14, 165, 233, 0.8)',
-          'rgba(168, 85, 247, 0.8)',
-          'rgba(249, 115, 22, 0.8)',
-          'rgba(234, 179, 8, 0.8)'
-        ],
-        borderColor: 'rgba(255, 255, 255, 0.8)',
-        borderWidth: 1
-      }
-    ]
-  },
-  options: {
-    indexAxis: 'y' as const,
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        display: false
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const value = context.raw || 0;
-            const total = countriesData.reduce((a, b) => a + b.visitors, 0);
-            const percentage = Math.round((value / total) * 100);
-            return `${value} visitors (${percentage}%)`;
-          }
-        }
-      }
-    },
-    scales: {
-      x: {
-        beginAtZero: true,
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        grid: {
-          display: false
-        }
-      }
-    }
-  }
-}
-
 // World map data for visualization
 let mapData = {
   // This would be used with a mapping library like jVectorMap or a GeoJSON visualization
@@ -184,8 +120,6 @@ function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
-// Initialize chart when component is mounted
-let countryChart: Chart | null = null
 
 </script>
 
@@ -404,16 +338,33 @@ let countryChart: Chart | null = null
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  const ctx = document.getElementById('countryChart') as HTMLCanvasElement
-  if (ctx) {
-    countryChart = new Chart(ctx, chartConfig)
-  }
+const ctx = document.getElementById('countryChart')
+if (ctx) {
+  new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: countriesData.slice(0, 10).map(item => item.name),
+      datasets: [{
+        label: 'Visitors',
+        data: countriesData.slice(0, 10).map(item => item.visitors),
+        backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(236, 72, 153, 0.8)', 'rgba(14, 165, 233, 0.8)', 'rgba(168, 85, 247, 0.8)', 'rgba(249, 115, 22, 0.8)', 'rgba(234, 179, 8, 0.8)'],
+        borderColor: 'rgba(255, 255, 255, 0.8)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { callbacks: { label: function(context) { const value = context.raw || 0; const total = countriesData.reduce((a, b) => a + b.visitors, 0); const percentage = Math.round((value / total) * 100); return `${value} visitors (${percentage}%)` } } } },
+      scales: { x: { beginAtZero: true, grid: { display: false } }, y: { grid: { display: false } } }
+    }
+  })
+}
 
-  updateDataForDateRange()
-})
+updateDataForDateRange()
 </script>
 
 

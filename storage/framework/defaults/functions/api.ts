@@ -6,7 +6,7 @@
 
 import { useAuth } from './auth'
 
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+const baseUrl = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
 export interface ApiResponse<T> {
   data: T

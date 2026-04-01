@@ -2,29 +2,6 @@
 
 @section('content')
 <script server>
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 interface QueueStats {
   queued: number
   processing: number
@@ -465,12 +442,12 @@ workers = workers.map(worker => ({
           <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
             <!-- Throughput Chart -->
             <div class="h-80">
-              <Line :data="getThroughputData()" :options="chartOptions" />
+              <canvas id="throughputChart"></canvas>
             </div>
 
             <!-- Wait Time Chart -->
             <div class="h-80">
-              <Line :data="getWaitTimeData()" :options="chartOptions" />
+              <canvas id="waitTimeChart"></canvas>
             </div>
           </div>
         </div>
@@ -612,5 +589,28 @@ workers = workers.map(worker => ({
       </div>
     </div>
   </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const throughputCtx = document.getElementById('throughputChart')
+if (throughputCtx) {
+  new Chart(throughputCtx, {
+    type: 'line',
+    data: getThroughputData(),
+    options: chartOptions,
+  })
+}
+
+const waitTimeCtx = document.getElementById('waitTimeChart')
+if (waitTimeCtx) {
+  new Chart(waitTimeCtx, {
+    type: 'line',
+    data: getWaitTimeData(),
+    options: chartOptions,
+  })
+}
+</script>
 
 @endsection

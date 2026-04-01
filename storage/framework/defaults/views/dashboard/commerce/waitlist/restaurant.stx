@@ -2,8 +2,6 @@
 
 @section('content')
 <script server>
-import Chart from 'chart.js/auto'
-
 // Define waitlist entry type
 interface WaitlistEntry {
   id: number
@@ -1735,5 +1733,15 @@ function updateCharts(): void {
       </div>
     </div>
   </main>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+initProductChart()
+initSourceChart()
+initStatusChart()
+initTrendChart()
+</script>
 
 @endsection

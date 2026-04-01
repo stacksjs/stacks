@@ -1,7 +1,7 @@
 ```vue
 <script lang="ts" setup>
 import { ref } from '@stacksjs/stx'
-import { Notification, notification } from '@stacksjs/notification'
+import { Notification, notification } from '@stacksjs/notifications'
 
 type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right' | 'top-center' | 'bottom-center'
 type Theme = 'light' | 'dark' | 'system'

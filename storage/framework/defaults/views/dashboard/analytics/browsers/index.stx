@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -74,54 +71,6 @@ let detailedBrowserData = [
   { name: 'Firefox', version: '121.0', os: 'macOS', visitors: 40, percentage: 2 }
 ]
 
-// Chart.js configuration for browser distribution
-const chartConfig = reactive({
-  type: 'pie' as keyof ChartTypeRegistry,
-  data: {
-    labels: browserData.slice(0, 5).map(item => item.name),
-    datasets: [
-      {
-        data: browserData.slice(0, 5).map(item => item.visitors),
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(239, 68, 68, 0.8)',
-          'rgba(139, 92, 246, 0.8)'
-        ],
-        borderColor: 'rgba(255, 255, 255, 0.8)',
-        borderWidth: 1
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'right' as const,
-        labels: {
-          padding: 20,
-          font: {
-            size: 12
-          }
-        }
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const label = context.label || '';
-            const value = context.raw || 0;
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = Math.round((value / total) * 100);
-            return `${label}: ${value} visitors (${percentage}%)`;
-          }
-        }
-      }
-    }
-  }
-}
-
 // Browser trend data for line chart
 let browserTrendData = [
   { date: '2023-09', Chrome: 800, Safari: 400, Edge: 80, Firefox: 60, Other: 30 },
@@ -134,86 +83,6 @@ let browserTrendData = [
   { date: '2024-04', Chrome: 1250, Safari: 560, Edge: 125, Firefox: 92, Other: 47 },
   { date: '2024-05', Chrome: 1300, Safari: 579, Edge: 129, Firefox: 92, Other: 50 }
 ]
-
-// Chart.js configuration for browser trends
-const trendChartConfig = reactive({
-  type: 'line' as keyof ChartTypeRegistry,
-  data: {
-    labels: browserTrendData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Chrome',
-        data: browserTrendData.map(item => item.Chrome),
-        borderColor: 'rgba(59, 130, 246, 0.8)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Safari',
-        data: browserTrendData.map(item => item.Safari),
-        borderColor: 'rgba(16, 185, 129, 0.8)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Edge',
-        data: browserTrendData.map(item => item.Edge),
-        borderColor: 'rgba(245, 158, 11, 0.8)',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Firefox',
-        data: browserTrendData.map(item => item.Firefox),
-        borderColor: 'rgba(239, 68, 68, 0.8)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Other',
-        data: browserTrendData.map(item => item.Other),
-        borderColor: 'rgba(139, 92, 246, 0.8)',
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        tension: 0.4,
-        fill: false
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          borderDash: [2, 4],
-          color: 'rgba(160, 174, 192, 0.2)'
-        },
-        ticks: {
-          maxTicksLimit: 6
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top' as const
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false
-      }
-    }
-  }
-}
 
 // Format numbers with commas
 function formatNumber(number) {
@@ -230,9 +99,6 @@ function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
-// Initialize charts when component is mounted
-let browserDistributionChart: Chart | null = null
-let browserTrendChart: Chart | null = null
 
 </script>
 
@@ -409,21 +275,47 @@ let browserTrendChart: Chart | null = null
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  const distributionCtx = document.getElementById('browserDistributionChart') as HTMLCanvasElement
-  if (distributionCtx) {
-    browserDistributionChart = new Chart(distributionCtx, chartConfig)
-  }
+const distributionCtx = document.getElementById('browserDistributionChart')
+if (distributionCtx) {
+  new Chart(distributionCtx, {
+    type: 'pie',
+    data: {
+      labels: browserData.slice(0, 5).map(item => item.name),
+      datasets: [{ data: browserData.slice(0, 5).map(item => item.visitors), backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)'], borderColor: 'rgba(255, 255, 255, 0.8)', borderWidth: 1 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { padding: 20, font: { size: 12 } } }, tooltip: { callbacks: { label: function(context) { const label = context.label || ''; const value = context.raw || 0; const total = context.dataset.data.reduce((a, b) => a + b, 0); const percentage = Math.round((value / total) * 100); return `${label}: ${value} visitors (${percentage}%)` } } } }
+    }
+  })
+}
 
-  const trendCtx = document.getElementById('browserTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    browserTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
+const trendCtx = document.getElementById('browserTrendChart')
+if (trendCtx) {
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: browserTrendData.map(item => item.date),
+      datasets: [
+        { label: 'Chrome', data: browserTrendData.map(item => item.Chrome), borderColor: 'rgba(59, 130, 246, 0.8)', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.4, fill: false },
+        { label: 'Safari', data: browserTrendData.map(item => item.Safari), borderColor: 'rgba(16, 185, 129, 0.8)', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: false },
+        { label: 'Edge', data: browserTrendData.map(item => item.Edge), borderColor: 'rgba(245, 158, 11, 0.8)', backgroundColor: 'rgba(245, 158, 11, 0.1)', tension: 0.4, fill: false },
+        { label: 'Firefox', data: browserTrendData.map(item => item.Firefox), borderColor: 'rgba(239, 68, 68, 0.8)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: false },
+        { label: 'Other', data: browserTrendData.map(item => item.Other), borderColor: 'rgba(139, 92, 246, 0.8)', backgroundColor: 'rgba(139, 92, 246, 0.1)', tension: 0.4, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6 } } },
+      plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } }
+    }
+  })
+}
 
-  updateDataForDateRange()
-})
+updateDataForDateRange()
 </script>
 
 

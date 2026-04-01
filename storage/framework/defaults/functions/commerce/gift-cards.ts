@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent gift cards array using VueUse's useStorage
 const giftCards = useStorage<GiftCards[]>('giftCards', [])
 
-const baseURL = `${import.meta.env.VITE_API_URL || 'http://localhost:3008'}/api`
+const baseURL = `${process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`}/api`
 
 // Basic fetch function to get all gift cards
 async function fetchGiftCards(): Promise<GiftCards[]> {

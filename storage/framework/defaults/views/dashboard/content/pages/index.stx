@@ -2,33 +2,6 @@
 
 @section('content')
 <script server>
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 // Chart options
 const chartOptions = {
   responsive: true,
@@ -816,7 +789,7 @@ function websiteStats() {
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Page Views</h3>
               <div class="mt-2 h-80">
-                <Line :data="monthlyChartData.viewsChartData" :options="chartOptions" />
+                <canvas id="chart_pages_1"></canvas>
               </div>
             </div>
           </div>
@@ -825,7 +798,7 @@ function websiteStats() {
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Template Distribution</h3>
               <div class="mt-2 h-80">
-                <Doughnut :data="monthlyChartData.templateChartData" :options="doughnutChartOptions" />
+                <canvas id="chart_pages_2"></canvas>
               </div>
             </div>
           </div>
@@ -836,7 +809,7 @@ function websiteStats() {
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Pages & Conversions</h3>
               <div class="mt-2 h-80">
-                <Bar :data="monthlyChartData.pagesConversionsChartData" :options="chartOptions" />
+                <canvas id="chart_pages_3"></canvas>
               </div>
             </div>
           </div>
@@ -1384,4 +1357,36 @@ function websiteStats() {
       </div>
     </div>
 </div>
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_pages_1_ctx = document.getElementById('chart_pages_1')
+if (chart_pages_1_ctx) {
+  new Chart(chart_pages_1_ctx, {
+    type: 'line',
+    data: monthlyChartData.viewsChartData,
+    options: chartOptions,
+  })
+}
+
+const chart_pages_2_ctx = document.getElementById('chart_pages_2')
+if (chart_pages_2_ctx) {
+  new Chart(chart_pages_2_ctx, {
+    type: 'doughnut',
+    data: monthlyChartData.templateChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+const chart_pages_3_ctx = document.getElementById('chart_pages_3')
+if (chart_pages_3_ctx) {
+  new Chart(chart_pages_3_ctx, {
+    type: 'bar',
+    data: monthlyChartData.pagesConversionsChartData,
+    options: chartOptions,
+  })
+}
+</script>
+
 @endsection

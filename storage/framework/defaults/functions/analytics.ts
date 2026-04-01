@@ -3,7 +3,7 @@
  */
 import { ref } from '@stacksjs/stx'
 
-const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+const baseUrl = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
 export interface AnalyticsOverview {
   realtime: number

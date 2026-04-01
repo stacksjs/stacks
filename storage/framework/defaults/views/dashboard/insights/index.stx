@@ -7,31 +7,6 @@ definePageMeta({
   layout: 'default'
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ArcElement,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  ArcElement,
-)
-
 interface SystemMetrics {
   cpu: number
   memory: {
@@ -489,7 +464,7 @@ const statsCards = [
             ></div>
           </div>
           <div class="mt-4 h-32">
-            <Line :data="cpuData" :options="chartOptions" />
+            <canvas id="cpuChart"></canvas>
           </div>
         </div>
       </div>
@@ -510,7 +485,7 @@ const statsCards = [
             ></div>
           </div>
           <div class="mt-4 h-32">
-            <Line :data="memoryData" :options="chartOptions" />
+            <canvas id="memoryChart"></canvas>
           </div>
         </div>
       </div>
@@ -525,7 +500,7 @@ const statsCards = [
             </span>
           </div>
           <div class="mt-4 h-32">
-            <Doughnut :data="storageData" :options="pieChartOptions" />
+            <canvas id="storageChart"></canvas>
           </div>
           <div class="mt-4 flex justify-center space-x-4">
             <div class="flex items-center">
@@ -610,7 +585,7 @@ const statsCards = [
                       </div>
                     </div>
                     <div class="h-48">
-                      <Line :data="getQueueData(name)" :options="queueChartOptions" />
+                      <canvas id="queueChart-{{ name }}" class="queue-chart" data-queue="{{ name }}"></canvas>
                     </div>
                   </div>
                 </div>
@@ -883,5 +858,48 @@ const statsCards = [
     </div>
   </div>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const cpuCtx = document.getElementById('cpuChart')
+if (cpuCtx) {
+  new Chart(cpuCtx, {
+    type: 'line',
+    data: cpuData,
+    options: chartOptions,
+  })
+}
+
+const memoryCtx = document.getElementById('memoryChart')
+if (memoryCtx) {
+  new Chart(memoryCtx, {
+    type: 'line',
+    data: memoryData,
+    options: chartOptions,
+  })
+}
+
+const storageCtx = document.getElementById('storageChart')
+if (storageCtx) {
+  new Chart(storageCtx, {
+    type: 'doughnut',
+    data: storageData,
+    options: pieChartOptions,
+  })
+}
+
+document.querySelectorAll('.queue-chart').forEach((canvas) => {
+  const queueName = canvas.getAttribute('data-queue')
+  if (queueName) {
+    new Chart(canvas, {
+      type: 'line',
+      data: getQueueData(queueName),
+      options: queueChartOptions,
+    })
+  }
+})
+</script>
 
 @endsection

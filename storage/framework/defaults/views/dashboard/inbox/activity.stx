@@ -10,33 +10,6 @@ definePageMeta({
 const { ref, computed, onMounted } = await import('@stacksjs/stx')
 const { useHead } = await import('@stacksjs/stx')
 const { useRouter } = await import('vue-router')
-const { Line, Bar, Doughnut } = await import('vue-chartjs')
-const {
-  Chart: ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} = await import('chart.js')
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
 
 const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.vue')).default
 
@@ -424,7 +397,7 @@ const handleCompose = () => {
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
             @endif
-            <Line :data="emailActivityData" :options="lineChartOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
         </div>
 
@@ -439,7 +412,7 @@ const handleCompose = () => {
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
             @endif
-            <Bar :data="responseTimeData" :options="barChartOptions" />
+            <canvas id="chart_2"></canvas>
           </div>
         </div>
 
@@ -451,7 +424,7 @@ const handleCompose = () => {
               <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Email Categories</h2>
             </div>
             <div class="h-64 relative">
-              <Doughnut :data="emailCategoryData" :options="doughnutChartOptions" />
+              <canvas id="chart_3"></canvas>
             </div>
           </div>
 
@@ -461,7 +434,7 @@ const handleCompose = () => {
               <h2 class="text-lg font-medium text-gray-900 dark:text-neutral-100">Device Usage</h2>
             </div>
             <div class="h-64 relative">
-              <Doughnut :data="deviceUsageData" :options="doughnutChartOptions" />
+              <canvas id="chart_4"></canvas>
             </div>
           </div>
         </div>
@@ -595,6 +568,45 @@ const handleCompose = () => {
   </div>
 </div>
 <script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: emailActivityData,
+    options: lineChartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: responseTimeData,
+    options: barChartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'doughnut',
+    data: emailCategoryData,
+    options: doughnutChartOptions,
+  })
+}
+
+const chart_4_ctx = document.getElementById('chart_4')
+if (chart_4_ctx) {
+  new Chart(chart_4_ctx, {
+    type: 'doughnut',
+    data: deviceUsageData,
+    options: doughnutChartOptions,
+  })
+}
+
 import { onMount } from 'stx'
 
 onMount(async () => {

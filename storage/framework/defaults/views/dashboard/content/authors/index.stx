@@ -2,31 +2,7 @@
 
 @section('content')
 <script server>
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-  Scale,
-  CoreScaleOptions,
-} from 'chart.js'
 import * as d3 from 'd3'
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 // Define author type
 interface Author {
   id: string
@@ -845,7 +821,7 @@ const getRoleBadgeClass = (role: string): string => {
 <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
-            <Line :data="chartData" :options="chartOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
         </div>
       </div>
@@ -1510,5 +1486,20 @@ const getRoleBadgeClass = (role: string): string => {
   color: rgb(252, 211, 77);
 }
 </style>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: chartData,
+    options: chartOptions,
+  })
+}
+
+</script>
 
 @endsection

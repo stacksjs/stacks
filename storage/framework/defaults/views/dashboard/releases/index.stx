@@ -2,29 +2,6 @@
 
 @section('content')
 <script>
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 // Chart options
 const chartOptions = {
   responsive: true,
@@ -164,7 +141,7 @@ const fetchReleaseData = async (days) => {
   isLoading = true
   fetchError = ''
   try {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const baseUrl = 'http://localhost:' + (process.env.PORT_API || '3008')
     const response = await fetch(`${baseUrl}/releases/stats?days=${days}`, {
       headers: { 'Accept': 'application/json' },
     })
@@ -345,7 +322,7 @@ const releaseTimeOptions = {
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
             @endif
-            <Line :data="downloadsData" :options="chartOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
         </div>
       </div>
@@ -363,7 +340,7 @@ const releaseTimeOptions = {
               <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
             </div>
             @endif
-            <Line :data="releaseTimeData" :options="releaseTimeOptions" />
+            <canvas id="chart_2"></canvas>
           </div>
         </div>
       </div>
@@ -623,5 +600,29 @@ const releaseTimeOptions = {
     </div>
   </div>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: downloadsData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'line',
+    data: releaseTimeData,
+    options: releaseTimeOptions,
+  })
+}
+
+</script>
 
 @endsection

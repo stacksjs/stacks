@@ -2,29 +2,6 @@
 
 @section('content')
 <script server>
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  BarElement,
-  ArcElement,
-  Title,
-  Tooltip,
-  Legend,
-)
-
 // Role form state
 let showRoleModal = false
 const roleForm = reactive({
@@ -297,7 +274,7 @@ const deleteRole = (roleId: number) => {
               <div class="p-6">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Permissions by Role</h3>
                 <div class="mt-2 h-80">
-                  <Pie :data="permissionsByRoleData" :options="pieChartOptions" />
+                  <canvas id="chart_1"></canvas>
                 </div>
               </div>
             </div>
@@ -306,7 +283,7 @@ const deleteRole = (roleId: number) => {
               <div class="p-6">
                 <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Permission Activity</h3>
                 <div class="mt-2 h-80">
-                  <Bar :data="permissionActivityData" :options="barChartOptions" />
+                  <canvas id="chart_2"></canvas>
                 </div>
               </div>
             </div>
@@ -589,5 +566,29 @@ const deleteRole = (roleId: number) => {
     </div>
 </div>
 
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'pie',
+    data: permissionsByRoleData,
+    options: pieChartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: permissionActivityData,
+    options: barChartOptions,
+  })
+}
+
+</script>
 
 @endsection

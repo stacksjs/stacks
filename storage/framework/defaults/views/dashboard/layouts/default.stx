@@ -1,6 +1,4 @@
 <script client>
-import { dashboardStore } from '@stores'
-
 // Craft native sidebar integration
 // Maps sidebar itemIds to STX page routes for SPA navigation
 const sidebarRoutes = {

@@ -6,11 +6,7 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
-
 // Register ChartJS components
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
-
 // File and folder interfaces
 interface FileItem {
   id: number
@@ -559,7 +555,7 @@ function deleteSelectedItems() {
         <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
           <h3 class="text-sm font-semibold text-stone-500 dark:text-neutral-400 uppercase tracking-wider">Storage</h3>
           <div class="mt-2" style="height: 120px;">
-            <Doughnut :data="storageChartData" :options="doughnutChartOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
           <div class="mt-2 text-xs text-stone-500 dark:text-neutral-400">
             <div class="flex justify-between py-0.5">
@@ -581,7 +577,7 @@ function deleteSelectedItems() {
         <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
           <h3 class="text-sm font-semibold text-stone-500 dark:text-neutral-400 uppercase tracking-wider">Storage by Type</h3>
           <div class="mt-2" style="height: 120px;">
-            <Doughnut :data="storageByTypeChartData" :options="doughnutChartOptions" />
+            <canvas id="chart_2"></canvas>
           </div>
           <div class="mt-2 text-xs text-stone-500 dark:text-neutral-400">
             <div class="flex justify-between py-0.5">
@@ -1162,5 +1158,29 @@ function deleteSelectedItems() {
   </div>
   @endif
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'doughnut',
+    data: storageChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'doughnut',
+    data: storageByTypeChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+</script>
 
 @endsection

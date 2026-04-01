@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -97,53 +94,6 @@ let searchTermsData = [
   { term: 'vue typescript boilerplate', visitors: 20, percentage: 3 }
 ]
 
-// Chart.js configuration for referrer types
-const chartConfig = reactive({
-  type: 'pie' as keyof ChartTypeRegistry,
-  data: {
-    labels: referrerTypesData.map(item => item.name),
-    datasets: [
-      {
-        data: referrerTypesData.map(item => item.visitors),
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(245, 158, 11, 0.8)',
-          'rgba(239, 68, 68, 0.8)'
-        ],
-        borderColor: 'rgba(255, 255, 255, 0.8)',
-        borderWidth: 1
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'right' as const,
-        labels: {
-          padding: 20,
-          font: {
-            size: 12
-          }
-        }
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const label = context.label || '';
-            const value = context.raw || 0;
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = Math.round((value / total) * 100);
-            return `${label}: ${value} visitors (${percentage}%)`;
-          }
-        }
-      }
-    }
-  }
-}
-
 // Referrer trend data for line chart
 let referrerTrendData = [
   { date: '2023-09', Direct: 800, Social: 400, Search: 300, Referral: 200 },
@@ -158,78 +108,6 @@ let referrerTrendData = [
   { date: '2024-06', Direct: 1350, Social: 750, Search: 480, Referral: 290 },
   { date: '2024-07', Direct: 1400, Social: 799, Search: 658, Referral: 654 }
 ]
-
-// Chart.js configuration for referrer trends
-const trendChartConfig = reactive({
-  type: 'line' as keyof ChartTypeRegistry,
-  data: {
-    labels: referrerTrendData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Direct',
-        data: referrerTrendData.map(item => item.Direct),
-        borderColor: 'rgba(59, 130, 246, 0.8)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Social',
-        data: referrerTrendData.map(item => item.Social),
-        borderColor: 'rgba(16, 185, 129, 0.8)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Search',
-        data: referrerTrendData.map(item => item.Search),
-        borderColor: 'rgba(245, 158, 11, 0.8)',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Referral',
-        data: referrerTrendData.map(item => item.Referral),
-        borderColor: 'rgba(239, 68, 68, 0.8)',
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        tension: 0.4,
-        fill: false
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          borderDash: [2, 4],
-          color: 'rgba(160, 174, 192, 0.2)'
-        },
-        ticks: {
-          maxTicksLimit: 6
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top' as const
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false
-      }
-    }
-  }
-}
 
 // Format numbers with commas
 function formatNumber(number) {
@@ -262,9 +140,6 @@ function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
-// Initialize charts when component is mounted
-let referrerTypeChart: Chart | null = null
-let referrerTrendChart: Chart | null = null
 
 </script>
 
@@ -487,21 +362,77 @@ let referrerTrendChart: Chart | null = null
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  const typeCtx = document.getElementById('referrerTypeChart') as HTMLCanvasElement
-  if (typeCtx) {
-    referrerTypeChart = new Chart(typeCtx, chartConfig)
-  }
+const typeCtx = document.getElementById('referrerTypeChart')
+if (typeCtx) {
+  new Chart(typeCtx, {
+    type: 'pie',
+    data: {
+      labels: referrerTypesData.map(item => item.name),
+      datasets: [{
+        data: referrerTypesData.map(item => item.visitors),
+        backgroundColor: [
+          'rgba(59, 130, 246, 0.8)',
+          'rgba(16, 185, 129, 0.8)',
+          'rgba(245, 158, 11, 0.8)',
+          'rgba(239, 68, 68, 0.8)'
+        ],
+        borderColor: 'rgba(255, 255, 255, 0.8)',
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { position: 'right', labels: { padding: 20, font: { size: 12 } } },
+        tooltip: {
+          callbacks: {
+            label: function(context) {
+              const label = context.label || ''
+              const value = context.raw || 0
+              const total = context.dataset.data.reduce((a, b) => a + b, 0)
+              const percentage = Math.round((value / total) * 100)
+              return `${label}: ${value} visitors (${percentage}%)`
+            }
+          }
+        }
+      }
+    }
+  })
+}
 
-  const trendCtx = document.getElementById('referrerTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    referrerTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
+const trendCtx = document.getElementById('referrerTrendChart')
+if (trendCtx) {
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: referrerTrendData.map(item => item.date),
+      datasets: [
+        { label: 'Direct', data: referrerTrendData.map(item => item.Direct), borderColor: 'rgba(59, 130, 246, 0.8)', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.4, fill: false },
+        { label: 'Social', data: referrerTrendData.map(item => item.Social), borderColor: 'rgba(16, 185, 129, 0.8)', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: false },
+        { label: 'Search', data: referrerTrendData.map(item => item.Search), borderColor: 'rgba(245, 158, 11, 0.8)', backgroundColor: 'rgba(245, 158, 11, 0.1)', tension: 0.4, fill: false },
+        { label: 'Referral', data: referrerTrendData.map(item => item.Referral), borderColor: 'rgba(239, 68, 68, 0.8)', backgroundColor: 'rgba(239, 68, 68, 0.1)', tension: 0.4, fill: false }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false } },
+        y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6 } }
+      },
+      plugins: {
+        legend: { position: 'top' },
+        tooltip: { mode: 'index', intersect: false }
+      }
+    }
+  })
+}
 
-  updateDataForDateRange()
-})
+updateDataForDateRange()
 </script>
 
 

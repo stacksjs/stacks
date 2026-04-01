@@ -6,29 +6,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 interface QueryStats {
   total: number
   select: number
@@ -442,7 +419,7 @@ function filteredQueries() {
                 <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
               </div>
             @endif
-            <Line :data="performanceData" :options="chartOptions" />
+            <canvas id="chart_1"></canvas>
           </div>
         </div>
       </div>
@@ -456,7 +433,7 @@ function filteredQueries() {
                 <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
               </div>
             @endif
-            <Line :data="durationData" :options="chartOptions" />
+            <canvas id="chart_2"></canvas>
           </div>
         </div>
       </div>
@@ -579,5 +556,29 @@ function filteredQueries() {
   line-height: 1.5;
 }
 </style>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: performanceData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'line',
+    data: durationData,
+    options: chartOptions,
+  })
+}
+
+</script>
 
 @endsection

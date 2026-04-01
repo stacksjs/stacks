@@ -6,7 +6,7 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import { toast } from '@stacksjs/notification'
+import { toast } from '@stacksjs/notifications'
 // @ts-ignore
 import { Dialog, DialogPanel } from '@stacksjs/dialog'
 

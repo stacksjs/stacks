@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -67,52 +64,6 @@ let detailedDeviceData = [
   { name: 'Tablet', model: 'Samsung Tab', os: 'Android 14', visitors: 2, percentage: 0.1 }
 ]
 
-// Chart.js configuration for device distribution
-const chartConfig = reactive({
-  type: 'doughnut' as keyof ChartTypeRegistry,
-  data: {
-    labels: deviceData.map(item => item.name),
-    datasets: [
-      {
-        data: deviceData.map(item => item.visitors),
-        backgroundColor: [
-          'rgba(59, 130, 246, 0.8)',
-          'rgba(16, 185, 129, 0.8)',
-          'rgba(245, 158, 11, 0.8)'
-        ],
-        borderColor: 'rgba(255, 255, 255, 0.8)',
-        borderWidth: 1
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: 'right' as const,
-        labels: {
-          padding: 20,
-          font: {
-            size: 12
-          }
-        }
-      },
-      tooltip: {
-        callbacks: {
-          label: function(context) {
-            const label = context.label || '';
-            const value = context.raw || 0;
-            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-            const percentage = Math.round((value / total) * 100);
-            return `${label}: ${value} visitors (${percentage}%)`;
-          }
-        }
-      }
-    }
-  }
-}
-
 // Device trend data for line chart
 let deviceTrendData = [
   { date: '2023-09', Desktop: 800, Phone: 400, Tablet: 10 },
@@ -125,70 +76,6 @@ let deviceTrendData = [
   { date: '2024-04', Desktop: 1250, Phone: 750, Tablet: 5 },
   { date: '2024-05', Desktop: 1300, Phone: 874, Tablet: 5 }
 ]
-
-// Chart.js configuration for device trends
-const trendChartConfig = reactive({
-  type: 'line' as keyof ChartTypeRegistry,
-  data: {
-    labels: deviceTrendData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Desktop',
-        data: deviceTrendData.map(item => item.Desktop),
-        borderColor: 'rgba(59, 130, 246, 0.8)',
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Phone',
-        data: deviceTrendData.map(item => item.Phone),
-        borderColor: 'rgba(16, 185, 129, 0.8)',
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        tension: 0.4,
-        fill: false
-      },
-      {
-        label: 'Tablet',
-        data: deviceTrendData.map(item => item.Tablet),
-        borderColor: 'rgba(245, 158, 11, 0.8)',
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        tension: 0.4,
-        fill: false
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          display: false
-        }
-      },
-      y: {
-        beginAtZero: true,
-        grid: {
-          borderDash: [2, 4],
-          color: 'rgba(160, 174, 192, 0.2)'
-        },
-        ticks: {
-          maxTicksLimit: 6
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        position: 'top' as const
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false
-      }
-    }
-  }
-}
 
 // Screen size data
 let screenSizeData = [
@@ -217,9 +104,6 @@ function handleDateRangeChange() {
   updateDataForDateRange()
 }
 
-// Initialize charts when component is mounted
-let deviceDistributionChart: Chart | null = null
-let deviceTrendChart: Chart | null = null
 
 </script>
 
@@ -440,21 +324,45 @@ let deviceTrendChart: Chart | null = null
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  const distributionCtx = document.getElementById('deviceDistributionChart') as HTMLCanvasElement
-  if (distributionCtx) {
-    deviceDistributionChart = new Chart(distributionCtx, chartConfig)
-  }
+const distributionCtx = document.getElementById('deviceDistributionChart')
+if (distributionCtx) {
+  new Chart(distributionCtx, {
+    type: 'doughnut',
+    data: {
+      labels: deviceData.map(item => item.name),
+      datasets: [{ data: deviceData.map(item => item.visitors), backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)'], borderColor: 'rgba(255, 255, 255, 0.8)', borderWidth: 1 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { position: 'right', labels: { padding: 20, font: { size: 12 } } }, tooltip: { callbacks: { label: function(context) { const label = context.label || ''; const value = context.raw || 0; const total = context.dataset.data.reduce((a, b) => a + b, 0); const percentage = Math.round((value / total) * 100); return `${label}: ${value} visitors (${percentage}%)` } } } }
+    }
+  })
+}
 
-  const trendCtx = document.getElementById('deviceTrendChart') as HTMLCanvasElement
-  if (trendCtx) {
-    deviceTrendChart = new Chart(trendCtx, trendChartConfig)
-  }
+const trendCtx = document.getElementById('deviceTrendChart')
+if (trendCtx) {
+  new Chart(trendCtx, {
+    type: 'line',
+    data: {
+      labels: deviceTrendData.map(item => item.date),
+      datasets: [
+        { label: 'Desktop', data: deviceTrendData.map(item => item.Desktop), borderColor: 'rgba(59, 130, 246, 0.8)', backgroundColor: 'rgba(59, 130, 246, 0.1)', tension: 0.4, fill: false },
+        { label: 'Phone', data: deviceTrendData.map(item => item.Phone), borderColor: 'rgba(16, 185, 129, 0.8)', backgroundColor: 'rgba(16, 185, 129, 0.1)', tension: 0.4, fill: false },
+        { label: 'Tablet', data: deviceTrendData.map(item => item.Tablet), borderColor: 'rgba(245, 158, 11, 0.8)', backgroundColor: 'rgba(245, 158, 11, 0.1)', tension: 0.4, fill: false }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6 } } },
+      plugins: { legend: { position: 'top' }, tooltip: { mode: 'index', intersect: false } }
+    }
+  })
+}
 
-  updateDataForDateRange()
-})
+updateDataForDateRange()
 </script>
 
 

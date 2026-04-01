@@ -154,7 +154,7 @@ function statusVariant(s) {
 
 <script client>
 const _root = useRef('pageRoot')
-const API_BASE = 'http://localhost:3000/cms'
+const API_BASE = 'http://localhost:' + (process.env.PORT_API || '3008') + '/cms'
 let deleteCommentId = null
 
 let viewModal, deleteModal

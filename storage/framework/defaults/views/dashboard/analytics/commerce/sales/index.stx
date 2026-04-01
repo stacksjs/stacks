@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -88,106 +85,6 @@ let salesData = [
   { date: '2025-02-01', revenue: 18000, orders: 400 }
 ]
 
-// Chart.js configuration
-const chartConfig = reactive({
-  type: 'line' as keyof ChartTypeRegistry,
-  data: {
-    labels: salesData.map(item => item.date),
-    datasets: [
-      {
-        label: 'Revenue ($)',
-        data: salesData.map(item => item.revenue),
-        backgroundColor: 'rgba(16, 185, 129, 0.3)',
-        borderColor: 'rgba(16, 185, 129, 0.8)',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: true,
-        yAxisID: 'y'
-      },
-      {
-        label: 'Orders',
-        data: salesData.map(item => item.orders),
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        borderColor: 'rgba(245, 158, 11, 0.8)',
-        borderWidth: 2,
-        tension: 0.4,
-        fill: false,
-        yAxisID: 'y1'
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    maintainAspectRatio: false,
-    scales: {
-      x: {
-        grid: {
-          display: false
-        },
-        ticks: {
-          maxTicksLimit: 4,
-          callback: function(value, index) {
-            const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
-            return index % Math.floor(salesData.length / 4) === 0 ? labels[Math.floor(index / (salesData.length / 4))] || '' : ''
-          }
-        }
-      },
-      y: {
-        type: 'linear' as const,
-        display: true,
-        position: 'left' as const,
-        beginAtZero: true,
-        grid: {
-          borderDash: [2, 4],
-          color: 'rgba(160, 174, 192, 0.2)'
-        },
-        ticks: {
-          maxTicksLimit: 6,
-          callback: function(value) {
-            return '$' + value.toLocaleString()
-          }
-        }
-      },
-      y1: {
-        type: 'linear' as const,
-        display: true,
-        position: 'right' as const,
-        beginAtZero: true,
-        grid: {
-          display: false
-        },
-        ticks: {
-          maxTicksLimit: 6
-        }
-      }
-    },
-    plugins: {
-      legend: {
-        display: true,
-        position: 'top' as const
-      },
-      tooltip: {
-        mode: 'index' as const,
-        intersect: false,
-        callbacks: {
-          label: function(context) {
-            let label = context.dataset.label || '';
-            if (label) {
-              label += ': ';
-            }
-            if (context.dataset.yAxisID === 'y') {
-              label += '$' + context.parsed.y.toLocaleString();
-            } else {
-              label += context.parsed.y;
-            }
-            return label;
-          }
-        }
-      }
-    }
-  }
-}
-
 // Products data
 let productsData = [
   { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450, percentage: 0 },
@@ -263,8 +160,6 @@ const getPercentageColorClass = (percentage) => {
   return 'text-red-600 dark:text-red-400'
 }
 
-// Initialize chart when component is mounted
-let salesChart: Chart | null = null
 
 </script>
 
@@ -524,14 +419,34 @@ let salesChart: Chart | null = null
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  const ctx = document.getElementById('salesChart') as HTMLCanvasElement
-  if (ctx) {
-    salesChart = new Chart(ctx, chartConfig)
-  }
-})
+const ctx = document.getElementById('salesChart')
+if (ctx) {
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: salesData.map(item => item.date),
+      datasets: [
+        { label: 'Revenue ($)', data: salesData.map(item => item.revenue), backgroundColor: 'rgba(16, 185, 129, 0.3)', borderColor: 'rgba(16, 185, 129, 0.8)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' },
+        { label: 'Orders', data: salesData.map(item => item.orders), backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.8)', borderWidth: 2, tension: 0.4, fill: false, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 4 } },
+        y: { type: 'linear', display: true, position: 'left', beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6, callback: function(value) { return '$' + value.toLocaleString() } } },
+        y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, grid: { display: false }, ticks: { maxTicksLimit: 6 } }
+      },
+      plugins: {
+        legend: { display: true, position: 'top' },
+        tooltip: { mode: 'index', intersect: false, callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) label += ': '; if (context.dataset.yAxisID === 'y') { label += '$' + context.parsed.y.toLocaleString() } else { label += context.parsed.y } return label } } }
+      }
+    }
+  })
+}
 </script>
 
 

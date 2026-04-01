@@ -6,31 +6,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 // Chart options
 const chartOptions = {
   responsive: true,
@@ -434,7 +409,7 @@ function totalAmount() {
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Transaction Count</h3>
             <div class="mt-2 h-80">
-              <Line :data="monthlyChartData.transactionCountChartData" :options="chartOptions" />
+              <canvas id="chart_1"></canvas>
             </div>
           </div>
         </div>
@@ -443,7 +418,7 @@ function totalAmount() {
           <div class="p-6">
             <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
             <div class="mt-2 h-80">
-              <Bar :data="monthlyChartData.revenueChartData" :options="chartOptions" />
+              <canvas id="chart_2"></canvas>
             </div>
           </div>
         </div>
@@ -710,5 +685,29 @@ function totalAmount() {
     </div>
   </div>
 </main>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: monthlyChartData.transactionCountChartData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: monthlyChartData.revenueChartData,
+    options: chartOptions,
+  })
+}
+
+</script>
 
 @endsection

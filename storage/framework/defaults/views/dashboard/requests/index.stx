@@ -6,31 +6,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -278,7 +253,7 @@ const barChartOptions = {
           </div>
         </div>
         <div class="relative h-[300px]">
-          <Line :data="requestVolumeData" :options="chartOptions" />
+          <canvas id="chart_1"></canvas>
         </div>
       </div>
 
@@ -288,7 +263,7 @@ const barChartOptions = {
           <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Response Time</h3>
         </div>
         <div class="relative h-[300px]">
-          <Line :data="responseTimeData" :options="chartOptions" />
+          <canvas id="chart_2"></canvas>
         </div>
       </div>
 
@@ -298,7 +273,7 @@ const barChartOptions = {
           <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Success Rate</h3>
         </div>
         <div class="relative h-[300px]">
-          <Line :data="successRateData" :options="chartOptions" />
+          <canvas id="chart_3"></canvas>
         </div>
       </div>
 
@@ -308,7 +283,7 @@ const barChartOptions = {
           <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Status Codes</h3>
         </div>
         <div class="relative h-[300px]">
-          <Bar :data="statusCodesData" :options="barChartOptions" />
+          <canvas id="chart_4"></canvas>
         </div>
       </div>
     </div>
@@ -445,5 +420,47 @@ const barChartOptions = {
     </div>
   </div>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: requestVolumeData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'line',
+    data: responseTimeData,
+    options: chartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'line',
+    data: successRateData,
+    options: chartOptions,
+  })
+}
+
+const chart_4_ctx = document.getElementById('chart_4')
+if (chart_4_ctx) {
+  new Chart(chart_4_ctx, {
+    type: 'bar',
+    data: statusCodesData,
+    options: barChartOptions,
+  })
+}
+
+</script>
 
 @endsection

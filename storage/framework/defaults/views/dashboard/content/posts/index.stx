@@ -9,14 +9,6 @@ import { useCategorizables } from '../../../../functions/cms/categorizables'
 const postsModule = usePosts()
 const categorizablesModule = useCategorizables()
 
-import {
-  Chart as ChartJS,
-  CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement,
-  Title, Tooltip, Legend, Filler,
-} from 'chart.js'
-
-ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, BarElement, ArcElement, Title, Tooltip, Legend, Filler)
-
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
@@ -168,16 +160,16 @@ let showNewPostModal = false
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2">
       <ChartCard title="Post Views" height="320px">
-        <Line :data="viewsChartData" :options="chartOptions" />
+        <canvas id="chart_1"></canvas>
       </ChartCard>
     </div>
     <ChartCard title="Category Distribution" height="320px">
-      <Doughnut :data="categoryChartData" :options="doughnutChartOptions" />
+      <canvas id="chart_2"></canvas>
     </ChartCard>
   </div>
 
   <ChartCard title="Posts & Comments">
-    <Bar :data="postsCommentsChartData" :options="chartOptions" />
+    <canvas id="chart_3"></canvas>
   </ChartCard>
 
   <!-- Filters -->
@@ -284,5 +276,38 @@ let showNewPostModal = false
     </form>
   </Modal>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: viewsChartData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'doughnut',
+    data: categoryChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'bar',
+    data: postsCommentsChartData,
+    options: chartOptions,
+  })
+}
+
+</script>
 
 @endsection

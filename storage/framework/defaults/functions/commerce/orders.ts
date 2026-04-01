@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent orders array using VueUse's useStorage
 const orders = useStorage<Orders[]>('orders', [])
 
-const baseURL = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
 // Basic fetch function to get all orders
 async function fetchOrders(): Promise<Orders[]> {

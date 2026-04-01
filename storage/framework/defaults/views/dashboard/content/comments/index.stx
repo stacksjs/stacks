@@ -2,11 +2,7 @@
 
 @section('content')
 <script server>
-import { Chart as ChartJS, Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement } from 'chart.js'
-
 // Register ChartJS components
-ChartJS.register(Title, Tooltip, Legend, BarElement, CategoryScale, LinearScale, PointElement, LineElement, ArcElement)
-
 // Chart options
 const lineChartOptions = {
   responsive: true,
@@ -661,7 +657,7 @@ function commentStats() {
             <div class="px-4 py-5 sm:p-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments Over Time</h3>
               <div class="mt-4" style="height: 250px;">
-                <Line :data="monthlyChartData.commentsOverTimeChartData" :options="lineChartOptions" />
+                <canvas id="chart_1"></canvas>
               </div>
             </div>
           </div>
@@ -671,7 +667,7 @@ function commentStats() {
             <div class="px-4 py-5 sm:p-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Comments by Status</h3>
               <div class="mt-4" style="height: 250px;">
-                <Doughnut :data="monthlyChartData.commentsByStatusChartData" :options="doughnutChartOptions" />
+                <canvas id="chart_2"></canvas>
               </div>
             </div>
           </div>
@@ -681,7 +677,7 @@ function commentStats() {
             <div class="px-4 py-5 sm:p-6">
               <h3 class="text-base font-semibold text-gray-900 dark:text-white">Top Posts by Comments</h3>
               <div class="mt-4" style="height: 250px;">
-                <Bar :data="monthlyChartData.commentsByPostChartData" :options="barChartOptions" />
+                <canvas id="chart_3"></canvas>
               </div>
             </div>
           </div>
@@ -1169,5 +1165,38 @@ function commentStats() {
     </div>
   </div>
 </div>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: monthlyChartData.commentsOverTimeChartData,
+    options: lineChartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'doughnut',
+    data: monthlyChartData.commentsByStatusChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'bar',
+    data: monthlyChartData.commentsByPostChartData,
+    options: barChartOptions,
+  })
+}
+
+</script>
 
 @endsection

@@ -7,29 +7,6 @@ definePageMeta({
   layout: 'default'
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 // Laravel-style activity log interfaces
 interface User {
   id: string
@@ -782,7 +759,7 @@ let timeRange = 'day'
             <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
           </div>
           @endif
-          <Line :data="logVolumeData" :options="chartOptions" />
+          <canvas id="chart_1"></canvas>
         </div>
       </div>
     </div>
@@ -1207,6 +1184,18 @@ let timeRange = 'day'
     </div>
   </div>
 <script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: logVolumeData,
+    options: chartOptions,
+  })
+}
+
 import { onMount } from 'stx'
 
 onMount(async () => {

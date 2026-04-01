@@ -649,7 +649,7 @@ const saveWorkerConfig = async () => {
   saveError = null
 
   try {
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3008'
+    const baseUrl = 'http://localhost:' + (process.env.PORT_API || '3008')
     const response = await fetch(`${baseUrl}/api/cloud/config`, {
       method: 'PUT',
       headers: {

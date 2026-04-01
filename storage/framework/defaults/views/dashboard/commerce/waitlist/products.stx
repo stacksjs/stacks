@@ -6,8 +6,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import Chart from 'chart.js/auto'
-
 interface WaitlistEntry {
   id: number
   name: string
@@ -1568,14 +1566,13 @@ function updateCharts() {
   @endif
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  initProductChart()
-  initSourceChart()
-  initStatusChart()
-  initTrendChart()
-})
+initProductChart()
+initSourceChart()
+initStatusChart()
+initTrendChart()
 </script>
 
 @endsection

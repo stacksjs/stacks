@@ -6,31 +6,6 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-} from 'chart.js'
-
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  BarElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler,
-)
-
 // Sample data for the dashboard
 const revenueData = {
   labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
@@ -175,7 +150,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Revenue</h3>
               <div class="mt-2 h-80">
-                <Line :data="revenueData" :options="chartOptions" />
+                <canvas id="revenueChart"></canvas>
               </div>
             </div>
           </div>
@@ -184,7 +159,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             <div class="p-6">
               <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Orders</h3>
               <div class="mt-2 h-80">
-                <Bar :data="ordersData" :options="chartOptions" />
+                <canvas id="ordersChart"></canvas>
               </div>
             </div>
           </div>
@@ -266,5 +241,28 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
     </div>
   </div>
 </main>
+
+<script client>
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
+
+const revenueCtx = document.getElementById('revenueChart')
+if (revenueCtx) {
+  new Chart(revenueCtx, {
+    type: 'line',
+    data: revenueData,
+    options: chartOptions,
+  })
+}
+
+const ordersCtx = document.getElementById('ordersChart')
+if (ordersCtx) {
+  new Chart(ordersCtx, {
+    type: 'bar',
+    data: ordersData,
+    options: chartOptions,
+  })
+}
+</script>
 
 @endsection

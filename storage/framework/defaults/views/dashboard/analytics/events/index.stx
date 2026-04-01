@@ -7,10 +7,7 @@ definePageMeta({
   layout: 'default'
 })
 
-import { Chart, registerables, ChartTypeRegistry } from 'chart.js'
 
-// Register Chart.js components
-Chart.register(...registerables)
 
 // Types
 interface DateRange {
@@ -207,92 +204,7 @@ const newEvent = reactive({
   currency: 'USD'
 ))}
 
-// Chart.js configuration
-let eventChart: Chart | null = null
-
-function createEventChart(eventId) {
-  const ctx = document.getElementById('eventChart') as HTMLCanvasElement
-  if (!ctx) return
-
-  const chartData = eventChartData[eventId] || []
-
-  const datasets = [
-    {
-      label: 'Completions',
-      data: chartData.map(item => item.completions),
-      backgroundColor: 'rgba(59, 130, 246, 0.3)',
-      borderColor: 'rgba(59, 130, 246, 0.8)',
-      borderWidth: 2,
-      tension: 0.4,
-      fill: true
-    }
-  ]
-
-  // Add comparison dataset if comparing
-  if (isComparing && comparisonData[eventId]) {
-    // Create a dataset with values that are 20-40% lower for demonstration
-    const comparisonDataset = {
-      label: comparisonLabel,
-      data: chartData.map(item => Math.round(item.completions * (0.6 + Math.random() * 0.2))),
-      backgroundColor: 'rgba(156, 163, 175, 0.2)',
-      borderColor: 'rgba(156, 163, 175, 0.7)',
-      borderWidth: 2,
-      borderDash: [5, 5],
-      tension: 0.4,
-      fill: false
-    }
-
-    datasets.push(comparisonDataset)
-  }
-
-  const chartConfig = {
-    type: 'line' as keyof ChartTypeRegistry,
-    data: {
-      labels: chartData.map(item => {
-        const date = new Date(item.date)
-        return `${date.getMonth() + 1}/${date.getDate()}`
-      }),
-      datasets
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        x: {
-          grid: {
-            display: false
-          }
-        },
-        y: {
-          beginAtZero: true,
-          grid: {
-            borderDash: [2, 4],
-            color: 'rgba(160, 174, 192, 0.2)'
-          },
-          ticks: {
-            precision: 0
-          }
-        }
-      },
-      plugins: {
-        legend: {
-          display: isComparing,
-          position: 'top' as const
-        },
-        tooltip: {
-          mode: 'index' as const,
-          intersect: false
-        }
-      }
-    }
-  }
-
-  if (eventChart) {
-    eventChart.destroy()
-  }
-
-  eventChart = new Chart(ctx, chartConfig)
-}
+// Chart creation is handled in <script client>
 
 // Utility functions
 function formatNumber(number) {
@@ -1229,13 +1141,61 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
+const { Chart, registerables } = await import('chart.js/auto')
+Chart.register(...registerables)
 
-onMount(async () => {
-  // In a real app, this would fetch data from the server
-  console.log('Events component mounted')
-  updateDataForDateRange()
-})
+let eventChart = null
+
+function createEventChart(eventId) {
+  const ctx = document.getElementById('eventChart')
+  if (!ctx) return
+
+  const chartData = eventChartData[eventId] || []
+  const datasets = [{
+    label: 'Completions',
+    data: chartData.map(item => item.completions),
+    backgroundColor: 'rgba(59, 130, 246, 0.3)',
+    borderColor: 'rgba(59, 130, 246, 0.8)',
+    borderWidth: 2,
+    tension: 0.4,
+    fill: true
+  }]
+
+  if (isComparing && comparisonData[eventId]) {
+    datasets.push({
+      label: comparisonLabel,
+      data: chartData.map(item => Math.round(item.completions * (0.6 + Math.random() * 0.2))),
+      backgroundColor: 'rgba(156, 163, 175, 0.2)',
+      borderColor: 'rgba(156, 163, 175, 0.7)',
+      borderWidth: 2,
+      borderDash: [5, 5],
+      tension: 0.4,
+      fill: false
+    })
+  }
+
+  if (eventChart) {
+    eventChart.destroy()
+  }
+
+  eventChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: chartData.map(item => {
+        const date = new Date(item.date)
+        return `${date.getMonth() + 1}/${date.getDate()}`
+      }),
+      datasets
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: { x: { grid: { display: false } }, y: { beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { precision: 0 } } },
+      plugins: { legend: { display: isComparing, position: 'top' }, tooltip: { mode: 'index', intersect: false } }
+    }
+  })
+}
+
+updateDataForDateRange()
 </script>
 
 
