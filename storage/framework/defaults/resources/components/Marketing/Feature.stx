@@ -1,13 +1,18 @@
-<script server>
-const className = props.className || ''
-const feature = props.feature || {
-  name: '',
+<script>
+interface FeatureProps {
+  className?: string
+  feature?: string
+  isActive?: boolean
+}
+
+const { className = '', feature = {, isActive = false } = defineProps<FeatureProps>()
+
+name: '',
   summary: '',
   description: '',
   image: '',
   icon: ''
 }
-const isActive = props.isActive || false
 </script>
 <div class="{{ className }} {{ !isActive ? 'opacity-75 hover:opacity-100' : '' }}">
   <div class="w-9 rounded-lg {{ isActive ? 'bg-blue-600' : 'bg-slate-500' }}">

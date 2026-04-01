@@ -1,8 +1,12 @@
-<script server>
-  const defaultPaymentMethod = props.defaultPaymentMethod || null // { brand, last_four, exp_month, exp_year }
-  const paymentMethods = props.paymentMethods || []
-  const loading = props.loading || false
-  const showCardForm = props.showCardForm || false
+<script>
+interface PaymentMethodProps {
+  defaultPaymentMethod?: any
+  paymentMethods?: any[]
+  loading?: boolean
+  showCardForm?: boolean
+}
+
+const { defaultPaymentMethod = null, paymentMethods = [], loading = false, showCardForm = false } = defineProps<PaymentMethodProps>()
 </script>
 <div class="mt-16 w-2/3 bg-white px-8 py-6 shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
     <h2 class="text-lg text-gray-900 font-medium">

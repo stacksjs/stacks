@@ -1,6 +1,11 @@
-<script server>
-const data = props.data || {
-  name: '',
+<script>
+interface TeamMemberProps {
+  data?: string
+}
+
+const { data = { } = defineProps<TeamMemberProps>()
+
+name: '',
   avatar: '',
   description: '',
   github: '',

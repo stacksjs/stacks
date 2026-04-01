@@ -1,7 +1,11 @@
-<script server>
-  const routes = props.routes || []
+<script>
+interface DeliveryRoutesTableProps {
+  routes?: any[]
+}
 
-  function formatDate(date) {
+const { routes = [] } = defineProps<DeliveryRoutesTableProps>()
+
+function formatDate(date) {
     if (!date) return 'N/A'
     const dateObj = typeof date === 'string' ? new Date(date) : date
     return dateObj.toLocaleDateString('en-US', {

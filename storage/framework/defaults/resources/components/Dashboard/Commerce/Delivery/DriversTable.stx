@@ -1,7 +1,11 @@
-<script server>
-  const drivers = props.drivers || []
+<script>
+interface DriversTableProps {
+  drivers?: any[]
+}
 
-  function formatDate(date) {
+const { drivers = [] } = defineProps<DriversTableProps>()
+
+function formatDate(date) {
     if (!date) return 'N/A'
     const dateObj = typeof date === 'string' ? new Date(date) : date
     return dateObj.toLocaleDateString('en-US', {

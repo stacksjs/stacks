@@ -1,10 +1,14 @@
-<script server>
-  const live = props.live || false
-  const path = props.path || '~/Code/stacks'
-  const branch = props.branch || 'main'
-  const version = props.version || 'v1.2.3'
+<script>
+interface TerminalContainerProps {
+  live?: boolean
+  path?: string
+  branch?: string
+  version?: string
+}
 
-  const files = [
+const { live = false, path = '~/Code/stacks', branch = 'main', version = 'v1.2.3' } = defineProps<TerminalContainerProps>()
+
+const files = [
     'CHANGELOG.md', 'LICENSE.md', 'README.md', 'app',
     'bootstrap', 'buddy', 'cloud', 'commitlint.config.ts',
     'bun.lock', 'bunfig.toml', 'config', 'database',

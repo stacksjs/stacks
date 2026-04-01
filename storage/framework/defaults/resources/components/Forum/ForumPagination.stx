@@ -1,7 +1,11 @@
-<script server>
-const currentPage = props.currentPage || 1
-const totalPages = props.totalPages || 1
-const pages = props.pages || []
+<script>
+interface ForumPaginationProps {
+  currentPage?: number
+  totalPages?: number
+  pages?: any[]
+}
+
+const { currentPage = 1, totalPages = 1, pages = [] } = defineProps<ForumPaginationProps>()
 </script>
 <div class="flex items-center justify-center mt-8">
     <nav class="flex items-center gap-1">

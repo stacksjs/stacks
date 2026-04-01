@@ -1,5 +1,9 @@
-<script server>
-const className = props.className || ''
+<script>
+interface ContainerProps {
+  className?: string
+}
+
+const { className = '' } = defineProps<ContainerProps>()
 </script>
 <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 {{ className }}">
     <slot />

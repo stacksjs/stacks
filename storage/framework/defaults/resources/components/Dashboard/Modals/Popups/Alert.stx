@@ -1,12 +1,16 @@
-<script server>
-  const title = props.title || ''
-  const description = props.description || ''
-  const type = props.type || 'info' // 'info' | 'warning' | 'danger' | 'success' | 'error'
-  const confirmationText = props.confirmationText || 'Confirm'
-  const abortText = props.abortText || 'Cancel'
-  const show = props.show !== undefined ? props.show : true
+<script>
+interface AlertProps {
+  title?: string
+  description?: string
+  type?: 'info' | 'warning' | 'danger' | 'success' | 'error'
+  confirmationText?: string
+  abortText?: string
+  show?: boolean
+}
 
-  function getButtonBackground() {
+const { title = '', description = '', type = 'info', confirmationText = 'Confirm', abortText = 'Cancel', show = true } = defineProps<AlertProps>()
+
+function getButtonBackground() {
     if (type === 'info') return 'bg-blue-600 hover:bg-blue-700 focus:ring-blue-500'
     if (type === 'warning') return 'bg-yellow-600 hover:bg-yellow-700 focus:ring-yellow-500'
     if (type === 'danger') return 'bg-red-600 hover:bg-red-700 focus:ring-red-500'

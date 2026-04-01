@@ -1,11 +1,16 @@
-<script server>
-const inter = props.inter || {
-  subsets: ['latin'],
+<script>
+interface LayoutProps {
+  inter?: string
+  lexend?: string
+}
+
+const { inter = {, lexend = { } = defineProps<LayoutProps>()
+
+subsets: ['latin'],
   display: 'swap',
   variable: '--font-inter',
 }
 
-const lexend = props.lexend || {
   subsets: ['latin'],
   display: 'swap',
   variable: '--font-lexend',

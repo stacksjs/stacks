@@ -1,4 +1,12 @@
-<script server>
+<script>
+interface BulkActionBarProps {
+  selectedCount?: number
+  defaultActions?: string
+  actions?: string
+}
+
+const { selectedCount = 0, defaultActions = [, actions } = defineProps<BulkActionBarProps>()
+
 /**
  * BulkActionBar Component
  *
@@ -10,9 +18,6 @@
  *   actions - Array of { label, icon, variant, action } objects
  */
 
-const selectedCount = props.selectedCount || 0
-
-const defaultActions = props.actions || [
   { label: 'Delete', icon: 'i-hugeicons-delete-02', variant: 'danger' },
   { label: 'Export', icon: 'i-hugeicons-download-04', variant: 'secondary' },
 ]

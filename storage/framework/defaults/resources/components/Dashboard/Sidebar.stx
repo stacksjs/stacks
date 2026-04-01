@@ -1,12 +1,17 @@
-<script server>
+<script>
+interface SidebarProps {
+  isSidebarCollapsed?: boolean
+  currentTeam?: string
+}
+
+const { isSidebarCollapsed = false, currentTeam = teams[0] } = defineProps<SidebarProps>()
+
 /**
  * Sidebar Component
  * Clean, modern navigation sidebar inspired by Tailwind UI.
  */
 
 // State
-const isSidebarCollapsed = props.isSidebarCollapsed || false
-
 // Teams data
 const teams = [
   {
@@ -17,8 +22,6 @@ const teams = [
     logo: '/images/logos/logo.svg'
   }
 ]
-
-const currentTeam = props.currentTeam || teams[0]
 
 // SVG icon helper - returns inline SVG markup for each icon name
 // All icons are 20x20, stroke-based, currentColor

@@ -1,17 +1,21 @@
-<script server>
-  const appName = props.appName || 'Stacks'
-  const appKey = props.appKey || ''
-  const appUrl = props.appUrl || 'stacks.localhost'
-  const description = props.description || ''
-  const environment = props.environment || 'local'
-  const redirectUrls = props.redirectUrls || 'stacks.localhost,localhost:3000,stack.com'
-  const appDebug = props.appDebug !== undefined ? props.appDebug : false
-  const maintenanceMode = props.maintenanceMode !== undefined ? props.maintenanceMode : false
-  const docMode = props.docMode !== undefined ? props.docMode : true
-  const timezone = props.timezone || 'America/Los_Angeles'
-  const locale = props.locale || 'en'
-  const fallbackLocale = props.fallbackLocale || 'en'
-  const cipher = props.cipher || 'aes-256-cbc'
+<script>
+interface AppFormProps {
+  appName?: string
+  appKey?: string
+  appUrl?: string
+  description?: string
+  environment?: string
+  redirectUrls?: string
+  timezone?: string
+  locale?: string
+  fallbackLocale?: string
+  cipher?: string
+  appDebug?: boolean
+  maintenanceMode?: boolean
+  docMode?: boolean
+}
+
+const { appName = 'Stacks', appKey = '', appUrl = 'stacks.localhost', description = '', environment = 'local', redirectUrls = 'stacks.localhost,localhost:3000,stack.com', timezone = 'America/Los_Angeles', locale = 'en', fallbackLocale = 'en', cipher = 'aes-256-cbc', appDebug = false, maintenanceMode = false, docMode = true } = defineProps<AppFormProps>()
 </script>
 <form>
     <div class="space-y-12">

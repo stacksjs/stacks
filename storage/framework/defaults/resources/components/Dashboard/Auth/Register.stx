@@ -1,24 +1,26 @@
-<script server>
+<script>
+interface RegisterProps {
+  title?: string
+  subtitle?: string
+  name?: string
+  email?: string
+  password?: string
+  passwordConfirmation?: string
+  agreeToTerms?: boolean
+  isLoading?: boolean
+  error?: string
+  errors?: Record<string, any>
+  showLogin?: boolean
+}
+
+const { title = 'Create an account', subtitle = 'Get started with your free account', name = '', email = '', password = '', passwordConfirmation = '', agreeToTerms = false, isLoading = false, error = '', errors = {}, showLogin = true } = defineProps<RegisterProps>()
+
 /**
  * Register Component
  * A clean, modern registration form for the Stacks Dashboard.
  */
 
-// Props
-const title = props.title || 'Create an account'
-const subtitle = props.subtitle || 'Get started with your free account'
-const showLogin = props.showLogin !== undefined ? props.showLogin : true
-
 // Form state
-const name = props.name || ''
-const email = props.email || ''
-const password = props.password || ''
-const passwordConfirmation = props.passwordConfirmation || ''
-const agreeToTerms = props.agreeToTerms || false
-const isLoading = props.isLoading || false
-const error = props.error || ''
-const errors = props.errors || {}
-
 // Password strength calculation
 let passwordStrength = 0
 let passwordStrengthLabel = ''

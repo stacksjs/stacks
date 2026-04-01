@@ -1,6 +1,11 @@
-<script server>
-const testimonials = props.testimonials || [
-  [
+<script>
+interface TestimonialsProps {
+  testimonials?: string
+}
+
+const { testimonials = [ } = defineProps<TestimonialsProps>()
+
+[
     {
       content: 'Stacks is a rapid development framework that has helped me create and maintain frontends, backends, and clouds without worrying about the boilerplate.',
       author: {

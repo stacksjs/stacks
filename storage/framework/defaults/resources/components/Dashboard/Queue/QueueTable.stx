@@ -1,7 +1,11 @@
-<script server>
-  const queues = props.queues || [] // Array of queue jobs
+<script>
+interface QueueTableProps {
+  queues?: any[]
+}
 
-  function parseName(payload) {
+const { queues = [] } = defineProps<QueueTableProps>()
+
+function parseName(payload) {
     try {
       const parsedPayload = JSON.parse(payload)
       return parsedPayload.name

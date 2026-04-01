@@ -1,5 +1,9 @@
-<script server>
-  const defaultEngine = props.defaultEngine || 'opensearch'
+<script>
+interface SearchEngineFormProps {
+  defaultEngine?: string
+}
+
+const { defaultEngine = 'opensearch' } = defineProps<SearchEngineFormProps>()
 </script>
 <form>
     <main class="border-b border-gray-900/10">

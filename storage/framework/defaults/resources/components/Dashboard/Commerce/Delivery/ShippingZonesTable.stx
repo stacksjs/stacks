@@ -1,7 +1,11 @@
-<script server>
-  const zones = props.zones || []
+<script>
+interface ShippingZonesTableProps {
+  zones?: any[]
+}
 
-  function getPostalCodes(postalCodes) {
+const { zones = [] } = defineProps<ShippingZonesTableProps>()
+
+function getPostalCodes(postalCodes) {
     if (!postalCodes) return 'All'
     return postalCodes.split(',').map(code => code.trim()).join(', ')
   }

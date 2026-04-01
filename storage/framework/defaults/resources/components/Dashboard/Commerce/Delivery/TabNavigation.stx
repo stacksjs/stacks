@@ -1,6 +1,10 @@
-<script server>
-  const modelValue = props.modelValue || ''
-  const tabs = props.tabs || []
+<script>
+interface TabNavigationProps {
+  modelValue?: string
+  tabs?: any[]
+}
+
+const { modelValue = '', tabs = [] } = defineProps<TabNavigationProps>()
 </script>
 <div>
     <div class="sm:hidden">

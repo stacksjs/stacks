@@ -1,6 +1,10 @@
-<script server>
-const title = props.title || 'Quick Links'
-const links = props.links || [] // Array of { title, description, href?, icon? }
+<script>
+interface QuickLinksProps {
+  title?: string
+  links?: any[]
+}
+
+const { title = 'Quick Links', links = [] } = defineProps<QuickLinksProps>()
 </script>
 <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
   <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">

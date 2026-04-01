@@ -1,7 +1,11 @@
-<script server>
-  const productId = props.productId || 1
-  const price = props.price || '$0.00'
-  const paymentIntent = props.paymentIntent || ''
+<script>
+interface PaymentFormProps {
+  productId?: number
+  price?: string
+  paymentIntent?: string
+}
+
+const { productId = 1, price = '$0.00', paymentIntent = '' } = defineProps<PaymentFormProps>()
 </script>
 <div>
     <form id="payment-form">

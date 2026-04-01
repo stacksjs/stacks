@@ -1,5 +1,9 @@
-<script server>
-const enabled = props.enabled || false
+<script>
+interface SwitchDemoProps {
+  enabled?: boolean
+}
+
+const { enabled = false } = defineProps<SwitchDemoProps>()
 </script>
 <div class="max-w-4xl">
     <DocsPlayground>

@@ -1,10 +1,13 @@
-<script server>
-// Props
-const error = props.error || null
-const isOpen = props.isOpen || false
-const errorInstances = props.errorInstances || []
-const isLoading = props.isLoading || false
-const activeTab = props.activeTab || 'details'
+<script>
+interface ErrorDetailModalProps {
+  error?: any
+  isOpen?: boolean
+  errorInstances?: any[]
+  isLoading?: boolean
+  activeTab?: string
+}
+
+const { error = null, isOpen = false, errorInstances = [], isLoading = false, activeTab = 'details' } = defineProps<ErrorDetailModalProps>()
 
 // Helper functions
 function getStatusClass(status) {

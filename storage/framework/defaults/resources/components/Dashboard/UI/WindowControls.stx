@@ -1,10 +1,14 @@
-<script server>
-  import { isCraftNative, useWindowControls } from '../../../../functions/craft'
+<script>
+interface WindowControlsProps {
+  variant?: 'macos' | 'windows'
+  size?: 'sm' | 'md' | 'lg'
+  showLabels?: boolean
+  disabled?: boolean
+}
 
-  const variant = props.variant || 'macos' // 'macos' | 'windows'
-  const size = props.size || 'md' // 'sm' | 'md' | 'lg'
-  const showLabels = props.showLabels || false
-  const disabled = props.disabled || false
+const { variant = 'macos', size = 'md', showLabels = false, disabled = false } = defineProps<WindowControlsProps>()
+
+import { isCraftNative, useWindowControls } from '../../../../functions/craft'
 
   const sizeConfig = {
     sm: { button: 'w-3 h-3', gap: 'gap-1.5', iconSize: 'w-2 h-2' },

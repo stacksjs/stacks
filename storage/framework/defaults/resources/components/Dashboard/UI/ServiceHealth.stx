@@ -1,5 +1,10 @@
-<script server>
-const services = props.services || []
+<script>
+interface ServiceHealthProps {
+  services?: any[]
+}
+
+const { services = [] } = defineProps<ServiceHealthProps>()
+
 const allHealthy = services.every(s => s.status === 'healthy')
 </script>
 <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">

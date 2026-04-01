@@ -1,10 +1,14 @@
-<script server>
-  const buttonText = props.buttonText || ''
-  const loadingText = props.loadingText || ''
-  const passedClass = props.passedClass || ''
-  const loading = props.loading || false
+<script>
+interface AppButtonProps {
+  buttonText?: string
+  loadingText?: string
+  passedClass?: string
+  loading?: boolean
+}
 
-  const buttonString = loading ? loadingText : buttonText
+const { buttonText = '', loadingText = '', passedClass = '', loading = false } = defineProps<AppButtonProps>()
+
+const buttonString = loading ? loadingText : buttonText
   const disabledClass = ' disabled:opacity-50 disabled:cursor-not-allowed'
   const finalClass = passedClass + disabledClass
 </script>

@@ -1,7 +1,11 @@
-<script server>
-  const transactionHistory = props.transactionHistory || [] // Array of transactions
+<script>
+interface indexProps {
+  transactionHistory?: any[]
+}
 
-  function formatTimestampDate(timestamp) {
+const { transactionHistory = [] } = defineProps<indexProps>()
+
+function formatTimestampDate(timestamp) {
     if (!timestamp) return ''
     const date = new Date(timestamp * 1000)
     return date.toLocaleDateString()

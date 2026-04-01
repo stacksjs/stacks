@@ -1,9 +1,13 @@
-<script server>
-  const timeRange = props.timeRange || 'day' // 'day' | 'week' | 'month' | 'year'
-  const isLoading = props.isLoading || false
+<script>
+interface EmailActivityChartProps {
+  timeRange?: 'day' | 'week' | 'month' | 'year'
+  isLoading?: boolean
+  chartOptions?: string
+}
 
-  // Chart configuration - to be rendered client-side
-  const chartOptions = props.chartOptions || {
+const { timeRange = 'day', isLoading = false, chartOptions = { } = defineProps<EmailActivityChartProps>()
+
+// Chart configuration - to be rendered client-side
     responsive: true,
     maintainAspectRatio: false,
     scales: {

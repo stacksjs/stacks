@@ -1,9 +1,13 @@
-<script server>
-  const isOpen = props.isOpen || false
-  const notificationId = props.notificationId || ''
-  const notificationType = props.notificationType || 'email'
-  const errorMessage = props.errorMessage || ''
-  const sentAt = props.sentAt || ''
+<script>
+interface NotificationErrorModalProps {
+  isOpen?: boolean
+  notificationId?: string
+  notificationType?: string
+  errorMessage?: string
+  sentAt?: string
+}
+
+const { isOpen = false, notificationId = '', notificationType = 'email', errorMessage = '', sentAt = '' } = defineProps<NotificationErrorModalProps>()
 </script>
 @if(isOpen)
   <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">

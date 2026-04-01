@@ -1,10 +1,14 @@
-<script server>
-const variant = props.variant || 'default' // 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
-const size = props.size || 'sm' // 'xs' | 'sm' | 'md' | 'lg'
-const rounded = props.rounded || 'full' // 'default' | 'full'
-const outline = props.outline || false
-const dot = props.dot || false
-const text = props.text || ''
+<script>
+interface BadgeProps {
+  variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  rounded?: 'default' | 'full'
+  outline?: boolean
+  dot?: boolean
+  text?: string
+}
+
+const { variant = 'default', size = 'sm', rounded = 'full', outline = false, dot = false, text = '' } = defineProps<BadgeProps>()
 
 const sizeClasses = {
   xs: 'text-[10px] px-1.5 py-0.5',

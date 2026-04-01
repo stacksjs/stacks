@@ -1,7 +1,11 @@
-<script server>
-  const methods = props.methods || []
+<script>
+interface ShippingMethodsTableProps {
+  methods?: any[]
+}
 
-  function formatCurrency(amount) {
+const { methods = [] } = defineProps<ShippingMethodsTableProps>()
+
+function formatCurrency(amount) {
     if (!amount) return 'N/A'
     return new Intl.NumberFormat('en-US', {
       style: 'currency',

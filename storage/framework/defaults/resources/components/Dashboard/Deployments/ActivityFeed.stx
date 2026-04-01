@@ -1,7 +1,11 @@
-<script server>
-  const commits = props.commits || [] // Array of commit data
+<script>
+interface ActivityFeedProps {
+  commits?: any[]
+}
 
-  function getTimeDifference(dateString) {
+const { commits = [] } = defineProps<ActivityFeedProps>()
+
+function getTimeDifference(dateString) {
     const date = new Date(dateString)
     const now = new Date()
     const diffMs = now.getTime() - date.getTime()

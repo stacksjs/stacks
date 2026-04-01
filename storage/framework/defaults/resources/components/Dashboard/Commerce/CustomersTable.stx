@@ -1,14 +1,18 @@
-<script server>
-  const customers = props.customers || []
-  const searchQuery = props.searchQuery || ''
-  const statusFilter = props.statusFilter || ''
-  const sortBy = props.sortBy || 'name'
-  const sortOrder = props.sortOrder || 'asc'
-  const currentPage = props.currentPage || 1
-  const itemsPerPage = props.itemsPerPage || 10
-  const statuses = props.statuses || ['Active', 'Inactive']
+<script>
+interface CustomersTableProps {
+  customers?: any[]
+  searchQuery?: string
+  statusFilter?: string
+  sortBy?: string
+  sortOrder?: string
+  currentPage?: number
+  itemsPerPage?: number
+  statuses?: string
+}
 
-  function getStatusClass(status) {
+const { customers = [], searchQuery = '', statusFilter = '', sortBy = 'name', sortOrder = 'asc', currentPage = 1, itemsPerPage = 10, statuses = ['Active', 'Inactive'] } = defineProps<CustomersTableProps>()
+
+function getStatusClass(status) {
     const statusStr = Array.isArray(status) ? status[0] : status
     switch (statusStr) {
       case 'Active':

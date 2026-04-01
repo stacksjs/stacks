@@ -1,5 +1,9 @@
-<script server>
-const isPreviewMode = props.isPreviewMode !== undefined ? props.isPreviewMode : true
+<script>
+interface DocsPlaygroundProps {
+  isPreviewMode?: boolean
+}
+
+const { isPreviewMode = true } = defineProps<DocsPlaygroundProps>()
 </script>
 <div class="flex flex-col gap-4">
   <div class="flex flex-col gap-2">

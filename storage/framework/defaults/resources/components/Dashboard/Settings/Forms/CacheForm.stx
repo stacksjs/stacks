@@ -1,22 +1,25 @@
-<script server>
-  // DynamoDB settings
-  const dynamoHost = props.dynamoHost || 'stacks.s3.amazonaws.com'
-  const dynamoKey = props.dynamoKey || 'kldsanko3njksdasjfasdn2m'
-  const dynamoSecret = props.dynamoSecret || 'kldsanko3njksdasjfasdn2m'
-  const dynamoRegion = props.dynamoRegion || 'us-east-1'
-  const dynamoTable = props.dynamoTable || 'cache'
+<script>
+interface CacheFormProps {
+  dynamoHost?: string
+  dynamoKey?: string
+  dynamoSecret?: string
+  dynamoRegion?: string
+  dynamoTable?: string
+  memcachedPersistentId?: string
+  memcachedUsername?: string
+  memcachedPassword?: string
+  memcachedHost?: string
+  memcachedPort?: string
+  redisHost?: string
+  redisPort?: string
+  redisPassword?: string
+}
 
+const { dynamoHost = 'stacks.s3.amazonaws.com', dynamoKey = 'kldsanko3njksdasjfasdn2m', dynamoSecret = 'kldsanko3njksdasjfasdn2m', dynamoRegion = 'us-east-1', dynamoTable = 'cache', memcachedPersistentId = 'hj3jknkjh1kjh5', memcachedUsername = 'username', memcachedPassword = 'test@123', memcachedHost = 'stacks.s3.amazonaws.com', memcachedPort = '11211', redisHost = '127.0.0.1', redisPort = '6379', redisPassword = '' } = defineProps<CacheFormProps>()
+
+// DynamoDB settings
   // Memcached settings
-  const memcachedPersistentId = props.memcachedPersistentId || 'hj3jknkjh1kjh5'
-  const memcachedUsername = props.memcachedUsername || 'username'
-  const memcachedPassword = props.memcachedPassword || 'test@123'
-  const memcachedHost = props.memcachedHost || 'stacks.s3.amazonaws.com'
-  const memcachedPort = props.memcachedPort || '11211'
-
   // Redis settings
-  const redisHost = props.redisHost || '127.0.0.1'
-  const redisPort = props.redisPort || '6379'
-  const redisPassword = props.redisPassword || ''
 </script>
 <form>
     <main class="border-b border-gray-900/10">

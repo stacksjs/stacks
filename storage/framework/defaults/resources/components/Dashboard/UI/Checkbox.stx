@@ -1,13 +1,17 @@
-<script server>
-const checked = props.checked || false
-const label = props.label || ''
-const description = props.description || ''
-const disabled = props.disabled || false
-const indeterminate = props.indeterminate || false
-const size = props.size || 'md' // 'sm' | 'md' | 'lg'
-const error = props.error || ''
-const name = props.name || ''
-const id = props.id || ''
+<script>
+interface CheckboxProps {
+  checked?: boolean
+  label?: string
+  description?: string
+  disabled?: boolean
+  indeterminate?: boolean
+  size?: 'sm' | 'md' | 'lg'
+  error?: string
+  name?: string
+  id?: string
+}
+
+const { checked = false, label = '', description = '', disabled = false, indeterminate = false, size = 'md', error = '', name = '', id = '' } = defineProps<CheckboxProps>()
 
 const sizeClasses = {
   sm: { checkbox: 'h-4 w-4', text: 'text-sm', desc: 'text-xs' },

@@ -1,18 +1,22 @@
-<script server>
-  const columns = props.columns || [] // Array of { key, label, sortable?, align?, width?, class? }
-  const data = props.data || [] // Array of records
-  const loading = props.loading || false
-  const selectable = props.selectable || false
-  const hoverable = props.hoverable !== undefined ? props.hoverable : true
-  const striped = props.striped || false
-  const bordered = props.bordered || false
-  const compact = props.compact || false
-  const stickyHeader = props.stickyHeader || false
-  const emptyTitle = props.emptyTitle || 'No data'
-  const emptyDescription = props.emptyDescription || 'There are no items to display.'
-  const rowKey = props.rowKey || 'id'
+<script>
+interface TableProps {
+  columns?: any[]
+  data?: any[]
+  loading?: boolean
+  selectable?: boolean
+  striped?: boolean
+  bordered?: boolean
+  compact?: boolean
+  stickyHeader?: boolean
+  emptyTitle?: string
+  emptyDescription?: string
+  rowKey?: string
+  hoverable?: boolean
+}
 
-  function getAlignClass(align) {
+const { columns = [], data = [], loading = false, selectable = false, striped = false, bordered = false, compact = false, stickyHeader = false, emptyTitle = 'No data', emptyDescription = 'There are no items to display.', rowKey = 'id', hoverable = true } = defineProps<TableProps>()
+
+function getAlignClass(align) {
     switch (align) {
       case 'center': return 'text-center'
       case 'right': return 'text-right'

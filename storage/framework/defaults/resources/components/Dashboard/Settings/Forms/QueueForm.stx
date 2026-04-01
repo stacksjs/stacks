@@ -1,15 +1,19 @@
-<script server>
-  const defaultQueue = props.defaultQueue || 'sync'
-  const databaseTable = props.databaseTable || 'jobs'
-  const databaseQueue = props.databaseQueue || 'default'
-  const redisConnection = props.redisConnection || 'default'
-  const redisQueue = props.redisQueue || 'default'
-  const sqsKey = props.sqsKey || ''
-  const sqsSecret = props.sqsSecret || ''
-  const sqsPrefix = props.sqsPrefix || ''
-  const sqsSuffix = props.sqsSuffix || ''
-  const sqsQueue = props.sqsQueue || 'default'
-  const sqsRegion = props.sqsRegion || 'us-east-1'
+<script>
+interface QueueFormProps {
+  defaultQueue?: string
+  databaseTable?: string
+  databaseQueue?: string
+  redisConnection?: string
+  redisQueue?: string
+  sqsKey?: string
+  sqsSecret?: string
+  sqsPrefix?: string
+  sqsSuffix?: string
+  sqsQueue?: string
+  sqsRegion?: string
+}
+
+const { defaultQueue = 'sync', databaseTable = 'jobs', databaseQueue = 'default', redisConnection = 'default', redisQueue = 'default', sqsKey = '', sqsSecret = '', sqsPrefix = '', sqsSuffix = '', sqsQueue = 'default', sqsRegion = 'us-east-1' } = defineProps<QueueFormProps>()
 </script>
 <form>
     <main class="border-b border-gray-900/10">

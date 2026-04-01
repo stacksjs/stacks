@@ -1,8 +1,12 @@
-<script server>
-  const title = props.title || ''
-  const description = props.description || ''
-  const backLink = props.backLink || ''
-  const backLabel = props.backLabel || 'Back'
+<script>
+interface PageHeaderProps {
+  title?: string
+  description?: string
+  backLink?: string
+  backLabel?: string
+}
+
+const { title = '', description = '', backLink = '', backLabel = 'Back' } = defineProps<PageHeaderProps>()
 </script>
 <div class="mb-6">
   <!-- Back link -->

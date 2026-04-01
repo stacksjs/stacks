@@ -1,15 +1,19 @@
-<script server>
-  // MySQL settings
-  const mysqlHost = props.mysqlHost || 'stacks'
-  const mysqlPort = props.mysqlPort || '3306'
-  const mysqlUsername = props.mysqlUsername || 'root'
-  const mysqlPassword = props.mysqlPassword || ''
-  const mysqlDatabase = props.mysqlDatabase || ''
+<script>
+interface DatabaseFormProps {
+  mysqlHost?: string
+  mysqlPort?: string
+  mysqlUsername?: string
+  mysqlPassword?: string
+  mysqlDatabase?: string
+  sqliteHost?: string
+  sqlitePrefix?: string
+  sqliteDatabase?: string
+}
 
+const { mysqlHost = 'stacks', mysqlPort = '3306', mysqlUsername = 'root', mysqlPassword = '', mysqlDatabase = '', sqliteHost = '127.0.0.1', sqlitePrefix = 'sqlite', sqliteDatabase = 'stacks' } = defineProps<DatabaseFormProps>()
+
+// MySQL settings
   // SQLite settings
-  const sqliteHost = props.sqliteHost || '127.0.0.1'
-  const sqlitePrefix = props.sqlitePrefix || 'sqlite'
-  const sqliteDatabase = props.sqliteDatabase || 'stacks'
 </script>
 <form>
     <main class="border-b border-gray-900/10">

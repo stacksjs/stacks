@@ -1,5 +1,9 @@
-<script server>
-const items = props.items || []
+<script>
+interface ForumBreadcrumbProps {
+  items?: any[]
+}
+
+const { items = [] } = defineProps<ForumBreadcrumbProps>()
 </script>
 <div class="mb-4">
   <nav class="flex" aria-label="Breadcrumb">

@@ -1,4 +1,12 @@
-<script server>
+<script>
+interface NavbarModernProps {
+  currentPath?: string
+  user?: Record<string, any>
+  notificationCount?: number
+}
+
+const { currentPath = '/', user, notificationCount = 3 } = defineProps<NavbarModernProps>()
+
 /**
  * Modern Navbar Component
  * A clean, refined navigation header for the dashboard.
@@ -12,10 +20,6 @@ const defaultUser = {
   avatar: 'https://avatars.githubusercontent.com/u/6228425',
 }
 
-function getProp(name, defaultValue) {
-  return props[name] !== undefined ? props[name] : defaultValue
-}
-
 function getBreadcrumb(path) {
   const parts = (path || '/').split('/').filter(Boolean)
   return parts.map((part, index) => ({
@@ -26,16 +30,15 @@ function getBreadcrumb(path) {
 }
 
 function isActiveRoute(path) {
-  const currentPath = getProp('currentPath', '/')
   return currentPath === path || currentPath.startsWith(path + '/')
 }
 
 function getUser() {
-  return getProp('user', defaultUser)
+  return user || defaultUser
 }
 
 function getNotificationCount() {
-  return getProp('notificationCount', 3)
+  return notificationCount
 }
 </script>
 <header class="sticky top-0 z-40 h-14 flex items-center gap-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-700/50 px-4">
@@ -46,7 +49,7 @@ function getNotificationCount() {
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
       </svg>
     </a>
-    @foreach(getBreadcrumb(props.currentPath || '/') as crumb)
+    @foreach(getBreadcrumb(currentPath || '/') as crumb)
       <span class="text-neutral-300 dark:text-neutral-600">/</span>
       @if(!crumb.isLast)
         <a href="{{ crumb.path }}" class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors">

@@ -1,7 +1,11 @@
-<script server>
-  const rates = props.rates || []
+<script>
+interface ShippingRatesTableProps {
+  rates?: any[]
+}
 
-  function formatCurrency(amount) {
+const { rates = [] } = defineProps<ShippingRatesTableProps>()
+
+function formatCurrency(amount) {
     return new Intl.NumberFormat('en-US', {
       style: 'currency',
       currency: 'USD'

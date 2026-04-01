@@ -1,5 +1,9 @@
-<script server>
-const coreTeamMembers = props.coreTeamMembers || []
+<script>
+interface HomeTeamProps {
+  coreTeamMembers?: any[]
+}
+
+const { coreTeamMembers = [] } = defineProps<HomeTeamProps>()
 </script>
 <div class="vp-doc">
     <h2 class="pb-2 pt-5 font-normal op50">

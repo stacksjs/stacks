@@ -1,7 +1,11 @@
-<script server>
-  const driver = props.driver || 'Fathom'
-  const googleAnalyticsId = props.googleAnalyticsId || ''
-  const fathomSiteId = props.fathomSiteId || ''
+<script>
+interface AnalyticsFormProps {
+  driver?: string
+  googleAnalyticsId?: string
+  fathomSiteId?: string
+}
+
+const { driver = 'Fathom', googleAnalyticsId = '', fathomSiteId = '' } = defineProps<AnalyticsFormProps>()
 </script>
 <form>
     <div class="space-y-12">

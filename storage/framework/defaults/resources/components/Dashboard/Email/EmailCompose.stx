@@ -1,7 +1,11 @@
-<script server>
-  const to = props.to || ''
-  const subject = props.subject || ''
-  const body = props.body || ''
+<script>
+interface EmailComposeProps {
+  to?: string
+  subject?: string
+  body?: string
+}
+
+const { to = '', subject = '', body = '' } = defineProps<EmailComposeProps>()
 </script>
 <div class="w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700 flex flex-col">
     <div class="py-2 px-4 border-b border-gray-200 dark:border-neutral-600 flex items-center justify-between">

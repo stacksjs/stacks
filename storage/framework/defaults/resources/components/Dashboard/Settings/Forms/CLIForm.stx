@@ -1,8 +1,12 @@
-<script server>
-  const deploy = props.deploy !== undefined ? props.deploy : true
-  const name = props.name || 'My Custom CLI'
-  const description = props.description || 'My Custom CLI'
-  const command = props.command || 'my-custom-cli'
+<script>
+interface CLIFormProps {
+  name?: string
+  description?: string
+  command?: string
+  deploy?: boolean
+}
+
+const { name = 'My Custom CLI', description = 'My Custom CLI', command = 'my-custom-cli', deploy = true } = defineProps<CLIFormProps>()
 </script>
 <form>
     <div class="space-y-12">

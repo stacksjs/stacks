@@ -1,4 +1,15 @@
-<script server>
+<script>
+interface AvatarProps {
+  name?: string
+  size?: string
+  rounded?: string
+  status?: string
+  src?: string
+  alt?: string
+}
+
+const { name = '', size = 'md', rounded = 'full', status, src, alt } = defineProps<AvatarProps>()
+
 /**
  * Avatar Component
  * Displays user avatar with optional status indicator
@@ -68,37 +79,36 @@ function getBgColorIndex(fullName) {
 }
 
 function getSizeClass() {
-  return sizeClasses[props.size || 'md']
+  return sizeClasses[size || 'md']
 }
 
 function getRadiusClass() {
-  return radiusClasses[props.rounded || 'full']
+  return radiusClasses[rounded || 'full']
 }
 
 function getStatusColor() {
-  return statusColors[props.status] || ''
+  return statusColors[status] || ''
 }
 
 function getStatusSize() {
-  return statusSizes[props.size || 'md']
+  return statusSizes[size || 'md']
 }
 
 function getBgColor() {
-  const name = props.name || ''
   return name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
 }
 </script>
 <div class="relative inline-flex flex-shrink-0">
-    @if(props.src)
+    @if(src)
       <img
-        src="{{ props.src }}"
-        alt="{{ props.alt || props.name || 'Avatar' }}"
+        src="{{ src }}"
+        alt="{{ alt || name || 'Avatar' }}"
         class="object-cover {{ getSizeClass() }} {{ getRadiusClass() }}"
       >
     @else
       <div class="inline-flex items-center justify-center font-medium {{ getSizeClass() }} {{ getRadiusClass() }} {{ getBgColor() }}">
-        @if(props.name)
-          <span>{{ getInitials(props.name) }}</span>
+        @if(name)
+          <span>{{ getInitials(name) }}</span>
         @else
           <svg class="w-1/2 h-1/2 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
@@ -107,7 +117,7 @@ function getBgColor() {
       </div>
     @endif
 
-    @if(props.status)
+    @if(status)
       <span class="absolute bottom-0 right-0 rounded-full ring-2 ring-white dark:ring-neutral-900 {{ getStatusColor() }} {{ getStatusSize() }}"></span>
     @endif
   </div>

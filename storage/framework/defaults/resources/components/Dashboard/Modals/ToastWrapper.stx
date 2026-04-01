@@ -1,6 +1,10 @@
-<script server>
-  const width = props.width || 30 // in rem
-  const position = props.position || 'top-right' // 'center' | 'top' | 'top-right' | 'top-left'
+<script>
+interface ToastWrapperProps {
+  width?: number
+  position?: 'center' | 'top' | 'top-right' | 'top-left'
+}
+
+const { width = 30, position = 'top-right' } = defineProps<ToastWrapperProps>()
 </script>
 <div class="relative z-60" aria-labelledby="modal-title" role="dialog" aria-modal="true">
   <div class="fixed inset-0"></div>

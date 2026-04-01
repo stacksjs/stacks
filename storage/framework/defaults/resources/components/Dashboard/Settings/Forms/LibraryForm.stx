@@ -1,30 +1,33 @@
-<script server>
-  const libraryName = props.libraryName || 'hello-world'
-  const libraryOwner = props.libraryOwner || '@stacksjs'
-  const libraryRepository = props.libraryRepository || 'stacksjs/stacks'
-  const libraryLicense = props.libraryLicense || 'MIT'
-  const libraryAuthor = props.libraryAuthor || 'Chris Breuer'
-  const libraryDefaultLanguage = props.libraryDefaultLanguage || 'en'
-  const libraryContributors = props.libraryContributors || 'Chris Breuer <chris@stacksjs.com>'
-  const libraryReleaseable = props.libraryReleaseable !== undefined ? props.libraryReleaseable : true
+<script>
+interface LibraryFormProps {
+  libraryName?: string
+  libraryOwner?: string
+  libraryRepository?: string
+  libraryLicense?: string
+  libraryAuthor?: string
+  libraryDefaultLanguage?: string
+  libraryContributors?: string
+  functionsName?: string
+  functionsDescription?: string
+  functionsKeywords?: string
+  functionsFiles?: string
+  stxComponentsName?: string
+  stxComponentsKeywords?: string
+  stxComponentsDescription?: string
+  stxComponentsTags?: string
+  webComponentsName?: string
+  webComponentsKeywords?: string
+  webComponentsDescription?: string
+  webComponentsTags?: string
+  libraryReleaseable?: boolean
+  functionsGenerateSourcemap?: boolean
+}
 
-  const functionsName = props.functionsName || 'hello-world-fx'
-  const functionsDescription = props.functionsDescription || 'Your function library description.'
-  const functionsKeywords = props.functionsKeywords || 'functions,composables,library,typescript,javascript'
-  const functionsGenerateSourcemap = props.functionsGenerateSourcemap !== undefined ? props.functionsGenerateSourcemap : true
-  const functionsFiles = props.functionsFiles || 'counter,dark'
+const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryRepository = 'stacksjs/stacks', libraryLicense = 'MIT', libraryAuthor = 'Chris Breuer', libraryDefaultLanguage = 'en', libraryContributors = 'Chris Breuer <chris@stacksjs.com>', functionsName = 'hello-world-fx', functionsDescription = 'Your function library description.', functionsKeywords = 'functions,composables,library,typescript,javascript', functionsFiles = 'counter,dark', stxComponentsName = 'hello-world-stx', stxComponentsKeywords = 'component,library,stx,vite,typescript,javascript', stxComponentsDescription = 'Your stx component library description', stxComponentsTags = [, webComponentsName = 'hello-world-elements', webComponentsKeywords = 'custom-elements,web-components,library,framework-agnostic,typescript,javascript', webComponentsDescription = 'Your framework agnostic web component library description.', webComponentsTags = [, libraryReleaseable = true, functionsGenerateSourcemap = true } = defineProps<LibraryFormProps>()
 
-  const stxComponentsName = props.stxComponentsName || 'hello-world-stx'
-  const stxComponentsKeywords = props.stxComponentsKeywords || 'component,library,stx,vite,typescript,javascript'
-  const stxComponentsDescription = props.stxComponentsDescription || 'Your stx component library description'
-  const stxComponentsTags = props.stxComponentsTags || [
-    { names: 'HelloWorld, AppHelloWorld', description: 'The Hello World custom element, built via this framework.', attributes: 'name : greeting' }
+{ names: 'HelloWorld, AppHelloWorld', description: 'The Hello World custom element, built via this framework.', attributes: 'name : greeting' }
   ]
 
-  const webComponentsName = props.webComponentsName || 'hello-world-elements'
-  const webComponentsKeywords = props.webComponentsKeywords || 'custom-elements,web-components,library,framework-agnostic,typescript,javascript'
-  const webComponentsDescription = props.webComponentsDescription || 'Your framework agnostic web component library description.'
-  const webComponentsTags = props.webComponentsTags || [
     { names: 'HelloWorld, AppHelloWorld', description: 'The Hello World custom element, built via this framework.', attributes: 'name : greeting' }
   ]
 </script>

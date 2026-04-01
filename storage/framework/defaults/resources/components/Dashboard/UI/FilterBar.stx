@@ -1,9 +1,13 @@
-<script server>
-const searchPlaceholder = props.searchPlaceholder || 'Search...'
-const searchValue = props.searchValue || ''
-const showItemsPerPage = props.showItemsPerPage !== false
-const itemsPerPage = props.itemsPerPage || 10
-const itemsPerPageOptions = props.itemsPerPageOptions || [10, 25, 50, 100]
+<script>
+interface FilterBarProps {
+  searchPlaceholder?: string
+  searchValue?: string
+  itemsPerPage?: number
+  itemsPerPageOptions?: string
+  showItemsPerPage?: boolean
+}
+
+const { searchPlaceholder = 'Search...', searchValue = '', itemsPerPage = 10, itemsPerPageOptions = [10, 25, 50, 100], showItemsPerPage = true } = defineProps<FilterBarProps>()
 </script>
 <div class="flex flex-col sm:flex-row sm:items-center gap-3">
   <!-- Search -->

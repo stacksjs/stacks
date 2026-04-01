@@ -1,19 +1,23 @@
-<script server>
-  const value = props.value || ''
-  const type = props.type || 'text' // 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
-  const placeholder = props.placeholder || ''
-  const disabled = props.disabled || false
-  const readonly = props.readonly || false
-  const required = props.required || false
-  const error = props.error || ''
-  const hint = props.hint || ''
-  const label = props.label || ''
-  const id = props.id || ''
-  const size = props.size || 'md' // 'xs' | 'sm' | 'md' | 'lg'
-  const fullWidth = props.fullWidth !== undefined ? props.fullWidth : true
-  const name = props.name || ''
+<script>
+interface InputProps {
+  value?: string
+  type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'
+  placeholder?: string
+  disabled?: boolean
+  readonly?: boolean
+  required?: boolean
+  error?: string
+  hint?: string
+  label?: string
+  id?: string
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  name?: string
+  fullWidth?: boolean
+}
 
-  const sizeClasses = {
+const { value = '', type = 'text', placeholder = '', disabled = false, readonly = false, required = false, error = '', hint = '', label = '', id = '', size = 'md', name = '', fullWidth = true } = defineProps<InputProps>()
+
+const sizeClasses = {
     xs: 'px-2 py-1 text-[11px] h-6',
     sm: 'px-2.5 py-1 text-[12px] h-7',
     md: 'px-3 py-1.5 text-[13px] h-8',

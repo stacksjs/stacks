@@ -1,5 +1,9 @@
-<script server>
-const count = props.count || 0
+<script>
+interface CounterProps {
+  count?: number
+}
+
+const { count = 0 } = defineProps<CounterProps>()
 </script>
 <div>
     <button

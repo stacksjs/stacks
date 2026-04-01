@@ -1,15 +1,19 @@
-<script server>
-  const products = props.products || []
-  const searchQuery = props.searchQuery || ''
-  const categoryFilter = props.categoryFilter || ''
-  const sortBy = props.sortBy || 'name'
-  const sortOrder = props.sortOrder || 'asc'
-  const currentPage = props.currentPage || 1
-  const itemsPerPage = props.itemsPerPage || 10
-  const categories = props.categories || []
-  const selectedItems = props.selectedItems || []
+<script>
+interface ProductsTableProps {
+  products?: any[]
+  searchQuery?: string
+  categoryFilter?: string
+  sortBy?: string
+  sortOrder?: string
+  currentPage?: number
+  itemsPerPage?: number
+  categories?: any[]
+  selectedItems?: any[]
+}
 
-  function isSelected(productId) {
+const { products = [], searchQuery = '', categoryFilter = '', sortBy = 'name', sortOrder = 'asc', currentPage = 1, itemsPerPage = 10, categories = [], selectedItems = [] } = defineProps<ProductsTableProps>()
+
+function isSelected(productId) {
     return selectedItems.includes(productId)
   }
 

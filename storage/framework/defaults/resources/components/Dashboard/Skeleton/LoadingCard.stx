@@ -1,6 +1,10 @@
-<script server>
-  const width = props.width || 16 // Default width in rem
-  const height = props.height || 4 // Default height in rem
+<script>
+interface LoadingCardProps {
+  width?: number
+  height?: number
+}
+
+const { width = 16, height = 4 } = defineProps<LoadingCardProps>()
 </script>
 <div class="mx-auto w-full rounded-md shadow">
   <div class="flex animate-pulse space-x-4">

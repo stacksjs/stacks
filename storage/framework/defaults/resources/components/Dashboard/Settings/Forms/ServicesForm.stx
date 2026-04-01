@@ -1,16 +1,20 @@
-<script server>
-  const awsAccountId = props.awsAccountId || ''
-  const awsAppId = props.awsAppId || ''
-  const awsAppKey = props.awsAppKey || ''
-  const awsAppRegion = props.awsAppRegion || 'us-east-1'
-  const algoliaAppId = props.algoliaAppId || ''
-  const algoliaAppKey = props.algoliaAppKey || ''
-  const meiliAppId = props.meiliAppId || ''
-  const meiliAppKey = props.meiliAppKey || ''
-  const lemonSqueezyAppId = props.lemonSqueezyAppId || ''
-  const lemonSqueezyAppKey = props.lemonSqueezyAppKey || ''
-  const stripeAppId = props.stripeAppId || ''
-  const stripeAppKey = props.stripeAppKey || ''
+<script>
+interface ServicesFormProps {
+  awsAccountId?: string
+  awsAppId?: string
+  awsAppKey?: string
+  awsAppRegion?: string
+  algoliaAppId?: string
+  algoliaAppKey?: string
+  meiliAppId?: string
+  meiliAppKey?: string
+  lemonSqueezyAppId?: string
+  lemonSqueezyAppKey?: string
+  stripeAppId?: string
+  stripeAppKey?: string
+}
+
+const { awsAccountId = '', awsAppId = '', awsAppKey = '', awsAppRegion = 'us-east-1', algoliaAppId = '', algoliaAppKey = '', meiliAppId = '', meiliAppKey = '', lemonSqueezyAppId = '', lemonSqueezyAppKey = '', stripeAppId = '', stripeAppKey = '' } = defineProps<ServicesFormProps>()
 </script>
 <form>
     <main class="border-b border-gray-900/10">

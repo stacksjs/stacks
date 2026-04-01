@@ -1,20 +1,24 @@
-<script server>
-const title = props.title || ''
-const link = props.link || ''
-const authorName = props.authorName || ''
-const authorAvatar = props.authorAvatar || ''
-const createdAt = props.createdAt || ''
-const viewCount = props.viewCount || 0
-const replyCount = props.replyCount || 0
-const likeCount = props.likeCount || 0
-const isPinned = props.isPinned || false
-const isSolved = props.isSolved || false
-const category = props.category || ''
-const categoryLink = props.categoryLink || ''
-const excerpt = props.excerpt || ''
-const lastReplyAuthorName = props.lastReplyAuthorName || ''
-const lastReplyAuthorAvatar = props.lastReplyAuthorAvatar || ''
-const lastReplyAt = props.lastReplyAt || ''
+<script>
+interface ForumTopicItemProps {
+  title?: string
+  link?: string
+  authorName?: string
+  authorAvatar?: string
+  createdAt?: string
+  viewCount?: number
+  replyCount?: number
+  likeCount?: number
+  isPinned?: boolean
+  isSolved?: boolean
+  category?: string
+  categoryLink?: string
+  excerpt?: string
+  lastReplyAuthorName?: string
+  lastReplyAuthorAvatar?: string
+  lastReplyAt?: string
+}
+
+const { title = '', link = '', authorName = '', authorAvatar = '', createdAt = '', viewCount = 0, replyCount = 0, likeCount = 0, isPinned = false, isSolved = false, category = '', categoryLink = '', excerpt = '', lastReplyAuthorName = '', lastReplyAuthorAvatar = '', lastReplyAt = '' } = defineProps<ForumTopicItemProps>()
 </script>
 <div class="flex items-start p-4 hover:bg-gray-50">
     <div class="flex-shrink-0 mr-4">

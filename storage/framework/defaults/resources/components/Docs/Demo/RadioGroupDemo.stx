@@ -1,10 +1,15 @@
-<script server>
-const plans = props.plans || [
-  { name: 'Startup', ram: '12GB', cpus: '6 CPUs', disk: '160 GB SSD disk' },
+<script>
+interface RadioGroupDemoProps {
+  plans?: string
+  selected?: boolean
+}
+
+const { plans = [, selected = plans[0] } = defineProps<RadioGroupDemoProps>()
+
+{ name: 'Startup', ram: '12GB', cpus: '6 CPUs', disk: '160 GB SSD disk' },
   { name: 'Business', ram: '16GB', cpus: '8 CPUs', disk: '512 GB SSD disk' },
   { name: 'Enterprise', ram: '32GB', cpus: '12 CPUs', disk: '1024 GB SSD disk' },
 ]
-const selected = props.selected || plans[0]
 </script>
 <div class="max-w-4xl">
     <DocsPlayground>

@@ -1,4 +1,13 @@
-<script server>
+<script>
+interface SidebarModernProps {
+  isCollapsed?: boolean
+  searchQuery?: string
+  expandedSections?: boolean
+  currentTeam?: string
+}
+
+const { isCollapsed = false, searchQuery = '', expandedSections = {, currentTeam = { } = defineProps<SidebarModernProps>()
+
 /**
  * Dashboard Sidebar
  *
@@ -48,11 +57,7 @@ function getModelItems() {
 const modelItems = getModelItems()
 
 // State
-const isCollapsed = props.isCollapsed || false
-const searchQuery = props.searchQuery || ''
-
 // Section expansion state
-const expandedSections = props.expandedSections || {
   library: true,
   content: false,
   app: false,
@@ -65,7 +70,6 @@ const expandedSections = props.expandedSections || {
 }
 
 // Current team
-const currentTeam = props.currentTeam || {
   id: 1,
   name: 'Stacks',
   type: 'Professional',

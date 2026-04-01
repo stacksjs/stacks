@@ -1,7 +1,12 @@
-<script server>
-const show = props.show || false
-const mode = props.mode || 'add' // 'add' | 'edit'
-const coupon = props.coupon || null
+<script>
+interface CouponsFormProps {
+  show?: boolean
+  mode?: 'add' | 'edit'
+  coupon?: any
+  formData?: string
+}
+
+const { show = false, mode = 'add', coupon = null, formData = { } = defineProps<CouponsFormProps>()
 
 // Get today's date in YYYY-MM-DD format
 const today = new Date().toISOString().split('T')[0]
@@ -10,7 +15,6 @@ nextMonth.setMonth(nextMonth.getMonth() + 1)
 const nextMonthDate = nextMonth.toISOString().split('T')[0]
 
 // Form default values
-const formData = props.formData || {
   code: '',
   discount_type: 'Percentage',
   discount_value: 10,

@@ -1,8 +1,12 @@
-<script server>
-const title = props.title || ''
-const subtitle = props.subtitle || ''
-const height = props.height || '300px'
-const loading = props.loading || false
+<script>
+interface ChartCardProps {
+  title?: string
+  subtitle?: string
+  height?: string
+  loading?: boolean
+}
+
+const { title = '', subtitle = '', height = '300px', loading = false } = defineProps<ChartCardProps>()
 </script>
 <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
   @if(title)

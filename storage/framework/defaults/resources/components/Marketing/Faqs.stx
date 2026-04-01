@@ -1,8 +1,12 @@
-<script server>
-const backgroundImage = props.backgroundImage || '/images/background-faqs.jpg'
+<script>
+interface FaqsProps {
+  backgroundImage?: string
+  faqs?: string
+}
 
-const faqs = props.faqs || [
-  [
+const { backgroundImage = '/images/background-faqs.jpg', faqs = [ } = defineProps<FaqsProps>()
+
+[
     {
       question: 'What is the goal of the Stacks framework?',
       answer: 'The goal of the Stacks framework is to help you create and maintain frontends, backends, and clouds—without having to worry about the boilerplate. It is a rapid development framework, meeting all your full stack needs.',

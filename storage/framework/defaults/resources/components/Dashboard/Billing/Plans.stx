@@ -1,16 +1,20 @@
-<script server>
-  const currentPlan = props.currentPlan || null // { subscription: { type }, providerSubscription: { plan: { interval } } }
-  const hasPaymentMethods = props.hasPaymentMethods || false
-  const showPlans = props.showPlans !== undefined ? props.showPlans : true
-  const updatingPlanState = props.updatingPlanState || false
+<script>
+interface PlansProps {
+  currentPlan?: any
+  hasPaymentMethods?: boolean
+  updatingPlanState?: boolean
+  hobbyMonthlyPrice?: number
+  hobbyYearlyPrice?: number
+  hobbyLifetimePrice?: number
+  proMonthlyPrice?: number
+  proYearlyPrice?: number
+  proLifetimePrice?: number
+  showPlans?: boolean
+}
 
-  // Pricing data
-  const hobbyMonthlyPrice = props.hobbyMonthlyPrice || 39
-  const hobbyYearlyPrice = props.hobbyYearlyPrice || 379
-  const hobbyLifetimePrice = props.hobbyLifetimePrice || 479
-  const proMonthlyPrice = props.proMonthlyPrice || 59
-  const proYearlyPrice = props.proYearlyPrice || 579
-  const proLifetimePrice = props.proLifetimePrice || 749
+const { currentPlan = null, hasPaymentMethods = false, updatingPlanState = false, hobbyMonthlyPrice = 39, hobbyYearlyPrice = 379, hobbyLifetimePrice = 479, proMonthlyPrice = 59, proYearlyPrice = 579, proLifetimePrice = 749, showPlans = true } = defineProps<PlansProps>()
+
+// Pricing data
 </script>
 <div class="w-full">
     <div class="flex items-center justify-between">

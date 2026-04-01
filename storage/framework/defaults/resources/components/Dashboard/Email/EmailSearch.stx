@@ -1,6 +1,10 @@
-<script server>
-  const modelValue = props.modelValue || ''
-  const timeRange = props.timeRange || 'day' // 'day' | 'week' | 'month' | 'year'
+<script>
+interface EmailSearchProps {
+  modelValue?: string
+  timeRange?: 'day' | 'week' | 'month' | 'year'
+}
+
+const { modelValue = '', timeRange = 'day' } = defineProps<EmailSearchProps>()
 </script>
 <div class="bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600 py-2 px-4">
     <div class="flex items-center">

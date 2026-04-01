@@ -1,7 +1,11 @@
-<script server>
-  const plan = props.plan || {} // { subscription: { type, description, unit_price }, providerSubscription: { current_period_end } }
+<script>
+interface ActivePlanProps {
+  plan?: Record<string, any>
+}
 
-  function convertUnixTimestampToDate(timestamp) {
+const { plan = {} } = defineProps<ActivePlanProps>()
+
+function convertUnixTimestampToDate(timestamp) {
     if (!timestamp) return ''
     const date = new Date(timestamp * 1000)
     return date.toLocaleDateString()

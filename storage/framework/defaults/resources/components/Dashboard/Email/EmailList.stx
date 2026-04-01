@@ -1,9 +1,13 @@
-<script server>
-  const emails = props.emails || [] // Array of email objects
-  const activeFolder = props.activeFolder || 'inbox'
-  const searchQuery = props.searchQuery || ''
+<script>
+interface EmailListProps {
+  emails?: any[]
+  activeFolder?: string
+  searchQuery?: string
+}
 
-  // Helper function to format date
+const { emails = [], activeFolder = 'inbox', searchQuery = '' } = defineProps<EmailListProps>()
+
+// Helper function to format date
   function formatDate(dateString) {
     const date = new Date(dateString)
     const now = new Date()

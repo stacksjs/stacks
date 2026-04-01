@@ -1,8 +1,12 @@
-<script server>
-  const label = props.label || ''
-  const open = props.open || false
-  const elements = props.elements || [] // Array of { to, label }
-  const id = props.id || 'dropdown-nav-' + Math.random().toString(36).slice(2, 11)
+<script>
+interface DropdownProps {
+  label?: string
+  open?: boolean
+  elements?: any[]
+  id?: string
+}
+
+const { label = '', open = false, elements = [], id = 'dropdown-nav-' + Math.random().toString(36).slice(2, 11) } = defineProps<DropdownProps>()
 </script>
 <div ref="pageRoot" class="flex flex-col gap-y-2 overflow-hidden" data-dropdown-nav="{{ id }}">
   <a class="flex items-center justify-between gap-x-2 cursor-pointer" data-toggle>

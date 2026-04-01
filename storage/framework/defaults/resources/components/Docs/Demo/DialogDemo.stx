@@ -1,6 +1,10 @@
-<script server>
-const visible = props.visible || false
-const currentTransition = props.currentTransition || 'fade'
+<script>
+interface DialogDemoProps {
+  visible?: boolean
+  currentTransition?: string
+}
+
+const { visible = false, currentTransition = 'fade' } = defineProps<DialogDemoProps>()
 </script>
 <div class="max-w-4xl">
   <DocsPlayground>

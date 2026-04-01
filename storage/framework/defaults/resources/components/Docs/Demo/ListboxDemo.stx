@@ -1,13 +1,18 @@
-<script server>
-const people = props.people || [
-  { id: 1, name: 'Chris Breuer', unavailable: false },
+<script>
+interface ListboxDemoProps {
+  people?: string
+  selectedPerson?: boolean
+  isOpen?: boolean
+}
+
+const { people = [, selectedPerson = people[0], isOpen = false } = defineProps<ListboxDemoProps>()
+
+{ id: 1, name: 'Chris Breuer', unavailable: false },
   { id: 2, name: 'Avery Hill', unavailable: false },
   { id: 3, name: 'Glenn Michael', unavailable: false },
   { id: 4, name: 'Michael Vincent', unavailable: true },
   { id: 5, name: 'Blake Ayer', unavailable: false },
 ]
-const selectedPerson = props.selectedPerson || people[0]
-const isOpen = props.isOpen || false
 </script>
 <div class="max-w-4xl">
   <DocsPlayground>

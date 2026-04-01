@@ -1,7 +1,11 @@
-<script server>
-  const methods = props.methods || []
+<script>
+interface DigitalDeliveryTableProps {
+  methods?: any[]
+}
 
-  function statusVariant(status) {
+const { methods = [] } = defineProps<DigitalDeliveryTableProps>()
+
+function statusVariant(status) {
     return String(status || '').toLowerCase() === 'active' ? 'success' : 'default'
   }
 

@@ -1,15 +1,19 @@
-<script server>
-const listItems = props.listItems || [
-  { id: 1, name: 'Chris Breuer' },
+<script>
+interface ComboboxDemoProps {
+  listItems?: string
+  selected?: any
+  query?: string
+  isOpen?: boolean
+}
+
+const { listItems = [, selected = null, query = '', isOpen = false } = defineProps<ComboboxDemoProps>()
+
+{ id: 1, name: 'Chris Breuer' },
   { id: 2, name: 'Avery Hill' },
   { id: 3, name: 'Glenn Michael' },
   { id: 4, name: 'Michael Vincent' },
   { id: 5, name: 'Blake Ayer' },
 ]
-const selected = props.selected || null
-const query = props.query || ''
-const isOpen = props.isOpen || false
-
 function filterItems(items, query) {
   if (query === '') return items
   return items.filter(item => item.name.toLowerCase().includes(query.toLowerCase()))

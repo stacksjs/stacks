@@ -1,10 +1,14 @@
-<script server>
-const isOpen = props.isOpen || false
-const title = props.title || 'Are you sure?'
-const description = props.description || 'This action cannot be undone.'
-const confirmLabel = props.confirmLabel || 'Delete'
-const cancelLabel = props.cancelLabel || 'Cancel'
-const variant = props.variant || 'danger' // 'danger' | 'warning'
+<script>
+interface ConfirmDialogProps {
+  isOpen?: boolean
+  title?: string
+  description?: string
+  confirmLabel?: string
+  cancelLabel?: string
+  variant?: 'danger' | 'warning'
+}
+
+const { isOpen = false, title = 'Are you sure?', description = 'This action cannot be undone.', confirmLabel = 'Delete', cancelLabel = 'Cancel', variant = 'danger' } = defineProps<ConfirmDialogProps>()
 
 const iconClasses = {
   danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',

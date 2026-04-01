@@ -1,5 +1,9 @@
-<script server>
-const route = props.route || 'forum'
+<script>
+interface ForumLayoutProps {
+  route?: string
+}
+
+const { route = 'forum' } = defineProps<ForumLayoutProps>()
 
 function isActiveRoute(currentRoute, targetRoute) {
   return currentRoute === targetRoute

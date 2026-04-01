@@ -1,6 +1,11 @@
-<script server>
-  const email = props.email || {
-    id: 0,
+<script>
+interface EmailDetailProps {
+  email?: string
+}
+
+const { email = { } = defineProps<EmailDetailProps>()
+
+id: 0,
     from: '',
     email: '',
     subject: '',

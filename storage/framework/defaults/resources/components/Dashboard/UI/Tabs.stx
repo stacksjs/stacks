@@ -1,9 +1,13 @@
-<script server>
-const tabs = props.tabs || [] // Array of { id, label, icon?, badge?, disabled? }
-const activeTab = props.activeTab || ''
-const variant = props.variant || 'underline' // 'underline' | 'pills' | 'boxed'
-const size = props.size || 'md' // 'sm' | 'md' | 'lg'
-const fullWidth = props.fullWidth || false
+<script>
+interface TabsProps {
+  tabs?: any[]
+  activeTab?: string
+  variant?: 'underline' | 'pills' | 'boxed'
+  size?: 'sm' | 'md' | 'lg'
+  fullWidth?: boolean
+}
+
+const { tabs = [], activeTab = '', variant = 'underline', size = 'md', fullWidth = false } = defineProps<TabsProps>()
 
 const sizeClasses = {
   sm: 'text-sm py-2 px-3',

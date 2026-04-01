@@ -1,5 +1,9 @@
-<script server>
-  const live = props.live || true
+<script>
+interface LiveTerminalOutputProps {
+  live?: boolean
+}
+
+const { live = true } = defineProps<LiveTerminalOutputProps>()
 </script>
 <div class="px-4 pt-12 lg:px-8 sm:px-6">
     <div class="mt-8 flow-root">

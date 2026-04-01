@@ -1,8 +1,12 @@
-<script server>
-  const deployAI = props.deployAI !== undefined ? props.deployAI : false
-  const selectedModel = props.selectedModel || 'meta.llama2-70b-chat-v1'
+<script>
+interface AIFormProps {
+  selectedModel?: string
+  deployAI?: boolean
+}
 
-  const models = [
+const { selectedModel = 'meta.llama2-70b-chat-v1', deployAI = false } = defineProps<AIFormProps>()
+
+const models = [
     { id: 'amazon.titan-embed-text-v1', name: 'amazon.titan-embed-text-v1', online: false },
     { id: 'amazon.titan-text-express-v1', name: 'amazon.titan-text-express-v1', online: true },
     { id: 'amazon.titan-text-lite-v1', name: 'amazon.titan-text-lite-v1', online: true },

@@ -1,8 +1,12 @@
-<script server>
-const align = props.align || 'left' // 'left' | 'right'
-const width = props.width || 'auto' // 'auto' | 'sm' | 'md' | 'lg' | 'full'
-const disabled = props.disabled || false
-const id = props.id || 'dropdown-' + Math.random().toString(36).slice(2, 11)
+<script>
+interface DropdownProps {
+  align?: 'left' | 'right'
+  width?: 'auto' | 'sm' | 'md' | 'lg' | 'full'
+  disabled?: boolean
+  id?: string
+}
+
+const { align = 'left', width = 'auto', disabled = false, id = 'dropdown-' + Math.random().toString(36).slice(2, 11) } = defineProps<DropdownProps>()
 
 const widthClasses = {
   auto: 'min-w-[12rem]',

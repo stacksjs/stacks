@@ -1,11 +1,15 @@
-<script server>
-const columns = props.columns || [] // Array of { key, label, align?, class? }
-const data = props.data || []
-const striped = props.striped || false
-const hoverable = props.hoverable !== false
-const emptyTitle = props.emptyTitle || 'No data found'
-const emptyDescription = props.emptyDescription || ''
-const emptyIcon = props.emptyIcon || 'i-hugeicons-folder-02'
+<script>
+interface DataTableProps {
+  columns?: any[]
+  data?: any[]
+  striped?: boolean
+  emptyTitle?: string
+  emptyDescription?: string
+  emptyIcon?: string
+  hoverable?: boolean
+}
+
+const { columns = [], data = [], striped = false, emptyTitle = 'No data found', emptyDescription = '', emptyIcon = 'i-hugeicons-folder-02', hoverable = true } = defineProps<DataTableProps>()
 </script>
 <div class="overflow-x-auto">
   <table class="min-w-full">

@@ -1,5 +1,9 @@
-<script server>
-const backgroundImage = props.backgroundImage || '/images/background-call-to-action.jpg'
+<script>
+interface CallToActionProps {
+  backgroundImage?: string
+}
+
+const { backgroundImage = '/images/background-call-to-action.jpg' } = defineProps<CallToActionProps>()
 </script>
 <section
   id="get-started-today"

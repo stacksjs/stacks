@@ -1,10 +1,14 @@
-<script server>
-  const currentPage = props.currentPage || 1
-  const totalItems = props.totalItems || 0
-  const itemsPerPage = props.itemsPerPage || 10
-  const maxDisplayedPages = props.maxDisplayedPages || 5
+<script>
+interface PaginationProps {
+  currentPage?: number
+  totalItems?: number
+  itemsPerPage?: number
+  maxDisplayedPages?: number
+}
 
-  const totalPages = Math.ceil(totalItems / itemsPerPage)
+const { currentPage = 1, totalItems = 0, itemsPerPage = 10, maxDisplayedPages = 5 } = defineProps<PaginationProps>()
+
+const totalPages = Math.ceil(totalItems / itemsPerPage)
   const startItem = ((currentPage - 1) * itemsPerPage) + 1
   const endItem = Math.min(currentPage * itemsPerPage, totalItems)
 

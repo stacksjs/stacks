@@ -1,6 +1,11 @@
-<script server>
-const plans = props.plans || [
-  {
+<script>
+interface PricingProps {
+  plans?: string
+}
+
+const { plans = [ } = defineProps<PricingProps>()
+
+{
     name: 'Hobby (Early Bird Pricing)',
     price: '$19',
     description: 'Get a lifetime access with all upgrades included in the future.',

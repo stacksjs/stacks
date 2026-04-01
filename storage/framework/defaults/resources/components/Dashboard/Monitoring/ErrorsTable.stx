@@ -1,11 +1,14 @@
-<script server>
-// Props
-const errors = props.errors || []
-const searchQuery = props.searchQuery || ''
-const statusFilter = props.statusFilter || 'all'
-const typeFilter = props.typeFilter || 'all'
-const sortBy = props.sortBy || 'last_seen'
-const sortOrder = props.sortOrder || 'desc'
+<script>
+interface ErrorsTableProps {
+  errors?: any[]
+  searchQuery?: string
+  statusFilter?: string
+  typeFilter?: string
+  sortBy?: string
+  sortOrder?: string
+}
+
+const { errors = [], searchQuery = '', statusFilter = 'all', typeFilter = 'all', sortBy = 'last_seen', sortOrder = 'desc' } = defineProps<ErrorsTableProps>()
 
 // Helper functions
 function getStatusClass(status) {

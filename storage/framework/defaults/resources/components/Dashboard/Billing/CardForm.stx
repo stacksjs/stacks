@@ -1,5 +1,9 @@
-<script server>
-  const clientSecret = props.clientSecret || ''
+<script>
+interface CardFormProps {
+  clientSecret?: string
+}
+
+const { clientSecret = '' } = defineProps<CardFormProps>()
 </script>
 <div>
     <form

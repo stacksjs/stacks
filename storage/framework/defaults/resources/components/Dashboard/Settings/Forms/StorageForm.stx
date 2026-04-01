@@ -1,17 +1,21 @@
-<script server>
-  const defaultStorage = props.defaultStorage || 's3'
-  const s3Key = props.s3Key || 'JKHJK$KJAHKS'
-  const s3Secret = props.s3Secret || 'kldsanko3njksdasjfasdn2m'
-  const s3Region = props.s3Region || 'us-east-1'
-  const s3Bucket = props.s3Bucket || 'stacks'
-  const s3Url = props.s3Url || 'stacks.s3.amazonaws.com'
-  const dropboxKey = props.dropboxKey || 'JKHJK$KJAHKS'
-  const dropboxSecret = props.dropboxSecret || 'kldsanko3njksdasjfasdn2m'
-  const dropboxBox = props.dropboxBox || 'stacks'
-  const meemaKey = props.meemaKey || 'HJDSU41HJJKAD'
-  const meemaSecret = props.meemaSecret || 'jkhnb523nbmnb9dsanmeop'
-  const meemaRegion = props.meemaRegion || 'us-east-1'
-  const meemaBucket = props.meemaBucket || 'stacks'
+<script>
+interface StorageFormProps {
+  defaultStorage?: string
+  s3Key?: string
+  s3Secret?: string
+  s3Region?: string
+  s3Bucket?: string
+  s3Url?: string
+  dropboxKey?: string
+  dropboxSecret?: string
+  dropboxBox?: string
+  meemaKey?: string
+  meemaSecret?: string
+  meemaRegion?: string
+  meemaBucket?: string
+}
+
+const { defaultStorage = 's3', s3Key = 'JKHJK$KJAHKS', s3Secret = 'kldsanko3njksdasjfasdn2m', s3Region = 'us-east-1', s3Bucket = 'stacks', s3Url = 'stacks.s3.amazonaws.com', dropboxKey = 'JKHJK$KJAHKS', dropboxSecret = 'kldsanko3njksdasjfasdn2m', dropboxBox = 'stacks', meemaKey = 'HJDSU41HJJKAD', meemaSecret = 'jkhnb523nbmnb9dsanmeop', meemaRegion = 'us-east-1', meemaBucket = 'stacks' } = defineProps<StorageFormProps>()
 </script>
 <form>
     <main class="border-b border-gray-900/10">

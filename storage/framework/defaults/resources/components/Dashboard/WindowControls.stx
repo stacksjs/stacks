@@ -1,4 +1,11 @@
-<script server>
+<script>
+interface WindowControlsProps {
+  size?: string
+  variant?: string
+}
+
+const { size = 'sm', variant = 'macos' } = defineProps<WindowControlsProps>()
+
 /**
  * WindowControls Component
  * macOS-style traffic light window controls (close, minimize, maximize)
@@ -19,15 +26,15 @@ const gapClasses = {
 }
 
 function getSizeClass() {
-  return sizeClasses[props.size || 'sm']
+  return sizeClasses[size || 'sm']
 }
 
 function getGapClass() {
-  return gapClasses[props.size || 'sm']
+  return gapClasses[size || 'sm']
 }
 
 function getVariant() {
-  return props.variant || 'macos'
+  return variant || 'macos'
 }
 </script>
 @if(getVariant() === 'macos')

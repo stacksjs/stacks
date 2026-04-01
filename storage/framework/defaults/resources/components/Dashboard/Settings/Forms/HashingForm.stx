@@ -1,10 +1,14 @@
-<script server>
-  const driver = props.driver || 'argon2'
-  const bcryptRounds = props.bcryptRounds || '10'
-  const bcryptCost = props.bcryptCost || '4'
-  const argon2Memory = props.argon2Memory || '65596'
-  const argon2Threads = props.argon2Threads || '1'
-  const argon2Time = props.argon2Time || '1'
+<script>
+interface HashingFormProps {
+  driver?: string
+  bcryptRounds?: string
+  bcryptCost?: string
+  argon2Memory?: string
+  argon2Threads?: string
+  argon2Time?: string
+}
+
+const { driver = 'argon2', bcryptRounds = '10', bcryptCost = '4', argon2Memory = '65596', argon2Threads = '1', argon2Time = '1' } = defineProps<HashingFormProps>()
 </script>
 <form>
     <main class="border-b border-gray-900/10">

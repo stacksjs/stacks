@@ -9,28 +9,30 @@
   </Card>
 -->
 
-<script server>
-const props = defineProps({
-  title: { type: String, default: '' },
-  subtitle: { type: String, default: '' },
-  actions: { type: Array, default: [] },
-  padding: { type: Boolean, default: true },
-})
+<script>
+interface CardProps {
+  title?: string
+  subtitle?: string
+  actions?: any[]
+  padding?: boolean
+}
+
+const { title, subtitle, actions, padding } = defineProps<CardProps>()
 </script>
 <div class="dashboard-card">
-    @if (props.title || props.actions.length > 0)
+    @if (title || actions.length > 0)
       <div class="dashboard-card-header">
         <div>
-          @if (props.title)
-            <h3 class="dashboard-card-title">{{ props.title }}</h3>
+          @if (title)
+            <h3 class="dashboard-card-title">{{ title }}</h3>
           @endif
-          @if (props.subtitle)
-            <p class="dashboard-card-subtitle">{{ props.subtitle }}</p>
+          @if (subtitle)
+            <p class="dashboard-card-subtitle">{{ subtitle }}</p>
           @endif
         </div>
-        @if (props.actions.length > 0)
+        @if (actions.length > 0)
           <div class="dashboard-card-actions">
-            @foreach (props.actions as action)
+            @foreach (actions as action)
               <button class="btn btn-ghost btn-sm" @click="action.onClick">
                 {{ action.label }}
               </button>
@@ -39,7 +41,7 @@ const props = defineProps({
         @endif
       </div>
     @endif
-    <div class="{{ props.padding ? 'dashboard-card-content' : '' }}">
+    <div class="{{ padding ? 'dashboard-card-content' : '' }}">
       <slot></slot>
     </div>
   </div>

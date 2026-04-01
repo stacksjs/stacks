@@ -1,12 +1,16 @@
-<script server>
-const checked = props.checked || false
-const label = props.label || ''
-const description = props.description || ''
-const disabled = props.disabled || false
-const size = props.size || 'md' // 'sm' | 'md' | 'lg'
-const labelPosition = props.labelPosition || 'right' // 'left' | 'right'
-const name = props.name || ''
-const id = props.id || ''
+<script>
+interface ToggleProps {
+  checked?: boolean
+  label?: string
+  description?: string
+  disabled?: boolean
+  size?: 'sm' | 'md' | 'lg'
+  labelPosition?: 'left' | 'right'
+  name?: string
+  id?: string
+}
+
+const { checked = false, label = '', description = '', disabled = false, size = 'md', labelPosition = 'right', name = '', id = '' } = defineProps<ToggleProps>()
 
 const trackSizes = {
   sm: 'h-4 w-7',

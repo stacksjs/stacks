@@ -1,8 +1,12 @@
-<script server>
-  const text = props.text || ''
-  const position = props.position || 'bottom'
-  const dark = props.dark || false
-  const alignment = props.alignment || 'center'
+<script>
+interface TooltipProps {
+  text?: string
+  position?: string
+  dark?: boolean
+  alignment?: string
+}
+
+const { text = '', position = 'bottom', dark = false, alignment = 'center' } = defineProps<TooltipProps>()
 </script>
 <div
     class="tooltip-container"

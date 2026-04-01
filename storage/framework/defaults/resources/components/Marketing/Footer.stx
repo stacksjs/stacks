@@ -1,5 +1,9 @@
-<script server>
-const currentYear = props.currentYear || new Date().getFullYear()
+<script>
+interface FooterProps {
+  currentYear?: string
+}
+
+const { currentYear = new Date().getFullYear() } = defineProps<FooterProps>()
 </script>
 <footer class="bg-white">
   <Container>

@@ -1,6 +1,10 @@
-<script server>
-const replyContent = props.replyContent || ''
-const notifyOnReply = props.notifyOnReply !== undefined ? props.notifyOnReply : true
+<script>
+interface ForumReplyFormProps {
+  replyContent?: string
+  notifyOnReply?: boolean
+}
+
+const { replyContent = '', notifyOnReply = true } = defineProps<ForumReplyFormProps>()
 
 function canSubmit(content) {
   return content.trim().length > 0

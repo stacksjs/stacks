@@ -8,18 +8,20 @@
   <Chart type="line" :data="chartData" :options="chartOptions" />
 -->
 
-<script server>
-const props = defineProps({
-  type: { type: String, default: 'line' }, // line, bar, pie, doughnut, area
-  data: { type: Object, required: true },
-  options: { type: Object, default: {} },
-  height: { type: String, default: '300px' },
-})
+<script>
+interface ChartProps {
+  type?: string
+  data: Record<string, any>
+  options?: Record<string, any>
+  height?: string
+}
+
+const { type = 'line', data, options = {}, height = '300px' } = defineProps<ChartProps>()
 </script>
-<div class="dashboard-chart" style="height: {{ props.height }};">
+<div class="dashboard-chart" style="height: {{ height }};">
     <div class="chart-placeholder">
       <div class="chart-icon">📊</div>
-      <div class="chart-text">{{ props.type.charAt(0).toUpperCase() + props.type.slice(1) }} Chart</div>
+      <div class="chart-text">{{ type.charAt(0).toUpperCase() + type.slice(1) }} Chart</div>
       <div class="chart-hint">
         Integrate with Chart.js, D3, or your preferred library
       </div>
@@ -39,9 +41,9 @@ import { onMount } from 'stx'
 
 onMount(() => {
   new Chart(chartCanvas, {
-          type: props.type,
-          data: props.data,
-          options: props.options
+          type: type,
+          data: data,
+          options: options
         }
 })
 </script>

@@ -1,14 +1,18 @@
-<script server>
-  const orders = props.orders || []
-  const searchQuery = props.searchQuery || ''
-  const statusFilter = props.statusFilter || ''
-  const sortBy = props.sortBy || 'id'
-  const sortOrder = props.sortOrder || 'desc'
-  const currentPage = props.currentPage || 1
-  const itemsPerPage = props.itemsPerPage || 10
-  const statuses = props.statuses || ['Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded']
+<script>
+interface OrdersTableProps {
+  orders?: any[]
+  searchQuery?: string
+  statusFilter?: string
+  sortBy?: string
+  sortOrder?: string
+  currentPage?: number
+  itemsPerPage?: number
+  statuses?: string
+}
 
-  function getStatusClass(status) {
+const { orders = [], searchQuery = '', statusFilter = '', sortBy = 'id', sortOrder = 'desc', currentPage = 1, itemsPerPage = 10, statuses = ['Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] } = defineProps<OrdersTableProps>()
+
+function getStatusClass(status) {
     switch (status) {
       case 'Completed':
         return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'

@@ -1,5 +1,9 @@
-<script server>
-  const currentPath = props.currentPath || '/settings/ai'
+<script>
+interface SettingsHeaderProps {
+  currentPath?: string
+}
+
+const { currentPath = '/settings/ai' } = defineProps<SettingsHeaderProps>()
 </script>
 <header class="border-b border-gray-200 dark:border-neutral-600">
     <!-- Secondary navigation -->

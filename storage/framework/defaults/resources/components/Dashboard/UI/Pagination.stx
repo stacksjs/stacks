@@ -1,13 +1,17 @@
-<script server>
-const currentPage = props.currentPage || 1
-const totalPages = props.totalPages || 1
-const totalItems = props.totalItems || 0
-const itemsPerPage = props.itemsPerPage || 10
-const showItemsPerPage = props.showItemsPerPage || false
-const showTotalItems = props.showTotalItems !== false
-const maxVisiblePages = props.maxVisiblePages || 5
-const itemsPerPageOptions = props.itemsPerPageOptions || [10, 25, 50, 100]
-const baseUrl = props.baseUrl || ''
+<script>
+interface PaginationProps {
+  currentPage?: number
+  totalPages?: number
+  totalItems?: number
+  itemsPerPage?: number
+  showItemsPerPage?: boolean
+  maxVisiblePages?: number
+  itemsPerPageOptions?: string
+  baseUrl?: string
+  showTotalItems?: boolean
+}
+
+const { currentPage = 1, totalPages = 1, totalItems = 0, itemsPerPage = 10, showItemsPerPage = false, maxVisiblePages = 5, itemsPerPageOptions = [10, 25, 50, 100], baseUrl = '', showTotalItems = true } = defineProps<PaginationProps>()
 
 // Calculate visible page numbers
 function getVisiblePages() {

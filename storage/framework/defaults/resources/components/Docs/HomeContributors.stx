@@ -1,5 +1,9 @@
-<script server>
-const contributors = props.contributors || []
+<script>
+interface HomeContributorsProps {
+  contributors?: any[]
+}
+
+const { contributors = [] } = defineProps<HomeContributorsProps>()
 </script>
 <div class="vp-doc">
     <h2 class="pb-2 pt-5 font-normal op50">

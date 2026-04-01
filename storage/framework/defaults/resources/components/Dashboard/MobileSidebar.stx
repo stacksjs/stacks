@@ -1,7 +1,11 @@
-<script server>
-  const isOpen = props.isOpen || false
-  const companyLogo = props.companyLogo || 'https://tailwindui.com/img/logos/mark.svg?color=indigo&shade=600'
-  const companyName = props.companyName || 'Your Company'
+<script>
+interface MobileSidebarProps {
+  isOpen?: boolean
+  companyLogo?: string
+  companyName?: string
+}
+
+const { isOpen = false, companyLogo = 'https:, companyName = 'Your Company' } = defineProps<MobileSidebarProps>()
 </script>
 @if(isOpen)
   <div

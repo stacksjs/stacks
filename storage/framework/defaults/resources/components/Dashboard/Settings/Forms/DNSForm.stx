@@ -1,8 +1,12 @@
-<script server>
-  const nameservers = props.nameservers || ''
+<script>
+interface DNSFormProps {
+  nameservers?: string
+  aRecords?: string
+}
 
-  // A Records data
-  const aRecords = props.aRecords || [
+const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
+
+// A Records data
     { name: 'localhost', address: '10.0.0.1', ttl: 300 },
     { name: 'www', address: '@', ttl: 300 }
   ]

@@ -1,8 +1,12 @@
-<script server>
-const href = props.href || ''
-const disabled = props.disabled || false
-const danger = props.danger || false
-const active = props.active || false
+<script>
+interface DropdownItemProps {
+  href?: string
+  disabled?: boolean
+  danger?: boolean
+  active?: boolean
+}
+
+const { href = '', disabled = false, danger = false, active = false } = defineProps<DropdownItemProps>()
 
 function getClasses() {
   const base = [

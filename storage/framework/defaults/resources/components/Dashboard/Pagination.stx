@@ -1,9 +1,13 @@
-<script server>
-  const currentPage = props.currentPage || 1
-  const perPage = props.perPage || 20
-  const total = props.total || 875
-  const from = props.from || 1
-  const to = props.to || 20
+<script>
+interface PaginationProps {
+  currentPage?: number
+  perPage?: number
+  total?: number
+  from?: number
+  to?: number
+}
+
+const { currentPage = 1, perPage = 20, total = 875, from = 1, to = 20 } = defineProps<PaginationProps>()
 </script>
 <div class="flex items-center justify-between border-t border-gray-200 rounded-bl-lg rounded-br-lg bg-white px-4 py-3 dark:border-neutral-600 dark:bg-neutral-800 sm:px-6">
     <div class="flex flex-1 justify-between sm:hidden">

@@ -1,27 +1,27 @@
-<script server>
-  const defaultDisk = props.defaultDisk || 'local'
+<script>
+interface FileSystemFormProps {
+  defaultDisk?: string
+  localDriver?: string
+  localRoot?: string
+  publicDriver?: string
+  publicRoot?: string
+  privateDriver?: string
+  privateRoot?: string
+  efsDriver?: string
+  efsRoot?: string
+  s3Driver?: string
+  s3Root?: string
+  publicVisibility?: boolean
+  privateVisibility?: boolean
+}
 
-  // Local disk settings
-  const localDriver = props.localDriver || 'local'
-  const localRoot = props.localRoot || 'storage'
+const { defaultDisk = 'local', localDriver = 'local', localRoot = 'storage', publicDriver = 'public', publicRoot = 'storage/public', privateDriver = 'private', privateRoot = 'storage/private', efsDriver = 'local', efsRoot = '/mnt/efs', s3Driver = 's3', s3Root = 's3', publicVisibility = true, privateVisibility = false } = defineProps<FileSystemFormProps>()
 
+// Local disk settings
   // Public disk settings
-  const publicDriver = props.publicDriver || 'public'
-  const publicRoot = props.publicRoot || 'storage/public'
-  const publicVisibility = props.publicVisibility !== undefined ? props.publicVisibility : true
-
   // Private disk settings
-  const privateDriver = props.privateDriver || 'private'
-  const privateRoot = props.privateRoot || 'storage/private'
-  const privateVisibility = props.privateVisibility !== undefined ? props.privateVisibility : false
-
   // EFS disk settings
-  const efsDriver = props.efsDriver || 'local'
-  const efsRoot = props.efsRoot || '/mnt/efs'
-
   // S3 disk settings
-  const s3Driver = props.s3Driver || 's3'
-  const s3Root = props.s3Root || 's3'
 </script>
 <form>
     <main class="border-b border-gray-900/10">

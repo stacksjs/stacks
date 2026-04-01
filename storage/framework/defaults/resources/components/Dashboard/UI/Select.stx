@@ -1,15 +1,19 @@
-<script server>
-const value = props.value || ''
-const options = props.options || [] // Array of { value, label, disabled? }
-const placeholder = props.placeholder || 'Select an option'
-const label = props.label || ''
-const error = props.error || ''
-const hint = props.hint || ''
-const disabled = props.disabled || false
-const required = props.required || false
-const size = props.size || 'md' // 'xs' | 'sm' | 'md' | 'lg'
-const name = props.name || ''
-const id = props.id || ''
+<script>
+interface SelectProps {
+  value?: string
+  options?: any[]
+  placeholder?: string
+  label?: string
+  error?: string
+  hint?: string
+  disabled?: boolean
+  required?: boolean
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  name?: string
+  id?: string
+}
+
+const { value = '', options = [], placeholder = 'Select an option', label = '', error = '', hint = '', disabled = false, required = false, size = 'md', name = '', id = '' } = defineProps<SelectProps>()
 
 const sizeClasses = {
   xs: 'h-6 text-[11px] px-2',

@@ -1,7 +1,11 @@
-<script server>
-  const userId = props.userId || 1
-  const paymentMethods = props.paymentMethods || [] // Array of { id, brand, last_four, exp_month, exp_year }
-  const loading = props.loading || false
+<script>
+interface PaymentMethodListProps {
+  userId?: number
+  paymentMethods?: any[]
+  loading?: boolean
+}
+
+const { userId = 1, paymentMethods = [], loading = false } = defineProps<PaymentMethodListProps>()
 </script>
 <div class="mt-4">
     @if(loading)

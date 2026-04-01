@@ -1,6 +1,12 @@
-<script server>
-const features = props.features || [
-  {
+<script>
+interface PrimaryFeaturesProps {
+  features?: string
+  selectedIndex?: number
+}
+
+const { features = [, selectedIndex = 0 } = defineProps<PrimaryFeaturesProps>()
+
+{
     title: 'Frontend',
     description: 'Powered by a progressive UI Engine, building application interfaces has never been easier.',
     image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
@@ -21,8 +27,6 @@ const features = props.features || [
     image: 'https://salient.tailwindui.com/_next/image?url=%2F_next%2Fstatic%2Fmedia%2Fpayroll.517af4e7.png&w=1920&q=75',
   },
 ]
-
-const selectedIndex = props.selectedIndex || 0
 </script>
 <section id="features" aria-label="Features for running your books" class="relative overflow-hidden bg-blue-600 pb-28 pt-20 sm:py-32">
   <Container class="relative">

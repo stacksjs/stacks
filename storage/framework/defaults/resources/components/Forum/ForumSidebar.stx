@@ -1,12 +1,17 @@
-<script server>
-const stats = props.stats || {
-  topics: 0,
+<script>
+interface ForumSidebarProps {
+  stats?: string
+  popularTopics?: any[]
+  onlineUsers?: any[]
+}
+
+const { stats = {, popularTopics = [], onlineUsers = [] } = defineProps<ForumSidebarProps>()
+
+topics: 0,
   posts: 0,
   members: 0,
   newestMember: ''
 }
-const popularTopics = props.popularTopics || []
-const onlineUsers = props.onlineUsers || []
 </script>
 <div class="space-y-6">
     <!-- Search -->

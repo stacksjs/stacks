@@ -1,7 +1,10 @@
-<script server>
-// Props
-const showButtons = props.showButtons || false
-const greeting = props.greeting || 'Welcome!'
+<script>
+interface HelloWorldProps {
+  showButtons?: boolean
+  greeting?: string
+}
+
+const { showButtons = false, greeting = 'Welcome!' } = defineProps<HelloWorldProps>()
 
 // Lifecycle hook simulation
 console.log('HelloWorld component mounted & the greeting is', greeting)

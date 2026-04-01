@@ -1,9 +1,15 @@
-<script server>
-const backgroundImage = props.backgroundImage || '/images/screenshots/background-features.jpg'
-const screenshotPayroll = props.screenshotPayroll || '/images/screenshots/payroll.webp'
+<script>
+interface PrimaryFeatures2Props {
+  backgroundImage?: string
+  screenshotPayroll?: string
+  features?: string
+  selectedIndex?: number
+  tabOrientation?: string
+}
 
-const features = props.features || [
-  {
+const { backgroundImage = '/images/screenshots/background-features.jpg', screenshotPayroll = '/images/screenshots/payroll.webp', features = [, selectedIndex = 0, tabOrientation = 'vertical' } = defineProps<PrimaryFeatures2Props>()
+
+{
     title: 'Payroll',
     description: "Keep track of everyone's salaries and whether or not they've been paid. Direct deposit not supported.",
     image: screenshotPayroll,
@@ -24,9 +30,6 @@ const features = props.features || [
     image: '',
   },
 ]
-
-const selectedIndex = props.selectedIndex || 0
-const tabOrientation = props.tabOrientation || 'vertical'
 </script>
 <section
   id="features"

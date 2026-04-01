@@ -1,9 +1,13 @@
-<script server>
-  const activeFolder = props.activeFolder || 'inbox'
-  const folders = props.folders || []
-  const unreadCounts = props.unreadCounts || {}
+<script>
+interface EmailSidebarProps {
+  activeFolder?: string
+  folders?: any[]
+  unreadCounts?: Record<string, any>
+}
 
-  // User info
+const { activeFolder = 'inbox', folders = [], unreadCounts = {} } = defineProps<EmailSidebarProps>()
+
+// User info
   const userInfo = {
     name: 'Alicia Koch',
     email: 'alicia@example.com',

@@ -1,7 +1,11 @@
-<script server>
-  const licenseKeys = props.licenseKeys || []
+<script>
+interface LicenseKeysTableProps {
+  licenseKeys?: any[]
+}
 
-  function statusVariant(status) {
+const { licenseKeys = [] } = defineProps<LicenseKeysTableProps>()
+
+function statusVariant(status) {
     const s = String(status || '').toLowerCase()
     if (s === 'active') return 'success'
     if (s === 'expired') return 'warning'

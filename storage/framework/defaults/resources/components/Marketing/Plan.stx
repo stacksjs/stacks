@@ -1,10 +1,14 @@
-<script server>
-const name = props.name || ''
-const price = props.price || ''
-const description = props.description || ''
-const href = props.href || ''
-const features = props.features || []
-const featured = props.featured || false
+<script>
+interface PlanProps {
+  name?: string
+  price?: string
+  description?: string
+  href?: string
+  features?: any[]
+  featured?: boolean
+}
+
+const { name = '', price = '', description = '', href = '', features = [], featured = false } = defineProps<PlanProps>()
 </script>
 <section
   class="flex flex-col rounded-3xl px-6 sm:px-8 {{ featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8' }}"

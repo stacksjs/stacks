@@ -1,5 +1,9 @@
-<script server>
-const href = props.href || ''
+<script>
+interface NavLinkProps {
+  href?: string
+}
+
+const { href = '' } = defineProps<NavLinkProps>()
 </script>
 <a
   href="{{ href }}"

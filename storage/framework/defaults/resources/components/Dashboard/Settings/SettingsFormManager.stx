@@ -1,4 +1,10 @@
-<script server>
+<script>
+interface SettingsFormManagerProps {
+  name?: string
+}
+
+const { name = '' } = defineProps<SettingsFormManagerProps>()
+
 import AIForm from './Forms/AIForm.vue'
 import AnalyticsForm from './Forms/AnalyticsForm.vue'
 import AppForm from './Forms/AppForm.vue'
@@ -17,8 +23,6 @@ import SecurityForm from './Forms/SecurityForm.vue'
 import ServicesForm from './Forms/ServicesForm.vue'
 import StorageForm from './Forms/StorageForm.vue'
 import TeamsForm from './Forms/TeamsForm.vue'
-
-const name = props.name || ''
 
 const options = [
   {

@@ -1,13 +1,17 @@
-<script server>
-  const categories = props.categories || []
-  const searchQuery = props.searchQuery || ''
-  const featuredFilter = props.featuredFilter || ''
-  const sortBy = props.sortBy || 'name'
-  const sortOrder = props.sortOrder || 'asc'
-  const currentPage = props.currentPage || 1
-  const itemsPerPage = props.itemsPerPage || 10
+<script>
+interface CategoriesTableProps {
+  categories?: any[]
+  searchQuery?: string
+  featuredFilter?: string
+  sortBy?: string
+  sortOrder?: string
+  currentPage?: number
+  itemsPerPage?: number
+}
 
-  // Color mapping for initial letters
+const { categories = [], searchQuery = '', featuredFilter = '', sortBy = 'name', sortOrder = 'asc', currentPage = 1, itemsPerPage = 10 } = defineProps<CategoriesTableProps>()
+
+// Color mapping for initial letters
   const initialColors = {
     'Burgers': 'bg-red-500',
     'Mexican': 'bg-green-500',

@@ -1,6 +1,12 @@
-<script server>
-const solutions = props.solutions || [
-  {
+<script>
+interface PopoverDemoProps {
+  solutions?: string
+  isOpen?: boolean
+}
+
+const { solutions = [, isOpen = false } = defineProps<PopoverDemoProps>()
+
+{
     name: 'Insights',
     description: 'Measure actions your users take',
     href: '##',
@@ -22,7 +28,6 @@ const solutions = props.solutions || [
     iconStroke: '#FB923C',
   },
 ]
-const isOpen = props.isOpen || false
 </script>
 <div class="max-w-4xl">
   <DocsPlayground>

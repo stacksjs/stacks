@@ -1,10 +1,14 @@
-<script server>
-const src = props.src || ''
-const alt = props.alt || ''
-const name = props.name || ''
-const size = props.size || 'md' // 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
-const rounded = props.rounded || 'full' // 'sm' | 'md' | 'lg' | 'full'
-const status = props.status || '' // 'online' | 'offline' | 'away' | 'busy' | ''
+<script>
+interface AvatarProps {
+  src?: string
+  alt?: string
+  name?: string
+  size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | '2xl'
+  rounded?: 'sm' | 'md' | 'lg' | 'full'
+  status?: 'online' | 'offline' | 'away' | 'busy'
+}
+
+const { src = '', alt = '', name = '', size = 'md', rounded = 'full', status = '' } = defineProps<AvatarProps>()
 
 const sizeClasses = {
   xs: 'h-5 w-5 text-[10px]',

@@ -1,7 +1,11 @@
-<script server>
-  const templates = props.templates || []
+<script>
+interface LicenseTemplatesTableProps {
+  templates?: any[]
+}
 
-  function statusVariant(active, status) {
+const { templates = [] } = defineProps<LicenseTemplatesTableProps>()
+
+function statusVariant(active, status) {
     if (status) {
       const s = String(Array.isArray(status) ? status[0] || '' : status).toLowerCase()
       if (s === 'active') return 'success'

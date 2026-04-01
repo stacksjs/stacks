@@ -1,11 +1,15 @@
-<script server>
-const title = props.title || ''
-const description = props.description || ''
-const link = props.link || ''
-const topicCount = props.topicCount || 0
-const postCount = props.postCount || 0
-const icon = props.icon || 'i-hugeicons-chat'
-const latestTopic = props.latestTopic || null
+<script>
+interface ForumCategoryItemProps {
+  title?: string
+  description?: string
+  link?: string
+  topicCount?: number
+  postCount?: number
+  icon?: string
+  latestTopic?: any
+}
+
+const { title = '', description = '', link = '', topicCount = 0, postCount = 0, icon = 'i-hugeicons-chat', latestTopic = null } = defineProps<ForumCategoryItemProps>()
 </script>
 <div class="flex items-start p-4 hover:bg-gray-50">
     <div class="flex-shrink-0 mr-4">

@@ -1,12 +1,16 @@
-<script server>
-const variant = props.variant || 'primary' // 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'
-const size = props.size || 'md' // 'xs' | 'sm' | 'md' | 'lg'
-const disabled = props.disabled || false
-const loading = props.loading || false
-const fullWidth = props.fullWidth || false
-const iconOnly = props.iconOnly || false
-const href = props.href || ''
-const type = props.type || 'button'
+<script>
+interface ButtonProps {
+  variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'danger' | 'success'
+  size?: 'xs' | 'sm' | 'md' | 'lg'
+  disabled?: boolean
+  loading?: boolean
+  fullWidth?: boolean
+  iconOnly?: boolean
+  href?: string
+  type?: string
+}
+
+const { variant = 'primary', size = 'md', disabled = false, loading = false, fullWidth = false, iconOnly = false, href = '', type = 'button' } = defineProps<ButtonProps>()
 
 // Variant classes
 const variantClasses = {

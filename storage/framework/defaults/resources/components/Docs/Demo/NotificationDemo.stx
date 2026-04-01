@@ -1,6 +1,10 @@
-<script server>
-const position = props.position || 'top-right'
-const theme = props.theme || 'light'
+<script>
+interface NotificationDemoProps {
+  position?: string
+  theme?: string
+}
+
+const { position = 'top-right', theme = 'light' } = defineProps<NotificationDemoProps>()
 </script>
 <div class="max-w-4xl">
   <DocsPlayground>

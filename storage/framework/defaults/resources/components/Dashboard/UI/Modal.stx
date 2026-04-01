@@ -1,9 +1,13 @@
-<script server>
-const isOpen = props.isOpen || false
-const title = props.title || ''
-const description = props.description || ''
-const size = props.size || 'md' // 'sm' | 'md' | 'lg' | 'xl' | 'full'
-const closable = props.closable !== false
+<script>
+interface ModalProps {
+  isOpen?: boolean
+  title?: string
+  description?: string
+  size?: 'sm' | 'md' | 'lg' | 'xl' | 'full'
+  closable?: boolean
+}
+
+const { isOpen = false, title = '', description = '', size = 'md', closable = true } = defineProps<ModalProps>()
 
 const sizeClasses = {
   sm: 'max-w-sm',

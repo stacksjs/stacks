@@ -1,8 +1,12 @@
-<script server>
-  const live = props.live || false
-  const lang = props.lang || 'typescript'
-  const theme = props.theme || 'github_dark'
-  const content = props.content || `echo 'Hello World!'
+<script>
+interface CodeEditorProps {
+  live?: boolean
+  lang?: string
+  theme?: string
+  content?: string
+}
+
+const { live = false, lang = 'typescript', theme = 'github_dark', content = `echo 'Hello World!' } = defineProps<CodeEditorProps>()
 
 mv ./test/test.ts ./jello
 cp`

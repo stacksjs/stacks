@@ -1,6 +1,10 @@
-<script server>
-  const to = props.to || ''
-  const active = props.active || false
+<script>
+interface IconButtonProps {
+  to?: string
+  active?: boolean
+}
+
+const { to = '', active = false } = defineProps<IconButtonProps>()
 </script>
 <a
   href="{{ to }}"

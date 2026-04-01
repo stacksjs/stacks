@@ -1,10 +1,14 @@
-<script server>
-const icon = props.icon || 'i-hugeicons-folder-02'
-const title = props.title || ''
-const description = props.description || ''
-const actionLabel = props.actionLabel || ''
-const actionIcon = props.actionIcon || ''
-const actionHref = props.actionHref || ''
+<script>
+interface EmptyStateProps {
+  icon?: string
+  title?: string
+  description?: string
+  actionLabel?: string
+  actionIcon?: string
+  actionHref?: string
+}
+
+const { icon = 'i-hugeicons-folder-02', title = '', description = '', actionLabel = '', actionIcon = '', actionHref = '' } = defineProps<EmptyStateProps>()
 </script>
 <div class="flex flex-col items-center justify-center py-12 px-4 text-center">
     <!-- Icon -->

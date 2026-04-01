@@ -1,9 +1,13 @@
-<script server>
-const variant = props.variant || 'default' // 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
-const padding = props.padding || 'md' // 'none' | 'sm' | 'md' | 'lg' | 'xl'
-const rounded = props.rounded || 'lg' // 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
-const hoverable = props.hoverable || false
-const clickable = props.clickable || false
+<script>
+interface CardProps {
+  variant?: 'default' | 'elevated' | 'outline' | 'ghost' | 'vibrancy'
+  padding?: 'none' | 'sm' | 'md' | 'lg' | 'xl'
+  rounded?: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '3xl'
+  hoverable?: boolean
+  clickable?: boolean
+}
+
+const { variant = 'default', padding = 'md', rounded = 'lg', hoverable = false, clickable = false } = defineProps<CardProps>()
 
 const variantClasses = {
   default: 'bg-white dark:bg-neutral-800/90 border border-stone-200/80 dark:border-white/5 shadow-sm shadow-stone-200/50 dark:shadow-black/20',

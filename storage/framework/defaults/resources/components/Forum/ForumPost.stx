@@ -1,12 +1,16 @@
-<script server>
-const id = props.id || ''
-const authorName = props.authorName || ''
-const authorAvatar = props.authorAvatar || ''
-const createdAt = props.createdAt || ''
-const likeCount = props.likeCount || 0
-const isOriginalPost = props.isOriginalPost || false
-const title = props.title || ''
-const isSolved = props.isSolved || false
+<script>
+interface ForumPostProps {
+  id?: string
+  authorName?: string
+  authorAvatar?: string
+  createdAt?: string
+  likeCount?: number
+  isOriginalPost?: boolean
+  title?: string
+  isSolved?: boolean
+}
+
+const { id = '', authorName = '', authorAvatar = '', createdAt = '', likeCount = 0, isOriginalPost = false, title = '', isSolved = false } = defineProps<ForumPostProps>()
 </script>
 <div id="post-{{ id }}" class="border rounded-md mb-6">
   <div class="bg-gray-50 px-4 py-3 flex items-center justify-between rounded-t-md">

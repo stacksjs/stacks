@@ -1,6 +1,12 @@
-<script server>
-const menuItems = props.menuItems || [
-  { icon: 'i-hugeicons-pencil-20-solid', label: 'Edit' },
+<script>
+interface DropdownDemoProps {
+  menuItems?: string
+  isOpen?: boolean
+}
+
+const { menuItems = [, isOpen = false } = defineProps<DropdownDemoProps>()
+
+{ icon: 'i-hugeicons-pencil-20-solid', label: 'Edit' },
   { icon: 'i-hugeicons-document-duplicate-20-solid', label: 'Duplicate' },
   { divider: true },
   { icon: 'i-hugeicons-archive-box-20-solid', label: 'Archive' },
@@ -8,8 +14,6 @@ const menuItems = props.menuItems || [
   { divider: true },
   { icon: 'i-hugeicons-trash-20-solid', label: 'Delete', variant: 'danger' },
 ]
-const isOpen = props.isOpen || false
-
 function getMenuSections(items) {
   const sections = []
   let currentSection = []

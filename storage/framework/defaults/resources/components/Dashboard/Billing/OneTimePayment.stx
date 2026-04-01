@@ -1,8 +1,12 @@
-<script server>
-  const product = props.product || {} // { name, unit_price }
-  const paymentIntent = props.paymentIntent || ''
+<script>
+interface OneTimePaymentProps {
+  product?: Record<string, any>
+  paymentIntent?: string
+}
 
-  const unitPrice = product.unit_price ? `$${(product.unit_price / 100).toFixed(2)}` : '$0.00'
+const { product = {}, paymentIntent = '' } = defineProps<OneTimePaymentProps>()
+
+const unitPrice = product.unit_price ? `${(product.unit_price / 100).toFixed(2)}` : '$0.00'
 </script>
 @if(product.name)
     <div class="flex border border-gray-200 rounded-md p-4 space-x-2">

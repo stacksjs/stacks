@@ -1,12 +1,16 @@
-<script server>
-  const firewallEnabled = props.firewallEnabled !== undefined ? props.firewallEnabled : true
-  const useIpReputationLists = props.useIpReputationLists !== undefined ? props.useIpReputationLists : true
-  const useKnownBadInputs = props.useKnownBadInputs !== undefined ? props.useKnownBadInputs : true
-  const rateLimitPerMinute = props.rateLimitPerMinute || '1000'
-  const countryCodes = props.countryCodes || 'RU,IN'
-  const ipAddresses = props.ipAddresses || '56.123.456.789'
-  const queryString = props.queryString || 'foo,bar'
-  const httpHeaders = props.httpHeaders || 'x-foo,x-bar'
+<script>
+interface SecurityFormProps {
+  rateLimitPerMinute?: string
+  countryCodes?: string
+  ipAddresses?: string
+  queryString?: string
+  httpHeaders?: string
+  firewallEnabled?: boolean
+  useIpReputationLists?: boolean
+  useKnownBadInputs?: boolean
+}
+
+const { rateLimitPerMinute = '1000', countryCodes = 'RU,IN', ipAddresses = '56.123.456.789', queryString = 'foo,bar', httpHeaders = 'x-foo,x-bar', firewallEnabled = true, useIpReputationLists = true, useKnownBadInputs = true } = defineProps<SecurityFormProps>()
 </script>
 <form>
     <main class="border-b border-gray-900/10">

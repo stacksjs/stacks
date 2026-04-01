@@ -1,24 +1,26 @@
-<script server>
+<script>
+interface LoginProps {
+  title?: string
+  subtitle?: string
+  email?: string
+  password?: string
+  rememberMe?: boolean
+  isLoading?: boolean
+  error?: string
+  fieldErrors?: Record<string, any>
+  showRememberMe?: boolean
+  showForgotPassword?: boolean
+  showSignUp?: boolean
+}
+
+const { title = 'Welcome back', subtitle = 'Sign in to your account', email = '', password = '', rememberMe = false, isLoading = false, error = '', fieldErrors = {}, showRememberMe = true, showForgotPassword = true, showSignUp = true } = defineProps<LoginProps>()
+
 /**
  * Login Component
  * A clean, modern login form for the Stacks Dashboard.
  */
 
-// Props
-const title = props.title || 'Welcome back'
-const subtitle = props.subtitle || 'Sign in to your account'
-const showRememberMe = props.showRememberMe !== undefined ? props.showRememberMe : true
-const showForgotPassword = props.showForgotPassword !== undefined ? props.showForgotPassword : true
-const showSignUp = props.showSignUp !== undefined ? props.showSignUp : true
-
 // Form state
-const email = props.email || ''
-const password = props.password || ''
-const rememberMe = props.rememberMe || false
-const isLoading = props.isLoading || false
-const error = props.error || ''
-const fieldErrors = props.fieldErrors || {}
-
 // Validate email format
 function validateEmail() {
   if (!email) {

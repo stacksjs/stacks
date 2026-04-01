@@ -1,16 +1,19 @@
-<script server>
+<script>
+interface ButtonProps {
+  variant?: 'solid' | 'outline'
+  color?: 'blue' | 'slate' | 'white' | 'black'
+  href?: string
+  customClass?: string
+}
+
+const { variant = 'solid', color = 'slate', href = '', customClass = '' } = defineProps<ButtonProps>()
+
 /**
  * Marketing Button Component
  *
  * A simple button designed for marketing pages with solid/outline variants.
  * NOTE: For dashboard/app UIs, use @stacksjs/stx-ui components instead.
  */
-
-// Props
-const variant = props.variant || 'solid' // 'solid' | 'outline'
-const color = props.color || 'slate' // 'blue' | 'slate' | 'white' | 'black'
-const href = props.href || ''
-const customClass = props.customClass || ''
 
 const baseStyles = {
   solid:

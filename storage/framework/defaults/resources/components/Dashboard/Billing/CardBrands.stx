@@ -1,8 +1,12 @@
-<script server>
-  const brand = props.brand || ''
-  const width = props.width || 4
+<script>
+interface CardBrandsProps {
+  brand?: string
+  width?: number
+}
 
-  function getLogoSrc(cardBrand) {
+const { brand = '', width = 4 } = defineProps<CardBrandsProps>()
+
+function getLogoSrc(cardBrand) {
     if (!cardBrand) return ''
 
     switch (cardBrand.toLowerCase()) {

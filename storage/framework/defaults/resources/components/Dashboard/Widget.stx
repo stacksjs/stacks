@@ -4,35 +4,44 @@
   Use this component to create reusable widgets for your dashboard.
   Import this in your dashboard pages using:
 
-  <script server>
-  import Widget from '@/components/Dashboard/Widget.stx'
-  </script>
+  <script>
+interface WidgetProps {
+  title: string
+  value: string
+  description?: string
+  trend?: string
+  icon?: string
+}
+
+const { title, value, description, trend, icon } = defineProps<WidgetProps>()
+</script>
 -->
 
-<script server>
-// Widget props
-const props = defineProps({
-  title: { type: String, required: true },
-  value: { type: String, required: true },
-  description: { type: String, default: '' },
-  trend: { type: String, default: '' },
-  icon: { type: String, default: '' },
-})
+<script>
+interface WidgetProps {
+  title: string
+  value: string
+  description?: string
+  trend?: string
+  icon?: string
+}
+
+const { title, value, description = '', trend = '', icon = '' } = defineProps<WidgetProps>()
 </script>
 <div class="widget">
     <div class="widget-header">
-      @if (props.icon)
-        <div class="widget-icon">{{ props.icon }}</div>
+      @if (icon)
+        <div class="widget-icon">{{ icon }}</div>
       @endif
-      <h3 class="widget-title">{{ props.title }}</h3>
+      <h3 class="widget-title">{{ title }}</h3>
     </div>
-    <div class="widget-value">{{ props.value }}</div>
-    @if (props.description)
-      <div class="widget-description">{{ props.description }}</div>
+    <div class="widget-value">{{ value }}</div>
+    @if (description)
+      <div class="widget-description">{{ description }}</div>
     @endif
-    @if (props.trend)
-      <div class="widget-trend {{ props.trend.startsWith('+') ? 'positive' : 'negative' }}">
-        {{ props.trend }}
+    @if (trend)
+      <div class="widget-trend {{ trend.startsWith('+') ? 'positive' : 'negative' }}">
+        {{ trend }}
       </div>
     @endif
   </div>

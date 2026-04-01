@@ -1,45 +1,46 @@
-<script server>
-  const type = props.type || 'serverless'
-  const driver = props.driver || 'aws'
-  const enableAI = props.enableAI !== undefined ? props.enableAI : false
-  const enableCLI = props.enableCLI !== undefined ? props.enableCLI : false
-  const enableDocs = props.enableDocs !== undefined ? props.enableDocs : true
-  const enableFileSystem = props.enableFileSystem !== undefined ? props.enableFileSystem : true
-  const environments = props.environments || 'production,staging,development'
+<script>
+interface CloudFormProps {
+  type?: string
+  driver?: string
+  environments?: string
+  apiDescription?: string
+  apiPrefix?: string
+  apiMemorySize?: string
+  apiPrewarm?: string
+  apiTimeout?: string
+  firewallRateLimit?: string
+  firewallCountryCodes?: string
+  firewallIpAddresses?: string
+  firewallQueryString?: string
+  firewallHttpHeaders?: string
+  cdnAllowedMethods?: string
+  cdnCachedMethods?: string
+  cdnOriginShieldRegion?: string
+  cdnDefaultTTL?: string
+  cdnMinTTL?: string
+  cdnMaxTTL?: string
+  cdnCookieBehavior?: string
+  cdnCookies?: string
+  cdnHeaders?: string
+  cdnQueryStrings?: string
+  cdnSamplingRate?: string
+  enableAI?: boolean
+  enableCLI?: boolean
+  enableDocs?: boolean
+  enableFileSystem?: boolean
+  apiDeploy?: boolean
+  firewallEnabled?: boolean
+  firewallIpReputation?: boolean
+  firewallBadInputs?: boolean
+  cdnCompress?: boolean
+  cdnRealTimeLogsEnabled?: boolean
+}
 
-  // API settings
-  const apiDeploy = props.apiDeploy !== undefined ? props.apiDeploy : true
-  const apiDescription = props.apiDescription || 'My awesome Stacks API'
-  const apiPrefix = props.apiPrefix || 'api'
-  const apiMemorySize = props.apiMemorySize || '512'
-  const apiPrewarm = props.apiPrewarm || '10'
-  const apiTimeout = props.apiTimeout || '30'
+const { type = 'serverless', driver = 'aws', environments = 'production,staging,development', apiDescription = 'My awesome Stacks API', apiPrefix = 'api', apiMemorySize = '512', apiPrewarm = '10', apiTimeout = '30', firewallRateLimit = '1000', firewallCountryCodes = 'RU,IN', firewallIpAddresses = '56.123.456.789', firewallQueryString = 'foo,bar', firewallHttpHeaders = 'x-foo,x-bar', cdnAllowedMethods = 'ALL', cdnCachedMethods = 'GET_HEAD', cdnOriginShieldRegion = 'us-east-1', cdnDefaultTTL = '86400', cdnMinTTL = '0', cdnMaxTTL = '31536000', cdnCookieBehavior = 'none', cdnCookies = '', cdnHeaders = '', cdnQueryStrings = '', cdnSamplingRate = '1', enableAI = false, enableCLI = false, enableDocs = true, enableFileSystem = true, apiDeploy = true, firewallEnabled = true, firewallIpReputation = true, firewallBadInputs = true, cdnCompress = true, cdnRealTimeLogsEnabled = true } = defineProps<CloudFormProps>()
 
+// API settings
   // Firewall settings
-  const firewallEnabled = props.firewallEnabled !== undefined ? props.firewallEnabled : true
-  const firewallIpReputation = props.firewallIpReputation !== undefined ? props.firewallIpReputation : true
-  const firewallBadInputs = props.firewallBadInputs !== undefined ? props.firewallBadInputs : true
-  const firewallRateLimit = props.firewallRateLimit || '1000'
-  const firewallCountryCodes = props.firewallCountryCodes || 'RU,IN'
-  const firewallIpAddresses = props.firewallIpAddresses || '56.123.456.789'
-  const firewallQueryString = props.firewallQueryString || 'foo,bar'
-  const firewallHttpHeaders = props.firewallHttpHeaders || 'x-foo,x-bar'
-
   // CDN settings
-  const cdnCompress = props.cdnCompress !== undefined ? props.cdnCompress : true
-  const cdnAllowedMethods = props.cdnAllowedMethods || 'ALL'
-  const cdnCachedMethods = props.cdnCachedMethods || 'GET_HEAD'
-  const cdnOriginShieldRegion = props.cdnOriginShieldRegion || 'us-east-1'
-  const cdnDefaultTTL = props.cdnDefaultTTL || '86400'
-  const cdnMinTTL = props.cdnMinTTL || '0'
-  const cdnMaxTTL = props.cdnMaxTTL || '31536000'
-  const cdnCookieBehavior = props.cdnCookieBehavior || 'none'
-  const cdnCookies = props.cdnCookies || ''
-  const cdnHeaders = props.cdnHeaders || ''
-  const cdnQueryStrings = props.cdnQueryStrings || ''
-  const cdnRealTimeLogsEnabled = props.cdnRealTimeLogsEnabled !== undefined ? props.cdnRealTimeLogsEnabled : true
-  const cdnSamplingRate = props.cdnSamplingRate || '1'
-
   // API Routes
   const routes = [
     { name: 'Index', description: 'Endpoint to list all resources', available: true },

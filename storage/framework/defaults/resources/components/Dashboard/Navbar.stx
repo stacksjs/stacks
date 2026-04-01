@@ -1,18 +1,21 @@
-<script server>
+<script>
+interface NavbarProps {
+  showDropdown?: boolean
+  isDark?: boolean
+  theme?: string
+  isSidebarCollapsed?: boolean
+  currentPath?: string
+}
+
+const { showDropdown = false, isDark = false, theme = 'light', isSidebarCollapsed = false, currentPath = '/' } = defineProps<NavbarProps>()
+
 /**
  * Navbar Component
  * Top navigation bar with search, notifications, and user menu.
  */
 
 // State
-const showDropdown = props.showDropdown || false
-const isDark = props.isDark || false
-const theme = props.theme || 'light'
-const isSidebarCollapsed = props.isSidebarCollapsed || false
-
 // Current path (would be provided by router)
-const currentPath = props.currentPath || '/'
-
 function isActiveRoute(path) {
   return currentPath === path || currentPath.startsWith(path + '/')
 }

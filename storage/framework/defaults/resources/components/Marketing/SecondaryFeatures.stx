@@ -1,6 +1,12 @@
-<script server>
-const features = props.features || [
-  {
+<script>
+interface SecondaryFeaturesProps {
+  features?: string
+  selectedIndex?: number
+}
+
+const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>()
+
+{
     name: 'Dashboard',
     summary: 'The UI to your application.',
     description: 'Whether you are a developer or a client, The Dashboard visualizes your data. Easily extend your admin panel.',
@@ -22,8 +28,6 @@ const features = props.features || [
     icon: '',
   },
 ]
-
-const selectedIndex = props.selectedIndex || 0
 </script>
 <section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 lg:pb-32 sm:pb-20 sm:pt-32">
   <Container>

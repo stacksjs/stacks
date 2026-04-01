@@ -1,5 +1,9 @@
-<script server>
-  const currentPath = props.currentPath || 'ai'
+<script>
+interface SettingsSidebarProps {
+  currentPath?: string
+}
+
+const { currentPath = 'ai' } = defineProps<SettingsSidebarProps>()
 </script>
 <header class="border-b border-gray-200 p-4 lg:w-92 dark:border-neutral-600 lg:p-8 sm:p-6">
     <div class="w-full rounded-lg bg-white p-4 shadow-sm">

@@ -1,18 +1,22 @@
-<script server>
-const value = props.value || ''
-const label = props.label || ''
-const placeholder = props.placeholder || ''
-const error = props.error || ''
-const hint = props.hint || ''
-const disabled = props.disabled || false
-const readonly = props.readonly || false
-const required = props.required || false
-const rows = props.rows || 3
-const maxLength = props.maxLength || 0
-const showCount = props.showCount || false
-const resize = props.resize || 'vertical' // 'none' | 'vertical' | 'horizontal' | 'both'
-const name = props.name || ''
-const id = props.id || ''
+<script>
+interface TextareaProps {
+  value?: string
+  label?: string
+  placeholder?: string
+  error?: string
+  hint?: string
+  disabled?: boolean
+  readonly?: boolean
+  required?: boolean
+  rows?: number
+  maxLength?: number
+  showCount?: boolean
+  resize?: 'none' | 'vertical' | 'horizontal' | 'both'
+  name?: string
+  id?: string
+}
+
+const { value = '', label = '', placeholder = '', error = '', hint = '', disabled = false, readonly = false, required = false, rows = 3, maxLength = 0, showCount = false, resize = 'vertical', name = '', id = '' } = defineProps<TextareaProps>()
 
 const resizeClasses = {
   none: 'resize-none',

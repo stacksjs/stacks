@@ -1,9 +1,13 @@
-<script server>
-  const show = props.show || false
-  const type = props.type || 'warning' // 'warning' | 'success' | 'error' | 'info'
-  const title = props.title || 'sample title'
-  const position = props.position || 'top-right'
-  const id = props.id || 'toast-' + Math.random().toString(36).slice(2, 11)
+<script>
+interface ToastProps {
+  show?: boolean
+  type?: 'warning' | 'success' | 'error' | 'info'
+  title?: string
+  position?: string
+  id?: string
+}
+
+const { show = false, type = 'warning', title = 'sample title', position = 'top-right', id = 'toast-' + Math.random().toString(36).slice(2, 11) } = defineProps<ToastProps>()
 </script>
 @if(show)
 <div class="relative z-60" aria-labelledby="modal-title" role="alert" aria-live="assertive" data-toast="{{ id }}">
