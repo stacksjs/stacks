@@ -47,7 +47,8 @@ run_with_timeout() {
 }
 
 run_buddy() {
-  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" "${PANTRY_LOCAL_BIN}/bun" "${BUDDY_ENTRY}" "$@"
+  PANTRY_DIR="${ROOT_DIR}/pantry"
+  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${PANTRY_LOCAL_BIN}/bun" "${BUDDY_ENTRY}" "$@"
 }
 
 if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
@@ -71,7 +72,7 @@ if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
 fi
 
 if command -v bun >/dev/null 2>&1; then
-  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" bun "${BUDDY_ENTRY}" "$@"
+  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${ROOT_DIR}/pantry:${NODE_PATH:-}" bun "${BUDDY_ENTRY}" "$@"
 fi
 
 echo "Pantry did not provide a local bun runtime." >&2
