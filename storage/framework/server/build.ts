@@ -53,12 +53,6 @@ async function main() {
     process.exit(1)
   }
 
-  // await outro({
-  //   dir: import.meta.dir,
-  //   startTime,
-  //   result,
-  // })
-
   await useCustomOrDefaultServerConfig()
 
   log.info('Building app...')
@@ -97,35 +91,43 @@ async function main() {
     process.exit(1)
   }
 
-  // Process files in the ./app folder
+  // Rewrite import paths in bundled app code.
+  // The bundler emits imports relative to the source tree (storage/framework/server/...)
+  // but in the Docker image these resolve from dist/. Only rewrite exact import path
+  // segments to avoid corrupting unrelated strings.
   const glob2 = new Bun.Glob('**/*.js')
   const appPath = path.userServerPath('app')
   const scanOptions2 = { cwd: appPath, onlyFiles: true }
+  const importPathPattern = /from\s+["']([^"']*storage\/framework\/server)([^"']*)["']/g
 
   for await (const file of glob2.scan(scanOptions2)) {
     const filePath = path.resolve(appPath, file)
     let content = readFileSync(filePath, 'utf-8')
-    if (content.includes('storage/framework/server')) {
-      content = content.replace(/storage\/framework\/server/g, 'dist')
+    if (importPathPattern.test(content)) {
+      importPathPattern.lastIndex = 0
+      content = content.replace(importPathPattern, (_, _prefix, suffix) => `from "dist${suffix}"`)
       writeFileSync(filePath, content, 'utf-8')
-      log.info(`Updated imports in ${file}`)
+      log.info(`Rewrote import paths in ${file}`)
     }
   }
 
-  // Process files in the ./dist folder
-  // need to remove export `{ ENV_KEY, ENV_SECRET, fromEnv };` from whatever file that contains it in the dist/*
-  // TODO: test later, potentially a bundler issue
+  // Strip re-exported env internals from the bundled dist.
+  // Bun's bundler sometimes hoists and re-exports these from @stacksjs/env,
+  // which causes duplicate export errors at runtime. We strip the specific
+  // export statement rather than a broad string match.
   const glob3 = new Bun.Glob('**/*.js')
   const distPath = path.userServerPath('dist')
   const scanOptions3 = { cwd: distPath, onlyFiles: true }
+  const envExportPattern = /export\s*\{\s*ENV_KEY\s*,\s*ENV_SECRET\s*,\s*fromEnv\s*\}\s*;?/g
 
   for await (const file of glob3.scan(scanOptions3)) {
     const filePath = path.resolve(distPath, file)
     let content = readFileSync(filePath, 'utf-8')
-    if (content.includes('export { ENV_KEY, ENV_SECRET, fromEnv };')) {
-      content = content.replace(/export { ENV_KEY, ENV_SECRET, fromEnv };/g, '')
+    if (envExportPattern.test(content)) {
+      envExportPattern.lastIndex = 0
+      content = content.replace(envExportPattern, '/* stripped: env re-export */')
       writeFileSync(filePath, content, 'utf-8')
-      log.info(`Updated imports in ${file}`)
+      log.info(`Stripped env re-export in ${file}`)
       break
     }
   }

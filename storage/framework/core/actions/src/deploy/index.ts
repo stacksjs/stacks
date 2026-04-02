@@ -161,17 +161,8 @@ if (!blogDistExists) {
   if (isVerbose) log.debug('Pre-built blog found at dist/blog, skipping build')
 }
 
-// Skip views build for now - vite-config is not set up
-// TODO: Set up vite-config for views build
-// if (config.app.docMode !== true) {
-//   const viewsSpinner = spinner('Building views...')
-//   viewsSpinner.start()
-//   await runCommand('bun run build', {
-//     cwd: p.frameworkPath('views/web'),
-//     quiet: !isVerbose,
-//   })
-//   viewsSpinner.succeed('Views built')
-// }
+// Views are served via STX at runtime (SSR) — no pre-build step needed.
+// Static site generation (SSG) can be added here in the future if required.
 if (isVerbose) log.debug('Skipping views build (vite-config not configured)')
 
 // await runCommand('bun run build-edge', {
