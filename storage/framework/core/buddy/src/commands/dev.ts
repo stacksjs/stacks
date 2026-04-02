@@ -376,10 +376,7 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
   const verbose = options.verbose ?? false
 
   try {
-    // Resolve rpx from the project root (buddy's nested copy may lack src/ files
-    // needed for Bun's "bun" export condition in the package.json)
-    const rpxPath = projectPath('node_modules/@stacksjs/rpx')
-    const { startProxies } = await import(rpxPath)
+    const { startProxies } = await import('@stacksjs/rpx')
 
     // Use multi-proxy mode so rpx generates a SINGLE cert covering all domains
     await startProxies({

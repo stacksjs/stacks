@@ -87,8 +87,7 @@ async function startReverseProxy(): Promise<boolean> {
   if (process.env.STACKS_PROXY_MANAGED) return false
 
   try {
-    const rpxPath = projectPath('node_modules/@stacksjs/rpx')
-    const { startProxies } = await import(rpxPath)
+    const { startProxies } = await import('@stacksjs/rpx')
 
     await startProxies({
       proxies: [
