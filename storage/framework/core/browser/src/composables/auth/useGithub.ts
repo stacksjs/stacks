@@ -19,8 +19,9 @@ declare global {
 }
 
 export function useGitHubOAuth(): GitHubOAuthReturn {
-  const clientId = import.meta.env.GITHUB_CLIENT_ID || ''
-  const baseUrl = import.meta.env.APP_URL || window.location.origin
+  const stacksConfig = (window as any).__STACKS_CONFIG__ || {}
+  const clientId = stacksConfig.GITHUB_CLIENT_ID || ''
+  const baseUrl = stacksConfig.APP_URL || window.location.origin
   const redirectUri = `${baseUrl}/auth/github/callback`
 
   const accessToken = ref<string | null>(null)
@@ -39,7 +40,7 @@ export function useGitHubOAuth(): GitHubOAuthReturn {
     error.value = null
 
     try {
-      const apiUrl = import.meta.env.APP_URL || window.location.origin
+      const apiUrl = stacksConfig.APP_URL || window.location.origin
       const res = await fetch(`${apiUrl}/api/github/token`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },

@@ -104,7 +104,7 @@ function autoInit(): void {
   window.dispatchEvent(new CustomEvent('stacks:api-ready'))
 
   // Log in development
-  if (import.meta.env?.DEV || (window as any).__STACKS_DEBUG__) {
+  if ((window as any).__STACKS_DEBUG__) {
     console.debug('[Stacks] Browser API initialized:', baseUrl)
   }
 }
