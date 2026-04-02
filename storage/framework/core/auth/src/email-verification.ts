@@ -96,7 +96,7 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
     .executeTakeFirst()
 
   // Build verification URL
-  const appUrl = config.app.url || 'https://localhost:5173'
+  const appUrl = config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
   const verificationUrl = `${appUrl}/verify-email/${user.id}/${token}`
   const appName = config.app.name || 'Stacks'
 

@@ -44,7 +44,7 @@ export async function confirmCardPayment(clientSecret: string, elements: any): P
       payment_method: {
         card: elements,
         billing_details: {
-          name: 'Chris Breuer',
+          name: stacksConfig.USER_NAME || '',
         },
       },
     })

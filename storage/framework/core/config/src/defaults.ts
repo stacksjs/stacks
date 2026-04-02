@@ -432,8 +432,8 @@ export const defaults: StacksOptions = {
     owner: '@stacksjs', // you may or may not add the @ prefix here (it is added automatically)
     repository: 'stacksjs/stacks',
     license: 'MIT',
-    author: 'Chris Breuer',
-    contributors: ['Chris Breuer <chris@stacksjs.com>'],
+    author: '',
+    contributors: [],
     defaultLanguage: 'en',
 
     webComponents: {
@@ -643,10 +643,8 @@ export const defaults: StacksOptions = {
   },
 
   team: {
-    name: 'Stacks',
-    members: {
-      'Chris Breuer': 'chris@stacksjs.com',
-    },
+    name: '',
+    members: {},
   },
 
   ui: {

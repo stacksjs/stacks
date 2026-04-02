@@ -36,10 +36,11 @@ export function initApi(options?: {
   baseUrl?: string
   onUnauthorized?: () => void
 }): void {
+  const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
   const baseUrl = options?.baseUrl || (
     typeof window !== 'undefined'
       ? `${window.location.origin}/api`
-      : 'http://localhost:3008/api'
+      : `http://localhost:${process.env.PORT_API || '3008'}/api`
   )
 
   configureBrowser({

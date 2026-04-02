@@ -5,7 +5,8 @@ import { ref } from '@stacksjs/stx'
 
 const token = useStorage('token', '')
 
-const baseUrl = 'http://localhost:3008'
+const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
+const baseUrl = stacksConfig.API_URL || (typeof window !== 'undefined' ? window.location.origin : `http://localhost:${process.env.PORT_API || '3008'}`)
 
 // Create singleton state
 const user = ref<UserData | null>(null)

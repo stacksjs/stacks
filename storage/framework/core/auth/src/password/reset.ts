@@ -77,7 +77,7 @@ export function passwordResets(email: string): PasswordResetActions {
   async function sendEmail(): Promise<void> {
     const token = await createResetToken()
 
-    const url = config.app.url || 'https://localhost:5173'
+    const url = config.app.url ? `https://${config.app.url}` : `http://localhost:${process.env.PORT || '3000'}`
     const resetUrl = `${url}/password/reset/${token}?email=${encodeURIComponent(email)}`
     const expireMinutes = getTokenExpireMinutes()
     const appName = config.app.name || 'Stacks'
