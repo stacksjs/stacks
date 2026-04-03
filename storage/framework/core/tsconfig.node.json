@@ -1,0 +1,47 @@
+// This config is for framework files
+{
+  "compilerOptions": {
+    // Project structure
+    "composite": true,
+    "incremental": true,
+
+    // Target environment
+    "target": "esnext",
+    "jsx": "preserve",
+    "lib": [
+      "ESNext",
+    ],
+
+    // Typing and pantry support
+    "typeRoots": [
+      "../../../pantry/@types",
+      "../../../pantry"
+    ],
+    "types": [
+      "bun",
+    ],
+
+    // Module resolution
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@stacksjs/*": [
+        "./*/src",
+        "../../../pantry/@stacksjs/*"
+      ],
+
+      "@/*": ["./../../../app/*"], // app root
+      "~/*": ["./../../../*"], // project root
+      "#/*": ["./../*"] // framework directory
+    },
+
+    // Output settings
+    "noEmit": true,
+  },
+  "include": [
+    "../../../**/*"
+  ],
+  "exclude": [
+    "../../../app"
+  ]
+}

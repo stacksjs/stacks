@@ -1,3 +1,11 @@
 {
-  "extends": "./storage/framework/core/tsconfig.json"
+  "files": [],
+  "references": [
+    {
+      "path": "./storage/framework/core/tsconfig.app.json"
+    },
+    {
+      "path": "./storage/framework/core/tsconfig.node.json"
+    },
+  ]
 }

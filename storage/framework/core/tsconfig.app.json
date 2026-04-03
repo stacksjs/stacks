@@ -1,0 +1,52 @@
+// This config is for files in the @root/app directory
+{
+  "compilerOptions": {
+    // Project structure
+    "composite": true,
+    "incremental": true,
+
+    // Target environment
+    "target": "esnext",
+    "jsx": "preserve",
+    "lib": [
+      "ESNext",
+      "dom",
+      "dom.iterable",
+      "webworker"
+    ],
+
+    // Typing and pantry support
+    "typeRoots": [
+      "../../../pantry/@types",
+      "../../../pantry"
+    ],
+    "types": [
+      "bun",
+    ],
+
+    // Module resolution
+    "moduleDetection": "force",
+    "moduleResolution": "bundler",
+    "paths": {
+      "@stacksjs/*": [
+        "./*/src",
+        "../../../pantry/@stacksjs/*"
+      ],
+
+      "@/*": ["./../../../app/*"], // app root
+      "~/*": ["./../../../*"], // project root
+      "#/*": ["./../*"] // framework directory
+    },
+
+    // Output settings
+    "noEmit": true,
+  },
+  "include": [
+    "../../../app/**/*",
+    "../../../app/*"
+  ],
+  "exclude": [
+    "./*/dist",
+    "dist"
+  ]
+}
