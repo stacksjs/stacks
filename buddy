@@ -3,6 +3,7 @@ set -e
 
 ROOT_DIR=$(CDPATH= cd -- "$(dirname "$0")" && pwd)
 PANTRY_LOCAL_BIN="${ROOT_DIR}/pantry/.bin"
+PANTRY_DIR="${ROOT_DIR}/pantry"
 USER_LOCAL_BIN="${HOME}/.local/bin"
 PANTRY_INSTALLER="${ROOT_DIR}/storage/framework/scripts/pantry-install"
 BUDDY_ENTRY="${ROOT_DIR}/storage/framework/core/buddy/src/cli.ts"
@@ -46,15 +47,24 @@ run_with_timeout() {
   return "${status}"
 }
 
+# Run buddy with the correct PATH and NODE_PATH for pantry resolution
 run_buddy() {
-  PANTRY_DIR="${ROOT_DIR}/pantry"
-  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${PANTRY_LOCAL_BIN}/bun" "${BUDDY_ENTRY}" "$@"
+  BUN_CMD="$1"
+  shift
+  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${BUN_CMD}" "${BUDDY_ENTRY}" "$@"
 }
 
+# Fast path: if pantry is already set up, run immediately
+# Check for pantry/.bin/bun first (managed runtime), then system bun
 if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
-  run_buddy "$@"
+  run_buddy "${PANTRY_LOCAL_BIN}/bun" "$@"
 fi
 
+if [ -d "${PANTRY_DIR}" ] && command -v bun >/dev/null 2>&1; then
+  run_buddy bun "$@"
+fi
+
+# Pantry not set up — bootstrap it
 if ! command -v pantry >/dev/null 2>&1; then
   if [ ! -x "${PANTRY_INSTALLER}" ]; then
     echo "Pantry installer not found at ${PANTRY_INSTALLER}" >&2
@@ -67,12 +77,13 @@ fi
 
 run_with_timeout "${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS}" pantry install
 
+# After install, try again
 if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
-  run_buddy "$@"
+  run_buddy "${PANTRY_LOCAL_BIN}/bun" "$@"
 fi
 
 if command -v bun >/dev/null 2>&1; then
-  exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${ROOT_DIR}/pantry:${NODE_PATH:-}" bun "${BUDDY_ENTRY}" "$@"
+  run_buddy bun "$@"
 fi
 
 echo "Pantry did not provide a local bun runtime." >&2
