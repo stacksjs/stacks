@@ -1059,12 +1059,19 @@
     "@stacksjs/actions@^0.70.23": {
       "name": "@stacksjs/actions",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.2.1"
+      }
     },
     "@stacksjs/ai@^0.70.23": {
       "name": "@stacksjs/ai",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@anthropic-ai/claude-agent-sdk": "^0.2.79",
+        "@stacksjs/ts-cloud": "^0.1.14"
+      }
     },
     "@stacksjs/alias@^0.70.23": {
       "name": "@stacksjs/alias",
@@ -1079,7 +1086,10 @@
     "@stacksjs/auth@^0.70.23": {
       "name": "@stacksjs/auth",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-auth": "^0.4.1"
+      }
     },
     "@stacksjs/build@^0.70.23": {
       "name": "@stacksjs/build",
@@ -1165,12 +1175,18 @@
     "@stacksjs/cli@^0.70.23": {
       "name": "@stacksjs/cli",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/clapp": "^0.2.0"
+      }
     },
     "@stacksjs/cloud@^0.70.23": {
       "name": "@stacksjs/cloud",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.14"
+      }
     },
     "@stacksjs/collections@^0.70.23": {
       "name": "@stacksjs/collections",
@@ -1180,12 +1196,18 @@
     "@stacksjs/config@^0.70.23": {
       "name": "@stacksjs/config",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "ts-pantry": "^0.8.16"
+      }
     },
     "@stacksjs/database@^0.70.23": {
       "name": "@stacksjs/database",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "bun-query-builder": "^0.1.12"
+      }
     },
     "@stacksjs/desktop@^0.70.23": {
       "name": "@stacksjs/desktop",
@@ -1195,7 +1217,11 @@
     "@stacksjs/dns@^0.70.23": {
       "name": "@stacksjs/dns",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/dnsx": "^0.2.2",
+        "@stacksjs/ts-cloud": "^0.1.14"
+      }
     },
     "@stacksjs/dnsx@^0.2.2": {
       "name": "@stacksjs/dnsx",
@@ -1208,7 +1234,10 @@
     "@stacksjs/email@^0.70.23": {
       "name": "@stacksjs/email",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.14"
+      }
     },
     "@stacksjs/enums@^0.70.23": {
       "name": "@stacksjs/enums",
@@ -1218,7 +1247,10 @@
     "@stacksjs/error-handling@^0.70.23": {
       "name": "@stacksjs/error-handling",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "ts-error-handling": "^0.1.1"
+      }
     },
     "@stacksjs/events@^0.70.23": {
       "name": "@stacksjs/events",
@@ -1287,7 +1319,11 @@
     "@stacksjs/orm@^0.70.23": {
       "name": "@stacksjs/orm",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-validation": "^0.4.9",
+        "bun-query-builder": "^0.1.12"
+      }
     },
     "@stacksjs/path@^0.70.23": {
       "name": "@stacksjs/path",
@@ -1307,7 +1343,11 @@
     "@stacksjs/router@^0.70.23": {
       "name": "@stacksjs/router",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/bun-router": "^0.0.2",
+        "ts-rate-limiter": "^0.4.0"
+      }
     },
     "@stacksjs/rpx@^0.11.2": {
       "name": "@stacksjs/rpx",
@@ -1326,7 +1366,10 @@
     "@stacksjs/security@^0.70.23": {
       "name": "@stacksjs/security",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "ts-security-crypto": "0.0.2"
+      }
     },
     "@stacksjs/server@^0.70.23": {
       "name": "@stacksjs/server",
@@ -1336,7 +1379,10 @@
     "@stacksjs/storage@^0.70.23": {
       "name": "@stacksjs/storage",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.14"
+      }
     },
     "@stacksjs/strings@^0.70.23": {
       "name": "@stacksjs/strings",
@@ -1384,7 +1430,10 @@
     "@stacksjs/testing@^0.70.23": {
       "name": "@stacksjs/testing",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-cloud": "^0.1.14"
+      }
     },
     "@stacksjs/tlsx@^0.13.0": {
       "name": "@stacksjs/tlsx",
@@ -1479,12 +1528,20 @@
     "@stacksjs/tunnel@^0.70.23": {
       "name": "@stacksjs/tunnel",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "localtunnels": "^0.2.7"
+      }
     },
     "@stacksjs/types@^0.70.23": {
       "name": "@stacksjs/types",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/bunpress": "^0.1.1",
+        "@stacksjs/ts-validation": "^0.4.10",
+        "bun-query-builder": "^0.1.12"
+      }
     },
     "@stacksjs/ui@^0.70.23": {
       "name": "@stacksjs/ui",
@@ -1494,12 +1551,18 @@
     "@stacksjs/utils@^0.70.23": {
       "name": "@stacksjs/utils",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/browser": "workspace:*"
+      }
     },
     "@stacksjs/validation@^0.70.23": {
       "name": "@stacksjs/validation",
       "version": "^0.70.23",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/ts-validation": "^0.4.9"
+      }
     },
     "@stripe/stripe-js@^8.7.0": {
       "name": "@stripe/stripe-js",
@@ -1752,23 +1815,15 @@
         "spreadsheets": "./dist/bin/cli.js"
       }
     },
-    "typescript@^5.9.3": {
-      "name": "typescript",
+    "typescriptlang.org@^5.9.3": {
+      "name": "typescriptlang.org",
       "version": "^5.9.3",
-      "source": "npm",
-      "bin": {
-        "tsc": "./bin/tsc",
-        "tsserver": "./bin/tsserver"
-      }
+      "source": "npm"
     },
-    "typescript@^6.0.2": {
-      "name": "typescript",
+    "typescriptlang.org@^6.0.2": {
+      "name": "typescriptlang.org",
       "version": "^6.0.2",
-      "source": "npm",
-      "bin": {
-        "tsc": "./bin/tsc",
-        "tsserver": "./bin/tsserver"
-      }
+      "source": "npm"
     }
   }
 }
