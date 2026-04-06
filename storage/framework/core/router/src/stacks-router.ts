@@ -987,8 +987,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     resource(name: string, handler: string, options?: ResourceRouteOptions) {
       const actions: ResourceAction[] = ['index', 'store', 'show', 'update', 'destroy']
 
-      // Apply only/except filters
-      let activeActions = options?.only
+      const activeActions = options?.only
         ? actions.filter(a => options.only!.includes(a))
         : options?.except
           ? actions.filter(a => !options.except!.includes(a))
@@ -996,32 +995,55 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
       const handlerBase = handler.replace(/Action$/, '')
 
-      for (const action of activeActions) {
-        switch (action) {
-          case 'index':
-            stacksRouter.get(`/${name}`, `${handlerBase}IndexAction`)
-            break
-          case 'store':
-            stacksRouter.post(`/${name}`, `${handlerBase}StoreAction`)
-            break
-          case 'show':
-            stacksRouter.get(`/${name}/:id`, `${handlerBase}ShowAction`)
-            break
-          case 'update':
-            stacksRouter.put(`/${name}/:id`, `${handlerBase}UpdateAction`)
-            break
-          case 'destroy':
-            stacksRouter.delete(`/${name}/:id`, `${handlerBase}DestroyAction`)
-            break
+      const registerResourceRoutes = () => {
+        for (const action of activeActions) {
+          switch (action) {
+            case 'index':
+              stacksRouter.get(`/${name}`, `${handlerBase}IndexAction`)
+              break
+            case 'store':
+              stacksRouter.post(`/${name}`, `${handlerBase}StoreAction`)
+              break
+            case 'show':
+              stacksRouter.get(`/${name}/:id`, `${handlerBase}ShowAction`)
+              break
+            case 'update':
+              stacksRouter.put(`/${name}/:id`, `${handlerBase}UpdateAction`)
+              break
+            case 'destroy':
+              stacksRouter.delete(`/${name}/:id`, `${handlerBase}DestroyAction`)
+              break
+          }
         }
       }
 
-      // Apply middleware to all resource routes if specified
+      // Wrap resource routes in a group if middleware is specified
       if (options?.middleware) {
-        // Middleware is applied via the group mechanism
+        stacksRouter.group({ middleware: options.middleware }, registerResourceRoutes)
+      }
+      else {
+        registerResourceRoutes()
       }
 
       return stacksRouter
+    },
+
+    // Match multiple HTTP methods for a single route
+    match(methods: string[], path: string, handler: StacksHandler) {
+      for (const method of methods) {
+        const m = method.toUpperCase()
+        const { fullPath, routeKey } = registerRoute(m, path, handler)
+        const wrappedHandler = createMiddlewareHandler(routeKey, handler)
+        switch (m) {
+          case 'GET': bunRouter.get(fullPath, wrappedHandler); break
+          case 'POST': bunRouter.post(fullPath, wrappedHandler); break
+          case 'PUT': bunRouter.put(fullPath, wrappedHandler); break
+          case 'PATCH': bunRouter.patch(fullPath, wrappedHandler); break
+          case 'DELETE': bunRouter.delete(fullPath, wrappedHandler); break
+          case 'OPTIONS': bunRouter.options(fullPath, wrappedHandler); break
+        }
+      }
+      return createChainableRoute(`${methods[0]}:${currentPrefix}${path}`)
     },
 
     // Health check route
@@ -1069,21 +1091,31 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Import routes from route registry
     async importRoutes(): Promise<void> {
+      // Load user-defined routes
       try {
-        // Load routes from the route registry
         const { loadRoutes } = await import('./route-loader')
         const routeRegistry = (await import('../../../../../app/Routes')).default
         await loadRoutes(routeRegistry)
+      }
+      catch (error) {
+        log.error('Failed to load route registry:', error)
+      }
 
-        // Also load ORM routes
+      // Load ORM-generated API routes
+      try {
         const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
         await import(ormRoutesPath)
+      }
+      catch (error) {
+        log.debug('ORM routes not available:', error)
+      }
 
-        // Load routes from discovered packages
+      // Load routes from discovered packages
+      try {
         await stacksRouter.loadDiscoveredRoutes()
       }
       catch (error) {
-        log.error('Failed to import routes:', error)
+        log.debug('Package route discovery skipped:', error)
       }
     },
 
@@ -1141,6 +1173,7 @@ export interface StacksRouterInstance {
   options: (path: string, handler: StacksHandler) => ChainableRoute
   group: (options: GroupOptions, callback: () => void | Promise<void>) => StacksRouterInstance | Promise<StacksRouterInstance>
   resource: (name: string, handler: string, options?: ResourceRouteOptions) => StacksRouterInstance
+  match: (methods: string[], path: string, handler: StacksHandler) => ChainableRoute
   health: () => StacksRouterInstance
   use: (middleware: ActionHandler) => StacksRouterInstance
   register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
