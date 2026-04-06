@@ -1035,12 +1035,24 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const { fullPath, routeKey } = registerRoute(m, path, handler)
         const wrappedHandler = createMiddlewareHandler(routeKey, handler)
         switch (m) {
-          case 'GET': bunRouter.get(fullPath, wrappedHandler); break
-          case 'POST': bunRouter.post(fullPath, wrappedHandler); break
-          case 'PUT': bunRouter.put(fullPath, wrappedHandler); break
-          case 'PATCH': bunRouter.patch(fullPath, wrappedHandler); break
-          case 'DELETE': bunRouter.delete(fullPath, wrappedHandler); break
-          case 'OPTIONS': bunRouter.options(fullPath, wrappedHandler); break
+          case 'GET':
+            bunRouter.get(fullPath, wrappedHandler)
+            break
+          case 'POST':
+            bunRouter.post(fullPath, wrappedHandler)
+            break
+          case 'PUT':
+            bunRouter.put(fullPath, wrappedHandler)
+            break
+          case 'PATCH':
+            bunRouter.patch(fullPath, wrappedHandler)
+            break
+          case 'DELETE':
+            bunRouter.delete(fullPath, wrappedHandler)
+            break
+          case 'OPTIONS':
+            bunRouter.options(fullPath, wrappedHandler)
+            break
         }
       }
       return createChainableRoute(`${methods[0]}:${currentPrefix}${path}`)
