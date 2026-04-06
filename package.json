@@ -69,7 +69,8 @@
     "perfect-debounce": "latest",
     "pretty-bytes": "latest",
     "ofetch": "latest",
-    "chart.js": "latest"
+    "chart.js": "latest",
+    "ts-broadcasting": "latest"
   },
   "devDependencies": {
     "bun-git-hooks": "^0.3.1"
