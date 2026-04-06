@@ -1,0 +1,15 @@
+<script server>
+const title = ''
+const description = ''
+const url = ''
+const icon = ''
+</script>
+
+<a href="{{ url }}" class="block p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 hover:-translate-y-0.5 transition-all group" target="_blank" rel="noopener noreferrer">
+  <div class="flex items-center gap-3 mb-3">
+    <span class="text-indigo-500 dark:text-indigo-400 [&>svg]:w-6 [&>svg]:h-6">{!! icon !!}</span>
+    <span class="text-base font-semibold text-neutral-900 dark:text-neutral-100">{{ title }}</span>
+    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 ml-auto text-neutral-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+  </div>
+  <p class="text-sm leading-relaxed">{{ description }}</p>
+</a>

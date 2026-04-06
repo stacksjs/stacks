@@ -1,3 +1,7 @@
+@extends('layouts/default')
+
+@include('theme')
+
 <script server>
 const appName = 'Stacks'
 const appVersion = '0.1.0'
@@ -7,575 +11,87 @@ const features = [
     title: 'Documentation',
     description: 'Explore our comprehensive guides and API references to get the most out of Stacks.',
     url: 'https://stacksjs.org/docs',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>`,
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>',
   },
   {
     title: 'GitHub',
     description: 'View the source code, report issues, and contribute to the Stacks ecosystem.',
     url: 'https://github.com/stacksjs/stacks',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>`,
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>',
   },
   {
     title: 'Discord',
     description: 'Join our community of developers. Get help, share ideas, and stay up to date.',
     url: 'https://discord.gg/stacksjs',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>`,
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>',
   },
   {
     title: 'Dashboard',
     description: 'Manage your application with the built-in admin dashboard and developer tools.',
     url: '/dashboard',
-    icon: `<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="card-icon"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>`,
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
   },
 ]
-
 </script>
 
-<!DOCTYPE html>
-<html lang="en" data-theme="dark">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{ appName }}</title>
-  <script>
-    (function() {
-      var t = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-      document.documentElement.setAttribute('data-theme', t);
-    })();
-  </script>
-  <style>
-    :root, [data-theme="dark"] {
-      --bg: #0e0e0e;
-      --bg-secondary: rgba(255, 255, 255, 0.03);
-      --bg-card: rgba(255, 255, 255, 0.04);
-      --bg-card-hover: rgba(255, 255, 255, 0.07);
-      --bg-input: rgba(255, 255, 255, 0.05);
-      --border: rgba(255, 255, 255, 0.08);
-      --border-hover: rgba(255, 255, 255, 0.14);
-      --text: #ececec;
-      --text-secondary: #a0a0a0;
-      --text-muted: #666;
-      --accent: #6366f1;
-      --accent-light: #818cf8;
-      --accent-glow: rgba(99, 102, 241, 0.25);
-      --success: #34d399;
-      --error: #f87171;
-      --warning: #fbbf24;
-      --warning-bg: rgba(245, 158, 11, 0.12);
-      --warning-border: rgba(245, 158, 11, 0.25);
-      --shadow: rgba(0, 0, 0, 0.4);
-      --toggle-bg: rgba(255, 255, 255, 0.08);
-      --toggle-hover: rgba(255, 255, 255, 0.12);
-    }
-
-    [data-theme="light"] {
-      --bg: #f8f8f8;
-      --bg-secondary: rgba(0, 0, 0, 0.02);
-      --bg-card: rgba(0, 0, 0, 0.02);
-      --bg-card-hover: rgba(0, 0, 0, 0.05);
-      --bg-input: #fff;
-      --border: rgba(0, 0, 0, 0.08);
-      --border-hover: rgba(0, 0, 0, 0.15);
-      --text: #1a1a1a;
-      --text-secondary: #555;
-      --text-muted: #999;
-      --accent: #4f46e5;
-      --accent-light: #6366f1;
-      --accent-glow: rgba(79, 70, 229, 0.2);
-      --success: #059669;
-      --error: #dc2626;
-      --warning: #d97706;
-      --warning-bg: rgba(245, 158, 11, 0.08);
-      --warning-border: rgba(245, 158, 11, 0.2);
-      --shadow: rgba(0, 0, 0, 0.08);
-      --toggle-bg: rgba(0, 0, 0, 0.05);
-      --toggle-hover: rgba(0, 0, 0, 0.1);
-    }
-
-    *, *::before, *::after {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-
-    body {
-      font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji';
-      background-color: var(--bg);
-      color: var(--text-secondary);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      -webkit-font-smoothing: antialiased;
-      -moz-osx-font-smoothing: grayscale;
-      transition: background-color 0.3s, color 0.3s;
-    }
-
-    .container {
-      width: 100%;
-      max-width: 64rem;
-      padding: 2rem;
-      position: relative;
-    }
-
-    .theme-toggle {
-      position: absolute;
-      top: 2rem;
-      right: 2rem;
-      width: 2.25rem;
-      height: 2.25rem;
-      border-radius: 0.5rem;
-      border: 1px solid var(--border);
-      background: var(--toggle-bg);
-      color: var(--text-secondary);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s;
-    }
-
-    .theme-toggle:hover {
-      background: var(--toggle-hover);
-      border-color: var(--border-hover);
-      color: var(--text);
-    }
-
-    .theme-toggle svg {
-      width: 1.125rem;
-      height: 1.125rem;
-    }
-
-    .header {
-      text-align: center;
-      margin-bottom: 3rem;
-    }
-
-    .logo {
-      display: inline-flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 1.5rem;
-    }
-
-    .logo-diamond {
-      width: 3rem;
-      height: 3rem;
-      background: linear-gradient(135deg, var(--accent-light), var(--accent));
-      transform: rotate(45deg);
-      border-radius: 0.5rem;
-      box-shadow: 0 0 40px var(--accent-glow);
-    }
-
-    .logo-text {
-      font-size: 2.25rem;
-      font-weight: 700;
-      color: var(--text);
-      letter-spacing: -0.025em;
-    }
-
-    .subtitle {
-      font-size: 1.125rem;
-      color: var(--text-muted);
-      max-width: 36rem;
-      margin: 0 auto;
-      line-height: 1.75;
-    }
-
-    .alpha-badge {
-      display: inline-block;
-      margin-top: 1rem;
-      padding: 0.375rem 1rem;
-      background: var(--warning-bg);
-      border: 1px solid var(--warning-border);
-      border-radius: 9999px;
-      font-size: 0.8125rem;
-      color: var(--warning);
-      font-weight: 600;
-      letter-spacing: 0.025em;
-      animation: pulse-glow 3s ease-in-out infinite;
-    }
-
-    @keyframes pulse-glow {
-      0%, 100% { box-shadow: 0 0 8px rgba(245, 158, 11, 0.08); }
-      50% { box-shadow: 0 0 16px rgba(245, 158, 11, 0.2); }
-    }
-
-    .version-badge {
-      display: inline-block;
-      margin-top: 0.5rem;
-      padding: 0.25rem 0.75rem;
-      background: rgba(99, 102, 241, 0.08);
-      border: 1px solid rgba(99, 102, 241, 0.15);
-      border-radius: 9999px;
-      font-size: 0.75rem;
-      color: var(--accent-light);
-      font-weight: 500;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 1rem;
-      margin-bottom: 3rem;
-    }
-
-    @media (max-width: 640px) {
-      .cards {
-        grid-template-columns: 1fr;
-      }
-    }
-
-    .card {
-      display: block;
-      padding: 1.5rem;
-      background: var(--bg-card);
-      border: 1px solid var(--border);
-      border-radius: 0.75rem;
-      text-decoration: none;
-      color: inherit;
-      transition: all 0.2s ease;
-    }
-
-    .card:hover {
-      background: var(--bg-card-hover);
-      border-color: var(--border-hover);
-      transform: translateY(-2px);
-      box-shadow: 0 10px 30px -10px var(--shadow);
-    }
-
-    .card-header {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      margin-bottom: 0.75rem;
-    }
-
-    .card-icon {
-      width: 1.5rem;
-      height: 1.5rem;
-      color: var(--accent-light);
-      flex-shrink: 0;
-    }
-
-    .card-title {
-      font-size: 1rem;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .card-arrow {
-      margin-left: auto;
-      color: var(--text-muted);
-      transition: color 0.2s, transform 0.2s;
-    }
-
-    .card:hover .card-arrow {
-      color: var(--accent-light);
-      transform: translateX(4px);
-    }
-
-    .card-description {
-      font-size: 0.875rem;
-      color: var(--text-secondary);
-      line-height: 1.625;
-    }
-
-    .footer {
-      text-align: center;
-      padding-top: 2rem;
-      border-top: 1px solid var(--border);
-    }
-
-    .tech-stack {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      flex-wrap: wrap;
-    }
-
-    .tech-link {
-      color: var(--text-muted);
-      text-decoration: none;
-      font-size: 0.8125rem;
-      transition: color 0.15s;
-    }
-
-    .tech-link:hover {
-      color: var(--accent-light);
-    }
-
-    .tech-separator {
-      color: var(--border);
-      font-size: 0.75rem;
-      user-select: none;
-    }
-
-    .env-badge {
-      display: inline-block;
-      margin-top: 0.75rem;
-      padding: 0.125rem 0.5rem;
-      background: rgba(16, 185, 129, 0.08);
-      border: 1px solid rgba(16, 185, 129, 0.15);
-      border-radius: 9999px;
-      font-size: 0.6875rem;
-      color: var(--success);
-      font-weight: 500;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
-    }
-
-    .subscribe-section {
-      text-align: center;
-      margin-bottom: 3rem;
-      padding: 2.5rem 2rem;
-      background: var(--bg-secondary);
-      border: 1px solid var(--border);
-      border-radius: 1rem;
-    }
-
-    .subscribe-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 0.5rem;
-    }
-
-    .subscribe-description {
-      font-size: 0.875rem;
-      color: var(--text-muted);
-      margin-bottom: 1.5rem;
-    }
-
-    .subscribe-form {
-      display: flex;
-      gap: 0.5rem;
-      max-width: 28rem;
-      margin: 0 auto;
-    }
-
-    @media (max-width: 480px) {
-      .subscribe-form {
-        flex-direction: column;
-      }
-    }
-
-    .subscribe-input {
-      flex: 1;
-      padding: 0.75rem 1rem;
-      background: var(--bg-input);
-      border: 1px solid var(--border);
-      border-radius: 0.5rem;
-      color: var(--text);
-      font-size: 0.875rem;
-      font-family: inherit;
-      outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
-    }
-
-    .subscribe-input::placeholder {
-      color: var(--text-muted);
-    }
-
-    .subscribe-input:focus {
-      border-color: var(--accent);
-      box-shadow: 0 0 0 3px var(--accent-glow);
-    }
-
-    .subscribe-btn {
-      padding: 0.75rem 1.5rem;
-      background: var(--accent);
-      border: none;
-      border-radius: 0.5rem;
-      color: #fff;
-      font-size: 0.875rem;
-      font-weight: 600;
-      font-family: inherit;
-      cursor: pointer;
-      transition: all 0.2s;
-      white-space: nowrap;
-    }
-
-    .subscribe-btn:hover {
-      background: var(--accent-light);
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px var(--accent-glow);
-    }
-
-    .subscribe-btn:active {
-      transform: translateY(0);
-    }
-
-    .subscribe-btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-      box-shadow: none;
-    }
-
-    .subscribe-feedback {
-      margin-top: 0.75rem;
-      font-size: 0.8125rem;
-      font-weight: 500;
-      min-height: 1.25rem;
-    }
-
-    .subscribe-feedback.success {
-      color: var(--success);
-    }
-
-    .subscribe-feedback.error {
-      color: var(--error);
-    }
-
-    .subscribe-privacy {
-      margin-top: 0.75rem;
-      font-size: 0.6875rem;
-      color: var(--text-muted);
-    }
-  </style>
-  <link rel="preconnect" href="https://fonts.bunny.net">
-  <link href="https://fonts.bunny.net/css?family=figtree:400,500,600,700" rel="stylesheet" />
-</head>
-<body>
-  <div class="container" data-stx-scope="theme">
-    <button class="theme-toggle" @click="toggle()" aria-label="Toggle theme">
-      <svg @show="isDark()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386l-1.591 1.591M21 12h-2.25m-.386 6.364l-1.591-1.591M12 18.75V21m-4.773-4.227l-1.591 1.591M5.25 12H3m4.227-4.773L5.636 5.636M15.75 12a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0z" /></svg>
-      <svg @show="!isDark()" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.718 9.718 0 0118 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 003 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 009.002-5.998z" /></svg>
-    </button>
-    <script>
-    (function() {
-      var initial = localStorage.getItem('theme') || (window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark');
-      var isDark = state(initial === 'dark');
-
-      function toggle() {
-        isDark.set(!isDark());
-        var next = isDark() ? 'dark' : 'light';
-        document.documentElement.setAttribute('data-theme', next);
-        localStorage.setItem('theme', next);
-      }
-
-      window.stx = window.stx || {};
-      window.stx._scopes = window.stx._scopes || {};
-      window.stx._scopes['theme'] = { isDark, toggle };
-    })();
-    </script>
-
-    <div class="header">
-      <div class="logo">
-        <div class="logo-diamond"></div>
-        <span class="logo-text">{{ appName }}</span>
-      </div>
-      <p class="subtitle">
-        Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
-      </p>
-      <span class="alpha-badge">Alpha Coming Soon</span>
-      <span class="version-badge">v{{ appVersion }}</span>
+@section('content')
+  <!-- Header -->
+  <div class="text-center mb-12">
+    <div class="inline-flex items-center gap-3 mb-6">
+      <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-indigo-600 rotate-45 rounded-lg shadow-lg shadow-indigo-500/25"></div>
+      <span class="text-4xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ appName }}</span>
     </div>
-
-    <div class="cards">
-      @foreach (features as feature)
-        <a href="{{ feature.url }}" class="card" target="_blank" rel="noopener noreferrer">
-          <div class="card-header">
-            {!! feature.icon !!}
-            <span class="card-title">{{ feature.title }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" style="width:1rem;height:1rem;" class="card-arrow"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
-          </div>
-          <p class="card-description">{{ feature.description }}</p>
-        </a>
-      @endforeach
-    </div>
-
-    <div class="subscribe-section" data-stx-scope="subscribe">
-      <h2 class="subscribe-title">Stay in the loop</h2>
-      <p class="subscribe-description">Get notified when we launch and receive updates on new features.</p>
-      <form class="subscribe-form" @submit.prevent="subscribe()">
-        <input
-          type="email"
-          class="subscribe-input"
-          @model="email"
-          placeholder="you@example.com"
-          required
-          autocomplete="email"
-        >
-        <button type="submit" class="subscribe-btn" :disabled="loading">
-          <span @text="loading ? 'Subscribing...' : 'Subscribe'"></span>
-        </button>
-      </form>
-      <div
-        class="subscribe-feedback"
-        @class="{ success: success(), error: error() }"
-        @show="feedback()"
-        @text="feedback"
-      ></div>
-      <p class="subscribe-privacy">No spam, unsubscribe at any time.</p>
-    </div>
-    <script>
-    (function() {
-      const email = state('');
-      const loading = state(false);
-      const feedback = state('');
-      const success = state(false);
-      const error = state(false);
-
-      async function subscribe() {
-        feedback.set('');
-        success.set(false);
-        error.set(false);
-
-        if (!email() || !email().includes('@')) {
-          feedback.set('Please enter a valid email address.');
-          error.set(true);
-          return;
-        }
-
-        loading.set(true);
-
-        try {
-          const res = await fetch('/api/email/subscribe', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ email: email(), source: 'homepage' })
-          });
-
-          const data = await res.json();
-
-          if (data.success) {
-            feedback.set(data.message === 'Already subscribed'
-              ? 'You are already subscribed!'
-              : 'Thanks for subscribing!');
-            success.set(true);
-            email.set('');
-          } else {
-            feedback.set(data.message || 'Something went wrong. Please try again.');
-            error.set(true);
-          }
-        } catch (err) {
-          feedback.set('Could not connect. Please try again later.');
-          error.set(true);
-        }
-
-        loading.set(false);
-      }
-
-      window.stx = window.stx || {};
-      window.stx._scopes = window.stx._scopes || {};
-      window.stx._scopes['subscribe'] = { email, loading, feedback, success, error, subscribe };
-    })();
-    </script>
-
-    <div class="footer">
-      <div class="tech-stack">
-        <a href="https://bun.sh" class="tech-link" target="_blank" rel="noopener noreferrer">Bun</a>
-        <span class="tech-separator">/</span>
-        <a href="https://www.typescriptlang.org" class="tech-link" target="_blank" rel="noopener noreferrer">TypeScript</a>
-        <span class="tech-separator">/</span>
-        <a href="https://github.com/stacksjs/stx" class="tech-link" target="_blank" rel="noopener noreferrer">STX</a>
-      </div>
-      <div class="env-badge">local</div>
+    <p class="text-lg max-w-xl mx-auto leading-relaxed">
+      Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
+    </p>
+    <div class="flex items-center justify-center gap-3 mt-4">
+      <span class="px-4 py-1.5 rounded-full text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">Alpha Coming Soon</span>
+      <span class="px-3 py-1 rounded-full text-xs font-medium text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20">v{{ appVersion }}</span>
     </div>
   </div>
-</body>
-</html>
+
+  <!-- Feature Cards -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+    @foreach (features as feature)
+      <a href="{{ feature.url }}" class="block p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 hover:-translate-y-0.5 transition-all group" target="_blank" rel="noopener noreferrer">
+        <div class="flex items-center gap-3 mb-3">
+          <span class="text-indigo-500 dark:text-indigo-400 [&>svg]:w-6 [&>svg]:h-6">{!! feature.icon !!}</span>
+          <span class="text-base font-semibold text-neutral-900 dark:text-neutral-100">{{ feature.title }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 ml-auto text-neutral-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+        </div>
+        <p class="text-sm leading-relaxed">{{ feature.description }}</p>
+      </a>
+    @endforeach
+  </div>
+
+  <!-- Subscribe Section -->
+  <div class="text-center p-8 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 mb-12">
+    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">Stay in the loop</h2>
+    <p class="text-sm mb-6">Get notified when we launch and receive updates on new features.</p>
+    <form class="flex gap-2 max-w-md mx-auto" action="/api/email/subscribe" method="POST">
+      <input
+        type="email"
+        name="email"
+        class="flex-1 px-4 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500"
+        placeholder="you@example.com"
+        required
+      >
+      <button type="submit" class="px-6 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-colors">
+        Subscribe
+      </button>
+    </form>
+    <p class="text-xs mt-3 text-neutral-400">No spam, unsubscribe at any time.</p>
+  </div>
+@endsection
+
+@section('footer')
+  <div class="text-center pt-8 border-t border-neutral-200 dark:border-neutral-800">
+    <div class="flex items-center justify-center gap-2 text-sm">
+      <a href="https://bun.sh" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">Bun</a>
+      <span class="text-neutral-300 dark:text-neutral-700">/</span>
+      <a href="https://www.typescriptlang.org" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">TypeScript</a>
+      <span class="text-neutral-300 dark:text-neutral-700">/</span>
+      <a href="https://github.com/stacksjs/stx" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">STX</a>
+    </div>
+  </div>
+@endsection
