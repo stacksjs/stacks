@@ -1,5 +1,7 @@
 @extends('layouts/default')
 
+@section('title', 'Stacks — Build modern web applications')
+
 @include('theme')
 
 <script server>
