@@ -1797,7 +1797,14 @@
     "ts-mocker@^0.1.7": {
       "name": "ts-mocker",
       "version": "^0.1.7",
-      "source": "npm"
+      "source": "npm",
+      "dependencies": {
+        "@stacksjs/clapp": "^0.2.0"
+      },
+      "bin": {
+        "mock": "./dist/bin/cli.js",
+        "ts-mocker": "./dist/bin/cli.js"
+      }
     },
     "ts-pantry@^0.8.16": {
       "name": "ts-pantry",

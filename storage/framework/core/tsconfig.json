@@ -1,5 +1,6 @@
 {
   "compilerOptions": {
+    "ignoreDeprecations": "6.0",
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
