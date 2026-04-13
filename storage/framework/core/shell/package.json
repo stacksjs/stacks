@@ -17,6 +17,11 @@
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": ["ohmyzsh", "zsh", "stacks"],
+  "exports": {
+    ".": {
+      "import": "./src/index.ts"
+    }
+  },
   "files": ["buddy.plugin.zsh", "dist"],
   "scripts": {
     "build": "bun build.ts",

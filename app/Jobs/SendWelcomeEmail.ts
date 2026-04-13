@@ -1,3 +1,5 @@
+import { mail, template } from '@stacksjs/email'
+import { log } from '@stacksjs/logging'
 import { Job } from '@stacksjs/queue'
 
 export default new Job({
@@ -5,14 +7,32 @@ export default new Job({
   description: 'Send a welcome email to a new user',
   queue: 'emails',
   tries: 3,
-  backoff: 10,
+  backoff: 60,
   timeout: 30,
 
   async handle(payload: { email: string; name: string }) {
-    console.log(`Sending welcome email to ${payload.name} <${payload.email}>`)
+    const { email, name } = payload
 
-    // Your email sending logic here
-    // e.g. await mail.to(payload.email).send(new WelcomeEmail(payload))
+    if (!email) {
+      log.warn('[job] SendWelcomeEmail: no email provided')
+      return
+    }
+
+    log.debug(`[job] Sending welcome email to ${name || 'there'} <${email}>`)
+
+    const { html, text } = await template('welcome', {
+      subject: 'Welcome!',
+      variables: { name: name || 'there', email },
+    })
+
+    await mail.send({
+      to: email,
+      subject: 'Welcome to Stacks!',
+      html,
+      text,
+    })
+
+    log.info(`[job] Welcome email sent to ${email}`)
   },
 })
 
