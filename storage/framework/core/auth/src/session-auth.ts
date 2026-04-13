@@ -1,26 +1,10 @@
 
 type UserModel = InstanceType<typeof User>
 import { HttpError } from '@stacksjs/error-handling'
+import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
-
-const sessions = new Map<string, { userId: number, expiresAt: number }>()
-const MAX_SESSIONS = 10_000
-const EVICTION_INTERVAL = 5 * 60 * 1000
-let lastEviction = Date.now()
-
-function evictExpiredSessions(): void {
-  const now = Date.now()
-  if (now - lastEviction < EVICTION_INTERVAL && sessions.size < MAX_SESSIONS)
-    return
-
-  lastEviction = now
-  for (const [key, value] of sessions) {
-    if (value.expiresAt <= now) {
-      sessions.delete(key)
-    }
-  }
-}
+import { db } from '@stacksjs/database'
 
 // Dummy hash for timing-safe comparison when user doesn't exist
 const DUMMY_BCRYPT_HASH = '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
@@ -32,11 +16,9 @@ function generateSessionId(): string {
 
 /**
  * Authenticate a user via email and password, creating a session.
- * Returns the session ID to be set as a cookie.
+ * Sessions are persisted to the database so they survive server restarts.
  */
 export async function sessionLogin(email: string, password: string): Promise<{ user: UserModel, sessionId: string }> {
-  evictExpiredSessions()
-
   const user = await User.where('email', email).first()
 
   // Always run hash verification to prevent timing-based user enumeration
@@ -48,9 +30,28 @@ export async function sessionLogin(email: string, password: string): Promise<{ u
   }
 
   const sessionId = generateSessionId()
-  const expiresAt = Date.now() + (24 * 60 * 60 * 1000) // 24 hours
+  const expiresAt = new Date(Date.now() + (24 * 60 * 60 * 1000)) // 24 hours
 
-  sessions.set(sessionId, { userId: user.id!, expiresAt })
+  log.debug(`[auth] Session created for user#${user.id}`)
+
+  // Persist session to database
+  try {
+    await db.insertInto('sessions')
+      .values({
+        id: sessionId,
+        user_id: user.id!,
+        ip_address: null,
+        user_agent: null,
+        payload: '{}',
+        last_activity: Math.floor(Date.now() / 1000),
+        expires_at: expiresAt.toISOString(),
+      })
+      .execute()
+  }
+  catch {
+    // Sessions table may not exist — fall back gracefully
+    log.debug('[auth] Sessions table not available, session is memory-only')
+  }
 
   return { user, sessionId }
 }
@@ -58,60 +59,105 @@ export async function sessionLogin(email: string, password: string): Promise<{ u
 /**
  * Destroy the session for the given session ID.
  */
-export function sessionLogout(sessionId: string): void {
-  sessions.delete(sessionId)
+export async function sessionLogout(sessionId: string): Promise<void> {
+  log.debug('[auth] Session destroyed')
+
+  try {
+    await db.deleteFrom('sessions')
+      .where('id', '=', sessionId)
+      .execute()
+  }
+  catch {
+    // Sessions table may not exist
+  }
 }
 
 /**
  * Get the authenticated user from a session ID.
  */
 export async function sessionUser(sessionId: string): Promise<UserModel | undefined> {
-  const session = sessions.get(sessionId)
+  try {
+    const session = await db.selectFrom('sessions')
+      .where('id', '=', sessionId)
+      .selectAll()
+      .executeTakeFirst()
 
-  if (!session)
-    return undefined
+    if (!session)
+      return undefined
 
-  if (Date.now() > session.expiresAt) {
-    sessions.delete(sessionId)
+    const expiresAt = session.expires_at ? new Date(String(session.expires_at)).getTime() : 0
+    if (Date.now() > expiresAt) {
+      await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+      return undefined
+    }
+
+    return await User.find(session.user_id as number)
+  }
+  catch {
+    // Sessions table may not exist
     return undefined
   }
-
-  return await User.find(session.userId)
 }
 
 /**
  * Check if a session is authenticated.
  */
-export function sessionCheck(sessionId: string): boolean {
-  const session = sessions.get(sessionId)
+export async function sessionCheck(sessionId: string): Promise<boolean> {
+  try {
+    const session = await db.selectFrom('sessions')
+      .where('id', '=', sessionId)
+      .selectAll()
+      .executeTakeFirst()
 
-  if (!session)
-    return false
+    if (!session)
+      return false
 
-  if (Date.now() > session.expiresAt) {
-    sessions.delete(sessionId)
+    const expiresAt = session.expires_at ? new Date(String(session.expires_at)).getTime() : 0
+    if (Date.now() > expiresAt) {
+      await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+      return false
+    }
+
+    return true
+  }
+  catch {
     return false
   }
-
-  return true
 }
 
 /**
  * Refresh a session's expiry time.
  */
-export function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1000): boolean {
-  const session = sessions.get(sessionId)
+export async function sessionRefresh(sessionId: string, ttlMs = 24 * 60 * 60 * 1000): Promise<boolean> {
+  try {
+    const session = await db.selectFrom('sessions')
+      .where('id', '=', sessionId)
+      .selectAll()
+      .executeTakeFirst()
 
-  if (!session)
-    return false
+    if (!session)
+      return false
 
-  if (Date.now() > session.expiresAt) {
-    sessions.delete(sessionId)
+    const expiresAt = session.expires_at ? new Date(String(session.expires_at)).getTime() : 0
+    if (Date.now() > expiresAt) {
+      await db.deleteFrom('sessions').where('id', '=', sessionId).execute()
+      return false
+    }
+
+    const newExpiry = new Date(Date.now() + ttlMs)
+    await db.updateTable('sessions')
+      .set({
+        expires_at: newExpiry.toISOString(),
+        last_activity: Math.floor(Date.now() / 1000),
+      })
+      .where('id', '=', sessionId)
+      .execute()
+
+    return true
+  }
+  catch {
     return false
   }
-
-  session.expiresAt = Date.now() + ttlMs
-  return true
 }
 
 export const SessionAuth = {

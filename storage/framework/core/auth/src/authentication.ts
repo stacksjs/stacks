@@ -14,10 +14,19 @@ import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, User } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { Buffer } from 'node:buffer'
-import { timingSafeEqual } from 'node:crypto'
+import { createHash, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
+import { log } from '@stacksjs/logging'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
+
+/**
+ * Hash a token using SHA-256 before storing in the database.
+ * The plain token is returned to the user; only the hash is persisted.
+ */
+function hashToken(token: string): string {
+  return createHash('sha256').update(token).digest('hex')
+}
 import { parseScopes } from './tokens'
 
 export class Auth {
@@ -316,22 +325,26 @@ export class Auth {
     // Set token expiry
     const expiresAt = options?.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 30 * 24 * 60 * 60 * 1000))
 
-    // Store the token in the database
+    // Hash the token before storing — only the hash is persisted
+    const hashedToken = hashToken(token)
+    log.debug(`[auth] Creating token for user#${user.id}: ${name}`)
+
+    // Store the hashed token in the database
     await db.insertInto('oauth_access_tokens')
       .values({
         user_id: user.id,
         oauth_client_id: client.id,
         name,
-        token,
+        token: hashedToken,
         scopes: JSON.stringify(abilities),
         revoked: false,
         expires_at: formatDate(expiresAt),
       })
       .execute()
 
-    // Get the inserted token record by the unique token value
+    // Get the inserted token record by the hashed value
     const insertedToken = await db.selectFrom('oauth_access_tokens')
-      .where('token', '=', token)
+      .where('token', '=', hashedToken)
       .selectAll()
       .executeTakeFirst()
 
@@ -414,8 +427,23 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken || accessToken.token !== plainToken)
+    // Compare hashed token using timing-safe comparison
+    if (!accessToken)
       return false
+
+    const hashedPlainToken = hashToken(plainToken)
+    const storedHash = String(accessToken.token)
+    if (hashedPlainToken.length !== storedHash.length)
+      return false
+
+    const isMatch = timingSafeEqual(
+      Buffer.from(hashedPlainToken, 'utf-8'),
+      Buffer.from(storedHash, 'utf-8'),
+    )
+    if (!isMatch)
+      return false
+
+    log.debug(`[auth] Token validated for token#${accessToken.id}`)
 
     // Check if token is expired
     if (accessToken.expires_at && new Date(String(accessToken.expires_at)) < new Date()) {
