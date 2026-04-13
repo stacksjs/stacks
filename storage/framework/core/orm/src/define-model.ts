@@ -1,5 +1,6 @@
 import { createModel, type ModelDefinition as BQBModelDefinition } from 'bun-query-builder'
 import type { InferRelationNames } from 'bun-query-builder'
+import { log } from '@stacksjs/logging'
 
 // Extended model definition that provides proper contextual typing for factory callbacks.
 // BrowserModelDefinition from bun-query-builder uses BrowserTypedAttribute<unknown> which
@@ -95,6 +96,7 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
     const original = baseModel[method]
     if (typeof original === 'function') {
       baseModel[method] = async function (...args: any[]) {
+        log.debug(`[orm] Query ${String(baseModel.name || 'unknown')}: ${method}(${args.length ? JSON.stringify(args) : ''})`)
         const result = await (original as Function).apply(this, args)
         if (Array.isArray(result)) return result.map((r: any) => castAttributes(r, casts, 'get'))
         if (result && typeof result === 'object') return castAttributes(result, casts, 'get')
@@ -107,6 +109,7 @@ function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Re
     const original = baseModel[method]
     if (typeof original === 'function') {
       baseModel[method] = async function (...args: any[]) {
+        log.debug(`[orm] ${method.charAt(0).toUpperCase() + method.slice(1)} ${String(baseModel.name || 'unknown')}`, args[0])
         // Cast the input data before writing
         if (args[0] && typeof args[0] === 'object' && !Array.isArray(args[0])) {
           args[0] = castAttributes(args[0], casts, 'set')
@@ -175,6 +178,8 @@ import { createTwoFactorMethods } from './traits/two-factor'
  * ```
  */
 export function defineModel<const TDef extends ModelDefinition>(definition: TDef) {
+  log.debug(`[orm] Defining model: ${definition.name} (table: ${definition.table})`)
+
   // Build event hooks from observer configuration
   const hooks = buildEventHooks(definition as unknown as BQBModelDefinition)
 
@@ -251,6 +256,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
 
   if (events.includes('create')) {
     hooks.beforeCreate = async (model: any) => {
+      log.debug(`[orm] Create ${modelName}`, model)
       const shouldProceed = await dispatchBeforeEvent(`${modelName}:creating`, model)
       if (!shouldProceed) throw new Error(`[ORM] ${modelName}:creating event cancelled the operation`)
     }
@@ -258,6 +264,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   }
   if (events.includes('update')) {
     hooks.beforeUpdate = async (model: any) => {
+      log.debug(`[orm] Update ${modelName}#${model?.id ?? 'unknown'}`, model)
       const shouldProceed = await dispatchBeforeEvent(`${modelName}:updating`, model)
       if (!shouldProceed) throw new Error(`[ORM] ${modelName}:updating event cancelled the operation`)
     }
@@ -265,6 +272,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   }
   if (events.includes('delete')) {
     hooks.beforeDelete = async (model: any) => {
+      log.debug(`[orm] Delete ${modelName}#${model?.id ?? 'unknown'}`)
       const shouldProceed = await dispatchBeforeEvent(`${modelName}:deleting`, model)
       if (!shouldProceed) throw new Error(`[ORM] ${modelName}:deleting event cancelled the operation`)
     }

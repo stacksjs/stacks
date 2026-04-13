@@ -1,0 +1,43 @@
+<!--
+  Email Verification Template
+
+  Variables:
+  - appName: Application name
+  - verificationUrl: Email verification URL
+  - expiryMinutes: Token expiration time in minutes
+  - userName: User's name or email
+  - primaryColor: Primary brand color
+-->
+
+<h2 style="margin: 0 0 20px; color: #111827; font-size: 20px; font-weight: 600;">Verify Your Email Address</h2>
+
+<p style="margin: 0 0 20px; color: #4b5563; font-size: 16px;">
+  Hi {{ userName }}, please verify your email address to complete your <strong>{{ appName }}</strong> account setup. Click the button below to verify.
+</p>
+
+<table role="presentation" cellpadding="0" cellspacing="0" style="margin: 30px 0;">
+  <tr>
+    <td>
+      <a href="{{ verificationUrl }}" class="button" style="display: inline-block; padding: 14px 32px; background-color: {{ primaryColor }}; color: #ffffff !important; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px;">
+        Verify Email Address
+      </a>
+    </td>
+  </tr>
+</table>
+
+<p style="margin: 0 0 20px; color: #6b7280; font-size: 14px;">
+  This verification link will expire in <strong>{{ expiryMinutes }} minutes</strong>.
+</p>
+
+<p style="margin: 0 0 20px; color: #6b7280; font-size: 14px;">
+  If you did not create an account, please ignore this email.
+</p>
+
+<hr style="border: none; border-top: 1px solid #e5e7eb; margin: 30px 0;">
+
+<p style="margin: 0; color: #9ca3af; font-size: 12px;">
+  If the button above doesn't work, copy and paste the following URL into your browser:
+</p>
+<p style="margin: 10px 0 0; word-break: break-all;">
+  <a href="{{ verificationUrl }}" style="color: {{ primaryColor }}; font-size: 12px;">{{ verificationUrl }}</a>
+</p>

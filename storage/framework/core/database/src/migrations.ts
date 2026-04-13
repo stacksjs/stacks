@@ -15,6 +15,7 @@ const log = {
   info: (...args: any[]) => typeof _log?.info === 'function' ? _log.info(...args) : console.log(...args),
   success: (msg: string) => typeof _log?.success === 'function' ? _log.success(msg) : console.log(msg),
   warn: (msg: string) => typeof _log?.warn === 'function' ? _log.warn(msg) : console.warn(msg),
+  debug: (...args: any[]) => typeof _log?.debug === 'function' ? _log.debug(...args) : console.debug(...args),
 }
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -123,6 +124,7 @@ function preprocessSqliteMigrations(): void {
   }
 
   for (const file of files) {
+    log.debug(`[migration] Running: ${file}`)
     const filePath = join(migrationsDir, file)
     const content = readFileSync(filePath, 'utf-8')
     const statements = content
@@ -320,6 +322,7 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     const modelsDir = path.userModelsPath()
 
     // Execute existing migration files
+    log.debug(`[migration] Running migrations from: ${modelsDir}`)
     await qbExecuteMigration(modelsDir)
 
     log.success('Database migration completed.')
@@ -455,6 +458,7 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
     const modelsDir = path.userModelsPath()
     const dialect = getDialect()
 
+    log.debug(`[migration] Generating migrations for dialect: ${dialect}, models: ${modelsDir}`)
     const result = await qbGenerateMigration(modelsDir, { dialect })
 
     if (result.hasChanges) {

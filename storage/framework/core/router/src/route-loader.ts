@@ -10,6 +10,7 @@
  */
 
 import type { RouteDefinition, RouteRegistry } from '../../../../../app/Routes'
+import { log } from '@stacksjs/logging'
 import { route } from './stacks-router'
 
 /** Keys that should not have a prefix (loaded at root /) */
@@ -29,6 +30,7 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
       ? (config.prefix ? (config.prefix.startsWith('/') ? config.prefix : `/${config.prefix}`) : undefined)
       : (NO_PREFIX_KEYS.includes(key) ? undefined : `/${key}`)
     const middleware = normalizeMiddleware(config.middleware)
+    log.debug(`[route-loader] Loading: ${config.path} prefix=${prefix || '/'} middleware=[${middleware.join(', ')}]`)
 
     try {
       if (prefix || middleware.length > 0) {

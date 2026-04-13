@@ -160,7 +160,9 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
 async function resolveMiddlewareName(name: string): Promise<string> {
   const aliases = await getMiddlewareAliases()
   // If there's an alias mapping, use it; otherwise capitalize the first letter
-  return aliases[name] || (name.charAt(0).toUpperCase() + name.slice(1))
+  const resolved = aliases[name] || (name.charAt(0).toUpperCase() + name.slice(1))
+  log.debug(`[middleware] Resolved: ${name} → ${resolved}`)
+  return resolved
 }
 
 /**
@@ -242,6 +244,12 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     return runWithRequest<Promise<Response>>(enhancedReq, async () => {
       const middlewareEntries = routeMiddlewareRegistry.get(routeKey) || []
 
+      if (middlewareEntries.length > 0) {
+        const method = req.method
+        const urlPath = new URL(req.url).pathname
+        log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${method} ${urlPath}`)
+      }
+
       // Run middleware in order
       for (const middlewareEntry of middlewareEntries) {
         const { name: middlewareName, params } = parseMiddlewareName(middlewareEntry)
@@ -259,6 +267,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           }
           catch (error) {
             // Middleware threw an error — always convert to a proper HTTP response
+            log.debug(`[middleware] Blocked by: ${middlewareName}`)
             const err = error instanceof Error ? error : new Error(String(error))
             if ('statusCode' in err) {
               return await createMiddlewareErrorResponse(
@@ -884,6 +893,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
   function registerRoute(method: string, path: string, _handler: StacksHandler) {
     const fullPath = currentPrefix + path
     const routeKey = `${method}:${fullPath}`
+    log.debug(`[router] ${method} ${fullPath} → ${typeof _handler === 'string' ? _handler : 'function'}`)
 
     // Pre-populate middleware registry with group middleware
     if (currentGroupMiddleware.length > 0) {
@@ -950,12 +960,14 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       }
 
       // Apply middleware (can be string or array)
-      if (options.middleware) {
-        const middlewareList = Array.isArray(options.middleware)
-          ? options.middleware
-          : [options.middleware]
+      const middlewareList = options.middleware
+        ? (Array.isArray(options.middleware) ? options.middleware : [options.middleware])
+        : undefined
+      if (middlewareList) {
         currentGroupMiddleware = [...currentGroupMiddleware, ...middlewareList]
       }
+
+      log.debug(`[router] Entering group: prefix=${options.prefix || '/'} middleware=[${middlewareList?.join(', ') || ''}]`)
 
       // Call the callback
       const result = callback()
@@ -994,6 +1006,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           : actions
 
       const handlerBase = handler.replace(/Action$/, '')
+      log.debug(`[router] Resource: /${name} → ${handler} [${activeActions.join(', ')}]`)
 
       const registerResourceRoutes = () => {
         for (const action of activeActions) {
@@ -1030,6 +1043,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Match multiple HTTP methods for a single route
     match(methods: string[], path: string, handler: StacksHandler) {
+      log.debug(`[router] Match: [${methods.join(', ')}] ${path} → ${typeof handler === 'string' ? handler : 'function'}`)
       for (const method of methods) {
         const m = method.toUpperCase()
         const { fullPath, routeKey } = registerRoute(m, path, handler)
@@ -1084,6 +1098,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
     // Register routes from a package or module file within an optional group
     async register(routePath: string, options?: { prefix?: string, middleware?: string | string[] }): Promise<StacksRouterInstance> {
+      log.debug(`[router] Register: ${routePath} prefix=${options?.prefix || 'none'}`)
       const callback = async () => {
         await import(routePath)
       }
@@ -1104,6 +1119,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Import routes from route registry
     async importRoutes(): Promise<void> {
       // Load user-defined routes
+      log.debug('[router] Loading user routes from registry...')
       try {
         const { loadRoutes } = await import('./route-loader')
         const routeRegistry = (await import('../../../../../app/Routes')).default
@@ -1114,6 +1130,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       }
 
       // Load ORM-generated API routes
+      log.debug('[router] Loading ORM routes...')
       try {
         const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
         await import(ormRoutesPath)
@@ -1123,6 +1140,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       }
 
       // Load routes from discovered packages
+      log.debug('[router] Loading discovered package routes...')
       try {
         await stacksRouter.loadDiscoveredRoutes()
       }
@@ -1152,6 +1170,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           const pkgDir = `${pantryDir}/${pkgName}`
 
           for (const routeFile of routeList) {
+            log.debug(`[router] Discovered route: ${pkgName} → ${routeFile}`)
             const fullPath = routeFile.startsWith('/') ? routeFile : `${pkgDir}/${routeFile}`
             const prefix = meta?.routePrefix
             const middleware = meta?.routeMiddleware
@@ -1208,6 +1227,7 @@ let routesLoadPromise: Promise<void> | null = null
 export async function serverResponse(request: Request, _body?: string): Promise<Response> {
   // Load routes on first request — use a shared promise to prevent double-loading
   if (!routesLoadPromise) {
+    log.debug('[router] Loading routes for first time...')
     routesLoadPromise = route.importRoutes().catch((err) => {
       routesLoadPromise = null
       throw err

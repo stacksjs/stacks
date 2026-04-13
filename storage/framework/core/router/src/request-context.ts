@@ -8,6 +8,7 @@
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import process from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { log } from '@stacksjs/logging'
 
 // AsyncLocalStorage for request context
 const requestStorage = new AsyncLocalStorage<EnhancedRequest>()
@@ -17,6 +18,7 @@ const requestStorage = new AsyncLocalStorage<EnhancedRequest>()
  * Called by middleware/router when handling a request
  */
 export function setCurrentRequest(req: EnhancedRequest): void {
+  log.debug(`[request] ${req.method} ${new URL(req.url).pathname}`)
   // Use enterWith to set the request context for the current async scope.
   // This is useful for testing and middleware that operate outside of runWithRequest.
   requestStorage.enterWith(req)

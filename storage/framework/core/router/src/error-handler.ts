@@ -7,6 +7,7 @@
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
 import process from 'node:process'
+import { log } from '@stacksjs/logging'
 import {
   createErrorHandler,
   renderProductionErrorPage,
@@ -229,6 +230,7 @@ export async function createErrorResponse(
   },
 ): Promise<Response> {
   const status = options?.status || 500
+  log.debug(`[error] ${status} ${error.message}`)
   const isDevelopment = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
 
   if (!isDevelopment) {

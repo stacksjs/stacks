@@ -1,4 +1,5 @@
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import { fs } from '@stacksjs/storage'
 import { resourcesPath } from '@stacksjs/path'
 import { join } from 'node:path'
@@ -202,8 +203,7 @@ export async function template(
       return result
     }
     catch (error: unknown) {
-      const message = error instanceof Error ? error.message : String(error)
-      console.error(`[Email Template] STX render error for "${templateName}":`, message)
+      log.warn(`[email] STX template rendering failed for ${templateName}:`, error)
       return { html: '', text: '' }
     }
   }
