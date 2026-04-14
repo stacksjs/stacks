@@ -98,8 +98,8 @@ const hourlyStats = await receipts.fetchPrintsPerHour(startDate, endDate)
 
 ```ts
 const newReceipt = await receipts.store({
-  print_device_id: 1,
-  order_id: 123,
+  print*device*id: 1,
+  order*id: 123,
   status: 'success',
   size: 1024,
   pages: 1,
@@ -113,15 +113,15 @@ const newReceipt = await receipts.store({
 ```ts
 const newReceipts = await receipts.bulkStore([
   {
-    print_device_id: 1,
-    order_id: 123,
+    print*device*id: 1,
+    order*id: 123,
     status: 'success',
     size: 1024,
     pages: 1,
   },
   {
-    print_device_id: 2,
-    order_id: 124,
+    print*device*id: 2,
+    order*id: 124,
     status: 'success',
     size: 2048,
     pages: 2,
@@ -154,11 +154,13 @@ const updatedJob = await receipts.updatePrintJob(1, 2048, 2, 750)
 ### Delete Receipts
 
 Single receipt deletion:
+
 ```ts
 const deleted = await receipts.destroy(1) // Returns true if successful
 ```
 
 Bulk deletion:
+
 ```ts
 const deletedCount = await receipts.bulkDestroy([1, 2, 3]) // Returns number of receipts deleted
 ```
@@ -194,8 +196,8 @@ const response = await fetch('/commerce/printers/receipts', {
     'Content-Type': 'application/json',
   },
   body: JSON.stringify({
-    print_device_id: 1,
-    order_id: 123,
+    print*device*id: 1,
+    order*id: 123,
     status: 'success',
     size: 1024,
     pages: 1,
@@ -224,15 +226,15 @@ A successful response includes the receipt data with all its attributes:
 {
   "id": 1,
   "uuid": "550e8400-e29b-41d4-a716-446655440000",
-  "print_device_id": 1,
-  "order_id": 123,
+  "print*device*id": 1,
+  "order*id": 123,
   "status": "success",
   "size": 1024,
   "pages": 1,
   "duration": 500,
   "timestamp": "2024-01-01T00:00:00.000Z",
-  "created_at": "2024-01-01T00:00:00.000Z",
-  "updated_at": "2024-01-01T00:00:00.000Z"
+  "created*at": "2024-01-01T00:00:00.000Z",
+  "updated*at": "2024-01-01T00:00:00.000Z"
 }
 ```
 
@@ -254,8 +256,8 @@ Example error handling in your code:
 ```ts
 try {
   const receipt = await receipts.store({
-    print_device_id: 1,
-    order_id: 123,
+    print*device*id: 1,
+    order*id: 123,
     status: 'success',
     size: 1024,
     pages: 1,

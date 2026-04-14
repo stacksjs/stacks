@@ -4,19 +4,19 @@ const subcategory = ''
 const filter = ''
 </script>
 <ForumLayout :route="routeType">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <div class="grid gap-8 grid-cols-1 lg:grid-cols-3">
     <div class="lg:col-span-2">
       <ForumBreadcrumb :items="breadcrumbItems" />
 
       <div class="mb-6">
-        <div class="bg-gray-100 px-4 py-3 rounded-t-md flex items-center justify-between">
+        <div class="flex items-center justify-between px-4 py-3 bg-gray-100 rounded-t-md">
           <div>
-            <h1 class="text-xl font-bold">{{ categoryTitle }}</h1>
-            <p class="text-sm text-gray-600 mt-1">{{ categoryDescription }}</p>
+            <h1 class="font-bold text-xl">{{ categoryTitle }}</h1>
+            <p class="mt-1 text-gray-600 text-sm">{{ categoryDescription }}</p>
           </div>
 
           <div>
-            <a href="/forum/new-topic" class="px-4 py-2 bg-primary text-white rounded-md hover:opacity-90">New Topic</a>
+            <a href="/forum/new-topic" class="px-4 py-2 text-white bg-primary rounded-md hover:opacity-90">New Topic</a>
           </div>
         </div>
       </div>

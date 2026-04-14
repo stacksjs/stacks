@@ -18,7 +18,7 @@ const { id, logoText, subtitle } = withDefaults(
 </script>
 
 <template>
-  <div id="{{ id }}" class="login-screen hidden">
+  <div id="{{ id }}" class="hidden login-screen">
     <div class="login-background">
       <div class="login-container">
         <button class="login-close-btn" onclick="closeLoginScreens()">×</button>

@@ -65,41 +65,41 @@ function isSelectField(col) {
 <div ref="pageRoot">
 <dialog
   id="{{ modalId }}"
-  class="modal-dialog backdrop:bg-black/50 backdrop:backdrop-blur-sm rounded-xl shadow-2xl border-0 p-0 w-full max-w-lg bg-white dark:bg-neutral-900"
+  class="p-0 max-w-lg w-full bg-white backdrop:bg-black/50 dark:bg-neutral-900 border-0 rounded-xl shadow-2xl backdrop:backdrop-blur-sm modal-dialog"
 >
   <form method="dialog" class="modal-form">
     <!-- Header - macOS style with vibrancy effect -->
-    <div class="flex items-center justify-between px-5 py-4 border-b border-neutral-200 dark:border-neutral-700 bg-neutral-50/80 dark:bg-neutral-800/80 rounded-t-xl">
+    <div class="flex items-center justify-between px-5 py-4 bg-neutral-50/80 dark:bg-neutral-800/80 border-b border-neutral-200 rounded-t-xl dark:border-neutral-700">
       <div>
-        <h2 class="text-base font-semibold text-neutral-900 dark:text-white">
+        <h2 class="font-semibold text-base text-neutral-900 dark:text-white">
           Create {{ modelName }}
         </h2>
-        <p class="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+        <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
           Add a new record to {{ tableName }}
         </p>
       </div>
       <button
         type="button"
-        class="modal-close-btn p-1.5 rounded-lg text-neutral-400 hover:text-neutral-600 hover:bg-neutral-200 dark:hover:text-neutral-300 dark:hover:bg-neutral-700 transition-colors"
+        class="p-1.5 text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 hover:bg-neutral-200 dark:hover:bg-neutral-700 rounded-lg transition-colors modal-close-btn"
         aria-label="Close"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       </button>
     </div>
 
     <!-- Body - Form Fields -->
-    <div class="px-5 py-4 space-y-4 max-h-[60vh] overflow-y-auto">
+    <div class="overflow-y-auto px-5 py-4 space-y-4 max-h-[60vh]">
       @foreach(formColumns as col)
         <div class="form-field">
           <label
             for="{{ modalId }}-{{ col.name }}"
-            class="block text-sm font-medium text-neutral-700 dark:text-neutral-300 mb-1.5"
+            class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-300"
           >
             {{ col.label }}
             @if(col.notnull && col.dflt_value === null)
-              <span class="text-red-500 ml-0.5">*</span>
+              <span class="ml-0.5 text-red-500">*</span>
             @endif
           </label>
 
@@ -108,7 +108,7 @@ function isSelectField(col) {
             <select
               id="{{ modalId }}-{{ col.name }}"
               name="{{ col.name }}"
-              class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-shadow"
               {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
             >
               <option value="">Select {{ col.label }}</option>
@@ -132,22 +132,22 @@ function isSelectField(col) {
               id="{{ modalId }}-{{ col.name }}"
               name="{{ col.name }}"
               rows="3"
-              class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none transition-shadow"
+              class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-shadow resize-none"
               placeholder="Enter {{ col.label.toLowerCase() }}"
               {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
             ></textarea>
 
           @elseif(getInputType(col) === 'checkbox')
             <!-- Checkbox toggle -->
-            <label class="flex items-center gap-3 cursor-pointer">
+            <label class="flex gap-3 items-center cursor-pointer">
               <input
                 type="checkbox"
                 id="{{ modalId }}-{{ col.name }}"
                 name="{{ col.name }}"
                 value="1"
-                class="w-4 h-4 rounded border-neutral-300 dark:border-neutral-600 text-blue-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
+                class="h-4 w-4 text-blue-600 border-neutral-300 rounded dark:border-neutral-600 focus:ring-2 focus:ring-blue-500 focus:ring-offset-0"
               />
-              <span class="text-sm text-neutral-600 dark:text-neutral-400">Enable {{ col.label.toLowerCase() }}</span>
+              <span class="text-neutral-600 text-sm dark:text-neutral-400">Enable {{ col.label.toLowerCase() }}</span>
             </label>
 
           @else
@@ -156,7 +156,7 @@ function isSelectField(col) {
               type="{{ getInputType(col) }}"
               id="{{ modalId }}-{{ col.name }}"
               name="{{ col.name }}"
-              class="w-full px-3 py-2 rounded-lg border border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-shadow"
+              class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-transparent focus:ring-2 focus:ring-blue-500 transition-shadow"
               placeholder="Enter {{ col.label.toLowerCase() }}"
               {{ col.notnull && col.dflt_value === null ? 'required' : '' }}
               {{ getInputType(col) === 'number' ? 'step="any"' : '' }}
@@ -164,7 +164,7 @@ function isSelectField(col) {
           @endif
 
           @if(col.dflt_value !== null)
-            <p class="mt-1 text-xs text-neutral-400 dark:text-neutral-500">
+            <p class="mt-1 text-neutral-400 text-xs dark:text-neutral-500">
               Default: {{ col.dflt_value }}
             </p>
           @endif
@@ -172,23 +172,23 @@ function isSelectField(col) {
       @endforeach
 
       @if(formColumns.length === 0)
-        <div class="text-center py-8 text-neutral-500 dark:text-neutral-400">
+        <div class="py-8 text-center text-neutral-500 dark:text-neutral-400">
           <p>No editable fields available for this model.</p>
         </div>
       @endif
     </div>
 
     <!-- Footer - Action buttons -->
-    <div class="flex items-center justify-end gap-3 px-5 py-4 border-t border-neutral-200 dark:border-neutral-700 bg-neutral-50/50 dark:bg-neutral-800/50 rounded-b-xl">
+    <div class="flex gap-3 items-center justify-end px-5 py-4 bg-neutral-50/50 dark:bg-neutral-800/50 border-neutral-200 border-t rounded-b-xl dark:border-neutral-700">
       <button
         type="button"
-        class="modal-close-btn px-4 py-2 text-sm font-medium text-neutral-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 rounded-lg hover:bg-neutral-50 dark:hover:bg-neutral-600 transition-colors"
+        class="px-4 py-2 font-medium text-neutral-700 text-sm dark:text-neutral-300 bg-white dark:bg-neutral-700 hover:bg-neutral-50 dark:hover:bg-neutral-600 border border-neutral-300 rounded-lg dark:border-neutral-600 transition-colors modal-close-btn"
       >
         Cancel
       </button>
       <button
         type="submit"
-        class="modal-submit-btn px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 disabled:opacity-50 transition-colors disabled:cursor-not-allowed modal-submit-btn"
         {{ formColumns.length === 0 ? 'disabled' : '' }}
       >
         Create {{ modelName }}
@@ -243,7 +243,7 @@ onMount(function() {
       // Show loading state
       submitBtn.disabled = true;
       submitBtn.innerHTML = `
-        <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white inline" fill="none" viewBox="0 0 24 24">
+        <svg class="inline -ml-1 mr-2 h-4 w-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
           <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
         </svg>

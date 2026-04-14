@@ -257,7 +257,7 @@ schedule.job('NewFeature')
 import { sendAt } from '@stacksjs/scheduler'
 
 // Get next run time for a cron pattern
-const nextRun = sendAt('0 9 * * *') // Next 9 AM
+const nextRun = sendAt('0 9 _ _ _') // Next 9 AM
 console.log(nextRun) // Date object
 ```
 
@@ -267,7 +267,7 @@ console.log(nextRun) // Date object
 import { timeout } from '@stacksjs/scheduler'
 
 // Get milliseconds until next run
-const ms = timeout('0 9 * * *')
+const ms = timeout('0 9 _ _ _')
 console.log(`Next run in ${ms}ms`)
 ```
 
@@ -324,17 +324,20 @@ The scheduler uses standard cron expressions:
 │ │ │ │ ┌───────────── month (1 - 12)
 │ │ │ │ │ ┌───────────── day of week (0 - 6) (Sunday = 0)
 │ │ │ │ │ │
-* * * * * *
+
+_ _ _ _ _ _
+
 ```
 
 Common patterns:
-- `* * * * *` - Every minute
-- `*/5 * * * *` - Every 5 minutes
-- `0 * * * *` - Every hour
-- `0 0 * * *` - Daily at midnight
-- `0 0 * * 0` - Weekly on Sunday
-- `0 0 1 * *` - Monthly on 1st
-- `0 9 * * 1-5` - Weekdays at 9 AM
+
+_ `_ _ _ _ _` - Every minute
+_ `_/5 _ _ _ _` - Every 5 minutes
+_ `0 _ _ _ _` - Every hour
+_ `0 0 _ _ _` - Daily at midnight
+_ `0 0 _ _ 0` - Weekly on Sunday
+_ `0 0 1 _ _` - Monthly on 1st
+_ `0 9 _ _ 1-5` - Weekdays at 9 AM
 
 ## Job Definition Example
 

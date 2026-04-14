@@ -108,21 +108,25 @@ const updatedGiftCard = await giftCards.updateBalance(1, -50) // Deduct 50 from 
 ### Delete Gift Cards
 
 Single gift card deletion:
+
 ```ts
 await giftCards.destroy(1) // Replace 1 with the gift card ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await giftCards.bulkDestroy([1, 2, 3]) // Array of gift card IDs to delete
 ```
 
 Delete expired gift cards:
+
 ```ts
 await giftCards.destroyExpired()
 ```
 
 Deactivate a gift card:
+
 ```ts
 await giftCards.deactivate(1) // Replace 1 with the gift card ID to deactivate
 ```

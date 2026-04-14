@@ -1,4 +1,4 @@
-<div class="home mt-4 flex flex-col items-center">
+<div class="flex flex-col items-center mt-4 home">
   <HomeTeam />
 
   <HomeSponsors />

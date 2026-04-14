@@ -20,7 +20,7 @@ It is interesting to note that this is not necessarily due to the complexity of 
 
 No matter which component or function library you are building, these concerns all have to be—and should be—addressed, one way or another.
 
-## What is a Composable/Atomic Library?
+## What is a Composable/Atomic Library
 
 Have you ever needed to reuse one of your components from Project A in Project B? Or have you ever needed to access a project-specific function from Project B? How about a beautiful, working modal experience? Or calendar components?
 
@@ -28,7 +28,7 @@ In concept, you can characterize a "composable library" as a collection of compo
 
 >Think of Lodash for "functions," and minimal HTML for the "components."
 
-## How do I know if it’s right for me?
+## How do I know if it’s right for me
 
 When wanting to adapt the "Composability-First Design" pattern, you will want to ask the following questions to identify whether or not this design pattern is a fit for you:
 

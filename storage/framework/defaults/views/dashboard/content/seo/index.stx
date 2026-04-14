@@ -397,45 +397,45 @@ function getPostTitleById(id: number): string {
         <!-- Header -->
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">SEO</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">SEO</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
               Optimize your blog posts for search engines
             </p>
           </div>
-          <div class="mt-4 flex space-x-3 sm:mt-0">
+          <div class="flex mt-4 space-x-3 sm:mt-0">
             <button
               type="button"
               onclick="openGlobalSettingsModal"
-              class="inline-flex items-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
-              <div class="i-hugeicons-settings-02 h-5 w-5 mr-1"></div>
+              <div class="mr-1 h-5 w-5 i-hugeicons-settings-02"></div>
               Global Settings
             </button>
             <button
               type="button"
               onclick="openBulkOptimizationModal"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
-              <div class="i-hugeicons-magic-wand-05 h-5 w-5 mr-1"></div>
+              <div class="mr-1 h-5 w-5 i-hugeicons-magic-wand-05"></div>
               Bulk Optimize
             </button>
           </div>
         </div>
 
         <!-- SEO Overview Cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
           <!-- Average SEO Score -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="i-hugeicons-presentation-bar-chart-02 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+                  <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-presentation-bar-chart-02"></div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Average SEO Score</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Average SEO Score</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">
                         {{ Math.round(seoData.reduce((acc, item) => acc + item.score, 0) / seoData.length) }}%
                       </div>
                     </dd>
@@ -443,25 +443,25 @@ function getPostTitleById(id: number): string {
                 </div>
               </div>
             </div>
-            <div class="bg-gray-50 px-5 py-3 dark:bg-neutral-700">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-neutral-700">
               <div class="text-sm">
-                <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View details</a>
+                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">View details</a>
               </div>
             </div>
           </div>
 
           <!-- Posts with Good SEO -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-green-600 dark:text-green-400"></div>
+                  <div class="h-6 w-6 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Posts with Good SEO</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Posts with Good SEO</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">
                         {{ seoData.filter(item => item.score >= 80).length }} / {{ seoData.length }}
                       </div>
                     </dd>
@@ -469,25 +469,25 @@ function getPostTitleById(id: number): string {
                 </div>
               </div>
             </div>
-            <div class="bg-gray-50 px-5 py-3 dark:bg-neutral-700">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-neutral-700">
               <div class="text-sm">
-                <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View details</a>
+                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">View details</a>
               </div>
             </div>
           </div>
 
           <!-- Posts Needing Improvement -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="i-hugeicons-alert-02 h-6 w-6 text-yellow-600 dark:text-yellow-400"></div>
+                  <div class="h-6 w-6 text-yellow-600 dark:text-yellow-400 i-hugeicons-alert-02"></div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Needs Improvement</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Needs Improvement</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">
                         {{ seoData.filter(item => item.score < 80 && item.score >= 60).length }} / {{ seoData.length }}
                       </div>
                     </dd>
@@ -495,25 +495,25 @@ function getPostTitleById(id: number): string {
                 </div>
               </div>
             </div>
-            <div class="bg-gray-50 px-5 py-3 dark:bg-neutral-700">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-neutral-700">
               <div class="text-sm">
-                <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View details</a>
+                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">View details</a>
               </div>
             </div>
           </div>
 
           <!-- Posts with Poor SEO -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="i-hugeicons-cancel-circle h-6 w-6 text-red-600 dark:text-red-400"></div>
+                  <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-cancel-circle"></div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Poor SEO</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Poor SEO</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">
                         {{ seoData.filter(item => item.score < 60).length }} / {{ seoData.length }}
                       </div>
                     </dd>
@@ -521,32 +521,32 @@ function getPostTitleById(id: number): string {
                 </div>
               </div>
             </div>
-            <div class="bg-gray-50 px-5 py-3 dark:bg-neutral-700">
+            <div class="px-5 py-3 bg-gray-50 dark:bg-neutral-700">
               <div class="text-sm">
-                <a href="#" class="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300">View details</a>
+                <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">View details</a>
               </div>
             </div>
           </div>
         </div>
 
         <!-- Filters -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
           <div class="relative w-full sm:max-w-md">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
             </div>
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
               placeholder="Search by title, keyword, or slug..."
             />
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex flex-col gap-4 sm:flex-row">
             <select
               value="{{ sortBy }}"
-              class="block w-full min-w-[180px] rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 min-w-[180px] w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="score">Sort by SEO Score</option>
               <option value="title">Sort by Title</option>
@@ -555,7 +555,7 @@ function getPostTitleById(id: number): string {
 
             <select
               value="{{ sortOrder }}"
-              class="block w-full min-w-[140px] rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 min-w-[140px] w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="asc">Ascending</option>
               <option value="desc">Descending</option>
@@ -563,7 +563,7 @@ function getPostTitleById(id: number): string {
 
             <select
               value="{{ itemsPerPage }}"
-              class="block w-full min-w-[140px] rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 min-w-[140px] w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="{{ 5 }}">5 per page</option>
               <option value="{{ 10 }}">10 per page</option>
@@ -575,18 +575,18 @@ function getPostTitleById(id: number): string {
 
         <!-- Bulk actions -->
         @if(hasSelectedPosts)
-<div class="mt-4 bg-blue-50 p-4 rounded-lg shadow-sm dark:bg-blue-900/20">
+<div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-blue-400 mr-2"></div>
-              <span class="text-sm text-blue-800 dark:text-blue-300">{{ selectedPostIds.length }} posts selected</span>
+              <div class="mr-2 h-5 w-5 text-blue-400 i-hugeicons-checkmark-circle-02"></div>
+              <span class="text-blue-800 text-sm dark:text-blue-300">{{ selectedPostIds.length }} posts selected</span>
             </div>
             <div class="flex space-x-2">
               <button
                 onclick="openBulkOptimizationModal"
-                class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-blue-600 shadow-sm ring-1 ring-inset ring-blue-300 hover:bg-blue-50 dark:bg-neutral-800 dark:text-blue-400 dark:ring-blue-500/30 dark:hover:bg-blue-500/10"
+                class="inline-flex items-center px-2.5 py-1.5 font-semibold text-blue-600 text-sm dark:text-blue-400 bg-white dark:bg-neutral-800 hover:bg-blue-50 dark:hover:bg-blue-500/10 ring-1 ring-blue-300 ring-inset rounded-md dark:ring-blue-500/30 shadow-sm"
               >
-                <div class="i-hugeicons-magic-wand-05 h-4 w-4 mr-1"></div>
+                <div class="mr-1 h-4 w-4 i-hugeicons-magic-wand-05"></div>
                 Optimize Selected
               </button>
             </div>
@@ -594,30 +594,30 @@ function getPostTitleById(id: number): string {
         </div>
 
         <!-- SEO Table -->
-        <div class="mt-6 flow-root">
-          <div class="overflow-x-auto rounded-lg border border-gray-200 dark:border-neutral-700 shadow">
+        <div class="flow-root mt-6">
+          <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-neutral-700 shadow">
             <div class="overflow-hidden">
-              <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+              <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
                 <thead class="bg-gray-50 dark:bg-neutral-700/50">
                   <tr>
-                    <th scope="col" class="relative px-4 sm:px-6 py-3.5">
+                    <th scope="col" class="relative px-4 py-3.5 sm:px-6">
                       <input
                         type="checkbox"
                         checked="{{ selectAll }}"
                         onchange="toggleSelectAll"
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                        class="h-4 w-4 text-blue-600 dark:bg-neutral-700 dark:checked:bg-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </th>
-                    <th scope="col" class="px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                    <th scope="col" class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                       Title
                     </th>
-                    <th scope="col" class="px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                    <th scope="col" class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                       Focus Keyword
                     </th>
-                    <th scope="col" class="px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                    <th scope="col" class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                       SEO Score
                     </th>
-                    <th scope="col" class="px-4 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                    <th scope="col" class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                       Last Updated
                     </th>
                     <th scope="col" class="relative px-4 py-3.5">
@@ -625,71 +625,71 @@ function getPostTitleById(id: number): string {
                     </th>
                   </tr>
                 </thead>
-                <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
+                <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
                   @foreach(paginatedSeoData as item)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-                    <td class="relative px-4 sm:px-6 py-4 whitespace-nowrap">
+                    <td class="relative px-4 py-4 sm:px-6 whitespace-nowrap">
                       <div class="flex items-center">
                         <input
                           type="checkbox"
                           checked="{{ selectedPostIds.includes(item.id) }}"
                           onchange="togglePostSelection(item.id)"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                          class="h-4 w-4 text-blue-600 dark:bg-neutral-700 dark:checked:bg-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                         />
                       </div>
                     </td>
                     <td class="px-4 py-4">
                       <div class="flex flex-col">
-                        <div class="text-sm font-medium text-gray-900 dark:text-white">
+                        <div class="font-medium text-gray-900 text-sm dark:text-white">
                           {{ item.title }}
                         </div>
-                        <div class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                        <div class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                           Slug: {{ item.slug }}
                         </div>
                       </div>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
-                      <div class="inline-flex items-center rounded-full bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 ring-1 ring-inset ring-blue-700/10 dark:bg-blue-900/30 dark:text-blue-400 dark:ring-blue-400/30">
-                        <div class="i-hugeicons-tag-01 h-3 w-3 mr-1"></div>
+                      <div class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-700/10 ring-inset rounded-full dark:ring-blue-400/30">
+                        <div class="mr-1 h-3 w-3 i-hugeicons-tag-01"></div>
                         {{ item.focusKeyword }}
                       </div>
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="{{ [
+                        <div class="[
                           'text-sm font-medium',
                           getScoreColorClass(item.score)
-                        ] }}">
+                        ] {{ }}">
                           {{ item.score }}%
                         </div>
-                        <div class="ml-2 h-2 w-16 rounded-full bg-gray-200 dark:bg-neutral-700">
+                        <div class="ml-2 h-2 w-16 bg-gray-200 dark:bg-neutral-700 rounded-full">
                           <div
-                            class="{{ [
+                            class="[
                               'h-2 rounded-full',
                               getScoreBgClass(item.score)
-                            ] }}"
+                            ] {{ }}"
                             style="{{ { width: `${item.score}%` } }}"
                           ></div>
                         </div>
                       </div>
                     </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">
+                    <td class="px-4 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                       {{ item.lastUpdated }}
                     </td>
-                    <td class="px-4 py-4 whitespace-nowrap text-right text-sm font-medium">
+                    <td class="px-4 py-4 font-medium text-right text-sm whitespace-nowrap">
                       <div class="flex justify-end space-x-2">
                         <button
                           onclick="openAnalysisModal(item.id)"
-                          class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors"
                         >
-                          <div class="i-hugeicons-analysis-text-link h-5 w-5"></div>
+                          <div class="h-5 w-5 i-hugeicons-analysis-text-link"></div>
                           <span class="sr-only">Analyze</span>
                         </button>
                         <button
                           onclick="openEditModal(item)"
-                          class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300"
+                          class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors"
                         >
-                          <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+                          <div class="h-5 w-5 i-hugeicons-edit-01"></div>
                           <span class="sr-only">Edit</span>
                         </button>
                       </div>
@@ -697,7 +697,7 @@ function getPostTitleById(id: number): string {
                   </tr>
                   @if(paginatedSeoData.length === 0)
 <tr>
-                    <td colspan="6" class="px-4 py-8 text-center text-sm text-gray-500 dark:text-neutral-400">
+                    <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">
                       No SEO data found. Try adjusting your search.
                     </td>
                   </tr>
@@ -709,57 +709,57 @@ function getPostTitleById(id: number): string {
 
         <!-- Pagination -->
         @if(totalPages > 1)
-<div class="mt-6 flex items-center justify-between">
-          <div class="flex flex-1 justify-between sm:hidden">
+<div class="flex items-center justify-between mt-6">
+          <div class="flex sm:hidden flex-1 justify-between">
             <button
               onclick="currentPage = Math.max(1, currentPage - 1)"
               disabled="{{ currentPage === 1 }}"
-              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+              class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
               onclick="currentPage = Math.min(totalPages, currentPage + 1)"
               disabled="{{ currentPage === totalPages }}"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
+              class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-neutral-300">
+              <p class="text-gray-700 text-sm dark:text-neutral-300">
                 Showing <span class="font-medium">{{ ((currentPage - 1) * itemsPerPage) + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredSeoData.length) }}</span> of <span class="font-medium">{{ filteredSeoData.length }}</span> results
               </p>
             </div>
             <div>
-              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+              <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
                 <button
                   onclick="currentPage = Math.max(1, currentPage - 1)"
                   disabled="{{ currentPage === 1 }}"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-700"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
+                  <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
                 @foreach(paginationRange as page)
 <button
                   onclick="currentPage = page"
-                  class="{{ [
+                  class="[
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
                       : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700'
-                  ] }}"
+                  ] {{ }}"
                 >
                   {{ page }}
                 </button>
                 <button
                   onclick="currentPage = Math.min(totalPages, currentPage + 1)"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-neutral-600 dark:text-neutral-500 dark:hover:bg-neutral-700"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+                  <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
                 </button>
               </nav>
             </div>
@@ -772,29 +772,29 @@ function getPostTitleById(id: number): string {
 <!-- Edit SEO Modal -->
   @if(showEditModal)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6 dark:bg-neutral-800">
-          <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-3xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="hidden sm:block absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeEditModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
+              class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-cancel-circle h-6 w-6"></div>
+              <div class="h-6 w-6 i-hugeicons-cancel-circle"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900/30">
-              <div class="i-hugeicons-edit-01 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+            <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-edit-01"></div>
             </div>
-            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Edit SEO Settings</h3>
+            <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white" id="modal-title">Edit SEO Settings</h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-neutral-400">
+                <p class="text-gray-500 text-sm dark:text-neutral-400">
                   Optimize your post's SEO settings to improve search engine visibility.
                 </p>
               </div>
@@ -805,14 +805,14 @@ function getPostTitleById(id: number): string {
             <div class="space-y-4">
               <!-- Tabs -->
               <div class="border-b border-gray-200 dark:border-neutral-700">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                  <a href="#" class="border-blue-500 text-blue-600 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-blue-400">
+                <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                  <a href="#" class="px-1 py-4 font-medium text-blue-600 text-sm whitespace-nowrap dark:text-blue-400 border-b-2 border-blue-500">
                     Basic SEO
                   </a>
-                  <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-neutral-400 dark:hover:text-gray-300 dark:hover:border-gray-600">
+                  <a href="#" class="px-1 py-4 font-medium text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600">
                     Social Media
                   </a>
-                  <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-neutral-400 dark:hover:text-gray-300 dark:hover:border-gray-600">
+                  <a href="#" class="px-1 py-4 font-medium text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600">
                     Advanced
                   </a>
                 </nav>
@@ -822,16 +822,16 @@ function getPostTitleById(id: number): string {
               <div>
                 <div class="space-y-4">
                   <div>
-                    <label for="seo-title" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">SEO Title</label>
+                    <label for="seo-title" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">SEO Title</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="seo-title"
                         value="{{ currentSeo.title }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       />
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                       {{ currentSeo.title.length }}/60 characters
                       @if(currentSeo.title.length > 60)
 <span class="text-red-500 dark:text-red-400">
@@ -841,43 +841,43 @@ function getPostTitleById(id: number): string {
                   </div>
 
                   <div>
-                    <label for="seo-slug" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Slug</label>
+                    <label for="seo-slug" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Slug</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="seo-slug"
                         value="{{ currentSeo.slug }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="seo-focus-keyword" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Focus Keyword</label>
+                    <label for="seo-focus-keyword" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Focus Keyword</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="seo-focus-keyword"
                         value="{{ currentSeo.focusKeyword }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       />
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                       The main keyword you want this post to rank for
                     </p>
                   </div>
 
                   <div>
-                    <label for="seo-meta-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Meta Description</label>
+                    <label for="seo-meta-description" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Meta Description</label>
                     <div class="mt-2">
                       <textarea
                         id="seo-meta-description"
                         value="{{ currentSeo.metaDescription }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       ></textarea>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                       {{ currentSeo.metaDescription.length }}/160 characters
                       @if(currentSeo.metaDescription.length > 160)
 <span class="text-red-500 dark:text-red-400">
@@ -887,27 +887,27 @@ function getPostTitleById(id: number): string {
                   </div>
 
                   <div>
-                    <label for="seo-canonical-url" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Canonical URL</label>
+                    <label for="seo-canonical-url" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Canonical URL</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="seo-canonical-url"
                         value="{{ currentSeo.canonicalUrl }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       />
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                       Leave empty to use the default URL
                     </p>
                   </div>
 
                   <div>
-                    <label for="seo-robots" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Robots Meta</label>
+                    <label for="seo-robots" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Robots Meta</label>
                     <div class="mt-2">
                       <select
                         id="seo-robots"
                         value="{{ currentSeo.robots }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value="index, follow">index, follow</option>
                         <option value="noindex, follow">noindex, follow</option>
@@ -918,12 +918,12 @@ function getPostTitleById(id: number): string {
                   </div>
 
                   <div>
-                    <label for="seo-schema" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Schema Type</label>
+                    <label for="seo-schema" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Schema Type</label>
                     <div class="mt-2">
                       <select
                         id="seo-schema"
                         value="{{ currentSeo.schema }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value="Article">Article</option>
                         <option value="BlogPosting">Blog Post</option>
@@ -939,28 +939,28 @@ function getPostTitleById(id: number): string {
               </div>
 
               <!-- SEO Preview -->
-              <div class="mt-6 rounded-md border border-gray-200 p-4 dark:border-neutral-700">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Google Search Preview</h4>
+              <div class="mt-6 p-4 border border-gray-200 rounded-md dark:border-neutral-700">
+                <h4 class="font-medium text-gray-900 text-sm dark:text-white">Google Search Preview</h4>
                 <div class="mt-2 space-y-1">
-                  <div class="text-blue-600 text-lg hover:underline dark:text-blue-400">{{ currentSeo.title }}</div>
+                  <div class="text-blue-600 text-lg dark:text-blue-400 hover:underline">{{ currentSeo.title }}</div>
                   <div class="text-green-600 text-sm dark:text-green-400">{{ currentSeo.canonicalUrl }}</div>
-                  <div class="text-sm text-gray-600 dark:text-neutral-300">{{ currentSeo.metaDescription.substring(0, 160) }}{{ currentSeo.metaDescription.length > 160 ? '...' : '' }}</div>
+                  <div class="text-gray-600 text-sm dark:text-neutral-300">{{ currentSeo.metaDescription.substring(0, 160) }}{{ currentSeo.metaDescription.length > 160 ? '...' : '' }}</div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="saveSeoSettings"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Save Changes
             </button>
             <button
               type="button"
               onclick="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Cancel
             </button>
@@ -973,29 +973,29 @@ function getPostTitleById(id: number): string {
   <!-- Global Settings Modal -->
   @if(showGlobalSettingsModal)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6 dark:bg-neutral-800">
-          <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-3xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="hidden sm:block absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeGlobalSettingsModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
+              class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-cancel-circle h-6 w-6"></div>
+              <div class="h-6 w-6 i-hugeicons-cancel-circle"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900/30">
-              <div class="i-hugeicons-cog-01 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+            <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-cog-01"></div>
             </div>
-            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Global SEO Settings</h3>
+            <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white" id="modal-title">Global SEO Settings</h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-neutral-400">
+                <p class="text-gray-500 text-sm dark:text-neutral-400">
                   Configure global SEO settings for your entire blog.
                 </p>
               </div>
@@ -1005,17 +1005,17 @@ function getPostTitleById(id: number): string {
             <div class="space-y-4">
               <!-- Tabs -->
               <div class="border-b border-gray-200 dark:border-neutral-700">
-                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
-                  <a href="#" class="border-blue-500 text-blue-600 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-blue-400">
+                <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+                  <a href="#" class="px-1 py-4 font-medium text-blue-600 text-sm whitespace-nowrap dark:text-blue-400 border-b-2 border-blue-500">
                     General
                   </a>
-                  <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-neutral-400 dark:hover:text-gray-300 dark:hover:border-gray-600">
+                  <a href="#" class="px-1 py-4 font-medium text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600">
                     Social Media
                   </a>
-                  <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-neutral-400 dark:hover:text-gray-300 dark:hover:border-gray-600">
+                  <a href="#" class="px-1 py-4 font-medium text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600">
                     Webmaster Tools
                   </a>
-                  <a href="#" class="border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium dark:text-neutral-400 dark:hover:text-gray-300 dark:hover:border-gray-600">
+                  <a href="#" class="px-1 py-4 font-medium text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300 border-b-2 border-transparent hover:border-gray-300 dark:hover:border-gray-600">
                     Sitemap
                   </a>
                 </nav>
@@ -1025,24 +1025,24 @@ function getPostTitleById(id: number): string {
               <div>
                 <div class="space-y-4">
                   <div>
-                    <label for="site-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Site Name</label>
+                    <label for="site-name" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Site Name</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="site-name"
                         value="{{ globalSeoSettings.siteName }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="title-separator" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Title Separator</label>
+                    <label for="title-separator" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Title Separator</label>
                     <div class="mt-2">
                       <select
                         id="title-separator"
                         value="{{ globalSeoSettings.separator }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value=" | ">|</option>
                         <option value=" - ">-</option>
@@ -1054,18 +1054,18 @@ function getPostTitleById(id: number): string {
                         <option value=" : ">:</option>
                       </select>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                       Example: Post Title {{ globalSeoSettings.separator }} {{ globalSeoSettings.siteName }}
                     </p>
                   </div>
 
                   <div>
-                    <label for="title-format" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Title Format</label>
+                    <label for="title-format" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Title Format</label>
                     <div class="mt-2">
                       <select
                         id="title-format"
                         value="{{ globalSeoSettings.titleFormat }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value="%post_title% %separator% %site_name%">Post Title - Site Name</option>
                         <option value="%site_name% %separator% %post_title%">Site Name - Post Title</option>
@@ -1075,27 +1075,27 @@ function getPostTitleById(id: number): string {
                   </div>
 
                   <div>
-                    <label for="meta-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Default Meta Description</label>
+                    <label for="meta-description" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Default Meta Description</label>
                     <div class="mt-2">
                       <textarea
                         id="meta-description"
                         value="{{ globalSeoSettings.metaDescription }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       ></textarea>
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                       Used when individual posts don't have a meta description
                     </p>
                   </div>
 
                   <div>
-                    <label for="default-schema" class="block text-sm font-medium leading-6 text-gray-900 dark:text-white">Default Schema Type</label>
+                    <label for="default-schema" class="block font-medium leading-6 text-gray-900 text-sm dark:text-white">Default Schema Type</label>
                     <div class="mt-2">
                       <select
                         id="default-schema"
                         value="{{ globalSeoSettings.defaultSchema }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value="Article">Article</option>
                         <option value="BlogPosting">Blog Post</option>
@@ -1108,30 +1108,30 @@ function getPostTitleById(id: number): string {
               </div>
 
               <!-- Robots.txt Editor -->
-              <div class="mt-6 rounded-md border border-gray-200 p-4 dark:border-neutral-700">
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white">robots.txt</h4>
+              <div class="mt-6 p-4 border border-gray-200 rounded-md dark:border-neutral-700">
+                <h4 class="font-medium text-gray-900 text-sm dark:text-white">robots.txt</h4>
                 <div class="mt-2">
                   <textarea
                     value="{{ globalSeoSettings.robotsTxt }}"
                     rows="6"
-                    class="block w-full rounded-md border-0 py-1.5 font-mono text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:placeholder:text-neutral-500"
+                    class="block py-1.5 w-full font-mono text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                   ></textarea>
                 </div>
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="saveGlobalSettings"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Save Settings
             </button>
             <button
               type="button"
               onclick="closeGlobalSettingsModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Cancel
             </button>
@@ -1144,29 +1144,29 @@ function getPostTitleById(id: number): string {
   <!-- Bulk Optimization Modal -->
   @if(showBulkOptimizationModal)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
-          <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="hidden sm:block absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeBulkOptimizationModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
+              class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-cancel-circle h-6 w-6"></div>
+              <div class="h-6 w-6 i-hugeicons-cancel-circle"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900/30">
-              <div class="i-hugeicons-magic-wand-05 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+            <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-magic-wand-05"></div>
             </div>
-            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">Bulk SEO Optimization</h3>
+            <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white" id="modal-title">Bulk SEO Optimization</h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-neutral-400">
+                <p class="text-gray-500 text-sm dark:text-neutral-400">
                   Automatically optimize SEO settings for the selected posts.
                 </p>
               </div>
@@ -1174,13 +1174,13 @@ function getPostTitleById(id: number): string {
           </div>
           <div class="mt-5 sm:mt-4">
             <div class="space-y-4">
-              <div class="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <div class="i-hugeicons-info-circle h-5 w-5 text-blue-400"></div>
+                    <div class="h-5 w-5 text-blue-400 i-hugeicons-info-circle"></div>
                   </div>
-                  <div class="ml-3 flex-1 md:flex md:justify-between">
-                    <p class="text-sm text-blue-700 dark:text-blue-300">
+                  <div class="md:flex flex-1 md:justify-between ml-3">
+                    <p class="text-blue-700 text-sm dark:text-blue-300">
                       {{ selectedPostIds.length }} posts selected for optimization
                     </p>
                   </div>
@@ -1188,63 +1188,63 @@ function getPostTitleById(id: number): string {
               </div>
 
               <div>
-                <h4 class="text-sm font-medium text-gray-900 dark:text-white">Optimization Options</h4>
+                <h4 class="font-medium text-gray-900 text-sm dark:text-white">Optimization Options</h4>
                 <div class="mt-4 space-y-4">
-                  <div class="relative flex items-start">
-                    <div class="flex h-6 items-center">
+                  <div class="flex relative items-start">
+                    <div class="flex items-center h-6">
                       <input
                         id="optimize-titles"
                         type="checkbox"
                         checked
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                        class="h-4 w-4 text-blue-600 dark:bg-neutral-700 dark:checked:bg-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </div>
-                    <div class="ml-3 text-sm leading-6">
+                    <div class="ml-3 leading-6 text-sm">
                       <label for="optimize-titles" class="font-medium text-gray-900 dark:text-white">Optimize Titles</label>
                       <p class="text-gray-500 dark:text-neutral-400">Generate SEO-friendly titles based on content</p>
                     </div>
                   </div>
 
-                  <div class="relative flex items-start">
-                    <div class="flex h-6 items-center">
+                  <div class="flex relative items-start">
+                    <div class="flex items-center h-6">
                       <input
                         id="optimize-descriptions"
                         type="checkbox"
                         checked
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                        class="h-4 w-4 text-blue-600 dark:bg-neutral-700 dark:checked:bg-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </div>
-                    <div class="ml-3 text-sm leading-6">
+                    <div class="ml-3 leading-6 text-sm">
                       <label for="optimize-descriptions" class="font-medium text-gray-900 dark:text-white">Generate Meta Descriptions</label>
                       <p class="text-gray-500 dark:text-neutral-400">Create compelling meta descriptions</p>
                     </div>
                   </div>
 
-                  <div class="relative flex items-start">
-                    <div class="flex h-6 items-center">
+                  <div class="flex relative items-start">
+                    <div class="flex items-center h-6">
                       <input
                         id="extract-keywords"
                         type="checkbox"
                         checked
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                        class="h-4 w-4 text-blue-600 dark:bg-neutral-700 dark:checked:bg-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </div>
-                    <div class="ml-3 text-sm leading-6">
+                    <div class="ml-3 leading-6 text-sm">
                       <label for="extract-keywords" class="font-medium text-gray-900 dark:text-white">Extract Focus Keywords</label>
                       <p class="text-gray-500 dark:text-neutral-400">Identify the best focus keywords from content</p>
                     </div>
                   </div>
 
-                  <div class="relative flex items-start">
-                    <div class="flex h-6 items-center">
+                  <div class="flex relative items-start">
+                    <div class="flex items-center h-6">
                       <input
                         id="optimize-social"
                         type="checkbox"
                         checked
-                        class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:checked:bg-blue-600 dark:focus:ring-offset-neutral-800"
+                        class="h-4 w-4 text-blue-600 dark:bg-neutral-700 dark:checked:bg-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                       />
                     </div>
-                    <div class="ml-3 text-sm leading-6">
+                    <div class="ml-3 leading-6 text-sm">
                       <label for="optimize-social" class="font-medium text-gray-900 dark:text-white">Optimize Social Media</label>
                       <p class="text-gray-500 dark:text-neutral-400">Generate social media titles and descriptions</p>
                     </div>
@@ -1253,18 +1253,18 @@ function getPostTitleById(id: number): string {
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="runBulkOptimization"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Run Optimization
             </button>
             <button
               type="button"
               onclick="closeBulkOptimizationModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Cancel
             </button>
@@ -1277,29 +1277,29 @@ function getPostTitleById(id: number): string {
   <!-- SEO Analysis Modal -->
   @if(showAnalysisModal)
 <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
 
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:p-6 dark:bg-neutral-800">
-          <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-3xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="hidden sm:block absolute right-0 top-0 pr-4 pt-4">
             <button
               type="button"
               onclick="closeAnalysisModal"
-              class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
+              class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
             >
               <span class="sr-only">Close</span>
-              <div class="i-hugeicons-cancel-circle h-6 w-6"></div>
+              <div class="h-6 w-6 i-hugeicons-cancel-circle"></div>
             </button>
           </div>
           <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900/30">
-              <div class="i-hugeicons-presentation-bar-chart-02 h-6 w-6 text-blue-600 dark:text-blue-400"></div>
+            <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+              <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-presentation-bar-chart-02"></div>
             </div>
-            <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white" id="modal-title">SEO Analysis</h3>
+            <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white" id="modal-title">SEO Analysis</h3>
               <div class="mt-2">
-                <p class="text-sm text-gray-500 dark:text-neutral-400">
+                <p class="text-gray-500 text-sm dark:text-neutral-400">
                   Detailed SEO analysis for "{{ analysisPostId ? getPostTitleById(analysisPostId) : '' }}"
                 </p>
               </div>
@@ -1311,15 +1311,15 @@ function getPostTitleById(id: number): string {
               <!-- Overall Score -->
               <div class="flex items-center justify-between">
                 <div>
-                  <h4 class="text-lg font-medium text-gray-900 dark:text-white">Overall SEO Score</h4>
-                  <p class="text-sm text-gray-500 dark:text-neutral-400">Based on multiple factors</p>
+                  <h4 class="font-medium text-gray-900 text-lg dark:text-white">Overall SEO Score</h4>
+                  <p class="text-gray-500 text-sm dark:text-neutral-400">Based on multiple factors</p>
                 </div>
                 <div class="flex items-center">
                   <div
-                    class="flex h-16 w-16 items-center justify-center rounded-full text-xl font-bold"
-                    :class="getScoreBgClass(seoData.find(item => item.id === analysisPostId)?.score || 0)"
+                    class="flex items-center justify-center h-16 w-16 font-bold text-xl rounded-full"
+                    :class="=== => || 0) analysisPostId)?.score getScoreBgClass(seoData.find(item item.id"
                   >
-                    <span :class="getScoreColorClass(seoData.find(item => item.id === analysisPostId)?.score || 0)">
+                    <span :class="=== => || 0) analysisPostId)?.score getScoreColorClass(seoData.find(item item.id">
                       {{ seoData.find(item => item.id === analysisPostId)?.score || 0 }}%
                     </span>
                   </div>
@@ -1329,108 +1329,108 @@ function getPostTitleById(id: number): string {
               <!-- Analysis Sections -->
               <div class="space-y-4">
                 <!-- Content Analysis -->
-                <div class="rounded-md border border-gray-200 overflow-hidden dark:border-neutral-700">
-                  <div class="bg-gray-50 px-4 py-3 dark:bg-neutral-700">
-                    <h5 class="text-sm font-medium text-gray-900 dark:text-white">Content Analysis</h5>
+                <div class="overflow-hidden border border-gray-200 rounded-md dark:border-neutral-700">
+                  <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-700">
+                    <h5 class="font-medium text-gray-900 text-sm dark:text-white">Content Analysis</h5>
                   </div>
-                  <div class="px-4 py-3 divide-y divide-gray-200 dark:divide-neutral-700">
-                    <div class="py-3 flex items-start">
+                  <div class="px-4 py-3 divide-gray-200 divide-y dark:divide-neutral-700">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500 dark:text-green-400"></div>
+                        <div class="h-5 w-5 text-green-500 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Focus keyword appears in the title</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your focus keyword is used in the SEO title</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Focus keyword appears in the title</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your focus keyword is used in the SEO title</p>
                       </div>
                     </div>
-                    <div class="py-3 flex items-start">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500 dark:text-green-400"></div>
+                        <div class="h-5 w-5 text-green-500 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Focus keyword appears in the meta description</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your focus keyword is used in the meta description</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Focus keyword appears in the meta description</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your focus keyword is used in the meta description</p>
                       </div>
                     </div>
-                    <div class="py-3 flex items-start">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-alert-02 h-5 w-5 text-yellow-500 dark:text-yellow-400"></div>
+                        <div class="h-5 w-5 text-yellow-500 dark:text-yellow-400 i-hugeicons-alert-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Content length could be improved</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your content is 850 words. Consider expanding to at least 1000 words for better ranking.</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Content length could be improved</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your content is 850 words. Consider expanding to at least 1000 words for better ranking.</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Technical Analysis -->
-                <div class="rounded-md border border-gray-200 overflow-hidden dark:border-neutral-700">
-                  <div class="bg-gray-50 px-4 py-3 dark:bg-neutral-700">
-                    <h5 class="text-sm font-medium text-gray-900 dark:text-white">Technical Analysis</h5>
+                <div class="overflow-hidden border border-gray-200 rounded-md dark:border-neutral-700">
+                  <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-700">
+                    <h5 class="font-medium text-gray-900 text-sm dark:text-white">Technical Analysis</h5>
                   </div>
-                  <div class="px-4 py-3 divide-y divide-gray-200 dark:divide-neutral-700">
-                    <div class="py-3 flex items-start">
+                  <div class="px-4 py-3 divide-gray-200 divide-y dark:divide-neutral-700">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500 dark:text-green-400"></div>
+                        <div class="h-5 w-5 text-green-500 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">URL is SEO friendly</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your URL is concise and contains your focus keyword</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">URL is SEO friendly</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your URL is concise and contains your focus keyword</p>
                       </div>
                     </div>
-                    <div class="py-3 flex items-start">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500 dark:text-green-400"></div>
+                        <div class="h-5 w-5 text-green-500 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Schema markup is implemented</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your page includes proper schema markup</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Schema markup is implemented</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your page includes proper schema markup</p>
                       </div>
                     </div>
-                    <div class="py-3 flex items-start">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-cancel-circle h-5 w-5 text-red-500 dark:text-red-400"></div>
+                        <div class="h-5 w-5 text-red-500 dark:text-red-400 i-hugeicons-cancel-circle"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Missing image alt tags</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">3 images on your page are missing alt tags</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Missing image alt tags</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">3 images on your page are missing alt tags</p>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 <!-- Readability Analysis -->
-                <div class="rounded-md border border-gray-200 overflow-hidden dark:border-neutral-700">
-                  <div class="bg-gray-50 px-4 py-3 dark:bg-neutral-700">
-                    <h5 class="text-sm font-medium text-gray-900 dark:text-white">Readability Analysis</h5>
+                <div class="overflow-hidden border border-gray-200 rounded-md dark:border-neutral-700">
+                  <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-700">
+                    <h5 class="font-medium text-gray-900 text-sm dark:text-white">Readability Analysis</h5>
                   </div>
-                  <div class="px-4 py-3 divide-y divide-gray-200 dark:divide-neutral-700">
-                    <div class="py-3 flex items-start">
+                  <div class="px-4 py-3 divide-gray-200 divide-y dark:divide-neutral-700">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500 dark:text-green-400"></div>
+                        <div class="h-5 w-5 text-green-500 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Good use of headings</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your content uses proper heading structure</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Good use of headings</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your content uses proper heading structure</p>
                       </div>
                     </div>
-                    <div class="py-3 flex items-start">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-alert-02 h-5 w-5 text-yellow-500 dark:text-yellow-400"></div>
+                        <div class="h-5 w-5 text-yellow-500 dark:text-yellow-400 i-hugeicons-alert-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Paragraph length</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Some paragraphs are too long. Consider breaking them up for better readability.</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Paragraph length</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Some paragraphs are too long. Consider breaking them up for better readability.</p>
                       </div>
                     </div>
-                    <div class="py-3 flex items-start">
+                    <div class="flex items-start py-3">
                       <div class="flex-shrink-0">
-                        <div class="i-hugeicons-checkmark-circle-02 h-5 w-5 text-green-500 dark:text-green-400"></div>
+                        <div class="h-5 w-5 text-green-500 dark:text-green-400 i-hugeicons-checkmark-circle-02"></div>
                       </div>
                       <div class="ml-3">
-                        <p class="text-sm font-medium text-gray-900 dark:text-white">Reading ease score is good</p>
-                        <p class="text-xs text-gray-500 dark:text-neutral-400">Your content has a Flesch reading ease score of 68, which is considered good</p>
+                        <p class="font-medium text-gray-900 text-sm dark:text-white">Reading ease score is good</p>
+                        <p class="text-gray-500 text-xs dark:text-neutral-400">Your content has a Flesch reading ease score of 68, which is considered good</p>
                       </div>
                     </div>
                   </div>
@@ -1438,15 +1438,15 @@ function getPostTitleById(id: number): string {
               </div>
 
               <!-- Improvement Suggestions -->
-              <div class="rounded-md bg-blue-50 p-4 dark:bg-blue-900/20">
+              <div class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <div class="i-hugeicons-idea-01 h-5 w-5 text-blue-400"></div>
+                    <div class="h-5 w-5 text-blue-400 i-hugeicons-idea-01"></div>
                   </div>
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium text-blue-800 dark:text-blue-300">Improvement Suggestions</h3>
-                    <div class="mt-2 text-sm text-blue-700 dark:text-blue-300">
-                      <ul class="list-disc space-y-1 pl-5">
+                    <h3 class="font-medium text-blue-800 text-sm dark:text-blue-300">Improvement Suggestions</h3>
+                    <div class="mt-2 text-blue-700 text-sm dark:text-blue-300">
+                      <ul class="pl-5 space-y-1 list-disc">
                         <li>Add alt tags to all images</li>
                         <li>Increase content length to at least 1000 words</li>
                         <li>Break up longer paragraphs for better readability</li>
@@ -1458,18 +1458,18 @@ function getPostTitleById(id: number): string {
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="openEditModal(seoData.find(item => item.id === analysisPostId) as SeoSettings)"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Edit SEO Settings
             </button>
             <button
               type="button"
               onclick="closeAnalysisModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Close
             </button>

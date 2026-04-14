@@ -129,27 +129,34 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
       - name: Install dependencies
+
         run: bun install --frozen-lockfile
 
       - name: Run tests
+
         run: bun test
 
       - name: Build
+
         run: bun run build
 ```
 
 ### Caching Dependencies
 
 ```yaml
+
 - name: Cache Bun dependencies
+
   uses: actions/cache@v4
   with:
     path: ~/.bun/install/cache
@@ -434,7 +441,9 @@ bun install --ignore-scripts
 
 ```yaml
 # Use caching and frozen lockfile
+
 - run: bun install --frozen-lockfile
+
   env:
     BUN_INSTALL_CACHE_DIR: ~/.bun/install/cache
 ```

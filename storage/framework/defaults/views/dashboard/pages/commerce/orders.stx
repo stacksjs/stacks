@@ -47,14 +47,14 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
     <template #actions>
       <Button variant="secondary">Export</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         New Order
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     <StatsCard title="Total Orders" value="{{ totalCount }}" icon="i-hugeicons-shopping-cart-01" iconBg="primary" />
     <StatsCard title="Revenue" value="{{ totalRevenue }}" icon="i-hugeicons-dollar-circle" iconBg="success" />
     <StatsCard title="Pending" value="{{ pendingCount }}" icon="i-hugeicons-clock-02" iconBg="warning" />
@@ -69,7 +69,7 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
   </div>
 
   <!-- Orders Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="{{ JSON.stringify([
         { key: 'id', label: 'Order ID' },
@@ -89,11 +89,11 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
       @foreach(orders as order)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ order.id }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ order.id }}</code>
           </td>
           <td class="px-4 py-3 text-[13px] text-neutral-900 dark:text-white">{{ order.customer }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ order.items }}</td>
-          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ order.total }}</td>
+          <td class="px-4 py-3 font-semibold text-[13px] text-neutral-900 dark:text-white">{{ order.total }}</td>
           <td class="px-4 py-3">
             <Badge variant="{{ statusVariant(order.payment) }}" size="xs" dot>{{ order.payment }}</Badge>
           </td>
@@ -102,7 +102,7 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
           </td>
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ order.date }}</td>
           <td class="px-4 py-3">
-            <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-view w-4 h-4"></div></Button>
+            <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-view"></div></Button>
           </td>
         </tr>
       @endforeach

@@ -3,23 +3,6 @@ title: Views
 description: Learn about STX templating and view rendering in Stacks applications
 ---
 
-# Views
-
-Stacks uses STX (Stacks Template eXpressions) as its templating engine, providing a powerful, Vue-inspired syntax with Blade-style directives. STX components offer reactive UI with scoped styles and TypeScript support.
-
-## Introduction
-
-STX is a compile-time templating system that combines:
-- Vue-like component syntax with `<template>`, `<script>`, and `<style>` blocks
-- Blade-inspired directives (`@if`, `@foreach`, `@include`)
-- Scoped CSS with automatic class hashing
-- TypeScript support with full type inference
-- Server-side rendering (SSR) capabilities
-
-Views are stored in `resources/views/` and components in `resources/components/`.
-
-## Basic Templating
-
 ### Creating a View
 
 ```html
@@ -216,7 +199,7 @@ Within loops, special variables are available:
       <span>Total: {{ $loop.count }}</span>
 
       <!-- Even/Odd -->
-      <div :class="{ 'bg-gray': $loop.even }">
+      <div :class="'bg-gray': { } $loop.even">
         {{ item.name }}
       </div>
     </div>

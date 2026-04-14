@@ -27,7 +27,7 @@ try {
 
   @if (tags.length > 0)
   <Card title="All Tags">
-    <div class="p-4 flex gap-2 flex-wrap">
+    <div class="flex flex-wrap gap-2 p-4">
       @foreach (tags as tag)
         <Badge variant="primary" size="sm">
           #{{ tag.name }} ({{ tag.count }})

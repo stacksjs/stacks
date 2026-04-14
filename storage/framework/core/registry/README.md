@@ -19,7 +19,7 @@ import { registry } from '@stacksjs/registry'
 console.log(registry) // the Registry as an object
 ```
 
-To view the full documentation, please visit [https://stacksjs.com/path](https://stacksjs.com/path).
+To view the full documentation, please visit [<https://stacksjs.com/pat>h](https://stacksjs.com/path).
 
 ## 🧪 Testing
 

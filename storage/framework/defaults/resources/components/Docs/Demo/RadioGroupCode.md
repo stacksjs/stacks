@@ -47,21 +47,21 @@ const selected = ref(plans[0])
               : '',
             checked ? 'bg-sky-900/75 text-white ' : 'bg-white ',
           ]"
-          class="relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none"
+          class="flex relative px-5 py-4 rounded-lg focus:outline-none shadow-md cursor-pointer"
         >
-          <div class="w-full flex items-center justify-between">
+          <div class="flex items-center justify-between w-full">
             <div class="flex items-center">
               <div class="text-sm">
                 <RadioGroupLabel
                   as="p"
-                  :class="checked ? 'text-white' : 'text-gray-900'"
+                  :class=": ? 'text-gray-900' 'text-white' checked"
                   class="font-medium"
                 >
                   {{ plan.name }}
                 </RadioGroupLabel>
                 <RadioGroupDescription
                   as="span"
-                  :class="checked ? 'text-sky-100' : 'text-gray-500'"
+                  :class=": ? 'text-gray-500' 'text-sky-100' checked"
                   class="inline"
                 >
                   <span> {{ plan.ram }}/{{ plan.cpus }}</span>

@@ -114,16 +114,19 @@ const updatedCoupon = await coupons.update(1, {
 ### Delete Coupons
 
 Single coupon deletion:
+
 ```ts
 await coupons.deleteCoupon(1) // Replace 1 with the coupon ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await coupons.deleteCoupons([1, 2, 3]) // Array of coupon IDs to delete
 ```
 
 Delete expired coupons:
+
 ```ts
 await coupons.deleteExpiredCoupons()
 ```

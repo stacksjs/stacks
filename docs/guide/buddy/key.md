@@ -39,6 +39,7 @@ buddy key:generate
 ```
 
 Output:
+
 ```
 buddy key:generate
 
@@ -114,6 +115,7 @@ base64:[32 random bytes encoded as base64]
 ```
 
 Example:
+
 ```
 APP_KEY=base64:Fd5VcGvY7JZO2h8jU3cR1QpZvN4bM9xK0wL6eT5fH8I=
 ```
@@ -144,6 +146,7 @@ APP_ENV=production buddy key:generate  # Updates .env.production
 ### Key Length
 
 The generated key is:
+
 - 32 bytes (256 bits) of random data
 - Base64 encoded for storage
 - Suitable for AES-256 encryption
@@ -178,6 +181,7 @@ Error: Application key not set
 ```
 
 **Solution**: Generate a key:
+
 ```bash
 buddy key:generate
 ```
@@ -189,6 +193,7 @@ Error: Invalid application key format
 ```
 
 **Solution**: Regenerate the key:
+
 ```bash
 buddy key:generate
 ```
@@ -200,6 +205,7 @@ Error: Cannot write to .env file
 ```
 
 **Solution**: Fix file permissions:
+
 ```bash
 chmod 644 .env
 buddy key:generate
@@ -265,7 +271,9 @@ env:
 ```yaml
 # Docker
 environment:
+
   - APP_KEY=${APP_KEY}
+
 ```
 
 ## Related Commands

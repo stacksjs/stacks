@@ -38,21 +38,21 @@ function statusVariant(s) {
   <PageHeader title="Notifications" description="Manage notification channels">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-notification-03 h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-notification-03"></div>
         Send Notification
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
     <StatsCard title="Total Sent" value="{{ totalCount }}" icon="i-hugeicons-mail-send-02" iconBg="primary" />
     <StatsCard title="Delivered" value="{{ sentCount }}" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
     <StatsCard title="Pending" value="{{ pendingCount }}" icon="i-hugeicons-clock-02" iconBg="warning" />
   </div>
 
   <!-- Notifications Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="{{ JSON.stringify([
         { key: 'type', label: 'Type' },

@@ -3,24 +3,6 @@ title: Models
 description: Learn how to define and use ORM models in Stacks applications
 ---
 
-# Models
-
-Stacks provides a powerful, type-safe ORM that combines Laravel's Eloquent-like patterns with TypeScript's static typing. Models define your database schema, relationships, validation rules, and API endpoints in a single, declarative configuration.
-
-## Introduction
-
-Models in Stacks are configuration objects that define:
-- Database table structure and attributes
-- Relationships between models
-- Validation rules
-- API route generation
-- Factory definitions for testing
-- Timestamps, soft deletes, and other traits
-
-Models are stored in `app/Models/` for your application models and `storage/framework/defaults/models/` for framework defaults.
-
-## Defining Models
-
 ### Basic Model Structure
 
 ```typescript
@@ -409,6 +391,7 @@ traits: {
 ```
 
 This generates:
+
 - `GET /posts` - List posts
 - `POST /posts` - Create post
 - `GET /posts/{id}` - Show post
@@ -676,6 +659,7 @@ traits: {
 ```
 
 This emits events on model changes:
+
 - `{model}:created` - After creation
 - `{model}:updated` - After update
 - `{model}:deleted` - After deletion

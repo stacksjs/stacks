@@ -7,13 +7,13 @@ interface HeroProps {
 
 const { title = '', description = '', link = '' } = defineProps<HeroProps>()
 </script>
-<div class="flex flex-col items-center gap-3">
+<div class="flex flex-col gap-3 items-center">
   <div class="dropdownWrapper">
     <div class="toast"></div>
     <div class="toast"></div>
     <div class="toast"></div>
   </div>
-  <h1 class="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700 dark:to-blue-300 mb-3 text-5xl font-bold -mt-5">
+  <h1 class="-mt-5 mb-3 font-bold text-5xl text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-blue-700 dark:to-blue-300">
     {{ title }}
   </h1>
   <p class="mb-3 mt-0 text-lg">
@@ -21,7 +21,7 @@ const { title = '', description = '', link = '' } = defineProps<HeroProps>()
   </p>
 
   <a
-    class="button btn-secondary"
+    class="btn-secondary button"
     href="{{ link }}"
     target="_blank"
   >

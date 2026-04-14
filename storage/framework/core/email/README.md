@@ -40,77 +40,77 @@ Drivers are configured with the following environment variables:
 #### Sendgrid
 
 ```bash
-SENDGRID_API_KEY=SG123
-SENDGRID_FROM=from@example.com
-SENDGRID_SENDER_NAME=Sender
+SENDGRID*API*KEY=SG123
+SENDGRID*FROM=from@example.com
+SENDGRID*SENDER*NAME=Sender
 ```
 
 #### Mailgun
 
 ```bash
-MAILGUN_API_KEY=MG123
-MAILGUN_DOMAIN=example.com
-MAILGUN_USERNAME=username
-MAILGUN_FROM=from@example.com
+MAILGUN*API*KEY=MG123
+MAILGUN*DOMAIN=example.com
+MAILGUN*USERNAME=username
+MAILGUN*FROM=from@example.com
 ```
 
 #### Mailjet
 
 ```bash
-MAILJET_API_KEY=MJ123
-MAILJET_API_SECRET=MJTESTSECRET
-MAILJET_FROM_EMAIL=from@example.com
+MAILJET*API*KEY=MJ123
+MAILJET*API*SECRET=MJTESTSECRET
+MAILJET*FROM*EMAIL=from@example.com
 ```
 
 #### Netcore
 
 ```bash
-NETCORE_API_KEY=NC123
-NETCORE_FROM=from@example.com
+NETCORE*API*KEY=NC123
+NETCORE*FROM=from@example.com
 ```
 
 #### Nodemailer
 
 ```bash
-NODEMAILER_FROM_EMAIL=from@example.com
-NODEMAILER_HOST=example.com
-NODEMAILER_USERNAME=username
-NODEMAILER_PASSWORD=password
-NODEMAILER_PORT=25
-NODEMAILER_SECURE=true
+NODEMAILER*FROM*EMAIL=from@example.com
+NODEMAILER*HOST=example.com
+NODEMAILER*USERNAME=username
+NODEMAILER*PASSWORD=password
+NODEMAILER*PORT=25
+NODEMAILER*SECURE=true
 ```
 
 #### Postmark
 
 ```bash
-POSTMARK_API_KEY=PM123
-POSTMARK_FROM=from@example.com
+POSTMARK*API*KEY=PM123
+POSTMARK*FROM=from@example.com
 ```
 
 #### AWS SES
 
 ```bash
-SES_REGION=US
-SES_ACCESS_KEY_ID=testkey123
-SES_SECRET_ACCESS_KEY=testaccesskey123
-SES_FROM=from@example.com
+SES*REGION=US
+SES*ACCESS*KEY*ID=testkey123
+SES*SECRET*ACCESS*KEY=testaccesskey123
+SES*FROM=from@example.com
 ```
 
 #### Mandrill
 
 ```bash
-MANDRILL_API_KEY=Ma123
-MANDRILL_EMAIL=from@example.com
+MANDRILL*API*KEY=Ma123
+MANDRILL*EMAIL=from@example.com
 ```
 
 #### EmailJS
 
 ```bash
-EMAILJS_FROM_EMAIL=from@example.com
-EMAILJS_HOST=example.com
-EMAILJS_USERNAME=username
-EMAILJS_PASSWORD=password
-EMAILJS_PORT=25
+EMAILJS*FROM*EMAIL=from@example.com
+EMAILJS*HOST=example.com
+EMAILJS*USERNAME=username
+EMAILJS*PASSWORD=password
+EMAILJS*PORT=25
 EMAILJS_SECURE=true
 ```
 

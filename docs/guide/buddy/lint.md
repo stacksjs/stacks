@@ -84,6 +84,7 @@ buddy lint
 ```
 
 Output:
+
 ```
 buddy lint
 
@@ -279,7 +280,9 @@ Add to your CI pipeline:
 
 ```yaml
 # .github/workflows/ci.yml
+
 - name: Lint
+
   run: buddy lint
 ```
 

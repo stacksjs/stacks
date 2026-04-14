@@ -15,7 +15,7 @@
 </head>
 <body>
   <!-- Windows XP Login Screen -->
-  <div id="login-screen" class="login-screen hidden">
+  <div id="login-screen" class="hidden login-screen">
     <div class="login-background">
       <div class="login-container">
         <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
@@ -44,7 +44,7 @@
   </div>
 
   <!-- Email/Password Login Form -->
-  <div id="email-login-form" class="login-form hidden">
+  <div id="email-login-form" class="hidden login-form">
     <div class="login-form-background">
       <div class="login-form-container">
         <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
@@ -81,7 +81,7 @@
   </div>
 
   <!-- License Key Login Form -->
-  <div id="license-login-form" class="login-form hidden">
+  <div id="license-login-form" class="hidden login-form">
     <div class="login-form-background">
       <div class="login-form-container">
         <button class="login-close-btn" onclick="closeLoginScreens()">×</button>
@@ -392,9 +392,9 @@ Sponsor Here</div>
         <div class="window-icon">📄</div>
         <div class="window-title">About Stacks</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('about')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('about')">□</button>
-          <button class="window-control close" onclick="closeWindow('about')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('about')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('about')">□</button>
+          <button class="close window-control" onclick="closeWindow('about')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -421,9 +421,9 @@ Sponsor Here</div>
         <div class="window-icon">🌐</div>
         <div class="window-title">Ecosystem</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('ecosystem')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('ecosystem')">□</button>
-          <button class="window-control close" onclick="closeWindow('ecosystem')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('ecosystem')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('ecosystem')">□</button>
+          <button class="close window-control" onclick="closeWindow('ecosystem')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -431,7 +431,7 @@ Sponsor Here</div>
         <p style="margin-bottom: 20px;">The complete Stacks.js ecosystem—all open source, all TypeScript.</p>
 
         <div class="feature-buttons" style="margin-bottom: 20px;">
-          <button class="feature-btn active" onclick="showEcosystemTab('core')">Core Packages</button>
+          <button class="active feature-btn" onclick="showEcosystemTab('core')">Core Packages</button>
           <button class="feature-btn" onclick="showEcosystemTab('frameworks')">Frameworks</button>
           <button class="feature-btn" onclick="showEcosystemTab('sponsorware')">Sponsorware</button>
           <button class="feature-btn" onclick="showEcosystemTab('apps')">Apps</button>
@@ -705,9 +705,9 @@ Sponsor Here</div>
         <div class="window-icon">⚙️</div>
         <div class="window-title">Backend Features</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('backend')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('backend')">□</button>
-          <button class="window-control close" onclick="closeWindow('backend')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('backend')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('backend')">□</button>
+          <button class="close window-control" onclick="closeWindow('backend')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -715,7 +715,7 @@ Sponsor Here</div>
         <p>Simple, elegant syntax powers amazing functionality.</p>
 
         <div class="feature-buttons">
-          <button class="feature-btn active" onclick="showFeature('backend', 'auth')">Authentication</button>
+          <button class="active feature-btn" onclick="showFeature('backend', 'auth')">Authentication</button>
           <button class="feature-btn" onclick="showFeature('backend', 'orm')">ORM</button>
           <button class="feature-btn" onclick="showFeature('backend', 'validation')">Validation</button>
           <button class="feature-btn" onclick="showFeature('backend', 'storage')">Storage</button>
@@ -746,9 +746,9 @@ const current = await Auth.user()
         <div class="window-icon">🎨</div>
         <div class="window-title">Frontend Features</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('frontend')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('frontend')">□</button>
-          <button class="window-control close" onclick="closeWindow('frontend')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('frontend')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('frontend')">□</button>
+          <button class="close window-control" onclick="closeWindow('frontend')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -757,7 +757,7 @@ const current = await Auth.user()
         <p style="color: #333; font-size: 12px;">⚡️ Powered by TypeScript, Bun & Tauri</p>
 
         <div class="feature-buttons">
-          <button class="feature-btn active" onclick="showFeature('frontend', 'components')">Components</button>
+          <button class="active feature-btn" onclick="showFeature('frontend', 'components')">Components</button>
           <button class="feature-btn" onclick="showFeature('frontend', 'ui-kit')">UI Kit</button>
           <button class="feature-btn" onclick="showFeature('frontend', 'routing')">Routing</button>
           <button class="feature-btn" onclick="showFeature('frontend', 'desktop')">Desktop</button>
@@ -785,9 +785,9 @@ const current = await Auth.user()
         <div class="window-icon">☁️</div>
         <div class="window-title">Cloud Features</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('cloud')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('cloud')">□</button>
-          <button class="window-control close" onclick="closeWindow('cloud')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('cloud')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('cloud')">□</button>
+          <button class="close window-control" onclick="closeWindow('cloud')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -796,7 +796,7 @@ const current = await Auth.user()
         <p style="color: #333; font-size: 12px;">Imagine Vercel, Vapor and Forge having been unified.</p>
 
         <div class="feature-buttons">
-          <button class="feature-btn active" onclick="showFeature('cloud', 'deployment')">Deployment</button>
+          <button class="active feature-btn" onclick="showFeature('cloud', 'deployment')">Deployment</button>
           <button class="feature-btn" onclick="showFeature('cloud', 'storage')">Storage</button>
           <button class="feature-btn" onclick="showFeature('cloud', 'cdn')">CDN</button>
           <button class="feature-btn" onclick="showFeature('cloud', 'dns')">DNS</button>
@@ -824,9 +824,9 @@ export default {
         <div class="window-icon">📊</div>
         <div class="window-title">Dashboard</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('dashboard')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('dashboard')">□</button>
-          <button class="window-control close" onclick="closeWindow('dashboard')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('dashboard')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('dashboard')">□</button>
+          <button class="close window-control" onclick="closeWindow('dashboard')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -843,14 +843,14 @@ export default {
       </div>
     </div>
 
-    <div id="window-welcome" class="window active" style="left: 150px; top: 100px; width: 700px; height: 600px; z-index: 101;">
+    <div id="window-welcome" class="active window" style="left: 150px; top: 100px; width: 700px; height: 600px; z-index: 101;">
       <div class="window-titlebar">
         <div class="window-icon">📃</div>
         <div class="window-title">Welcome.pdf - PDF Viewer</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('welcome')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('welcome')">□</button>
-          <button class="window-control close" onclick="closeWindow('welcome')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('welcome')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('welcome')">□</button>
+          <button class="close window-control" onclick="closeWindow('welcome')">×</button>
         </div>
       </div>
       <div class="window-content" style="background: #525659; padding: 0;">
@@ -997,9 +997,9 @@ export default {
         <div class="window-icon">🔑</div>
         <div class="window-title">Software License Registration</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('license')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('license')">□</button>
-          <button class="window-control close" onclick="closeLicenseWindow()">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('license')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('license')">□</button>
+          <button class="close window-control" onclick="closeLicenseWindow()">×</button>
         </div>
       </div>
       <div class="window-content" style="background: #c0c0c0;">
@@ -1179,9 +1179,9 @@ export default {
         <div class="window-icon">📝</div>
         <div class="window-title">Stacks Blog - Coming Soon</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('blog')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('blog')">□</button>
-          <button class="window-control close" onclick="closeWindow('blog')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('blog')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('blog')">□</button>
+          <button class="close window-control" onclick="closeWindow('blog')">×</button>
         </div>
       </div>
       <div class="window-content" style="overflow-y: auto;">
@@ -1305,9 +1305,9 @@ export default {
         <div class="window-icon">💖</div>
         <div class="window-title">Become a Stacks.js Sponsor</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('sponsors')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('sponsors')">□</button>
-          <button class="window-control close" onclick="closeWindow('sponsors')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('sponsors')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('sponsors')">□</button>
+          <button class="close window-control" onclick="closeWindow('sponsors')">×</button>
         </div>
       </div>
       <div class="window-content" style="overflow-y: auto;">
@@ -1449,9 +1449,9 @@ export default {
         <div class="window-icon">📁</div>
         <div class="window-title">Benchmarks</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('benchmarks')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('benchmarks')">□</button>
-          <button class="window-control close" onclick="closeWindow('benchmarks')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('benchmarks')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('benchmarks')">□</button>
+          <button class="close window-control" onclick="closeWindow('benchmarks')">×</button>
         </div>
       </div>
       <div class="window-content" style="overflow-y: auto; padding: 20px;">
@@ -1542,9 +1542,9 @@ export default {
         <div class="window-icon">🗑️</div>
         <div class="window-title">Recycle Bin</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('trash')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('trash')">□</button>
-          <button class="window-control close" onclick="closeWindow('trash')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('trash')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('trash')">□</button>
+          <button class="close window-control" onclick="closeWindow('trash')">×</button>
         </div>
       </div>
       <div class="window-content" style="padding: 16px;">
@@ -1683,9 +1683,9 @@ export default {
         <div class="window-icon">�</div>
         <div class="window-title">Contact Us</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('contact')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('contact')">□</button>
-          <button class="window-control close" onclick="closeWindow('contact')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('contact')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('contact')">□</button>
+          <button class="close window-control" onclick="closeWindow('contact')">×</button>
         </div>
       </div>
       <div class="window-content" style="padding: 16px;">
@@ -1784,9 +1784,9 @@ export default {
         <div class="window-icon">📁</div>
         <div class="window-title">Libraries & CLIs</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('libraries')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('libraries')">□</button>
-          <button class="window-control close" onclick="closeWindow('libraries')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('libraries')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('libraries')">□</button>
+          <button class="close window-control" onclick="closeWindow('libraries')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -2250,9 +2250,9 @@ export default {
         <div class="window-icon">📁</div>
         <div class="window-title">Plugins & Actions</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('plugins')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('plugins')">□</button>
-          <button class="window-control close" onclick="closeWindow('plugins')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('plugins')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('plugins')">□</button>
+          <button class="close window-control" onclick="closeWindow('plugins')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -2388,9 +2388,9 @@ export default {
         <div class="window-icon">📁</div>
         <div class="window-title">Templates</div>
         <div class="window-controls">
-          <button class="window-control minimize" onclick="minimizeWindow('templates')">_</button>
-          <button class="window-control maximize" onclick="toggleMaximizeWindow('templates')">□</button>
-          <button class="window-control close" onclick="closeWindow('templates')">×</button>
+          <button class="minimize window-control" onclick="minimizeWindow('templates')">_</button>
+          <button class="maximize window-control" onclick="toggleMaximizeWindow('templates')">□</button>
+          <button class="close window-control" onclick="closeWindow('templates')">×</button>
         </div>
       </div>
       <div class="window-content">
@@ -2669,7 +2669,7 @@ export default {
     </div>
 
     <!-- Notification Popup -->
-    <div class="notification-popup hidden" id="notification-popup">
+    <div class="hidden notification-popup" id="notification-popup">
       <div class="notification-header">
         <div class="notification-icon">⭐</div>
         <div class="notification-title">Build Anything</div>

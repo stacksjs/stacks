@@ -62,11 +62,13 @@ const newPayment = await payments.store({
 ### Delete Payments
 
 Single payment deletion:
+
 ```ts
 await payments.destroy(1) // Replace 1 with the payment ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await payments.bulkDestroy([1, 2, 3]) // Array of payment IDs to delete
 ```

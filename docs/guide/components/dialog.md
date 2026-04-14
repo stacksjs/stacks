@@ -63,13 +63,13 @@ const handleClose = () => {
     <Dialog v-if="visible" @close="handleClose">
       <DialogPanel as="div" class="p-6 bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
         <div class="flex items-center justify-between mb-4">
-          <h2 class="text-lg font-semibold">Greetings! This is a dialog.</h2>
-          <button @click="handleClose" class="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200">
+          <h2 class="font-semibold text-lg">Greetings! This is a dialog.</h2>
+          <button @click="handleClose" class="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">
             <i class="hgi hgi-stroke hgi-x-close" />
           </button>
         </div>
-        <div class="flex items-center gap-2 text-gray-600 dark:text-gray-300">
-          <i class="hgi hgi-stroke hgi-info-circle" />
+        <div class="flex gap-2 items-center text-gray-600 dark:text-gray-300">
+          <i class="hgi hgi-info-circle hgi-stroke" />
           <p>This is an example of using HugeIcons in a dialog.</p>
         </div>
       </DialogPanel>
@@ -78,9 +78,9 @@ const handleClose = () => {
 
   <button
     @click="visible = true"
-    class="flex items-center gap-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600"
+    class="flex gap-2 items-center px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg"
   >
-    <i class="hgi hgi-stroke hgi-presentation-bar-chart-01" />
+    <i class="hgi hgi-presentation-bar-chart-01 hgi-stroke" />
     <span>Open Dialog</span>
   </button>
 </template>

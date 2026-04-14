@@ -64,7 +64,7 @@ const { testimonials = [ } = defineProps<TestimonialsProps>()
 <section
   id="testimonials"
   aria-label="What our customers are saying"
-  class="bg-slate-50 py-20 sm:py-32"
+  class="py-20 sm:py-32 bg-slate-50"
 >
   <Container>
     <div class="mx-auto max-w-2xl md:text-center">
@@ -77,31 +77,31 @@ const { testimonials = [ } = defineProps<TestimonialsProps>()
     </div>
     <ul
       role="list"
-      class="grid grid-cols-1 mx-auto mt-16 max-w-2xl gap-6 lg:grid-cols-3 lg:mt-20 lg:max-w-none sm:gap-8"
+      class="grid gap-6 grid-cols-1 sm:gap-8 lg:grid-cols-3 mt-16 mx-auto lg:mt-20 max-w-2xl lg:max-w-none"
     >
       @foreach(testimonials as column)
         <li>
           <ul role="list" class="flex flex-col gap-y-6 sm:gap-y-8">
             @foreach(column as testimonial)
               <li>
-                <figure class="relative rounded-2xl bg-white p-6 shadow-slate-900/10 shadow-xl">
+                <figure class="relative p-6 bg-white rounded-2xl shadow-slate-900/10 shadow-xl">
                   <blockquote class="relative">
                     <p class="text-lg text-slate-900 tracking-tight">
                       {{ testimonial.content }}
                     </p>
                   </blockquote>
-                  <figcaption class="relative mt-6 flex items-center justify-between border-t border-slate-100 pt-6">
+                  <figcaption class="flex relative items-center justify-between mt-6 pt-6 border-slate-100 border-t">
                     <div>
                       <div class="font-display text-base text-slate-900">
                         {{ testimonial.author.name }}
                       </div>
-                      <div class="mt-1 text-sm text-slate-500">
+                      <div class="mt-1 text-slate-500 text-sm">
                         {{ testimonial.author.role }}
                       </div>
                     </div>
-                    <div class="overflow-hidden rounded-full bg-slate-50">
+                    <div class="overflow-hidden bg-slate-50 rounded-full">
                       <img
-                        class="h-14 w-14 object-cover"
+                        class="object-cover h-14 w-14"
                         src="{{ testimonial.author.image }}"
                         alt=""
                         width="56"

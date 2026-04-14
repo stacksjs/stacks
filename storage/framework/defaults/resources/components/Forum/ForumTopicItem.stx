@@ -22,23 +22,23 @@ const { title = '', link = '', authorName = '', authorAvatar = '', createdAt = '
 </script>
 <div class="flex items-start p-4 hover:bg-gray-50">
     <div class="flex-shrink-0 mr-4">
-      <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="w-10 h-10 rounded-full">
+      <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="h-10 w-10 rounded-full">
     </div>
 
     <div class="flex-grow min-w-0">
-      <div class="flex items-center gap-2">
+      <div class="flex gap-2 items-center">
         <h3 class="font-medium text-primary hover:underline">
           <a href="{{ link }}">{{ title }}</a>
         </h3>
         @if(isPinned)
-          <span class="bg-gray-200 text-gray-700 text-xs px-2 py-0.5 rounded">Pinned</span>
+          <span class="px-2 py-0.5 text-gray-700 text-xs bg-gray-200 rounded">Pinned</span>
         @endif
         @if(isSolved)
-          <span class="bg-success text-dark text-xs px-2 py-0.5 rounded">Solved</span>
+          <span class="px-2 py-0.5 text-dark text-xs bg-success rounded">Solved</span>
         @endif
       </div>
 
-      <div class="flex items-center text-xs text-gray-500 mt-1">
+      <div class="flex items-center mt-1 text-gray-500 text-xs">
         <span>{{ authorName }}</span>
         <span class="mx-1">•</span>
         <span>{{ createdAt }}</span>
@@ -49,19 +49,19 @@ const { title = '', link = '', authorName = '', authorAvatar = '', createdAt = '
       </div>
 
       @if(excerpt)
-        <p class="text-gray-600 text-sm mt-2 line-clamp-2">{{ excerpt }}</p>
+        <p class="mt-2 line-clamp-2 text-gray-600 text-sm">{{ excerpt }}</p>
       @endif
 
-      <div class="flex items-center gap-4 mt-2 text-xs text-gray-500">
-        <div class="flex items-center gap-1">
+      <div class="flex gap-4 items-center mt-2 text-gray-500 text-xs">
+        <div class="flex gap-1 items-center">
           <div class="i-hugeicons-eye"></div>
           <span>{{ viewCount }}</span>
         </div>
-        <div class="flex items-center gap-1">
+        <div class="flex gap-1 items-center">
           <div class="i-hugeicons-chat"></div>
           <span>{{ replyCount }}</span>
         </div>
-        <div class="flex items-center gap-1">
+        <div class="flex gap-1 items-center">
           <div class="i-hugeicons-heart"></div>
           <span>{{ likeCount }}</span>
         </div>
@@ -70,8 +70,8 @@ const { title = '', link = '', authorName = '', authorAvatar = '', createdAt = '
 
     @if(lastReplyAuthorAvatar)
       <div class="flex-shrink-0 ml-4 text-right">
-        <img src="{{ lastReplyAuthorAvatar }}" alt="{{ lastReplyAuthorName }}" class="w-6 h-6 rounded-full inline-block">
-        <div class="text-xs text-gray-500 mt-1">{{ lastReplyAt }}</div>
+        <img src="{{ lastReplyAuthorAvatar }}" alt="{{ lastReplyAuthorName }}" class="inline-block h-6 w-6 rounded-full">
+        <div class="mt-1 text-gray-500 text-xs">{{ lastReplyAt }}</div>
       </div>
     @endif
   </div>

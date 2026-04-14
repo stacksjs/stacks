@@ -20,7 +20,7 @@ The MVA pattern separates your application into three main components:
         (Response)
 ```
 
-## Why MVA?
+## Why MVA
 
 ### Problems with Traditional MVC
 

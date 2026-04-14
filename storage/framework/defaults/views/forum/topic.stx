@@ -2,7 +2,7 @@
 const topicId = 0
 </script>
 <ForumLayout route="forum-topic">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <div class="grid gap-8 grid-cols-1 lg:grid-cols-3">
     <div class="lg:col-span-2">
       <ForumBreadcrumb :items="[
         { label: 'Forum', link: '/forum' },
@@ -22,7 +22,7 @@ const topicId = 0
         <p>Hello everyone,</p>
         <p>I'm trying to implement authentication in my new Stacks.js project but I'm having some issues with the middleware. Here's what I've tried so far:</p>
 
-        <pre class="bg-gray-100 p-4 rounded-md my-4"><code>
+        <pre class="my-4 p-4 bg-gray-100 rounded-md"><code>
 // My authentication middleware
 function authMiddleware(req, res, next) {
   if (!req.session.user) {
@@ -34,7 +34,7 @@ function authMiddleware(req, res, next) {
 
         <p>But when I try to use this middleware, I get the following error:</p>
 
-        <blockquote class="border-l-4 border-gray-300 pl-4 italic my-4">
+        <blockquote class="my-4 pl-4 italic border-gray-300 border-l-4">
           Error: req.session is undefined
         </blockquote>
 
@@ -51,7 +51,7 @@ function authMiddleware(req, res, next) {
         <p>Hi <a href="/forum/profile/johndoe" class="text-primary hover:underline">@JohnDoe</a>,</p>
         <p>It looks like you haven't set up the session middleware correctly. You need to add it before your authentication middleware:</p>
 
-        <pre class="bg-gray-100 p-4 rounded-md my-4"><code>
+        <pre class="my-4 p-4 bg-gray-100 rounded-md"><code>
 const session = require('express-session');
 
 app.use(session({
@@ -67,7 +67,7 @@ app.use(authMiddleware);
 
         <p>Also, make sure you've installed the express-session package:</p>
 
-        <pre class="bg-gray-100 p-4 rounded-md my-4"><code>
+        <pre class="my-4 p-4 bg-gray-100 rounded-md"><code>
 npm install express-session
 # or with bun
 bun add express-session
@@ -87,7 +87,7 @@ bun add express-session
         <p>I completely forgot to set up the session middleware. Your solution works perfectly!</p>
         <p>For anyone else who might run into this issue, I also had to install the express-session types for TypeScript:</p>
 
-        <pre class="bg-gray-100 p-4 rounded-md my-4"><code>
+        <pre class="my-4 p-4 bg-gray-100 rounded-md"><code>
 npm install --save-dev @types/express-session
 # or with bun
 bun add -d @types/express-session

@@ -82,9 +82,9 @@ export default {
 
 ```ts
 // cloud/constructs/custom-api.ts
-import * as cdk from 'aws-cdk-lib'
-import * as apigateway from 'aws-cdk-lib/aws-apigateway'
-import * as lambda from 'aws-cdk-lib/aws-lambda'
+import _ as cdk from 'aws-cdk-lib'
+import _ as apigateway from 'aws-cdk-lib/aws-apigateway'
+import _ as lambda from 'aws-cdk-lib/aws-lambda'
 import { Construct } from 'constructs'
 
 export interface CustomApiProps {
@@ -134,10 +134,10 @@ export class CustomApi extends Construct {
 
 ```ts
 // cloud/stacks/custom-stack.ts
-import * as cdk from 'aws-cdk-lib'
-import * as s3 from 'aws-cdk-lib/aws-s3'
-import * as dynamodb from 'aws-cdk-lib/aws-dynamodb'
-import * as sqs from 'aws-cdk-lib/aws-sqs'
+import _ as cdk from 'aws-cdk-lib'
+import _ as s3 from 'aws-cdk-lib/aws-s3'
+import _ as dynamodb from 'aws-cdk-lib/aws-dynamodb'
+import _ as sqs from 'aws-cdk-lib/aws-sqs'
 import { Construct } from 'constructs'
 import { CustomApi } from '../constructs/custom-api'
 
@@ -211,7 +211,7 @@ export class CustomStack extends cdk.Stack {
 
 ```ts
 // cloud/app.ts
-import * as cdk from 'aws-cdk-lib'
+import _ as cdk from 'aws-cdk-lib'
 import { CustomStack } from './stacks/custom-stack'
 
 const app = new cdk.App()
@@ -236,9 +236,9 @@ app.synth()
 
 ```ts
 // cloud/functions/custom-function.ts
-import * as lambda from 'aws-cdk-lib/aws-lambda'
-import * as events from 'aws-cdk-lib/aws-events'
-import * as targets from 'aws-cdk-lib/aws-events-targets'
+import _ as lambda from 'aws-cdk-lib/aws-lambda'
+import _ as events from 'aws-cdk-lib/aws-events'
+import _ as targets from 'aws-cdk-lib/aws-events-targets'
 import { Construct } from 'constructs'
 
 export function addScheduledFunction(
@@ -269,7 +269,7 @@ export function addScheduledFunction(
 
 // Usage
 addScheduledFunction(this, 'DailyCleanup', {
-  schedule: 'cron(0 0 * * ? *)', // Every day at midnight
+  schedule: 'cron(0 0 _ _ ? _)', // Every day at midnight
   handler: 'cleanup.handler',
 })
 ```
@@ -278,9 +278,9 @@ addScheduledFunction(this, 'DailyCleanup', {
 
 ```ts
 // cloud/databases/custom-database.ts
-import * as rds from 'aws-cdk-lib/aws-rds'
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
-import * as cdk from 'aws-cdk-lib'
+import _ as rds from 'aws-cdk-lib/aws-rds'
+import _ as ec2 from 'aws-cdk-lib/aws-ec2'
+import _ as cdk from 'aws-cdk-lib'
 import { Construct } from 'constructs'
 
 export function addRdsDatabase(
@@ -320,8 +320,8 @@ export function addRdsDatabase(
 
 ```ts
 // cloud/caching/elasticache.ts
-import * as elasticache from 'aws-cdk-lib/aws-elasticache'
-import * as ec2 from 'aws-cdk-lib/aws-ec2'
+import _ as elasticache from 'aws-cdk-lib/aws-elasticache'
+import _ as ec2 from 'aws-cdk-lib/aws-ec2'
 import { Construct } from 'constructs'
 
 export function addRedisCluster(
@@ -425,7 +425,7 @@ async function clearCaches() {
   await cloudfront.createInvalidation({
     DistributionId: process.env.CLOUDFRONT_DISTRIBUTION_ID,
     InvalidationBatch: {
-      Paths: { Quantity: 1, Items: ['/*'] },
+      Paths: { Quantity: 1, Items: ['/_'] },
       CallerReference: Date.now().toString(),
     },
   })
@@ -502,8 +502,8 @@ export default {
 
 ```ts
 // cloud/stacks/multi-region-stack.ts
-import * as cdk from 'aws-cdk-lib'
-import * as route53 from 'aws-cdk-lib/aws-route53'
+import _ as cdk from 'aws-cdk-lib'
+import _ as route53 from 'aws-cdk-lib/aws-route53'
 import { Construct } from 'constructs'
 
 export class MultiRegionStack extends cdk.Stack {

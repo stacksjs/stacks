@@ -57,15 +57,16 @@ buddy commit
 ```
 
 Interactive prompts:
+
 ```
 ? Select the type of change: feat
 ? What is the scope? (optional): auth
 ? Write a short description: add OAuth2 login support
-? Provide a longer description? (optional): 
+? Provide a longer description? (optional):
 ? Are there any breaking changes? No
 ? Does this commit close any issues? #123
 
-# Creates commit:
+# Creates commit
 # feat(auth): add OAuth2 login support
 #
 # Closes #123
@@ -102,25 +103,30 @@ Commits follow the Conventional Commits specification:
 ### Examples
 
 **Simple commit:**
+
 ```
 feat: add user authentication
 ```
 
 **Commit with scope:**
+
 ```
 fix(api): resolve race condition in database queries
 ```
 
 **Commit with body:**
+
 ```
 refactor(components): simplify modal state management
 
 - Remove redundant state variables
 - Consolidate event handlers
 - Improve TypeScript types
+
 ```
 
 **Breaking change:**
+
 ```
 feat(api)!: change response format for user endpoints
 
@@ -137,12 +143,14 @@ Stacks configures commit message validation via git hooks. Invalid commit messag
 ### Write Good Descriptions
 
 **Good:**
+
 ```
 feat(auth): add password reset functionality
 fix(ui): prevent button from submitting twice
 ```
 
 **Bad:**
+
 ```
 feat: stuff
 fix: fix bug
@@ -151,6 +159,7 @@ fix: fix bug
 ### Use Meaningful Scopes
 
 Common scopes:
+
 - `api` - API changes
 - `ui` - User interface
 - `auth` - Authentication
@@ -161,6 +170,7 @@ Common scopes:
 ### Reference Issues
 
 Always reference related issues:
+
 ```
 fix(auth): resolve login timeout issue
 
@@ -170,6 +180,7 @@ Fixes #456
 ### Breaking Changes
 
 Mark breaking changes clearly:
+
 ```
 feat(api)!: update authentication flow
 
@@ -185,6 +196,7 @@ Error: Nothing to commit
 ```
 
 **Solution**: Stage changes first:
+
 ```bash
 git add .
 buddy commit
@@ -202,11 +214,13 @@ If the commit hook rejects your message:
 ### Reverting a Commit
 
 To undo the last commit:
+
 ```bash
 git reset --soft HEAD~1
 ```
 
 To create a revert commit:
+
 ```bash
 git revert HEAD
 ```
@@ -215,7 +229,7 @@ git revert HEAD
 
 ```bash
 # 1. Make changes to your code
-# ...
+#
 
 # 2. Stage changes
 git add src/auth/

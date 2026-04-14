@@ -93,11 +93,13 @@ const updatedReview = await products.reviews.updateVotes(1, 'unhelpful', false)
 ### Delete Reviews
 
 Single review deletion:
+
 ```ts
 await products.reviews.destroy(1) // Replace 1 with the review ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await products.reviews.bulkDestroy([1, 2, 3]) // Array of review IDs to delete
 ```

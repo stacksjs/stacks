@@ -33,8 +33,8 @@ It’s incredibly easy to get started with this framework. Simply run the follow
 ```bash
 curl -Ssf stacksjs.com/install | sh # wip
 
-# alternatively, if Bun >= v1.1.11 is installed already,
-# you may also get started via:
+# alternatively, if Bun >= v1.1.11 is installed already
+# you may also get started via
 bunx stacks new my-project
 ```
 
@@ -112,7 +112,7 @@ buddy development # `buddy dev` alias
 
 buddy share # creates a sharable link to your local project
 
-# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
+# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it
 buddy serve
 buddy serve:components
 buddy serve:desktop
@@ -225,7 +225,7 @@ buddy test:coverage # runs test coverage
 buddy test:types # runs typecheck
 
 # the CLI may be triggered in any
-# of the following syntax:
+# of the following syntax
 stx fresh
 buddy fresh
 bud fresh

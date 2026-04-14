@@ -63,8 +63,8 @@ export default {
     enabled: true,
     priceClass: 'PriceClass_100',
     origins: {
-      api: { type: 's3', path: '/api/*' },
-      static: { type: 's3', path: '/static/*' }
+      api: { type: 's3', path: '/api/_' },
+      static: { type: 's3', path: '/static/_' }
     }
   },
 
@@ -192,7 +192,7 @@ await Storage.createBucket({
   cors: [{
     allowedOrigins: ['https://example.com'],
     allowedMethods: ['GET', 'PUT', 'POST'],
-    allowedHeaders: ['*']
+    allowedHeaders: ['_']
   }]
 })
 
@@ -253,9 +253,9 @@ import { CDN } from '@stacksjs/cloud'
 
 // Invalidate specific paths
 await CDN.invalidate([
-  '/static/*',
+  '/static/_',
   '/index.html',
-  '/api/v1/*'
+  '/api/v1/_'
 ])
 
 // Invalidate everything
@@ -466,7 +466,7 @@ import { Security } from '@stacksjs/cloud'
 // Request certificate
 const cert = await Security.requestCertificate({
   domain: 'example.com',
-  alternativeNames: ['*.example.com', 'api.example.com'],
+  alternativeNames: ['_.example.com', 'api.example.com'],
   validation: 'DNS'
 })
 

@@ -25,7 +25,7 @@ const { id, label, type, placeholder, class: classList } = withDefaults(
     <input
       type="{{ type }}"
       id="{{ id }}"
-      class="{{ classList }}"
+      class="{{ }} classList"
       placeholder="{{ placeholder }}"
     />
   </div>

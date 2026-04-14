@@ -159,11 +159,13 @@ const updatedPosition = await waitlists.restaurant.updateQueuePosition(1, 3)
 ### Delete Entries
 
 Single entry deletion:
+
 ```ts
 const deletedEntry = await waitlists.restaurant.destroy(1) // Returns the deleted entry
 ```
 
 Bulk deletion:
+
 ```ts
 const deletedCount = await waitlists.restaurant.bulkDestroy([1, 2, 3]) // Returns number of entries deleted
 ```

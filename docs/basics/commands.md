@@ -3,25 +3,6 @@ title: Commands
 description: Learn how to create and use CLI commands in Stacks applications
 ---
 
-# Commands
-
-Stacks provides a powerful CLI framework for building command-line tools. Commands can automate tasks, run maintenance operations, generate code, and interact with your application from the terminal.
-
-## Introduction
-
-CLI commands in Stacks use a fluent, chainable API inspired by popular CLI libraries. Commands are stored in `app/Commands/` and registered in `app/Commands.ts`. They can be executed using the `buddy` CLI tool.
-
-## Creating Commands
-
-### Basic Command Structure
-
-```typescript
-// app/Commands/Inspire.ts
-import type { CLI } from '@stacksjs/types'
-import process from 'node:process'
-import { log, quotes } from '@stacksjs/cli'
-import { ExitCode } from '@stacksjs/types'
-
 export default function (cli: CLI) {
   cli
     .command('inspire', 'Inspire yourself with a random quote')
@@ -33,11 +14,13 @@ export default function (cli: CLI) {
 
   return cli
 }
+
 ```
 
 ### Command with Options
 
 ```typescript
+
 // app/Commands/Greet.ts
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
@@ -68,11 +51,13 @@ export default function (cli: CLI) {
 
   return cli
 }
+
 ```
 
 ### Command with Arguments
 
 ```typescript
+
 // app/Commands/Copy.ts
 import type { CLI } from '@stacksjs/types'
 import { copy } from '@stacksjs/storage'
@@ -93,6 +78,7 @@ export default function (cli: CLI) {
 
   return cli
 }
+
 ```
 
 ## Registering Commands
@@ -102,6 +88,7 @@ export default function (cli: CLI) {
 Register commands in `app/Commands.ts`:
 
 ```typescript
+
 // app/Commands.ts
 export interface CommandConfig {
   /** The command file name (without .ts extension) */
@@ -136,6 +123,7 @@ export default {
   'queue:work': 'QueueWork',
 
 } satisfies CommandRegistry
+
 ```
 
 ### File Location
@@ -143,12 +131,14 @@ export default {
 Commands are loaded from `app/Commands/`. The file name should match the value in the registry:
 
 ```
+
 app/
   Commands/
     Inspire.ts          # Registered as 'inspire': 'Inspire'
     Greet.ts            # Registered as 'greet': 'Greet'
     DatabaseSeed.ts     # Registered as 'db:seed': 'DatabaseSeed'
     CacheClear.ts       # Registered as 'cache:clear': 'CacheClear'
+
 ```
 
 ## Arguments
@@ -158,10 +148,12 @@ app/
 Use angle brackets for required arguments:
 
 ```typescript
+
 cli.command('user:create <email>', 'Create a new user')
   .action((email: string) => {
     console.log(`Creating user: ${email}`)
   })
+
 ```
 
 ### Optional Arguments
@@ -169,10 +161,12 @@ cli.command('user:create <email>', 'Create a new user')
 Use square brackets for optional arguments:
 
 ```typescript
+
 cli.command('greet [name]', 'Greet someone')
   .action((name: string = 'World') => {
     console.log(`Hello, ${name}!`)
   })
+
 ```
 
 ### Variadic Arguments
@@ -180,10 +174,12 @@ cli.command('greet [name]', 'Greet someone')
 Use `...` for variadic arguments:
 
 ```typescript
+
 cli.command('install <packages...>', 'Install packages')
   .action((packages: string[]) => {
     console.log(`Installing: ${packages.join(', ')}`)
   })
+
 ```
 
 ### Multiple Arguments
@@ -191,6 +187,7 @@ cli.command('install <packages...>', 'Install packages')
 Combine multiple arguments:
 
 ```typescript
+
 cli.command('move <source> <destination> [options...]', 'Move files')
   .action((source: string, destination: string, options: string[]) => {
     console.log(`Moving ${source} to ${destination}`)
@@ -198,6 +195,7 @@ cli.command('move <source> <destination> [options...]', 'Move files')
       console.log(`Options: ${options.join(', ')}`)
     }
   })
+
 ```
 
 ## Options
@@ -205,6 +203,7 @@ cli.command('move <source> <destination> [options...]', 'Move files')
 ### Boolean Options
 
 ```typescript
+
 cli.command('build', 'Build the project')
   .option('--verbose, -v', 'Enable verbose output')
   .option('--watch, -w', 'Watch for changes')
@@ -215,32 +214,38 @@ cli.command('build', 'Build the project')
     }
     // Build logic
   })
+
 ```
 
 ### Options with Values
 
 ```typescript
+
 cli.command('serve', 'Start the server')
   .option('--port, -p <port>', 'Port to listen on', { default: 3000 })
   .option('--host, -h <host>', 'Host to bind to', { default: 'localhost' })
   .action((options) => {
     console.log(`Starting server on ${options.host}:${options.port}`)
   })
+
 ```
 
 ### Required Options
 
 ```typescript
+
 cli.command('deploy', 'Deploy the application')
   .option('--environment, -e <env>', 'Deployment environment', { required: true })
   .action((options) => {
     console.log(`Deploying to ${options.environment}`)
   })
+
 ```
 
 ### Option Types
 
 ```typescript
+
 cli.command('process', 'Process data')
   // String option
   .option('--format, -f <format>', 'Output format', { default: 'json' })
@@ -260,11 +265,13 @@ cli.command('process', 'Process data')
     console.log('Dry run:', options.dryRun)   // boolean
     console.log('Include:', options.include)   // string[]
   })
+
 ```
 
 ### Option Validation
 
 ```typescript
+
 cli.command('resize', 'Resize an image')
   .option('--width, -w <width>', 'Image width', {
     default: 100,
@@ -279,6 +286,7 @@ cli.command('resize', 'Resize an image')
   .action((options) => {
     console.log(`Resizing to width: ${options.width}`)
   })
+
 ```
 
 ## Input/Output
@@ -286,6 +294,7 @@ cli.command('resize', 'Resize an image')
 ### Console Output
 
 ```typescript
+
 import { log } from '@stacksjs/cli'
 
 export default function (cli: CLI) {
@@ -303,11 +312,13 @@ export default function (cli: CLI) {
       console.log('Plain output')
     })
 }
+
 ```
 
 ### Styled Output
 
 ```typescript
+
 import { bold, green, red, yellow, italic, dim } from '@stacksjs/cli'
 
 export default function (cli: CLI) {
@@ -324,11 +335,13 @@ export default function (cli: CLI) {
       console.log(bold(green('Bold and green')))
     })
 }
+
 ```
 
 ### Progress Indicators
 
 ```typescript
+
 import { spinner } from '@stacksjs/cli'
 
 export default function (cli: CLI) {
@@ -345,11 +358,13 @@ export default function (cli: CLI) {
       }
     })
 }
+
 ```
 
 ### Interactive Prompts
 
 ```typescript
+
 import { prompt, confirm, select, multiselect } from '@stacksjs/cli'
 
 export default function (cli: CLI) {
@@ -378,6 +393,7 @@ export default function (cli: CLI) {
       console.log({ name, proceed, framework, features })
     })
 }
+
 ```
 
 ## Command Aliases
@@ -385,22 +401,26 @@ export default function (cli: CLI) {
 ### Single Alias
 
 ```typescript
+
 cli.command('inspire', 'Inspire yourself')
   .alias('insp')
   .action(() => {
     // Can be run as `buddy inspire` or `buddy insp`
   })
+
 ```
 
 ### Multiple Aliases
 
 ```typescript
+
 cli.command('generate:component', 'Generate a component')
   .alias('g:c')
   .alias('gc')
   .action(() => {
     // Can be run as any of the aliases
   })
+
 ```
 
 ## Subcommands
@@ -408,6 +428,7 @@ cli.command('generate:component', 'Generate a component')
 ### Creating Subcommands
 
 ```typescript
+
 // app/Commands/User.ts
 export default function (cli: CLI) {
   // Main command group
@@ -445,6 +466,7 @@ export default function (cli: CLI) {
 
   return cli
 }
+
 ```
 
 ## Calling Commands Programmatically
@@ -452,6 +474,7 @@ export default function (cli: CLI) {
 ### From Actions
 
 ```typescript
+
 // app/Actions/MaintenanceAction.ts
 import { runCommand } from '@stacksjs/cli'
 
@@ -464,11 +487,13 @@ export default new Action({
     return response.json({ message: 'Maintenance complete' })
   },
 })
+
 ```
 
 ### From Other Commands
 
 ```typescript
+
 export default function (cli: CLI) {
   cli.command('reset', 'Reset the application')
     .action(async () => {
@@ -486,11 +511,13 @@ export default function (cli: CLI) {
       log.success('Application reset complete!')
     })
 }
+
 ```
 
 ### Using exec
 
 ```typescript
+
 import { exec } from '@stacksjs/cli'
 
 export default function (cli: CLI) {
@@ -506,6 +533,7 @@ export default function (cli: CLI) {
       }
     })
 }
+
 ```
 
 ## Error Handling
@@ -513,6 +541,7 @@ export default function (cli: CLI) {
 ### Exit Codes
 
 ```typescript
+
 import { ExitCode } from '@stacksjs/types'
 
 export default function (cli: CLI) {
@@ -526,11 +555,13 @@ export default function (cli: CLI) {
       }
     })
 }
+
 ```
 
 ### Graceful Error Handling
 
 ```typescript
+
 import { handleError } from '@stacksjs/error-handling'
 
 export default function (cli: CLI) {
@@ -546,11 +577,13 @@ export default function (cli: CLI) {
       }
     })
 }
+
 ```
 
 ### Validation Errors
 
 ```typescript
+
 export default function (cli: CLI) {
   cli.command('process <file>', 'Process a file')
     .action(async (file) => {
@@ -570,6 +603,7 @@ export default function (cli: CLI) {
       await processFile(file)
     })
 }
+
 ```
 
 ## Best Practices
@@ -577,6 +611,7 @@ export default function (cli: CLI) {
 ### Command Structure
 
 ```typescript
+
 // Recommended command structure
 export default function (cli: CLI) {
   cli
@@ -610,16 +645,19 @@ export default function (cli: CLI) {
 
   return cli
 }
+
 ```
 
 ### Help Text
 
 ```typescript
+
 cli.command('complex', 'A complex command')
   .option('--input, -i <file>', 'Input file path')
   .option('--output, -o <file>', 'Output file path')
   .example('buddy complex -i data.json -o result.json')
   .example('buddy complex --input=data.json --output=result.json')
+
 ```
 
 ## Edge Cases and Gotchas
@@ -629,9 +667,11 @@ cli.command('complex', 'A complex command')
 Avoid using reserved option names:
 
 ```typescript
+
 // Avoid these (used by CLI framework)
 // --help, -h
 // --version, -v (if version is enabled)
+
 ```
 
 ### Async Actions
@@ -639,6 +679,7 @@ Avoid using reserved option names:
 Always handle async operations properly:
 
 ```typescript
+
 // Correct: await async operations
 cli.command('async', 'Async command')
   .action(async () => {
@@ -652,6 +693,7 @@ cli.command('async', 'Async command')
     someAsyncOperation()  // Command exits before this completes
     process.exit(0)
   })
+
 ```
 
 ### Environment Variables
@@ -659,6 +701,7 @@ cli.command('async', 'Async command')
 Access environment variables in commands:
 
 ```typescript
+
 cli.command('config', 'Show configuration')
   .action(() => {
     const env = process.env.NODE_ENV || 'development'
@@ -667,6 +710,7 @@ cli.command('config', 'Show configuration')
     console.log(`Environment: ${env}`)
     console.log(`Debug: ${debug}`)
   })
+
 ```
 
 ## API Reference

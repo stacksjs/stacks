@@ -128,7 +128,7 @@ const getStatusIconBg = (status) => {
 @title('Dashboard - Health')
 <div>
   <!-- Overview Stats -->
-  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
     <StatsCard
       title="Uptime"
       value="100%"
@@ -161,14 +161,14 @@ const getStatusIconBg = (status) => {
   </div>
 
   <!-- Detailed Health Cards -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
     @foreach(metric in healthMetrics)
       <Card
         variant="default"
         padding="md"
         hoverable
       >
-        <div class="flex items-start gap-4">
+        <div class="flex gap-4 items-start">
           <!-- Icon -->
           <div :class="[getStatusIconBg(metric.status), 'p-2.5 rounded-lg flex-shrink-0']">
             <div :class="[metric.icon, 'h-5 w-5']" />
@@ -176,15 +176,15 @@ const getStatusIconBg = (status) => {
 
           <!-- Content -->
           <div class="flex-1 min-w-0">
-            <div class="flex items-center justify-between gap-2">
-              <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white truncate">
+            <div class="flex gap-2 items-center justify-between">
+              <h3 class="font-medium text-[14px] text-neutral-900 truncate dark:text-white">
                 {{ metric.name }}
               </h3>
               <Badge :variant="getStatusVariant(metric.status)" size="sm">
                 {{ metric.status }}
               </Badge>
             </div>
-            <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400 line-clamp-1">
+            <p class="mt-1 line-clamp-1 text-[12px] text-neutral-500 dark:text-neutral-400">
               {{ metric.description }}
             </p>
           </div>
@@ -195,20 +195,16 @@ const getStatusIconBg = (status) => {
           <div class="mt-4">
             <dl
               class="grid gap-3"
-              class="{{ {
-                'grid-cols-3': metric.metrics.length === 3,
-                'grid-cols-2': metric.metrics.length === 2,
-                'grid-cols-1': metric.metrics.length === 1
-              } }}"
+              class="'grid-cols-1': 'grid-cols-2': 'grid-cols-3': { {{ } }} === === === 1 2, 3, metric.metrics.length metric.metrics.length metric.metrics.length"
             >
               @foreach(m in metric.metrics)
                 <div
-                  class="overflow-hidden rounded-lg bg-black/[0.03] dark:bg-white/[0.05] px-3 py-2.5"
+                  class="overflow-hidden px-3 py-2.5 bg-black/[0.03] dark:bg-white/[0.05] rounded-lg"
                 >
-                  <dt class="truncate text-[11px] font-medium text-neutral-500 dark:text-neutral-400">
+                  <dt class="font-medium text-[11px] text-neutral-500 truncate dark:text-neutral-400">
                     {{ m.label }}
                   </dt>
-                  <dd class="mt-0.5 text-[14px] font-semibold tracking-tight text-neutral-900 dark:text-white">
+                  <dd class="mt-0.5 font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">
                     {{ m.value }}
                   </dd>
                 </div>

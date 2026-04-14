@@ -126,4 +126,4 @@ Error responses include an error message:
 
 ## Authentication
 
-These endpoints may require authentication depending on your application's configuration. Make sure to include the appropriate authentication headers with your requests. 
+These endpoints may require authentication depending on your application's configuration. Make sure to include the appropriate authentication headers with your requests.

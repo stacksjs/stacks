@@ -32,6 +32,7 @@ buddy changelog
 ```
 
 Output:
+
 ```
 buddy changelog
 
@@ -78,22 +79,27 @@ All notable changes to this project will be documented in this file.
 ## [1.2.0] - 2024-01-15
 
 ### Added
+
 - Add user dashboard (#123)
 - Implement dark mode (#124)
 
 ### Fixed
+
 - Fix login timeout issue (#125)
 - Resolve database connection leak (#126)
 
 ### Changed
+
 - Update dependency versions
 - Improve error messages
 
 ## [1.1.0] - 2024-01-01
 
 ### Added
+
 - Initial authentication system
 - Basic CRUD operations
+
 ```
 
 ## Commit Type Mapping
@@ -122,11 +128,14 @@ Breaking changes are highlighted prominently:
 ## [2.0.0] - 2024-02-01
 
 ### BREAKING CHANGES
+
 - API response format changed from object to array
 - Removed deprecated authentication methods
 
 ### Added
+
 - New REST API endpoints
+
 ```
 
 ## Configuration
@@ -164,10 +173,13 @@ In CI/CD, update changelog automatically:
 
 ```yaml
 # .github/workflows/release.yml
+
 - name: Generate Changelog
+
   run: buddy changelog
 
 - name: Commit Changelog
+
   run: |
     git add CHANGELOG.md
     git commit -m "docs: update changelog"
@@ -181,15 +193,18 @@ In CI/CD, update changelog automatically:
 The changelog quality depends on commit messages:
 
 **Good commits produce good changelogs:**
+
 ```
 feat(auth): add two-factor authentication support
 
 - Add TOTP generation
 - Add backup codes
 - Add QR code display
+
 ```
 
 **Bad commits produce unclear changelogs:**
+
 ```
 update auth
 fix stuff
@@ -216,6 +231,7 @@ fix(cart): resolve checkout race condition (#456)
 ### Keep Entries Concise
 
 Good changelog entries are:
+
 - Clear and concise
 - Written in imperative mood
 - Focused on the "what", not "how"
@@ -229,6 +245,7 @@ Warning: No commits found since last release
 ```
 
 **Solution**: Ensure you have conventional commits:
+
 ```bash
 # Check recent commits
 git log --oneline -10
@@ -244,6 +261,7 @@ Error: Cannot write to CHANGELOG.md
 ```
 
 **Solution**:
+
 ```bash
 chmod 644 CHANGELOG.md
 buddy changelog
@@ -256,6 +274,7 @@ Warning: No version tags found
 ```
 
 **Solution**: Create an initial tag:
+
 ```bash
 git tag v0.0.1
 buddy changelog
@@ -264,6 +283,7 @@ buddy changelog
 ### Incorrect Dates
 
 Dates come from git tags. If incorrect:
+
 ```bash
 # Check tag dates
 git tag -l --format='%(refname:short) %(creatordate:short)'
@@ -282,6 +302,7 @@ While the changelog is auto-generated, you can manually edit it:
 ## [1.2.0] - 2024-01-15
 
 ### Added
+
 - Add user dashboard (#123)
 
 ### Notes

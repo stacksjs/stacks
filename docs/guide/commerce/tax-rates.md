@@ -90,11 +90,13 @@ const updatedRate = await tax.updateRate(1, 22.5)
 ### Delete Tax Rates
 
 Single tax rate deletion:
+
 ```ts
 const deleted = await tax.destroy(1) // Returns true if successful
 ```
 
 Bulk deletion:
+
 ```ts
 const deletedCount = await tax.bulkDestroy([1, 2, 3]) // Returns number of tax rates deleted
 ```

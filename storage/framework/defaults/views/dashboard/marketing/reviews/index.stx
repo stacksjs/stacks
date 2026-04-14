@@ -874,8 +874,8 @@ const renderSourceChart = () => {
         <!-- Header section -->
         <div class="sm:flex sm:items-center sm:justify-between">
           <div>
-            <h1 class="text-2xl font-semibold text-gray-900 dark:text-white">Customer Reviews</h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Customer Reviews</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
               Monitor and respond to customer reviews from Google, Yelp, and other platforms
             </p>
           </div>
@@ -883,30 +883,30 @@ const renderSourceChart = () => {
             <button
               type="button"
               onclick="openResponseModal(null)"
-              class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+              class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
-              <div class="i-hugeicons-mail-reply-01 h-5 w-5 mr-1"></div>
+              <div class="mr-1 h-5 w-5 i-hugeicons-mail-reply-01"></div>
               Respond to Review
             </button>
           </div>
         </div>
 
         <!-- Summary cards -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
           <!-- Total reviews card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-blue-100 p-2 dark:bg-blue-900">
-                    <div class="i-hugeicons-star h-6 w-6 text-blue-600 dark:text-blue-300"></div>
+                  <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                    <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-star"></div>
                   </div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Total Reviews</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Reviews</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ totalReviews }}</div>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalReviews }}</div>
                     </dd>
                   </dl>
                 </div>
@@ -915,19 +915,19 @@ const renderSourceChart = () => {
           </div>
 
           <!-- Average rating card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-yellow-100 p-2 dark:bg-yellow-900">
-                    <div class="i-hugeicons-chart-average h-6 w-6 text-yellow-600 dark:text-yellow-300"></div>
+                  <div class="p-2 h-10 w-10 bg-yellow-100 dark:bg-yellow-900 rounded-md">
+                    <div class="h-6 w-6 text-yellow-600 dark:text-yellow-300 i-hugeicons-chart-average"></div>
                   </div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Average Rating</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Average Rating</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ averageRating }} / 5</div>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ averageRating }} / 5</div>
                     </dd>
                   </dl>
                 </div>
@@ -936,19 +936,19 @@ const renderSourceChart = () => {
           </div>
 
           <!-- Positive reviews card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-green-100 p-2 dark:bg-green-900">
-                    <div class="i-hugeicons-thumbs-up h-6 w-6 text-green-600 dark:text-green-300"></div>
+                  <div class="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 rounded-md">
+                    <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-thumbs-up"></div>
                   </div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Positive Reviews</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Positive Reviews</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ positiveReviews }}</div>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ positiveReviews }}</div>
                     </dd>
                   </dl>
                 </div>
@@ -957,19 +957,19 @@ const renderSourceChart = () => {
           </div>
 
           <!-- Negative reviews card -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
               <div class="flex items-center">
                 <div class="flex-shrink-0">
-                  <div class="h-10 w-10 rounded-md bg-red-100 p-2 dark:bg-red-900">
-                    <div class="i-hugeicons-thumbs-down h-6 w-6 text-red-600 dark:text-red-300"></div>
+                  <div class="p-2 h-10 w-10 bg-red-100 dark:bg-red-900 rounded-md">
+                    <div class="h-6 w-6 text-red-600 dark:text-red-300 i-hugeicons-thumbs-down"></div>
                   </div>
                 </div>
-                <div class="ml-5 w-0 flex-1">
+                <div class="flex-1 ml-5 w-0">
                   <dl>
-                    <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-400">Negative Reviews</dt>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Negative Reviews</dt>
                     <dd>
-                      <div class="text-lg font-medium text-gray-900 dark:text-white">{{ negativeReviews }}</div>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ negativeReviews }}</div>
                     </dd>
                   </dl>
                 </div>
@@ -979,51 +979,51 @@ const renderSourceChart = () => {
         </div>
 
         <!-- Visualization section -->
-        <div class="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-3 mt-6">
           <!-- Rating distribution chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Rating Distribution</h3>
-              <div id="rating-chart" class="h-48 mt-4"></div>
+              <h3 class="font-semibold text-base text-gray-900 dark:text-white">Rating Distribution</h3>
+              <div id="rating-chart" class="mt-4 h-48"></div>
             </div>
           </div>
 
           <!-- Sentiment distribution chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Sentiment Analysis</h3>
-              <div id="sentiment-chart" class="h-48 mt-4"></div>
+              <h3 class="font-semibold text-base text-gray-900 dark:text-white">Sentiment Analysis</h3>
+              <div id="sentiment-chart" class="mt-4 h-48"></div>
             </div>
           </div>
 
           <!-- Source distribution chart -->
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-5">
-              <h3 class="text-base font-semibold text-gray-900 dark:text-white">Review Sources</h3>
-              <div id="source-chart" class="h-48 mt-4"></div>
+              <h3 class="font-semibold text-base text-gray-900 dark:text-white">Review Sources</h3>
+              <div id="source-chart" class="mt-4 h-48"></div>
             </div>
           </div>
         </div>
 
         <!-- Filters and view options -->
-        <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
           <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
             </div>
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
               placeholder="Search reviews..."
             />
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex flex-col gap-4 sm:flex-row">
             <!-- Source filter -->
             <select
               value="{{ sourceFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="all">All Sources</option>
               @foreach(sources.filter(s => s !== 'all') as source)
@@ -1033,7 +1033,7 @@ const renderSourceChart = () => {
             <!-- Rating filter -->
             <select
               value="{{ ratingFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="all">All Ratings</option>
               @foreach(ratings.filter(r => r !== 'all') as rating)
@@ -1043,7 +1043,7 @@ const renderSourceChart = () => {
             <!-- Sentiment filter -->
             <select
               value="{{ sentimentFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="all">All Sentiments</option>
               <option value="positive">Positive</option>
@@ -1054,7 +1054,7 @@ const renderSourceChart = () => {
             <!-- Status filter -->
             <select
               value="{{ statusFilter }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="all">All Statuses</option>
               <option value="unread">Unread</option>
@@ -1068,193 +1068,193 @@ const renderSourceChart = () => {
               <button
                 type="button"
                 onclick="viewMode = 'detailed'"
-                class="{{ [
+                class="[
                   'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
                     : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-grid h-5 w-5"></div>
+                <div class="h-5 w-5 i-hugeicons-grid"></div>
               </button>
               <button
                 type="button"
                 onclick="viewMode = 'compact'"
-                class="{{ [
+                class="[
                   'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
                   viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
                     : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-list-view h-5 w-5"></div>
+                <div class="h-5 w-5 i-hugeicons-list-view"></div>
               </button>
             </div>
           </div>
         </div>
 
         <!-- Sort options -->
-        <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
+        <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
           <span class="mr-2">Sort by:</span>
           <button
             onclick="toggleSort('date')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'date' } }}"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'date' 'font-semibold { {{ } }} === sortBy dark:text-blue-400':"
           >
             Date
             @if(sortBy === 'date')
 <span class="ml-1">
               @if(sortOrder === 'asc')
-<div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
               @else
-<div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
           </button>
           <button
             onclick="toggleSort('rating')"
-            class="mr-3 flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'rating' } }}"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'rating' { {{ } }} === sortBy dark:text-blue-400':"
           >
             Rating
             @if(sortBy === 'rating')
 <span class="ml-1">
               @if(sortOrder === 'asc')
-<div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
               @else
-<div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
           </button>
           <button
             onclick="toggleSort('helpful')"
             class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-            class="{{ { 'font-semibold text-blue-600 dark:text-blue-400': sortBy === 'helpful' } }}"
+            class="text-blue-600 'font-semibold 'helpful' { {{ } }} === sortBy dark:text-blue-400':"
           >
             Helpful
             @if(sortBy === 'helpful')
 <span class="ml-1">
               @if(sortOrder === 'asc')
-<div class="i-hugeicons-arrow-up-01 h-4 w-4"></div>
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
               @else
-<div class="i-hugeicons-arrow-down-02 h-4 w-4"></div>
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
           </button>
         </div>
 
         <!-- Compact view (table) -->
         @if(viewMode === 'compact')
-<div class="mt-6 overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
+<div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-700">
               <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">Review</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Source</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Rating</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Sentiment</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Status</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">Date</th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">Review</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Source</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Rating</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Sentiment</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Date</th>
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                   <span class="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
               @if(paginatedReviews.length === 0)
 <tr>
-                <td colspan="7" class="py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
+                <td colspan="7" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
                   No reviews found. Try adjusting your search or filter.
                 </td>
               </tr>
               @foreach(paginatedReviews as review)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <div class="flex items-center">
-                    <div class="h-10 w-10 flex-shrink-0">
+                    <div class="flex-shrink-0 h-10 w-10">
                       @if(review.authorAvatar)
 <img class="h-10 w-10 rounded-full" :src="review.authorAvatar" alt="" />
                       @else
-<div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                        <div class="i-hugeicons-user h-6 w-6 text-gray-500"></div>
+<div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
+                        <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
                       </div>
                     </div>
                     <div class="ml-4">
                       <div class="font-medium text-gray-900 dark:text-white">{{ review.title }}</div>
-                      <div class="text-xs text-gray-500 dark:text-neutral-400">{{ review.author }} - {{ review.location }}</div>
+                      <div class="text-gray-500 text-xs dark:text-neutral-400">{{ review.author }} - {{ review.location }}</div>
                     </div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                   <div class="flex items-center">
-                    <div :class="getSourceIcon(review.source) + ' h-4 w-4 mr-2 ' + getSourceColor(review.source)"></div>
+                    <div :class="mr-2 h-4 w-4 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
                     {{ review.source }}
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                   <div class="flex items-center">
                     @foreach(getRatingStars(review.rating) as index => star)
 <div class="mr-0.5">
                       @if(star === 'full')
-<div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
+<div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
                       @else
-<div class="i-hugeicons-star h-4 w-4 text-gray-300 dark:text-neutral-600"></div>
+<div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                     </div>
                     <span class="ml-1">{{ review.rating }}.0</span>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
                   <span :class="[getSentimentClass(review.sentiment), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
                     {{ review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1) }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm">
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
                   <span :class="[getStatusClass(review.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
                     {{ review.status.charAt(0).toUpperCase() + review.status.slice(1) }}
                   </span>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                   {{ formatDate(review.date) }}
                 </td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
                   <div class="flex justify-end space-x-2">
                     @if(review.status !== 'responded')
 <button
                       onclick="openResponseModal(review)"
-                      class="text-gray-400 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 transition-all duration-150"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-all"
                       title="Respond"
                     >
-                      <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+                      <div class="h-5 w-5 i-hugeicons-edit-01"></div>
                       <span class="sr-only">Respond</span>
                     </button>
                     @if(review.status === 'unread')
 <button
                       onclick="markAsRead(review)"
-                      class="text-gray-400 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 transition-all duration-150"
+                      class="text-gray-400 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 duration-150 transition-all"
                       title="Mark as Read"
                     >
-                      <div class="i-hugeicons-checkmark-circle-02 h-5 w-5"></div>
+                      <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
                       <span class="sr-only">Mark as Read</span>
                     </button>
                     <button
                       onclick="flagReview(review)"
-                      class="text-gray-400 hover:text-yellow-900 dark:text-yellow-400 dark:hover:text-yellow-300 transition-all duration-150"
+                      class="text-gray-400 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 duration-150 transition-all"
                       :title="review.status === 'flagged' ? 'Unflag' : 'Flag'"
                     >
-                      <div class="i-hugeicons-flag-01 h-5 w-5"></div>
+                      <div class="h-5 w-5 i-hugeicons-flag-01"></div>
                       <span class="sr-only">Flag</span>
                     </button>
                     <button
                       onclick="highlightReview(review)"
-                      class="text-gray-400 hover:text-purple-900 dark:text-purple-400 dark:hover:text-purple-300 transition-all duration-150"
+                      class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 duration-150 transition-all"
                       :title="review.isHighlighted ? 'Remove Highlight' : 'Highlight'"
                     >
-                      <div :class="review.isHighlighted ? 'i-hugeicons-star' : 'i-hugeicons-star'" class="h-5 w-5"></div>
+                      <div :class=": ? 'i-hugeicons-star' 'i-hugeicons-star' review.isHighlighted" class="h-5 w-5"></div>
                       <span class="sr-only">Highlight</span>
                     </button>
                     <button
                       onclick="hideReview(review)"
-                      class="text-gray-400 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 transition-all duration-150"
+                      class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-all"
                       :title="review.isHidden ? 'Unhide' : 'Hide'"
                     >
-                      <div :class="review.isHidden ? 'i-hugeicons-eye-off' : 'i-hugeicons-eye'" class="h-5 w-5"></div>
+                      <div :class=": ? 'i-hugeicons-eye-off' 'i-hugeicons-eye' review.isHidden" class="h-5 w-5"></div>
                       <span class="sr-only">Hide</span>
                     </button>
                   </div>
@@ -1266,51 +1266,51 @@ const renderSourceChart = () => {
 
         <!-- Detailed view (cards) -->
         @else
-<div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
           @if(paginatedReviews.length === 0)
-<div class="col-span-full py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
+<div class="col-span-full py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
             No reviews found. Try adjusting your search or filter.
           </div>
           @foreach(paginatedReviews as review)
 <div
-            class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800"
-            class="{{ { 'ring-2 ring-yellow-400': review.isHighlighted, 'opacity-60': review.isHidden } }}"
+            class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow"
+            class="'opacity-60': 'ring-2 { {{ } }} review.isHidden review.isHighlighted, ring-yellow-400':"
           >
             <div class="p-5">
               <!-- Review header -->
               <div class="flex items-center justify-between">
                 <div class="flex items-center">
-                  <div class="h-10 w-10 flex-shrink-0">
+                  <div class="flex-shrink-0 h-10 w-10">
                     @if(review.authorAvatar)
 <img class="h-10 w-10 rounded-full" :src="review.authorAvatar" alt="" />
                     @else
-<div class="h-10 w-10 rounded-full bg-gray-200 flex items-center justify-center">
-                      <div class="i-hugeicons-user h-6 w-6 text-gray-500"></div>
+<div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
+                      <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
                     </div>
                   </div>
                   <div class="ml-3">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">{{ review.author }}</div>
-                    <div class="text-xs text-gray-500 dark:text-neutral-400">{{ review.location }}</div>
+                    <div class="font-medium text-gray-900 text-sm dark:text-white">{{ review.author }}</div>
+                    <div class="text-gray-500 text-xs dark:text-neutral-400">{{ review.location }}</div>
                   </div>
                 </div>
                 <div class="flex items-center">
-                  <div :class="getSourceIcon(review.source) + ' h-5 w-5 mr-2 ' + getSourceColor(review.source)"></div>
-                  <span class="text-xs text-gray-500 dark:text-neutral-400">{{ formatDate(review.date) }}</span>
+                  <div :class="mr-2 h-5 w-5 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
+                  <span class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(review.date) }}</span>
                 </div>
               </div>
 
               <!-- Rating -->
-              <div class="mt-3 flex items-center">
+              <div class="flex items-center mt-3">
                 <div class="flex">
                   @foreach(getRatingStars(review.rating) as index => star)
 <div class="mr-0.5">
                     @if(star === 'full')
-<div class="i-hugeicons-star h-5 w-5 text-yellow-400"></div>
+<div class="h-5 w-5 text-yellow-400 i-hugeicons-star"></div>
                     @else
-<div class="i-hugeicons-star h-5 w-5 text-gray-300 dark:text-neutral-600"></div>
+<div class="h-5 w-5 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                   </div>
                 </div>
-                <span class="ml-2 text-sm text-gray-500 dark:text-neutral-400">{{ review.rating }}.0</span>
+                <span class="ml-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.rating }}.0</span>
                 <span
                   :class="[getSentimentClass(review.sentiment), 'ml-auto inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']"
                 >
@@ -1325,11 +1325,11 @@ const renderSourceChart = () => {
 
               <!-- Review title and content -->
               <div class="mt-3">
-                <h3 class="text-base font-semibold text-gray-900 dark:text-white">{{ review.title }}</h3>
-                <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400 line-clamp-3">{{ review.content }}</p>
+                <h3 class="font-semibold text-base text-gray-900 dark:text-white">{{ review.title }}</h3>
+                <p class="mt-1 line-clamp-3 text-gray-500 text-sm dark:text-neutral-400">{{ review.content }}</p>
                 @if(review.content.length > 150)
 <button
-                  class="mt-1 text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                  class="mt-1 text-blue-600 text-xs dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                 >
                   Read more
                 </button>
@@ -1337,10 +1337,10 @@ const renderSourceChart = () => {
 
               <!-- Tags -->
               @if(review.tags && review.tags.length > 0)
-<div class="mt-3 flex flex-wrap gap-1">
+<div class="flex flex-wrap gap-1 mt-3">
                 @foreach(review.tags as tag)
 <span
-                  class="inline-flex items-center rounded-full bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-800 dark:bg-neutral-700 dark:text-neutral-300"
+                  class="inline-flex items-center px-2 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full"
                 >
                   {{ tag }}
                 </span>
@@ -1348,77 +1348,77 @@ const renderSourceChart = () => {
 
               <!-- Response section -->
               @if(review.response)
-<div class="mt-4 rounded-md bg-gray-50 p-3 dark:bg-neutral-700">
+<div class="mt-4 p-3 bg-gray-50 dark:bg-neutral-700 rounded-md">
                 <div class="flex items-center">
-                  <div class="h-8 w-8 flex-shrink-0">
+                  <div class="flex-shrink-0 h-8 w-8">
                     <img class="h-8 w-8 rounded-full" src="/images/logos/logo.svg" alt="Your Business" />
                   </div>
                   <div class="ml-3">
-                    <div class="text-sm font-medium text-gray-900 dark:text-white">Your Business</div>
-                    <div class="text-xs text-gray-500 dark:text-neutral-400">{{ formatDate(review.response.date) }}</div>
+                    <div class="font-medium text-gray-900 text-sm dark:text-white">Your Business</div>
+                    <div class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(review.response.date) }}</div>
                   </div>
                 </div>
-                <p class="mt-2 text-sm text-gray-500 dark:text-neutral-400">{{ review.response.content }}</p>
+                <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.response.content }}</p>
               </div>
 
               <!-- Helpful metrics -->
-              <div class="mt-4 flex items-center text-xs text-gray-500 dark:text-neutral-400">
+              <div class="flex items-center mt-4 text-gray-500 text-xs dark:text-neutral-400">
                 <div class="flex items-center">
-                  <div class="i-hugeicons-thumb-up h-4 w-4 mr-1"></div>
+                  <div class="mr-1 h-4 w-4 i-hugeicons-thumb-up"></div>
                   <span>{{ review.helpful || 0 }} helpful</span>
                 </div>
-                <div class="ml-4 flex items-center">
-                  <div class="i-hugeicons-thumb-down h-4 w-4 mr-1"></div>
+                <div class="flex items-center ml-4">
+                  <div class="mr-1 h-4 w-4 i-hugeicons-thumb-down"></div>
                   <span>{{ review.notHelpful || 0 }} not helpful</span>
                 </div>
                 @if(review.isVerified)
-<div class="ml-auto flex items-center text-green-600 dark:text-green-400">
-                  <div class="i-hugeicons-check-verified h-4 w-4 mr-1"></div>
+<div class="flex items-center ml-auto text-green-600 dark:text-green-400">
+                  <div class="mr-1 h-4 w-4 i-hugeicons-check-verified"></div>
                   <span>Verified</span>
                 </div>
               </div>
 
               <!-- Action buttons -->
-              <div class="mt-4 flex justify-between">
+              <div class="flex justify-between mt-4">
                 @if(review.status !== 'responded')
 <button
                   onclick="openResponseModal(review)"
-                  class="inline-flex items-center rounded-md bg-blue-50 px-2 py-1 text-xs font-medium text-blue-700 hover:bg-blue-100 dark:bg-blue-900 dark:text-blue-300 dark:hover:bg-blue-800"
+                  class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md"
                 >
-                  <div class="i-hugeicons-message-text-edit h-4 w-4 mr-1"></div>
+                  <div class="mr-1 h-4 w-4 i-hugeicons-message-text-edit"></div>
                   Respond
                 </button>
                 @if(review.status === 'unread')
 <button
                   onclick="markAsRead(review)"
-                  class="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 hover:bg-green-100 dark:bg-green-900 dark:text-green-300 dark:hover:bg-green-800"
+                  class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 rounded-md"
                 >
-                  <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
+                  <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
                   Mark as Read
                 </button>
                 <div class="flex space-x-2">
                   <button
                     onclick="flagReview(review)"
-                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
-                    class="{{ { 'bg-yellow-50 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-300': review.status === 'flagged' } }}"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+                    class="text-yellow-700 dark:bg-yellow-900 'bg-yellow-50 'flagged' { {{ } }} === review.status dark:text-yellow-300':"
                   >
-                    <div class="i-hugeicons-flag-01 h-4 w-4 mr-1"></div>
+                    <div class="mr-1 h-4 w-4 i-hugeicons-flag-01"></div>
                     {{ review.status === 'flagged' ? 'Unflag' : 'Flag' }}
                   </button>
                   <button
                     onclick="highlightReview(review)"
-                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
-                    class="{{ { 'bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-300': review.isHighlighted } }}"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+                    class="text-purple-700 dark:bg-purple-900 'bg-purple-50 { {{ } }} review.isHighlighted dark:text-purple-300':"
                   >
-                    <div :class="review.isHighlighted ? 'i-hugeicons-star' : 'i-hugeicons-star'" class="h-4 w-4 mr-1"></div>
+                    <div :class=": ? 'i-hugeicons-star' 'i-hugeicons-star' review.isHighlighted" class="mr-1 h-4 w-4"></div>
                     {{ review.isHighlighted ? 'Unhighlight' : 'Highlight' }}
                   </button>
                   <button
                     onclick="hideReview(review)"
-                    class="inline-flex items-center rounded-md bg-gray-50 px-2 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
-                    class="{{ { 'bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300': review.isHidden } }}"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+                    class="text-red-700 dark:bg-red-900 'bg-red-50 { {{ } }} review.isHidden dark:text-red-300':"
                   >
-                    <div :class="review.isHidden ? 'i-hugeicons-eye-off' : 'i-hugeicons-eye'" class="h-4 w-4 mr-1"></div>
+                    <div :class=": ? 'i-hugeicons-eye-off' 'i-hugeicons-eye' review.isHidden" class="mr-1 h-4 w-4"></div>
                     {{ review.isHidden ? 'Unhide' : 'Hide' }}
                   </button>
                 </div>
@@ -1428,26 +1428,26 @@ const renderSourceChart = () => {
         </div>
 
         <!-- Pagination -->
-        <div class="mt-6 flex items-center justify-between border-t border-gray-200 px-4 py-3 sm:px-6 dark:border-neutral-700">
-          <div class="flex flex-1 justify-between sm:hidden">
+        <div class="flex items-center justify-between mt-6 px-4 py-3 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
+          <div class="flex sm:hidden flex-1 justify-between">
             <button
               onclick="currentPage > 1 ? currentPage-- : null"
               disabled="{{ currentPage === 1 }}"
-              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+              class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Previous
             </button>
             <button
               onclick="currentPage < totalPages ? currentPage++ : null"
               disabled="{{ currentPage === totalPages }}"
-              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed dark:border-neutral-600 dark:bg-neutral-800 dark:text-white dark:hover:bg-neutral-700"
+              class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Next
             </button>
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-neutral-300">
+              <p class="text-gray-700 text-sm dark:text-neutral-300">
                 Showing
                 <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
                 to
@@ -1458,34 +1458,34 @@ const renderSourceChart = () => {
               </p>
             </div>
             <div>
-              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
+              <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
                 <button
                   onclick="currentPage > 1 ? currentPage-- : null"
                   disabled="{{ currentPage === 1 }}"
-                  class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-l-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
                 >
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-chevron-left h-5 w-5"></div>
+                  <div class="h-5 w-5 i-hugeicons-chevron-left"></div>
                 </button>
                 @foreach(displayedPages as page)
 <button
                   onclick="currentPage = page"
-                  class="{{ [
+                  class="[
                     page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
                       : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
                     'focus:z-20 focus:outline-offset-0'
-                  ] }}"
+                  ] {{ }}"
                 >
                   {{ page }}
                 </button>
                 <button
                   onclick="currentPage < totalPages ? currentPage++ : null"
                   disabled="{{ currentPage === totalPages }}"
-                  class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed dark:ring-neutral-600 dark:text-neutral-400 dark:hover:bg-neutral-700"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-chevron-right h-5 w-5"></div>
+                  <div class="h-5 w-5 i-hugeicons-chevron-right"></div>
                 </button>
               </nav>
             </div>
@@ -1497,30 +1497,30 @@ const renderSourceChart = () => {
 
   <!-- Response modal -->
   @if(showResponseModal)
-<div class="fixed inset-0 z-10 overflow-y-auto">
-    <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+<div class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeResponseModal"></div>
-      <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
-        <div class="absolute right-0 top-0 hidden pr-4 pt-4 sm:block">
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div class="hidden sm:block absolute right-0 top-0 pr-4 pt-4">
           <button
             type="button"
             onclick="closeResponseModal"
-            class="rounded-md bg-white text-gray-400 hover:text-gray-500 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-800 dark:text-neutral-300 dark:hover:text-gray-200"
+            class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             <span class="sr-only">Close</span>
-            <div class="i-hugeicons-x-mark h-6 w-6"></div>
+            <div class="h-6 w-6 i-hugeicons-x-mark"></div>
           </button>
         </div>
         <div class="sm:flex sm:items-start">
-          <div class="mx-auto flex h-12 w-12 flex-shrink-0 items-center justify-center rounded-full bg-blue-100 sm:mx-0 sm:h-10 sm:w-10 dark:bg-blue-900">
-            <div class="i-hugeicons-mail-reply-01 h-6 w-6 text-blue-600 dark:text-blue-300"></div>
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900 rounded-full">
+            <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-mail-reply-01"></div>
           </div>
-          <div class="mt-3 text-center sm:ml-4 sm:mt-0 sm:text-left">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
               {{ currentReview ? 'Respond to Review' : 'Create Response Template' }}
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-gray-500 dark:text-neutral-400">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
                 {{ currentReview ? 'Write a thoughtful response to this customer review.' : 'Create a response template that can be used for future reviews.' }}
               </p>
             </div>
@@ -1529,42 +1529,42 @@ const renderSourceChart = () => {
 
         <!-- Review details (if responding to a specific review) -->
         @if(currentReview)
-<div class="mt-4 rounded-md bg-gray-50 p-3 dark:bg-neutral-700">
+<div class="mt-4 p-3 bg-gray-50 dark:bg-neutral-700 rounded-md">
           <div class="flex items-center">
-            <div class="h-8 w-8 flex-shrink-0">
+            <div class="flex-shrink-0 h-8 w-8">
               @if(currentReview.authorAvatar)
 <img class="h-8 w-8 rounded-full" :src="currentReview.authorAvatar" alt="" />
               @else
-<div class="h-8 w-8 rounded-full bg-gray-200 flex items-center justify-center">
-                <div class="i-hugeicons-user h-5 w-5 text-gray-500"></div>
+<div class="flex items-center justify-center h-8 w-8 bg-gray-200 rounded-full">
+                <div class="h-5 w-5 text-gray-500 i-hugeicons-user"></div>
               </div>
             </div>
             <div class="ml-3">
-              <div class="text-sm font-medium text-gray-900 dark:text-white">{{ currentReview.author }}</div>
+              <div class="font-medium text-gray-900 text-sm dark:text-white">{{ currentReview.author }}</div>
               <div class="flex items-center">
                 @foreach(getRatingStars(currentReview.rating) as index => star)
 <div class="mr-0.5">
                   @if(star === 'full')
-<div class="i-hugeicons-star h-4 w-4 text-yellow-400"></div>
+<div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
                   @else
-<div class="i-hugeicons-star h-4 w-4 text-gray-300 dark:text-neutral-600"></div>
+<div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                 </div>
-                <span class="ml-2 text-xs text-gray-500 dark:text-neutral-400">{{ formatDate(currentReview.date) }}</span>
+                <span class="ml-2 text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(currentReview.date) }}</span>
               </div>
             </div>
           </div>
-          <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">{{ currentReview.content }}</p>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">{{ currentReview.content }}</p>
         </div>
 
         <!-- Response form -->
         <div class="mt-4">
-          <label for="response" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Your response</label>
+          <label for="response" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Your response</label>
           <div class="mt-1">
             <textarea
               id="response"
               value="{{ responseText }}"
               rows="4"
-              class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+              class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
               placeholder="Write your response here..."
             ></textarea>
           </div>
@@ -1572,25 +1572,25 @@ const renderSourceChart = () => {
 
         <!-- Response templates -->
         <div class="mt-4">
-          <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Response templates</label>
-          <div class="mt-1 grid grid-cols-1 gap-2">
+          <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Response templates</label>
+          <div class="grid gap-2 grid-cols-1 mt-1">
             <button
               onclick="responseText = 'Thank you for your positive feedback! We appreciate your kind words and are delighted that you had a great experience with us. We look forward to serving you again soon!'"
-              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+              class="p-2 text-gray-700 text-left text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
             >
               <span class="font-medium">Positive Review Response</span>
               <p class="mt-1 truncate">Thank you for your positive feedback! We appreciate your kind words...</p>
             </button>
             <button
               onclick="responseText = 'Thank you for bringing this to our attention. We apologize for your negative experience and would like to make things right. Please contact our customer service team directly so we can address your concerns personally.'"
-              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+              class="p-2 text-gray-700 text-left text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
             >
               <span class="font-medium">Negative Review Response</span>
               <p class="mt-1 truncate">Thank you for bringing this to our attention. We apologize for your negative experience...</p>
             </button>
             <button
               onclick="responseText = 'Thank you for your feedback. We appreciate you taking the time to share your thoughts with us. Your input helps us improve our services, and we hope to exceed your expectations on your next visit.'"
-              class="text-left rounded-md bg-gray-50 p-2 text-xs text-gray-700 hover:bg-gray-100 dark:bg-neutral-700 dark:text-neutral-300 dark:hover:bg-neutral-600"
+              class="p-2 text-gray-700 text-left text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
             >
               <span class="font-medium">Neutral Review Response</span>
               <p class="mt-1 truncate">Thank you for your feedback. We appreciate you taking the time to share your thoughts...</p>
@@ -1598,18 +1598,18 @@ const renderSourceChart = () => {
           </div>
         </div>
 
-        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
           <button
             type="button"
             onclick="submitResponse"
-            class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 sm:ml-3 sm:w-auto"
+            class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
           >
             Submit Response
           </button>
           <button
             type="button"
             onclick="closeResponseModal"
-            class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+            class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
           >
             Cancel
           </button>

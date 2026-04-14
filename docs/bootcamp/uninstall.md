@@ -1,4 +1,4 @@
-# How to uninstall?
+# How to uninstall
 
 wip
 

@@ -111,11 +111,13 @@ const updatedZone = await shippings.zones.updateRegionsAndPostalCodes(
 ### Delete Shipping Zones
 
 Single shipping zone deletion:
+
 ```ts
 await shippings.zones.destroy(1) // Replace 1 with the shipping zone ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await shippings.zones.bulkDestroy([1, 2, 3]) // Array of shipping zone IDs to delete
 ```
@@ -123,11 +125,13 @@ await shippings.zones.bulkDestroy([1, 2, 3]) // Array of shipping zone IDs to de
 ### Soft Delete
 
 Single soft delete:
+
 ```ts
 await shippings.zones.softDelete(1) // Marks the shipping zone as inactive
 ```
 
 Bulk soft delete:
+
 ```ts
 await shippings.zones.bulkSoftDelete([1, 2, 3]) // Marks multiple shipping zones as inactive
 ```

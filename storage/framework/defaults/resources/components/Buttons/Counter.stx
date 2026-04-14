@@ -8,11 +8,11 @@ const { count = 0 } = defineProps<CounterProps>()
 <div>
     <button
       type="button"
-      class="bg-blue-500 text-xs text-white btn hover:bg-blue-600"
+      class="text-white text-xs bg-blue-500 hover:bg-blue-600 btn"
       data-counter
     >
       <i
-        class="i-hugeicons-outline-plus mr-3 h-4 w-4 -ml-1"
+        class="-ml-1 mr-3 h-4 w-4 i-hugeicons-outline-plus"
         aria-hidden="true"
       ></i>
       Counter: <span data-count>{{ count }}</span>

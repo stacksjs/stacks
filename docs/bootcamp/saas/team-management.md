@@ -92,7 +92,7 @@ const invitation = await TeamInvitation.create({
   email: 'newmember@example.com',
   role: 'member',
   token: randomUUIDv7(),
-  expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(), // 7 days
+  expires_at: new Date(Date.now() + 7 _ 24 _ 60 _ 60 _ 1000).toISOString(), // 7 days
 })
 
 // Send invitation email
@@ -147,7 +147,7 @@ export default {
   roles: {
     owner: {
       name: 'Owner',
-      permissions: ['*'], // All permissions
+      permissions: ['_'], // All permissions
     },
     admin: {
       name: 'Administrator',
@@ -198,7 +198,7 @@ async function hasPermission(
   if (!roleConfig) return false
 
   // Check for wildcard permission
-  if (roleConfig.permissions.includes('*')) return true
+  if (roleConfig.permissions.includes('_')) return true
 
   return roleConfig.permissions.includes(permission)
 }

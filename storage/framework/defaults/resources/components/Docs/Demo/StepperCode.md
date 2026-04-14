@@ -67,7 +67,7 @@ const currentContent = computed(() => {
 </script>
 
 <template>
-  <div class="p-8 max-w-3xl mx-auto">
+  <div class="mx-auto p-8 max-w-3xl">
     <Stepper
       ref="stepperRef"
       v-model="currentStep"
@@ -77,74 +77,74 @@ const currentContent = computed(() => {
     />
 
     <!-- Content Section -->
-    <div class="mb-8 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
-      <h2 class="text-xl font-semibold text-gray-900 mb-2">
+    <div class="mb-8 p-6 bg-white ring-1 ring-gray-900/5 rounded-lg shadow-sm">
+      <h2 class="mb-2 font-semibold text-gray-900 text-xl">
         {{ currentContent.title }}
       </h2>
-      <p class="text-gray-600 mb-6">
+      <p class="mb-6 text-gray-600">
         {{ currentContent.description }}
       </p>
 
       <!-- Step 1 Content -->
       <div v-if="currentStep === 0" class="space-y-4">
-        <div class="grid grid-cols-2 gap-4">
+        <div class="grid gap-4 grid-cols-2">
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">First Name</label>
-            <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+            <label class="block font-medium text-gray-700 text-sm">First Name</label>
+            <input type="text" class="block w-full sm:text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
           </div>
           <div class="space-y-2">
-            <label class="block text-sm font-medium text-gray-700">Last Name</label>
-            <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+            <label class="block font-medium text-gray-700 text-sm">Last Name</label>
+            <input type="text" class="block w-full sm:text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
           </div>
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Email</label>
-          <input type="email" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+          <label class="block font-medium text-gray-700 text-sm">Email</label>
+          <input type="email" class="block w-full sm:text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
         </div>
       </div>
 
       <!-- Step 2 Content -->
       <div v-if="currentStep === 1" class="space-y-4">
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Username</label>
-          <input type="text" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+          <label class="block font-medium text-gray-700 text-sm">Username</label>
+          <input type="text" class="block w-full sm:text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
         </div>
         <div class="space-y-2">
-          <label class="block text-sm font-medium text-gray-700">Password</label>
-          <input type="password" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm" />
+          <label class="block font-medium text-gray-700 text-sm">Password</label>
+          <input type="password" class="block w-full sm:text-sm border-gray-300 rounded-md focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
         </div>
       </div>
 
       <!-- Step 3 Content -->
       <div v-if="currentStep === 2" class="space-y-4">
-        <div class="rounded-lg bg-gray-50 p-4">
-          <h3 class="text-sm font-medium text-gray-900 mb-2">Review Your Information</h3>
-          <p class="text-sm text-gray-600">Please review all the information you've entered. Once you submit, you won't be able to make changes.</p>
+        <div class="p-4 bg-gray-50 rounded-lg">
+          <h3 class="mb-2 font-medium text-gray-900 text-sm">Review Your Information</h3>
+          <p class="text-gray-600 text-sm">Please review all the information you've entered. Once you submit, you won't be able to make changes.</p>
         </div>
         <div class="flex items-center space-x-2">
-          <input type="checkbox" class="rounded border-gray-300 text-blue-600 focus:ring-blue-500" />
-          <label class="text-sm text-gray-700">I confirm that all the information provided is correct</label>
+          <input type="checkbox" class="text-blue-600 border-gray-300 rounded focus:ring-blue-500" />
+          <label class="text-gray-700 text-sm">I confirm that all the information provided is correct</label>
         </div>
       </div>
     </div>
 
-    <div class="flex justify-center gap-4">
+    <div class="flex gap-4 justify-center">
       <button
-        class="rounded-md bg-gray-50 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        class="px-4 py-2 font-medium text-gray-700 text-sm bg-gray-50 hover:bg-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         :disabled="currentStep === 0"
         @click="previous"
       >
         Previous
       </button>
       <button
-        class="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
+        class="px-4 py-2 font-medium text-sm text-white bg-blue-500 hover:bg-blue-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50"
         :disabled="currentStep === steps.length - 1"
         @click="next"
       >
         Next
       </button>
       <button
-        class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+        class="px-4 py-2 font-medium text-gray-700 text-sm bg-white hover:bg-gray-50 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
         @click="reset"
       >
         Reset

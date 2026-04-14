@@ -1,4 +1,4 @@
-# How to create your own mailbox/es?
+# How to create your own mailbox/es
 
 Creating a full-fledged email server complicated. A significant overhead due to the need for server installation and configuration. Stacks deploys a streamlined solution leveraging AWS SES for email handling and S3 for data storage. AWS Lambda ties these components together, providing a simple, serverless email server solution.
 

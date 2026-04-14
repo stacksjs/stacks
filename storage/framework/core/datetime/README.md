@@ -46,7 +46,7 @@ format(new Date(), 'MMMM D, YYYY', { tz: 'Asia/Tokyo' })
 parse('2024-03-15 10:30:00', 'YYYY-MM-DD HH:mm:ss')
 ```
 
-To view the full documentation, please visit [https://stacksjs.com/datetime](https://stacksjs.com/datetime).
+To view the full documentation, please visit [<https://stacksjs.com/datetim>e](https://stacksjs.com/datetime).
 
 ## Testing
 

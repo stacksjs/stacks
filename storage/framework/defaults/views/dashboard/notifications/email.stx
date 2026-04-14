@@ -185,23 +185,23 @@ const closeErrorModal = () => {
 </script>
 
 @title('Dashboard - Email Notifications')
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
-  <div class="px-4 lg:px-8 sm:px-6">
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Email Notifications</h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Email Notifications</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
           Manage and monitor all email notifications sent through the system
         </p>
       </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
+      <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
         <button
           onclick="showFilters = !showFilters"
           type="button"
-          class="inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
+          class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
         >
-          <div class="i-hugeicons-filter h-5 w-5 mr-2" />
+          <div class="mr-2 h-5 w-5 i-hugeicons-filter" />
           {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
         </button>
       </div>
@@ -209,20 +209,20 @@ const closeErrorModal = () => {
 
     <!-- Filters -->
     @if(showFilters)
-    <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-4">
       <!-- Search -->
       <div class="flex-1 min-w-0">
         <label for="search" class="sr-only">Search email notifications</label>
         <div class="relative rounded-md shadow-sm">
-          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400" />
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01" />
           </div>
           <input
             value="{{ searchQuery }}"
             type="search"
             name="search"
             id="search"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+            class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             placeholder="Search by email, subject or content..."
           >
         </div>
@@ -232,7 +232,7 @@ const closeErrorModal = () => {
       <div>
         <select
           value="{{ selectedStatus }}"
-          class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6"
+          class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
         >
           @foreach(statusTypes as status)
           <option value="{{ status }}">
@@ -247,7 +247,7 @@ const closeErrorModal = () => {
         <button
           onclick="resetFilters"
           type="button"
-          class="rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
+          class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
         >
           Reset Filters
         </button>
@@ -256,78 +256,78 @@ const closeErrorModal = () => {
     @endif
 
     <!-- Email Notification List -->
-    <div class="mt-8 flow-root">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-opacity-20 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg dark:ring-opacity-20 shadow">
+            <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-600">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 sm:pl-6">Recipient</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Subject</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Status</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Template</th>
-                  <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-neutral-100">Opens</th>
-                  <th scope="col" class="px-3 py-3.5 text-right text-sm font-semibold text-gray-900 dark:text-neutral-100 cursor-pointer" onclick="toggleSort('sent_at')">
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Recipient</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Subject</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Status</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Template</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">Opens</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100 cursor-pointer" onclick="toggleSort('sent_at')">
                     <div class="flex items-center justify-end">
                       Sent
                       @if(sortField === 'sent_at')
                       <div class="ml-2">
                         @if(sortDirection === 'desc')
-                        <div class="i-hugeicons-chevron-down h-4 w-4" />
+                        <div class="h-4 w-4 i-hugeicons-chevron-down" />
                         @else
-                        <div class="i-hugeicons-chevron-up h-4 w-4" />
+                        <div class="h-4 w-4 i-hugeicons-chevron-up" />
                         @endif
                       </div>
                       @else
                       <div class="ml-2">
-                        <div class="i-hugeicons-arrows-up-down h-4 w-4 text-gray-400" />
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-arrows-up-down" />
                       </div>
                       @endif
                     </div>
                   </th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                     <span class="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-neutral-600 bg-white dark:bg-neutral-700">
+              <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
                 @if(isLoading)
                 <tr>
-                  <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-center">
+                  <td colspan="7" class="px-3 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
                     <div class="flex justify-center">
-                      <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+                      <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
                     </div>
                   </td>
                 </tr>
                 @elseif(paginatedNotifications.length === 0)
                 <tr>
-                  <td colspan="7" class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-center">
+                  <td colspan="7" class="px-3 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
                     No email notifications found matching your criteria
                   </td>
                 </tr>
                 @endif
                 @foreach(paginatedNotifications as notification)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-neutral-100 sm:pl-6">
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
                     {{ notification.recipient }}
                   </td>
-                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                  <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                     <div class="max-w-xs truncate">{{ notification.subject }}</div>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm">
+                  <td class="px-3 py-4 text-sm whitespace-nowrap">
                     <NotificationStatusBadge :status="notification.status" />
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                     {{ notification.metadata?.template }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
                     {{ notification.metadata?.opens }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
                     {{ formatDate(notification.sent_at) }}
                   </td>
-                  <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
                     <div class="flex justify-end space-x-2">
                       @if(notification.status === 'failed')
                       <button
@@ -341,7 +341,7 @@ const closeErrorModal = () => {
                       <button
                         onclick="openErrorModal(notification)"
                         type="button"
-                        class="text-gray-600 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-gray-200"
+                        class="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-200"
                       >
                         View Logs
                       </button>
@@ -357,9 +357,9 @@ const closeErrorModal = () => {
     </div>
 
     <!-- Pagination -->
-    <div class="mt-4 flex items-center justify-between">
+    <div class="flex items-center justify-between mt-4">
       <div class="flex items-center">
-        <p class="text-sm text-gray-700 dark:text-neutral-300">
+        <p class="text-gray-700 text-sm dark:text-neutral-300">
           Showing
           <span class="font-medium">{{ (currentPage - 1) * perPage + 1 }}</span>
           to
@@ -373,7 +373,7 @@ const closeErrorModal = () => {
         @if(currentPage > 1)
         <button
           type="button"
-          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
+          class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600"
           onclick="currentPage--"
         >
           Previous
@@ -381,7 +381,7 @@ const closeErrorModal = () => {
         @endif
         <button
           type="button"
-          class="relative inline-flex items-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:z-10"
+          class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600"
           disabled="{{ currentPage === totalPages }}"
           onclick="currentPage++"
         >

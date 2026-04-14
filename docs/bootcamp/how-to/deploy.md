@@ -135,7 +135,7 @@ For first-time deployments, run the setup command:
 # Initialize cloud infrastructure
 buddy cloud:init
 
-# This will:
+# This will
 # - Create necessary cloud resources
 # - Set up IAM roles and permissions
 # - Configure DNS records
@@ -262,7 +262,7 @@ Add the following DNS records with your domain registrar:
 # View required DNS records
 buddy domain:dns
 
-# Output:
+# Output
 # Type    Name    Value                          TTL
 # A       @       76.76.21.21                   300
 # CNAME   www     cname.myapp.stacks.cloud      300
@@ -418,23 +418,29 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Run tests
+
         run: bun test
 
       - name: Build
+
         run: bun run build
 
       - name: Deploy
+
         run: bun run deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -447,6 +453,7 @@ jobs:
 ```yaml
 # .gitlab-ci.yml
 stages:
+
   - test
   - build
   - deploy
@@ -454,23 +461,31 @@ stages:
 test:
   stage: test
   script:
+
     - bun install
     - bun test
 
 build:
   stage: build
   script:
+
     - bun run build
+
   artifacts:
     paths:
+
       - dist/
 
 deploy:
   stage: deploy
   script:
+
     - bun run deploy
+
   only:
+
     - main
+
   environment:
     name: production
     url: https://myapp.com

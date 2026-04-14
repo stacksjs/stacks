@@ -230,6 +230,7 @@ Error: Domain is not available
 ```
 
 **Solutions**:
+
 1. Check domain availability on registrar websites
 2. Try alternative domain names
 3. Use `domains:add` for existing domains
@@ -249,6 +250,7 @@ Warning: DNS changes may take 24-48 hours
 ```
 
 **Solution**: Use specific nameservers to check propagation:
+
 ```bash
 buddy dns myapp.com --nameserver 8.8.8.8
 ```
@@ -260,6 +262,7 @@ Error: Invalid contact information
 ```
 
 **Solution**: Ensure all required fields are provided and valid:
+
 - Phone numbers in international format: `+1.5551234567`
 - Valid country codes (2-letter ISO)
 - Valid email addresses
@@ -307,6 +310,7 @@ buddy domains:purchase myapp.com --auto-renew
 ### Verify Contact Information
 
 Ensure contact info is accurate for:
+
 - ICANN compliance
 - Domain transfer verification
 - Important notifications

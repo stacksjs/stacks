@@ -118,8 +118,8 @@ const db = new Database({
 
   // Model hooks
   hooks: {
-    beforeCreate: async (data) => { /* ... */ },
-    afterCreate: async (result) => { /* ... */ }
+    beforeCreate: async (data) => { /_ ... _/ },
+    afterCreate: async (result) => { /_ ... _/ }
   }
 })
 ```
@@ -200,7 +200,7 @@ const users = await db.selectFrom('users')
 // Inner join
 const posts = await db.selectFrom('posts')
   .innerJoin('users', 'posts.user_id', 'users.id')
-  .select(['posts.*', 'users.name as author_name'])
+  .select(['posts._', 'users.name as author_name'])
   .execute()
 
 // Left join
@@ -232,7 +232,7 @@ const users = await db.selectFrom('users')
 
 // Group by
 const stats = await db.selectFrom('orders')
-  .select(['status', 'count(*) as total'])
+  .select(['status', 'count(_) as total'])
   .groupBy('status')
   .execute()
 
@@ -508,7 +508,7 @@ await transaction(async (trx) => {
 // Manual transaction control
 const trx = await db.transaction()
 try {
-  await trx.insertInto('orders').values({ /* ... */ }).execute()
+  await trx.insertInto('orders').values({ /_ ... _/ }).execute()
   await trx.commit()
 } catch (error) {
   await trx.rollback()
@@ -522,7 +522,7 @@ try {
 import { db, sql } from '@stacksjs/database'
 
 // Raw select
-const users = await db.raw('SELECT * FROM users WHERE status = ?', ['active'])
+const users = await db.raw('SELECT _ FROM users WHERE status = ?', ['active'])
 
 // Raw expression in query
 const users = await db.selectFrom('users')
@@ -582,7 +582,7 @@ enableQueryLogging()
 
 // All queries will be logged to console
 await db.selectFrom('users').execute()
-// [SQL] SELECT * FROM users (2.3ms)
+// [SQL] SELECT _ FROM users (2.3ms)
 
 // Disable logging
 disableQueryLogging()

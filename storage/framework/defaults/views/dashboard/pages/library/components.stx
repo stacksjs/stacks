@@ -37,14 +37,14 @@ try {
     <template #actions>
       <Button variant="secondary">Import</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         New Component
       </Button>
     </template>
   </PageHeader>
 
   <!-- Filter -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-4">
+  <div class="p-4 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <FilterBar searchPlaceholder="Search components...">
       <Select
         placeholder="All Categories"
@@ -56,15 +56,15 @@ try {
 
   <!-- Components Grid -->
   @if (components.length > 0)
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     @foreach (components as component)
       <Card>
         <div class="p-5">
           <div class="flex items-center justify-between mb-3">
-            <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">{{ component.name }}</span>
+            <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">{{ component.name }}</span>
             <Badge variant="info" size="xs">{{ component.category }}</Badge>
           </div>
-          <p class="text-[13px] text-neutral-500 dark:text-neutral-400 mb-4">{{ component.description }}</p>
+          <p class="mb-4 text-[13px] text-neutral-500 dark:text-neutral-400">{{ component.description }}</p>
           <div class="flex items-center justify-between">
             <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ component.instances }} instances</span>
             <Button variant="ghost" size="xs">View</Button>

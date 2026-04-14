@@ -12,16 +12,16 @@ const { type = 'text', label = '', className = '', id = '', name = '', placehold
 
 const formClasses = 'block w-full appearance-none rounded-md border border-gray-200 bg-gray-50 px-3 py-2 text-gray-900 placeholder-gray-400 focus:border-blue-500 focus:bg-white focus:outline-none focus:ring-blue-500 sm:text-sm'
 </script>
-<div class="{{ className }}">
+<div class="{{ }} className">
   @if(label)
-    <label for="{{ id }}" class="mb-3 block text-sm text-gray-700 font-medium">
+    <label for="{{ id }}" class="block mb-3 font-medium text-gray-700 text-sm">
       {{ label }}
     </label>
   @endif
   @if(type == 'text' || type == 'email' || type == 'password')
-    <input id="{{ id }}" type="{{ type }}" name="{{ name }}" placeholder="{{ placeholder }}" class="{{ formClasses }}">
+    <input id="{{ id }}" type="{{ type }}" name="{{ name }}" placeholder="{{ placeholder }}" class="{{ }} formClasses">
   @else
-    <select id="{{ id }}" name="{{ name }}" class="{{ formClasses }} pr-8">
+    <select id="{{ id }}" name="{{ name }}" class="pr-8 {{ }} formClasses">
       <slot />
     </select>
   @endif

@@ -122,6 +122,7 @@ buddy cloud:clean-up
 ```
 
 This removes:
+
 - Jump boxes
 - S3 buckets
 - Lambda functions
@@ -177,6 +178,7 @@ buddy cloud --ssh
 ```
 
 Once connected, you can:
+
 - Debug application issues
 - Check logs
 - Run database commands
@@ -226,10 +228,10 @@ buddy cloud:invalidate-cache --paths "/api/*,/static/*"
 Set these in your `.env.production` file:
 
 ```bash
-AWS_ACCESS_KEY_ID=your-access-key
-AWS_SECRET_ACCESS_KEY=your-secret-key
-AWS_REGION=us-east-1
-AWS_ACCOUNT_ID=123456789012
+AWS*ACCESS*KEY*ID=your-access-key
+AWS*SECRET*ACCESS*KEY=your-secret-key
+AWS*REGION=us-east-1
+AWS*ACCOUNT*ID=123456789012
 ```
 
 ### AWS Credentials File
@@ -238,12 +240,12 @@ Alternatively, configure `~/.aws/credentials`:
 
 ```ini
 [stacks]
-aws_access_key_id = your-access-key
-aws_secret_access_key = your-secret-key
+aws*access*key*id = your-access-key
+aws*secret*access*key = your-secret-key
 
 [default]
-aws_access_key_id = your-access-key
-aws_secret_access_key = your-secret-key
+aws*access*key*id = your-access-key
+aws*secret*access*key = your-secret-key
 ```
 
 ## Troubleshooting
@@ -256,7 +258,7 @@ aws_secret_access_key = your-secret-key
 buddy cloud --ssh --verbose
 ```
 
-### Stack Stuck in DELETE_FAILED
+### Stack Stuck in DELETE*FAILED
 
 ```bash
 # Use force deletion

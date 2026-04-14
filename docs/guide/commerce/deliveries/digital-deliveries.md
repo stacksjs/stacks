@@ -95,11 +95,13 @@ const updatedStatus = await shippings.digital.updateStatus(1, 'active')
 ### Delete Digital Deliveries
 
 Single digital delivery deletion:
+
 ```ts
 await shippings.digital.destroy(1) // Replace 1 with the delivery ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await shippings.digital.bulkDestroy([1, 2, 3]) // Array of delivery IDs to delete
 ```
@@ -107,11 +109,13 @@ await shippings.digital.bulkDestroy([1, 2, 3]) // Array of delivery IDs to delet
 ### Soft Delete
 
 Single soft delete:
+
 ```ts
 await shippings.digital.softDelete(1) // Marks the delivery as inactive
 ```
 
 Bulk soft delete:
+
 ```ts
 await shippings.digital.bulkSoftDelete([1, 2, 3]) // Marks multiple deliveries as inactive
 ```

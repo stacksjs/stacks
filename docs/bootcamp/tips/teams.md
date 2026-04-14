@@ -1,4 +1,4 @@
-# How to manage teams?
+# How to manage teams
 
 wip
 

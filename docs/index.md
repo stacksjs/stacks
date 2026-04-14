@@ -74,5 +74,3 @@ features:
     icon: 🏃🏻
     details: Build real-time features with WebSockets. Add live updates, chat, notifications & collaborative features with ease.
 ---
-
-<Home />

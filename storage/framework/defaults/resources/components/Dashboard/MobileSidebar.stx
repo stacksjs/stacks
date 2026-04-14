@@ -9,31 +9,31 @@ const { isOpen = false, companyLogo = 'https:, companyName = 'Your Company' } = 
 </script>
 @if(isOpen)
   <div
-    class="relative z-50 lg:hidden"
+    class="lg:hidden relative z-50"
     role="dialog"
     aria-modal="true"
   >
     <!-- Off-canvas menu backdrop -->
     <div class="fixed inset-0 bg-gray-900/80"></div>
 
-    <div class="fixed inset-0 flex">
+    <div class="flex fixed inset-0">
       <!-- Off-canvas menu panel -->
-      <div class="relative mr-16 max-w-xs w-full flex flex-1">
+      <div class="flex relative flex-1 mr-16 max-w-xs w-full">
         <!-- Close button -->
-        <div class="absolute left-full top-0 w-16 flex justify-center pt-5">
+        <div class="flex absolute left-full top-0 justify-center pt-5 w-16">
           <button
             type="button"
-            class="p-2.5 -m-2.5"
+            class="-m-2.5 p-2.5"
             data-close-sidebar
           >
             <span class="sr-only">Close sidebar</span>
-            <div class="i-hugeicons-cancel-01 h-6 w-6 text-white"></div>
+            <div class="h-6 w-6 text-white i-hugeicons-cancel-01"></div>
           </button>
         </div>
 
         <!-- Sidebar component -->
-        <div class="flex grow flex-col gap-y-5 overflow-y-auto bg-white dark:bg-neutral-900 px-6 pb-4">
-          <div class="h-16 flex shrink-0 items-center">
+        <div class="flex overflow-y-auto flex-col gap-y-5 grow pb-4 px-6 bg-white dark:bg-neutral-900">
+          <div class="flex items-center shrink-0 h-16">
             <img
               class="h-8 w-auto"
               src="{{ companyLogo }}"

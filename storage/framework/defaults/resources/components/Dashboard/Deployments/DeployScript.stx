@@ -1,19 +1,19 @@
-<div class="px-4 pt-12 lg:px-8 sm:px-6">
+<div class="pt-12 px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 font-semibold leading-6">
+        <h1 class="font-semibold leading-6 text-base text-gray-900">
           Deploy Script
         </h1>
 
-        <p class="mt-2 text-sm text-gray-700">
+        <p class="mt-2 text-gray-700 text-sm">
           If you need a custom deploy script, you may specify it here.
         </p>
       </div>
     </div>
 
-    <div class="mt-8 flow-root">
-      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-        <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
           <div class="overflow-hidden">
             <slot />
           </div>

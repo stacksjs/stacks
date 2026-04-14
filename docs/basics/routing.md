@@ -1,17 +1,6 @@
 ---
 title: Routing
 ---
-
-# Routing
-
-Stacks provides a powerful, Laravel-inspired routing system that supports both file-based routing and programmatic route definitions. Routes can be attached to Actions, Controllers, or inline handlers.
-
-## Basic Routing
-
-### Defining Routes
-
-Routes are defined in the `routes/` directory. The main API routes file is `routes/api.ts`:
-
 ```typescript
 import { route, response } from '@stacksjs/router'
 

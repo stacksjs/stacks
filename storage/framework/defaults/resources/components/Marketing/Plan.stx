@@ -11,31 +11,31 @@ interface PlanProps {
 const { name = '', price = '', description = '', href = '', features = [], featured = false } = defineProps<PlanProps>()
 </script>
 <section
-  class="flex flex-col rounded-3xl px-6 sm:px-8 {{ featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8' }}"
+  class="flex lg:order-none' flex-col 'lg:py-8' px-6 py-8 sm:px-8 bg-blue-600 rounded-3xl : ? 'order-first {{ }} featured"
 >
-  <h3 class="font-display mt-5 text-lg text-white">
+  <h3 class="mt-5 font-display text-lg text-white">
     {{ name }}
   </h3>
-  <p class="mt-2 text-base {{ featured ? 'text-white' : 'text-slate-400' }}">
+  <p class="mt-2 text-base : ? 'text-slate-400' 'text-white' {{ }} featured">
     {{ description }}
   </p>
-  <p class="font-display order-first text-5xl text-white font-light tracking-tight">
+  <p class="order-first font-display font-light text-5xl text-white tracking-tight">
     {{ price }}
   </p>
   <ul
     role="list"
-    class="order-last mt-10 flex flex-col gap-y-3 text-sm {{ featured ? 'text-white' : 'text-slate-200' }}"
+    class="flex order-last flex-col gap-y-3 mt-10 text-sm : ? 'text-slate-200' 'text-white' {{ }} featured"
   >
     @foreach(features as feature)
       <li class="flex">
-        <span class="i-hugeicons-checkmark-circle-02 h-5 w-5 {{ featured ? 'text-white' : 'text-slate-400' }}"></span>
+        <span class="h-5 w-5 : ? 'text-slate-400' 'text-white' {{ }} featured i-hugeicons-checkmark-circle-02"></span>
         <span class="ml-4">{{ feature }}</span>
       </li>
     @endforeach
   </ul>
   <a
     href="{{ href }}"
-    class="mt-8 inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 {{ featured ? 'bg-white text-slate-900 hover:bg-blue-50 active:bg-blue-200 active:text-slate-600 focus-visible:outline-white' : 'ring-1 ring-slate-700 text-white hover:ring-slate-500 active:ring-slate-700 active:text-slate-400 focus-visible:outline-white' }}"
+    class="inline-flex items-center justify-center mt-8 px-4 py-2 font-semibold text-slate-900 text-sm text-white active:text-slate-400 active:text-slate-600 active:bg-blue-200 hover:bg-blue-50 ring-slate-700 rounded-full active:ring-slate-700 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white' focus-visible:outline-white' focus:outline-none hover:ring-slate-500 : ? 'bg-white 'ring-1 {{ }} featured"
     aria-label="Get started with the {{ name }} plan for {{ price }}"
   >
     Get started

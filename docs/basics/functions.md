@@ -307,14 +307,14 @@ export default async function GetPosts(ctx: FunctionContext) {
 
   let query = db
     .selectFrom('posts')
-    .innerJoin('users', 'users.id', 'posts.author_id')
+    .innerJoin('users', 'users.id', 'posts.author*id')
     .select([
       'posts.id',
       'posts.title',
-      'posts.created_at',
+      'posts.created*at',
       'users.name as author',
     ])
-    .orderBy('posts.created_at', 'desc')
+    .orderBy('posts.created*at', 'desc')
 
   if (category) {
     query = query.where('posts.category', '=', category)
@@ -338,7 +338,7 @@ export default async function UpdateUser(ctx: FunctionContext) {
 
   const user = await db
     .updateTable('users')
-    .set({ name, email, updated_at: new Date() })
+    .set({ name, email, updated*at: new Date() })
     .where('id', '=', Number(id))
     .returning(['id', 'name', 'email'])
     .executeTakeFirst()
@@ -380,8 +380,8 @@ export default async function TransferFunds(ctx: FunctionContext) {
     await trx
       .insertInto('transactions')
       .values({
-        from_account: fromAccount,
-        to_account: toAccount,
+        from*account: fromAccount,
+        to*account: toAccount,
         amount,
         created_at: new Date(),
       })

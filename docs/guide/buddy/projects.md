@@ -36,12 +36,14 @@ buddy projects
 ```
 
 Output:
+
 ```
 buddy projects
 
-   -  /Users/username/Code/my-app
-   -  /Users/username/Code/another-project
-   -  /Users/username/Projects/stacks-demo
+   - /Users/username/Code/my-app
+   - /Users/username/Code/another-project
+   - /Users/username/Projects/stacks-demo
+
 ```
 
 ### List Projects
@@ -59,6 +61,7 @@ buddy projects --quiet
 ```
 
 Output (no decorations):
+
 ```
 /Users/username/Code/my-app
 /Users/username/Code/another-project
@@ -196,6 +199,7 @@ No Stacks projects found
 ```
 
 **Solutions**:
+
 1. Ensure you have Stacks projects installed
 2. Check that projects have proper package.json
 3. Try with verbose mode to see search paths
@@ -236,7 +240,7 @@ buddy list
 ### Running Commands Across Projects
 
 ```bash
-#!/bin/bash
+# !/bin/bash
 # upgrade-all.sh
 
 for project in $(buddy projects --quiet); do
@@ -248,7 +252,7 @@ done
 ### Checking Project Status
 
 ```bash
-#!/bin/bash
+# !/bin/bash
 # status-all.sh
 
 for project in $(buddy projects --quiet); do

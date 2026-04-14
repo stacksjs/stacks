@@ -41,14 +41,14 @@ try {
     <template #actions>
       <Button variant="secondary">Add Alias</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Create Mailbox
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     <StatsCard title="Mailboxes" value="{{ stats[0]?.value || '0' }}" icon="i-hugeicons-mail-02" iconBg="primary" />
     <StatsCard title="Aliases" value="{{ stats[1]?.value || '0' }}" icon="i-hugeicons-mail-reply-02" iconBg="info" />
     <StatsCard title="Domain" value="{{ stats[2]?.value || '-' }}" icon="i-hugeicons-global" iconBg="warning" />
@@ -56,9 +56,9 @@ try {
   </div>
 
   <!-- Email Domains Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Email Domains</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Email Domains</span>
     </div>
 
     <DataTable
@@ -77,7 +77,7 @@ try {
     >
       @foreach (domains as domain)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ domain.domain }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ domain.domain }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ domain.mailboxes }}</td>
           <td class="px-4 py-3"><Badge variant="success" size="xs" dot>{{ domain.status }}</Badge></td>
           <td class="px-4 py-3"><Badge variant="success" size="xs">{{ domain.dkim }}</Badge></td>
@@ -91,11 +91,11 @@ try {
   </div>
 
   <!-- Mailboxes & Aliases -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Mailboxes -->
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Mailboxes</span>
+        <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Mailboxes</span>
       </div>
 
       <DataTable
@@ -112,7 +112,7 @@ try {
       >
         @foreach (mailboxes as mailbox)
           <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-            <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ mailbox.email }}</td>
+            <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ mailbox.email }}</td>
             <td class="px-4 py-3"><Badge variant="default" size="xs">{{ mailbox.type }}</Badge></td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ mailbox.storage }} / {{ mailbox.quota }}</td>
             <td class="px-4 py-3"><Badge variant="success" size="xs" dot>{{ mailbox.status }}</Badge></td>
@@ -124,16 +124,16 @@ try {
     <!-- Aliases -->
     <Card>
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Aliases</span>
+        <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Aliases</span>
       </div>
-      <div class="divide-y divide-neutral-100 dark:divide-white/5">
+      <div class="divide-neutral-100 divide-y dark:divide-white/5">
         @foreach (aliases as alias)
-          <div class="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center px-4 py-3 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ alias.alias }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ alias.alias }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">forwards to {{ alias.forwards }}</div>
             </div>
-            <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+            <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
           </div>
         @endforeach
       </div>

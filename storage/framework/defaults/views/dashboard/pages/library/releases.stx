@@ -26,14 +26,14 @@ function typeVariant(t) {
   <PageHeader title="Releases" description="Manage application versions and releases">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         New Release
       </Button>
     </template>
   </PageHeader>
 
   <!-- Releases Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="{{ JSON.stringify([
         { key: 'version', label: 'Version' },
@@ -50,7 +50,7 @@ function typeVariant(t) {
     >
       @foreach (releases as release)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">
+          <td class="px-4 py-3 font-semibold text-[13px] text-neutral-900 dark:text-white">
             {{ release.version }}
             @if (release.breaking)
               <Badge variant="danger" size="xs" class="ml-2">Breaking</Badge>
@@ -65,7 +65,7 @@ function typeVariant(t) {
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ release.changes }} changes</td>
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ release.date }}</td>
           <td class="px-4 py-3">
-            <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-view w-4 h-4"></div></Button>
+            <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-view"></div></Button>
           </td>
         </tr>
       @endforeach

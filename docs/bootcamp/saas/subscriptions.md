@@ -188,7 +188,7 @@ async function daysLeftInTrial(user: UserModel): Promise<number> {
 
   const now = new Date()
   const diff = endsAt.getTime() - now.getTime()
-  return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)))
+  return Math.max(0, Math.ceil(diff / (1000 _ 60 _ 60 _ 24)))
 }
 ```
 
@@ -208,14 +208,14 @@ async function extendTrial(user: UserModel, additionalDays: number) {
     ? new Date(subscription.trial_ends_at).getTime() / 1000
     : Math.floor(Date.now() / 1000)
 
-  const newTrialEnd = currentTrialEnd + (additionalDays * 24 * 60 * 60)
+  const newTrialEnd = currentTrialEnd + (additionalDays _ 24 _ 60 _ 60)
 
   await stripe.subscriptions.update(subscription.provider_id, {
     trial_end: newTrialEnd,
   })
 
   await subscription.update({
-    trial_ends_at: new Date(newTrialEnd * 1000).toISOString(),
+    trial_ends_at: new Date(newTrialEnd _ 1000).toISOString(),
   })
 }
 ```
@@ -357,7 +357,7 @@ async function cancelAtPeriodEnd(user: UserModel) {
   )
 
   await subscription.update({
-    ends_at: new Date(stripeSubscription.current_period_end * 1000).toISOString(),
+    ends_at: new Date(stripeSubscription.current_period_end _ 1000).toISOString(),
   })
 }
 ```

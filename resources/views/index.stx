@@ -13,82 +13,82 @@ const features = [
     title: 'Documentation',
     description: 'Explore our comprehensive guides and API references to get the most out of Stacks.',
     url: 'https://stacksjs.org/docs',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>',
   },
   {
     title: 'GitHub',
     description: 'View the source code, report issues, and contribute to the Stacks ecosystem.',
     url: 'https://github.com/stacksjs/stacks',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>',
   },
   {
     title: 'Discord',
     description: 'Join our community of developers. Get help, share ideas, and stay up to date.',
     url: 'https://discord.gg/stacksjs',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>',
   },
   {
     title: 'Dashboard',
     description: 'Manage your application with the built-in admin dashboard and developer tools.',
     url: '/dashboard',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="w-6 h-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
   },
 ]
 </script>
 
 @section('content')
   <!-- Header -->
-  <div class="text-center mb-12">
-    <div class="inline-flex items-center gap-3 mb-6">
-      <div class="w-12 h-12 bg-gradient-to-br from-indigo-400 to-indigo-600 rotate-45 rounded-lg shadow-lg shadow-indigo-500/25"></div>
-      <span class="text-4xl font-bold text-neutral-900 dark:text-white tracking-tight">{{ appName }}</span>
+  <div class="mb-12 text-center">
+    <div class="inline-flex gap-3 items-center mb-6">
+      <div class="h-12 w-12 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg shadow-indigo-500/25 shadow-lg rotate-45"></div>
+      <span class="font-bold text-4xl text-neutral-900 tracking-tight dark:text-white">{{ appName }}</span>
     </div>
-    <p class="text-lg max-w-xl mx-auto leading-relaxed">
+    <p class="mx-auto max-w-xl leading-relaxed text-lg">
       Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
     </p>
-    <div class="flex items-center justify-center gap-3 mt-4">
-      <span class="px-4 py-1.5 rounded-full text-sm font-semibold text-amber-600 dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20">Alpha Coming Soon</span>
-      <span class="px-3 py-1 rounded-full text-xs font-medium text-indigo-500 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 dark:border-indigo-500/20">v{{ appVersion }}</span>
+    <div class="flex gap-3 items-center justify-center mt-4">
+      <span class="px-4 py-1.5 font-semibold text-amber-600 text-sm dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 rounded-full dark:border-amber-500/20">Alpha Coming Soon</span>
+      <span class="px-3 py-1 font-medium text-indigo-500 text-xs dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 rounded-full dark:border-indigo-500/20">v{{ appVersion }}</span>
     </div>
   </div>
 
   <!-- Feature Cards -->
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-12">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mb-12">
     @foreach (features as feature)
-      <a href="{{ feature.url }}" class="block p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 bg-white/50 dark:bg-neutral-900/50 hover:border-neutral-300 dark:hover:border-neutral-700 hover:-translate-y-0.5 transition-all group" target="_blank" rel="noopener noreferrer">
-        <div class="flex items-center gap-3 mb-3">
+      <a href="{{ feature.url }}" class="block p-6 bg-white/50 dark:bg-neutral-900/50 border border-neutral-200 rounded-xl dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all group hover:-translate-y-0.5" target="_blank" rel="noopener noreferrer">
+        <div class="flex gap-3 items-center mb-3">
           <span class="text-indigo-500 dark:text-indigo-400">{!! feature.icon !!}</span>
-          <span class="text-base font-semibold text-neutral-900 dark:text-neutral-100">{{ feature.title }}</span>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="w-4 h-4 ml-auto text-neutral-400 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+          <span class="font-semibold text-base text-neutral-900 dark:text-neutral-100">{{ feature.title }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="ml-auto h-4 w-4 text-neutral-400 group-hover:text-indigo-500 transition-all group-hover:translate-x-1"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
         </div>
-        <p class="text-sm leading-relaxed">{{ feature.description }}</p>
+        <p class="leading-relaxed text-sm">{{ feature.description }}</p>
       </a>
     @endforeach
   </div>
 
   <!-- Subscribe Section -->
-  <div class="text-center p-8 rounded-2xl bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 dark:border-neutral-800 mb-12">
-    <h2 class="text-xl font-semibold text-neutral-900 dark:text-white mb-2">Stay in the loop</h2>
-    <p class="text-sm mb-6">Get notified when we launch and receive updates on new features.</p>
-    <form class="flex gap-2 max-w-md mx-auto" action="/api/email/subscribe" method="POST">
+  <div class="mb-12 p-8 text-center bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 rounded-2xl dark:border-neutral-800">
+    <h2 class="mb-2 font-semibold text-neutral-900 text-xl dark:text-white">Stay in the loop</h2>
+    <p class="mb-6 text-sm">Get notified when we launch and receive updates on new features.</p>
+    <form class="flex gap-2 mx-auto max-w-md" action="/api/email/subscribe" method="POST">
       <input
         type="email"
         name="email"
-        class="flex-1 px-4 py-2.5 rounded-lg border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white text-sm placeholder-neutral-400 focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500"
+        class="flex-1 placeholder-neutral-400 px-4 py-2.5 text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-200 rounded-lg dark:border-neutral-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
         placeholder="you@example.com"
         required
       >
-      <button type="submit" class="px-6 py-2.5 rounded-lg bg-indigo-500 hover:bg-indigo-400 text-white text-sm font-semibold transition-colors">
+      <button type="submit" class="px-6 py-2.5 font-semibold text-sm text-white bg-indigo-500 hover:bg-indigo-400 rounded-lg transition-colors">
         Subscribe
       </button>
     </form>
-    <p class="text-xs mt-3 text-neutral-400">No spam, unsubscribe at any time.</p>
+    <p class="mt-3 text-neutral-400 text-xs">No spam, unsubscribe at any time.</p>
   </div>
 @endsection
 
 @section('footer')
-  <div class="text-center pt-8 border-t border-neutral-200 dark:border-neutral-800">
-    <div class="flex items-center justify-center gap-2 text-sm">
+  <div class="pt-8 text-center border-neutral-200 border-t dark:border-neutral-800">
+    <div class="flex gap-2 items-center justify-center text-sm">
       <a href="https://bun.sh" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">Bun</a>
       <span class="text-neutral-300 dark:text-neutral-700">/</span>
       <a href="https://www.typescriptlang.org" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">TypeScript</a>

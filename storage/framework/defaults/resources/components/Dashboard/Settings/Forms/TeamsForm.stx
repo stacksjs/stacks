@@ -15,15 +15,15 @@ const { teamMembers = [ } = defineProps<TeamsFormProps>()
   ]
 </script>
 <div class="bg-white">
-    <div class="mx-auto max-w-7xl px-6 lg:px-8">
-      <ul role="list" class="grid grid-cols-2 mx-auto mt-20 max-w-2xl gap-x-8 gap-y-16 text-center lg:grid-cols-5 md:grid-cols-4 sm:grid-cols-3 xl:grid-cols-6 lg:mx-0 lg:max-w-none">
+    <div class="mx-auto px-6 lg:px-8 max-w-7xl">
+      <ul role="list" class="grid gap-x-8 gap-y-16 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 mt-20 mx-auto lg:mx-0 max-w-2xl lg:max-w-none text-center">
         @foreach(teamMembers as member)
           <li>
             <img class="mx-auto h-24 w-24 rounded-full" src="{{ member.avatar }}" alt="{{ member.name }}">
-            <h3 class="mt-6 text-base text-gray-900 font-semibold leading-7 tracking-tight">
+            <h3 class="mt-6 font-semibold leading-7 text-base text-gray-900 tracking-tight">
               {{ member.name }}
             </h3>
-            <p class="text-sm text-gray-600 leading-6">
+            <p class="leading-6 text-gray-600 text-sm">
               {{ member.email }}
             </p>
           </li>

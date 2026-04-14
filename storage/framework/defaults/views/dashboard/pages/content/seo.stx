@@ -37,20 +37,20 @@ try {
   <Card title="Default Meta Tags">
     <div class="p-4 space-y-4">
       <div>
-        <label class="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">Site Title</label>
-        <input type="text" class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ seoData.title }}" />
+        <label class="block mb-1.5 font-semibold text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Site Title</label>
+        <input type="text" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" value="{{ seoData.title }}" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">Meta Description</label>
-        <textarea class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500">{{ seoData.description }}</textarea>
+        <label class="block mb-1.5 font-semibold text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Meta Description</label>
+        <textarea class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500">{{ seoData.description }}</textarea>
       </div>
       <div>
-        <label class="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">Keywords</label>
-        <input type="text" class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ seoData.keywords.join(', ') }}" />
+        <label class="block mb-1.5 font-semibold text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Keywords</label>
+        <input type="text" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" value="{{ seoData.keywords.join(', ') }}" />
       </div>
       <div>
-        <label class="block text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wide mb-1.5">OG Image URL</label>
-        <input type="text" class="w-full px-3 py-2 text-sm border border-neutral-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ seoData.ogImage }}" />
+        <label class="block mb-1.5 font-semibold text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">OG Image URL</label>
+        <input type="text" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" value="{{ seoData.ogImage }}" />
       </div>
     </div>
   </Card>

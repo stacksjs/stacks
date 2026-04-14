@@ -21,7 +21,7 @@ function statusVariant(s) {
   </PageHeader>
 
     @if (deployments.length > 0)
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
         :columns="{{ JSON.stringify([
           { key: 'id', label: 'Deployment' },
@@ -39,26 +39,26 @@ function statusVariant(s) {
       >
         @foreach (deployments as deploy)
           <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-            <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ deploy.id }}</td>
+            <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ deploy.id }}</td>
             <td class="px-4 py-3">
               <Badge variant="{{ statusVariant(deploy.status) }}" size="sm" dot>{{ deploy.status }}</Badge>
             </td>
-            <td class="px-4 py-3"><code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ deploy.branch }}</code></td>
-            <td class="px-4 py-3"><code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ deploy.commit }}</code></td>
+            <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ deploy.branch }}</code></td>
+            <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ deploy.commit }}</code></td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ deploy.author }}</td>
-            <td class="px-4 py-3 text-[12px] font-mono text-neutral-500 dark:text-neutral-400">{{ deploy.duration }}</td>
+            <td class="px-4 py-3 font-mono text-[12px] text-neutral-500 dark:text-neutral-400">{{ deploy.duration }}</td>
             <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ deploy.time }}</td>
           </tr>
         @endforeach
       </DataTable>
     </div>
     @else
-    <div class="flex flex-col items-center justify-center py-16 px-4">
-      <div class="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+    <div class="flex flex-col items-center justify-center px-4 py-16">
+      <div class="flex items-center justify-center mb-4 h-16 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-full">
         <span class="text-2xl text-neutral-400">&#x1F680;</span>
       </div>
-      <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">No deployments yet</h3>
-      <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center max-w-sm">Deploy your application using buddy deploy to see deployment history.</p>
+      <h3 class="mb-2 font-semibold text-lg text-neutral-900 dark:text-white">No deployments yet</h3>
+      <p class="max-w-sm text-center text-neutral-500 text-sm dark:text-neutral-400">Deploy your application using buddy deploy to see deployment history.</p>
     </div>
     @endif
 </div>

@@ -28,12 +28,12 @@ Are you interested in contributing to the Stacks codebase?
 Head over to the [repository][stacks] on GitHub and click the Fork button in the top right corner. After the project has been forked, run the following commands in your terminal:
 
 ```bash
-# Replace {github-username} with your GitHub username.
+# Replace {github-username} with your GitHub username
 git clone https://github.com/{github-username}/stacks --depth=1
 
 cd stacks
 
-# Create a branch for your PR, replace {issue-no} with the GitHub issue number.
+# Create a branch for your PR, replace {issue-no} with the GitHub issue number
 git checkout -b issue-{issue-no}
 ```
 
@@ -41,16 +41,16 @@ Now it'll help if we keep our `main` branch pointing at the original repository 
 pull requests from the forked branch.
 
 ```bash
-# Add the original repository as a "remote" called "upstream".
+# Add the original repository as a "remote" called "upstream"
 git remote add upstream git@github.com:stacksjs/stacks.git
 
-# Fetch the git information from the remote.
+# Fetch the git information from the remote
 git fetch upstream
 
-# Set your local main branch to use the upstream main branch whenever you run `git pull`.
+# Set your local main branch to use the upstream main branch whenever you run `git pull`
 git branch --set-upstream-to=upstream/main main
 
-# Run this when we want to update our version of main.
+# Run this when we want to update our version of main
 git pull
 ```
 
@@ -97,7 +97,7 @@ buddy dev:views # starts local playground views dev server
 buddy dev:functions # stubs local the functions
 buddy dev:docs # starts local docs dev server
 
-# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
+# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it
 buddy serve # starts one of the dev servers (components, functions, views, or docs)
 buddy serve:components # starts local playground dev server
 buddy serve:views # starts local playground views dev server
@@ -158,13 +158,13 @@ Stacks uses [semantic commit messages][semantic-commit-style] to automate packag
 For example,
 
 ```bash
-# Add all changes to staging to be committed.
+# Add all changes to staging to be committed
 git add .
 
-# Commit changes.
+# Commit changes
 buddy commit
 
-# Push changes up to GitHub.
+# Push changes up to GitHub
 git push
 ```
 

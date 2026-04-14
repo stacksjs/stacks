@@ -16,17 +16,17 @@ const { plans = [, selected = plans[0] } = defineProps<RadioGroupDemoProps>()
       <div class="space-y-2">
         @foreach(plans as plan)
           <div
-            class="relative flex cursor-pointer rounded-lg px-5 py-4 shadow-md focus:outline-none {{ selected.name == plan.name ? 'bg-sky-900/75 text-white ring-2 ring-white/60 ring-offset-2 ring-offset-sky-300' : 'bg-white' }}"
+            class="flex relative px-5 py-4 text-white ring-2 ring-offset-2 ring-offset-sky-300' ring-white/60 rounded-lg focus:outline-none shadow-md cursor-pointer selected.name : ? 'bg-sky-900/75 'bg-white' {{ }} == plan.name"
             data-action="select-plan"
             data-plan-name="{{ plan.name }}"
           >
-            <div class="w-full flex items-center justify-between">
+            <div class="flex items-center justify-between w-full">
               <div class="flex items-center">
                 <div class="text-sm">
-                  <p class="font-medium {{ selected.name == plan.name ? 'text-white' : 'text-gray-900' }}">
+                  <p class="font-medium selected.name : ? 'text-gray-900' 'text-white' {{ }} == plan.name">
                     {{ plan.name }}
                   </p>
-                  <span class="inline {{ selected.name == plan.name ? 'text-sky-100' : 'text-gray-500' }}">
+                  <span class="inline selected.name : ? 'text-gray-500' 'text-sky-100' {{ }} == plan.name">
                     <span>{{ plan.ram }}/{{ plan.cpus }}</span>
                     <span aria-hidden="true"> &middot; </span>
                     <span>{{ plan.disk }}</span>

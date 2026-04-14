@@ -132,21 +132,25 @@ const updatedCount = await shippings.rates.updateByMethod('express', {
 ### Delete Shipping Rates
 
 Single shipping rate deletion:
+
 ```ts
 await shippings.rates.destroy(1) // Replace 1 with the shipping rate ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await shippings.rates.bulkDestroy([1, 2, 3]) // Array of shipping rate IDs to delete
 ```
 
 Delete by zone:
+
 ```ts
 await shippings.rates.destroyByZone('north-america')
 ```
 
 Delete by method:
+
 ```ts
 await shippings.rates.destroyByMethod('express')
 ```

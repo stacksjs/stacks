@@ -32,38 +32,36 @@ function handleDeselectAll() {
 </script>
 
 @if(selectedCount > 0)
-  <div class="sticky top-0 z-10 flex items-center justify-between gap-4 px-4 py-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg mb-4">
-    <div class="flex items-center gap-3">
-      <span class="inline-flex items-center justify-center w-6 h-6 text-xs font-bold text-white bg-blue-600 rounded-full">
+  <div class="flex sticky top-0 z-10 gap-4 items-center justify-between mb-4 px-4 py-3 bg-blue-50 dark:bg-blue-900/30 border border-blue-200 rounded-lg dark:border-blue-800">
+    <div class="flex gap-3 items-center">
+      <span class="inline-flex items-center justify-center h-6 w-6 font-bold text-white text-xs bg-blue-600 rounded-full">
         {{ selectedCount }}
       </span>
-      <span class="text-sm font-medium text-blue-800 dark:text-blue-200">
+      <span class="font-medium text-blue-800 text-sm dark:text-blue-200">
         {{ selectedCount === 1 ? '1 item selected' : `${selectedCount} items selected` }}
       </span>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex gap-2 items-center">
       @for(action in defaultActions)
         <button
           type="button"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-md transition-colors"
-          :class="action.variant === 'danger'
-            ? 'text-red-700 dark:text-red-300 bg-red-100 dark:bg-red-900/50 hover:bg-red-200 dark:hover:bg-red-900/70'
-            : 'text-blue-700 dark:text-blue-300 bg-blue-100 dark:bg-blue-900/50 hover:bg-blue-200 dark:hover:bg-blue-900/70'"
+          class="inline-flex gap-1.5 items-center px-3 py-1.5 font-medium text-sm rounded-md transition-colors"
+          :class="dark:text-blue-300 dark:text-red-300 bg-blue-100 bg-red-100 dark:bg-blue-900/50 dark:bg-red-900/50 hover:bg-blue-200 hover:bg-red-200 dark:hover:bg-blue-900/70' dark:hover:bg-red-900/70' : ? 'danger' 'text-blue-700 'text-red-700 === action.variant"
           @click="handleAction(action)"
         >
-          <div :class="action.icon" class="w-4 h-4"></div>
+          <div :class="action.icon" class="h-4 w-4"></div>
           {{ action.label }}
         </button>
       @endfor
 
       <button
         type="button"
-        class="ml-2 p-1.5 text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors"
+        class="ml-2 p-1.5 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
         @click="handleDeselectAll"
         title="Deselect all"
       >
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>

@@ -5,10 +5,10 @@ interface LiveTerminalOutputProps {
 
 const { live = true } = defineProps<LiveTerminalOutputProps>()
 </script>
-<div class="px-4 pt-12 lg:px-8 sm:px-6">
-    <div class="mt-8 flow-root">
-      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-        <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
+<div class="pt-12 px-4 sm:px-6 lg:px-8">
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
           <div class="overflow-hidden">
             <slot />
           </div>

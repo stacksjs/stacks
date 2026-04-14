@@ -79,71 +79,71 @@ const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
   <PageHeader title="Models" :description="`${totalModels} models with ${totalRecords} total records`">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-add-01 w-4 h-4"></div>
+        <div class="h-4 w-4 i-hugeicons-add-01"></div>
         New Model
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5">
-      <div class="flex items-center gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
+      <div class="flex gap-4 items-center">
         <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-          <span class="i-hugeicons-database w-6 h-6 text-blue-600 dark:text-blue-400"></span>
+          <span class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-database"></span>
         </div>
         <div>
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Models</p>
-          <p class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ totalModels }}</p>
+          <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Models</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ totalModels }}</p>
         </div>
       </div>
     </div>
-    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5">
-      <div class="flex items-center gap-4">
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
+      <div class="flex gap-4 items-center">
         <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-          <span class="i-hugeicons-rows-01 w-6 h-6 text-green-600 dark:text-green-400"></span>
+          <span class="h-6 w-6 text-green-600 dark:text-green-400 i-hugeicons-rows-01"></span>
         </div>
         <div>
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Records</p>
-          <p class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ totalRecords.toLocaleString() }}</p>
+          <p class="text-neutral-500 text-sm dark:text-neutral-400">Total Records</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ totalRecords.toLocaleString() }}</p>
         </div>
       </div>
     </div>
-    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5">
-      <div class="flex items-center gap-4">
+    <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
+      <div class="flex gap-4 items-center">
         <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-          <span class="i-hugeicons-chart-average w-6 h-6 text-purple-600 dark:text-purple-400"></span>
+          <span class="h-6 w-6 text-purple-600 dark:text-purple-400 i-hugeicons-chart-average"></span>
         </div>
         <div>
-          <p class="text-sm text-neutral-500 dark:text-neutral-400">Avg Records/Model</p>
-          <p class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ totalModels > 0 ? Math.round(totalRecords / totalModels) : 0 }}</p>
+          <p class="text-neutral-500 text-sm dark:text-neutral-400">Avg Records/Model</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ totalModels > 0 ? Math.round(totalRecords / totalModels) : 0 }}</p>
         </div>
       </div>
     </div>
   </div>
 
   <!-- Models Grid -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     @for(model of models)
       <a
         href="{{ model.href }}"
-        class="group bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-5 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all"
+        class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all group"
       >
         <div class="flex items-start justify-between">
-          <div class="flex items-center gap-3">
-            <div class="p-2 bg-neutral-100 dark:bg-neutral-800 rounded-lg group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 transition-colors">
-              <span class="i-hugeicons-database-01 w-5 h-5 text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400"></span>
+          <div class="flex gap-3 items-center">
+            <div class="p-2 bg-neutral-100 dark:bg-neutral-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-lg transition-colors">
+              <span class="h-5 w-5 text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 i-hugeicons-database-01"></span>
             </div>
             <div>
               <h3 class="font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                 {{ model.name }}
               </h3>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400 font-mono">{{ model.table }}</p>
+              <p class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ model.table }}</p>
             </div>
           </div>
-          <span class="i-hugeicons-arrow-right-01 w-5 h-5 text-neutral-300 dark:text-neutral-600 group-hover:text-blue-500 transition-colors"></span>
+          <span class="h-5 w-5 text-neutral-300 dark:text-neutral-600 group-hover:text-blue-500 transition-colors i-hugeicons-arrow-right-01"></span>
         </div>
-        <div class="mt-4 pt-4 border-t border-neutral-100 dark:border-neutral-800">
+        <div class="mt-4 pt-4 border-neutral-100 border-t dark:border-neutral-800">
           <div class="flex items-center justify-between text-sm">
             <span class="text-neutral-500 dark:text-neutral-400">Records</span>
             <span class="font-medium text-neutral-900 dark:text-white">{{ model.count.toLocaleString() }}</span>
@@ -155,10 +155,10 @@ const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
 
   @if(models.length === 0)
     <!-- Empty State -->
-    <div class="bg-white dark:bg-neutral-900 rounded-xl border border-neutral-200 dark:border-neutral-800 p-12 text-center">
-      <span class="i-hugeicons-database-01 w-12 h-12 text-neutral-300 dark:text-neutral-600 mx-auto"></span>
-      <h3 class="mt-4 text-lg font-medium text-neutral-900 dark:text-white">No models found</h3>
-      <p class="mt-2 text-sm text-neutral-500 dark:text-neutral-400">Create your first model to get started.</p>
+    <div class="p-12 text-center bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
+      <span class="mx-auto h-12 w-12 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-01"></span>
+      <h3 class="mt-4 font-medium text-lg text-neutral-900 dark:text-white">No models found</h3>
+      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Create your first model to get started.</p>
     </div>
   @endif
 </div>

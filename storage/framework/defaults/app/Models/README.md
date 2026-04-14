@@ -1,4 +1,4 @@
-# What are Models?
+# What are Models
 
 Models are a way to define the structure of your data. They are used to interact with your database, and can be used to define relationships between different types of data.
 

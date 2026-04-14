@@ -23,7 +23,7 @@ import ui from '@stacksjs/ui'
 // wip
 ```
 
-To view the full documentation, please visit [https://stacksjs.com/ui](https://stacksjs.com/ui).
+To view the full documentation, please visit [<https://stacksjs.com/u>i](https://stacksjs.com/ui).
 
 ## 🧪 Testing
 

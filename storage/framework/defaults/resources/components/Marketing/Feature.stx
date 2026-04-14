@@ -14,19 +14,19 @@ name: '',
   icon: ''
 }
 </script>
-<div class="{{ className }} {{ !isActive ? 'opacity-75 hover:opacity-100' : '' }}">
-  <div class="w-9 rounded-lg {{ isActive ? 'bg-blue-600' : 'bg-slate-500' }}">
+<div class="hover:opacity-100' : !isActive ? '' 'opacity-75 {{ {{ }} }} className">
+  <div class="w-9 rounded-lg : ? 'bg-blue-600' 'bg-slate-500' {{ }} isActive">
     <svg aria-hidden="true" class="h-9 w-9" fill="none">
       <!-- feature.icon -->
     </svg>
   </div>
-  <h3 class="mt-6 text-sm font-medium {{ isActive ? 'text-blue-600' : 'text-slate-600' }}">
+  <h3 class="mt-6 font-medium text-sm : ? 'text-blue-600' 'text-slate-600' {{ }} isActive">
     {{ feature.name }}
   </h3>
-  <p class="font-display mt-2 text-xl text-slate-900">
+  <p class="mt-2 font-display text-slate-900 text-xl">
     {{ feature.summary }}
   </p>
-  <p class="mt-4 text-sm text-slate-600">
+  <p class="mt-4 text-slate-600 text-sm">
     {{ feature.description }}
   </p>
 </div>

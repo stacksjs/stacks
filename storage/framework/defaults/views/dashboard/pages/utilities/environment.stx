@@ -52,43 +52,43 @@ function statusVariant(s) {
     <template #actions>
       <Button variant="secondary">Sync</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Add Variable
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     <StatsCard title="Variables" value="{{ stats[0]?.value || '0' }}" icon="i-hugeicons-settings-02" iconBg="primary" />
     <StatsCard title="Secrets" value="{{ stats[1]?.value || '0' }}" icon="i-hugeicons-lock" iconBg="danger" />
     <StatsCard title="Environments" value="{{ stats[2]?.value || '0' }}" icon="i-hugeicons-layers-01" iconBg="info" />
   </div>
 
   <!-- Environment Cards -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     @foreach (environments as env)
       <Card>
         <div class="p-5">
           <div class="flex items-center justify-between mb-4">
-            <span class="text-[14px] font-semibold text-neutral-900 dark:text-white capitalize">{{ env.name }}</span>
+            <span class="capitalize font-semibold text-[14px] text-neutral-900 dark:text-white">{{ env.name }}</span>
             <Badge variant="{{ statusVariant(env.status) }}" size="xs" dot>{{ env.status }}</Badge>
           </div>
           <div class="space-y-2 text-[13px]">
             <div class="flex justify-between">
               <span class="text-neutral-500 dark:text-neutral-400">URL</span>
-              <a href="{{ env.url }}" class="text-blue-600 dark:text-blue-400 hover:underline text-[12px]">{{ env.url }}</a>
+              <a href="{{ env.url }}" class="text-[12px] text-blue-600 dark:text-blue-400 hover:underline">{{ env.url }}</a>
             </div>
             <div class="flex justify-between">
               <span class="text-neutral-500 dark:text-neutral-400">Version</span>
-              <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ env.version }}</code>
+              <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ env.version }}</code>
             </div>
             <div class="flex justify-between">
               <span class="text-neutral-500 dark:text-neutral-400">Last Deploy</span>
               <span class="text-neutral-600 dark:text-neutral-300">{{ env.lastDeploy }}</span>
             </div>
           </div>
-          <div class="mt-4 pt-4 border-t border-neutral-200/60 dark:border-white/5">
+          <div class="mt-4 pt-4 border-neutral-200/60 border-t dark:border-white/5">
             <Button variant="outline" size="xs" class="w-full">Configure</Button>
           </div>
         </div>
@@ -97,7 +97,7 @@ function statusVariant(s) {
   </div>
 
   <!-- Variables Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
       <FilterBar searchPlaceholder="Search variables..." />
     </div>
@@ -117,10 +117,10 @@ function statusVariant(s) {
       @foreach (variables as variable)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ variable.key }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ variable.key }}</code>
           </td>
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ variable.value }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ variable.value }}</code>
           </td>
           <td class="px-4 py-3">
             <div class="flex flex-wrap gap-1">
@@ -130,9 +130,9 @@ function statusVariant(s) {
             </div>
           </td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-1">
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
-              <Button variant="danger" size="xs" iconOnly><div class="i-hugeicons-delete-02 w-4 h-4"></div></Button>
+            <div class="flex gap-1 items-center">
+              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
+              <Button variant="danger" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-delete-02"></div></Button>
             </div>
           </td>
         </tr>

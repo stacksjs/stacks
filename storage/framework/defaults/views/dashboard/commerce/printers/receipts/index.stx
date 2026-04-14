@@ -118,56 +118,56 @@ const totalPages = 1105
   <PageHeader title="Print Logs" description="View and analyze all print jobs across your receipt printers" />
 
         <!-- Stats -->
-        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Print Jobs</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalPrints }}</dd>
-            <dd class="mt-2 flex items-center text-sm">
+        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Print Jobs</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPrints }}</dd>
+            <dd class="flex items-center mt-2 text-sm">
               <span class="text-green-600 dark:text-green-400">{{ successfulPrints }} Successful</span>
               <span class="mx-2 text-gray-500 dark:text-neutral-400">•</span>
               <span class="text-red-600 dark:text-red-400">{{ failedPrints }} Failed</span>
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Success Rate</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ successRate }}%</dd>
-            <dd class="mt-2 flex items-center text-sm text-gray-600 dark:text-neutral-400">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Success Rate</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ successRate }}%</dd>
+            <dd class="flex items-center mt-2 text-gray-600 text-sm dark:text-neutral-400">
               <span>{{ warningPrints }} prints with warnings</span>
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Pages</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ totalPages }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-gray-600 dark:text-neutral-400">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Pages</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPages }}</dd>
+            <dd class="flex items-center mt-2 text-gray-600 text-sm dark:text-neutral-400">
               <span>Avg. {{ (totalPages / totalPrints).toFixed(1) }} pages per print</span>
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Average Print Time</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ averagePrintTime }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-gray-600 dark:text-neutral-400">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Average Print Time</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ averagePrintTime }}</dd>
+            <dd class="flex items-center mt-2 text-gray-600 text-sm dark:text-neutral-400">
               <span>For successful prints</span>
             </dd>
           </div>
         </dl>
 
         <!-- Charts -->
-        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-2">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Hourly Print Volume</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Hourly Print Volume</h3>
               <div class="mt-2 h-64">
                 <canvas id="chart_1"></canvas>
               </div>
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Print Volume by Printer</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Print Volume by Printer</h3>
               <div class="mt-2 h-64">
                 <canvas id="chart_2"></canvas>
               </div>
@@ -176,13 +176,13 @@ const totalPages = 1105
         </div>
 
         <!-- Filters -->
-        <div class="mt-8 flex flex-wrap gap-4">
+        <div class="flex flex-wrap gap-4 mt-8">
           <div class="w-full sm:w-auto">
-            <label for="printer-filter" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Printer</label>
+            <label for="printer-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Printer</label>
             <select
               id="printer-filter"
               value="{{ printerFilter }}"
-              class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+              class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
               @foreach(printers as printer)
                 <option value="{{ printer }}">{{ printer }}</option>
@@ -190,11 +190,11 @@ const totalPages = 1105
             </select>
           </div>
           <div class="w-full sm:w-auto">
-            <label for="status-filter" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Status</label>
+            <label for="status-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
             <select
               id="status-filter"
               value="{{ statusFilter }}"
-              class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+              class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
               @foreach(statuses as status)
                 <option value="{{ status }}">{{ status }}</option>
@@ -202,11 +202,11 @@ const totalPages = 1105
             </select>
           </div>
           <div class="w-full sm:w-auto">
-            <label for="date-filter" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Date Range</label>
+            <label for="date-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Date Range</label>
             <select
               id="date-filter"
               value="{{ dateFilter }}"
-              class="mt-1 block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white sm:text-sm"
+              class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
               @foreach(dateRanges as range)
                 <option value="{{ range }}">{{ range }}</option>
@@ -217,48 +217,48 @@ const totalPages = 1105
 
         <!-- Print Logs Table -->
         <div class="mt-4">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
-            <div class="px-4 py-5 sm:px-6 flex justify-between items-center">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Print Logs</h3>
-              <span class="text-sm text-gray-500 dark:text-neutral-400">Showing {{ filteredPrints.length }} of {{ prints.length }} prints</span>
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="flex items-center justify-between px-4 py-5 sm:px-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Print Logs</h3>
+              <span class="text-gray-500 text-sm dark:text-neutral-400">Showing {{ filteredPrints.length }} of {{ prints.length }} prints</span>
             </div>
-            <div class="border-t border-gray-200 dark:border-neutral-700">
+            <div class="border-gray-200 border-t dark:border-neutral-700">
               <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+                <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
                   <thead class="bg-gray-50 dark:bg-neutral-700">
                     <tr>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">ID</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Printer</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Document</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Timestamp</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Status</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Duration</th>
-                      <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider dark:text-neutral-300">Actions</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">ID</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Printer</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Document</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Timestamp</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Status</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Duration</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Actions</th>
                     </tr>
                   </thead>
-                  <tbody class="bg-white divide-y divide-gray-200 dark:bg-neutral-800 dark:divide-neutral-700">
+                  <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
                     @foreach(filteredPrints as print)
                       <tr>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">#{{ print.id.toString().padStart(6, '0') }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">{{ print.printer }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ print.document }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ print.timestamp }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">#{{ print.id.toString().padStart(6, '0') }}</td>
+                        <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ print.printer }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ print.document }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ print.timestamp }}</td>
                         <td class="px-6 py-4 whitespace-nowrap">
-                          <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full {{ print.status === 'Success' ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300' : print.status === 'Failed' ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300' : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300' }}">
+                          <span class="inline-flex px-2 font-semibold leading-5 text-green-800 text-red-800 text-xs text-yellow-800 dark:text-green-300' dark:text-red-300' dark:text-yellow-300' dark:bg-green-900 dark:bg-red-900 dark:bg-yellow-900 rounded-full : : ? ? 'bg-green-100 'bg-red-100 'bg-yellow-100 'Failed' 'Success' {{ }} === === print.status print.status">
                             {{ print.status }}
                           </span>
                         </td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300">{{ print.duration }}</td>
-                        <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-neutral-300 text-right">
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ print.duration }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                           <div class="flex space-x-2">
-                            <button class="text-gray-400 transition-colors duration-150 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-gray-300" title="View Details">
-                              <div class="i-hugeicons-view h-5 w-5"></div>
+                            <button class="text-gray-400 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-300 duration-150 transition-colors" title="View Details">
+                              <div class="h-5 w-5 i-hugeicons-view"></div>
                             </button>
-                            <button class="text-gray-400 transition-colors duration-150 hover:text-gray-900 dark:text-neutral-400 dark:hover:text-gray-300" title="Reprint">
-                              <div class="i-hugeicons-refresh h-5 w-5"></div>
+                            <button class="text-gray-400 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-300 duration-150 transition-colors" title="Reprint">
+                              <div class="h-5 w-5 i-hugeicons-refresh"></div>
                             </button>
-                            <button class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300" title="Delete">
-                              <div class="i-hugeicons-waste h-5 w-5"></div>
+                            <button class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-colors" title="Delete">
+                              <div class="h-5 w-5 i-hugeicons-waste"></div>
                             </button>
                           </div>
                         </td>
@@ -272,31 +272,31 @@ const totalPages = 1105
         </div>
 
         <!-- Pagination -->
-        <div class="mt-4 flex items-center justify-between border-t border-gray-200 dark:border-neutral-700 px-4 py-3 sm:px-6">
-          <div class="flex flex-1 justify-between sm:hidden">
-            <a href="#" class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700">Previous</a>
-            <a href="#" class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700">Next</a>
+        <div class="flex items-center justify-between mt-4 px-4 py-3 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
+          <div class="flex sm:hidden flex-1 justify-between">
+            <a href="#" class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">Previous</a>
+            <a href="#" class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">Next</a>
           </div>
           <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
             <div>
-              <p class="text-sm text-gray-700 dark:text-neutral-300">
+              <p class="text-gray-700 text-sm dark:text-neutral-300">
                 Showing <span class="font-medium">1</span> to <span class="font-medium">15</span> of <span class="font-medium">755</span> results
               </p>
             </div>
             <div>
-              <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
-                <a href="#" class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 dark:hover:bg-neutral-700">
+              <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+                <a href="#" class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:outline-offset-0">
                   <span class="sr-only">Previous</span>
-                  <div class="i-hugeicons-arrow-left-01 h-5 w-5" aria-hidden="true" />
+                  <div class="h-5 w-5 i-hugeicons-arrow-left-01" aria-hidden="true" />
                 </a>
-                <a href="#" aria-current="page" class="relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600">1</a>
-                <a href="#" class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700">2</a>
-                <a href="#" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700">3</a>
-                <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-neutral-400 dark:ring-neutral-600">...</span>
-                <a href="#" class="relative hidden items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 md:inline-flex dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700">50</a>
-                <a href="#" class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 dark:hover:bg-neutral-700">
+                <a href="#" aria-current="page" class="inline-flex relative z-10 focus:z-20 items-center px-4 py-2 font-semibold text-sm text-white bg-blue-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2">1</a>
+                <a href="#" class="inline-flex relative focus:z-20 items-center px-4 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600 focus:outline-offset-0">2</a>
+                <a href="#" class="hidden md:inline-flex relative focus:z-20 items-center px-4 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600 focus:outline-offset-0">3</a>
+                <span class="inline-flex relative items-center px-4 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-400 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600 focus:outline-offset-0">...</span>
+                <a href="#" class="hidden md:inline-flex relative focus:z-20 items-center px-4 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600 focus:outline-offset-0">50</a>
+                <a href="#" class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0">
                   <span class="sr-only">Next</span>
-                  <div class="i-hugeicons-arrow-right-01 h-5 w-5" aria-hidden="true" />
+                  <div class="h-5 w-5 i-hugeicons-arrow-right-01" aria-hidden="true" />
                 </a>
               </nav>
             </div>

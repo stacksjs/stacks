@@ -500,7 +500,7 @@ try {
   if (error.status === 429) {
     // Rate limited
     console.log('Too many requests, waiting...')
-    await delay(error.headers['retry-after'] * 1000)
+    await delay(error.headers['retry-after'] _ 1000)
   } else if (error.status === 401) {
     // Invalid API key
     console.error('Invalid API key')
@@ -548,7 +548,7 @@ async function chatWithRetry(
     } catch (error) {
       if (attempt === maxRetries) throw error
 
-      const delay = Math.pow(2, attempt) * 1000 // Exponential backoff
+      const delay = Math.pow(2, attempt) _ 1000 // Exponential backoff
       await new Promise(r => setTimeout(r, delay))
     }
   }

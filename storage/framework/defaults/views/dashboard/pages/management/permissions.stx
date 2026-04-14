@@ -37,24 +37,24 @@ try {
   <PageHeader title="Permissions" description="Roles and access control">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Create Role
       </Button>
     </template>
   </PageHeader>
 
   <!-- Roles & Permissions -->
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Roles -->
     <Card>
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Roles</span>
+        <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Roles</span>
       </div>
-      <div class="divide-y divide-neutral-100 dark:divide-white/5">
+      <div class="divide-neutral-100 divide-y dark:divide-white/5">
         @foreach (roles as role)
-          <div class="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center px-4 py-3 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ role.name }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ role.name }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ role.description }}</div>
             </div>
             <div class="text-right">
@@ -69,12 +69,12 @@ try {
     <!-- Permission Groups -->
     <Card>
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Permission Groups</span>
+        <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Permission Groups</span>
       </div>
       <div class="p-4 space-y-4">
         @foreach (permissions as group)
           <div>
-            <div class="text-[13px] font-medium text-neutral-900 dark:text-white mb-2">{{ group.group }}</div>
+            <div class="mb-2 font-medium text-[13px] text-neutral-900 dark:text-white">{{ group.group }}</div>
             <div class="flex flex-wrap gap-1.5">
               @foreach (group.items as item)
                 <Badge variant="default" size="xs">{{ item }}</Badge>
@@ -89,13 +89,13 @@ try {
   <!-- Recent Changes -->
   <Card>
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Recent Changes</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Recent Changes</span>
     </div>
-    <div class="divide-y divide-neutral-100 dark:divide-white/5">
+    <div class="divide-neutral-100 divide-y dark:divide-white/5">
       @foreach (recentChanges as change)
-        <div class="flex items-center gap-3 px-4 py-3 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+        <div class="flex gap-3 items-center px-4 py-3 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <div class="flex-1 min-w-0">
-            <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ change.action }}: {{ change.target }}</div>
+            <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ change.action }}: {{ change.target }}</div>
             <div class="text-[12px] text-neutral-500 dark:text-neutral-400">by {{ change.user }}</div>
           </div>
           <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ change.time }}</span>

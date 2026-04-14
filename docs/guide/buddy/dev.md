@@ -194,7 +194,7 @@ All development servers support Hot Module Replacement (HMR), which means:
 
 Stacks provides pretty development URLs out of the box:
 
-- `https://your-project.localhost` instead of `http://localhost:3000`
+- `<https://your-project.localhost>` instead of `<http://localhost:3000>`
 
 This is configured automatically based on your `APP_URL` environment variable.
 

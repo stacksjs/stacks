@@ -7,7 +7,7 @@ const { backgroundImage = '/images/background-call-to-action.jpg' } = defineProp
 </script>
 <section
   id="get-started-today"
-  class="relative overflow-hidden bg-blue-600 py-32"
+  class="overflow-hidden relative py-32 bg-blue-600"
 >
   <img
     class="absolute left-1/2 top-1/2 max-w-none -translate-x-1/2 -translate-y-1/2"
@@ -22,7 +22,7 @@ const { backgroundImage = '/images/background-call-to-action.jpg' } = defineProp
       <p class="mt-4 text-lg text-white tracking-tight">
         It's time to put away the worries of later when you scale up because everything is built right out of the box. We believe your focus is to just build and grow your business.
       </p>
-      <a href="/register" class="mt-10 inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-white text-slate-900 hover:bg-blue-50 active:bg-blue-200 active:text-slate-600 focus-visible:outline-white">
+      <a href="/register" class="inline-flex items-center justify-center mt-10 px-4 py-2 font-semibold text-slate-900 text-sm active:text-slate-600 bg-white active:bg-blue-200 hover:bg-blue-50 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white focus:outline-none">
         View Documentation
       </a>
     </div>

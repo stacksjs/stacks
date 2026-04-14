@@ -115,7 +115,7 @@ describe('Checkout Flow', () => {
     const cartResponse = await actingAs(user).get('/api/cart')
     const cart = await cartResponse.json()
     expect(cart.items).toHaveLength(1)
-    expect(cart.total).toBe(59.98)  // 29.99 * 2
+    expect(cart.total).toBe(59.98)  // 29.99 _ 2
 
     // Step 3: Submit order
     const orderResponse = await actingAs(user).post('/api/orders', {
@@ -178,7 +178,7 @@ export const UserFactory = new Factory({
     const data = { ...this.make(), ...attributes }
     return db.insertInto('users')
       .values(data)
-      .returning('*')
+      .returning('_')
       .executeTakeFirstOrThrow()
   },
 

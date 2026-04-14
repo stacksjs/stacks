@@ -6,21 +6,21 @@ interface LoadingDetailsProps {
 
 const { width = 16, height = 4 } = defineProps<LoadingDetailsProps>()
 </script>
-<div class="mx-auto w-full rounded-md p-4" style="height: {{ height }}rem">
-  <div class="animate-pulse space-y-12">
+<div class="mx-auto p-4 w-full rounded-md" style="height: {{ height }}rem">
+  <div class="space-y-12 animate-pulse">
     <!-- Title -->
-    <div class="h-4 w-3/4 rounded-md bg-slate-300"></div>
+    <div class="h-4 w-3/4 bg-slate-300 rounded-md"></div>
 
     <!-- Description -->
     <div class="space-y-2">
-      <div class="h-3 w-full rounded-md bg-slate-300"></div>
-      <div class="h-3 w-5/6 rounded-md bg-slate-300"></div>
+      <div class="h-3 w-full bg-slate-300 rounded-md"></div>
+      <div class="h-3 w-5/6 bg-slate-300 rounded-md"></div>
     </div>
 
     <!-- Buttons -->
     <div class="flex space-x-4">
-      <div class="h-8 w-1/4 rounded-md bg-slate-300"></div>
-      <div class="h-8 w-1/4 rounded-md bg-slate-300"></div>
+      <div class="h-8 w-1/4 bg-slate-300 rounded-md"></div>
+      <div class="h-8 w-1/4 bg-slate-300 rounded-md"></div>
     </div>
   </div>
 </div>

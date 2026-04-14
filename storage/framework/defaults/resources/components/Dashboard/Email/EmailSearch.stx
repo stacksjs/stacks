@@ -6,20 +6,20 @@ interface EmailSearchProps {
 
 const { modelValue = '', timeRange = 'day' } = defineProps<EmailSearchProps>()
 </script>
-<div class="bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600 py-2 px-4">
+<div class="px-4 py-2 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
     <div class="flex items-center">
       <!-- Search bar -->
       <div class="flex-1 max-w-2xl">
         <div class="relative">
-          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-            <i class="i-hugeicons-search text-gray-400 text-lg"></i>
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <i class="text-gray-400 text-lg i-hugeicons-search"></i>
           </div>
           <input
             type="text"
             name="search"
             value="{{ modelValue }}"
             placeholder="Search emails..."
-            class="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-neutral-600 rounded-md bg-gray-50 dark:bg-neutral-600 text-gray-900 dark:text-neutral-100 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+            class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
           >
         </div>
       </div>
@@ -28,7 +28,7 @@ const { modelValue = '', timeRange = 'day' } = defineProps<EmailSearchProps>()
       <div class="ml-4">
         <select
           name="timeRange"
-          class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+          class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
         >
           <option value="day" {{ timeRange == 'day' ? 'selected' : '' }}>Last 24 Hours</option>
           <option value="week" {{ timeRange == 'week' ? 'selected' : '' }}>Last 7 Days</option>

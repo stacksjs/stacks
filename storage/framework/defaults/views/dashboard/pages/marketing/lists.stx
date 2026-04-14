@@ -11,21 +11,21 @@ let stats = []
     <template #actions>
       <Button variant="secondary">Import</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Create List
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-user-group" iconBg="primary" />
     @endforeach
   </div>
 
   <!-- Lists Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
       <FilterBar searchPlaceholder="Search lists..." />
     </div>
@@ -46,17 +46,17 @@ let stats = []
     >
       @foreach (lists as list)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ list.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ list.name }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ list.members.toLocaleString() }}</td>
-          <td class="px-4 py-3 text-[13px] font-medium text-green-600 dark:text-green-400">{{ list.growth }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-green-600 dark:text-green-400">{{ list.growth }}</td>
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ list.lastSent }}</td>
           <td class="px-4 py-3">
             <Badge variant="success" size="xs" dot>{{ list.status }}</Badge>
           </td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-1">
+            <div class="flex gap-1 items-center">
               <Button variant="outline" size="xs">Send</Button>
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
             </div>
           </td>
         </tr>

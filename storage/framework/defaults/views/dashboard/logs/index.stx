@@ -498,12 +498,12 @@ let timeRange = 'day'
       <div class="p-6">
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Log Volume</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Distribution of log types over time</p>
+            <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Log Volume</h3>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Distribution of log types over time</p>
           </div>
           <select
             value="{{ timeRange }}"
-            class="h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 pl-3 pr-8 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+            class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="day">Last 24 Hours</option>
             <option value="week">Last 7 Days</option>
@@ -511,10 +511,10 @@ let timeRange = 'day'
             <option value="year">Last Year</option>
           </select>
         </div>
-        <div class="h-[300px] relative">
+        <div class="relative h-[300px]">
           @if(isLoading)
-            <div class="absolute inset-0 flex items-center justify-center bg-white bg-opacity-75 dark:bg-neutral-700 dark:bg-opacity-75 z-10">
-              <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500"></div>
+            <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
+              <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
             </div>
           @endif
           <canvas id="chart_1"></canvas>
@@ -523,21 +523,21 @@ let timeRange = 'day'
     </div>
 
     <!-- Control Panel -->
-    <div class="mt-8 flow-root">
+    <div class="flow-root mt-8">
       <div class="mb-6 space-y-4">
-        <div class="flex flex-wrap items-center gap-4">
+        <div class="flex flex-wrap gap-4 items-center">
           <div class="flex-1 min-w-[200px]">
             <input
               value="{{ searchTerm }}"
               type="text"
               placeholder="Search logs..."
-              class="w-full px-4 py-2 border rounded-lg"
+              class="px-4 py-2 w-full border rounded-lg"
             >
           </div>
 
           <select
             value="{{ filter }}"
-            class="px-4 py-2 border rounded-lg bg-white dark:bg-neutral-800 min-w-[140px]"
+            class="px-4 py-2 min-w-[140px] bg-white dark:bg-neutral-800 border rounded-lg"
           >
             <option value="all">All Sources</option>
             <option value="cli">CLI</option>
@@ -549,7 +549,7 @@ let timeRange = 'day'
 
           <select
             value="{{ logTypeFilter }}"
-            class="px-4 py-2 border rounded-lg bg-white dark:bg-neutral-800 min-w-[140px]"
+            class="px-4 py-2 min-w-[140px] bg-white dark:bg-neutral-800 border rounded-lg"
           >
             <option value="all">All Types</option>
             <option value="info">Info</option>
@@ -560,13 +560,13 @@ let timeRange = 'day'
           </select>
 
           <button
-            class="flex items-center gap-2 px-4 py-2 rounded-lg"
-            :class="autoRefresh ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700'"
+            class="flex gap-2 items-center px-4 py-2 rounded-lg"
+            :class="text-blue-700' text-gray-700' : ? 'bg-blue-100 'bg-gray-100 autoRefresh"
             onclick="toggleAutoRefresh"
           >
             <i
-              class="i-hugeicons-refresh h-4 w-4"
-              :class="autoRefresh ? 'animate-spin' : ''"
+              class="h-4 w-4 i-hugeicons-refresh"
+              :class=": ? '' 'animate-spin' autoRefresh"
               aria-hidden="true"
             />
             {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
@@ -574,10 +574,10 @@ let timeRange = 'day'
 
           @if(searchTerm || filter !== 'all' || logTypeFilter !== 'all' || selectedProjects.length > 0)
             <button
-              class="flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-100 text-gray-700 hover:bg-gray-200"
+              class="flex gap-2 items-center px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
               onclick="resetFilters"
             >
-              <i class="i-hugeicons-cancel-01 h-4 w-4" aria-hidden="true" />
+              <i class="h-4 w-4 i-hugeicons-cancel-01" aria-hidden="true" />
               Reset Filters
             </button>
           @endif
@@ -587,8 +587,8 @@ let timeRange = 'day'
           @foreach(project in projects)
             <button
               onclick="toggleProject(project.id)"
-              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-colors"
-              :class="selectedProjects.includes(project.id) ? getProjectClasses(project.id).bg + ' ' + getProjectClasses(project.id).text + ' ring-2' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'"
+              class="inline-flex items-center px-3 py-1 font-medium text-sm rounded-full transition-colors"
+              :class="text-gray-700 hover:bg-gray-200' ring-2' selectedProjects.includes(project.id) : ? ' ' ' 'bg-gray-100 + + + getProjectClasses(project.id).bg getProjectClasses(project.id).text"
             >
               {{ project.name }}
               @if(selectedProjects.includes(project.id))
@@ -599,30 +599,30 @@ let timeRange = 'day'
         </div>
       </div>
 
-      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-        <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-            <table class="min-w-full divide-y divide-gray-200 dark:divide-neutral-700">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Timestamp</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Source</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Message</th>
-                  <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Project</th>
-                  <th class="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">Details</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Timestamp</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Type</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Source</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Message</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Project</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase">Details</th>
                 </tr>
               </thead>
-              <tbody class="bg-white dark:bg-neutral-800 divide-y divide-gray-200">
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
                 @foreach(log in paginatedLogs)
                   <tr
-                    class="{{ getLogRowClass(log.type) }} hover:bg-gray-50 cursor-pointer"
+                    class="hover:bg-gray-50 cursor-pointer {{ }} getLogRowClass(log.type)"
                     onclick="selectedLog = log"
                   >
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-sm text-gray-900">
+                      <div class="text-gray-900 text-sm">
                         <i
-                          class="i-hugeicons-clock-01 h-4 w-4 mr-2 text-gray-400"
+                          class="mr-2 h-4 w-4 text-gray-400 i-hugeicons-clock-01"
                           aria-hidden="true"
                         />
                         {{ new Date(log.timestamp).toLocaleTimeString() }}
@@ -631,20 +631,20 @@ let timeRange = 'day'
                     <td class="px-6 py-4 whitespace-nowrap">
                       <div class="flex items-center">
                         <i
-                          class="{{ getLogIcon(log.type) }} {{ getLogIconColor(log.type) }} h-5 w-5"
+                          class="h-5 w-5 {{ {{ }} }} getLogIcon(log.type) getLogIconColor(log.type)"
                           aria-hidden="true"
                         />
                       </div>
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                      <span class="inline-flex px-2 font-semibold leading-5 text-blue-800 text-xs bg-blue-100 rounded-full">
                         {{ log.source }}
                       </span>
                     </td>
                     <td class="px-6 py-4">
-                      <div class="text-sm text-gray-900">{{ log.message }}</div>
+                      <div class="text-gray-900 text-sm">{{ log.message }}</div>
                       @if(log.email)
-                        <div class="text-xs text-gray-500 mt-1 truncate">
+                        <div class="mt-1 text-gray-500 text-xs truncate">
                           {{ log.email.subject }}
                         </div>
                       @endif
@@ -652,16 +652,16 @@ let timeRange = 'day'
                     <td class="px-6 py-4 whitespace-nowrap">
                       @if(log.project)
                         <span
-                          class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full"
-                          class="{{ getProjectClasses(log.project).bg }} {{ getProjectClasses(log.project).text }}"
+                          class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full"
+                          class="{{ {{ }} }} getProjectClasses(log.project).bg getProjectClasses(log.project).text"
                         >
                           {{ projects.find(p => p.id === log.project)?.name }}
                         </span>
                       @endif
                     </td>
-                    <td class="px-6 py-4 whitespace-nowrap text-right">
-                      <button class="text-gray-400 hover:text-blue-500 transition-colors duration-150">
-                        <i class="i-hugeicons-view h-5 w-5" aria-hidden="true" />
+                    <td class="px-6 py-4 text-right whitespace-nowrap">
+                      <button class="text-gray-400 hover:text-blue-500 duration-150 transition-colors">
+                        <i class="h-5 w-5 i-hugeicons-view" aria-hidden="true" />
                       </button>
                     </td>
                   </tr>
@@ -673,9 +673,9 @@ let timeRange = 'day'
       </div>
 
       <!-- Pagination Controls -->
-      <div class="mt-4 flex items-center justify-between">
+      <div class="flex items-center justify-between mt-4">
         <div class="flex items-center">
-          <span class="text-sm text-gray-700 dark:text-neutral-400">
+          <span class="text-gray-700 text-sm dark:text-neutral-400">
             Showing <span class="font-medium">{{ paginatedLogs.length }}</span> of <span class="font-medium">{{ totalItems }}</span> results
           </span>
         </div>
@@ -696,16 +696,16 @@ let timeRange = 'day'
               onclick="prevPage"
               disabled="{{ currentPage === 1 }}"
               class="px-2 py-1 text-sm border rounded-md"
-              :class="currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+              :class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === 1 currentPage"
             >
-              <i class="i-hugeicons-arrow-left-01 h-4 w-4" aria-hidden="true" />
+              <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true" />
             </button>
 
             @foreach(page in Math.min(5, totalPages))
               <button
                 onclick="goToPage(page)"
                 class="px-3 py-1 text-sm border rounded-md"
-                :class="currentPage === page ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'"
+                :class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage page"
               >
                 {{ page }}
               </button>
@@ -719,7 +719,7 @@ let timeRange = 'day'
               <button
                 onclick="goToPage(totalPages)"
                 class="px-3 py-1 text-sm border rounded-md"
-                :class="currentPage === totalPages ? 'bg-blue-600 text-white' : 'hover:bg-gray-100'"
+                :class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage totalPages"
               >
                 {{ totalPages }}
               </button>
@@ -729,9 +729,9 @@ let timeRange = 'day'
               onclick="nextPage"
               disabled="{{ currentPage === totalPages || totalPages === 0 }}"
               class="px-2 py-1 text-sm border rounded-md"
-              :class="currentPage === totalPages || totalPages === 0 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-100'"
+              :class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === === || 0 currentPage totalPages totalPages"
             >
-              <i class="i-hugeicons-arrow-right-01 h-4 w-4" aria-hidden="true" />
+              <i class="h-4 w-4 i-hugeicons-arrow-right-01" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -740,91 +740,91 @@ let timeRange = 'day'
       <Teleport to="body">
         @if(selectedLog)
           <div
-            class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4"
+            class="flex fixed inset-0 items-center justify-center p-4 bg-black bg-opacity-50"
             @click.self="selectedLog = null"
           >
-            <div class="bg-white dark:bg-neutral-800 rounded-lg max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-              <div class="flex justify-between items-center mb-4">
-                <h3 class="text-lg font-semibold">Log Details</h3>
+            <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-semibold text-lg">Log Details</h3>
                 <button
                   onclick="selectedLog = null"
                   class="text-gray-500 hover:text-gray-700"
                 >
                   <i
-                    class="i-hugeicons-cancel-01 h-5 w-5"
+                    class="h-5 w-5 i-hugeicons-cancel-01"
                     aria-hidden="true"
                   />
                 </button>
               </div>
               <div class="space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Timestamp</label>
-                  <p class="mt-1 text-sm text-gray-900">
+                  <label class="block font-medium text-gray-700 text-sm">Timestamp</label>
+                  <p class="mt-1 text-gray-900 text-sm">
                     {{ new Date(selectedLog.timestamp).toLocaleString() }}
                   </p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Type</label>
-                  <div class="mt-1 flex items-center">
+                  <label class="block font-medium text-gray-700 text-sm">Type</label>
+                  <div class="flex items-center mt-1">
                     <i
-                      class="{{ getLogIcon(selectedLog.type) }} {{ getLogIconColor(selectedLog.type) }} h-5 w-5 mr-2"
+                      class="mr-2 h-5 w-5 {{ {{ }} }} getLogIcon(selectedLog.type) getLogIconColor(selectedLog.type)"
                       aria-hidden="true"
                     />
-                    <span class="text-sm text-gray-900 capitalize">{{ selectedLog.type }}</span>
+                    <span class="capitalize text-gray-900 text-sm">{{ selectedLog.type }}</span>
                   </div>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Source</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedLog.source }}</p>
+                  <label class="block font-medium text-gray-700 text-sm">Source</label>
+                  <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.source }}</p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Project</label>
-                  <p class="mt-1 text-sm text-gray-900">
+                  <label class="block font-medium text-gray-700 text-sm">Project</label>
+                  <p class="mt-1 text-gray-900 text-sm">
                     {{ projects.find(p => p.id === selectedLog?.project)?.name || 'N/A' }}
                   </p>
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Message</label>
-                  <p class="mt-1 text-sm text-gray-900">{{ selectedLog.message }}</p>
+                  <label class="block font-medium text-gray-700 text-sm">Message</label>
+                  <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.message }}</p>
                 </div>
 
                 <!-- Email-specific details -->
                 @if(selectedLog.email)
-                  <div class="border-t border-gray-200 pt-4">
-                    <h4 class="text-base font-medium text-gray-900 mb-3">Email Details</h4>
+                  <div class="pt-4 border-gray-200 border-t">
+                    <h4 class="mb-3 font-medium text-base text-gray-900">Email Details</h4>
 
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
                       <div>
-                        <label class="block text-sm font-medium text-gray-700">Subject</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ selectedLog.email.subject }}</p>
+                        <label class="block font-medium text-gray-700 text-sm">Subject</label>
+                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.subject }}</p>
                       </div>
 
                       <div>
-                        <label class="block text-sm font-medium text-gray-700">Provider</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ selectedLog.email.provider || 'N/A' }}</p>
+                        <label class="block font-medium text-gray-700 text-sm">Provider</label>
+                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.provider || 'N/A' }}</p>
                       </div>
 
                       <div>
-                        <label class="block text-sm font-medium text-gray-700">Sender</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ selectedLog.email.sender }}</p>
+                        <label class="block font-medium text-gray-700 text-sm">Sender</label>
+                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.sender }}</p>
                       </div>
 
                       <div>
-                        <label class="block text-sm font-medium text-gray-700">Recipient</label>
-                        <p class="mt-1 text-sm text-gray-900">{{ selectedLog.email.recipient }}</p>
+                        <label class="block font-medium text-gray-700 text-sm">Recipient</label>
+                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.recipient }}</p>
                       </div>
 
                       @if(selectedLog.email.messageId)
                         <div>
-                          <label class="block text-sm font-medium text-gray-700">Message ID</label>
-                          <p class="mt-1 text-sm text-gray-900 font-mono">{{ selectedLog.email.messageId }}</p>
+                          <label class="block font-medium text-gray-700 text-sm">Message ID</label>
+                          <p class="mt-1 font-mono text-gray-900 text-sm">{{ selectedLog.email.messageId }}</p>
                         </div>
                       @endif
 
                       @if(selectedLog.email.size)
                         <div>
-                          <label class="block text-sm font-medium text-gray-700">Size</label>
-                          <p class="mt-1 text-sm text-gray-900">{{ selectedLog.email.size }}</p>
+                          <label class="block font-medium text-gray-700 text-sm">Size</label>
+                          <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.size }}</p>
                         </div>
                       @endif
                     </div>
@@ -832,13 +832,13 @@ let timeRange = 'day'
                     <!-- Attachments -->
                     @if(selectedLog.email.attachments && selectedLog.email.attachments.length > 0)
                       <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">Attachments</label>
-                        <div class="mt-2 flex flex-wrap gap-2">
+                        <label class="block font-medium text-gray-700 text-sm">Attachments</label>
+                        <div class="flex flex-wrap gap-2 mt-2">
                           @foreach(attachment, index in selectedLog.email.attachments)
                             <div
-                              class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800"
+                              class="inline-flex items-center px-3 py-1 font-medium text-gray-800 text-sm bg-gray-100 rounded-full"
                             >
-                              <i class="i-hugeicons-attachment-01 h-4 w-4 mr-1" aria-hidden="true" />
+                              <i class="mr-1 h-4 w-4 i-hugeicons-attachment-01" aria-hidden="true" />
                               {{ attachment.name }} ({{ attachment.size }})
                             </div>
                           @endforeach
@@ -849,17 +849,17 @@ let timeRange = 'day'
                     <!-- Authentication Results -->
                     @if(selectedLog.email.authResults)
                       <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">Authentication Results</label>
-                        <div class="mt-2 grid grid-cols-3 gap-2">
-                          <div class="px-3 py-1 rounded-md text-sm font-medium {{ selectedLog.email.authResults.spf === 'pass' ? 'bg-green-100 text-green-800' : selectedLog.email.authResults.spf === 'fail' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}"
+                        <label class="block font-medium text-gray-700 text-sm">Authentication Results</label>
+                        <div class="grid gap-2 grid-cols-3 mt-2">
+                          <div class="px-3 py-1 font-medium text-gray-800' text-green-800' text-red-800' text-sm rounded-md selectedLog.email.authResults.spf selectedLog.email.authResults.spf : : ? ? 'bg-gray-100 'bg-green-100 'bg-red-100 'fail' 'pass' {{ }} === ==="
                           >
                             SPF: {{ selectedLog.email.authResults.spf }}
                           </div>
-                          <div class="px-3 py-1 rounded-md text-sm font-medium {{ selectedLog.email.authResults.dkim === 'pass' ? 'bg-green-100 text-green-800' : selectedLog.email.authResults.dkim === 'fail' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}"
+                          <div class="px-3 py-1 font-medium text-gray-800' text-green-800' text-red-800' text-sm rounded-md selectedLog.email.authResults.dkim selectedLog.email.authResults.dkim : : ? ? 'bg-gray-100 'bg-green-100 'bg-red-100 'fail' 'pass' {{ }} === ==="
                           >
                             DKIM: {{ selectedLog.email.authResults.dkim }}
                           </div>
-                          <div class="px-3 py-1 rounded-md text-sm font-medium {{ selectedLog.email.authResults.dmarc === 'pass' ? 'bg-green-100 text-green-800' : selectedLog.email.authResults.dmarc === 'fail' ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-800' }}"
+                          <div class="px-3 py-1 font-medium text-gray-800' text-green-800' text-red-800' text-sm rounded-md selectedLog.email.authResults.dmarc selectedLog.email.authResults.dmarc : : ? ? 'bg-gray-100 'bg-green-100 'bg-red-100 'fail' 'pass' {{ }} === ==="
                           >
                             DMARC: {{ selectedLog.email.authResults.dmarc }}
                           </div>
@@ -870,11 +870,11 @@ let timeRange = 'day'
                     <!-- Bounce Info -->
                     @if(selectedLog.email.bounceInfo)
                       <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">Bounce Information</label>
+                        <label class="block font-medium text-gray-700 text-sm">Bounce Information</label>
                         <div class="mt-2 p-3 bg-red-50 rounded-md">
-                          <p class="text-sm text-red-800 font-medium">{{ selectedLog.email.bounceInfo.reason }}</p>
-                          <p class="text-xs text-red-700 mt-1">Code: {{ selectedLog.email.bounceInfo.code }}</p>
-                          <p class="text-xs text-red-700">Time: {{ new Date(selectedLog.email.bounceInfo.timestamp).toLocaleString() }}</p>
+                          <p class="font-medium text-red-800 text-sm">{{ selectedLog.email.bounceInfo.reason }}</p>
+                          <p class="mt-1 text-red-700 text-xs">Code: {{ selectedLog.email.bounceInfo.code }}</p>
+                          <p class="text-red-700 text-xs">Time: {{ new Date(selectedLog.email.bounceInfo.timestamp).toLocaleString() }}</p>
                         </div>
                       </div>
                     @endif
@@ -882,18 +882,18 @@ let timeRange = 'day'
                     <!-- User Interaction -->
                     @if(selectedLog.email.userInteraction)
                       <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">User Interaction</label>
-                        <div class="mt-2 grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <label class="block font-medium text-gray-700 text-sm">User Interaction</label>
+                        <div class="grid gap-2 grid-cols-1 md:grid-cols-2 mt-2">
                           <div class="p-2 bg-gray-50 rounded-md">
                             <div class="flex items-center">
                               <i
-                                class="{{ selectedLog.email.userInteraction.opened ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-circle text-red-500' }} h-5 w-5 mr-2"
+                                class="mr-2 h-5 w-5 text-green-500' text-red-500' selectedLog.email.userInteraction.opened : ? 'i-hugeicons-cancel-circle 'i-hugeicons-checkmark-circle-02 {{ }}"
                                 aria-hidden="true"
                               />
-                              <span class="text-sm font-medium">{{ selectedLog.email.userInteraction.opened ? 'Opened' : 'Not opened' }}</span>
+                              <span class="font-medium text-sm">{{ selectedLog.email.userInteraction.opened ? 'Opened' : 'Not opened' }}</span>
                             </div>
                             @if(selectedLog.email.userInteraction.openedAt)
-                              <p class="text-xs text-gray-500 mt-1 ml-7">
+                              <p class="ml-7 mt-1 text-gray-500 text-xs">
                                 {{ new Date(selectedLog.email.userInteraction.openedAt).toLocaleString() }}
                               </p>
                             @endif
@@ -902,13 +902,13 @@ let timeRange = 'day'
                           <div class="p-2 bg-gray-50 rounded-md">
                             <div class="flex items-center">
                               <i
-                                class="{{ selectedLog.email.userInteraction.clicked ? 'i-hugeicons-checkmark-circle-02 text-green-500' : 'i-hugeicons-cancel-01-circle text-red-500' }} h-5 w-5 mr-2"
+                                class="mr-2 h-5 w-5 text-green-500' text-red-500' selectedLog.email.userInteraction.clicked : ? 'i-hugeicons-cancel-01-circle 'i-hugeicons-checkmark-circle-02 {{ }}"
                                 aria-hidden="true"
                               />
-                              <span class="text-sm font-medium">{{ selectedLog.email.userInteraction.clicked ? 'Clicked' : 'No clicks' }}</span>
+                              <span class="font-medium text-sm">{{ selectedLog.email.userInteraction.clicked ? 'Clicked' : 'No clicks' }}</span>
                             </div>
                             @if(selectedLog.email.userInteraction.clickedAt)
-                              <p class="text-xs text-gray-500 mt-1 ml-7">
+                              <p class="ml-7 mt-1 text-gray-500 text-xs">
                                 {{ new Date(selectedLog.email.userInteraction.clickedAt).toLocaleString() }}
                               </p>
                             @endif
@@ -917,10 +917,10 @@ let timeRange = 'day'
 
                         @if(selectedLog.email.userInteraction.links && selectedLog.email.userInteraction.links.length > 0)
                           <div class="mt-2">
-                            <p class="text-xs text-gray-700 font-medium">Clicked links:</p>
+                            <p class="font-medium text-gray-700 text-xs">Clicked links:</p>
                             <ul class="mt-1 pl-7 list-disc">
                               @foreach(link, index in selectedLog.email.userInteraction.links)
-                                <li class="text-xs text-blue-600">
+                                <li class="text-blue-600 text-xs">
                                   {{ link }}
                                 </li>
                               @endforeach
@@ -933,8 +933,8 @@ let timeRange = 'day'
                     <!-- CLI Command -->
                     @if(selectedLog.source === 'CLI' && selectedLog.metadata?.command)
                       <div class="mt-4">
-                        <label class="block text-sm font-medium text-gray-700">Command</label>
-                        <div class="mt-2 p-3 bg-gray-50 rounded-md font-mono text-sm">
+                        <label class="block font-medium text-gray-700 text-sm">Command</label>
+                        <div class="mt-2 p-3 font-mono text-sm bg-gray-50 rounded-md">
                           {{ selectedLog.metadata.command }}
                         </div>
                       </div>
@@ -943,8 +943,8 @@ let timeRange = 'day'
                 @endif
 
                 <div>
-                  <label class="block text-sm font-medium text-gray-700">Metadata</label>
-                  <pre class="mt-1 text-sm text-gray-900 bg-gray-50 p-3 rounded overflow-x-auto">{{ JSON.stringify(selectedLog.metadata, null, 2) }}</pre>
+                  <label class="block font-medium text-gray-700 text-sm">Metadata</label>
+                  <pre class="overflow-x-auto mt-1 p-3 text-gray-900 text-sm bg-gray-50 rounded">{{ JSON.stringify(selectedLog.metadata, null, 2) }}</pre>
                 </div>
               </div>
             </div>

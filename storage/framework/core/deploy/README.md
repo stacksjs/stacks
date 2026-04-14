@@ -30,6 +30,7 @@ The deployment system integrates ts-cloud into the Stacks framework, providing:
 ### Prerequisites
 
 1. **AWS Credentials**
+
    ```bash
    export AWS_ACCESS_KEY_ID=your-access-key
    export AWS_SECRET_ACCESS_KEY=your-secret-key
@@ -46,6 +47,7 @@ The deployment system integrates ts-cloud into the Stacks framework, providing:
 ```
 
 This will:
+
 1. Build the framework
 2. Build the documentation (if exists)
 3. Build the views/frontend
@@ -119,6 +121,7 @@ export default config
 ### 1. Build Phase
 
 The deployment automatically builds:
+
 - Framework (`storage/framework`)
 - Documentation (if `docs/` exists)
 - Views (`storage/framework/views/web`) - unless in docMode
@@ -127,6 +130,7 @@ The deployment automatically builds:
 ### 2. Infrastructure Deployment
 
 Using ts-cloud:
+
 - Generates CloudFormation template from `cloud.config.ts`
 - Creates or updates CloudFormation stack
 - Waits for stack completion
@@ -148,6 +152,7 @@ Using ts-cloud:
 ```
 
 **Options:**
+
 - `--domain <domain>` - Specify deployment domain
 - `-p, --project <project>` - Target specific project
 - `--prod` - Deploy to production (default)
@@ -157,6 +162,7 @@ Using ts-cloud:
 - `--verbose` - Enable verbose output
 
 **Examples:**
+
 ```bash
 ./buddy deploy                           # Deploy to production
 ./buddy deploy --staging                 # Deploy to staging
@@ -244,6 +250,7 @@ All AWS operations use direct HTTPS requests with AWS Signature V4:
 The deployment action (`storage/framework/core/actions/src/deploy/index.ts`) has been updated to use ts-cloud instead of CDK.
 
 **Before (CDK):**
+
 ```typescript
 await runCommand(`bunx --bun cdk deploy --profile="${profile}"`, {
   cwd: p.frameworkCloudPath(),
@@ -251,6 +258,7 @@ await runCommand(`bunx --bun cdk deploy --profile="${profile}"`, {
 ```
 
 **After (ts-cloud):**
+
 ```typescript
 const { deployStack, deployFrontend } = await import('../../deploy')
 
@@ -276,6 +284,7 @@ export AWS_PROFILE=stacks
 ### Build Failures
 
 Ensure all build scripts work individually:
+
 ```bash
 cd storage/framework && bun run build
 cd storage/framework/views/web && bun run build
@@ -289,6 +298,7 @@ The deployment automatically updates existing stacks. If you see "No updates to 
 ### Import Errors
 
 If you see module import errors:
+
 ```bash
 # Re-link ts-cloud
 cd ~/Code/ts-cloud/packages/ts-cloud && bun link
@@ -340,6 +350,7 @@ stacks/
 ## Support
 
 For issues or questions:
+
 - Check the troubleshooting section above
 - Review the [ts-cloud issues](https://github.com/stacksjs/ts-cloud/issues)
 - Join the Stacks Discord community

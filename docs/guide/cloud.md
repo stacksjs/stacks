@@ -389,18 +389,23 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Run tests
+
         run: bun test
 
       - name: Deploy
+
         run: bun run deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}

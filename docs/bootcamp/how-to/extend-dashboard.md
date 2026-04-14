@@ -40,7 +40,7 @@ export default new Widget({
   },
 
   template: `
-    <div class="grid grid-cols-3 gap-4">
+    <div class="grid gap-4 grid-cols-3">
       <div class="stat-card">
         <div class="stat-value">{{ users }}</div>
         <div class="stat-label">Total Users</div>
@@ -448,7 +448,7 @@ export default new Theme({
 ### Custom CSS
 
 ```css
-/* resources/dashboard/themes/custom.css */
+/_ resources/dashboard/themes/custom.css _/
 :root {
   --color-primary: #6366F1;
   --color-primary-hover: #4F46E5;

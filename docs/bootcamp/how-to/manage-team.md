@@ -53,7 +53,7 @@ async function inviteTeamMember(
     invited_by: invitedBy,
     token: randomUUIDv7(),
     status: 'pending',
-    expires_at: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+    expires_at: new Date(Date.now() + 7 _ 24 _ 60 _ 60 _ 1000).toISOString(),
   })
 
   // Send invitation email
@@ -167,7 +167,7 @@ export default {
   roles: {
     owner: {
       name: 'Owner',
-      permissions: ['*'],
+      permissions: ['_'],
       canBeRemoved: false,
       canBeChanged: false,
     },
@@ -234,14 +234,14 @@ async function hasPermission(
   if (!roleConfig) return false
 
   // Wildcard permission (owner)
-  if (roleConfig.permissions.includes('*')) return true
+  if (roleConfig.permissions.includes('_')) return true
 
   // Check specific permission
   if (roleConfig.permissions.includes(permission)) return true
 
-  // Check permission prefix (e.g., 'projects:*' matches 'projects:create')
+  // Check permission prefix (e.g., 'projects:_' matches 'projects:create')
   const [resource] = permission.split(':')
-  if (roleConfig.permissions.includes(`${resource}:*`)) return true
+  if (roleConfig.permissions.includes(`${resource}:_`)) return true
 
   return false
 }

@@ -79,6 +79,7 @@ buddy dns example.com --type MX
 ```
 
 Output:
+
 ```
 MX example.com.  300  IN  MX  10 mail.example.com.
 MX example.com.  300  IN  MX  20 mail2.example.com.
@@ -103,6 +104,7 @@ buddy dns example.com --type A --short
 ```
 
 Output:
+
 ```
 93.184.216.34
 ```
@@ -232,6 +234,7 @@ Error: No records found
 ```
 
 **Solutions**:
+
 1. Verify the domain name is correct
 2. Check if the record type exists
 3. Try a different nameserver
@@ -243,6 +246,7 @@ Error: Query timed out
 ```
 
 **Solutions**:
+
 1. Try a different nameserver: `--nameserver 8.8.8.8`
 2. Use TCP: `--tcp`
 3. Check network connectivity
@@ -254,6 +258,7 @@ NXDOMAIN (domain does not exist)
 ```
 
 **Solutions**:
+
 1. Verify domain spelling
 2. Check if domain is registered
 3. Verify DNS configuration at registrar

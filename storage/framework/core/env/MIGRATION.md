@@ -90,7 +90,7 @@ buddy env:get API_KEY
 ```bash
 buddy env:encrypt
 # Output: ✔ encrypted (.env)
-#         ✔ key added to .env.keys
+# ✔ key added to .env.keys
 ```
 
 ### View keypairs

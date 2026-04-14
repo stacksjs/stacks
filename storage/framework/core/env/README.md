@@ -73,10 +73,10 @@ buddy env:encrypt
 buddy env:encrypt --file .env.production
 
 # Encrypt specific keys only
-buddy env:encrypt -k "SECRET_*"
+buddy env:encrypt -k "SECRET**"
 
 # Exclude specific keys from encryption
-buddy env:encrypt -ek "PUBLIC_*"
+buddy env:encrypt -ek "PUBLIC**"
 ```
 
 This will:
@@ -108,10 +108,10 @@ The encryption uses **secp256k1 ECIES** (Elliptic Curve Integrated Encryption Sc
 **Example encrypted .env:**
 
 ```ini
-#/-------------------[DOTENV_PUBLIC_KEY]--------------------/
-#/            public-key encryption for .env files          /
-#/       [how it works](https://stacksjs.com/encryption)   /
-#/----------------------------------------------------------/
+# /-------------------[DOTENV_PUBLIC_KEY]--------------------/
+# /            public-key encryption for .env files          /
+# /       [how it works](https://stacksjs.com/encryption)   /
+# /----------------------------------------------------------/
 DOTENV_PUBLIC_KEY="034af93e93708b994c10f236c96ef88e47291066946cce2e8d98c9e02c741ced45"
 
 # .env
@@ -364,8 +364,8 @@ import { encryptEnv } from '@stacksjs/env'
 const result = encryptEnv({
   file: '.env',
   keysFile: '.env.keys',
-  key: 'SECRET_*',        // Only encrypt keys matching pattern
-  excludeKey: 'PUBLIC_*',  // Exclude keys matching pattern
+  key: 'SECRET**',        // Only encrypt keys matching pattern
+  excludeKey: 'PUBLIC**',  // Exclude keys matching pattern
   stdout: false
 })
 ```

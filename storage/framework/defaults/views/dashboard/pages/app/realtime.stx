@@ -20,23 +20,23 @@ function statusVariant(s) {
   <PageHeader title="Realtime" description="WebSocket connections and channels" />
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
     <StatsCard title="Active Connections" value="{{ stats.activeConnections }}" icon="i-hugeicons-wifi-connected-01" iconBg="primary" />
     <StatsCard title="Messages/min" value="{{ stats.messagesPerMinute }}" icon="i-hugeicons-message-01" iconBg="success" />
     <StatsCard title="Avg Latency" value="{{ stats.avgLatency }}" icon="i-hugeicons-time-01" iconBg="warning" />
   </div>
 
   @if (channels.length > 0)
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5">
+  <div class="p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="flex items-center justify-between mb-4">
       <span class="font-semibold text-neutral-900 dark:text-white">Active Channels</span>
     </div>
-    <div class="divide-y divide-neutral-100 dark:divide-neutral-700">
+    <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
       @foreach (channels as channel)
-        <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+        <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <div class="flex-1 min-w-0">
             <div class="font-medium text-neutral-900 dark:text-white">{{ channel.name }}</div>
-            <div class="text-sm text-neutral-500 dark:text-neutral-400">{{ channel.messages }}</div>
+            <div class="text-neutral-500 text-sm dark:text-neutral-400">{{ channel.messages }}</div>
           </div>
           <Badge variant="success" size="sm" dot>{{ channel.connections }} connected</Badge>
         </div>
@@ -44,12 +44,12 @@ function statusVariant(s) {
     </div>
   </div>
   @else
-  <div class="flex flex-col items-center justify-center py-16 px-4">
-    <div class="w-16 h-16 rounded-full bg-neutral-100 dark:bg-neutral-800 flex items-center justify-center mb-4">
+  <div class="flex flex-col items-center justify-center px-4 py-16">
+    <div class="flex items-center justify-center mb-4 h-16 w-16 bg-neutral-100 dark:bg-neutral-800 rounded-full">
       <span class="text-2xl text-neutral-400">&#x1F4E1;</span>
     </div>
-    <h3 class="text-lg font-semibold text-neutral-900 dark:text-white mb-2">No realtime connections</h3>
-    <p class="text-sm text-neutral-500 dark:text-neutral-400 text-center max-w-sm">WebSocket connections will appear here when clients connect.</p>
+    <h3 class="mb-2 font-semibold text-lg text-neutral-900 dark:text-white">No realtime connections</h3>
+    <p class="max-w-sm text-center text-neutral-500 text-sm dark:text-neutral-400">WebSocket connections will appear here when clients connect.</p>
   </div>
   @endif
 </div>

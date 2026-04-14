@@ -419,10 +419,10 @@ export default {
   },
 
   // Token settings
-  tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
+  tokenExpiry: 30 _ 24 _ 60 _ 60 _ 1000, // 30 days
   tokenRotation: 24, // hours
   defaultTokenName: 'auth-token',
-  defaultAbilities: ['*'],
+  defaultAbilities: ['_'],
 
   // Password settings
   passwords: {
@@ -503,8 +503,8 @@ import type { StacksOptions } from '@stacksjs/types'
 
 // Full configuration type
 const config: StacksOptions = {
-  app: { name: 'My App', env: 'local', /* ... */ },
-  database: { default: 'sqlite', /* ... */ },
+  app: { name: 'My App', env: 'local', /_ ... _/ },
+  database: { default: 'sqlite', /_ ... _/ },
   // TypeScript ensures all required fields
 }
 
@@ -527,6 +527,7 @@ const appConfig: AppConfig = {
 ### IDE Support
 
 Configuration is fully typed, providing:
+
 - Autocomplete for config keys
 - Type checking for values
 - Documentation on hover
@@ -670,7 +671,7 @@ function validateConfig() {
 ### Configuration Loading Order
 
 1. Default values from `config/defaults.ts`
-2. User configuration from `config/*.ts` files
+2. User configuration from `config/_.ts` files
 3. Environment overrides from `.env` files
 4. Override values from `config/overrides.ts`
 

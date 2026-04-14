@@ -85,6 +85,7 @@ buddy test
 ```
 
 Output:
+
 ```
 buddy test
 
@@ -127,6 +128,7 @@ buddy test:types
 ```
 
 Output:
+
 ```
 buddy test:types
 
@@ -295,6 +297,7 @@ buddy test:coverage
 ```
 
 Coverage output:
+
 ```
 Coverage:
   Statements: 85.5%
@@ -319,16 +322,20 @@ jobs:
   test:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Run tests
+
         run: buddy test
 
       - name: Type check
+
         run: buddy test:types
 ```
 
@@ -341,7 +348,8 @@ Error: No tests found
 ```
 
 **Solutions**:
-1. Ensure test files match pattern: `*.test.ts` or `*.spec.ts`
+
+1. Ensure test files match pattern: `_.test.ts` or `_.spec.ts`
 2. Check test directory structure
 3. Verify file paths in configuration
 
@@ -352,6 +360,7 @@ Error: Test timed out
 ```
 
 **Solutions**:
+
 1. Increase timeout in test or configuration
 2. Check for hanging promises
 3. Ensure async operations complete
@@ -369,6 +378,7 @@ Error: TypeScript errors found
 ```
 
 **Solution**: Fix type errors or update types:
+
 ```bash
 # See detailed errors
 buddy test:types --verbose
@@ -384,6 +394,7 @@ Error: Database connection failed
 ```
 
 **Solutions**:
+
 1. Ensure test database is configured
 2. Run migrations: `APP_ENV=testing buddy migrate`
 3. Check database credentials

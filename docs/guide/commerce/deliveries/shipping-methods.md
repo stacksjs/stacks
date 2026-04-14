@@ -96,11 +96,13 @@ const shippingOptions = await shippings.methods.formatShippingOptions()
 ### Delete Shipping Methods
 
 Single shipping method deletion:
+
 ```ts
 await shippings.methods.destroy(1) // Replace 1 with the shipping method ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await shippings.methods.bulkDestroy([1, 2, 3]) // Array of shipping method IDs to delete
 ```
@@ -108,11 +110,13 @@ await shippings.methods.bulkDestroy([1, 2, 3]) // Array of shipping method IDs t
 ### Soft Delete
 
 Single soft delete:
+
 ```ts
 await shippings.methods.softDelete(1) // Marks the shipping method as inactive
 ```
 
 Bulk soft delete:
+
 ```ts
 await shippings.methods.bulkSoftDelete([1, 2, 3]) // Marks multiple shipping methods as inactive
 ```

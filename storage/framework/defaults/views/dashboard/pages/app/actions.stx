@@ -52,14 +52,14 @@ function statusVariant(s) {
   <PageHeader title="Actions" description="Application actions and automations">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         New Action
       </Button>
     </template>
   </PageHeader>
 
   <!-- Actions Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="{{ JSON.stringify([
         { key: 'name', label: 'Action' },
@@ -76,7 +76,7 @@ function statusVariant(s) {
     >
       @foreach(actions as action)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ action.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ action.name }}</td>
           <td class="px-4 py-3">
             <Badge variant="default" size="xs">{{ action.type }}</Badge>
           </td>
@@ -86,7 +86,7 @@ function statusVariant(s) {
             <Badge variant="{{ statusVariant(action.status) }}" size="xs" dot>{{ action.status }}</Badge>
           </td>
           <td class="px-4 py-3">
-            <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+            <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
           </td>
         </tr>
       @endforeach

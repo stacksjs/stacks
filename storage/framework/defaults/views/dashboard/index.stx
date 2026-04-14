@@ -48,25 +48,25 @@ const getActivityStatusClass = (status) => {
 }
 </script>
 
-<div class="p-6 max-w-7xl mx-auto">
+<div class="mx-auto p-6 max-w-7xl">
   <!-- Header -->
   <div class="mb-8">
-    <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">Dashboard</h1>
-    <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Welcome back! Here's an overview of your system.</p>
+    <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">Dashboard</h1>
+    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Welcome back! Here's an overview of your system.</p>
   </div>
 
   <!-- Stats Grid -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4 mb-8">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
     @foreach(stats as stat)
-      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5">
+      <div class="p-5 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
         <div class="flex items-center justify-between">
           <div>
-            <p class="text-sm font-medium text-neutral-500 dark:text-neutral-400">{{ stat.title }}</p>
-            <p class="mt-1 text-2xl font-semibold text-neutral-900 dark:text-white">{{ stat.value }}</p>
-            <p class="mt-1 text-xs text-neutral-500 dark:text-neutral-400">{{ stat.trendLabel }}</p>
+            <p class="font-medium text-neutral-500 text-sm dark:text-neutral-400">{{ stat.title }}</p>
+            <p class="mt-1 font-semibold text-2xl text-neutral-900 dark:text-white">{{ stat.value }}</p>
+            <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ stat.trendLabel }}</p>
           </div>
-          <div class="flex-shrink-0 rounded-xl p-3 bg-neutral-100 dark:bg-neutral-700">
-            <div class="{{ stat.icon }} h-6 w-6 text-neutral-500 dark:text-neutral-400"></div>
+          <div class="flex-shrink-0 p-3 bg-neutral-100 dark:bg-neutral-700 rounded-xl">
+            <div class="h-6 w-6 text-neutral-500 dark:text-neutral-400 {{ }} stat.icon"></div>
           </div>
         </div>
       </div>
@@ -75,17 +75,17 @@ const getActivityStatusClass = (status) => {
 
   <!-- Quick Links -->
   <div class="mb-8">
-    <h2 class="text-base font-semibold text-neutral-900 dark:text-white mb-4">Quick Links</h2>
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <h2 class="mb-4 font-semibold text-base text-neutral-900 dark:text-white">Quick Links</h2>
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       @foreach(quickLinks as link)
-        <a :href="link.href" data-stx-link class="block no-underline bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700 p-5 hover:shadow-md transition-shadow">
-          <div class="flex items-center gap-4">
-            <div class="{{ link.color }} flex-shrink-0 rounded-xl p-3">
+        <a :href="link.href" data-stx-link class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow">
+          <div class="flex gap-4 items-center">
+            <div class="flex-shrink-0 p-3 rounded-xl {{ }} link.color">
               <div class="h-5 w-5 text-white"></div>
             </div>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ link.name }}</p>
-              <p class="mt-0.5 text-xs text-neutral-500 dark:text-neutral-400">{{ link.description }}</p>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ link.name }}</p>
+              <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ link.description }}</p>
             </div>
           </div>
         </a>
@@ -94,24 +94,24 @@ const getActivityStatusClass = (status) => {
   </div>
 
   <!-- System Health + Recent Activity -->
-  <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
     <!-- System Health -->
-    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+    <div class="bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
       <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
-        <h3 class="text-base font-semibold text-neutral-900 dark:text-white">System Health</h3>
-        <a href="/health" data-stx-link class="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
+        <h3 class="font-semibold text-base text-neutral-900 dark:text-white">System Health</h3>
+        <a href="/health" data-stx-link class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
       </div>
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
         @foreach(systemHealth as service)
           <div class="flex items-center justify-between px-5 py-3.5">
-            <div class="flex items-center gap-3">
-              <span class="h-2.5 w-2.5 rounded-full {{ getStatusDotClass(service.status) }}"></span>
-              <span class="text-sm font-medium text-neutral-700 dark:text-neutral-200">{{ service.name }}</span>
+            <div class="flex gap-3 items-center">
+              <span class="h-2.5 w-2.5 rounded-full {{ }} getStatusDotClass(service.status)"></span>
+              <span class="font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ service.name }}</span>
             </div>
-            <div class="flex items-center gap-4">
-              <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ service.latency }}</span>
-              <span class="text-sm text-neutral-500 dark:text-neutral-400">{{ service.uptime }}</span>
-              <span class="px-2 py-0.5 text-xs font-medium rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">{{ service.status }}</span>
+            <div class="flex gap-4 items-center">
+              <span class="text-neutral-500 text-sm dark:text-neutral-400">{{ service.latency }}</span>
+              <span class="text-neutral-500 text-sm dark:text-neutral-400">{{ service.uptime }}</span>
+              <span class="px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-full">{{ service.status }}</span>
             </div>
           </div>
         @endforeach
@@ -119,20 +119,20 @@ const getActivityStatusClass = (status) => {
     </div>
 
     <!-- Recent Activity -->
-    <div class="bg-white dark:bg-neutral-800 rounded-xl border border-neutral-200 dark:border-neutral-700">
+    <div class="bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
       <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
-        <h3 class="text-base font-semibold text-neutral-900 dark:text-white">Recent Activity</h3>
-        <a href="/data/activity" data-stx-link class="text-sm text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
+        <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Recent Activity</h3>
+        <a href="/data/activity" data-stx-link class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
       </div>
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
         @foreach(recentActivity as activity)
-          <div class="flex items-center gap-4 px-5 py-3.5">
-            <div class="{{ getActivityStatusClass(activity.status) }} flex-shrink-0 rounded-lg p-2">
+          <div class="flex gap-4 items-center px-5 py-3.5">
+            <div class="flex-shrink-0 p-2 rounded-lg {{ }} getActivityStatusClass(activity.status)">
               <div class="h-4 w-4"></div>
             </div>
-            <div class="min-w-0 flex-1">
-              <p class="text-sm font-medium text-neutral-900 dark:text-white truncate">{{ activity.title }}</p>
-              <p class="text-xs text-neutral-500 dark:text-neutral-400">{{ activity.time }}</p>
+            <div class="flex-1 min-w-0">
+              <p class="font-medium text-neutral-900 text-sm truncate dark:text-white">{{ activity.title }}</p>
+              <p class="text-neutral-500 text-xs dark:text-neutral-400">{{ activity.time }}</p>
             </div>
           </div>
         @endforeach
@@ -141,18 +141,18 @@ const getActivityStatusClass = (status) => {
   </div>
 
   <!-- Resources -->
-  <div class="mt-8 grid grid-cols-1 gap-4 sm:grid-cols-3">
-    <a href="https://docs.stacksjs.org" target="_blank" class="rounded-xl bg-blue-50 dark:bg-blue-900/20 p-5 hover:shadow-md transition-shadow">
-      <h4 class="text-sm font-semibold text-blue-900 dark:text-blue-200">Documentation</h4>
-      <p class="mt-1 text-xs text-blue-700 dark:text-blue-300">Guides and API references</p>
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3 mt-8">
+    <a href="https://docs.stacksjs.org" target="_blank" class="p-5 bg-blue-50 dark:bg-blue-900/20 rounded-xl hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-blue-900 text-sm dark:text-blue-200">Documentation</h4>
+      <p class="mt-1 text-blue-700 text-xs dark:text-blue-300">Guides and API references</p>
     </a>
-    <a href="https://discord.gg/stacksjs" target="_blank" class="rounded-xl bg-purple-50 dark:bg-purple-900/20 p-5 hover:shadow-md transition-shadow">
-      <h4 class="text-sm font-semibold text-purple-900 dark:text-purple-200">Community</h4>
-      <p class="mt-1 text-xs text-purple-700 dark:text-purple-300">Join our Discord</p>
+    <a href="https://discord.gg/stacksjs" target="_blank" class="p-5 bg-purple-50 dark:bg-purple-900/20 rounded-xl hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-purple-900 text-sm dark:text-purple-200">Community</h4>
+      <p class="mt-1 text-purple-700 text-xs dark:text-purple-300">Join our Discord</p>
     </a>
-    <a href="https://github.com/stacksjs/stacks" target="_blank" class="rounded-xl bg-green-50 dark:bg-green-900/20 p-5 hover:shadow-md transition-shadow">
-      <h4 class="text-sm font-semibold text-green-900 dark:text-green-200">GitHub</h4>
-      <p class="mt-1 text-xs text-green-700 dark:text-green-300">Star us on GitHub</p>
+    <a href="https://github.com/stacksjs/stacks" target="_blank" class="p-5 bg-green-50 dark:bg-green-900/20 rounded-xl hover:shadow-md transition-shadow">
+      <h4 class="font-semibold text-green-900 text-sm dark:text-green-200">GitHub</h4>
+      <p class="mt-1 text-green-700 text-xs dark:text-green-300">Star us on GitHub</p>
     </a>
   </div>
 </div>

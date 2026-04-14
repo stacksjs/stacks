@@ -86,11 +86,11 @@ function getClassName() {
 </script>
 
 @if(!href)
-  <button class="{{ getClassName() }}">
+  <button class="{{ }} getClassName()">
     <slot />
   </button>
 @else
-  <a href="{{ href }}" class="{{ getClassName() }}">
+  <a href="{{ href }}" class="{{ }} getClassName()">
     <slot />
   </a>
 @endif
@@ -114,9 +114,9 @@ Slots allow you to pass content into components:
 const title = props.title || ''
 </script>
 
-<div class="card rounded-lg shadow-md bg-white p-6">
+<div class="p-6 bg-white rounded-lg shadow-md card">
   @if(title)
-    <h2 class="text-xl font-bold mb-4">{{ title }}</h2>
+    <h2 class="mb-4 font-bold text-xl">{{ title }}</h2>
   @endif
 
   <div class="card-content">
@@ -124,7 +124,7 @@ const title = props.title || ''
   </div>
 
   @if(slots.footer)
-    <div class="card-footer mt-4 pt-4 border-t">
+    <div class="mt-4 pt-4 border-t card-footer">
       <slot name="footer" />
     </div>
   @endif
@@ -179,22 +179,22 @@ Stacks uses Headwind, a utility-first CSS framework similar to Tailwind CSS. You
 ```html
 <!-- Layout -->
 <div class="flex items-center justify-between">
-  <div class="grid grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-3">
     <!-- Grid items -->
   </div>
 </div>
 
 <!-- Spacing -->
-<div class="p-4 m-2 px-6 py-3 mt-8 mb-4">
+<div class="m-2 mb-4 mt-8 p-4 px-6 py-3">
   <!-- Content with padding and margin -->
 </div>
 
 <!-- Typography -->
-<h1 class="text-3xl font-bold text-gray-900">Title</h1>
-<p class="text-sm text-gray-600 leading-relaxed">Body text</p>
+<h1 class="font-bold text-3xl text-gray-900">Title</h1>
+<p class="leading-relaxed text-gray-600 text-sm">Body text</p>
 
 <!-- Colors -->
-<div class="bg-blue-500 text-white">
+<div class="text-white bg-blue-500">
   <span class="text-blue-200">Colored text</span>
 </div>
 
@@ -209,7 +209,7 @@ Stacks uses Headwind, a utility-first CSS framework similar to Tailwind CSS. You
 </div>
 
 <!-- Dark Mode -->
-<div class="bg-white dark:bg-gray-900 text-gray-900 dark:text-white">
+<div class="text-gray-900 dark:text-white bg-white dark:bg-gray-900">
   <!-- Dark mode support -->
 </div>
 
@@ -224,8 +224,8 @@ Stacks uses Headwind, a utility-first CSS framework similar to Tailwind CSS. You
 Stacks supports icon classes using the `i-` prefix:
 
 ```html
-<i class="i-hugeicons-outline-book-open h-6 w-6 text-gray-500"></i>
-<i class="i-hugeicons-outline-heart h-5 w-5 text-red-500"></i>
+<i class="h-6 w-6 text-gray-500 i-hugeicons-outline-book-open"></i>
+<i class="h-5 w-5 text-red-500 i-hugeicons-outline-heart"></i>
 ```
 
 ## State Management
@@ -397,18 +397,18 @@ const title = props.title || 'My App'
 </head>
 <body class="min-h-screen bg-gray-50 dark:bg-gray-900">
   <header class="bg-white dark:bg-gray-800 shadow">
-    <nav class="max-w-7xl mx-auto px-4 py-4">
+    <nav class="mx-auto px-4 py-4 max-w-7xl">
       <Logo />
       <!-- Navigation items -->
     </nav>
   </header>
 
-  <main class="max-w-7xl mx-auto px-4 py-8">
+  <main class="mx-auto px-4 py-8 max-w-7xl">
     <slot />
   </main>
 
-  <footer class="bg-gray-100 dark:bg-gray-800 py-8">
-    <div class="max-w-7xl mx-auto px-4 text-center text-gray-600">
+  <footer class="py-8 bg-gray-100 dark:bg-gray-800">
+    <div class="mx-auto px-4 max-w-7xl text-center text-gray-600">
       &copy; 2024 My App. All rights reserved.
     </div>
   </footer>
@@ -428,7 +428,7 @@ layout = 'Default'
   <HelloWorld />
 
   <section>
-    <h2 class="text-2xl font-bold mb-4">Welcome to My App</h2>
+    <h2 class="mb-4 font-bold text-2xl">Welcome to My App</h2>
     <p class="text-gray-600">Build amazing things with Stacks.</p>
   </section>
 </div>
@@ -446,15 +446,15 @@ const onToggle = props.onToggle
 const onDelete = props.onDelete
 </script>
 
-<li class="flex items-center gap-3 p-3 bg-white rounded-lg shadow-sm">
+<li class="flex gap-3 items-center p-3 bg-white rounded-lg shadow-sm">
   <input
     type="checkbox"
     checked="{{ task.completed }}"
     onchange="onToggle(task.id)"
-    class="h-5 w-5 rounded border-gray-300"
+    class="h-5 w-5 border-gray-300 rounded"
   />
 
-  <span class="{{ task.completed ? 'line-through text-gray-400' : 'text-gray-900' }} flex-1">
+  <span class="flex-1 text-gray-400' : ? 'line-through 'text-gray-900' {{ }} task.completed">
     {{ task.title }}
   </span>
 
@@ -462,7 +462,7 @@ const onDelete = props.onDelete
     onclick="onDelete(task.id)"
     class="text-red-500 hover:text-red-700"
   >
-    <i class="i-hugeicons-outline-trash h-5 w-5"></i>
+    <i class="h-5 w-5 i-hugeicons-outline-trash"></i>
   </button>
 </li>
 ```
@@ -507,8 +507,8 @@ const completedCount = computed(() =>
 )
 </script>
 
-<div class="max-w-md mx-auto p-6">
-  <h1 class="text-2xl font-bold mb-6">Task Manager</h1>
+<div class="mx-auto p-6 max-w-md">
+  <h1 class="mb-6 font-bold text-2xl">Task Manager</h1>
 
   <!-- Add Task Form -->
   <div class="flex gap-2 mb-6">
@@ -536,7 +536,7 @@ const completedCount = computed(() =>
   </ul>
 
   <!-- Summary -->
-  <p class="mt-4 text-sm text-gray-600">
+  <p class="mt-4 text-gray-600 text-sm">
     {{ completedCount.value }} of {{ tasks.value.length }} tasks completed
   </p>
 </div>

@@ -66,7 +66,7 @@ export default defineConfig({
   ignores: [
     'dist/**',
     'node_modules/**',
-    '*.gen.ts',
+    '_.gen.ts',
   ],
 })
 ```
@@ -222,7 +222,7 @@ export default defineConfig({
   // Override per file type
   overrides: [
     {
-      files: '*.md',
+      files: '_.md',
       options: {
         proseWrap: 'always',
       },
@@ -301,7 +301,7 @@ buddy hooks:install
 
 ```typescript
 // .husky/pre-commit
-#!/bin/sh
+# !/bin/sh
 bun run lint-staged
 ```
 
@@ -311,11 +311,11 @@ bun run lint-staged
 // package.json
 {
   "lint-staged": {
-    "*.{ts,tsx,vue}": [
+    "_.{ts,tsx,vue}": [
       "eslint --fix",
       "prettier --write"
     ],
-    "*.{json,md,yml}": [
+    "_.{json,md,yml}": [
       "prettier --write"
     ]
   }
@@ -336,11 +336,13 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun run lint
       - run: bun run format:check
+
 ```
 
 ## Common Rules
@@ -403,22 +405,22 @@ const value = 42 // eslint-disable-line no-magic-numbers
 ### Per-File
 
 ```typescript
-/* eslint-disable no-console */
+/_ eslint-disable no-console _/
 // All console statements allowed in this file
 
 console.log('Hello')
 console.log('World')
 
-/* eslint-enable no-console */
+/_ eslint-enable no-console _/
 ```
 
 ### For Block
 
 ```typescript
-/* eslint-disable */
+/_ eslint-disable _/
 // All rules disabled
 const messy = code
-/* eslint-enable */
+/_ eslint-enable _/
 ```
 
 ## Best Practices

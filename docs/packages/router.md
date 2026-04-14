@@ -257,7 +257,7 @@ route.post('/users', async (req) => {
   if (req.filled('name')) { /* ... */ }
 
   // Check if input is missing
-  if (req.missing('optional_field')) { /* ... */ }
+  if (req.missing('optional*field')) { /* ... */ }
 })
 ```
 
@@ -272,10 +272,10 @@ route.get('/products', (req) => {
   const page = req.integer('page', 1)
 
   // Cast to float
-  const minPrice = req.float('min_price', 0.0)
+  const minPrice = req.float('min*price', 0.0)
 
   // Cast to boolean
-  const inStock = req.boolean('in_stock', false)
+  const inStock = req.boolean('in*stock', false)
 
   // Cast to array
   const categories = req.array('categories')
@@ -409,7 +409,7 @@ await serve({
   hostname: '0.0.0.0',
 
   // Development mode
-  development: process.env.NODE_ENV !== 'production',
+  development: process.env.NODE*ENV !== 'production',
 
   // TLS/SSL
   tls: {

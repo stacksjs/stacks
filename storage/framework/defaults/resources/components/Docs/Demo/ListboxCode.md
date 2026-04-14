@@ -28,38 +28,38 @@ const selectedPerson = ref<Person>(people[0] as Person)
 
 <template>
   <div class="max-w-4xl">
-    <div class="space-y-4 w-3/5 my-12 mx-auto items-center h-[150px] w-[300px]">
+    <div class="items-center mx-auto my-12 space-y-4 h-[150px] w-[300px] w-3/5">
       <Listbox v-model="selectedPerson">
         <div class="relative mt-1">
           <ListboxButton
-            class="relative w-full cursor-default rounded-lg bg-white py-2 pl-3 pr-10 text-left shadow-md focus-visible:border-indigo-500 sm:text-sm focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-white/75 focus-visible:ring-offset-orange-300 "
+            class="relative pl-3 pr-10 py-2 w-full text-left sm:text-sm bg-white rounded-lg focus-visible:border-indigo-500 focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-orange-300 focus-visible:ring-white/75 focus:outline-none shadow-md cursor-default"
           >
             <span class="block truncate">{{ selectedPerson.name }}</span>
             <span
-              class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2"
+              class="flex absolute inset-y-0 right-0 items-center pr-2 pointer-events-none"
             >
               <div class="i-hugeicons-chevron-up-down-20-solid" />
             </span>
           </ListboxButton>
 
           <transition
-            leave-active-class="transition duration-100 ease-in"
+            leave-active-class="duration-100 ease-in transition"
             leave-from-class="opacity-100"
             leave-to-class="opacity-0"
           >
             <ListboxOptions
-              class="absolute mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 sm:text-sm focus:outline-none outline-none"
+              class="absolute overflow-auto mt-1 py-1 max-h-60 w-full text-base sm:text-sm bg-white outline-none ring-1 ring-black/5 rounded-md focus:outline-none shadow-lg"
             >
               <ListboxOption
                 v-for="person in people"
-                class="list-none -ml-4"
+                class="-ml-4 list-none"
                 v-slot="{ active, selected }"
                 :key="person.name"
                 :value="person"
                 as="template"
               >
                 <li
-                  class="relative cursor-default select-none py-2 pl-10 pr-4" :class="[
+                  class="relative pl-10 pr-4 py-2 cursor-default select-none" :class="[
                     active ? 'bg-amber-100 text-amber-900' : 'text-gray-900',
                   ]"
                 >
@@ -70,7 +70,7 @@ const selectedPerson = ref<Person>(people[0] as Person)
                   >{{ person.name }}</span>
                   <span
                     v-if="selected"
-                    class="absolute inset-y-0 left-0 flex items-center pl-3 text-amber-600"
+                    class="flex absolute inset-y-0 left-0 items-center pl-3 text-amber-600"
                   >
                     <div class="i-hugeicons-check-20-solid" />
                   </span>

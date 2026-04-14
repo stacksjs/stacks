@@ -356,7 +356,7 @@ Schedule recurring jobs with cron expressions:
 // app/Jobs/DailyReport.ts
 export default class DailyReport extends Job {
   // Run at 8am every day
-  schedule = '0 8 * * *'
+  schedule = '0 8 _ _ *'
 
   async handle() {
     const report = await generateDailyReport()

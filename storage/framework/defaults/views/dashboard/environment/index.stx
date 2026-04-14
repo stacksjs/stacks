@@ -212,22 +212,22 @@ onUnmounted(() => {
 }
 </script>
 
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
-  <div class="px-4 lg:px-8 sm:px-6">
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
           Environment Variables
         </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
           This is your project's <code class="text-red-400">.env</code> file. Be careful when editing production values.
         </p>
       </div>
-      <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none space-x-3">
+      <div class="sm:flex-none mt-4 space-x-3 sm:ml-16 sm:mt-0">
         <button
           onclick="showAddModal = true"
           type="button"
-          class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+          class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
         >
           Add Variable
         </button>
@@ -235,7 +235,7 @@ onUnmounted(() => {
           <button
             onclick="showBackup = true"
             type="button"
-            class="rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-600"
+            class="px-3 py-2 font-semibold text-sm text-white bg-gray-600 hover:bg-gray-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-600 focus-visible:outline-offset-2 shadow-sm"
           >
             Show Backup
           </button>
@@ -243,9 +243,9 @@ onUnmounted(() => {
       </div>
     </div>
 
-    <div class="mt-8 flow-root">
-      <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-        <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
           <div class="overflow-hidden sm:rounded-lg">
             <form onsubmit="handleSave; return false" class="relative">
               <CodeEditor
@@ -259,53 +259,53 @@ onUnmounted(() => {
               />
 
               <!-- Keyboard shortcuts -->
-              <div class="mt-2 mb-4 flex items-center text-sm text-gray-500 dark:text-neutral-400 space-x-4">
+              <div class="flex items-center mb-4 mt-2 space-x-4 text-gray-500 text-sm dark:text-neutral-400">
                 <div class="flex items-center space-x-1">
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
                   <span>+</span>
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">S</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">S</kbd>
                   <span class="text-xs">save</span>
                 </div>
                 <div class="flex items-center space-x-1">
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
                   <span>+</span>
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">N</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">N</kbd>
                   <span class="text-xs">new</span>
                 </div>
                 <div class="flex items-center space-x-1">
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
                   <span>+</span>
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">⇧</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">⇧</kbd>
                   <span>+</span>
-                  <kbd class="px-1.5 py-0.5 text-xs font-semibold text-gray-800 bg-gray-100 border border-gray-200 rounded dark:bg-neutral-700 dark:text-neutral-100 dark:border-neutral-600">F</kbd>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">F</kbd>
                   <span class="text-xs">format</span>
                 </div>
               </div>
 
               <!-- Action buttons -->
-              <div class="mt-4 flex justify-end space-x-3">
+              <div class="flex justify-end mt-4 space-x-3">
                 <button
                   type="button"
                   onclick="formatContent"
-                  class="rounded-md px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
                 >
                   Format
                 </button>
                 <button
                   type="button"
                   onclick="envValues = ''"
-                  class="rounded-md px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600"
+                  class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
                 >
                   Clear
                 </button>
                 <button
                   type="submit"
                   disabled="{{ isLoading }}"
-                  class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
+                  class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   @if(isLoading)
                     <span class="flex items-center space-x-2">
-                      <div class="i-hugeicons-arrow-path h-4 w-4 animate-spin" />
+                      <div class="h-4 w-4 animate-spin i-hugeicons-arrow-path" />
                       <span>Saving...</span>
                     </span>
                   @else
@@ -323,54 +323,54 @@ onUnmounted(() => {
   <!-- Add Variable Modal -->
   @if(showAddModal)
     <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="fixed inset-0 bg-gray-500 dark:bg-neutral-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity"></div>
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
 
-      <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+      <div class="fixed inset-0 overflow-y-auto z-10">
+        <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+          <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform">
             <div>
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Add Environment Variable</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Add Environment Variable</h3>
               <div class="mt-4 space-y-4">
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Key</label>
+                  <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Key</label>
                   <input
                     value="{{ newVariable.key }}"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                    class="block mt-1 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                     placeholder="APP_NAME"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Value</label>
+                  <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Value</label>
                   <input
                     value="{{ newVariable.value }}"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                    class="block mt-1 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                     placeholder="My App"
                   />
                 </div>
                 <div>
-                  <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Description (optional)</label>
+                  <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Description (optional)</label>
                   <input
                     value="{{ newVariable.description }}"
                     type="text"
-                    class="mt-1 block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6"
+                    class="block mt-1 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                     placeholder="Application name used in emails and UI"
                   />
                 </div>
               </div>
             </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
               <button
                 type="button"
-                class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+                class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
                 onclick="addVariable"
               >
                 Add
               </button>
               <button
                 type="button"
-                class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 sm:col-start-1 sm:mt-0"
+                class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
                 onclick="showAddModal = false"
               >
                 Cancel
@@ -385,33 +385,33 @@ onUnmounted(() => {
   <!-- Backup Modal -->
   @if(showBackup)
     <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="fixed inset-0 bg-gray-500 dark:bg-neutral-900 bg-opacity-75 dark:bg-opacity-75 transition-opacity"></div>
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
 
-      <div class="fixed inset-0 z-10 overflow-y-auto">
-        <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-          <div class="relative transform overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6">
+      <div class="fixed inset-0 overflow-y-auto z-10">
+        <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+          <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform">
             <div>
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Backup Content</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Backup Content</h3>
               <div class="mt-4">
                 <textarea
                   value="{{ backupContent }}"
                   rows="10"
-                  class="block w-full rounded-md border-0 py-1.5 text-gray-900 dark:text-neutral-100 dark:bg-neutral-600 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 font-mono text-sm placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600"
+                  class="block py-1.5 w-full font-mono text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                   readonly
                 />
               </div>
             </div>
-            <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+            <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
               <button
                 type="button"
-                class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+                class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
                 onclick="restoreBackup"
               >
                 Restore Backup
               </button>
               <button
                 type="button"
-                class="mt-3 inline-flex w-full justify-center rounded-md bg-white dark:bg-neutral-600 px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 sm:col-start-1 sm:mt-0"
+                class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
                 onclick="showBackup = false"
               >
                 Close

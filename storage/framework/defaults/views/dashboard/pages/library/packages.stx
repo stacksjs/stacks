@@ -42,14 +42,14 @@ function statusVariant(s) {
     <template #actions>
       <Button variant="secondary">Check Updates</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Add Package
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     <StatsCard title="Total Packages" value="{{ stats[0]?.value || '0' }}" icon="i-hugeicons-package" iconBg="primary" />
     <StatsCard title="Published" value="{{ stats[1]?.value || '0' }}" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
     <StatsCard title="Workspace" value="{{ stats[2]?.value || '0' }}" icon="i-hugeicons-folder-links" iconBg="warning" />
@@ -57,9 +57,9 @@ function statusVariant(s) {
   </div>
 
   <!-- Packages Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
-    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5 flex items-center justify-between">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Dependencies</span>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <div class="flex items-center justify-between p-4 border-b border-neutral-200/60 dark:border-white/5">
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Dependencies</span>
       <Button variant="ghost" size="xs">Update All</Button>
     </div>
 
@@ -79,12 +79,12 @@ function statusVariant(s) {
     >
       @foreach (packages as pkg)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ pkg.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ pkg.name }}</td>
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ pkg.version }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ pkg.version }}</code>
           </td>
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ pkg.latest }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ pkg.latest }}</code>
           </td>
           <td class="px-4 py-3">
             <Badge variant="default" size="xs">{{ pkg.type }}</Badge>
@@ -93,7 +93,7 @@ function statusVariant(s) {
             <Badge variant="{{ statusVariant(pkg.status) }}" size="xs" dot>{{ pkg.status }}</Badge>
           </td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-1">
+            <div class="flex gap-1 items-center">
               <Button variant="primary" size="xs">Update</Button>
               <Button variant="ghost" size="xs">Details</Button>
             </div>

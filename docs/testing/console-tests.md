@@ -389,7 +389,7 @@ import { command, withEnv } from '@stacksjs/testing'
 describe('Environment Commands', () => {
   it('runs only in production', async () => {
     const result = await command('deploy:assets')
-      .withEnv({ NODE_ENV: 'development' })
+      .withEnv({ NODE*ENV: 'development' })
 
     expect(result.exitCode).toBe(1)
     expect(result.output).toContain('only in production')
@@ -398,7 +398,7 @@ describe('Environment Commands', () => {
   it('runs with custom env vars', async () => {
     const result = await command('config:show')
       .withEnv({
-        APP_DEBUG: 'true',
+        APP*DEBUG: 'true',
         DB_CONNECTION: 'sqlite',
       })
 

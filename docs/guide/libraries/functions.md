@@ -40,12 +40,14 @@ Write pure, predictable functions:
 ```typescript
 // functions/string/capitalize.ts
 /**
+
  * Capitalize the first letter of a string
  * @param str - The string to capitalize
  * @returns The capitalized string
  * @example
  * capitalize('hello') // 'Hello'
  * capitalize('HELLO') // 'HELLO'
+
  */
 export function capitalize(str: string): string {
   if (!str) return str
@@ -53,11 +55,13 @@ export function capitalize(str: string): string {
 }
 
 /**
+
  * Capitalize all words in a string
  * @param str - The string to title case
  * @returns The title cased string
  * @example
  * titleCase('hello world') // 'Hello World'
+
  */
 export function titleCase(str: string): string {
   return str.replace(
@@ -74,12 +78,14 @@ Use TypeScript generics for flexibility:
 ```typescript
 // functions/array/chunk.ts
 /**
+
  * Split an array into chunks of a specified size
  * @param array - The array to split
  * @param size - The size of each chunk
  * @returns An array of chunks
  * @example
  * chunk([1, 2, 3, 4, 5], 2) // [[1, 2], [3, 4], [5]]
+
  */
 export function chunk<T>(array: T[], size: number): T[][] {
   if (size <= 0) {
@@ -94,10 +100,12 @@ export function chunk<T>(array: T[], size: number): T[][] {
 }
 
 /**
+
  * Get unique values from an array
  * @param array - The array to deduplicate
  * @param key - Optional key function for object comparison
  * @returns Array with unique values
+
  */
 export function unique<T>(array: T[], key?: (item: T) => unknown): T[] {
   if (!key) {
@@ -366,25 +374,33 @@ Export useful type utilities:
 // functions/types.ts
 
 /**
+
  * Make all properties optional recursively
+
  */
 export type DeepPartial<T> = {
   [P in keyof T]?: T[P] extends object ? DeepPartial<T[P]> : T[P]
 }
 
 /**
+
  * Make specific properties required
+
  */
 export type RequireKeys<T, K extends keyof T> = T & Required<Pick<T, K>>
 
 /**
+
  * Extract function return type
+
  */
 export type AsyncReturnType<T extends (...args: any[]) => Promise<any>> =
   T extends (...args: any[]) => Promise<infer R> ? R : never
 
 /**
+
  * Create a type with only picked keys
+
  */
 export type PickByValue<T, V> = Pick<
   T,
@@ -523,17 +539,23 @@ Document all functions:
 
 ```typescript
 /**
+
  * Slugify a string for URL-safe usage
+
  *
+
  * @param str - The string to slugify
  * @param options - Slugify options
  * @returns The slugified string
+
  *
+
  * @example
  * ```typescript
  * slugify('Hello World!') // 'hello-world'
  * slugify('Café Müller', { transliterate: true }) // 'cafe-muller'
  * ```
+
  */
 export function slugify(
   str: string,
@@ -554,6 +576,6 @@ export function slugify(
 
 ## Related
 
-- [Getting Started](/guide/libraries/get-started) - Library setup
-- [Components](/guide/libraries/components) - Component libraries
-- [Publishing](/guide/libraries/publish) - Publishing workflow
+* [Getting Started](/guide/libraries/get-started) - Library setup
+* [Components](/guide/libraries/components) - Component libraries
+* [Publishing](/guide/libraries/publish) - Publishing workflow

@@ -53,7 +53,7 @@ const { backgroundImage = '/images/background-faqs.jpg', faqs = [ } = defineProp
 <section
   id="faq"
   aria-labelledby="faq-title"
-  class="relative overflow-hidden bg-slate-50 py-20 sm:py-32"
+  class="overflow-hidden relative py-20 sm:py-32 bg-slate-50"
 >
   <img
     class="absolute left-1/2 top-0 max-w-none translate-x-[-30%] -translate-y-1/4"
@@ -63,7 +63,7 @@ const { backgroundImage = '/images/background-faqs.jpg', faqs = [ } = defineProp
     height="946"
   >
   <Container class="relative">
-    <div class="mx-auto max-w-2xl lg:mx-0">
+    <div class="mx-auto lg:mx-0 max-w-2xl">
       <h2
         id="faq-title"
         class="font-display text-3xl text-slate-900 tracking-tight sm:text-4xl"
@@ -76,17 +76,17 @@ const { backgroundImage = '/images/background-faqs.jpg', faqs = [ } = defineProp
     </div>
     <ul
       role="list"
-      class="grid grid-cols-1 mx-auto mt-16 max-w-2xl gap-8 lg:grid-cols-3 lg:max-w-none"
+      class="grid gap-8 grid-cols-1 lg:grid-cols-3 mt-16 mx-auto max-w-2xl lg:max-w-none"
     >
       @foreach(faqs as column)
         <li>
           <ul role="list" class="flex flex-col gap-y-8">
             @foreach(column as faq)
               <li>
-                <h3 class="font-display text-lg text-slate-900 leading-7">
+                <h3 class="font-display leading-7 text-lg text-slate-900">
                   {{ faq.question }}
                 </h3>
-                <p class="mt-4 text-sm text-slate-700">
+                <p class="mt-4 text-slate-700 text-sm">
                   {{ faq.answer }}
                 </p>
               </li>

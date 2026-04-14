@@ -1,4 +1,4 @@
-# How to publish?
+# How to publish
 
 wip
 

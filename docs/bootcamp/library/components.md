@@ -1,3 +1,3 @@
-# How to build a component library?
+# How to build a component library
 
 wip

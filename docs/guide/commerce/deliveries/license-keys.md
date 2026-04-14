@@ -88,11 +88,13 @@ const updatedExpiration = await shippings.licenses.updateExpiration(1, '2026-12-
 ### Delete License Keys
 
 Single license key deletion:
+
 ```ts
 await shippings.licenses.destroy(1) // Replace 1 with the license key ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await shippings.licenses.bulkDestroy([1, 2, 3]) // Array of license key IDs to delete
 ```
@@ -100,11 +102,13 @@ await shippings.licenses.bulkDestroy([1, 2, 3]) // Array of license key IDs to d
 ### Soft Delete
 
 Single soft delete:
+
 ```ts
 await shippings.licenses.softDelete(1) // Marks the license key as inactive
 ```
 
 Bulk soft delete:
+
 ```ts
 await shippings.licenses.bulkSoftDelete([1, 2, 3]) // Marks multiple license keys as inactive
 ```

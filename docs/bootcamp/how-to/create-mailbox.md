@@ -215,8 +215,8 @@ Set up SES to store incoming emails in S3:
 
 ```ts
 // infrastructure/email-receiving.ts
-import * as ses from 'aws-cdk-lib/aws-ses'
-import * as actions from 'aws-cdk-lib/aws-ses-actions'
+import _ as ses from 'aws-cdk-lib/aws-ses'
+import _ as actions from 'aws-cdk-lib/aws-ses-actions'
 import * as s3 from 'aws-cdk-lib/aws-s3'
 
 const emailBucket = new s3.Bucket(this, 'EmailBucket', {

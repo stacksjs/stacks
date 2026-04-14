@@ -43,6 +43,7 @@ buddy release
 ```
 
 Output:
+
 ```
 buddy release
 
@@ -90,26 +91,31 @@ feat!: redesign API            -> 1.1.0 to 2.0.0
 Before releasing:
 
 1. **All tests pass**
+
    ```bash
    buddy test
    ```
 
 2. **Code is linted**
+
    ```bash
    buddy lint
    ```
 
 3. **Types are valid**
+
    ```bash
    buddy test:types
    ```
 
 4. **Working directory is clean**
+
    ```bash
    git status
    ```
 
 5. **On the correct branch**
+
    ```bash
    git branch
    ```
@@ -134,18 +140,21 @@ name: Release
 on:
   push:
     tags:
+
       - 'v*'
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun run build
       - run: bun run test
       - run: npm publish
+
 ```
 
 ## npm Publishing
@@ -168,11 +177,14 @@ Releases automatically update `CHANGELOG.md`:
 ## [1.2.0] - 2024-01-15
 
 ### Features
+
 - Add user dashboard (#123)
 - Implement dark mode (#124)
 
 ### Bug Fixes
+
 - Fix login timeout issue (#125)
+
 ```
 
 ## Troubleshooting
@@ -184,6 +196,7 @@ Error: Working directory is not clean
 ```
 
 **Solution**: Commit or stash changes:
+
 ```bash
 git add .
 buddy commit
@@ -198,6 +211,7 @@ Error: Must be on main branch to release
 ```
 
 **Solution**: Switch to main:
+
 ```bash
 git checkout main
 git pull
@@ -211,6 +225,7 @@ Error: npm publish failed
 ```
 
 **Solutions**:
+
 1. Check npm login: `npm whoami`
 2. Verify package name is available
 3. Check npm token permissions
@@ -222,6 +237,7 @@ Error: No new commits since last release
 ```
 
 **Solution**: Ensure you have conventional commits:
+
 ```bash
 buddy commit
 buddy release
@@ -230,6 +246,7 @@ buddy release
 ### GitHub Actions Failed
 
 Check the Actions tab in GitHub for details:
+
 ```
 https://github.com/your-repo/actions
 ```
@@ -277,6 +294,7 @@ fix bug
 ### Release Frequently
 
 Small, frequent releases are better than large, infrequent ones:
+
 - Easier to debug issues
 - Faster feedback
 - Lower risk

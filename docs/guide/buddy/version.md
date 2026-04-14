@@ -23,6 +23,7 @@ buddy version
 ```
 
 Output:
+
 ```
 buddy version
 
@@ -123,6 +124,7 @@ buddy -v
 ```
 
 Output:
+
 ```
 stacks 1.0.0
 ```
@@ -137,6 +139,7 @@ bun pm ls | grep @stacksjs
 ```
 
 Output:
+
 ```
 @stacksjs/actions@1.0.0
 @stacksjs/cli@1.0.0
@@ -198,6 +201,7 @@ Error: Unable to read version
 ```
 
 **Solutions**:
+
 1. Ensure you're in a Stacks project
 2. Check `package.json` exists and is valid
 3. Run `buddy install`
@@ -228,18 +232,23 @@ buddy version
 
 ```yaml
 # .github/workflows/ci.yml
+
 - name: Log versions
+
   run: buddy version
 ```
 
 ### Version-Based Deployment
 
 ```yaml
+
 - name: Get version
+
   id: version
   run: echo "version=$(buddy version | grep @stacksjs | awk '{print $2}')" >> $GITHUB_OUTPUT
 
 - name: Deploy
+
   run: |
     echo "Deploying version ${{ steps.version.outputs.version }}"
     buddy deploy

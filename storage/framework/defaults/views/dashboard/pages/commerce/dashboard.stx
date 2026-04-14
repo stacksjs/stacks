@@ -53,24 +53,24 @@ function statusVariant(s) {
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.change }}" icon="i-hugeicons-dollar-circle" iconBg="primary" />
     @endforeach
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Recent Orders -->
     <Card title="Recent Orders">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (recentOrders as order)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ order.id }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ order.id }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ order.customer }} &middot; {{ order.time }}</div>
             </div>
-            <div class="flex items-center gap-3">
-              <span class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ order.total }}</span>
+            <div class="flex gap-3 items-center">
+              <span class="font-semibold text-[13px] text-neutral-900 dark:text-white">{{ order.total }}</span>
               <Badge variant="{{ statusVariant(order.status) }}" size="xs" dot>{{ order.status }}</Badge>
             </div>
           </div>
@@ -80,14 +80,14 @@ function statusVariant(s) {
 
     <!-- Top Products -->
     <Card title="Top Products">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (topProducts as product)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ product.name }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ product.name }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ product.sales }} sales</div>
             </div>
-            <span class="text-[13px] font-semibold text-green-600 dark:text-green-400">{{ product.revenue }}</span>
+            <span class="font-semibold text-[13px] text-green-600 dark:text-green-400">{{ product.revenue }}</span>
           </div>
         @endforeach
       </div>

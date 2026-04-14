@@ -159,12 +159,14 @@ Use fenced code blocks with language specification:
 
 ````markdown
 ```typescript
+
 // TypeScript code with syntax highlighting
 import { route } from '@stacksjs/router'
 
 route.get('/hello', () => {
   return { message: 'Hello, World!' }
 })
+
 ```
 ````
 
@@ -174,6 +176,7 @@ Highlight specific lines in code blocks:
 
 ````markdown
 ```typescript{2,4-6}
+
 import { route } from '@stacksjs/router'
 
 route.get('/hello', () => {         // Line 2 highlighted
@@ -181,6 +184,7 @@ route.get('/hello', () => {         // Line 2 highlighted
     message: 'Hello, World!',       // Lines 4-6 highlighted
   }
 })
+
 ```
 ````
 
@@ -254,8 +258,10 @@ layout: home
 
 # Additional head tags
 head:
+
   - - meta
     - name: keywords
+
       content: stacks, typescript, framework
 
 # Disable features
@@ -282,21 +288,31 @@ hero:
     src: /logo.svg
     alt: My Project Logo
   actions:
+
     - theme: brand
+
       text: Get Started
       link: /guide/intro
+
     - theme: alt
+
       text: View on GitHub
       link: https://github.com/your-org/your-repo
 
 features:
+
   - icon: ⚡️
+
     title: Lightning Fast
     details: Built on Bun for maximum performance
+
   - icon: 🛠️
+
     title: Developer Experience
     details: Type-safe, auto-complete everything
+
   - icon: 📦
+
     title: Batteries Included
     details: Auth, database, routing, and more built-in
 ---
@@ -371,6 +387,7 @@ Register a GET route.
 **Example:**
 
 ```typescript
+
 import { route } from '@stacksjs/router'
 
 // With inline handler
@@ -380,6 +397,7 @@ route.get('/users', () => {
 
 // With action reference
 route.get('/users', 'Actions/User/ListUsersAction')
+
 ```
 
 ### `route.post(path, handler)`
@@ -399,7 +417,7 @@ Start the docs development server:
 buddy docs:dev
 ```
 
-This starts a hot-reloading server, typically at `http://localhost:5173/docs`.
+This starts a hot-reloading server, typically at `<http://localhost:5173/docs>`.
 
 ### Building for Production
 
@@ -540,7 +558,9 @@ Actions are reusable units of business logic in Stacks. They can be triggered fr
 Generate a new action using Buddy:
 
 ```bash
+
 buddy make:action SendWelcomeEmail
+
 ```
 
 This creates a new file in `app/Actions/SendWelcomeEmail.ts`.
@@ -549,6 +569,7 @@ This creates a new file in `app/Actions/SendWelcomeEmail.ts`.
 
 ::: code-group
 ```typescript [Basic Action]
+
 import { Action } from '@stacksjs/actions'
 
 export default new Action({
@@ -559,9 +580,11 @@ export default new Action({
     // Your logic here
   },
 })
+
 ```
 
 ```typescript [With Validation]
+
 import { Action } from '@stacksjs/actions'
 import { schema } from '@stacksjs/validation'
 
@@ -580,6 +603,7 @@ export default new Action({
     // Send email
   },
 })
+
 ```
 :::
 
@@ -592,7 +616,9 @@ Actions are automatically discovered and registered. You don't need to import th
 ### From Routes
 
 ```typescript
+
 route.post('/welcome', 'Actions/SendWelcomeEmail')
+
 ```
 
 ### From CLI
@@ -600,8 +626,10 @@ route.post('/welcome', 'Actions/SendWelcomeEmail')
 Actions can also be triggered from CLI commands:
 
 ```typescript
+
 // In a command
 await Action.run('SendWelcomeEmail', { email: 'user@example.com' })
+
 ```
 
 ## Next Steps
@@ -609,6 +637,7 @@ await Action.run('SendWelcomeEmail', { email: 'user@example.com' })
 - [Validation Guide](/guide/validation) - Learn about input validation
 - [Routing Guide](/guide/routing) - Connect actions to routes
 - [Testing Actions](/guide/testing-actions) - Write tests for your actions
+
 ```
 
 ## Next Steps

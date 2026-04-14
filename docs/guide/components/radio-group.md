@@ -129,11 +129,7 @@ For dynamic styling based on state, use the slot props provided by RadioGroupOpt
 
 ```vue
 <RadioGroupOption v-slot="{ checked, active }">
-  <div :class="{
-    'bg-blue-500 text-white': checked,
-    'bg-white text-black': !checked,
-    'ring-2 ring-blue-500': active
-  }">
+  <div :class="!checked, 'bg-blue-500 'bg-white 'ring-2 { } active checked, ring-blue-500': text-black': text-white':">
     {{ option.name }}
   </div>
 </RadioGroupOption>

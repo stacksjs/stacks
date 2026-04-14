@@ -103,4 +103,4 @@ Creates a file at the specified path with generated code from a template.
 3. Include helpful comments in generated code
 4. Follow the existing code style conventions
 5. Test templates with various inputs
-6. Document any special requirements or dependencies 
+6. Document any special requirements or dependencies

@@ -587,7 +587,7 @@ buddy test:feature
 bun test tests/Feature/UserApiTest.ts
 
 # Run with specific server
-TEST_SERVER_URL=http://localhost:3000 bun test
+TEST*SERVER*URL=http://localhost:3000 bun test
 
 # Run with coverage
 buddy test:feature --coverage

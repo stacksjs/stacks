@@ -140,11 +140,13 @@ const updatedCategory = await products.categories.updateParent(1, null)
 ### Delete Categories
 
 Single category deletion:
+
 ```ts
 await categories.remove(1) // Replace 1 with the category ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await categories.bulkRemove([1, 2, 3]) // Array of category IDs to delete
 ```

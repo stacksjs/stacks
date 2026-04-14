@@ -155,23 +155,23 @@ const tabs = [
 
 @title('Dashboard - Shipping Methods')
 <div class="py-6">
-  <div class="mx-auto max-w-7xl px-4 sm:px-6 md:px-8">
+  <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
     <!-- Tab Navigation -->
     <TabNavigation
       modelValue="methods"
       :tabs="tabs"
     />
 
-    <div class="mt-6 bg-white dark:bg-neutral-800 shadow rounded-lg overflow-hidden">
+    <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
-        <div class="flex justify-between items-center">
-          <h2 class="text-lg font-medium text-gray-900 dark:text-white">Shipping Methods</h2>
+        <div class="flex items-center justify-between">
+          <h2 class="font-medium text-gray-900 text-lg dark:text-white">Shipping Methods</h2>
           <button
             onclick="handleAddMethod"
             type="button"
-            class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
           >
-            <div class="i-hugeicons-plus-sign h-5 w-5 mr-2" />
+            <div class="mr-2 h-5 w-5 i-hugeicons-plus-sign" />
             Add Method
           </button>
         </div>
@@ -190,7 +190,7 @@ const tabs = [
         @delete="handleDeleteMethod"
       />
 
-      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <Pagination
           :current-page="currentPage"
           :total-items="filteredShippingMethods.length"
@@ -205,47 +205,47 @@ const tabs = [
 
   <!-- Add Shipping Method Modal -->
   @if(showAddModal)
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
 
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
           <div>
-            <div class="mt-3 text-center sm:mt-5">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Add New Shipping Method</h3>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Shipping Method</h3>
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="method-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Method Name</label>
+                    <label for="method-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Method Name</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="method-name"
                         value="{{ newShippingMethod.name }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                         placeholder="Enter method name"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="method-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Description</label>
+                    <label for="method-description" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Description</label>
                     <div class="mt-2">
                       <textarea
                         id="method-description"
                         value="{{ newShippingMethod.description }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                         placeholder="Enter method description"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="base-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Base Rate ($)</label>
+                    <label for="base-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Base Rate ($)</label>
                     <div class="mt-2">
                       <div class="relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
                           <span class="text-gray-500 sm:text-sm">$</span>
                         </div>
                         <input
@@ -254,17 +254,17 @@ const tabs = [
                           value="{{ newShippingMethod.base_rate }}"
                           step="0.01"
                           min="0"
-                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                          class="block pl-7 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label for="free-shipping" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Free Shipping Threshold ($)</label>
+                    <label for="free-shipping" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Free Shipping Threshold ($)</label>
                     <div class="mt-2">
                       <div class="relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
                           <span class="text-gray-500 sm:text-sm">$</span>
                         </div>
                         <input
@@ -273,7 +273,7 @@ const tabs = [
                           value="{{ newShippingMethod.free_shipping }}"
                           step="0.01"
                           min="0"
-                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                          class="block pl-7 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
                           placeholder="Leave empty for no threshold"
                         />
                       </div>
@@ -281,12 +281,12 @@ const tabs = [
                   </div>
 
                   <div>
-                    <label for="method-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Status</label>
+                    <label for="method-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                     <div class="mt-2">
                       <select
                         id="method-status"
                         value="{{ newShippingMethod.status }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
@@ -297,18 +297,18 @@ const tabs = [
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="addShippingMethod"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Add Method
             </button>
             <button
               type="button"
               onclick="closeAddModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Cancel
             </button>
@@ -320,47 +320,47 @@ const tabs = [
 
   <!-- Edit Shipping Method Modal -->
   @if(showEditModal)
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
 
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
           <div>
-            <div class="mt-3 text-center sm:mt-5">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Edit Shipping Method</h3>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit Shipping Method</h3>
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="edit-method-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Method Name</label>
+                    <label for="edit-method-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Method Name</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="edit-method-name"
                         value="{{ newShippingMethod.name }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                         placeholder="Enter method name"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="edit-method-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Description</label>
+                    <label for="edit-method-description" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Description</label>
                     <div class="mt-2">
                       <textarea
                         id="edit-method-description"
                         value="{{ newShippingMethod.description }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                         placeholder="Enter method description"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="edit-base-rate" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Base Rate ($)</label>
+                    <label for="edit-base-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Base Rate ($)</label>
                     <div class="mt-2">
                       <div class="relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
                           <span class="text-gray-500 sm:text-sm">$</span>
                         </div>
                         <input
@@ -369,17 +369,17 @@ const tabs = [
                           value="{{ newShippingMethod.base_rate }}"
                           step="0.01"
                           min="0"
-                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                          class="block pl-7 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
                         />
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label for="edit-free-shipping" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Free Shipping Threshold ($)</label>
+                    <label for="edit-free-shipping" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Free Shipping Threshold ($)</label>
                     <div class="mt-2">
                       <div class="relative rounded-md shadow-sm">
-                        <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
+                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
                           <span class="text-gray-500 sm:text-sm">$</span>
                         </div>
                         <input
@@ -388,7 +388,7 @@ const tabs = [
                           value="{{ newShippingMethod.free_shipping }}"
                           step="0.01"
                           min="0"
-                          class="block w-full rounded-md border-0 py-1.5 pl-7 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                          class="block pl-7 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
                           placeholder="Leave empty for no threshold"
                         />
                       </div>
@@ -396,12 +396,12 @@ const tabs = [
                   </div>
 
                   <div>
-                    <label for="edit-method-status" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Status</label>
+                    <label for="edit-method-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
                     <div class="mt-2">
                       <select
                         id="edit-method-status"
                         value="{{ newShippingMethod.status }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       >
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
@@ -412,18 +412,18 @@ const tabs = [
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="saveShippingMethod"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Save Changes
             </button>
             <button
               type="button"
               onclick="closeEditModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Cancel
             </button>

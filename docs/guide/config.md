@@ -125,7 +125,7 @@ export default defineCacheConfig({
 
     memory: {
       driver: 'memory',
-      maxSize: 100 * 1024 * 1024, // 100MB
+      maxSize: 100 _ 1024 _ 1024, // 100MB
     },
 
     dynamodb: {

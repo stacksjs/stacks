@@ -151,7 +151,7 @@ const currentContent = computed(() => {
 </script>
 
 <template>
-  <div class="p-8 max-w-3xl mx-auto">
+  <div class="mx-auto p-8 max-w-3xl">
     <!-- Stepper Component -->
     <Stepper
       ref="stepperRef"
@@ -162,11 +162,11 @@ const currentContent = computed(() => {
     />
 
     <!-- Dynamic Content Section -->
-    <div class="mb-8 rounded-lg bg-white p-6 shadow-sm ring-1 ring-gray-900/5">
-      <h2 class="text-xl font-semibold text-gray-900 mb-2">
+    <div class="mb-8 p-6 bg-white ring-1 ring-gray-900/5 rounded-lg shadow-sm">
+      <h2 class="mb-2 font-semibold text-gray-900 text-xl">
         {{ currentContent.title }}
       </h2>
-      <p class="text-gray-600 mb-6">
+      <p class="mb-6 text-gray-600">
         {{ currentContent.description }}
       </p>
 
@@ -174,23 +174,23 @@ const currentContent = computed(() => {
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="flex justify-center gap-4">
+    <div class="flex gap-4 justify-center">
       <button
-        class="rounded-md bg-gray-50 px-4 py-2 text-sm font-medium"
+        class="px-4 py-2 font-medium text-sm bg-gray-50 rounded-md"
         :disabled="currentStep === 0"
         @click="previous"
       >
         Previous
       </button>
       <button
-        class="rounded-md bg-blue-500 px-4 py-2 text-sm font-medium text-white"
+        class="px-4 py-2 font-medium text-sm text-white bg-blue-500 rounded-md"
         :disabled="currentStep === steps.length - 1"
         @click="next"
       >
         Next
       </button>
       <button
-        class="rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium"
+        class="px-4 py-2 font-medium text-sm bg-white border border-gray-300 rounded-md"
         @click="reset"
       >
         Reset

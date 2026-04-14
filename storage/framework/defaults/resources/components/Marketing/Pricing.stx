@@ -54,7 +54,7 @@ const { plans = [ } = defineProps<PricingProps>()
 <section
   id="pricing"
   aria-label="Pricing"
-  class="bg-slate-900 py-20 sm:py-32"
+  class="py-20 sm:py-32 bg-slate-900"
 >
   <Container>
     <div class="md:text-center">
@@ -81,34 +81,34 @@ const { plans = [ } = defineProps<PricingProps>()
         work well for you.
       </p>
     </div>
-    <div class="grid grid-cols-1 mt-16 max-w-2xl gap-y-10 lg:grid-cols-3 -mx-4 sm:mx-auto xl:mx-0 lg:max-w-none xl:gap-x-8 lg:-mx-8">
+    <div class="grid gap-y-10 grid-cols-1 lg:grid-cols-3 xl:gap-x-8 -mx-4 mt-16 sm:mx-auto lg:-mx-8 xl:mx-0 max-w-2xl lg:max-w-none">
       @foreach(plans as plan)
         <section
-          class="flex flex-col rounded-3xl px-6 sm:px-8 {{ plan.featured ? 'order-first bg-blue-600 py-8 lg:order-none' : 'lg:py-8' }}"
+          class="flex lg:order-none' flex-col 'lg:py-8' px-6 py-8 sm:px-8 bg-blue-600 rounded-3xl : ? 'order-first {{ }} plan.featured"
         >
-          <h3 class="font-display mt-5 text-lg text-white">
+          <h3 class="mt-5 font-display text-lg text-white">
             {{ plan.name }}
           </h3>
-          <p class="mt-2 text-base {{ plan.featured ? 'text-white' : 'text-slate-400' }}">
+          <p class="mt-2 text-base : ? 'text-slate-400' 'text-white' {{ }} plan.featured">
             {{ plan.description }}
           </p>
-          <p class="font-display order-first text-5xl text-white font-light tracking-tight">
+          <p class="order-first font-display font-light text-5xl text-white tracking-tight">
             {{ plan.price }}
           </p>
           <ul
             role="list"
-            class="order-last mt-10 flex flex-col gap-y-3 text-sm {{ plan.featured ? 'text-white' : 'text-slate-200' }}"
+            class="flex order-last flex-col gap-y-3 mt-10 text-sm : ? 'text-slate-200' 'text-white' {{ }} plan.featured"
           >
             @foreach(plan.features as feature)
               <li class="flex">
-                <span class="i-hugeicons-checkmark-circle-02 h-5 w-5 {{ plan.featured ? 'text-white' : 'text-slate-400' }}"></span>
+                <span class="h-5 w-5 : ? 'text-slate-400' 'text-white' {{ }} i-hugeicons-checkmark-circle-02 plan.featured"></span>
                 <span class="ml-4">{{ feature }}</span>
               </li>
             @endforeach
           </ul>
           <a
             href="{{ plan.href }}"
-            class="mt-8 inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 {{ plan.featured ? 'bg-white text-slate-900 hover:bg-blue-50' : 'ring-1 ring-slate-700 text-white hover:ring-slate-500' }}"
+            class="inline-flex items-center justify-center mt-8 px-4 py-2 font-semibold text-slate-900 text-sm text-white hover:bg-blue-50' ring-slate-700 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus:outline-none hover:ring-slate-500' : ? 'bg-white 'ring-1 {{ }} plan.featured"
             aria-label="Get started with the {{ plan.name }} plan for {{ plan.price }}"
           >
             Get started

@@ -22,6 +22,7 @@ buddy ci:init
 ```
 
 This creates configuration files for:
+
 - GitHub Actions
 - GitLab CI
 - CircleCI
@@ -46,26 +47,33 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v1
         with:
           bun-version: latest
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Type check
+
         run: bun run typecheck
 
       - name: Lint
+
         run: bun run lint
 
       - name: Test
+
         run: bun test
 
       - name: Build
+
         run: bun run build
 ```
 
@@ -88,6 +96,7 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
@@ -96,6 +105,7 @@ jobs:
   typecheck:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
@@ -112,7 +122,9 @@ jobs:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: test
         ports:
+
           - 3306:3306
+
         options: >-
           --health-cmd="mysqladmin ping"
           --health-interval=10s
@@ -122,7 +134,9 @@ jobs:
       redis:
         image: redis:7
         ports:
+
           - 6379:6379
+
         options: >-
           --health-cmd="redis-cli ping"
           --health-interval=10s
@@ -130,11 +144,13 @@ jobs:
           --health-retries=3
 
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
 
       - name: Run migrations
+
         run: bun run migrate
         env:
           DB_CONNECTION: mysql
@@ -145,6 +161,7 @@ jobs:
           DB_PASSWORD: password
 
       - name: Run tests
+
         run: bun test --coverage
         env:
           DB_CONNECTION: mysql
@@ -152,6 +169,7 @@ jobs:
           REDIS_HOST: 127.0.0.1
 
       - name: Upload coverage
+
         uses: codecov/codecov-action@v3
         with:
           files: ./coverage/lcov.info
@@ -160,12 +178,14 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun run build
 
       - name: Upload build artifacts
+
         uses: actions/upload-artifact@v4
         with:
           name: build
@@ -177,23 +197,27 @@ jobs:
     if: github.event_name == 'pull_request'
 
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
 
       - name: Download build
+
         uses: actions/download-artifact@v4
         with:
           name: build
           path: dist/
 
       - name: Deploy preview
+
         run: bun run deploy --preview
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
       - name: Comment preview URL
+
         uses: actions/github-script@v7
         with:
           script: |
@@ -210,17 +234,20 @@ jobs:
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
 
       - name: Download build
+
         uses: actions/download-artifact@v4
         with:
           name: build
           path: dist/
 
       - name: Deploy to production
+
         run: bun run deploy
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
@@ -241,12 +268,16 @@ jobs:
         bun-version: ['1.0', '1.1', 'latest']
 
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
+
         with:
           bun-version: ${{ matrix.bun-version }}
+
       - run: bun install
       - run: bun test
+
 ```
 
 ## GitLab CI
@@ -254,6 +285,7 @@ jobs:
 ```yaml
 # .gitlab-ci.yml
 stages:
+
   - test
   - build
   - deploy
@@ -263,37 +295,44 @@ variables:
 
 .setup: &setup
   before_script:
+
     - curl -fsSL https://bun.sh/install | bash
     - export PATH="$HOME/.bun/bin:$PATH"
     - bun install
 
 lint:
   stage: test
-  <<: *setup
+  <<: _setup
   script:
+
     - bun run lint
 
 typecheck:
   stage: test
-  <<: *setup
+  <<: _setup
   script:
+
     - bun run typecheck
 
 test:
   stage: test
-  <<: *setup
+  <<: _setup
   services:
+
     - mysql:8.0
     - redis:7
+
   variables:
     MYSQL_ROOT_PASSWORD: password
     MYSQL_DATABASE: test
     DB_HOST: mysql
     REDIS_HOST: redis
   script:
+
     - bun run migrate
     - bun test --coverage
-  coverage: '/Lines\s*:\s*(\d+\.\d+)%/'
+
+  coverage: '/Lines\s_:\s_(\d+\.\d+)%/'
   artifacts:
     reports:
       coverage_report:
@@ -302,35 +341,46 @@ test:
 
 build:
   stage: build
-  <<: *setup
+  <<: _setup
   script:
+
     - bun run build
+
   artifacts:
     paths:
+
       - dist/
+
     expire_in: 1 week
 
 deploy-staging:
   stage: deploy
-  <<: *setup
+  <<: _setup
   script:
+
     - bun run deploy --env=staging
+
   environment:
     name: staging
     url: https://staging.myapp.com
   only:
+
     - develop
 
 deploy-production:
   stage: deploy
-  <<: *setup
+  <<: _setup
   script:
+
     - bun run deploy --env=production
+
   environment:
     name: production
     url: https://myapp.com
   only:
+
     - main
+
   when: manual
 ```
 
@@ -346,91 +396,128 @@ orbs:
 executors:
   default:
     docker:
+
       - image: cimg/base:stable
       - image: cimg/mysql:8.0
+
         environment:
           MYSQL_ROOT_PASSWORD: password
           MYSQL_DATABASE: test
+
       - image: cimg/redis:7.0
 
 jobs:
   install:
     executor: default
     steps:
+
       - checkout
       - bun/install
       - run: bun install
       - persist_to_workspace:
+
           root: .
           paths:
+
             - node_modules
             - .bun
 
   lint:
     executor: default
     steps:
+
       - checkout
       - attach_workspace:
+
           at: .
+
       - bun/install
       - run: bun run lint
 
   test:
     executor: default
     steps:
+
       - checkout
       - attach_workspace:
+
           at: .
+
       - bun/install
       - run:
+
           name: Wait for MySQL
           command: dockerize -wait tcp://localhost:3306 -timeout 1m
+
       - run:
+
           name: Run migrations
           command: bun run migrate
           environment:
             DB_HOST: 127.0.0.1
+
       - run:
+
           name: Run tests
           command: bun test --coverage
+
       - store_test_results:
+
           path: test-results
+
       - store_artifacts:
+
           path: coverage
 
   build:
     executor: default
     steps:
+
       - checkout
       - attach_workspace:
+
           at: .
+
       - bun/install
       - run: bun run build
       - persist_to_workspace:
+
           root: .
           paths:
+
             - dist
 
   deploy:
     executor: default
     steps:
+
       - checkout
       - attach_workspace:
+
           at: .
+
       - bun/install
       - run: bun run deploy
 
 workflows:
   ci:
     jobs:
+
       - install
       - lint:
+
           requires: [install]
+
       - test:
+
           requires: [install]
+
       - build:
+
           requires: [lint, test]
+
       - deploy:
+
           requires: [build]
           filters:
             branches:
@@ -463,7 +550,7 @@ buddy hooks:install
 
 ```typescript
 // .husky/pre-commit
-#!/bin/sh
+# !/bin/sh
 bun run lint-staged
 ```
 
@@ -471,8 +558,8 @@ bun run lint-staged
 // package.json
 {
   "lint-staged": {
-    "*.{ts,tsx}": ["eslint --fix", "prettier --write"],
-    "*.{json,md}": ["prettier --write"]
+    "_.{ts,tsx}": ["eslint --fix", "prettier --write"],
+    "_.{json,md}": ["prettier --write"]
   }
 }
 ```
@@ -505,7 +592,9 @@ export default {
 ### Slack Integration
 
 ```yaml
+
 - name: Notify Slack
+
   uses: 8398a7/action-slack@v3
   with:
     status: ${{ job.status }}
@@ -524,7 +613,9 @@ Configure in your CI platform settings to receive email on failures.
 Speed up CI with caching:
 
 ```yaml
+
 - name: Cache Bun dependencies
+
   uses: actions/cache@v4
   with:
     path: |
@@ -541,12 +632,15 @@ Speed up CI with caching:
 security:
   runs-on: ubuntu-latest
   steps:
+
     - uses: actions/checkout@v4
 
     - name: Run security audit
+
       run: bun audit
 
     - name: Run SAST
+
       uses: github/codeql-action/analyze@v2
 ```
 

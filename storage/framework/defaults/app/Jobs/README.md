@@ -1,4 +1,4 @@
-# What are Jobs?
+# What are Jobs
 
 Jobs are a way to define a task that should be executed at a specific time. They are a Stacks primitive that may be called from anywhere in your application.
 
@@ -20,18 +20,23 @@ buddy make:job ExampleJob
 A simple example of a job that logs a message. _For a closer look, take a peak at the [ExampleJob.ts](./ExampleJob.ts)._
 
 ```ts
+
 export interface JobOptions {
   /**
-   * The name of the job.
-   */
+
+   _ The name of the job.
+
+   _/
   name?: string
   description?: string
   handle?: string | Function
   action?: string // the ActionName. Typed support incoming
   timezone?: string
   /**
-   * Number of tries. Must be between 0 and 185.
-   */
+
+   _ Number of tries. Must be between 0 and 185.
+
+   _/
   tries?: IntRange<0, 185>
   backoff?: number | number[]
   rate?: string | Every
@@ -43,13 +48,14 @@ const options: JobOptions = {
   description: 'A demo (cron) job that runs every minute', // optional, used in the dashboard for context
   tries: 3, // optional, defaults to 3 retries (in case of failures)
   backoff: 3, // optional, defaults to 3-second delays between retries
-  rate: Every.Minute, // optional, '* * * * *' in cron syntax
+  rate: Every.Minute, // optional, '_ _ _ _ *' in cron syntax
   handle: () => { // action: 'SendWelcomeEmail', // instead of handle, you may target an action or `action: () => {`
     log.info('This message logs every minute') // unless triggered via a route.job() call, in which case it logs once
   },
 }
 
 export default new Job(options)
+
 ```
 
 ## 🚜 Contributing

@@ -30,7 +30,7 @@ try {
   <PageHeader title="Authors" description="Manage content authors">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Add Author
       </Button>
     </template>
@@ -38,17 +38,17 @@ try {
 
   <!-- Authors Grid -->
   @if (authors.length > 0)
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     @foreach(authors as author)
       <Card>
-        <div class="flex items-center gap-4">
-          <div class="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center font-semibold text-sm flex-shrink-0">{{ author.avatar }}</div>
+        <div class="flex gap-4 items-center">
+          <div class="flex flex-shrink-0 items-center justify-center h-12 w-12 font-semibold text-sm text-white bg-blue-600 rounded-full">{{ author.avatar }}</div>
           <div>
-            <div class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ author.name }}</div>
+            <div class="font-semibold text-[13px] text-neutral-900 dark:text-white">{{ author.name }}</div>
             <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ author.email }}</div>
           </div>
         </div>
-        <div class="mt-4 flex justify-between items-center">
+        <div class="flex items-center justify-between mt-4">
           <Badge variant="default" size="xs">{{ author.role }}</Badge>
           <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ author.posts }} posts</span>
         </div>

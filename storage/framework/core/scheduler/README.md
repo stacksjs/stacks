@@ -38,62 +38,62 @@ Drivers are configured with the following environment variables:
 #### Twilio
 
 ```bash
-TWILIO_ACCOUNT_SID=ACtest
-TWILIO_AUTH_TOKEN=testtoken
-TWILIO_FROM_NUMBER=+112345
-TWILIO_TO_NUMBER=+145678
+TWILIO*ACCOUNT*SID=ACtest
+TWILIO*AUTH*TOKEN=testtoken
+TWILIO*FROM*NUMBER=+112345
+TWILIO*TO*NUMBER=+145678
 ```
 
 #### Nexmo
 
 ```bash
-VONAGE_API_KEY=VN123
-VONAGE_API_SECRET=testkey
-VONAGE_FROM_NUMBER=+112345
+VONAGE*API*KEY=VN123
+VONAGE*API*SECRET=testkey
+VONAGE*FROM*NUMBER=+112345
 ```
 
 #### Gupshup
 
 ```bash
-GUPSHUP_USER_ID=GU123
-GUPSHUP_PASSWORD=password
+GUPSHUP*USER*ID=GU123
+GUPSHUP*PASSWORD=password
 ```
 
 #### Plivo
 
 ```bash
-PLIVO_ACCOUNT_ID=PA123
-PLIVO_AUTH_TOKEN=testtoken
-PLIVO_FROM_NUMBER=+112345
+PLIVO*ACCOUNT*ID=PA123
+PLIVO*AUTH*TOKEN=testtoken
+PLIVO*FROM*NUMBER=+112345
 ```
 
 #### SMS77
 
 ```bash
-SMS77_API_KEY=SA123
-SMS77_FROM=from@example.com
+SMS77*API*KEY=SA123
+SMS77*FROM=from@example.com
 ```
 
 #### SNS
 
 ```bash
-SMS77_API_KEY=SA123
-SMS77_FROM=from@example.com
+SMS77*API*KEY=SA123
+SMS77*FROM=from@example.com
 ```
 
 #### Telnyx
 
 ```bash
-TELNYX_API_KEY=TA123
-TELNYX_MESSAGE_PROFILE_ID=testprofileid
-TELNYX_FROM=from@example.com
+TELNYX*API*KEY=TA123
+TELNYX*MESSAGE*PROFILE*ID=testprofileid
+TELNYX*FROM=from@example.com
 ```
 
 #### Termii
 
 ```bash
-TERMII_API_KEY=TermA123
-TERMII_SENDER=from@example.com
+TERMII*API*KEY=TermA123
+TERMII*SENDER=from@example.com
 ```
 
 Learn more in the docs.

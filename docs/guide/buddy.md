@@ -34,7 +34,7 @@ buddy dev:docs # starts local docs dev server
 buddy dev docs # also starts the local docs dev server (colon is optional)
 buddy development # `buddy dev` alias
 
-# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it:
+# for Laravel folks, `serve` may ring more familiar than the `dev` name. Hence, we aliased it
 buddy serve
 buddy serve:components
 buddy serve:desktop
@@ -150,7 +150,7 @@ buddy test:coverage # runs test coverage
 buddy test:types # runs typecheck
 
 # the CLI may be triggered in any
-# of the following syntax:
+# of the following syntax
 stx fresh
 buddy fresh
 bud fresh

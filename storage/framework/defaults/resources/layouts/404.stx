@@ -2,33 +2,33 @@
 const backgroundImage = props.backgroundImage || '/images/background-auth.jpg'
 </script>
 
-<div class="relative min-h-full flex shrink-0 justify-center lg:px-0 md:px-12">
-  <div class="relative z-10 flex flex-1 flex-col bg-white px-4 py-10 shadow-2xl md:flex-none sm:justify-center md:px-28">
-    <main class="mx-auto max-w-md w-full md:max-w-sm md:w-96 md:px-0 sm:px-4">
+<div class="flex relative justify-center shrink-0 md:px-12 lg:px-0 min-h-full">
+  <div class="flex relative z-10 flex-1 flex-col sm:justify-center md:flex-none px-4 py-10 md:px-28 bg-white shadow-2xl">
+    <main class="mx-auto sm:px-4 md:px-0 max-w-md w-full md:max-w-sm md:w-96">
       <div class="flex">
         <a href="/" aria-label="Home">
           <Logo class="h-10 w-auto" />
         </a>
       </div>
 
-      <p class="mt-20 text-sm text-gray-700 font-medium">
+      <p class="mt-20 font-medium text-gray-700 text-sm">
         404
       </p>
 
-      <h1 class="mt-3 text-lg text-gray-900 font-semibold">
+      <h1 class="mt-3 font-semibold text-gray-900 text-lg">
         Page not found
       </h1>
 
-      <p class="mt-3 text-sm text-gray-700">
+      <p class="mt-3 text-gray-700 text-sm">
         Sorry, we couldn't find the page you're looking for.
       </p>
 
-      <a href="/" class="mt-10 inline-block px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">
+      <a href="/" class="inline-block mt-10 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded">
         Go back home
       </a>
     </main>
   </div>
-  <div class="hidden lg:relative lg:block sm:contents lg:flex-1">
-    <img class="absolute inset-0 h-full w-full object-cover" src="{{ backgroundImage }}" alt="">
+  <div class="hidden sm:contents lg:block lg:relative lg:flex-1">
+    <img class="absolute inset-0 object-cover h-full w-full" src="{{ backgroundImage }}" alt="">
   </div>
 </div>

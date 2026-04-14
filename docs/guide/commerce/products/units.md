@@ -113,11 +113,13 @@ const success = await products.units.updateDefaultStatus(1, true) // Set as defa
 ### Delete Product Units
 
 Single unit deletion:
+
 ```ts
 await products.units.destroy(1) // Replace 1 with the unit ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await products.units.bulkDestroy([1, 2, 3]) // Array of unit IDs to delete
 ```

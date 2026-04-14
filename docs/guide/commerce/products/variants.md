@@ -103,11 +103,13 @@ const success = await products.variants.updateStatus(1, 'active') // Set status 
 ### Delete Variants
 
 Single variant deletion:
+
 ```ts
 await products.variants.destroy(1) // Replace 1 with the variant ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await products.variants.bulkDestroy([1, 2, 3]) // Array of variant IDs to delete
 ```

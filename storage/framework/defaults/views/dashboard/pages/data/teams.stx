@@ -22,14 +22,14 @@ try {
   <PageHeader title="Teams" description="Manage team organization">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Create Team
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
     <StatsCard title="Total Teams" value="{{ totalTeams }}" icon="i-hugeicons-user-group" iconBg="primary" />
     <StatsCard title="Total Members" value="{{ totalMembers }}" icon="i-hugeicons-users-01" iconBg="success" />
     <StatsCard title="Active Projects" value="{{ activeProjects }}" icon="i-hugeicons-folder-02" iconBg="info" />
@@ -37,25 +37,25 @@ try {
 
   <!-- Teams Grid -->
   @if (teams.length > 0)
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
     @foreach(teams as team)
       <Card>
         <div class="flex items-center justify-between mb-4">
-          <span class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ team.name }}</span>
+          <span class="font-semibold text-[13px] text-neutral-900 dark:text-white">{{ team.name }}</span>
           <Badge variant="success" size="xs" dot>{{ team.status }}</Badge>
         </div>
-        <div class="text-neutral-500 dark:text-neutral-400 text-[13px] mb-3">Team Lead: {{ team.lead }}</div>
-        <div class="grid grid-cols-2 gap-4 mt-4">
+        <div class="mb-3 text-[13px] text-neutral-500 dark:text-neutral-400">Team Lead: {{ team.lead }}</div>
+        <div class="grid gap-4 grid-cols-2 mt-4">
           <div>
-            <div class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ team.members }}</div>
+            <div class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ team.members }}</div>
             <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Members</div>
           </div>
           <div>
-            <div class="text-2xl font-semibold text-neutral-900 dark:text-white">{{ team.projects }}</div>
+            <div class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ team.projects }}</div>
             <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Projects</div>
           </div>
         </div>
-        <div class="mt-4 pt-4 border-t border-neutral-200/60 dark:border-white/5 flex gap-2">
+        <div class="flex gap-2 mt-4 pt-4 border-neutral-200/60 border-t dark:border-white/5">
           <Button variant="outline" size="xs" class="flex-1">View</Button>
           <Button variant="ghost" size="xs">Edit</Button>
         </div>

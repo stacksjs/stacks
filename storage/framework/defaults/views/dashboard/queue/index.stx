@@ -285,73 +285,73 @@ workers = workers.map(worker => ({
 }))
 </script>
 
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
-    <div class="px-4 lg:px-8 sm:px-6">
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+    <div class="px-4 sm:px-6 lg:px-8">
       <!-- Stats Overview -->
     <div class="mb-8">
       <div>
-        <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
           Queue Overview
         </h3>
 
-        <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-queue-02 h-6 w-6 text-white" />
+              <div class="absolute p-3 bg-blue-500 rounded-md">
+                <div class="h-6 w-6 text-white i-hugeicons-queue-02" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
+              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">
                 Total Jobs
               </p>
             </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
+            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
                 71,897
               </p>
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-up-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
+              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
+                <div class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-up-02" />
                 <span class="sr-only">Increased by</span>
                 122
               </p>
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-clock-01 h-6 w-6 text-white" />
+              <div class="absolute p-3 bg-blue-500 rounded-md">
+                <div class="h-6 w-6 text-white i-hugeicons-clock-01" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
+              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">
                 Average Processing Time
               </p>
             </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
+            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
                 2.3s
               </p>
-              <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-                <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-green-500" />
+              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
+                <div class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-down-02" />
                 <span class="sr-only">Decreased by</span>
                 0.4s
               </p>
             </dd>
           </div>
 
-          <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
-                <div class="i-hugeicons-energy h-6 w-6 text-white" />
+              <div class="absolute p-3 bg-blue-500 rounded-md">
+                <div class="h-6 w-6 text-white i-hugeicons-energy" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
+              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">
                 Jobs Per Minute
               </p>
             </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
+            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
                 42
               </p>
-              <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
-                <div class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-red-500" />
+              <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm">
+                <div class="flex-shrink-0 self-center h-5 w-5 text-red-500 i-hugeicons-arrow-down-02" />
                 <span class="sr-only">Decreased by</span>
                 8
               </p>
@@ -365,44 +365,38 @@ workers = workers.map(worker => ({
     <div class="mt-8">
       <div class="sm:flex sm:items-center">
         <div class="sm:flex-auto">
-          <h3 class="text-base font-medium text-gray-900 dark:text-neutral-100">Queue Statistics</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Detailed breakdown of jobs by queue and status</p>
+          <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Queue Statistics</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Detailed breakdown of jobs by queue and status</p>
         </div>
       </div>
 
-      <div class="mt-6 grid grid-cols-1 gap-6 lg:grid-cols-3 sm:grid-cols-2">
+      <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
         @foreach(queues as name => stats)
-<div class="bg-white dark:bg-neutral-700 rounded-lg shadow p-6">
+<div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="flex items-center justify-between mb-4">
-            <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-neutral-600 dark:text-neutral-200">
+            <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">
               {{ name }}
             </h4>
           </div>
 
           <div class="space-y-4">
             <!-- Queue Stats -->
-            <div class="grid grid-cols-3 gap-4">
+            <div class="grid gap-4 grid-cols-3">
               @foreach(stats as status => value)
 <div class="text-center">
-                <div class="text-2xl font-semibold font-mono" class="{{ {
-                  'text-blue-600 dark:text-blue-400': status === 'queued',
-                  'text-yellow-600 dark:text-yellow-400': status === 'processing',
-                  'text-green-600 dark:text-green-400': status === 'processed',
-                  'text-purple-600 dark:text-purple-400': status === 'released',
-                  'text-red-600 dark:text-red-400': status === 'failed'
-                } }}">{{ value }}</div>
-                <div class="text-xs text-gray-500 dark:text-neutral-400 capitalize">{{ status }}</div>
+                <div class="font-mono font-semibold text-2xl" class="'failed' 'processed', 'processing', 'queued', 'released', 'text-blue-600 'text-green-600 'text-purple-600 'text-red-600 'text-yellow-600 { {{ } }} === === === === === status status status status status dark:text-blue-400': dark:text-green-400': dark:text-purple-400': dark:text-red-400': dark:text-yellow-400':">{{ value }}</div>
+                <div class="capitalize text-gray-500 text-xs dark:text-neutral-400">{{ status }}</div>
               </div>
             </div>
 
             <!-- Queue Progress -->
-            <div class="h-2 bg-gray-100 dark:bg-neutral-600 rounded-full overflow-hidden">
+            <div class="overflow-hidden h-2 bg-gray-100 dark:bg-neutral-600 rounded-full">
               <div class="flex h-full">
-                <div class="bg-green-500 h-full" style="{{ { width: `${(stats.processed / (stats.processed + stats.failed)) * 100}%` } }}" />
-                <div class="bg-red-500 h-full" style="{{ { width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` } }}" />
+                <div class="h-full bg-green-500" style="{{ { width: `${(stats.processed / (stats.processed + stats.failed)) * 100}%` } }}" />
+                <div class="h-full bg-red-500" style="{{ { width: `${(stats.failed / (stats.processed + stats.failed)) * 100}%` } }}" />
               </div>
             </div>
-            <div class="flex justify-between text-xs text-gray-500 dark:text-neutral-400">
+            <div class="flex justify-between text-gray-500 text-xs dark:text-neutral-400">
               <span>Success Rate: {{ ((stats.processed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
               <span>Failure Rate: {{ ((stats.failed / (stats.processed + stats.failed)) * 100).toFixed(1) }}%</span>
             </div>
@@ -415,11 +409,11 @@ workers = workers.map(worker => ({
       <div class="my-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
-            <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Queue Statistics</h4>
-            <div class="flex items-center gap-4">
+            <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Queue Statistics</h4>
+            <div class="flex gap-4 items-center">
               <select
                 value="{{ selectedQueue }}"
-                class="block h-9 w-32 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+                class="block px-3 py-1.5 h-9 w-32 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="all">All Queues</option>
                 @foreach(queues as queue => _)
@@ -430,7 +424,7 @@ workers = workers.map(worker => ({
 
               <select
                 value="{{ timeRange }}"
-                class="block h-9 text-sm border-0 rounded-md bg-gray-50 dark:bg-neutral-600 py-1.5 px-3 text-gray-900 dark:text-neutral-100 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+                class="block px-3 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="hour">Last Hour</option>
                 <option value="day">Last 24 Hours</option>
@@ -439,7 +433,7 @@ workers = workers.map(worker => ({
             </div>
           </div>
 
-          <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+          <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
             <!-- Throughput Chart -->
             <div class="h-80">
               <canvas id="throughputChart"></canvas>
@@ -458,22 +452,22 @@ workers = workers.map(worker => ({
         <div class="p-6">
           <div class="flex items-center justify-between mb-6">
             <div>
-              <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Workers</h4>
-              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Monitor your queue workers and their performance.</p>
+              <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Workers</h4>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Monitor your queue workers and their performance.</p>
             </div>
-            <div class="flex items-center gap-4">
+            <div class="flex gap-4 items-center">
               <button
                 onclick="retryFailedJobs"
-                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-white bg-blue-600 rounded-md shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
               >
-                <div class="i-hugeicons-arrow-path h-5 w-5 mr-1" />
+                <div class="mr-1 h-5 w-5 i-hugeicons-arrow-path" />
                 Retry Failed Jobs
               </button>
               <button
                 onclick="clearFailedJobs"
-                class="inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-600 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500"
+                class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
               >
-                <div class="i-hugeicons-trash h-5 w-5 mr-1" />
+                <div class="mr-1 h-5 w-5 i-hugeicons-trash" />
                 Clear Failed Jobs
               </button>
             </div>
@@ -482,65 +476,61 @@ workers = workers.map(worker => ({
           <div class="space-y-6">
             @foreach(workers as worker)
 <div
-              class="relative border dark:border-neutral-600 rounded-lg p-6 transition-all duration-200 hover:border-blue-200 dark:hover:border-blue-500"
+              class="relative p-6 border rounded-lg dark:border-neutral-600 hover:border-blue-200 dark:hover:border-blue-500 duration-200 transition-all"
             >
-              <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
                 <div>
-                  <h5 class="text-lg font-medium text-gray-900 dark:text-neutral-100">{{ worker.name }}</h5>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Queue: {{ worker.queue }}</p>
+                  <h5 class="font-medium text-gray-900 text-lg dark:text-neutral-100">{{ worker.name }}</h5>
+                  <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Queue: {{ worker.queue }}</p>
                 </div>
 
                 <div>
-                  <div class="flex items-center gap-2">
+                  <div class="flex gap-2 items-center">
                     <div
-                      class="w-2 h-2 rounded-full"
-                      class="{{ {
-                        'bg-green-500': worker.status === 'running',
-                        'bg-yellow-500': worker.status === 'paused',
-                        'bg-red-500': worker.status === 'stopped',
-                      } }}"
+                      class="h-2 w-2 rounded-full"
+                      class="'bg-green-500': 'bg-red-500': 'bg-yellow-500': 'paused', 'running', 'stopped', { {{ } }} === === === worker.status worker.status worker.status"
                     ></div>
-                    <span class="text-sm font-medium text-gray-900 dark:text-neutral-100">
+                    <span class="font-medium text-gray-900 text-sm dark:text-neutral-100">
                       {{ worker.status.charAt(0).toUpperCase() + worker.status.slice(1) }}
                     </span>
                   </div>
-                  <div class="flex items-center gap-2 mt-2">
+                  <div class="flex gap-2 items-center mt-2">
                     @if(worker.status !== 'running')
 <button
                       onclick="restartWorker(worker.id)"
-                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 rounded-md hover:bg-green-100 dark:hover:bg-green-900"
+                      class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900/50 hover:bg-green-100 dark:hover:bg-green-900 rounded-md"
                     >
-                      <div class="i-hugeicons-play h-4 w-4 mr-1" />
+                      <div class="mr-1 h-4 w-4 i-hugeicons-play" />
                       Start
                     </button>
                     @if(worker.status === 'running')
 <button
                       onclick="pauseWorker(worker.id)"
-                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 rounded-md hover:bg-yellow-100 dark:hover:bg-yellow-900"
+                      class="inline-flex items-center px-2 py-1 font-medium text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 hover:bg-yellow-100 dark:hover:bg-yellow-900 rounded-md"
                     >
-                      <div class="i-hugeicons-pause h-4 w-4 mr-1" />
+                      <div class="mr-1 h-4 w-4 i-hugeicons-pause" />
                       Pause
                     </button>
                     @if(worker.status === 'running')
 <button
                       onclick="stopWorker(worker.id)"
-                      class="inline-flex items-center px-2 py-1 text-xs font-medium text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 rounded-md hover:bg-red-100 dark:hover:bg-red-900"
+                      class="inline-flex items-center px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-900/50 hover:bg-red-100 dark:hover:bg-red-900 rounded-md"
                     >
-                      <div class="i-hugeicons-stop h-4 w-4 mr-1" />
+                      <div class="mr-1 h-4 w-4 i-hugeicons-stop" />
                       Stop
                     </button>
                   </div>
-                  <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
+                  <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
                     Last heartbeat: {{ worker.last_heartbeat }}
                   </p>
                 </div>
 
                 <div>
-                  <p class="text-sm text-gray-500 dark:text-neutral-400">Jobs Processed</p>
-                  <p class="mt-1 text-lg font-medium text-gray-900 dark:text-neutral-100">
+                  <p class="text-gray-500 text-sm dark:text-neutral-400">Jobs Processed</p>
+                  <p class="mt-1 font-medium text-gray-900 text-lg dark:text-neutral-100">
                     {{ worker.jobs_processed.toLocaleString() }}
                   </p>
-                  <p class="mt-1 text-sm text-red-600 dark:text-red-400">
+                  <p class="mt-1 text-red-600 text-sm dark:text-red-400">
                     {{ worker.failed_jobs }} failed
                   </p>
                 </div>
@@ -552,26 +542,26 @@ workers = workers.map(worker => ({
                         <span class="text-gray-500 dark:text-neutral-400">Connection</span>
                         <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.connection }}</span>
                       </div>
-                      <div class="flex items-center justify-between text-sm mt-2">
+                      <div class="flex items-center justify-between mt-2 text-sm">
                         <span class="text-gray-500 dark:text-neutral-400">Memory Limit</span>
                         <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.memory_limit }}MB</span>
                       </div>
-                      <div class="flex items-center justify-between text-sm mt-2">
+                      <div class="flex items-center justify-between mt-2 text-sm">
                         <span class="text-gray-500 dark:text-neutral-400">Timeout</span>
                         <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.timeout }}s</span>
                       </div>
-                      <div class="flex items-center justify-between text-sm mt-2">
+                      <div class="flex items-center justify-between mt-2 text-sm">
                         <span class="text-gray-500 dark:text-neutral-400">Supervisor</span>
                         <span class="font-medium text-gray-900 dark:text-neutral-100">{{ worker.supervisor_id }}</span>
                       </div>
                     </div>
 
                     @if(worker.memory_usage / worker.memory_limit > 0.9)
-<div class="rounded-md bg-yellow-50 dark:bg-yellow-900/50 p-3">
+<div class="p-3 bg-yellow-50 dark:bg-yellow-900/50 rounded-md">
                       <div class="flex">
-                        <div class="i-hugeicons-exclamation-triangle h-5 w-5 text-yellow-400" />
+                        <div class="h-5 w-5 text-yellow-400 i-hugeicons-exclamation-triangle" />
                         <div class="ml-3">
-                          <h3 class="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                          <h3 class="font-medium text-sm text-yellow-800 dark:text-yellow-300">
                             High Memory Usage
                           </h3>
                           <div class="mt-2 text-sm text-yellow-700 dark:text-yellow-200">

@@ -116,11 +116,13 @@ const updatedManufacturer = await products.manufacturers.updateFeaturedStatus(1,
 ### Delete Manufacturers
 
 Single manufacturer deletion:
+
 ```ts
 await products.manufacturers.destroy(1) // Replace 1 with the manufacturer ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await products.manufacturers.bulkDestroy([1, 2, 3]) // Array of manufacturer IDs to delete
 ```

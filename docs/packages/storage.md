@@ -304,7 +304,7 @@ route.post('/upload', async (req) => {
       return Response.json({ error: 'Invalid file type' }, { status: 400 })
     }
 
-    if (size > 5 * 1024 * 1024) { // 5MB
+    if (size > 5 _ 1024 _ 1024) { // 5MB
       return Response.json({ error: 'File too large' }, { status: 400 })
     }
 

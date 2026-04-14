@@ -327,11 +327,11 @@ await slack.send({
       fields: [
         {
           type: 'mrkdwn',
-          text: '*Customer:*\nJohn Doe'
+          text: '_Customer:_\nJohn Doe'
         },
         {
           type: 'mrkdwn',
-          text: '*Total:*\n$299.99'
+          text: '_Total:_\n$299.99'
         }
       ]
     },

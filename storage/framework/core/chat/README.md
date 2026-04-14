@@ -39,9 +39,9 @@ Drivers are configured with the following environment variables:
 #### Slack
 
 ```bash
-SLACK_APPLICATION_ID=SAID123
-SLACK_CLIENT_ID=SCID123
-SLACK_SECRET_KEY=SSK123
+SLACK*APPLICATION*ID=SAID123
+SLACK*CLIENT*ID=SCID123
+SLACK*SECRET*KEY=SSK123
 ```
 
 ## 🧪 Testing

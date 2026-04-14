@@ -25,17 +25,17 @@ function statusVariant(s) {
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-terminal" iconBg="primary" />
     @endforeach
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Quick Commands -->
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-        <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Quick Commands</span>
+        <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Quick Commands</span>
       </div>
 
       <DataTable
@@ -54,7 +54,7 @@ function statusVariant(s) {
         @foreach (commands as cmd)
           <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <td class="px-4 py-3">
-              <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ cmd.command }}</code>
+              <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ cmd.command }}</code>
             </td>
             <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ cmd.description }}</td>
             <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ cmd.lastRun }}</td>
@@ -71,12 +71,12 @@ function statusVariant(s) {
 
     <!-- Recent Output -->
     <Card>
-      <div class="p-4 border-b border-neutral-200/60 dark:border-white/5 flex items-center justify-between">
-        <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Recent Output</span>
+      <div class="flex items-center justify-between p-4 border-b border-neutral-200/60 dark:border-white/5">
+        <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Recent Output</span>
         <Button variant="ghost" size="xs">Clear</Button>
       </div>
       <div class="p-4">
-        <div class="bg-[#1a1a2e] text-green-400 p-4 rounded-lg font-mono text-[13px] overflow-auto max-h-[300px]">
+        <div class="overflow-auto p-4 max-h-[300px] font-mono text-[13px] text-green-400 bg-[#1a1a2e] rounded-lg">
           <pre class="m-0 whitespace-pre-wrap">{{ recentOutput }}</pre>
         </div>
       </div>
@@ -86,11 +86,11 @@ function statusVariant(s) {
   <!-- Run Custom Command -->
   <Card>
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Run Custom Command</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Run Custom Command</span>
     </div>
     <div class="p-4">
       <div class="flex gap-2">
-        <input type="text" class="flex-1 px-3 py-2 text-sm font-mono border border-neutral-200 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-800 text-neutral-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500" placeholder="buddy ..." />
+        <input type="text" class="flex-1 px-3 py-2 font-mono text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-200 rounded-lg dark:border-neutral-700 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" placeholder="buddy ..." />
         <Button variant="primary">Execute</Button>
       </div>
     </div>

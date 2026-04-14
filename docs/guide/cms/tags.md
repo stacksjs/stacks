@@ -64,12 +64,12 @@ First, import the tags functionality from the CMS package:
 ```ts
 import { useTaggables } from '@stacksjs/cms'
 
-const { 
+const {
   taggables,
   fetchTaggables,
   createTaggable,
   updateTaggable,
-  deleteTaggable 
+  deleteTaggable
 } = useTaggables()
 ```
 

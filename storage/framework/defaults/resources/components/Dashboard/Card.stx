@@ -41,7 +41,7 @@ const { title, subtitle, actions, padding } = defineProps<CardProps>()
         @endif
       </div>
     @endif
-    <div class="{{ padding ? 'dashboard-card-content' : '' }}">
+    <div class=": ? '' 'dashboard-card-content' {{ }} padding">
       <slot></slot>
     </div>
   </div>

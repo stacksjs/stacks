@@ -1,4 +1,4 @@
-# What are Listeners?
+# What are Listeners
 
 Currently, only one specific kind of listener is allowed: `Console.ts`.
 

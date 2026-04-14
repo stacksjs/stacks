@@ -10,32 +10,32 @@ interface NotificationErrorModalProps {
 const { isOpen = false, notificationId = '', notificationType = 'email', errorMessage = '', sentAt = '' } = defineProps<NotificationErrorModalProps>()
 </script>
 @if(isOpen)
-  <div class="fixed inset-0 z-50 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
+  <div class="fixed inset-0 overflow-y-auto z-50" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
       <!-- Background overlay -->
       <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" data-close-modal></div>
 
       <!-- Modal panel -->
-      <div class="inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-4xl sm:w-full">
-        <div class="bg-white dark:bg-neutral-800 px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
+      <div class="inline-block overflow-hidden sm:my-8 sm:max-w-4xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
+        <div class="pb-4 pt-5 px-4 sm:p-6 sm:pb-4 bg-white dark:bg-neutral-800">
           <div class="sm:flex sm:items-start">
-            <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
-              <div class="i-hugeicons-alert-triangle h-6 w-6 text-red-600 dark:text-red-400"></div>
+            <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-red-100 dark:bg-red-900 rounded-full">
+              <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-triangle"></div>
             </div>
-            <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-              <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-neutral-100" id="modal-title">
+            <div class="mt-3 sm:ml-4 sm:mt-0 w-full text-center sm:text-left">
+              <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-neutral-100" id="modal-title">
                 Notification Error Details
               </h3>
 
               <!-- Error details section -->
-              <div class="mt-4 bg-red-50 dark:bg-red-900/30 p-4 rounded-md">
+              <div class="mt-4 p-4 bg-red-50 dark:bg-red-900/30 rounded-md">
                 <div class="flex">
                   <div class="flex-shrink-0">
-                    <div class="i-hugeicons-alert-circle h-5 w-5 text-red-400"></div>
+                    <div class="h-5 w-5 text-red-400 i-hugeicons-alert-circle"></div>
                   </div>
                   <div class="ml-3">
-                    <h3 class="text-sm font-medium text-red-800 dark:text-red-300">Error Message</h3>
-                    <div class="mt-2 text-sm text-red-700 dark:text-red-200">
+                    <h3 class="font-medium text-red-800 text-sm dark:text-red-300">Error Message</h3>
+                    <div class="mt-2 text-red-700 text-sm dark:text-red-200">
                       <p>{{ errorMessage }}</p>
                     </div>
                   </div>
@@ -44,36 +44,36 @@ const { isOpen = false, notificationId = '', notificationType = 'email', errorMe
 
               <!-- Logs section -->
               <div class="mt-4">
-                <h4 class="text-md font-medium text-gray-900 dark:text-neutral-100">Notification Logs</h4>
-                <p class="text-sm text-gray-500 dark:text-neutral-400 mb-2">
+                <h4 class="font-medium text-gray-900 text-md dark:text-neutral-100">Notification Logs</h4>
+                <p class="mb-2 text-gray-500 text-sm dark:text-neutral-400">
                   Detailed logs for {{ notificationType }} notification ID: {{ notificationId }}
                 </p>
 
                 <!-- Logs table placeholder -->
-                <div class="mt-2 overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-opacity-20 sm:rounded-lg">
-                  <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
+                <div class="overflow-hidden mt-2 ring-1 ring-black ring-opacity-5 sm:rounded-lg dark:ring-opacity-20 shadow">
+                  <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
                     <thead class="bg-gray-50 dark:bg-neutral-700">
                       <tr>
-                        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 sm:pl-6">Timestamp</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Level</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Message</th>
-                        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Context</th>
+                        <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Timestamp</th>
+                        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Level</th>
+                        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Message</th>
+                        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Context</th>
                       </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 dark:divide-neutral-600 bg-white dark:bg-neutral-800">
+                    <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-600">
                       <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
-                        <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-500 dark:text-neutral-400 sm:pl-6">
+                        <td class="pl-4 pr-3 py-4 sm:pl-6 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                           {{ sentAt }}
                         </td>
                         <td class="px-3 py-4 text-sm">
-                          <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400 bg-red-50 dark:bg-red-900/30">
+                          <span class="inline-flex items-center px-2 py-1 font-medium text-red-700 text-xs dark:text-red-400 bg-red-50 dark:bg-red-900/30 rounded-md">
                             ERROR
                           </span>
                         </td>
-                        <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                        <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                           {{ errorMessage }}
                         </td>
-                        <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                        <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                           -
                         </td>
                       </tr>
@@ -84,17 +84,17 @@ const { isOpen = false, notificationId = '', notificationType = 'email', errorMe
             </div>
           </div>
         </div>
-        <div class="bg-gray-50 dark:bg-neutral-700 px-4 py-3 sm:px-6 sm:flex sm:flex-row-reverse">
+        <div class="sm:flex sm:flex-row-reverse px-4 py-3 sm:px-6 bg-gray-50 dark:bg-neutral-700">
           <button
             type="button"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-600 text-base font-medium text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:mt-0 sm:ml-3 sm:w-auto sm:text-sm"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:ml-3 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
             data-close-modal
           >
             Close
           </button>
           <button
             type="button"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-blue-600 text-base font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 sm:ml-3 sm:w-auto sm:text-sm"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
           >
             Download Logs
           </button>

@@ -140,7 +140,7 @@ export default defineConfig({
     minify: {
       mangle: true,
       compress: {
-        drop_console: true,
+        drop*console: true,
       },
     },
 
@@ -257,7 +257,7 @@ npm login
 npm login --scope=@yourscope
 
 # Set auth token (CI/CD)
-echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
+echo "//registry.npmjs.org/:*authToken=${NPM*TOKEN}" >> .npmrc
 ```
 
 ### Private Registry
@@ -265,7 +265,7 @@ echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" >> .npmrc
 ```ts
 // .npmrc
 @yourscope:registry=https://npm.pkg.github.com
-//npm.pkg.github.com/:_authToken=${GITHUB_TOKEN}
+//npm.pkg.github.com/:*authToken=${GITHUB*TOKEN}
 ```
 
 ### GitHub Packages
@@ -291,30 +291,37 @@ name: Publish
 on:
   push:
     tags:
+
       - 'v*'
 
 jobs:
   publish:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Run tests
+
         run: bun test
 
       - name: Build
+
         run: bun run build
 
       - name: Publish to npm
+
         run: npm publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE*AUTH*TOKEN: ${{ secrets.NPM*TOKEN }}
 ```
 
 ### Automated Release
@@ -326,27 +333,33 @@ name: Release
 on:
   push:
     branches:
+
       - main
 
 jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
+
         with:
           fetch-depth: 0
 
       - name: Setup Bun
+
         uses: oven-sh/setup-bun@v1
 
       - name: Install dependencies
+
         run: bun install
 
       - name: Create Release
+
         run: bunx semantic-release
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GITHUB*TOKEN: ${{ secrets.GITHUB*TOKEN }}
+          NPM*TOKEN: ${{ secrets.NPM*TOKEN }}
 ```
 
 ## Documentation
@@ -407,6 +420,7 @@ const result = myFunction('hello')
 Description of what the function does.
 
 **Parameters:**
+
 - `input` - Description of the input
 
 **Returns:** Description of the return value
@@ -484,36 +498,43 @@ export type { AsyncState } from './composables/useAsync'
 Before publishing, ensure:
 
 1. **Tests pass**
+
    ```bash
    bun test
    ```
 
 2. **Types are correct**
+
    ```bash
    bun run typecheck
    ```
 
 3. **Linting passes**
+
    ```bash
    bun run lint
    ```
 
 4. **Build succeeds**
+
    ```bash
    bun run build
    ```
 
 5. **Package contents are correct**
+
    ```bash
    npm pack --dry-run
    ```
 
 6. **Version is correct**
+
    ```bash
    npm version patch
    ```
 
 7. **Changelog is updated**
+
    ```bash
    buddy changelog
    ```

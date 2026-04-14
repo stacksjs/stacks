@@ -60,11 +60,11 @@ import {
 
 <template>
   <Dropdown class="relative">
-    <DropdownButton class="rounded bg-blue-500 px-4 py-2 text-white">
+    <DropdownButton class="px-4 py-2 text-white bg-blue-500 rounded">
       Options
     </DropdownButton>
 
-    <DropdownItems class="absolute z-10 mt-2 w-56 rounded-md bg-white shadow-lg">
+    <DropdownItems class="absolute z-10 mt-2 w-56 bg-white rounded-md shadow-lg">
       <DropdownItem v-slot="{ active }">
         <a
           href="/account-settings"
@@ -88,7 +88,7 @@ import {
         </a>
       </DropdownItem>
       <DropdownItem disabled>
-        <span class="block px-4 py-2 text-sm text-gray-400">
+        <span class="block px-4 py-2 text-gray-400 text-sm">
           Invite a friend (coming soon!)
         </span>
       </DropdownItem>

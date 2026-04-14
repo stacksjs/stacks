@@ -33,6 +33,7 @@ export default class Post extends Model {
 ```
 
 This generates:
+
 - `GET /api/posts` - List posts
 - `GET /api/posts/:id` - Get single post
 - `POST /api/posts` - Create post
@@ -468,12 +469,14 @@ buddy api:docs --serve
 
 ```typescript
 /**
- * @api {get} /posts List posts
- * @apiGroup Posts
- * @apiQuery {number} page Page number
- * @apiQuery {number} per_page Items per page
- * @apiSuccess {Post[]} data List of posts
- */
+
+ _ @api {get} /posts List posts
+ _ @apiGroup Posts
+ _ @apiQuery {number} page Page number
+ _ @apiQuery {number} per_page Items per page
+ _ @apiSuccess {Post[]} data List of posts
+
+ _/
 async index(request: Request): Promise<Response> {
   // ...
 }

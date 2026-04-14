@@ -37,7 +37,7 @@ function queueStatusVariant(s) {
   <PageHeader title="Queue" description="Monitor job queues powered by bun-queue" />
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 md:grid-cols-4">
     <StatsCard title="Total Queues" value="{{ stats.totalQueues }}" icon="i-hugeicons-queue-01" iconBg="neutral" />
     <StatsCard title="Active Jobs" value="{{ stats.activeJobs }}" icon="i-hugeicons-loading-03" iconBg="primary" />
     <StatsCard title="Completed" value="{{ stats.completedJobs }}" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
@@ -46,28 +46,28 @@ function queueStatusVariant(s) {
 
   <!-- Queue Cards -->
   @if(queues.length > 0)
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
       @foreach(queues as queue)
-        <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 hover:shadow-md transition-shadow">
+        <div class="p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5 hover:shadow-md transition-shadow">
           <div class="flex items-center justify-between mb-4">
-            <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">{{ queue.name }}</span>
+            <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">{{ queue.name }}</span>
             <Badge variant="{{ queueStatusVariant(queue.status) }}" size="sm" dot>{{ queue.status }}</Badge>
           </div>
-          <div class="grid grid-cols-2 gap-4 mt-4">
+          <div class="grid gap-4 grid-cols-2 mt-4">
             <div>
-              <div class="text-xl font-semibold text-neutral-900 dark:text-white">{{ queue.pending }}</div>
+              <div class="font-semibold text-neutral-900 text-xl dark:text-white">{{ queue.pending }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Pending</div>
             </div>
             <div>
-              <div class="text-xl font-semibold text-blue-600 dark:text-blue-400">{{ queue.active }}</div>
+              <div class="font-semibold text-blue-600 text-xl dark:text-blue-400">{{ queue.active }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Active</div>
             </div>
             <div>
-              <div class="text-xl font-semibold text-red-600 dark:text-red-400">{{ queue.failed }}</div>
+              <div class="font-semibold text-red-600 text-xl dark:text-red-400">{{ queue.failed }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Failed</div>
             </div>
             <div>
-              <div class="text-xl font-semibold text-green-600 dark:text-green-400">{{ queue.completed }}</div>
+              <div class="font-semibold text-green-600 text-xl dark:text-green-400">{{ queue.completed }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Completed</div>
             </div>
           </div>

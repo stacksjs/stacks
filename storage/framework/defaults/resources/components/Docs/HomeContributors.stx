@@ -11,7 +11,7 @@ const { contributors = [] } = defineProps<HomeContributorsProps>()
     </h2>
   </div>
 
-  <div class="max-w-200 p-10 text-center text-lg leading-7">
+  <div class="p-10 max-w-200 leading-7 text-center text-lg">
     <div class="flex flex-wrap gap-1 justify-center">
       @foreach(contributors as contributor)
         <a href="https://github.com/{{ contributor.name }}" class="m-0" rel="noopener noreferrer" aria-label="{{ contributor.name }} on GitHub">

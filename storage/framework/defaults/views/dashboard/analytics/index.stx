@@ -31,7 +31,7 @@ let analyticsCards = [
 @title('Dashboard - Analytics')
 <div>
   <!-- Overview Stats -->
-  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
     <StatsCard
       title="Page Views"
       value="124,892"
@@ -67,26 +67,26 @@ let analyticsCards = [
   </div>
 
   <!-- Analytics Sections -->
-  <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     @foreach(analyticsCards as card)
     <RouterLink
       :to="card.to"
       class="block"
     >
       <Card variant="default" padding="md" hoverable clickable>
-        <div class="flex items-start gap-4">
-          <div class="p-2.5 rounded-lg bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400 flex-shrink-0">
+        <div class="flex gap-4 items-start">
+          <div class="flex-shrink-0 p-2.5 text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/20 rounded-lg">
             <div :class="[card.icon, 'h-5 w-5']" />
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">
+            <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">
               {{ card.name }}
             </h3>
             <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
               {{ card.description }}
             </p>
           </div>
-          <div class="i-hugeicons-arrow-right-01 h-4 w-4 text-neutral-400 flex-shrink-0" />
+          <div class="flex-shrink-0 h-4 w-4 text-neutral-400 i-hugeicons-arrow-right-01" />
         </div>
       </Card>
     </RouterLink>

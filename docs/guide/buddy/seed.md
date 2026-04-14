@@ -79,6 +79,7 @@ buddy seed
 ```
 
 Output:
+
 ```
 buddy seed
 

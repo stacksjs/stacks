@@ -1,4 +1,4 @@
-# What is a Middleware?
+# What is a Middleware
 
 Middleware is a way to define logic that should be executed before or after a specific event inside the request lifecycle.
 

@@ -59,22 +59,22 @@ import {
 
 <template>
   <Popover class="relative">
-    <PopoverButton class="rounded bg-blue-500 px-4 py-2 text-white">
+    <PopoverButton class="px-4 py-2 text-white bg-blue-500 rounded">
       Solutions
     </PopoverButton>
 
-    <PopoverPanel class="absolute z-10 mt-3 w-screen max-w-sm px-4">
-      <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
-        <div class="relative grid gap-8 bg-white p-7">
+    <PopoverPanel class="absolute z-10 mt-3 px-4 max-w-sm w-screen">
+      <div class="overflow-hidden ring-1 ring-black ring-opacity-5 rounded-lg shadow-lg">
+        <div class="grid relative gap-8 p-7 bg-white">
           <a
             href="#"
-            class="-m-3 flex items-center rounded-lg p-2 transition duration-150 ease-in-out hover:bg-gray-50"
+            class="flex items-center -m-3 p-2 hover:bg-gray-50 rounded-lg duration-150 ease-in-out transition"
           >
             <div class="ml-4">
-              <p class="text-sm font-medium text-gray-900">
+              <p class="font-medium text-gray-900 text-sm">
                 Analytics
               </p>
-              <p class="text-sm text-gray-500">
+              <p class="text-gray-500 text-sm">
                 Get a better understanding of your traffic
               </p>
             </div>
@@ -135,14 +135,14 @@ For dynamic positioning and transitions:
   v-slot="{ open }"
 >
   <transition
-    enter-active-class="transition duration-200 ease-out"
-    enter-from-class="translate-y-1 opacity-0"
-    enter-to-class="translate-y-0 opacity-100"
-    leave-active-class="transition duration-150 ease-in"
-    leave-from-class="translate-y-0 opacity-100"
-    leave-to-class="translate-y-1 opacity-0"
+    enter-active-class="duration-200 ease-out transition"
+    enter-from-class="opacity-0 translate-y-1"
+    enter-to-class="opacity-100 translate-y-0"
+    leave-active-class="duration-150 ease-in transition"
+    leave-from-class="opacity-100 translate-y-0"
+    leave-to-class="opacity-0 translate-y-1"
   >
-    <div v-if="open" class="rounded-lg shadow-lg ring-1 ring-black ring-opacity-5">
+    <div v-if="open" class="ring-1 ring-black ring-opacity-5 rounded-lg shadow-lg">
       <!-- Content -->
     </div>
   </transition>

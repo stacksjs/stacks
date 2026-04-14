@@ -17,7 +17,7 @@ const { label, onclick, active } = withDefaults(
 
 <template>
   <button
-    class="feature-btn @if (active)active@endif"
+    class="(active)active@endif @if feature-btn"
     @if (onclick)onclick="{{ onclick }}"@endif
   >
     {{ label }}

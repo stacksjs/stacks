@@ -32,9 +32,9 @@ const { id, icon, title, left, top, width, height, style } = withDefaults(
       <div class="window-icon">{{ icon }}</div>
       <div class="window-title">{{ title }}</div>
       <div class="window-controls">
-        <button class="window-control minimize" onclick="minimizeWindow('{{ id }}')">_</button>
-        <button class="window-control maximize" onclick="toggleMaximizeWindow('{{ id }}')">□</button>
-        <button class="window-control close" onclick="closeWindow('{{ id }}')">×</button>
+        <button class="minimize window-control" onclick="minimizeWindow('{{ id }}')">_</button>
+        <button class="maximize window-control" onclick="toggleMaximizeWindow('{{ id }}')">□</button>
+        <button class="close window-control" onclick="closeWindow('{{ id }}')">×</button>
       </div>
     </div>
     <div class="window-content">

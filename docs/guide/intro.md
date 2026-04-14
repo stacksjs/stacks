@@ -2,7 +2,7 @@
 
 Stacks is a batteries-included framework for building TypeScript applications. Think of it as the Laravel of TypeScript - a complete ecosystem for building web apps, APIs, desktop apps, CLIs, and libraries.
 
-## What is Stacks?
+## What is Stacks
 
 Stacks provides everything you need to build modern applications:
 
@@ -17,7 +17,7 @@ Stacks provides everything you need to build modern applications:
 - **Mobile Apps** - iOS/Android with Capacitor
 - **Cloud Deployment** - One-command AWS deployment
 
-## Why Stacks?
+## Why Stacks
 
 ### Zero External Dependencies
 
@@ -105,7 +105,7 @@ cd my-app
 bun run dev
 ```
 
-Your app is now running at `http://localhost:3000`.
+Your app is now running at `<http://localhost:3000>`.
 
 ### Project Structure
 
@@ -235,7 +235,7 @@ defineEmits<{
 </script>
 ```
 
-## What's Next?
+## What's Next
 
 1. **[Installation](/guide/getting-started)** - Set up your development environment
 2. **[Configuration](/guide/config)** - Configure your application

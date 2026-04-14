@@ -728,75 +728,75 @@ function websiteStats() {
   <PageHeader title="Pages" description="Manage all your website pages">
     <template #actions>
       <Button variant="primary" @click="openNewPageModal">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         New Page
       </Button>
     </template>
   </PageHeader>
 
         <!-- Time range selector -->
-        <div class="mt-4 flex items-center justify-between">
-          <p class="text-sm text-gray-500 dark:text-neutral-400">
+        <div class="flex items-center justify-between mt-4">
+          <p class="text-gray-500 text-sm dark:text-neutral-400">
             Overview of your website performance
           </p>
           <div class="relative">
-            <select value="{{ timeRange }}" class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700">
+            <select value="{{ timeRange }}" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
               <option v-for="range in timeRanges" :key="range" value="{{ range }}">{{ range }}</option>
             </select>
           </div>
         </div>
 
         <!-- Stats -->
-        <dl class="mt-5 grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-4">
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Pages</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ websiteStats.totalPages }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-gray-500 dark:text-neutral-400">
+        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Pages</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ websiteStats.totalPages }}</dd>
+            <dd class="flex items-center mt-2 text-gray-500 text-sm dark:text-neutral-400">
               <span>{{ websiteStats.publishedPages }} published, {{ websiteStats.draftPages }} drafts</span>
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Total Views</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ websiteStats.totalViews.toLocaleString() }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Views</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ websiteStats.totalViews.toLocaleString() }}</dd>
+            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
+              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
               <span>{{ websiteStats.avgViewsPerPage.toLocaleString() }} avg per page</span>
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Conversion Rate</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ websiteStats.conversionRate }}%</dd>
-            <dd class="mt-2 flex items-center text-sm text-green-600 dark:text-green-400">
-              <div class="i-hugeicons-analytics-up h-4 w-4 mr-1"></div>
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Conversion Rate</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ websiteStats.conversionRate }}%</dd>
+            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
+              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
               <span>{{ websiteStats.totalConversions }} total conversions</span>
             </dd>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white px-4 py-5 shadow sm:p-6 dark:bg-neutral-800">
-            <dt class="truncate text-sm font-medium text-gray-500 dark:text-neutral-300">Most Viewed Page</dt>
-            <dd class="mt-1 text-3xl font-semibold tracking-tight text-gray-900 dark:text-white">{{ websiteStats.mostViewedPage.title }}</dd>
-            <dd class="mt-2 flex items-center text-sm text-gray-500 dark:text-neutral-400">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Most Viewed Page</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ websiteStats.mostViewedPage.title }}</dd>
+            <dd class="flex items-center mt-2 text-gray-500 text-sm dark:text-neutral-400">
               <span>{{ websiteStats.mostViewedPage.views.toLocaleString() }} views</span>
             </dd>
           </div>
         </dl>
 
         <!-- Charts -->
-        <div class="mt-8 grid grid-cols-1 gap-5 lg:grid-cols-3">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800 lg:col-span-2">
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-3 mt-8">
+          <div class="overflow-hidden lg:col-span-2 bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Page Views</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Page Views</h3>
               <div class="mt-2 h-80">
                 <canvas id="chart_pages_1"></canvas>
               </div>
             </div>
           </div>
 
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Template Distribution</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Template Distribution</h3>
               <div class="mt-2 h-80">
                 <canvas id="chart_pages_2"></canvas>
               </div>
@@ -804,10 +804,10 @@ function websiteStats() {
           </div>
         </div>
 
-        <div class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-1">
-          <div class="overflow-hidden rounded-lg bg-white shadow dark:bg-neutral-800">
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-1 mt-5">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">Pages & Conversions</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Pages & Conversions</h3>
               <div class="mt-2 h-80">
                 <canvas id="chart_pages_3"></canvas>
               </div>
@@ -816,44 +816,44 @@ function websiteStats() {
         </div>
 
         <!-- Filters -->
-        <div class="mt-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8">
           <div class="relative max-w-sm">
-            <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-              <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
             </div>
             <input
               value="{{ searchQuery }}"
               type="text"
-              class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
               placeholder="Search pages..."
             />
           </div>
 
-          <div class="flex flex-col sm:flex-row gap-4">
+          <div class="flex flex-col gap-4 sm:flex-row">
             <select
               value="{{ selectedTemplate }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 sm:min-w-[180px]"
+              class="block pl-3 pr-10 py-1.5 w-full sm:min-w-[180px] text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option v-for="template in templates" :key="template.id" value="{{ template.name }}">{{ template.name }}</option>
             </select>
 
             <select
               value="{{ selectedStatus }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option v-for="status in statuses" :key="status.id" value="{{ status.name }}">{{ status.name }}</option>
             </select>
 
             <select
               value="{{ selectedLocation }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option v-for="location in locations" :key="location.id" value="{{ location.name }}">{{ location.name }}</option>
             </select>
 
             <select
               value="{{ itemsPerPage }}"
-              class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               <option value="{{ 5 }}">5 per page</option>
               <option value="{{ 10 }}">10 per page</option>
@@ -864,23 +864,23 @@ function websiteStats() {
         </div>
 
         <!-- Bulk actions -->
-        <div v-if="hasSelectedPages" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/20">
+        <div v-if="hasSelectedPages" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="i-hugeicons-info-circle h-5 w-5 text-blue-400 mr-2"></div>
-              <span class="text-sm text-blue-700 dark:text-blue-300">{{ selectedPageIds.length }} pages selected</span>
+              <div class="mr-2 h-5 w-5 text-blue-400 i-hugeicons-info-circle"></div>
+              <span class="text-blue-700 text-sm dark:text-blue-300">{{ selectedPageIds.length }} pages selected</span>
             </div>
             <div class="flex space-x-2">
-              <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
-                <div class="i-hugeicons-archive-box h-4 w-4 mr-1"></div>
+              <button type="button" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
+                <div class="mr-1 h-4 w-4 i-hugeicons-archive-box"></div>
                 Archive
               </button>
-              <button type="button" class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
-                <div class="i-hugeicons-duplicate h-4 w-4 mr-1"></div>
+              <button type="button" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
+                <div class="mr-1 h-4 w-4 i-hugeicons-duplicate"></div>
                 Duplicate
               </button>
-              <button type="button" class="inline-flex items-center rounded-md bg-red-600 px-2.5 py-1.5 text-sm font-semibold text-white shadow-sm hover:bg-red-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600">
-                <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
+              <button type="button" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm">
+                <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
                 Delete
               </button>
             </div>
@@ -888,224 +888,224 @@ function websiteStats() {
         </div>
 
         <!-- Active location filter -->
-        <div v-if="selectedLocation !== 'All Locations'" class="mt-4 bg-blue-50 p-4 rounded-md dark:bg-blue-900/20">
+        <div v-if="selectedLocation !== 'All Locations'" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-md">
           <div class="flex items-center justify-between">
             <div class="flex items-center">
-              <div class="i-hugeicons-map-pin-01 h-5 w-5 text-blue-400 mr-2"></div>
-              <span class="text-sm text-blue-700 dark:text-blue-300">
+              <div class="mr-2 h-5 w-5 text-blue-400 i-hugeicons-map-pin-01"></div>
+              <span class="text-blue-700 text-sm dark:text-blue-300">
                 Filtering by location: <span class="font-medium">{{ selectedLocation }}</span>
               </span>
             </div>
             <button
               @click="selectedLocation = 'All Locations'"
-              class="inline-flex items-center rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
-              <div class="i-hugeicons-cancel-01 h-4 w-4 mr-1"></div>
+              <div class="mr-1 h-4 w-4 i-hugeicons-cancel-01"></div>
               Clear Filter
             </button>
           </div>
         </div>
 
         <!-- Pages table -->
-        <div class="mt-6 flow-root">
+        <div class="flow-root mt-6">
           <div class="sm:flex sm:items-center sm:justify-between mb-4">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">All Pages</h3>
-            <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">All Pages</h3>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
               A list of all website pages including title, template, views, and status.
             </p>
           </div>
-          <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-              <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-                <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
+          <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+            <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+              <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+                <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
                   <thead class="bg-gray-50 dark:bg-neutral-700">
                     <tr>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                         <div class="flex items-center">
                           <input
                             id="select-all"
                             type="checkbox"
                             value="{{ selectAll }}"
                             @change="toggleSelectAll"
-                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:focus:ring-offset-neutral-800"
+                            class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                           />
                         </div>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
                         <!-- OG Image column (no header text) -->
                       </th>
-                      <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-neutral-200">
-                        <button @click="toggleSort('title')" class="group inline-flex items-center">
+                      <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button @click="toggleSort('title')" class="inline-flex items-center group">
                           Title
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'title'" class="{{ [
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            <div v-if="sortBy === 'title'" class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ] }}"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                            ] {{ }}"></div>
+                            <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
-                        <button @click="toggleSort('author')" class="group inline-flex items-center">
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button @click="toggleSort('author')" class="inline-flex items-center group">
                           Author
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'author'" class="{{ [
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            <div v-if="sortBy === 'author'" class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ] }}"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                            ] {{ }}"></div>
+                            <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">Template</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
-                        <button @click="toggleSort('views')" class="group inline-flex items-center">
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Template</th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button @click="toggleSort('views')" class="inline-flex items-center group">
                           Views
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'views'" class="{{ [
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            <div v-if="sortBy === 'views'" class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ] }}"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                            ] {{ }}"></div>
+                            <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
-                        <button @click="toggleSort('conversions')" class="group inline-flex items-center">
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button @click="toggleSort('conversions')" class="inline-flex items-center group">
                           Conversions
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'conversions'" class="{{ [
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            <div v-if="sortBy === 'conversions'" class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ] }}"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                            ] {{ }}"></div>
+                            <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
-                        <button @click="toggleSort('published')" class="group inline-flex items-center">
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button @click="toggleSort('published')" class="inline-flex items-center group">
                           Published
-                          <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
-                            <div v-if="sortBy === 'published'" class="{{ [
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            <div v-if="sortBy === 'published'" class="[
                               sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                               'h-4 w-4'
-                            ] }}"></div>
-                            <div v-else class="i-hugeicons-arrows-up-down h-4 w-4"></div>
+                            ] {{ }}"></div>
+                            <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
                       </th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">Status</th>
-                      <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">Location</th>
-                      <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Status</th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Location</th>
+                      <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                         <span class="sr-only">Actions</span>
                       </th>
                     </tr>
                   </thead>
-                  <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
-                    <tr v-for="page in paginatedPages" :key="page.id" class="{{ { 'bg-blue-50 dark:bg-blue-900/10': selectedPageIds.includes(page.id) } }}">
-                      <td class="relative py-4 pl-3 pr-4 text-sm font-medium sm:pr-6">
+                  <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                    <tr v-for="page in paginatedPages" :key="page.id" class="selectedPageIds.includes(page.id) 'bg-blue-50 { {{ } }} dark:bg-blue-900/10':">
+                      <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-sm">
                         <div class="flex items-center">
                           <input
                             id="{{ `page-${page.id}` }}"
                             type="checkbox"
                             checked="{{ selectedPageIds.includes(page.id) }}"
                             @change="togglePageSelection(page.id)"
-                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:focus:ring-offset-neutral-800"
+                            class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                           />
                         </div>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
-                        <div class="h-16 w-28 bg-gray-100 dark:bg-neutral-700 rounded overflow-hidden">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                        <div class="overflow-hidden h-16 w-28 bg-gray-100 dark:bg-neutral-700 rounded">
                           <img
                             :src="page.ogImage"
                             alt="{{ `OG image for ${page.title}` }}"
-                            class="h-full w-full object-cover"
+                            class="object-cover h-full w-full"
                           />
                         </div>
                       </td>
-                      <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 sm:pl-6 dark:text-white">
+                      <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">
                         <div class="flex items-center">
                           <div>
                             <div class="font-medium">{{ page.title }}</div>
-                            <div class="mt-1 flex items-center text-xs text-gray-500 dark:text-neutral-400">
+                            <div class="flex items-center mt-1 text-gray-500 text-xs dark:text-neutral-400">
                               <span class="truncate">{{ page.slug }}</span>
                             </div>
-                            <div class="mt-1 flex flex-wrap gap-1">
-                              <span v-for="section in page.sections.slice(0, 3)" :key="section" class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-neutral-800 dark:text-neutral-300">
+                            <div class="flex flex-wrap gap-1 mt-1">
+                              <span v-for="section in page.sections.slice(0, 3)" :key="section" class="inline-flex items-center px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 ring-1 ring-gray-500/10 ring-inset rounded-full">
                                 {{ section }}
                               </span>
-                              <span v-if="page.sections.length > 3" class="inline-flex items-center rounded-full bg-gray-50 px-2 py-1 text-xs font-medium text-gray-600 ring-1 ring-inset ring-gray-500/10 dark:bg-neutral-800 dark:text-neutral-300">
+                              <span v-if="page.sections.length > 3" class="inline-flex items-center px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 ring-1 ring-gray-500/10 ring-inset rounded-full">
                                 +{{ page.sections.length - 3 }} more
                               </span>
                             </div>
                           </div>
                         </div>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         {{ page.author }}
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         {{ page.template }}
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         {{ page.views.toLocaleString() }}
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         {{ page.conversions }}
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         {{ formatDate(page.published) }}
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm">
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium" :class="getStatusClass(page.status)">
+                      <td class="px-3 py-4 text-sm whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md" :class="getStatusClass(page.status)">
                           {{ page.status }}
                         </span>
                       </td>
-                      <td class="whitespace-nowrap px-3 py-4 text-sm">
+                      <td class="px-3 py-4 text-sm whitespace-nowrap">
                         <div class="flex flex-col gap-1">
                           <button
                             @click="toggleHomepage(page.id)"
-                            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-                            :class="page.isHomepage ? 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400' : 'bg-gray-100 text-gray-600 dark:bg-neutral-800/50 dark:text-neutral-400'"
+                            class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
+                            :class="text-gray-600 text-purple-800 dark:text-neutral-400' dark:text-purple-400' dark:bg-neutral-800/50 dark:bg-purple-900/30 : ? 'bg-gray-100 'bg-purple-100 page.isHomepage"
                           >
-                            <div class="i-hugeicons-home-01 h-3 w-3 mr-1"></div>
+                            <div class="mr-1 h-3 w-3 i-hugeicons-home-01"></div>
                             Homepage
                           </button>
                           <button
                             @click="toggleMainMenu(page.id)"
-                            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-                            :class="page.inMainMenu ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-gray-100 text-gray-600 dark:bg-neutral-800/50 dark:text-neutral-400'"
+                            class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
+                            :class="text-blue-800 text-gray-600 dark:text-blue-400' dark:text-neutral-400' dark:bg-blue-900/30 dark:bg-neutral-800/50 : ? 'bg-blue-100 'bg-gray-100 page.inMainMenu"
                           >
-                            <div class="i-hugeicons-menu-01 h-3 w-3 mr-1"></div>
+                            <div class="mr-1 h-3 w-3 i-hugeicons-menu-01"></div>
                             Menu
                           </button>
                           <button
                             @click="toggleFooter(page.id)"
-                            class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium"
-                            :class="page.inFooter ? 'bg-teal-100 text-teal-800 dark:bg-teal-900/30 dark:text-teal-400' : 'bg-gray-100 text-gray-600 dark:bg-neutral-800/50 dark:text-neutral-400'"
+                            class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
+                            :class="text-gray-600 text-teal-800 dark:text-neutral-400' dark:text-teal-400' dark:bg-neutral-800/50 dark:bg-teal-900/30 : ? 'bg-gray-100 'bg-teal-100 page.inFooter"
                           >
-                            <div class="i-hugeicons-layout-bottom h-3 w-3 mr-1"></div>
+                            <div class="mr-1 h-3 w-3 i-hugeicons-layout-bottom"></div>
                             Footer
                           </button>
                         </div>
                       </td>
-                      <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                      <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
                         <div class="flex items-center justify-end space-x-2">
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-view h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors">
+                            <div class="h-5 w-5 i-hugeicons-view"></div>
                           </button>
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
-                            <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors">
+                            <div class="h-5 w-5 i-hugeicons-edit-01"></div>
                           </button>
-                          <button type="button" class="text-gray-400 transition-colors duration-150 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300">
-                            <div class="i-hugeicons-waste h-5 w-5"></div>
+                          <button type="button" class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-colors">
+                            <div class="h-5 w-5 i-hugeicons-waste"></div>
                           </button>
                         </div>
                       </td>
                     </tr>
                     <tr v-if="paginatedPages.length === 0">
-                      <td colspan="11" class="px-6 py-4 text-center text-sm text-gray-500 dark:text-neutral-400">
+                      <td colspan="11" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
                         No pages found matching your criteria
                       </td>
                     </tr>
@@ -1117,8 +1117,8 @@ function websiteStats() {
         </div>
 
         <!-- Pagination -->
-        <div class="mt-6 flex items-center justify-between">
-          <div class="text-sm text-gray-700 dark:text-neutral-300">
+        <div class="flex items-center justify-between mt-6">
+          <div class="text-gray-700 text-sm dark:text-neutral-300">
             Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
             <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredPages.length) }}</span> of
             <span class="font-medium">{{ filteredPages.length }}</span> results
@@ -1127,39 +1127,39 @@ function websiteStats() {
             <button
               @click="previousPage"
               disabled="{{ currentPage === 1 }}"
-              class="{{ [
+              class="[
                 'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
                 currentPage === 1
                   ? 'text-gray-400 ring-gray-300 dark:text-neutral-500 dark:ring-neutral-700'
                   : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-              ] }}"
+              ] {{ }}"
             >
-              <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
+              <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
             </button>
             <button
               v-for="page in totalPages"
               :key="page"
               @click="changePage(page)"
-              class="{{ [
+              class="[
                 'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset',
                 page === currentPage
                   ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
                   : 'text-gray-900 ring-gray-300 hover:bg-gray-50 focus:z-20 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-              ] }}"
+              ] {{ }}"
             >
               {{ page }}
             </button>
             <button
               @click="nextPage"
               disabled="{{ currentPage === totalPages }}"
-              class="{{ [
+              class="[
                 'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
                 currentPage === totalPages
                   ? 'text-gray-400 ring-gray-300 dark:text-neutral-500 dark:ring-neutral-700'
                   : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-              ] }}"
+              ] {{ }}"
             >
-              <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
+              <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
             </button>
           </div>
         </div>
@@ -1167,51 +1167,51 @@ function websiteStats() {
     </div>
 
     <!-- New Page Modal -->
-    <div v-if="showNewPageModal" class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-      <div class="flex min-h-screen items-end justify-center px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+    <div v-if="showNewPageModal" class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
         <!-- Background overlay -->
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" aria-hidden="true" @click="closeNewPageModal"></div>
 
         <!-- Modal panel -->
-        <div class="inline-block transform overflow-hidden rounded-lg bg-white text-left align-bottom shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl sm:align-middle dark:bg-neutral-800">
-          <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4 dark:bg-neutral-800">
+        <div class="inline-block overflow-hidden sm:my-8 sm:max-w-3xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
+          <div class="pb-4 pt-5 px-4 sm:p-6 sm:pb-4 bg-white dark:bg-neutral-800">
             <div class="sm:flex sm:items-start">
-              <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
-                <h3 class="text-lg font-medium leading-6 text-gray-900 dark:text-white" id="modal-title">Create New Page</h3>
+              <div class="mt-3 sm:ml-4 sm:mt-0 w-full text-center sm:text-left">
+                <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">Create New Page</h3>
                 <div class="mt-6 space-y-6">
                   <div>
-                    <label for="page-title" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Title</label>
+                    <label for="page-title" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Title</label>
                     <div class="mt-1">
                       <input
                         type="text"
                         id="page-title"
                         value="{{ newPage.title }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                        class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                       />
                     </div>
                   </div>
 
                   <div>
-                    <label for="page-slug" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Slug (optional)</label>
+                    <label for="page-slug" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Slug (optional)</label>
                     <div class="mt-1">
                       <input
                         type="text"
                         id="page-slug"
                         value="{{ newPage.slug }}"
-                        class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                        class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                         placeholder="e.g. about-us (leave empty to generate from title)"
                       />
                     </div>
                   </div>
 
-                  <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                  <div class="grid gap-6 grid-cols-1 sm:grid-cols-2">
                     <div>
-                      <label for="page-template" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Template</label>
+                      <label for="page-template" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Template</label>
                       <div class="mt-1">
                         <select
                           id="page-template"
                           value="{{ newPage.template }}"
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                          class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                         >
                           <option v-for="template in templates.filter(t => t.name !== 'All Templates')" :key="template.id" value="{{ template.name }}">{{ template.name }}</option>
                         </select>
@@ -1219,12 +1219,12 @@ function websiteStats() {
                     </div>
 
                     <div>
-                      <label for="page-status" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Status</label>
+                      <label for="page-status" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
                       <div class="mt-1">
                         <select
                           id="page-status"
                           value="{{ newPage.status }}"
-                          class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                          class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                         >
                           <option v-for="status in statuses.filter(s => s.name !== 'All Statuses')" :key="status.id" value="{{ status.name }}">{{ status.name }}</option>
                         </select>
@@ -1233,7 +1233,7 @@ function websiteStats() {
                   </div>
 
                   <div>
-                    <label for="page-sections" class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Page Sections</label>
+                    <label for="page-sections" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Page Sections</label>
                     <div class="mt-1">
                       <div class="flex flex-wrap gap-2 p-3 border border-gray-300 rounded-md dark:border-neutral-600">
                         <div v-for="section in availableSections" :key="section" class="flex items-center">
@@ -1242,76 +1242,76 @@ function websiteStats() {
                             type="checkbox"
                             value="{{ section }}"
                             value="{{ newPage.sections }}"
-                            class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:focus:ring-offset-neutral-800"
+                            class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                           />
-                          <label for="{{ `section-${section}` }}" class="ml-2 text-sm text-gray-700 dark:text-neutral-300">{{ section }}</label>
+                          <label for="{{ `section-${section}` }}" class="ml-2 text-gray-700 text-sm dark:text-neutral-300">{{ section }}</label>
                         </div>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">Page Location</label>
+                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Page Location</label>
                     <div class="mt-2 space-y-2">
                       <div class="flex items-center">
                         <input
                           id="homepage"
                           type="checkbox"
                           value="{{ newPage.isHomepage }}"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:focus:ring-offset-neutral-800"
+                          class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                         />
-                        <label for="homepage" class="ml-2 text-sm text-gray-700 dark:text-neutral-300">Set as Homepage</label>
+                        <label for="homepage" class="ml-2 text-gray-700 text-sm dark:text-neutral-300">Set as Homepage</label>
                       </div>
                       <div class="flex items-center">
                         <input
                           id="main-menu"
                           type="checkbox"
                           value="{{ newPage.inMainMenu }}"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:focus:ring-offset-neutral-800"
+                          class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                         />
-                        <label for="main-menu" class="ml-2 text-sm text-gray-700 dark:text-neutral-300">Show in Main Menu</label>
+                        <label for="main-menu" class="ml-2 text-gray-700 text-sm dark:text-neutral-300">Show in Main Menu</label>
                       </div>
                       <div class="flex items-center">
                         <input
                           id="footer"
                           type="checkbox"
                           value="{{ newPage.inFooter }}"
-                          class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700 dark:focus:ring-offset-neutral-800"
+                          class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
                         />
-                        <label for="footer" class="ml-2 text-sm text-gray-700 dark:text-neutral-300">Show in Footer</label>
+                        <label for="footer" class="ml-2 text-gray-700 text-sm dark:text-neutral-300">Show in Footer</label>
                       </div>
                     </div>
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">SEO Settings</label>
+                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">SEO Settings</label>
                     <div class="mt-2 space-y-3">
                       <div>
-                        <label for="seo-title" class="block text-xs text-gray-500 dark:text-neutral-400">SEO Title</label>
+                        <label for="seo-title" class="block text-gray-500 text-xs dark:text-neutral-400">SEO Title</label>
                         <input
                           type="text"
                           id="seo-title"
                           value="{{ newPage.seo.title }}"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                          class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                           placeholder="Leave empty to use page title"
                         />
                       </div>
                       <div>
-                        <label for="seo-description" class="block text-xs text-gray-500 dark:text-neutral-400">Meta Description</label>
+                        <label for="seo-description" class="block text-gray-500 text-xs dark:text-neutral-400">Meta Description</label>
                         <textarea
                           id="seo-description"
                           value="{{ newPage.seo.description }}"
                           rows="2"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                          class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                         ></textarea>
                       </div>
                       <div>
-                        <label for="seo-keywords" class="block text-xs text-gray-500 dark:text-neutral-400">Meta Keywords</label>
+                        <label for="seo-keywords" class="block text-gray-500 text-xs dark:text-neutral-400">Meta Keywords</label>
                         <input
                           type="text"
                           id="seo-keywords"
                           value="{{ newPage.seo.keywords }}"
-                          class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white"
+                          class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                           placeholder="e.g. about, company, team"
                         />
                       </div>
@@ -1319,16 +1319,16 @@ function websiteStats() {
                   </div>
 
                   <div>
-                    <label class="block text-sm font-medium text-gray-700 dark:text-neutral-300">OG Image</label>
-                    <div class="mt-1 flex items-center space-x-4">
-                      <div class="h-24 w-40 bg-gray-100 dark:bg-neutral-700 rounded overflow-hidden">
-                        <img :src="newPage.ogImage" alt="OG Image Preview" class="h-full w-full object-cover" />
+                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">OG Image</label>
+                    <div class="flex items-center mt-1 space-x-4">
+                      <div class="overflow-hidden h-24 w-40 bg-gray-100 dark:bg-neutral-700 rounded">
+                        <img :src="newPage.ogImage" alt="OG Image Preview" class="object-cover h-full w-full" />
                       </div>
                       <button
                         type="button"
-                        class="inline-flex items-center rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:bg-neutral-700 dark:border-neutral-600 dark:text-white dark:hover:bg-neutral-600"
+                        class="inline-flex items-center px-3 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
                       >
-                        <div class="i-hugeicons-image-01 h-5 w-5 mr-1"></div>
+                        <div class="mr-1 h-5 w-5 i-hugeicons-image-01"></div>
                         Change Image
                       </button>
                     </div>
@@ -1337,18 +1337,18 @@ function websiteStats() {
               </div>
             </div>
           </div>
-          <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6 dark:bg-neutral-900">
+          <div class="sm:flex sm:flex-row-reverse px-4 py-3 sm:px-6 bg-gray-50 dark:bg-neutral-900">
             <button
               type="button"
               @click="createNewPage"
-              class="inline-flex w-full justify-center rounded-md border border-transparent bg-blue-600 px-4 py-2 text-base font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:ml-3 sm:w-auto sm:text-sm"
+              class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
             >
               Create Page
             </button>
             <button
               type="button"
               @click="closeNewPageModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-base font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 sm:mt-0 sm:w-auto sm:text-sm dark:bg-neutral-700 dark:border-neutral-600 dark:text-white dark:hover:bg-neutral-600"
+              class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
             >
               Cancel
             </button>

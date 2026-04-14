@@ -11,7 +11,7 @@ const { coreTeamMembers = [] } = defineProps<HomeTeamProps>()
     </h2>
   </div>
 
-  <div class="grid sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-x-3 gap-y-20 items-start p-10">
+  <div class="grid gap-x-3 gap-y-20 items-start sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 p-10">
     @foreach(coreTeamMembers as member)
       <TeamMember data="{{ member }}" />
     @endforeach

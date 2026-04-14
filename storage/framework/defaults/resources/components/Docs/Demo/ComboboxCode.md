@@ -42,16 +42,16 @@ const items = computed(() => {
     <Combobox v-model="selected" as="div" class="relative">
       <div class="relative">
         <ComboboxInput
-          class="w-full py-2.5 pl-3 pr-10 text-base text-gray-900 placeholder-gray-400 bg-white border border-gray-300 rounded-lg shadow-sm focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
+          class="placeholder-gray-400 pl-3 pr-10 py-2.5 w-full text-base text-gray-900 bg-white border border-gray-300 rounded-lg focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm duration-200 transition-all"
           :display-value="(person) => person?.name"
           placeholder="Search people..."
           @change="query = $event.target.value"
           @focus="isOpen = true"
         />
         <ComboboxButton
-          class="absolute inset-y-0 right-0 flex items-center pr-2 text-gray-400 hover:text-gray-500"
+          class="flex absolute inset-y-0 right-0 items-center pr-2 text-gray-400 hover:text-gray-500"
         >
-          <div class="i-hugeicons-chevron-up-down-20-solid w-5 h-5" />
+          <div class="h-5 w-5 i-hugeicons-chevron-up-down-20-solid" />
         </ComboboxButton>
       </div>
 
@@ -63,11 +63,11 @@ const items = computed(() => {
         @after-leave="query = ''"
       >
         <ComboboxOptions
-          class="absolute z-10 mt-1 max-h-60 w-full overflow-auto rounded-md bg-white py-1 text-base shadow-lg ring-1 ring-black/5 focus:outline-none"
+          class="absolute overflow-auto z-10 mt-1 py-1 max-h-60 w-full text-base bg-white ring-1 ring-black/5 rounded-md focus:outline-none shadow-lg"
         >
           <div
             v-if="items.length === 0"
-            class="relative cursor-default select-none px-4 py-2 text-gray-700"
+            class="relative px-4 py-2 text-gray-700 cursor-default select-none"
           >
             No results found.
           </div>
@@ -80,24 +80,21 @@ const items = computed(() => {
             as="template"
           >
             <li
-              class="relative cursor-default select-none py-2 pl-10 pr-4"
-              :class="{
-                'bg-indigo-600 text-white': active,
-                'text-gray-900': !active,
-              }"
+              class="relative pl-10 pr-4 py-2 cursor-default select-none"
+              :class="!active, 'bg-indigo-600 'text-gray-900': { } active, text-white':"
             >
               <span
                 class="block truncate"
-                :class="{ 'font-medium': isSelected, 'font-normal': !isSelected }"
+                :class="!isSelected 'font-medium': 'font-normal': { } isSelected,"
               >
                 {{ item.name }}
               </span>
               <span
                 v-if="isSelected"
-                class="absolute inset-y-0 left-0 flex items-center pl-3"
-                :class="{ 'text-white': active, 'text-indigo-600': !active }"
+                class="flex absolute inset-y-0 left-0 items-center pl-3"
+                :class="!active 'text-indigo-600': 'text-white': { } active,"
               >
-                <div class="i-hugeicons-check-20-solid w-5 h-5" />
+                <div class="h-5 w-5 i-hugeicons-check-20-solid" />
               </span>
             </li>
           </ComboboxOption>
@@ -105,11 +102,11 @@ const items = computed(() => {
       </TransitionRoot>
     </Combobox>
 
-    <div v-if="selected" class="mt-4 p-4 bg-gray-50 rounded-lg border border-gray-200">
-      <span class="text-sm font-medium text-gray-500">Selected Person</span>
-      <div class="flex items-center gap-2">
-        <span class="text-lg font-semibold text-gray-900">{{ selected.name }}</span>
-        <span class="text-sm text-gray-500">(ID: {{ selected.id }})</span>
+    <div v-if="selected" class="mt-4 p-4 bg-gray-50 border border-gray-200 rounded-lg">
+      <span class="font-medium text-gray-500 text-sm">Selected Person</span>
+      <div class="flex gap-2 items-center">
+        <span class="font-semibold text-gray-900 text-lg">{{ selected.name }}</span>
+        <span class="text-gray-500 text-sm">(ID: {{ selected.id }})</span>
       </div>
     </div>
   </div>

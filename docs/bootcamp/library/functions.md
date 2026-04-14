@@ -1,3 +1,3 @@
-# How to build a function library?
+# How to build a function library
 
 wip

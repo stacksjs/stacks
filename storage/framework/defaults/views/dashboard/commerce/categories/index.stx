@@ -228,31 +228,31 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
   <PageHeader title="Categories" description="Manage your product categories">
     <template #actions>
       <Button variant="primary" onclick="openAddModal">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Add Category
       </Button>
     </template>
   </PageHeader>
 
       <!-- Filters -->
-      <div class="mt-6 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
         <div class="relative max-w-sm">
-          <div class="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-            <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
           </div>
           <input
             value="{{ searchQuery }}"
             type="text"
-            class="block w-full rounded-md border-0 py-1.5 pl-10 pr-3 text-gray-900 ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:placeholder:text-neutral-500"
+            class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             placeholder="Search categories..."
             oninput="(event) => handleSearch((event.target as HTMLInputElement).value)"
           />
         </div>
 
-        <div class="flex flex-col sm:flex-row gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row">
           <select
             value="{{ featuredFilter }}"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
           >
             <option value="all">All Categories</option>
             <option value="featured">Active Only</option>
@@ -261,7 +261,7 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
 
           <select
             value="{{ itemsPerPage }}"
-            class="block w-full rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700"
+            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
           >
             <option value="{{ 5 }}">5 per page</option>
             <option value="{{ 10 }}">10 per page</option>
@@ -272,10 +272,10 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
       </div>
 
       <!-- Categories table -->
-      <div class="mt-6 flow-root">
-        <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-          <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-            <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
+      <div class="flow-root mt-6">
+        <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+          <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+            <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
               <CategoriesTable
                 :categories="paginatedCategories"
                 :search-query="searchQuery"
@@ -294,7 +294,7 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
         </div>
       </div>
 
-  <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-t border-gray-200 dark:border-neutral-700">
+  <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
     <Pagination
       :current-page="currentPage"
       :total-items="filteredCategories.length"
@@ -307,51 +307,51 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
 
   <!-- Add Category Modal -->
   @if(showAddModal)
-    <div class="fixed inset-0 z-10 overflow-y-auto">
-      <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
         <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
 
-        <div class="relative transform overflow-hidden rounded-lg bg-white px-4 pb-4 pt-5 text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-lg sm:p-6 dark:bg-neutral-800">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
           <div>
-            <div class="mt-3 text-center sm:mt-5">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-white">{{ isEditing ? 'Edit Category' : 'Add New Category' }}</h3>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">{{ isEditing ? 'Edit Category' : 'Add New Category' }}</h3>
               <div class="mt-4">
                 <div class="space-y-4">
                   <div>
-                    <label for="category-name" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Name</label>
+                    <label for="category-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Name</label>
                     <div class="mt-2">
                       <input
                         type="text"
                         id="category-name"
                         value="{{ newCategory.name }}"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       />
                     </div>
                   </div>
                   <div>
-                    <label for="category-description" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Description</label>
+                    <label for="category-description" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Description</label>
                     <div class="mt-2">
                       <textarea
                         id="category-description"
                         value="{{ newCategory.description }}"
                         rows="3"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                       ></textarea>
                     </div>
                   </div>
                   <div>
-                    <label for="category-image" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Image</label>
+                    <label for="category-image" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Image</label>
                     <div class="mt-2">
-                      <div class="flex items-center gap-3">
+                      <div class="flex gap-3 items-center">
                         <input
                           type="text"
                           id="category-image"
                           value="{{ newCategory.image_url }}"
                           placeholder="/images/categories/your-category.jpg"
-                          class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                         />
                         <span class="text-gray-500 dark:text-neutral-400">or</span>
-                        <label for="file-upload" class="cursor-pointer rounded-md bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600">
+                        <label for="file-upload" class="px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm cursor-pointer">
                           Browse
                           <input
                             id="file-upload"
@@ -363,33 +363,33 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
                         </label>
                       </div>
                     </div>
-                    <div class="mt-2 flex justify-center">
+                    <div class="flex justify-center mt-2">
                       @if(newCategory.image_url)
                         <img
                           :src="imagePreview"
                           alt="Category preview"
-                          class="h-16 w-16 rounded-full object-cover border border-gray-200 dark:border-neutral-700 shadow-sm"
+                          class="object-cover h-16 w-16 border border-gray-200 rounded-full dark:border-neutral-700 shadow-sm"
                           onerror="this.src='/images/categories/placeholder.jpg'"
                         />
                       @else
                         <div
-                          class="h-16 w-16 rounded-full flex items-center justify-center text-white font-medium shadow-sm bg-blue-500"
+                          class="flex items-center justify-center h-16 w-16 font-medium text-white bg-blue-500 rounded-full shadow-sm"
                         >
                           {{ newCategory.name ? newCategory.name.charAt(0).toUpperCase() : '?' }}
                         </div>
                       @endif
                     </div>
-                    <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400 text-left">Enter the URL of the category image or upload a file</p>
+                    <p class="mt-1 text-gray-500 text-left text-xs dark:text-neutral-400">Enter the URL of the category image or upload a file</p>
                   </div>
                   <div>
-                    <label for="category-display-order" class="block text-sm font-medium leading-6 text-gray-900 dark:text-neutral-200 text-left">Display Order</label>
+                    <label for="category-display-order" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Display Order</label>
                     <div class="mt-2">
                       <input
                         type="number"
                         id="category-display-order"
                         value="{{ newCategory.display_order }}"
                         min="0"
-                        class="block w-full rounded-md border-0 py-1.5 text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                         placeholder="0"
                       />
                     </div>
@@ -399,26 +399,26 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
                       id="category-featured"
                       type="checkbox"
                       value="{{ newCategory.is_active }}"
-                      class="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-600 dark:border-neutral-600 dark:bg-neutral-700"
+                      class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
                     />
-                    <label for="category-featured" class="ml-2 block text-sm text-gray-900 dark:text-neutral-200">Active category</label>
+                    <label for="category-featured" class="block ml-2 text-gray-900 text-sm dark:text-neutral-200">Active category</label>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="mt-5 sm:mt-6 sm:grid sm:grid-flow-row-dense sm:grid-cols-2 sm:gap-3">
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
               onclick="addCategory"
-              class="inline-flex w-full justify-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 sm:col-start-2"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
             >
               Add
             </button>
             <button
               type="button"
               onclick="closeAddModal"
-              class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:col-start-1 sm:mt-0 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Cancel
             </button>

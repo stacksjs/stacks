@@ -14,28 +14,28 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-y divide-gray-900/10">
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+      <div class="divide-gray-900/10 divide-y">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Nameservers
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Name servers settings.
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 sm:max-w-xl">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 sm:max-w-xl">
               <div class="sm:col-span-full">
-                <label for="nameservers" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Nameservers</label>
+                <label for="nameservers" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Nameservers</label>
                 <div class="mt-2">
                   <input
                     id="nameservers"
                     type="text"
                     name="nameservers"
                     value="{{ nameservers }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
@@ -43,82 +43,82 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               A Records
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your A Records.
             </p>
           </div>
 
           <div>
-            <table class="min-w-full divide-y divide-gray-300">
+            <table class="min-w-full divide-gray-300 divide-y">
               <thead>
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold uppercase sm:pl-0">
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm uppercase">
                     Name
                   </th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">
                     Address
                   </th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase">
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">
                     ttl
                   </th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0">
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0">
                     <span class="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white divide-gray-200 divide-y">
                 @foreach(aRecords as record)
                   <tr>
-                    <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
+                    <td class="pl-4 pr-3 py-4 sm:pl-0 max-w-0 w-full sm:max-w-none sm:w-auto font-medium text-gray-900 text-sm">
                       {{ record.name }}
-                      <dl class="font-normal lg:hidden">
+                      <dl class="lg:hidden font-normal">
                         <dt class="sr-only">Address</dt>
-                        <dd class="mt-1 truncate text-gray-700">{{ record.address }}</dd>
-                        <dt class="sr-only sm:hidden">TTL</dt>
-                        <dd class="mt-1 truncate text-gray-500 sm:hidden">{{ record.ttl }}</dd>
+                        <dd class="mt-1 text-gray-700 truncate">{{ record.address }}</dd>
+                        <dt class="sm:hidden sr-only">TTL</dt>
+                        <dd class="sm:hidden mt-1 text-gray-500 truncate">{{ record.ttl }}</dd>
                       </dl>
                     </td>
-                    <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">{{ record.address }}</td>
-                    <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">{{ record.ttl }}</td>
-                    <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                      <a href="#" class="text-gray-400 font-semibold hover:text-gray-600" data-action="delete">Delete<span class="sr-only">, {{ record.name }}</span></a>
-                      <a href="#" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="edit">Edit<span class="sr-only">, {{ record.name }}</span></a>
+                    <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm">{{ record.address }}</td>
+                    <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">{{ record.ttl }}</td>
+                    <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                      <a href="#" class="font-semibold text-gray-400 hover:text-gray-600" data-action="delete">Delete<span class="sr-only">, {{ record.name }}</span></a>
+                      <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="edit">Edit<span class="sr-only">, {{ record.name }}</span></a>
                     </td>
                   </tr>
                 @endforeach
                 <tr>
-                  <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
+                  <td class="pl-4 pr-3 py-4 sm:pl-0 max-w-0 w-full sm:max-w-none sm:w-auto font-medium text-gray-900 text-sm">
                     <input
                       type="text"
                       name="a-record-name"
                       value=""
-                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                      class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                     >
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm">
                     <input
                       type="text"
                       name="a-record-address"
                       value=""
-                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                      class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                     >
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">
                     <input
                       type="text"
                       name="a-record-ttl"
                       placeholder="auto"
                       value=""
-                      class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                      class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                     >
                   </td>
-                  <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                    <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-a-record">
+                  <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                    <button type="button" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="add-a-record">
                       Add
                     </button>
                   </td>
@@ -128,39 +128,39 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               AAAA Records
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your AAAA Records.
             </p>
           </div>
 
           <div>
-            <table class="min-w-full divide-y divide-gray-300">
+            <table class="min-w-full divide-gray-300 divide-y">
               <thead>
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold uppercase sm:pl-0">Name</th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">Address</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase">ttl</th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0"><span class="sr-only">Actions</span></th>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm uppercase">Name</th>
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">Address</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">ttl</th>
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0"><span class="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white divide-gray-200 divide-y">
                 <tr>
-                  <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="aaaa-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="pl-4 pr-3 py-4 sm:pl-0 max-w-0 w-full sm:max-w-none sm:w-auto font-medium text-gray-900 text-sm">
+                    <input type="text" name="aaaa-record-name" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="aaaa-record-address" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="aaaa-record-address" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="aaaa-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="aaaa-record-ttl" placeholder="auto" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                    <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-aaaa-record">Add</button>
+                  <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                    <button type="button" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="add-aaaa-record">Add</button>
                   </td>
                 </tr>
               </tbody>
@@ -168,39 +168,39 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               CNAME Records
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your CNAME Records.
             </p>
           </div>
 
           <div>
-            <table class="min-w-full divide-y divide-gray-300">
+            <table class="min-w-full divide-gray-300 divide-y">
               <thead>
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold uppercase sm:pl-0">Name</th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">Target</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase">ttl</th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0"><span class="sr-only">Actions</span></th>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm uppercase">Name</th>
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">Target</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">ttl</th>
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0"><span class="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white divide-gray-200 divide-y">
                 <tr>
-                  <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="cname-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="pl-4 pr-3 py-4 sm:pl-0 max-w-0 w-full sm:max-w-none sm:w-auto font-medium text-gray-900 text-sm">
+                    <input type="text" name="cname-record-name" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="cname-record-target" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="cname-record-target" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="cname-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="cname-record-ttl" placeholder="auto" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                    <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-cname-record">Add</button>
+                  <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                    <button type="button" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="add-cname-record">Add</button>
                   </td>
                 </tr>
               </tbody>
@@ -208,43 +208,43 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               MX Records
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your MX Records.
             </p>
           </div>
 
           <div>
-            <table class="min-w-full divide-y divide-gray-300">
+            <table class="min-w-full divide-gray-300 divide-y">
               <thead>
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold uppercase sm:pl-0">Name</th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">Mail Server</th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">ttl</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase">Priority</th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0"><span class="sr-only">Actions</span></th>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm uppercase">Name</th>
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">Mail Server</th>
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">ttl</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">Priority</th>
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0"><span class="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white divide-gray-200 divide-y">
                 <tr>
-                  <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="mx-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="pl-4 pr-3 py-4 sm:pl-0 max-w-0 w-full sm:max-w-none sm:w-auto font-medium text-gray-900 text-sm">
+                    <input type="text" name="mx-record-name" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="mx-record-server" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="mx-record-server" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="mx-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="mx-record-ttl" placeholder="auto" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="mx-record-priority" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="mx-record-priority" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                    <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-mx-record">Add</button>
+                  <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                    <button type="button" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="add-mx-record">Add</button>
                   </td>
                 </tr>
               </tbody>
@@ -252,39 +252,39 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               TXT Records
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your TXT Records.
             </p>
           </div>
 
           <div>
-            <table class="min-w-full divide-y divide-gray-300">
+            <table class="min-w-full divide-gray-300 divide-y">
               <thead>
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold uppercase sm:pl-0">Name</th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">Content</th>
-                  <th scope="col" class="hidden px-3 py-3.5 text-left text-sm text-gray-900 font-semibold uppercase lg:table-cell">ttl</th>
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0"><span class="sr-only">Actions</span></th>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm uppercase">Name</th>
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">Content</th>
+                  <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm uppercase">ttl</th>
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0"><span class="sr-only">Actions</span></th>
                 </tr>
               </thead>
-              <tbody class="bg-white divide-y divide-gray-200">
+              <tbody class="bg-white divide-gray-200 divide-y">
                 <tr>
-                  <td class="max-w-0 w-full py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:max-w-none sm:w-auto sm:pl-0">
-                    <input type="text" name="txt-record-name" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="pl-4 pr-3 py-4 sm:pl-0 max-w-0 w-full sm:max-w-none sm:w-auto font-medium text-gray-900 text-sm">
+                    <input type="text" name="txt-record-name" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 lg:table-cell">
-                    <input type="text" name="txt-record-content" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="txt-record-content" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 sm:table-cell">
-                    <input type="text" name="txt-record-ttl" placeholder="auto" value="" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm">
+                    <input type="text" name="txt-record-ttl" placeholder="auto" value="" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
                   </td>
-                  <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                    <button type="button" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="add-txt-record">Add</button>
+                  <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                    <button type="button" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="add-txt-record">Add</button>
                   </td>
                 </tr>
               </tbody>
@@ -293,13 +293,13 @@ const { nameservers = '', aRecords = [ } = defineProps<DNSFormProps>()
         </div>
       </div>
     </main>
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

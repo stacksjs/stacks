@@ -138,11 +138,7 @@ For dynamic styling based on state, use the slot props provided by ListboxOption
 
 ```vue
 <ListboxOption v-slot="{ active, selected }">
-  <li :class="{
-    'bg-blue-500 text-white': active,
-    'bg-white text-black': !active,
-    'font-bold': selected
-  }">
+  <li :class="selected !active, 'bg-blue-500 'bg-white 'font-bold': { } active, text-black': text-white':">
     {{ option.name }}
   </li>
 </ListboxOption>

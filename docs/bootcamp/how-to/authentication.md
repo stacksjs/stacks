@@ -61,22 +61,22 @@ CREATE TABLE users (
   email TEXT NOT NULL UNIQUE,
   password TEXT NOT NULL,
   name TEXT,
-  email_verified_at DATETIME,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
+  email*verified*at DATETIME,
+  created*at DATETIME DEFAULT CURRENT*TIMESTAMP,
+  updated*at DATETIME DEFAULT CURRENT*TIMESTAMP
 );
 
 -- Tokens table for API authentication
-CREATE TABLE personal_access_tokens (
+CREATE TABLE personal*access*tokens (
   id INTEGER PRIMARY KEY AUTOINCREMENT,
-  user_id INTEGER NOT NULL,
+  user*id INTEGER NOT NULL,
   name TEXT NOT NULL,
   token TEXT NOT NULL UNIQUE,
   abilities TEXT,
-  last_used_at DATETIME,
-  expires_at DATETIME,
-  created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+  last*used*at DATETIME,
+  expires*at DATETIME,
+  created*at DATETIME DEFAULT CURRENT*TIMESTAMP,
+  FOREIGN KEY (user*id) REFERENCES users(id) ON DELETE CASCADE
 );
 ```
 
@@ -112,7 +112,7 @@ export default new Action({
       rule: schema.string().min(8).max(255),
       message: 'Password must be at least 8 characters.',
     },
-    password_confirmation: {
+    password*confirmation: {
       rule: schema.string(),
       message: 'Password confirmation is required.',
     },
@@ -125,7 +125,7 @@ export default new Action({
   async handle(request: RequestInstance) {
     const email = request.get('email')
     const password = request.get('password')
-    const passwordConfirmation = request.get('password_confirmation')
+    const passwordConfirmation = request.get('password*confirmation')
     const name = request.get('name')
 
     // Verify password confirmation
@@ -177,7 +177,7 @@ const form = ref({
   name: '',
   email: '',
   password: '',
-  password_confirmation: '',
+  password*confirmation: '',
 })
 const error = ref('')
 const loading = ref(false)
@@ -211,55 +211,55 @@ async function handleRegister() {
 }
 </script>
 
-<form onsubmit="event.preventDefault(); handleRegister()" class="space-y-4 max-w-md mx-auto">
-  <h2 class="text-2xl font-bold">Create Account</h2>
+<form onsubmit="event.preventDefault(); handleRegister()" class="mx-auto space-y-4 max-w-md">
+  <h2 class="font-bold text-2xl">Create Account</h2>
 
   @if(error.value)
-    <div class="bg-red-100 text-red-700 p-3 rounded">
+    <div class="p-3 text-red-700 bg-red-100 rounded">
       {{ error.value }}
     </div>
   @endif
 
   <div>
-    <label class="block text-sm font-medium mb-1">Name</label>
+    <label class="block mb-1 font-medium text-sm">Name</label>
     <input
       type="text"
       value="{{ form.value.name }}"
       oninput="form.value.name = event.target.value"
-      class="w-full px-3 py-2 border rounded-lg"
+      class="px-3 py-2 w-full border rounded-lg"
       required
     />
   </div>
 
   <div>
-    <label class="block text-sm font-medium mb-1">Email</label>
+    <label class="block mb-1 font-medium text-sm">Email</label>
     <input
       type="email"
       value="{{ form.value.email }}"
       oninput="form.value.email = event.target.value"
-      class="w-full px-3 py-2 border rounded-lg"
+      class="px-3 py-2 w-full border rounded-lg"
       required
     />
   </div>
 
   <div>
-    <label class="block text-sm font-medium mb-1">Password</label>
+    <label class="block mb-1 font-medium text-sm">Password</label>
     <input
       type="password"
       value="{{ form.value.password }}"
       oninput="form.value.password = event.target.value"
-      class="w-full px-3 py-2 border rounded-lg"
+      class="px-3 py-2 w-full border rounded-lg"
       required
     />
   </div>
 
   <div>
-    <label class="block text-sm font-medium mb-1">Confirm Password</label>
+    <label class="block mb-1 font-medium text-sm">Confirm Password</label>
     <input
       type="password"
-      value="{{ form.value.password_confirmation }}"
-      oninput="form.value.password_confirmation = event.target.value"
-      class="w-full px-3 py-2 border rounded-lg"
+      value="{{ form.value.password*confirmation }}"
+      oninput="form.value.password*confirmation = event.target.value"
+      class="px-3 py-2 w-full border rounded-lg"
       required
     />
   </div>
@@ -267,12 +267,12 @@ async function handleRegister() {
   <button
     type="submit"
     disabled="{{ loading.value }}"
-    class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+    class="py-2 w-full text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50"
   >
     {{ loading.value ? 'Creating account...' : 'Register' }}
   </button>
 
-  <p class="text-center text-sm text-gray-600">
+  <p class="text-center text-gray-600 text-sm">
     Already have an account?
     <a href="/login" class="text-blue-500 hover:underline">Login</a>
   </p>
@@ -385,38 +385,38 @@ async function handleLogin() {
 }
 </script>
 
-<form onsubmit="event.preventDefault(); handleLogin()" class="space-y-4 max-w-md mx-auto">
-  <h2 class="text-2xl font-bold">Login</h2>
+<form onsubmit="event.preventDefault(); handleLogin()" class="mx-auto space-y-4 max-w-md">
+  <h2 class="font-bold text-2xl">Login</h2>
 
   @if(error.value)
-    <div class="bg-red-100 text-red-700 p-3 rounded">
+    <div class="p-3 text-red-700 bg-red-100 rounded">
       {{ error.value }}
     </div>
   @endif
 
   <div>
-    <label class="block text-sm font-medium mb-1">Email</label>
+    <label class="block mb-1 font-medium text-sm">Email</label>
     <input
       type="email"
       value="{{ form.value.email }}"
       oninput="form.value.email = event.target.value"
-      class="w-full px-3 py-2 border rounded-lg"
+      class="px-3 py-2 w-full border rounded-lg"
       required
     />
   </div>
 
   <div>
-    <label class="block text-sm font-medium mb-1">Password</label>
+    <label class="block mb-1 font-medium text-sm">Password</label>
     <input
       type="password"
       value="{{ form.value.password }}"
       oninput="form.value.password = event.target.value"
-      class="w-full px-3 py-2 border rounded-lg"
+      class="px-3 py-2 w-full border rounded-lg"
       required
     />
   </div>
 
-  <div class="flex items-center gap-2">
+  <div class="flex gap-2 items-center">
     <input
       type="checkbox"
       id="remember"
@@ -429,7 +429,7 @@ async function handleLogin() {
   <button
     type="submit"
     disabled="{{ loading.value }}"
-    class="w-full py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+    class="py-2 w-full text-white bg-blue-500 hover:bg-blue-600 rounded-lg disabled:opacity-50"
   >
     {{ loading.value ? 'Logging in...' : 'Login' }}
   </button>
@@ -510,8 +510,8 @@ export default new Action({
         id: token.id,
         name: token.name,
         abilities: token.abilities,
-        lastUsedAt: token.last_used_at,
-        createdAt: token.created_at,
+        lastUsedAt: token.last*used*at,
+        createdAt: token.created*at,
       })),
     })
   },
@@ -536,7 +536,7 @@ export default new Action({
     const tokenId = request.param('id')
 
     const token = await PersonalAccessToken.where('id', tokenId)
-      .where('user_id', user.id)
+      .where('user*id', user.id)
       .first()
 
     if (!token) {
@@ -634,8 +634,8 @@ export default new Action({
       id: user.id,
       email: user.email,
       name: user.name,
-      emailVerifiedAt: user.email_verified_at,
-      createdAt: user.created_at,
+      emailVerifiedAt: user.email*verified*at,
+      createdAt: user.created*at,
     })
   },
 })
@@ -789,7 +789,7 @@ export default new Action({
         subject: 'Reset Your Password',
         template: 'password-reset',
         data: {
-          resetUrl: `${APP_URL}/reset-password?token=${token}`,
+          resetUrl: `${APP*URL}/reset-password?token=${token}`,
         },
       })
     }
@@ -825,7 +825,7 @@ export default new Action({
       rule: schema.string().min(8),
       message: 'Password must be at least 8 characters.',
     },
-    password_confirmation: {
+    password*confirmation: {
       rule: schema.string(),
       message: 'Password confirmation is required.',
     },
@@ -834,7 +834,7 @@ export default new Action({
   async handle(request: RequestInstance) {
     const token = request.get('token')
     const password = request.get('password')
-    const passwordConfirmation = request.get('password_confirmation')
+    const passwordConfirmation = request.get('password*confirmation')
 
     if (password !== passwordConfirmation) {
       return response.badRequest('Passwords do not match.')
@@ -842,14 +842,14 @@ export default new Action({
 
     // Verify token and get user
     const resetRecord = await PasswordReset.where('token', token)
-      .where('expires_at', '>', new Date())
+      .where('expires*at', '>', new Date())
       .first()
 
     if (!resetRecord) {
       return response.badRequest('Invalid or expired reset token.')
     }
 
-    const user = await User.find(resetRecord.user_id)
+    const user = await User.find(resetRecord.user*id)
 
     if (!user) {
       return response.badRequest('User not found.')

@@ -542,22 +542,22 @@ function deleteSelectedItems() {
 </script>
 
 @title('Dashboard - File Manager')
-<div class="h-full flex flex-col">
+<div class="flex flex-col h-full">
   <!-- Main content -->
-  <div class="flex-1 flex">
+  <div class="flex flex-1">
     <!-- Sidebar -->
-    <div class="{{ [
+    <div class="[
       'border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300',
       showSidePanel ? 'w-64' : 'w-0 overflow-hidden'
-    ] }}">
-      <div class="h-full flex flex-col">
+    ] {{ }}">
+      <div class="flex flex-col h-full">
         <!-- Storage overview -->
         <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
-          <h3 class="text-sm font-semibold text-stone-500 dark:text-neutral-400 uppercase tracking-wider">Storage</h3>
+          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage</h3>
           <div class="mt-2" style="height: 120px;">
             <canvas id="chart_1"></canvas>
           </div>
-          <div class="mt-2 text-xs text-stone-500 dark:text-neutral-400">
+          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
             <div class="flex justify-between py-0.5">
               <span>Used</span>
               <span>{{ formatFileSize(storageStats.used) }}</span>
@@ -575,11 +575,11 @@ function deleteSelectedItems() {
 
         <!-- Storage by type -->
         <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
-          <h3 class="text-sm font-semibold text-stone-500 dark:text-neutral-400 uppercase tracking-wider">Storage by Type</h3>
+          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage by Type</h3>
           <div class="mt-2" style="height: 120px;">
             <canvas id="chart_2"></canvas>
           </div>
-          <div class="mt-2 text-xs text-stone-500 dark:text-neutral-400">
+          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
             <div class="flex justify-between py-0.5">
               <span>Documents</span>
               <span>{{ formatFileSize(storageByType.documents) }}</span>
@@ -600,72 +600,72 @@ function deleteSelectedItems() {
         </div>
 
         <!-- Navigation -->
-        <nav class="flex-1 overflow-y-auto p-2">
+        <nav class="overflow-y-auto flex-1 p-2">
           <div class="space-y-0.5">
             <button
               onclick="navigateToFolder(rootFolder)"
-              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md transition-colors"
-              class="{{ [
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
+              class="[
                 currentFolder.id === rootFolder.id
                   ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
                   : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
-              ] }}"
+              ] {{ }}"
             >
-              <div class="i-hugeicons-home-02 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
               Home
             </button>
 
             <button
-              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
             >
-              <div class="i-hugeicons-star h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-star"></div>
               Starred
-              <span class="ml-auto bg-stone-200/60 text-stone-600 dark:bg-neutral-700 dark:text-neutral-300 py-0.5 px-2 rounded-full text-xs">
+              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">
                 {{ starredItems.length }}
               </span>
             </button>
 
             <button
-              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
             >
-              <div class="i-hugeicons-share-01 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-share-01"></div>
               Shared
-              <span class="ml-auto bg-stone-200/60 text-stone-600 dark:bg-neutral-700 dark:text-neutral-300 py-0.5 px-2 rounded-full text-xs">
+              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">
                 {{ sharedItems.length }}
               </span>
             </button>
 
             <button
-              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
             >
-              <div class="i-hugeicons-clock-04 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-clock-04"></div>
               Recent
             </button>
 
             <button
-              class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white transition-colors"
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
             >
-              <div class="i-hugeicons-waste h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-waste"></div>
               Trash
             </button>
           </div>
 
           <div class="mt-6">
-            <h3 class="px-2.5 text-xs font-semibold text-stone-500 uppercase tracking-wider dark:text-neutral-400">
+            <h3 class="px-2.5 font-semibold text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
               Folders
             </h3>
             <div class="mt-1 space-y-0.5">
               @foreach(rootFolder.items.filter(item => item.type === 'folder') as folder)
               <button
                 onclick="navigateToFolder(folder)"
-                class="w-full flex items-center px-2.5 py-1.5 text-[13px] font-medium rounded-md transition-colors"
-                class="{{ [
+                class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
+                class="[
                   currentFolder.id === folder.id
                     ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
                     : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-folder-02 h-4 w-4 mr-2.5 text-stone-500 dark:text-neutral-500"></div>
+                <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-folder-02"></div>
                 {{ folder.name }}
               </button>
               @endforeach
@@ -674,12 +674,12 @@ function deleteSelectedItems() {
         </nav>
 
         <!-- Upload button -->
-        <div class="p-4 border-t border-stone-200/60 dark:border-neutral-700">
+        <div class="p-4 border-stone-200/60 border-t dark:border-neutral-700">
           <button
             onclick="showUploadModal = true"
-            class="w-full flex items-center justify-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-neutral-800"
+            class="flex items-center justify-center px-4 py-2 w-full font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
-            <div class="i-hugeicons-upload-01 h-5 w-5 mr-2"></div>
+            <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
             Upload Files
           </button>
         </div>
@@ -687,29 +687,29 @@ function deleteSelectedItems() {
     </div>
 
     <!-- Main content area -->
-    <div class="flex-1 flex flex-col bg-white dark:bg-neutral-900">
+    <div class="flex flex-1 flex-col bg-white dark:bg-neutral-900">
       <!-- Toolbar -->
-      <div class="border-b border-stone-200/60 dark:border-neutral-700 bg-white dark:bg-neutral-900 p-4">
+      <div class="p-4 bg-white dark:bg-neutral-900 border-b border-stone-200/60 dark:border-neutral-700">
         <div class="flex items-center justify-between">
           <!-- Toggle sidebar button -->
           <button
             onclick="showSidePanel = !showSidePanel"
-            class="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-700"
+            class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
           >
-            <div class="i-hugeicons-menu-01 h-5 w-5"></div>
+            <div class="h-5 w-5 i-hugeicons-menu-01"></div>
           </button>
 
           <!-- Search -->
-          <div class="max-w-lg w-full lg:max-w-xs ml-4">
+          <div class="ml-4 max-w-lg w-full lg:max-w-xs">
             <label for="search" class="sr-only">Search</label>
             <div class="relative text-gray-400 focus-within:text-gray-600 dark:focus-within:text-gray-300">
-              <div class="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center">
-                <div class="i-hugeicons-search-01 h-5 w-5"></div>
+              <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                <div class="h-5 w-5 i-hugeicons-search-01"></div>
               </div>
               <input
                 id="search"
                 value="{{ searchQuery }}"
-                class="block w-full bg-white dark:bg-neutral-700 py-2 pl-10 pr-3 border border-gray-300 dark:border-neutral-600 rounded-md leading-5 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full leading-5 text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
                 placeholder="Search files and folders..."
                 type="search"
               />
@@ -722,32 +722,32 @@ function deleteSelectedItems() {
             <div class="flex rounded-md shadow-sm">
               <button
                 onclick="viewMode = 'grid'"
-                class="{{ [
+                class="[
                   'relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium',
                   viewMode === 'grid'
                     ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
                     : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-grid-view h-5 w-5"></div>
+                <div class="h-5 w-5 i-hugeicons-grid-view"></div>
               </button>
               <button
                 onclick="viewMode = 'list'"
-                class="{{ [
+                class="[
                   'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium',
                   viewMode === 'list'
                     ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
                     : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-right-to-left-list-number h-5 w-5"></div>
+                <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
               </button>
             </div>
 
             <!-- Sort options -->
             <select
               value="{{ sortBy }}"
-              class="block w-full pl-3 pr-10 py-2 text-base border-gray-300 dark:border-neutral-600 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md bg-white dark:bg-neutral-700 text-gray-900 dark:text-white"
+              class="block pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
             >
               <option value="name">Name</option>
               <option value="lastModified">Date</option>
@@ -756,12 +756,12 @@ function deleteSelectedItems() {
 
             <button
               onclick="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-              class="p-2 rounded-md text-gray-500 hover:text-gray-900 hover:bg-gray-100 dark:text-neutral-400 dark:hover:text-white dark:hover:bg-neutral-700"
+              class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
             >
-              <div class="{{ [
+              <div class="[
                 sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
                 'h-5 w-5'
-              ] }}"></div>
+              ] {{ }}"></div>
             </button>
           </div>
 
@@ -769,16 +769,16 @@ function deleteSelectedItems() {
           <div class="flex items-center space-x-2">
             <button
               onclick="showCreateFolderModal = true"
-              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-neutral-800"
+              class="inline-flex items-center px-3 py-2 font-medium leading-4 text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
             >
-              <div class="i-hugeicons-folder-add h-4 w-4 mr-2"></div>
+              <div class="mr-2 h-4 w-4 i-hugeicons-folder-add"></div>
               New Folder
             </button>
             <button
               onclick="showUploadModal = true"
-              class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-neutral-800"
+              class="inline-flex items-center px-3 py-2 font-medium leading-4 text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
             >
-              <div class="i-hugeicons-upload-01 h-4 w-4 mr-2"></div>
+              <div class="mr-2 h-4 w-4 i-hugeicons-upload-01"></div>
               Upload
             </button>
           </div>
@@ -791,16 +791,16 @@ function deleteSelectedItems() {
             <li>
               <div class="flex items-center">
                 @if(index > 0)
-                <span class="text-gray-400 dark:text-neutral-500 mx-1">/</span>
+                <span class="mx-1 text-gray-400 dark:text-neutral-500">/</span>
                 @endif
                 <button
                   onclick="navigateToPath(index)"
-                  class="{{ [
+                  class="[
                     'text-sm font-medium',
                     index === currentPath.length - 1
                       ? 'text-indigo-600 dark:text-indigo-400'
                       : 'text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300'
-                  ] }}"
+                  ] {{ }}"
                 >
                   {{ path }}
                 </button>
@@ -812,86 +812,86 @@ function deleteSelectedItems() {
       </div>
 
       <!-- Content -->
-      <div class="flex-1 overflow-auto p-4 bg-stone-50/50 dark:bg-neutral-900">
+      <div class="overflow-auto flex-1 p-4 bg-stone-50/50 dark:bg-neutral-900">
         <!-- Empty state -->
         @if(filteredItems.length === 0)
         <div class="flex flex-col items-center justify-center h-full text-center">
-          <div class="i-hugeicons-folder-02 h-16 w-16 text-gray-400 dark:text-neutral-600"></div>
-          <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No items</h3>
-          <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
+          <div class="h-16 w-16 text-gray-400 dark:text-neutral-600 i-hugeicons-folder-02"></div>
+          <h3 class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No items</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
             {{ searchQuery ? 'No items match your search.' : 'This folder is empty.' }}
           </p>
-          <div class="mt-6 flex space-x-4">
+          <div class="flex mt-6 space-x-4">
             <button
               onclick="showCreateFolderModal = true"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-neutral-800"
+              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
             >
-              <div class="i-hugeicons-folder-add h-5 w-5 mr-2"></div>
+              <div class="mr-2 h-5 w-5 i-hugeicons-folder-add"></div>
               New Folder
             </button>
             <button
               onclick="showUploadModal = true"
-              class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-neutral-800"
+              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
             >
-              <div class="i-hugeicons-upload-01 h-5 w-5 mr-2"></div>
+              <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
               Upload Files
             </button>
           </div>
         </div>
         @elseif(viewMode === 'grid')
         <!-- Grid view -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4">
+        <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           @foreach(filteredItems as item)
           <div
             onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
             @contextmenu.prevent
-            class="{{ [
+            class="[
               'relative group p-4 rounded-lg border cursor-pointer transition-all duration-200',
               selectedItems.some(i => i.id === item.id)
                 ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-700'
                 : 'bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-gray-600'
-            ] }}"
+            ] {{ }}"
           >
             <!-- Item icon -->
             <div class="flex justify-center mb-4">
               <div
-                class="{{ [
+                class="[
                   item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
                   'h-12 w-12',
                   item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400'
-                ] }}"
+                ] {{ }}"
               ></div>
             </div>
 
             <!-- Item name -->
             <div class="text-center">
-              <p class="text-sm font-medium text-gray-900 dark:text-white truncate">{{ item.name }}</p>
+              <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.name }}</p>
               @if(item.type !== 'folder')
-              <p class="text-xs text-gray-500 dark:text-neutral-400 mt-1">
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                 {{ formatFileSize(item.size) }}
               </p>
               @endif
             </div>
 
             <!-- Actions -->
-            <div class="absolute top-2 right-2 flex space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+            <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
               <button
                 onclick="toggleStar(item); event.stopPropagation()"
-                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700"
-                class="{{ [
+                class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
+                class="[
                   item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-neutral-500'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-star h-4 w-4"></div>
+                <div class="h-4 w-4 i-hugeicons-star"></div>
               </button>
               <button
                 onclick="toggleShare(item); event.stopPropagation()"
-                class="p-1 rounded-full hover:bg-gray-100 dark:hover:bg-neutral-700"
-                class="{{ [
+                class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
+                class="[
                   item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-neutral-500'
-                ] }}"
+                ] {{ }}"
               >
-                <div class="i-hugeicons-share-01 h-4 w-4"></div>
+                <div class="h-4 w-4 i-hugeicons-share-01"></div>
               </button>
             </div>
           </div>
@@ -899,74 +899,74 @@ function deleteSelectedItems() {
         </div>
         @else
         <!-- List view -->
-        <div class="overflow-hidden shadow-sm ring-1 ring-stone-200/80 dark:ring-neutral-700 rounded-xl">
-          <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
+        <div class="overflow-hidden ring-1 ring-stone-200/80 rounded-xl dark:ring-neutral-700 shadow-sm">
+          <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
             <thead class="bg-stone-50/80 dark:bg-neutral-800">
               <tr>
-                <th scope="col" class="py-3.5 pl-6 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
+                <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
                   Name
                 </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
+                <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
                   Size
                 </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
+                <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
                   Modified
                 </th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-6">
+                <th scope="col" class="relative pl-3 pr-6 py-3.5">
                   <span class="sr-only">Actions</span>
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-stone-100 dark:divide-neutral-700 bg-white dark:bg-neutral-800">
+            <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
               @foreach(filteredItems as item)
               <tr
                 onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
-                class="{{ [
+                class="[
                   'cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors',
                   selectedItems.some(i => i.id === item.id)
                     ? 'bg-blue-50/50 dark:bg-blue-900/20'
                     : ''
-                ] }}"
+                ] {{ }}"
               >
-                <td class="whitespace-nowrap py-3.5 pl-6 pr-3 text-sm">
+                <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
                   <div class="flex items-center">
                     <div
-                      class="{{ [
+                      class="[
                         item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
                         'h-5 w-5 mr-3',
                         item.type === 'folder' ? 'text-blue-500 dark:text-blue-400' : 'text-stone-500 dark:text-neutral-400'
-                      ] }}"
+                      ] {{ }}"
                     ></div>
                     <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400">
+                <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
                   {{ item.type === 'folder' ? '-' : formatFileSize(item.size) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400">
+                <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
                   {{ formatDate(item.lastModified) }}
                 </td>
-                <td class="relative whitespace-nowrap py-3.5 pl-3 pr-6 text-right text-sm font-medium">
+                <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
                   <div class="flex justify-end space-x-2">
                     <button
                       onclick="toggleStar(item); event.stopPropagation()"
                       class="text-gray-400 hover:text-yellow-500"
-                      class="{{ { 'text-yellow-500': item.starred } }}"
+                      class="'text-yellow-500': { {{ } }} item.starred"
                     >
-                      <div class="i-hugeicons-star h-5 w-5"></div>
+                      <div class="h-5 w-5 i-hugeicons-star"></div>
                     </button>
                     <button
                       onclick="toggleShare(item); event.stopPropagation()"
                       class="text-gray-400 hover:text-indigo-500"
-                      class="{{ { 'text-indigo-500': item.shared } }}"
+                      class="'text-indigo-500': { {{ } }} item.shared"
                     >
-                      <div class="i-hugeicons-share-01 h-5 w-5"></div>
+                      <div class="h-5 w-5 i-hugeicons-share-01"></div>
                     </button>
                     <button
                       onclick="selectedItems = [item]; showDeleteConfirmation = true; event.stopPropagation()"
                       class="text-gray-400 hover:text-red-500"
                     >
-                      <div class="i-hugeicons-waste h-5 w-5"></div>
+                      <div class="h-5 w-5 i-hugeicons-waste"></div>
                     </button>
                   </div>
                 </td>
@@ -982,23 +982,23 @@ function deleteSelectedItems() {
 
   <!-- Create Folder Modal -->
   @if(showCreateFolderModal)
-  <div class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75" aria-hidden="true" onclick="showCreateFolderModal = false"></div>
+  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showCreateFolderModal = false"></div>
 
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-      <div class="inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
         <div class="sm:flex sm:items-start">
-          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900 sm:mx-0 sm:h-10 sm:w-10">
-            <div class="i-hugeicons-folder-add h-6 w-6 text-indigo-600 dark:text-indigo-400"></div>
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+            <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-folder-add"></div>
           </div>
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
               Create New Folder
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-gray-500 dark:text-neutral-400">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
                 Enter a name for the new folder.
               </p>
             </div>
@@ -1008,23 +1008,23 @@ function deleteSelectedItems() {
           <input
             type="text"
             value="{{ newFolderName }}"
-            class="shadow-sm focus:ring-indigo-500 focus:border-indigo-500 block w-full sm:text-sm border-gray-300 dark:border-neutral-600 dark:bg-neutral-700 dark:text-white rounded-md"
+            class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
             placeholder="Folder name"
             @keyup.enter="createNewFolder"
           />
         </div>
-        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
           <button
             type="button"
             onclick="createNewFolder"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm dark:focus:ring-offset-neutral-800"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
             Create
           </button>
           <button
             type="button"
             onclick="showCreateFolderModal = false"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-700 text-base font-medium text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:focus:ring-offset-neutral-800"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
             Cancel
           </button>
@@ -1036,56 +1036,56 @@ function deleteSelectedItems() {
 
   <!-- Upload Modal -->
   @if(showUploadModal)
-  <div class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75" aria-hidden="true" onclick="showUploadModal = false"></div>
+  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showUploadModal = false"></div>
 
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-      <div class="inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
         <div class="sm:flex sm:items-start">
-          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-indigo-100 dark:bg-indigo-900 sm:mx-0 sm:h-10 sm:w-10">
-            <div class="i-hugeicons-upload-01 h-6 w-6 text-indigo-600 dark:text-indigo-400"></div>
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+            <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-upload-01"></div>
           </div>
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
               Upload Files
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-gray-500 dark:text-neutral-400">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
                 Select files to upload to the current folder.
               </p>
             </div>
           </div>
         </div>
         <div class="mt-4">
-          <div class="flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 dark:border-neutral-600 border-dashed rounded-md">
+          <div class="flex justify-center pb-6 pt-5 px-6 border-2 border-dashed border-gray-300 rounded-md dark:border-neutral-600">
             <div class="space-y-1 text-center">
-              <div class="i-hugeicons-upload-01 mx-auto h-12 w-12 text-gray-400 dark:text-neutral-500"></div>
-              <div class="flex text-sm text-gray-600 dark:text-neutral-400">
-                <label for="file-upload" class="relative cursor-pointer bg-white dark:bg-neutral-800 rounded-md font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500 dark:focus-within:ring-offset-gray-800">
+              <div class="mx-auto h-12 w-12 text-gray-400 dark:text-neutral-500 i-hugeicons-upload-01"></div>
+              <div class="flex text-gray-600 text-sm dark:text-neutral-400">
+                <label for="file-upload" class="relative font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 bg-white dark:bg-neutral-800 rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-800 cursor-pointer">
                   <span>Upload a file</span>
                   <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple />
                 </label>
                 <p class="pl-1">or drag and drop</p>
               </div>
-              <p class="text-xs text-gray-500 dark:text-neutral-400">
+              <p class="text-gray-500 text-xs dark:text-neutral-400">
                 PNG, JPG, GIF, PDF, DOCX up to 10MB
               </p>
             </div>
           </div>
         </div>
-        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
           <button
             type="button"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-indigo-600 text-base font-medium text-white hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:ml-3 sm:w-auto sm:text-sm dark:focus:ring-offset-neutral-800"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
             Upload
           </button>
           <button
             type="button"
             onclick="showUploadModal = false"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-700 text-base font-medium text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:focus:ring-offset-neutral-800"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
             Cancel
           </button>
@@ -1097,39 +1097,39 @@ function deleteSelectedItems() {
 
   <!-- Delete Confirmation Modal -->
   @if(showDeleteConfirmation)
-  <div class="fixed inset-0 z-10 overflow-y-auto" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex items-end justify-center min-h-screen pt-4 px-4 pb-20 text-center sm:block sm:p-0">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75" aria-hidden="true" onclick="showDeleteConfirmation = false"></div>
+  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showDeleteConfirmation = false"></div>
 
-      <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
 
-      <div class="inline-block align-bottom bg-white dark:bg-neutral-800 rounded-lg px-4 pt-5 pb-4 text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-lg sm:w-full sm:p-6">
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
         <div class="sm:flex sm:items-start">
-          <div class="mx-auto flex-shrink-0 flex items-center justify-center h-12 w-12 rounded-full bg-red-100 dark:bg-red-900 sm:mx-0 sm:h-10 sm:w-10">
-            <div class="i-hugeicons-alert-02 h-6 w-6 text-red-600 dark:text-red-400"></div>
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-red-100 dark:bg-red-900 rounded-full">
+            <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-02"></div>
           </div>
-          <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left">
-            <h3 class="text-lg leading-6 font-medium text-gray-900 dark:text-white" id="modal-title">
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
               Delete {{ selectedItems.length > 1 ? 'Items' : 'Item' }}
             </h3>
             <div class="mt-2">
-              <p class="text-sm text-gray-500 dark:text-neutral-400">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
                 Are you sure you want to delete {{ selectedItems.length > 1 ? 'these items' : 'this item' }}? This action cannot be undone.
               </p>
             </div>
             @if(selectedItems.length > 0)
-            <div class="mt-3 max-h-40 overflow-y-auto">
-              <ul class="divide-y divide-gray-200 dark:divide-neutral-700">
+            <div class="overflow-y-auto mt-3 max-h-40">
+              <ul class="divide-gray-200 divide-y dark:divide-neutral-700">
                 @foreach(selectedItems as item)
-                <li class="py-2 flex items-center">
+                <li class="flex items-center py-2">
                   <div
-                    class="{{ [
+                    class="[
                       item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
                       'h-5 w-5 mr-3',
                       item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400'
-                    ] }}"
+                    ] {{ }}"
                   ></div>
-                  <span class="text-sm text-gray-700 dark:text-neutral-300">{{ item.name }}</span>
+                  <span class="text-gray-700 text-sm dark:text-neutral-300">{{ item.name }}</span>
                 </li>
                 @endforeach
               </ul>
@@ -1137,18 +1137,18 @@ function deleteSelectedItems() {
             @endif
           </div>
         </div>
-        <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse">
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
           <button
             type="button"
             onclick="deleteSelectedItems"
-            class="w-full inline-flex justify-center rounded-md border border-transparent shadow-sm px-4 py-2 bg-red-600 text-base font-medium text-white hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 sm:ml-3 sm:w-auto sm:text-sm dark:focus:ring-offset-neutral-800"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-red-600 hover:bg-red-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
             Delete
           </button>
           <button
             type="button"
             onclick="showDeleteConfirmation = false"
-            class="mt-3 w-full inline-flex justify-center rounded-md border border-gray-300 dark:border-neutral-600 shadow-sm px-4 py-2 bg-white dark:bg-neutral-700 text-base font-medium text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 sm:mt-0 sm:w-auto sm:text-sm dark:focus:ring-offset-neutral-800"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
           >
             Cancel
           </button>

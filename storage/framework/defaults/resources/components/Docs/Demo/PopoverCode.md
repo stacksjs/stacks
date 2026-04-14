@@ -97,58 +97,58 @@ const solutions = [
 <template>
   <Popover v-slot="{ open }" class="relative">
     <PopoverButton
-      :class="open ? 'text-white' : 'text-white/90'"
-      class="group inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
+      :class=": ? 'text-white' 'text-white/90' open"
+      class="inline-flex gap-2 items-center justify-center px-4 py-2.5 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm duration-200 transition-all group"
     >
       <span>Example</span>
-      <div class="i-hugeicons-arrow-down-01 h-5 w-5" />
+      <div class="h-5 w-5 i-hugeicons-arrow-down-01" />
     </PopoverButton>
 
     <transition
-      enter-active-class="transition duration-200 ease-out"
-      enter-from-class="translate-y-1 opacity-0"
-      enter-to-class="translate-y-0 opacity-100"
-      leave-active-class="transition duration-150 ease-in"
-      leave-from-class="translate-y-0 opacity-100"
-      leave-to-class="translate-y-1 opacity-0"
+      enter-active-class="duration-200 ease-out transition"
+      enter-from-class="opacity-0 translate-y-1"
+      enter-to-class="opacity-100 translate-y-0"
+      leave-active-class="duration-150 ease-in transition"
+      leave-from-class="opacity-100 translate-y-0"
+      leave-to-class="opacity-0 translate-y-1"
     >
       <PopoverPanel
-        class="absolute left-1/2 z-50 mt-3 max-w-sm w-screen transform px-4 -translate-x-1/2 sm:px-0"
+        class="absolute left-1/2 z-50 mt-3 px-4 sm:px-0 max-w-sm w-screen transform -translate-x-1/2"
       >
-        <div class="overflow-hidden rounded-lg shadow-lg ring-1 ring-black/5">
-          <div class="relative flex flex-col gap-8 bg-white p-7 lg:grid-cols-2">
+        <div class="overflow-hidden ring-1 ring-black/5 rounded-lg shadow-lg">
+          <div class="flex relative flex-col gap-8 lg:grid-cols-2 p-7 bg-white">
             <a
               v-for="item in solutions"
               :key="item.name"
               :href="item.href"
-              class="flex items-center rounded-lg p-2 transition duration-150 ease-in-out -m-3 hover:bg-gray-50 focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
+              class="flex items-center -m-3 p-2 hover:bg-gray-50 rounded-lg focus-visible:ring focus-visible:ring-orange-500/50 focus:outline-none duration-150 ease-in-out transition"
             >
               <div
-                class="h-10 w-10 flex shrink-0 items-center justify-center text-white sm:h-12 sm:w-12"
+                class="flex items-center justify-center shrink-0 h-10 w-10 sm:h-12 sm:w-12 text-white"
               >
                 <div v-html="item.icon" />
               </div>
               <div class="ml-4">
-                <p class="text-sm text-gray-900 font-medium">
+                <p class="font-medium text-gray-900 text-sm">
                   {{ item.name }}
                 </p>
-                <p class="text-sm text-gray-500">
+                <p class="text-gray-500 text-sm">
                   {{ item.description }}
                 </p>
               </div>
             </a>
           </div>
-          <div class="bg-gray-50 p-4">
+          <div class="p-4 bg-gray-50">
             <a
               href="##"
-              class="flow-root rounded-md px-2 py-2 transition duration-150 ease-in-out hover:bg-gray-100 focus:outline-none focus-visible:ring focus-visible:ring-orange-500/50"
+              class="flow-root px-2 py-2 hover:bg-gray-100 rounded-md focus-visible:ring focus-visible:ring-orange-500/50 focus:outline-none duration-150 ease-in-out transition"
             >
               <span class="flex items-center">
-                <span class="text-sm text-gray-900 font-medium">
+                <span class="font-medium text-gray-900 text-sm">
                   Documentation
                 </span>
               </span>
-              <span class="block text-sm text-gray-500">
+              <span class="block text-gray-500 text-sm">
                 Start integrating products and tools
               </span>
             </a>

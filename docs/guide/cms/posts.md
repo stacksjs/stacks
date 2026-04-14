@@ -80,11 +80,13 @@ const updatedPost = await posts.update(1, {
 ### Delete Posts
 
 Single post deletion:
+
 ```ts
 await posts.destroy(1) // Replace 1 with the post ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await posts.bulkDestroy([1, 2, 3]) // Array of post IDs to delete
 ```

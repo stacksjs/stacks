@@ -19,14 +19,14 @@ function statusVariant(s) {
   <PageHeader title="Access Tokens" description="API keys and authentication tokens">
     <template #actions>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Create Token
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-key-01" iconBg="primary" />
     @endforeach
@@ -34,9 +34,9 @@ function statusVariant(s) {
 
   @if (tokens.length > 0)
   <!-- Tokens Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">API Tokens</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">API Tokens</span>
     </div>
 
     <DataTable
@@ -56,11 +56,11 @@ function statusVariant(s) {
     >
       @foreach (tokens as token)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ token.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ token.name }}</td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-2">
-              <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ token.token }}</code>
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-copy-01 w-3.5 h-3.5"></div></Button>
+            <div class="flex gap-2 items-center">
+              <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ token.token }}</code>
+              <Button variant="ghost" size="xs" iconOnly><div class="h-3.5 w-3.5 i-hugeicons-copy-01"></div></Button>
             </div>
           </td>
           <td class="px-4 py-3">
@@ -76,8 +76,8 @@ function statusVariant(s) {
             <Badge variant="{{ statusVariant(token.status) }}" size="xs" dot>{{ token.status }}</Badge>
           </td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-1">
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+            <div class="flex gap-1 items-center">
+              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
               <Button variant="danger" size="xs">Revoke</Button>
             </div>
           </td>
@@ -89,13 +89,13 @@ function statusVariant(s) {
   <!-- Available Scopes -->
   <Card>
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Available Scopes</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Available Scopes</span>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 p-4">
+    <div class="grid gap-4 grid-cols-1 md:grid-cols-3 p-4">
       @foreach (scopes as scope)
-        <div class="p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-          <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ scope.name }}</code>
-          <p class="text-[12px] text-neutral-500 dark:text-neutral-400 mt-2">{{ scope.description }}</p>
+        <div class="p-4 bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+          <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ scope.name }}</code>
+          <p class="mt-2 text-[12px] text-neutral-500 dark:text-neutral-400">{{ scope.description }}</p>
         </div>
       @endforeach
     </div>

@@ -78,6 +78,7 @@ buddy migrate
 ```
 
 Output:
+
 ```
 buddy migrate
 
@@ -109,6 +110,7 @@ buddy migrate --auth
 ```
 
 Includes authentication-related tables:
+
 - `oauth_clients`
 - `oauth_access_tokens`
 - `oauth_refresh_tokens`
@@ -142,6 +144,7 @@ export default class User extends Model {
 ```
 
 When you run `buddy migrate`, Stacks:
+
 1. Reads all model definitions from `app/Models`
 2. Compares with current database schema
 3. Generates and runs necessary SQL

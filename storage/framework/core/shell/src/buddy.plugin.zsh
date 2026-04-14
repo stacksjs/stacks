@@ -9,7 +9,7 @@
 # Many thanks to Jess Archer for providing the initial scripts:
 # https://github.com/jessarcher/zsh-artisan
 
-function buddy() {
+buddy() {
   local buddy_path=$(_buddy_find)
 
   if [ "$buddy_path" = "" ]; then
@@ -31,63 +31,63 @@ function buddy() {
   if [[ $1 = "make:"* && $BUDDY_OPEN_ON_MAKE_EDITOR != "" ]]; then
     # Find and open files created by buddy
     find \
-      "$buddy_path/app" \
-      "$buddy_path/tests" \
-      -type f \
-      -newermt "-$(($(date +%s) - $buddy_start_time + 1)) seconds" \
-      -exec $BUDDY_OPEN_ON_MAKE_EDITOR {} \; 2>/dev/null
+    "$buddy_path/app" \
+    "$buddy_path/tests" \
+    -type f \
+    -newermt "-$(($(date +%s) - $buddy_start_time + 1)) seconds" \
+    -exec $BUDDY_OPEN_ON_MAKE_EDITOR {} \; 2>/dev/null
   fi
 
   return $buddy_exit_status
 }
 
-function bud() {
+bud() {
   buddy $*
 }
 
-function stacks() {
+stacks() {
   buddy $*
 }
 
-function stx() {
+stx() {
   buddy $*
 }
 
-function b() {
+b() {
   buddy $*
 }
 
-function bi() {
+bi() {
   buddy install
 }
 
-function ba() {
+ba() {
   buddy add "$@"
 }
 
-function bd() {
+bd() {
   buddy dev "$@"
 }
 
-function bb() {
+bb() {
   buddy build "$@"
 }
 
-function bt() {
+bt() {
   buddy test
 }
 
-function bu() {
+bu() {
   buddy upgrade
 }
 
-function brb() {
+brb() {
   bun run build
 }
 
 compdef _buddy_add_completion buddy
 
-function _buddy_find() {
+_buddy_find() {
   # First, try to find a globally installed buddy binary
   local global_buddy_path=$(which buddy)
   if [ -n "$global_buddy_path" ]; then
@@ -109,12 +109,12 @@ function _buddy_find() {
   return 1
 }
 
-function _buddy_add_completion() {
+_buddy_add_completion() {
   if [ "$(_buddy_find)" != "" ]; then
     compadd $(_buddy_get_command_list)
   fi
 }
 
-function _buddy_get_command_list() {
-  buddy list | sed "s/[[:space:]].*//g"
+_buddy_get_command_list() {
+  buddy list | sed "s/[[ :space: ]].*//g"
 }

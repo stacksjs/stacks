@@ -77,11 +77,13 @@ const updatedPage = await pages.update(1, {
 ### Delete Pages
 
 Single page deletion:
+
 ```ts
 await pages.destroy(1) // Replace 1 with the page ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await pages.bulkDestroy([1, 2, 3]) // Array of page IDs to delete
 ```

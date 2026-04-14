@@ -4,45 +4,45 @@
 
 <header class="py-10">
   <Container>
-    <nav class="relative z-50 flex justify-between">
+    <nav class="flex relative z-50 justify-between">
       <div class="flex items-center md:gap-x-12">
         <a href="#" aria-label="Home">
-          <Logo class="h-10 w-auto pb-1" />
+          <Logo class="pb-1 h-10 w-auto" />
         </a>
 
         <div class="hidden md:flex md:gap-x-6">
-          <a href="#features" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+          <a href="#features" class="inline-block px-2 py-1 text-slate-700 text-sm hover:text-slate-900 hover:bg-slate-100 rounded-lg">
             Features
           </a>
 
-          <a href="#testimonials" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+          <a href="#testimonials" class="inline-block px-2 py-1 text-slate-700 text-sm hover:text-slate-900 hover:bg-slate-100 rounded-lg">
             Testimonials
           </a>
 
-          <a href="#pricing" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+          <a href="#pricing" class="inline-block px-2 py-1 text-slate-700 text-sm hover:text-slate-900 hover:bg-slate-100 rounded-lg">
             Dashboard
           </a>
 
-          <a href="/blog" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+          <a href="/blog" class="inline-block px-2 py-1 text-slate-700 text-sm hover:text-slate-900 hover:bg-slate-100 rounded-lg">
             Blog
           </a>
         </div>
       </div>
 
-      <div class="flex items-center gap-x-5 md:gap-x-8">
+      <div class="flex gap-x-5 items-center md:gap-x-8">
         <div class="hidden md:block">
-          <a href="https://github.com/stacksjs/stacks/releases" class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900">
+          <a href="https://github.com/stacksjs/stacks/releases" class="inline-block px-2 py-1 text-slate-700 text-sm hover:text-slate-900 hover:bg-slate-100 rounded-lg">
             Changelog
           </a>
         </div>
 
-        <a href="/docs" class="inline-flex items-center justify-center rounded-full py-2 px-4 text-sm font-semibold focus:outline-none focus-visible:outline-2 focus-visible:outline-offset-2 bg-blue-600 text-white hover:text-slate-100 hover:bg-blue-500 active:bg-blue-800 active:text-blue-100 focus-visible:outline-blue-600">
+        <a href="/docs" class="inline-flex items-center justify-center px-4 py-2 font-semibold text-sm text-white active:text-blue-100 hover:text-slate-100 bg-blue-600 active:bg-blue-800 hover:bg-blue-500 rounded-full focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus:outline-none">
           <span>
             Learn More
           </span>
         </a>
 
-        <div class="-mr-1 md:hidden">
+        <div class="md:hidden -mr-1">
           <!-- Mobile Navigation Component -->
         </div>
       </div>

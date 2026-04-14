@@ -1,4 +1,4 @@
-# What are Actions?
+# What are Actions
 
 Actions introduce a concept of unique code reusability. They are "functions" that can be called from anywhere in the application. For example, they may be used as a ...
 

@@ -124,7 +124,7 @@ async function updateCartTotals(cartId: number): Promise<void> {
     .get()
 
   const subtotal = items.reduce((sum, item) => {
-    return sum + (item.unit_price * item.quantity)
+    return sum + (item.unit_price _ item.quantity)
   }, 0)
 
   // Apply discounts if any
@@ -137,7 +137,7 @@ async function updateCartTotals(cartId: number): Promise<void> {
 
   // Calculate tax
   const taxRate = 0.0825 // 8.25% - adjust based on location
-  const tax = (subtotal - discount) * taxRate
+  const tax = (subtotal - discount) _ taxRate
 
   const total = subtotal - discount + tax
 
@@ -220,7 +220,7 @@ async function applyCoupon(
         <span>Subtotal</span>
         <span>${{ formatPrice(cart.subtotal) }}</span>
       </div>
-      <div v-if="cart.discount > 0" class="total-row discount">
+      <div v-if="cart.discount > 0" class="discount total-row">
         <span>Discount</span>
         <span>-${{ formatPrice(cart.discount) }}</span>
       </div>
@@ -228,7 +228,7 @@ async function applyCoupon(
         <span>Tax</span>
         <span>${{ formatPrice(cart.tax) }}</span>
       </div>
-      <div class="total-row total">
+      <div class="total total-row">
         <span>Total</span>
         <span>${{ formatPrice(cart.total) }}</span>
       </div>
@@ -378,7 +378,7 @@ onMounted(loadCart)
     </section>
 
     <!-- Order Summary -->
-    <section class="checkout-section order-summary">
+    <section class="order-summary checkout-section">
       <h2>Order Summary</h2>
       <div class="summary-items">
         <div v-for="item in cartItems" :key="item.id" class="summary-item">

@@ -2,7 +2,7 @@
 const filter = ''
 </script>
 <ForumLayout :route="currentRoute">
-  <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+  <div class="grid gap-8 grid-cols-1 lg:grid-cols-3">
     <div class="lg:col-span-2">
       <ForumBreadcrumb :items="breadcrumbItems" />
 

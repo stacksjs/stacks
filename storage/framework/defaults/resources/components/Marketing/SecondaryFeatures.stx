@@ -29,7 +29,7 @@ const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>(
   },
 ]
 </script>
-<section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 lg:pb-32 sm:pb-20 sm:pt-32">
+<section id="secondary-features" aria-label="Features for simplifying everyday business tasks" class="pb-14 pt-20 sm:pb-20 sm:pt-32 lg:pb-32">
   <Container>
     <div class="mx-auto max-w-2xl md:text-center">
       <h2 class="font-display text-3xl text-slate-900 tracking-tight sm:text-4xl">
@@ -41,39 +41,39 @@ const { features = [, selectedIndex = 0 } = defineProps<SecondaryFeaturesProps>(
     </div>
 
     <!-- FeaturesDesktop -->
-    <div class="hidden lg:mt-20 lg:block">
-      <div class="grid grid-cols-3 gap-x-8 pt-12">
+    <div class="hidden lg:block lg:mt-20">
+      <div class="grid gap-x-8 grid-cols-3 pt-12">
         @foreach(features as feature)
           <div class="relative">
-            <div class="w-9 rounded-lg {{ loop.index == selectedIndex ? 'bg-blue-600' : 'bg-slate-500' }}">
+            <div class="w-9 rounded-lg selectedIndex : ? 'bg-blue-600' 'bg-slate-500' {{ }} == loop.index">
               <svg aria-hidden="true" class="h-9 w-9" fill="none">
                 {{ feature.icon }}
               </svg>
             </div>
-            <h3 class="mt-6 text-sm font-medium {{ loop.index == selectedIndex ? 'text-blue-600' : 'text-slate-600' }}">
+            <h3 class="mt-6 font-medium text-sm selectedIndex : ? 'text-blue-600' 'text-slate-600' {{ }} == loop.index">
               <button data-action="select-feature" data-index="{{ loop.index }}">{{ feature.name }}</button>
             </h3>
-            <p class="font-display mt-2 text-xl text-slate-900">
+            <p class="mt-2 font-display text-slate-900 text-xl">
               {{ feature.summary }}
             </p>
-            <p class="mt-4 text-sm text-slate-600">
+            <p class="mt-4 text-slate-600 text-sm">
               {{ feature.description }}
             </p>
           </div>
         @endforeach
       </div>
 
-      <div class="rounded-4xl relative mt-20 overflow-hidden bg-slate-200 px-14 py-16 xl:px-16">
+      <div class="overflow-hidden relative mt-20 px-14 py-16 xl:px-16 bg-slate-200 rounded-4xl">
         <div class="flex -mx-5">
           @foreach(features as feature)
-            <div class="px-5 transition duration-500 ease-in-out {{ loop.index != selectedIndex ? 'opacity-60' : '' }}" style="transform: translateX(-{{ selectedIndex * 100 }}%)">
-              <div class="w-[52.75rem] overflow-hidden rounded-xl bg-white shadow-lg shadow-slate-900/5 ring-1 ring-slate-500/10">
+            <div class="px-5 duration-500 ease-in-out transition selectedIndex : != ? '' 'opacity-60' {{ }} loop.index" style="transform: translateX(-{{ selectedIndex * 100 }}%)">
+              <div class="overflow-hidden w-[52.75rem] bg-white ring-1 ring-slate-500/10 rounded-xl shadow-lg shadow-slate-900/5">
                 <img class="w-full" src="{{ feature.image }}" alt="" sizes="52.75rem">
               </div>
             </div>
           @endforeach
         </div>
-        <div class="rounded-4xl pointer-events-none absolute inset-0 ring-1 ring-slate-900/10 ring-inset"></div>
+        <div class="absolute inset-0 ring-1 ring-inset ring-slate-900/10 rounded-4xl pointer-events-none"></div>
       </div>
     </div>
   </Container>

@@ -2,26 +2,6 @@
 title: Middleware
 description: Learn how to create and use middleware in Stacks applications
 ---
-
-# Middleware
-
-Middleware provides a mechanism for filtering and modifying HTTP requests entering your application. Common use cases include authentication, logging, CORS handling, and rate limiting.
-
-## Introduction
-
-Stacks middleware follows a Laravel-inspired pattern while leveraging TypeScript's type safety. Middleware can inspect, modify, or reject requests before they reach your route handlers.
-
-Middleware files are stored in `app/Middleware/` and registered in `app/Middleware.ts`.
-
-## Creating Middleware
-
-### Basic Middleware Structure
-
-Create a new middleware file in `app/Middleware/`:
-
-```typescript
-// app/Middleware/Logger.ts
-import { log } from '@stacksjs/cli'
 import { Middleware } from '@stacksjs/router'
 
 export default new Middleware({
@@ -32,11 +12,13 @@ export default new Middleware({
     log.info(`[${request.method}] ${request.url}`)
   },
 })
+
 ```
 
 ### Middleware with Async Operations
 
 ```typescript
+
 // app/Middleware/Auth.ts
 import type { Request } from '@stacksjs/router'
 import { HttpError } from '@stacksjs/error-handling'
@@ -65,6 +47,7 @@ export default new Middleware({
     ;(request as any)._authenticatedUser = user
   },
 })
+
 ```
 
 ### Middleware Options
@@ -72,6 +55,7 @@ export default new Middleware({
 The `Middleware` constructor accepts these options:
 
 ```typescript
+
 interface MiddlewareOptions {
   /** Unique name for the middleware */
   name: string
@@ -79,9 +63,10 @@ interface MiddlewareOptions {
   /** Priority order (lower runs first) */
   priority?: number
 
-  /** The handler function */
+  /** The handler function _/
   handle: (request: Request) => void | Promise<void>
 }
+
 ```
 
 ## Registering Middleware
@@ -91,6 +76,7 @@ interface MiddlewareOptions {
 Register middleware aliases in `app/Middleware.ts`:
 
 ```typescript
+
 // app/Middleware.ts
 export interface Middleware {
   [key: string]: string
@@ -112,6 +98,7 @@ export default {
   'env:staging': 'EnvStaging',
   'env:production': 'EnvProduction',
 } satisfies Middleware
+
 ```
 
 The key is the alias used in routes, and the value is the filename (without `.ts`).
@@ -123,11 +110,13 @@ The key is the alias used in routes, and the value is the filename (without `.ts
 Global middleware runs on every request. Register it using the router's `use` method:
 
 ```typescript
+
 // In your app initialization
 import { route } from '@stacksjs/router'
 import cors from './middleware/cors'
 
 route.use(cors)
+
 ```
 
 ### Route Middleware
@@ -135,6 +124,7 @@ route.use(cors)
 Route middleware runs only on specific routes:
 
 ```typescript
+
 import { route } from '@stacksjs/router'
 
 // Single middleware
@@ -145,6 +135,7 @@ route.get('/dashboard', 'Actions/DashboardAction')
 route.post('/admin/settings', 'Actions/AdminSettingsAction')
   .middleware('auth')
   .middleware('abilities:admin')
+
 ```
 
 ## Middleware Groups
@@ -154,6 +145,7 @@ route.post('/admin/settings', 'Actions/AdminSettingsAction')
 Apply middleware to entire route groups:
 
 ```typescript
+
 import { route } from '@stacksjs/router'
 
 // All routes in this group require authentication
@@ -168,16 +160,19 @@ route.group({ middleware: ['auth', 'throttle:60,1'] }, () => {
   route.post('/api/submit', 'Actions/SubmitAction')
   route.post('/api/upload', 'Actions/UploadAction')
 })
+
 ```
 
 ### Combining Prefix and Middleware
 
 ```typescript
+
 route.group({ prefix: '/admin', middleware: ['auth', 'can:admin'] }, () => {
   route.get('/users', 'Actions/Admin/UserIndexAction')
   route.post('/users', 'Actions/Admin/UserStoreAction')
   route.delete('/users/{id}', 'Actions/Admin/UserDestroyAction')
 })
+
 ```
 
 ## Middleware Parameters
@@ -187,6 +182,7 @@ route.group({ prefix: '/admin', middleware: ['auth', 'can:admin'] }, () => {
 Pass parameters to middleware using the colon syntax:
 
 ```typescript
+
 // Throttle: 60 requests per minute
 route.post('/api/data', 'Actions/DataAction')
   .middleware('throttle:60,1')
@@ -198,11 +194,13 @@ route.post('/posts', 'Actions/PostStoreAction')
 // Environment: only run in production
 route.get('/metrics', 'Actions/MetricsAction')
   .middleware('env:production')
+
 ```
 
 ### Accessing Parameters in Middleware
 
 ```typescript
+
 // app/Middleware/Abilities.ts
 import type { Request } from '@stacksjs/router'
 import { HttpError } from '@stacksjs/error-handling'
@@ -228,7 +226,7 @@ export default new Middleware({
     const tokenAbilities: string[] = token.abilities || []
 
     // Wildcard grants all permissions
-    if (tokenAbilities.includes('*')) {
+    if (tokenAbilities.includes('_')) {
       return
     }
 
@@ -240,6 +238,7 @@ export default new Middleware({
     }
   },
 })
+
 ```
 
 ## Terminable Middleware
@@ -247,6 +246,7 @@ export default new Middleware({
 Terminable middleware can perform actions after the response has been sent:
 
 ```typescript
+
 // app/Middleware/LogResponse.ts
 import { Middleware } from '@stacksjs/router'
 import { log } from '@stacksjs/logging'
@@ -268,6 +268,7 @@ export default new Middleware({
     log.info(`[${request.method}] ${request.url} - ${response.status} (${duration}ms)`)
   },
 })
+
 ```
 
 ## Built-in Middleware
@@ -277,10 +278,13 @@ export default new Middleware({
 Validates bearer tokens and authenticates users:
 
 ```typescript
+
 route.get('/me', 'Actions/AuthUserAction').middleware('auth')
+
 ```
 
 The auth middleware:
+
 - Extracts the Bearer token from Authorization header
 - Validates the token
 - Attaches the user to `request._authenticatedUser`
@@ -291,6 +295,7 @@ The auth middleware:
 Checks if the authenticated user's token has required abilities:
 
 ```typescript
+
 // Require 'admin' ability
 route.get('/admin', 'Actions/AdminAction')
   .middleware('auth')
@@ -300,6 +305,7 @@ route.get('/admin', 'Actions/AdminAction')
 route.post('/posts', 'Actions/PostAction')
   .middleware('auth')
   .middleware('abilities:posts:create,posts:update')
+
 ```
 
 ### Throttle Middleware
@@ -307,6 +313,7 @@ route.post('/posts', 'Actions/PostAction')
 Rate limits requests:
 
 ```typescript
+
 // 60 requests per minute
 route.post('/api/submit', 'Actions/SubmitAction')
   .middleware('throttle:60,1')
@@ -314,6 +321,7 @@ route.post('/api/submit', 'Actions/SubmitAction')
 // 10 requests per hour
 route.post('/expensive-operation', 'Actions/ExpensiveAction')
   .middleware('throttle:10,60')
+
 ```
 
 ### Environment Middleware
@@ -321,6 +329,7 @@ route.post('/expensive-operation', 'Actions/ExpensiveAction')
 Restricts routes to specific environments:
 
 ```typescript
+
 // Only in local environment
 route.get('/debug', 'Actions/DebugAction')
   .middleware('env:local')
@@ -332,6 +341,7 @@ route.get('/metrics', 'Actions/MetricsAction')
 // Only in development
 route.get('/test', 'Actions/TestAction')
   .middleware('env:development')
+
 ```
 
 ### Maintenance Middleware
@@ -339,10 +349,12 @@ route.get('/test', 'Actions/TestAction')
 Blocks requests when application is in maintenance mode:
 
 ```typescript
+
 route.group({ middleware: 'maintenance' }, () => {
   // These routes will return 503 during maintenance
   route.get('/api/data', 'Actions/DataAction')
 })
+
 ```
 
 ## Middleware Priority
@@ -352,6 +364,7 @@ route.group({ middleware: 'maintenance' }, () => {
 Lower priority numbers run first:
 
 ```typescript
+
 export default new Middleware({
   name: 'Auth',
   priority: 1, // Runs before priority 2
@@ -369,6 +382,7 @@ export default new Middleware({
     // Ability checking (needs authenticated user)
   },
 })
+
 ```
 
 ### Execution Order
@@ -382,6 +396,7 @@ export default new Middleware({
 ### Logger Middleware
 
 ```typescript
+
 // app/Middleware/Logger.ts
 import { Middleware } from '@stacksjs/router'
 import { log } from '@stacksjs/logging'
@@ -395,11 +410,13 @@ export default new Middleware({
     log.info(`[${timestamp}] ${request.method} ${request.url}`)
   },
 })
+
 ```
 
 ### CORS Middleware
 
 ```typescript
+
 // app/Middleware/Cors.ts
 import { Middleware } from '@stacksjs/router'
 
@@ -422,11 +439,13 @@ function isAllowedOrigin(origin: string): boolean {
   const allowedOrigins = ['https://example.com', 'https://app.example.com']
   return allowedOrigins.includes(origin)
 }
+
 ```
 
 ### Request Sanitization Middleware
 
 ```typescript
+
 // app/Middleware/Sanitize.ts
 import { Middleware } from '@stacksjs/router'
 
@@ -454,6 +473,7 @@ function sanitizeObject(obj: Record<string, any>): void {
     }
   }
 }
+
 ```
 
 ## Edge Cases and Gotchas
@@ -463,6 +483,7 @@ function sanitizeObject(obj: Record<string, any>): void {
 When using nested groups, middleware stacks:
 
 ```typescript
+
 route.group({ middleware: 'auth' }, () => {
   // 'auth' middleware applies here
 
@@ -471,6 +492,7 @@ route.group({ middleware: 'auth' }, () => {
     route.get('/data', 'Actions/DataAction')
   })
 })
+
 ```
 
 ### Async Middleware Errors
@@ -478,6 +500,7 @@ route.group({ middleware: 'auth' }, () => {
 Always throw `HttpError` for proper error responses:
 
 ```typescript
+
 import { HttpError } from '@stacksjs/error-handling'
 
 export default new Middleware({
@@ -492,6 +515,7 @@ export default new Middleware({
     }
   },
 })
+
 ```
 
 ### Middleware Short-Circuiting
@@ -499,6 +523,7 @@ export default new Middleware({
 When middleware throws an error, the request chain stops:
 
 ```typescript
+
 export default new Middleware({
   name: 'BlockedRoute',
 
@@ -507,6 +532,7 @@ export default new Middleware({
     throw new HttpError(403, 'This route is blocked')
   },
 })
+
 ```
 
 ### Accessing Request Data
@@ -514,6 +540,7 @@ export default new Middleware({
 After body parsing, data is available via:
 
 ```typescript
+
 handle(request) {
   // JSON body
   const jsonData = (request as any).jsonBody
@@ -530,6 +557,7 @@ handle(request) {
   // Query parameters
   const query = (request as any).query
 }
+
 ```
 
 ## API Reference
@@ -537,6 +565,7 @@ handle(request) {
 ### Middleware Class
 
 ```typescript
+
 class Middleware {
   constructor(options: {
     name: string
@@ -545,17 +574,20 @@ class Middleware {
     terminate?: (request: Request, response: Response) => void | Promise<void>
   })
 }
+
 ```
 
 ### HttpError Class
 
 ```typescript
+
 class HttpError extends Error {
   constructor(statusCode: number, message: string)
 
   statusCode: number
   message: string
 }
+
 ```
 
 ### Request Extensions

@@ -108,19 +108,23 @@ APP_ENV=production buddy deploy
 Stacks deploys a complete cloud infrastructure:
 
 ### Compute
+
 - Lambda functions for API
 - Edge functions for routing
 
 ### Storage
+
 - S3 buckets for static assets
 - DynamoDB tables (if configured)
 
 ### Networking
+
 - VPC and subnets
 - CloudFront CDN
 - Route 53 DNS records
 
 ### Security
+
 - SSL/TLS certificates (ACM)
 - IAM roles and policies
 - Security groups
@@ -194,6 +198,7 @@ Error: AWS credentials are invalid or expired
 ```
 
 **Solution**:
+
 1. Check credentials in `.env.production`
 2. Verify credentials are active in AWS console
 3. Ensure proper IAM permissions
@@ -205,6 +210,7 @@ Error: Domain verification pending
 ```
 
 **Solution**:
+
 1. Check email for verification link
 2. Add DNS verification records if using external DNS
 
@@ -215,6 +221,7 @@ Error: Stack stacks-production already exists
 ```
 
 **Solution**:
+
 ```bash
 # Remove existing stack
 buddy cloud:remove
@@ -231,6 +238,7 @@ Error: Deployment timed out
 ```
 
 **Solution**:
+
 1. Check AWS CloudFormation console for status
 2. Review CloudWatch logs for errors
 3. Run with `--verbose` for more details
@@ -271,7 +279,7 @@ Always deploy to staging before production:
 APP_ENV=staging buddy deploy
 
 # Test staging environment
-# ...
+#
 
 # Deploy to production
 APP_ENV=production buddy deploy
@@ -280,6 +288,7 @@ APP_ENV=production buddy deploy
 ### Monitor Deployments
 
 After deployment:
+
 1. Check CloudWatch logs
 2. Monitor CloudFront metrics
 3. Test critical paths

@@ -72,48 +72,48 @@ const showCustomNotification = () => {
 
 <template>
   <div class="p-6 space-y-6">
-    <h2 class="text-2xl font-bold mb-4">Notification Demo</h2>
+    <h2 class="mb-4 font-bold text-2xl">Notification Demo</h2>
 
     <div class="space-y-4">
       <div class="flex flex-wrap gap-4">
         <button
           @click="showBasicNotification"
-          class="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
+          class="px-4 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded"
         >
           Basic Notification
         </button>
 
         <button
           @click="showSuccessNotification"
-          class="px-4 py-2 bg-green-500 text-white rounded hover:bg-green-600"
+          class="px-4 py-2 text-white bg-green-500 hover:bg-green-600 rounded"
         >
           Success Notification
         </button>
 
         <button
           @click="showErrorNotification"
-          class="px-4 py-2 bg-red-500 text-white rounded hover:bg-red-600"
+          class="px-4 py-2 text-white bg-red-500 hover:bg-red-600 rounded"
         >
           Error Notification
         </button>
 
         <button
           @click="showLoadingNotification"
-          class="px-4 py-2 bg-yellow-500 text-white rounded hover:bg-yellow-600"
+          class="px-4 py-2 text-white bg-yellow-500 hover:bg-yellow-600 rounded"
         >
           Loading Notification
         </button>
 
         <button
           @click="showPromiseNotification"
-          class="px-4 py-2 bg-purple-500 text-white rounded hover:bg-purple-600"
+          class="px-4 py-2 text-white bg-purple-500 hover:bg-purple-600 rounded"
         >
           Promise Notification
         </button>
 
         <button
           @click="showCustomNotification"
-          class="px-4 py-2 bg-gray-500 text-white rounded hover:bg-gray-600"
+          class="px-4 py-2 text-white bg-gray-500 hover:bg-gray-600 rounded"
         >
           Custom Notification
         </button>

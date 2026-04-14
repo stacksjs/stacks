@@ -34,7 +34,7 @@ const { backgroundImage = '/images/screenshots/background-features.jpg', screens
 <section
   id="features"
   aria-label="Features for running your books"
-  class="relative overflow-hidden bg-blue-600 pb-28 pt-20 sm:py-32"
+  class="overflow-hidden relative pb-28 pt-20 sm:py-32 bg-blue-600"
 >
   <img
     class="absolute left-1/2 top-1/2 max-w-none translate-x-[-44%] translate-y-[-42%]"
@@ -44,29 +44,29 @@ const { backgroundImage = '/images/screenshots/background-features.jpg', screens
     height="1636"
   >
   <Container class="relative">
-    <div class="max-w-2xl md:mx-auto xl:max-w-none md:text-center">
-      <h2 class="font-display text-3xl text-white tracking-tight md:text-5xl sm:text-4xl">
+    <div class="md:mx-auto max-w-2xl xl:max-w-none md:text-center">
+      <h2 class="font-display text-3xl text-white tracking-tight sm:text-4xl md:text-5xl">
         Everything you need to run your books.
       </h2>
-      <p class="mt-6 text-lg text-blue-100 tracking-tight">
+      <p class="mt-6 text-blue-100 text-lg tracking-tight">
         Well everything you need if you aren't that picky about minor
         details like tax compliance.
       </p>
     </div>
 
-    <div class="grid grid-cols-1 mt-16 items-center gap-y-2 pt-10 lg:grid-cols-12 md:mt-20 sm:gap-y-6 lg:pt-0">
-      <div class="flex overflow-x-auto pb-4 lg:col-span-5 -mx-4 sm:mx-0 sm:overflow-visible sm:pb-0">
-        <div class="relative z-10 flex gap-x-4 whitespace-nowrap px-4 lg:mx-0 sm:mx-auto lg:block lg:gap-x-0 lg:gap-y-1 lg:whitespace-normal sm:px-0">
+    <div class="grid gap-y-2 grid-cols-1 items-center sm:gap-y-6 lg:grid-cols-12 mt-16 pt-10 md:mt-20 lg:pt-0">
+      <div class="flex overflow-x-auto sm:overflow-visible lg:col-span-5 -mx-4 pb-4 sm:mx-0 sm:pb-0">
+        <div class="flex lg:block relative z-10 gap-x-4 lg:gap-x-0 lg:gap-y-1 px-4 sm:mx-auto sm:px-0 lg:mx-0 whitespace-nowrap lg:whitespace-normal">
           @foreach(features as feature)
-            <div class="group relative rounded-full px-4 py-1 lg:rounded-l-xl lg:rounded-r-none lg:p-6 {{ loop.index == selectedIndex ? 'bg-white lg:bg-white/10 lg:ring-1 lg:ring-inset lg:ring-white/10' : 'hover:bg-white/10 lg:hover:bg-white/5' }}">
+            <div class="relative px-4 py-1 lg:p-6 'hover:bg-white/10 lg:bg-white/10 lg:hover:bg-white/5' rounded-full lg:ring-1 lg:ring-inset lg:ring-white/10' lg:rounded-l-xl lg:rounded-r-none selectedIndex : ? 'bg-white {{ }} == group loop.index">
               <h3>
-                <button class="font-display text-lg {{ loop.index == selectedIndex ? 'text-blue-600 lg:text-white' : 'text-blue-100 hover:text-white lg:text-white' }}" data-action="select-tab" data-index="{{ loop.index }}">
+                <button class="font-display text-lg lg:text-white' lg:text-white' hover:text-white selectedIndex : ? 'text-blue-100 'text-blue-600 {{ }} == loop.index" data-action="select-tab" data-index="{{ loop.index }}">
                   <span class="absolute inset-0 rounded-full lg:rounded-l-xl lg:rounded-r-none"></span>
                   {{ feature.title }}
                 </button>
               </h3>
               @if(tabOrientation == 'vertical')
-                <p class="mt-2 hidden text-sm lg:block {{ loop.index == selectedIndex ? 'text-white' : 'text-blue-100 group-hover:text-white' }}">
+                <p class="hidden lg:block mt-2 text-sm group-hover:text-white' selectedIndex : ? 'text-blue-100 'text-white' {{ }} == loop.index">
                   {{ feature.description }}
                 </p>
               @endif
@@ -77,15 +77,15 @@ const { backgroundImage = '/images/screenshots/background-features.jpg', screens
 
       <div class="lg:col-span-7">
         @foreach(features as feature)
-          <div class="{{ loop.index != selectedIndex ? 'hidden' : '' }}">
-            <div class="relative lg:hidden sm:px-6">
-              <div class="absolute bottom-[-4.25rem] top-[-6.5rem] bg-white/10 ring-1 ring-white/10 ring-inset -inset-x-4 sm:inset-x-0 sm:rounded-t-xl"></div>
+          <div class="selectedIndex : != ? '' 'hidden' {{ }} loop.index">
+            <div class="lg:hidden relative sm:px-6">
+              <div class="absolute bottom-[-4.25rem] top-[-6.5rem] sm:inset-x-0 bg-white/10 ring-1 ring-inset ring-white/10 sm:rounded-t-xl -inset-x-4"></div>
               <p class="relative mx-auto max-w-2xl text-base text-white sm:text-center">
                 {{ feature.description }}
               </p>
             </div>
 
-            <div class="mt-10 w-[45rem] overflow-hidden rounded-xl bg-slate-50 shadow-blue-900/20 shadow-xl lg:mt-0 lg:w-[67.8125rem] sm:w-auto">
+            <div class="overflow-hidden mt-10 lg:mt-0 w-[45rem] sm:w-auto lg:w-[67.8125rem] bg-slate-50 rounded-xl shadow-blue-900/20 shadow-xl">
               @if(feature.image)
                 <img class="w-full" src="{{ feature.image }}" alt="">
               @endif

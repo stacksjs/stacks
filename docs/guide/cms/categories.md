@@ -70,12 +70,12 @@ First, import the categories functionality from the CMS package:
 ```ts
 import { useCategorizables } from '@stacksjs/cms'
 
-const { 
+const {
   categorizables,
   fetchCategorizables,
   createCategorizable,
   updateCategorizable,
-  deleteCategorizable 
+  deleteCategorizable
 } = useCategorizables()
 ```
 

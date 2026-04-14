@@ -60,11 +60,11 @@ function getClassName(variant, color, customClass) {
 </script>
 
 @if(!href)
-  <button class="{{ getClassName(variant, color, customClass) }}">
+  <button class="{{ }} color, customClass) getClassName(variant,">
     <slot />
   </button>
 @else
-  <a href="{{ href }}" class="{{ getClassName(variant, color, customClass) }}">
+  <a href="{{ href }}" class="{{ }} color, customClass) getClassName(variant,">
     <slot />
   </a>
 @endif

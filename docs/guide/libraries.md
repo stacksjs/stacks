@@ -310,9 +310,11 @@ A customizable button component.
 ## Usage
 
 ```vue
+
 <Button variant="primary" @click="handleClick">
   Click me
 </Button>
+
 ```
 
 ## Props
@@ -337,7 +339,7 @@ A customizable button component.
 # Run checks before publishing
 buddy prepublish
 
-# This runs:
+# This runs
 # - Type checking
 # - Linting
 # - Tests
@@ -371,13 +373,15 @@ jobs:
   release:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v4
       - uses: oven-sh/setup-bun@v1
       - run: bun install
       - run: bun run build
       - run: npm publish
+
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE*AUTH*TOKEN: ${{ secrets.NPM_TOKEN }}
 ```
 
 ## Versioning
@@ -404,7 +408,7 @@ buddy version prerelease --preid beta  # 1.0.0 -> 1.0.1-beta.0
 # Generate changelog from commits
 buddy changelog
 
-# Changelog is generated from conventional commits:
+# Changelog is generated from conventional commits
 # feat: -> Features
 # fix: -> Bug Fixes
 # docs: -> Documentation

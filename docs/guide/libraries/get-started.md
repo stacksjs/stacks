@@ -186,7 +186,7 @@ Preview your components in isolation:
 buddy dev:components
 ```
 
-This opens a development environment at `http://localhost:3333` where you can:
+This opens a development environment at `<http://localhost:3333>` where you can:
 
 - View all components
 - Test different props
@@ -362,15 +362,19 @@ A customizable button component.
 ## Basic Usage
 
 ```vue
+
 <Button>Click me</Button>
+
 ```
 
 ## Variants
 
 ```vue
+
 <Button variant="primary">Primary</Button>
 <Button variant="secondary">Secondary</Button>
 <Button variant="outline">Outline</Button>
+
 ```
 
 ## Props

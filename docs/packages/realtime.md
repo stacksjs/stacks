@@ -73,13 +73,17 @@ interface OrderData {
 
 export default {
   /**
-   * The event name.
-   */
+
+   _ The event name.
+
+   _/
   event: 'OrderShipped',
 
   /**
-   * Handle the broadcast event.
-   * This method is called when the event is triggered.
+
+   _ Handle the broadcast event.
+   _ This method is called when the event is triggered.
+
    */
   async handle(data: OrderData): Promise<void> {
     await channel(`orders.${data.orderId}`).private(this.event, data)
@@ -92,20 +96,25 @@ export default {
 The package supports three types of channels:
 
 1. **Public Channels**
-   - Accessible to all clients
-   - No authentication required
-   - Example: `channel('notifications').public(event, data)`
+
+   _ Accessible to all clients
+   _ No authentication required
+
+   * Example: `channel('notifications').public(event, data)`
 
 2. **Private Channels**
-   - Require authentication
-   - Prefixed with `private-`
-   - Example: `channel('user-123').private(event, data)`
+
+   _ Require authentication
+   _ Prefixed with `private-`
+
+   * Example: `channel('user-123').private(event, data)`
 
 3. **Presence Channels**
-   - Require authentication
-   - Support user presence features
-   - Prefixed with `presence-`
-   - Example: `channel('chat-room').presence(event, data)`
+
+   _ Require authentication
+   _ Support user presence features
+   _ Prefixed with `presence-`
+   _ Example: `channel('chat-room').presence(event, data)`
 
 ## Broadcasting Methods
 
@@ -178,26 +187,36 @@ export default {
 ## Best Practices
 
 1. **Channel Naming**
-   - Use descriptive names for channels
-   - Follow the naming convention: `{type}.{identifier}`
-   - Example: `orders.12345`, `chat.user_123`
+
+   _ Use descriptive names for channels
+   _ Follow the naming convention: `{type}.{identifier}`
+
+   * Example: `orders.12345`, `chat.user_123`
 
 2. **Event Naming**
-   - Use PascalCase for event names
-   - Be specific and descriptive
-   - Example: `OrderShipped`, `MessageReceived`
+
+   _ Use PascalCase for event names
+   _ Be specific and descriptive
+
+   * Example: `OrderShipped`, `MessageReceived`
 
 3. **Type Safety**
-   - Define interfaces for your event data
-   - Use TypeScript to ensure type safety
-   - Export types for reuse across your application
+
+   _ Define interfaces for your event data
+   _ Use TypeScript to ensure type safety
+
+   * Export types for reuse across your application
 
 4. **Security**
-   - Use private channels for sensitive data
-   - Implement proper authentication for private and presence channels
-   - Validate data before broadcasting
+
+   _ Use private channels for sensitive data
+   _ Implement proper authentication for private and presence channels
+
+   * Validate data before broadcasting
 
 5. **Organization**
-   - Keep broadcast events in a dedicated directory
-   - Group related events together
-   - Use consistent naming conventions
+
+   _ Keep broadcast events in a dedicated directory
+   _ Group related events together
+
+   * Use consistent naming conventions

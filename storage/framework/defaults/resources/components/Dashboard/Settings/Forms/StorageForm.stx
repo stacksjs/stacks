@@ -20,23 +20,23 @@ const { defaultStorage = 's3', s3Key = 'JKHJK$KJAHKS', s3Secret = 'kldsanko3njks
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-y divide-gray-900/10">
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+      <div class="divide-gray-900/10 divide-y">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Default Storage Settings
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your default Storage settings
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="type" class="block text-sm text-gray-900 font-medium leading-6">Default</label>
+                <label for="type" class="block font-medium leading-6 text-gray-900 text-sm">Default</label>
                 <div class="mt-2">
-                  <select id="type" name="type" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <select id="type" name="type" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                     <option {{ defaultStorage == 's3' ? 'selected' : '' }}>s3</option>
                     <option {{ defaultStorage == 'Dropbox' ? 'selected' : '' }}>Dropbox</option>
                     <option {{ defaultStorage == 'Meema' ? 'selected' : '' }}>Meema</option>
@@ -47,129 +47,129 @@ const { defaultStorage = 's3', s3Key = 'JKHJK$KJAHKS', s3Secret = 'kldsanko3njks
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               AWS S3
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your AWS S3 configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="s3-key" class="block text-sm text-gray-900 font-medium leading-6">Key</label>
+                <label for="s3-key" class="block font-medium leading-6 text-gray-900 text-sm">Key</label>
                 <div class="mt-2">
-                  <input id="s3-key" type="text" name="s3-key" value="{{ s3Key }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="s3-key" type="text" name="s3-key" value="{{ s3Key }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="s3-secret" class="block text-sm text-gray-900 font-medium leading-6">Secret</label>
+                <label for="s3-secret" class="block font-medium leading-6 text-gray-900 text-sm">Secret</label>
                 <div class="mt-2">
-                  <input id="s3-secret" type="password" name="s3-secret" value="{{ s3Secret }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="s3-secret" type="password" name="s3-secret" value="{{ s3Secret }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="s3-region" class="block text-sm text-gray-900 font-medium leading-6">Region</label>
+                <label for="s3-region" class="block font-medium leading-6 text-gray-900 text-sm">Region</label>
                 <div class="mt-2">
-                  <input id="s3-region" type="text" name="s3-region" value="{{ s3Region }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="s3-region" type="text" name="s3-region" value="{{ s3Region }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="s3-bucket" class="block text-sm text-gray-900 font-medium leading-6">Bucket</label>
+                <label for="s3-bucket" class="block font-medium leading-6 text-gray-900 text-sm">Bucket</label>
                 <div class="mt-2">
-                  <input id="s3-bucket" type="text" name="s3-bucket" value="{{ s3Bucket }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="s3-bucket" type="text" name="s3-bucket" value="{{ s3Bucket }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="s3-url" class="block text-sm text-gray-900 font-medium leading-6">URL</label>
+                <label for="s3-url" class="block font-medium leading-6 text-gray-900 text-sm">URL</label>
                 <div class="mt-2">
-                  <input id="s3-url" type="text" name="s3-url" value="{{ s3Url }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="s3-url" type="text" name="s3-url" value="{{ s3Url }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Dropbox
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Dropbox configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="dropbox-key" class="block text-sm text-gray-900 font-medium leading-6">Key</label>
+                <label for="dropbox-key" class="block font-medium leading-6 text-gray-900 text-sm">Key</label>
                 <div class="mt-2">
-                  <input id="dropbox-key" type="text" name="dropbox-key" value="{{ dropboxKey }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="dropbox-key" type="text" name="dropbox-key" value="{{ dropboxKey }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="dropbox-secret" class="block text-sm text-gray-900 font-medium leading-6">Secret</label>
+                <label for="dropbox-secret" class="block font-medium leading-6 text-gray-900 text-sm">Secret</label>
                 <div class="mt-2">
-                  <input id="dropbox-secret" type="password" name="dropbox-secret" value="{{ dropboxSecret }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="dropbox-secret" type="password" name="dropbox-secret" value="{{ dropboxSecret }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="dropbox-box" class="block text-sm text-gray-900 font-medium leading-6">Box</label>
+                <label for="dropbox-box" class="block font-medium leading-6 text-gray-900 text-sm">Box</label>
                 <div class="mt-2">
-                  <input id="dropbox-box" type="text" name="dropbox-box" value="{{ dropboxBox }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="dropbox-box" type="text" name="dropbox-box" value="{{ dropboxBox }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Meema
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Meema configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="meema-key" class="block text-sm text-gray-900 font-medium leading-6">Key</label>
+                <label for="meema-key" class="block font-medium leading-6 text-gray-900 text-sm">Key</label>
                 <div class="mt-2">
-                  <input id="meema-key" type="text" name="meema-key" value="{{ meemaKey }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="meema-key" type="text" name="meema-key" value="{{ meemaKey }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="meema-secret" class="block text-sm text-gray-900 font-medium leading-6">Secret</label>
+                <label for="meema-secret" class="block font-medium leading-6 text-gray-900 text-sm">Secret</label>
                 <div class="mt-2">
-                  <input id="meema-secret" type="password" name="meema-secret" value="{{ meemaSecret }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="meema-secret" type="password" name="meema-secret" value="{{ meemaSecret }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="meema-region" class="block text-sm text-gray-900 font-medium leading-6">Region</label>
+                <label for="meema-region" class="block font-medium leading-6 text-gray-900 text-sm">Region</label>
                 <div class="mt-2">
-                  <input id="meema-region" type="text" name="meema-region" value="{{ meemaRegion }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="meema-region" type="text" name="meema-region" value="{{ meemaRegion }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="meema-bucket" class="block text-sm text-gray-900 font-medium leading-6">Bucket</label>
+                <label for="meema-bucket" class="block font-medium leading-6 text-gray-900 text-sm">Bucket</label>
                 <div class="mt-2">
-                  <input id="meema-bucket" type="text" name="meema-bucket" value="{{ meemaBucket }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="meema-bucket" type="text" name="meema-bucket" value="{{ meemaBucket }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
@@ -177,13 +177,13 @@ const { defaultStorage = 's3', s3Key = 'JKHJK$KJAHKS', s3Secret = 'kldsanko3njks
         </div>
       </div>
     </main>
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

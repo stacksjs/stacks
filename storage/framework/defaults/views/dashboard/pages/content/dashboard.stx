@@ -42,20 +42,20 @@ try {
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.trend }}" icon="i-hugeicons-note-01" iconBg="primary" />
     @endforeach
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Top Performing Posts -->
     <Card title="Top Performing Posts">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (topPosts as post)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ post.title }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ post.title }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ post.views.toLocaleString() }} views &middot; {{ post.comments }} comments</div>
             </div>
             <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ post.date }}</span>
@@ -66,13 +66,13 @@ try {
 
     <!-- Recent Comments -->
     <Card title="Recent Comments">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (recentComments as comment)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-            <div class="w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold">{{ comment.author.charAt(0) }}</div>
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <div class="flex items-center justify-center h-8 w-8 font-semibold text-white text-xs bg-blue-600 rounded-full">{{ comment.author.charAt(0) }}</div>
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ comment.author }}</div>
-              <div class="text-[12px] text-neutral-500 dark:text-neutral-400 truncate">{{ comment.content }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ comment.author }}</div>
+              <div class="text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ comment.content }}</div>
             </div>
             <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ comment.time }}</span>
           </div>

@@ -22,7 +22,7 @@ let attribution = []
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.change }}" />
     @endforeach
@@ -30,7 +30,7 @@ let attribution = []
 
   @if (campaigns.length > 0 || channels.length > 0 || attribution.length > 0)
   <!-- Campaign Performance -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="{{ JSON.stringify([
         { key: 'name', label: 'Campaign' },
@@ -47,20 +47,20 @@ let attribution = []
     >
       @foreach (campaigns as campaign)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ campaign.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ campaign.name }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ campaign.spend }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ campaign.leads }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ campaign.cpl }}</td>
-          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ campaign.revenue }}</td>
-          <td class="px-4 py-3 text-[13px] font-semibold text-green-600 dark:text-green-400">{{ campaign.roi }}</td>
+          <td class="px-4 py-3 font-semibold text-[13px] text-neutral-900 dark:text-white">{{ campaign.revenue }}</td>
+          <td class="px-4 py-3 font-semibold text-[13px] text-green-600 dark:text-green-400">{{ campaign.roi }}</td>
         </tr>
       @endforeach
     </DataTable>
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Channel Performance -->
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
         :columns="{{ JSON.stringify([
           { key: 'channel', label: 'Channel' },
@@ -75,7 +75,7 @@ let attribution = []
       >
         @foreach (channels as ch)
           <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-            <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ ch.channel }}</td>
+            <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ ch.channel }}</td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ ch.spend }}</td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ ch.leads }}</td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ ch.conversion }}</td>
@@ -86,17 +86,17 @@ let attribution = []
 
     <!-- Attribution Model -->
     <Card title="Attribution Model">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (attribution as attr)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ attr.source }}</div>
-              <div class="w-full h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden mt-2">
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ attr.source }}</div>
+              <div class="overflow-hidden mt-2 h-1.5 w-full bg-neutral-200 dark:bg-neutral-700 rounded-full">
                 <div class="h-full bg-blue-500 rounded-full" style="width: {{ attr.percentage }}%;"></div>
               </div>
             </div>
             <div class="text-right">
-              <div class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ attr.leads }}</div>
+              <div class="font-semibold text-[13px] text-neutral-900 dark:text-white">{{ attr.leads }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ attr.percentage }}%</div>
             </div>
           </div>

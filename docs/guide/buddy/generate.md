@@ -137,6 +137,7 @@ buddy generate:openapi-spec
 ```
 
 Output:
+
 ```
 buddy generate:openapi-spec
 
@@ -152,6 +153,7 @@ buddy generate:model-files
 ```
 
 This reads your model definitions and generates:
+
 - TypeScript interfaces
 - Database migration helpers
 - Model instance types
@@ -167,6 +169,7 @@ buddy generate:types --verbose
 ### Web Types
 
 After generating web types, JetBrains IDEs provide:
+
 - Component autocompletion
 - Prop validation
 - Documentation on hover
@@ -174,6 +177,7 @@ After generating web types, JetBrains IDEs provide:
 ### VS Code Custom Data
 
 After generating custom data, VS Code provides:
+
 - Custom element completion
 - Attribute hints
 - Documentation
@@ -181,6 +185,7 @@ After generating custom data, VS Code provides:
 ### IDE Helpers
 
 Generated helpers provide:
+
 - Path aliases
 - Type definitions
 - Configuration hints
@@ -195,6 +200,7 @@ buddy dev
 ```
 
 Auto-triggered generators:
+
 - TypeScript types
 - Entry points
 - IDE helpers
@@ -299,6 +305,7 @@ Error: No components found
 ```
 
 **Solution**: Ensure components exist in the expected location:
+
 ```
 app/
   Components/
@@ -313,6 +320,7 @@ Error: Failed to generate types
 ```
 
 **Solutions**:
+
 1. Check for syntax errors in source files
 2. Run with `--verbose` for details
 3. Ensure all dependencies are installed
@@ -332,10 +340,12 @@ Ensure routes are properly annotated:
 ```typescript
 // Annotate your API routes
 /**
+
  * @openapi
  * /api/users:
- *   get:
- *     summary: List users
+ * get:
+ * summary: List users
+
  */
 ```
 
@@ -344,6 +354,7 @@ Ensure routes are properly annotated:
 ### Commit Generated Files
 
 Include generated files in version control for:
+
 - Consistent IDE experience across team
 - CI/CD compatibility
 - Documentation
@@ -351,6 +362,7 @@ Include generated files in version control for:
 ### Regenerate After Changes
 
 After modifying:
+
 - Models: `buddy generate:model-files`
 - Components: `buddy generate:types`
 - API routes: `buddy generate:openapi`
@@ -359,8 +371,10 @@ After modifying:
 
 ```yaml
 # Verify generated files are up to date
+
 - run: buddy generate:types
 - run: git diff --exit-code
+
 ```
 
 ## Related Commands

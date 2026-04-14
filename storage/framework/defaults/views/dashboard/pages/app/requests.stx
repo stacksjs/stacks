@@ -41,7 +41,7 @@ function methodVariant(m) {
   <PageHeader title="Requests" description="Monitor API requests and responses" />
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     <StatsCard title="Total Requests" value="{{ totalCount }}" icon="i-hugeicons-sent" iconBg="primary" />
     <StatsCard title="Successful" value="{{ successCount }}" icon="i-hugeicons-checkmark-circle-02" iconBg="success" />
     <StatsCard title="Errors" value="{{ errorCount }}" icon="i-hugeicons-alert-02" iconBg="warning" />
@@ -49,9 +49,9 @@ function methodVariant(m) {
   </div>
 
   <!-- Requests Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
-    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5 flex items-center justify-between">
-      <span class="font-semibold text-neutral-900 dark:text-white text-[13px]">Recent Requests</span>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <div class="flex items-center justify-between p-4 border-b border-neutral-200/60 dark:border-white/5">
+      <span class="font-semibold text-[13px] text-neutral-900 dark:text-white">Recent Requests</span>
       <Button variant="ghost" size="xs">Live</Button>
     </div>
 
@@ -74,7 +74,7 @@ function methodVariant(m) {
             <Badge variant="{{ methodVariant(req.method) }}" size="xs">{{ req.method }}</Badge>
           </td>
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ req.path }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ req.path }}</code>
           </td>
           <td class="px-4 py-3">
             <Badge variant="{{ req.status < 400 ? 'success' : 'danger' }}" size="xs">{{ req.status }}</Badge>

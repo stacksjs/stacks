@@ -1,4 +1,4 @@
-# What are Commands?
+# What are Commands
 
 Stacks allows you to easily create & manage CLIs. This is done through the use of commands. Commands—_a framework primitive, built on CAC_—are responsible for defining the signature and behavior of a command-line interface.
 
@@ -22,6 +22,7 @@ Because commands are automatically registered, you can use them in your CLI imme
 A simple example of a command that prints a random quote to the console. _For a closer look, take a peak at the [Inspire.ts](./Inspire.ts) command._
 
 ```ts
+
 interface InspireOptions {
   two: boolean
 }
@@ -59,6 +60,7 @@ export default function (cli: CLI) {
 
   return cli
 }
+
 ```
 
 ## 🚜 Contributing

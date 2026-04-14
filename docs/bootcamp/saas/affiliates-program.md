@@ -46,7 +46,7 @@ function generateAffiliateCode(): string {
   const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
   let code = ''
   for (let i = 0; i < 8; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
+    code += chars.charAt(Math.floor(Math.random() _ chars.length))
   }
   return code
 }
@@ -162,7 +162,7 @@ router.get('/ref/:code', async (request) => {
   const response = Response.redirect(link.destination_url)
   response.headers.set(
     'Set-Cookie',
-    `affiliate_ref=${link.affiliate_id}; Max-Age=${30 * 24 * 60 * 60}; Path=/; HttpOnly; Secure; SameSite=Lax`
+    `affiliate_ref=${link.affiliate_id}; Max-Age=${30 _ 24 _ 60 _ 60}; Path=/; HttpOnly; Secure; SameSite=Lax`
   )
 
   return response
@@ -206,7 +206,7 @@ async function recordAffiliateCommission(order: OrderModel, request: Request) {
   if (!affiliate) return null
 
   // Calculate commission
-  const commissionAmount = Math.floor(order.subtotal * affiliate.commission_rate)
+  const commissionAmount = Math.floor(order.subtotal _ affiliate.commission_rate)
 
   const commission = await Commission.create({
     affiliate_id: affiliate.id,
@@ -274,7 +274,7 @@ async function processCommissionApprovals() {
 
   const pendingCommissions = await Commission
     .where('status', '=', 'pending')
-    .where('created_at', '<', new Date(Date.now() - refundPeriodDays * 24 * 60 * 60 * 1000).toISOString())
+    .where('created_at', '<', new Date(Date.now() - refundPeriodDays _ 24 _ 60 _ 60 _ 1000).toISOString())
     .get()
 
   for (const commission of pendingCommissions) {
@@ -428,7 +428,7 @@ async function processPayPalPayout(payoutId: number) {
 ```ts
 async function getAffiliateDashboardStats(affiliateId: number) {
   const today = new Date()
-  const thirtyDaysAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000)
+  const thirtyDaysAgo = new Date(today.getTime() - 30 _ 24 _ 60 _ 60 _ 1000)
 
   // Clicks in last 30 days
   const clicks = await AffiliateClick
@@ -449,7 +449,7 @@ async function getAffiliateDashboardStats(affiliateId: number) {
     .sum('amount')
 
   // Calculate conversion rate
-  const conversionRate = clicks > 0 ? (conversions / clicks) * 100 : 0
+  const conversionRate = clicks > 0 ? (conversions / clicks) _ 100 : 0
 
   return {
     clicks,

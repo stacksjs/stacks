@@ -93,20 +93,20 @@ const openFile = (file, line) => {
 }
 
 </script>
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="mb-8">
       <div class="flex items-center">
         <button
           type="button"
-          class="inline-flex items-center text-sm text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300"
+          class="inline-flex items-center text-gray-500 text-sm dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300"
           onclick="router.back()"
         >
-          <div class="i-hugeicons-arrow-left h-5 w-5 mr-1" />
+          <div class="mr-1 h-5 w-5 i-hugeicons-arrow-left" />
           Back
         </button>
-        <h1 class="ml-4 text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">
+        <h1 class="ml-4 font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
           Job Details #{{ route.params.id }}
         </h1>
       </div>
@@ -114,42 +114,42 @@ const openFile = (file, line) => {
 
     @if(isLoading)
       <div class="flex justify-center py-12">
-        <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-500" />
+        <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin" />
       </div>
     @elseif(!job)
-      <div class="text-center py-12">
-        <div class="i-hugeicons-exclamation-circle h-12 w-12 mx-auto text-gray-400" />
-        <h3 class="mt-2 text-sm font-semibold text-gray-900 dark:text-neutral-100">Job not found</h3>
-        <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">The job you're looking for doesn't exist or has been deleted.</p>
+      <div class="py-12 text-center">
+        <div class="mx-auto h-12 w-12 text-gray-400 i-hugeicons-exclamation-circle" />
+        <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-neutral-100">Job not found</h3>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">The job you're looking for doesn't exist or has been deleted.</p>
       </div>
     @else
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <!-- Overview -->
-        <div class="bg-white dark:bg-neutral-700 shadow rounded-lg">
+        <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="px-4 py-5 sm:p-6">
-            <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100 mb-4">Overview</h3>
+            <h3 class="mb-4 font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Overview</h3>
 
-            <dl class="grid grid-cols-1 gap-4">
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Name</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 font-mono">{{ job.name }}</dd>
+            <dl class="grid gap-4 grid-cols-1">
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Name</dt>
+                <dd class="col-span-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ job.name }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Connection</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 capitalize">{{ job.connection }}</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Connection</dt>
+                <dd class="col-span-2 capitalize text-gray-900 text-sm dark:text-neutral-100">{{ job.connection }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Queue</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 capitalize">{{ job.queue }}</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Queue</dt>
+                <dd class="col-span-2 capitalize text-gray-900 text-sm dark:text-neutral-100">{{ job.queue }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Status</dt>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Status</dt>
                 <dd class="col-span-2">
                   <span
-                    class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                    class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
                     :class="getJobStatusColor(job.status)"
                   >
                     {{ job.status }}
@@ -157,44 +157,44 @@ const openFile = (file, line) => {
                 </dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Attempts</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2">
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Attempts</dt>
+                <dd class="col-span-2 text-gray-900 text-sm dark:text-neutral-100">
                   {{ job.attempts }} / {{ job.max_tries }}
                 </dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Timeout</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 font-mono">{{ job.timeout }}s</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Timeout</dt>
+                <dd class="col-span-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ job.timeout }}s</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Started At</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2">{{ job.started_at }}</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Started At</dt>
+                <dd class="col-span-2 text-gray-900 text-sm dark:text-neutral-100">{{ job.started_at }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Finished At</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2">{{ job.finished_at || '-' }}</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Finished At</dt>
+                <dd class="col-span-2 text-gray-900 text-sm dark:text-neutral-100">{{ job.finished_at || '-' }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Runtime</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 font-mono">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Runtime</dt>
+                <dd class="col-span-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Worker</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 font-mono">{{ job.worker }}</dd>
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Worker</dt>
+                <dd class="col-span-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ job.worker }}</dd>
               </div>
 
-              <div class="grid grid-cols-3 gap-4">
-                <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">Tags</dt>
-                <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2">
+              <div class="grid gap-4 grid-cols-3">
+                <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Tags</dt>
+                <dd class="col-span-2 text-gray-900 text-sm dark:text-neutral-100">
                   <div class="flex flex-wrap gap-2">
                     @foreach(job.tags as tag)
-                      <span class="inline-flex items-center rounded-md bg-gray-50 dark:bg-neutral-600 px-2 py-1 text-xs font-medium text-gray-600 dark:text-neutral-300 ring-1 ring-inset ring-gray-500/10">
+                      <span class="inline-flex items-center px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-600 ring-1 ring-gray-500/10 ring-inset rounded-md">
                         {{ tag }}
                       </span>
                     @endforeach
@@ -209,19 +209,19 @@ const openFile = (file, line) => {
         <div class="space-y-6">
           <!-- Job Chain -->
           @if(job.chain?.length)
-            <div class="bg-white dark:bg-neutral-700 shadow rounded-lg">
+            <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
               <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100 mb-6">Job Chain</h3>
+                <h3 class="mb-6 font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Job Chain</h3>
 
                 <div class="relative">
-                  <div class="absolute left-4 top-4 bottom-4 w-px bg-gray-200 dark:bg-neutral-600"></div>
+                  <div class="absolute bottom-4 left-4 top-4 w-px bg-gray-200 dark:bg-neutral-600"></div>
                   <ul class="relative space-y-6">
                     @foreach(job.chain as chainJob)
                       <li class="relative pl-10">
-                        <div class="absolute left-0 top-1/2 -translate-y-1/2 flex h-8 w-8 items-center justify-center rounded-full border-2 border-gray-200 dark:border-neutral-600 bg-white dark:bg-neutral-700">
-                          <span class="text-sm font-medium text-gray-500 dark:text-neutral-400">{{ $loop->iteration }}</span>
+                        <div class="flex absolute left-0 top-1/2 items-center justify-center h-8 w-8 bg-white dark:bg-neutral-700 border-2 border-gray-200 rounded-full dark:border-neutral-600 -translate-y-1/2">
+                          <span class="font-medium text-gray-500 text-sm dark:text-neutral-400">{{ $loop->iteration }}</span>
                         </div>
-                        <div class="py-2 text-sm font-mono text-gray-900 dark:text-neutral-100">{{ chainJob.replace('App\\Jobs\\', '') }}</div>
+                        <div class="py-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ chainJob.replace('App\\Jobs\\', '') }}</div>
                       </li>
                     @endforeach
                   </ul>
@@ -232,13 +232,13 @@ const openFile = (file, line) => {
 
           <!-- Logs -->
           @if(job.logs?.length)
-            <div class="bg-white dark:bg-neutral-700 shadow rounded-lg">
+            <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
               <div class="px-4 py-5 sm:p-6">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100 mb-4">Logs</h3>
+                <h3 class="mb-4 font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Logs</h3>
                 <div class="space-y-2">
                   @foreach(job.logs as log)
-                    <div class="flex items-start gap-2 text-sm font-mono">
-                      <span class="text-gray-500 dark:text-neutral-400 shrink-0">{{ log.timestamp }}</span>
+                    <div class="flex gap-2 items-start font-mono text-sm">
+                      <span class="shrink-0 text-gray-500 dark:text-neutral-400">{{ log.timestamp }}</span>
                       <span :class="getLogLevelColor(log.level)" class="shrink-0">[{{ log.level }}]</span>
                       <span class="text-gray-900 dark:text-neutral-100">{{ log.message }}</span>
                     </div>
@@ -249,21 +249,21 @@ const openFile = (file, line) => {
           @endif
 
           <!-- Performance -->
-          <div class="bg-white dark:bg-neutral-700 shadow rounded-lg">
+          <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
             <div class="px-4 py-5 sm:p-6">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100 mb-6">Performance</h3>
+              <h3 class="mb-6 font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Performance</h3>
 
-              <dl class="grid grid-cols-1 gap-8">
+              <dl class="grid gap-8 grid-cols-1">
                 <!-- Memory Usage -->
                 <div>
-                  <dt class="flex items-center justify-between text-sm font-medium text-gray-500 dark:text-neutral-400 mb-2">
+                  <dt class="flex items-center justify-between mb-2 font-medium text-gray-500 text-sm dark:text-neutral-400">
                     <span>Memory Usage</span>
                     <span class="font-mono">{{ formatBytes(job.memory_usage) }}</span>
                   </dt>
                   <dd>
-                    <div class="bg-gray-100 dark:bg-neutral-600 rounded-full h-2.5 overflow-hidden">
+                    <div class="overflow-hidden h-2.5 bg-gray-100 dark:bg-neutral-600 rounded-full">
                       <div
-                        class="bg-blue-500 h-full rounded-full transition-all duration-300"
+                        class="h-full bg-blue-500 rounded-full duration-300 transition-all"
                         style="{{ { width: `${(job.memory_usage / (512 * 1024 * 1024)) * 100}%` } }}"
                       />
                     </div>
@@ -272,14 +272,14 @@ const openFile = (file, line) => {
 
                 <!-- CPU Usage -->
                 <div>
-                  <dt class="flex items-center justify-between text-sm font-medium text-gray-500 dark:text-neutral-400 mb-2">
+                  <dt class="flex items-center justify-between mb-2 font-medium text-gray-500 text-sm dark:text-neutral-400">
                     <span>CPU Usage</span>
                     <span class="font-mono">{{ job.cpu_usage.toFixed(1) }}%</span>
                   </dt>
                   <dd>
-                    <div class="bg-gray-100 dark:bg-neutral-600 rounded-full h-2.5 overflow-hidden">
+                    <div class="overflow-hidden h-2.5 bg-gray-100 dark:bg-neutral-600 rounded-full">
                       <div
-                        class="bg-green-500 h-full rounded-full transition-all duration-300"
+                        class="h-full bg-green-500 rounded-full duration-300 transition-all"
                         style="{{ { width: `${job.cpu_usage}%` } }}"
                       />
                     </div>
@@ -291,13 +291,13 @@ const openFile = (file, line) => {
         </div>
 
         <!-- Payload -->
-        <div class="bg-white dark:bg-neutral-700 shadow rounded-lg lg:col-span-2">
+        <div class="lg:col-span-2 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="px-4 py-5 sm:p-6">
             <div class="flex items-center justify-between mb-4">
-              <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Payload</h3>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Payload</h3>
               <button
                 type="button"
-                class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                 onclick="showPayload = !showPayload"
               >
                 {{ showPayload ? 'Hide' : 'Show' }} Raw
@@ -306,15 +306,15 @@ const openFile = (file, line) => {
 
             @if(showPayload)
               <div class="mt-4">
-                <pre class="bg-gray-50 dark:bg-neutral-600 rounded-lg p-4 text-sm text-gray-900 dark:text-neutral-100 font-mono overflow-x-auto">{{ JSON.stringify(job.payload, null, 2) }}</pre>
+                <pre class="overflow-x-auto p-4 font-mono text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 rounded-lg">{{ JSON.stringify(job.payload, null, 2) }}</pre>
               </div>
             @else
               <div class="mt-4">
-                <dl class="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                <dl class="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   @foreach(job.payload as key => value)
-                    <div class="grid grid-cols-3 gap-4">
-                      <dt class="text-sm font-medium text-gray-500 dark:text-neutral-400">{{ key }}</dt>
-                      <dd class="text-sm text-gray-900 dark:text-neutral-100 col-span-2 font-mono">{{ value }}</dd>
+                    <div class="grid gap-4 grid-cols-3">
+                      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">{{ key }}</dt>
+                      <dd class="col-span-2 font-mono text-gray-900 text-sm dark:text-neutral-100">{{ value }}</dd>
                     </div>
                   @endforeach
                 </dl>
@@ -325,21 +325,21 @@ const openFile = (file, line) => {
 
         <!-- Error Information (if failed) -->
         @if(job.status === 'failed')
-          <div class="bg-white dark:bg-neutral-700 shadow rounded-lg lg:col-span-2">
+          <div class="lg:col-span-2 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <div class="px-4 py-5 sm:p-6">
               <div class="flex items-center justify-between mb-4">
-                <h3 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Error Information</h3>
+                <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Error Information</h3>
                 <div class="flex items-center space-x-3">
                   <button
                     type="button"
-                    class="text-sm text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+                    class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
                     onclick="showTrace = !showTrace"
                   >
                     {{ showTrace ? 'Hide' : 'Show' }} Full Trace
                   </button>
                   <button
                     type="button"
-                    class="inline-flex items-center rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600"
+                    class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
                     onclick="handleRetry"
                   >
                     Retry Job
@@ -348,10 +348,10 @@ const openFile = (file, line) => {
               </div>
 
               <div class="mt-4">
-                <h4 class="text-sm font-medium text-gray-500 dark:text-neutral-400">Error Message</h4>
-                <p class="mt-1 text-sm text-red-600 dark:text-red-400">{{ job.exception?.message }}</p>
+                <h4 class="font-medium text-gray-500 text-sm dark:text-neutral-400">Error Message</h4>
+                <p class="mt-1 text-red-600 text-sm dark:text-red-400">{{ job.exception?.message }}</p>
 
-                <div class="mt-4 flex items-center text-sm text-gray-500 dark:text-neutral-400">
+                <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
                   <button
                     type="button"
                     class="font-mono hover:text-blue-600 dark:hover:text-blue-400"
@@ -361,22 +361,22 @@ const openFile = (file, line) => {
                   </button>
                 </div>
 
-                <h4 class="mt-4 text-sm font-medium text-gray-500 dark:text-neutral-400">Stack Trace</h4>
-                <div class="mt-1 bg-gray-50 dark:bg-neutral-600 rounded-lg overflow-hidden">
+                <h4 class="mt-4 font-medium text-gray-500 text-sm dark:text-neutral-400">Stack Trace</h4>
+                <div class="overflow-hidden mt-1 bg-gray-50 dark:bg-neutral-600 rounded-lg">
                   @if(!showTrace)
                     <div class="p-4">
                       <div
-                        class="text-sm font-mono text-red-600 dark:text-red-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                        class="font-mono text-red-600 text-sm dark:text-red-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
                         onclick="openFile(job.exception?.trace[0] || '')"
                       >
                         {{ job.exception?.trace[0] }}
                       </div>
                     </div>
                   @else
-                    <div class="divide-y divide-gray-200 dark:divide-neutral-500">
+                    <div class="divide-gray-200 divide-y dark:divide-neutral-500">
                       @foreach(job.exception?.trace as line)
                         <div
-                          class="p-4 text-sm font-mono text-red-600 dark:text-red-400 cursor-pointer hover:text-blue-600 dark:hover:text-blue-400"
+                          class="p-4 font-mono text-red-600 text-sm dark:text-red-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
                           onclick="openFile(line)"
                         >
                           {{ line }}

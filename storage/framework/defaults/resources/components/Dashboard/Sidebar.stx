@@ -251,7 +251,7 @@ function getSidebarWidth() {
 }
 </script>
 <div class="sidebar-root">
-  <div class="fixed flex flex-col" style="top: 0; bottom: 0; left: 0; width: {{ getSidebarWidth() }}px; z-index: 30;">
+  <div class="flex fixed flex-col" style="top: 0; bottom: 0; left: 0; width: {{ getSidebarWidth() }}px; z-index: 30;">
     <div class="sidebar-inner">
 
       <!-- Logo -->

@@ -39,27 +39,27 @@ function groupMenuItems(items: MenuSection): MenuItem[][] {
 </script>
 
 <template>
-  <Dropdown v-model="isOpen" as="div" class="relative inline-block text-left">
+  <Dropdown v-model="isOpen" as="div" class="inline-block relative text-left">
     <DropdownButton
-      class="inline-flex items-center justify-center gap-2 px-4 py-2.5 text-sm font-medium rounded-lg shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 transition-all duration-200"
+      class="inline-flex gap-2 items-center justify-center px-4 py-2.5 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 shadow-sm duration-200 transition-all"
     >
       Options
       <div
-        class="i-hugeicons-chevron-down-20-solid w-5 h-5 transition-transform duration-200"
-        :class="{ 'rotate-180': isOpen }"
+        class="h-5 w-5 duration-200 transition-transform i-hugeicons-chevron-down-20-solid"
+        :class="'rotate-180': { } isOpen"
       />
     </DropdownButton>
 
     <transition
-      enter-active-class="transition duration-100 ease-out"
-      enter-from-class="transform scale-95 opacity-0"
-      enter-to-class="transform scale-100 opacity-100"
-      leave-active-class="transition duration-75 ease-in"
-      leave-from-class="transform scale-100 opacity-100"
-      leave-to-class="transform scale-95 opacity-0"
+      enter-active-class="duration-100 ease-out transition"
+      enter-from-class="opacity-0 scale-95 transform"
+      enter-to-class="opacity-100 scale-100 transform"
+      leave-active-class="duration-75 ease-in transition"
+      leave-from-class="opacity-100 scale-100 transform"
+      leave-to-class="opacity-0 scale-95 transform"
     >
       <DropdownItems
-        class="absolute right-0 mt-2 w-56 origin-top-right divide-y divide-gray-100 rounded-lg bg-white shadow-lg ring-1 ring-black/5 focus:outline-none"
+        class="absolute right-0 mt-2 w-56 bg-white divide-gray-100 divide-y ring-1 ring-black/5 rounded-lg focus:outline-none shadow-lg origin-top-right"
       >
         <div
           v-for="(section, index) in groupMenuItems(menuItems)"
@@ -74,7 +74,7 @@ function groupMenuItems(items: MenuSection): MenuItem[][] {
           >
             <button
               type="button"
-              class="group relative flex w-full items-center rounded-md px-2 py-2 text-sm outline-none transition-colors"
+              class="flex relative items-center px-2 py-2 w-full text-sm outline-none rounded-md transition-colors group"
               :class="[
                 active
                   ? item.variant === 'danger'

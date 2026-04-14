@@ -2,7 +2,7 @@
 
 Design composable libraries that provide maximum flexibility and reusability.
 
-## What is Composability?
+## What is Composability
 
 Composability is a design principle where small, focused pieces combine to create complex functionality. Instead of monolithic components, you build with primitives that users can compose.
 
@@ -141,21 +141,27 @@ Create utilities for composition:
 // functions/compose.ts
 
 /**
+
  * Compose functions from right to left
+
  */
 export function compose<T>(...fns: Array<(arg: T) => T>): (arg: T) => T {
   return (arg: T) => fns.reduceRight((acc, fn) => fn(acc), arg)
 }
 
 /**
+
  * Pipe functions from left to right
+
  */
 export function pipe<T>(...fns: Array<(arg: T) => T>): (arg: T) => T {
   return (arg: T) => fns.reduce((acc, fn) => fn(acc), arg)
 }
 
 /**
+
  * Async pipe for promise-returning functions
+
  */
 export function pipeAsync<T>(
   ...fns: Array<(arg: T) => T | Promise<T>>
@@ -471,6 +477,6 @@ const picked = pick(user, ['name', 'email'])
 
 ## Related
 
-- [Components](/guide/libraries/components) - Component patterns
-- [Functions](/guide/libraries/functions) - Function libraries
-- [Composability Design](/guide/composability) - Design principles
+* [Components](/guide/libraries/components) - Component patterns
+* [Functions](/guide/libraries/functions) - Function libraries
+* [Composability Design](/guide/composability) - Design principles

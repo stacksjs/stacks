@@ -3,47 +3,47 @@ const appName = props.appName || 'Your App'
 const supportEmail = props.supportEmail || 'support@example.com'
 </script>
 
-<div class="min-h-screen flex flex-col lg:flex-row bg-gradient-to-br from-slate-50 to-slate-100">
+<div class="flex flex-col lg:flex-row min-h-screen bg-gradient-to-br from-slate-50 to-slate-100">
   <!-- Left side content -->
-  <div class="w-full lg:w-1/2 flex items-center justify-center p-8">
+  <div class="flex items-center justify-center p-8 w-full lg:w-1/2">
     <div class="max-w-xl w-full">
       <div class="flex items-center justify-between mb-16">
         <div class="flex items-center space-x-2">
-          <h1 class="text-xl font-bold text-slate-900">{{ appName }}</h1>
+          <h1 class="font-bold text-slate-900 text-xl">{{ appName }}</h1>
         </div>
       </div>
 
       <div class="">
-        <h2 class="text-6xl font-bold text-slate-900 mb-4">
+        <h2 class="mb-4 font-bold text-6xl text-slate-900">
           Access Denied
         </h2>
-        <p class="text-8xl font-bold mb-8 bounce" style="animation-duration: 1s; animation-iteration-count: 2;">
+        <p class="mb-8 font-bold text-8xl bounce" style="animation-duration: 1s; animation-iteration-count: 2;">
           403
         </p>
-        <p class="text-xl text-slate-600 mb-8">
+        <p class="mb-8 text-slate-600 text-xl">
           Sorry, you don't have permission to access this page.
         </p>
 
-        <div class="flex sm:flex-row gap-4">
+        <div class="flex gap-4 sm:flex-row">
           <a
             href="/"
-            class="flex items-center justify-center px-6 py-3 bg-slate-500 text-white rounded-lg hover:bg-slate-600 transition-colors duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center px-6 py-3 w-full sm:w-auto text-white bg-slate-500 hover:bg-slate-600 rounded-lg duration-200 transition-colors"
           >
-            <i class="i-hugeicons-home-03 h-5 w-5 mr-2"></i>
+            <i class="mr-2 h-5 w-5 i-hugeicons-home-03"></i>
             Back to Home
           </a>
 
           <a
             href="javascript:history.back()"
-            class="flex items-center justify-center px-6 py-3 border border-slate-300 text-slate-700 rounded-lg hover:bg-slate-50 transition-colors duration-200 w-full sm:w-auto"
+            class="flex items-center justify-center px-6 py-3 w-full sm:w-auto text-slate-700 hover:bg-slate-50 border border-slate-300 rounded-lg duration-200 transition-colors"
           >
-            <i class="i-hugeicons-arrow-left-02 h-5 w-5 mr-2"></i>
+            <i class="mr-2 h-5 w-5 i-hugeicons-arrow-left-02"></i>
             Go Back
           </a>
         </div>
       </div>
 
-      <div class="mt-16 border-t border-slate-200 pt-8">
+      <div class="mt-16 pt-8 border-slate-200 border-t">
         <p class="text-slate-600">
           Need help? Contact us at
           <a href="mailto:{{ supportEmail }}" class="text-slate-500 hover:text-slate-600">
@@ -55,7 +55,7 @@ const supportEmail = props.supportEmail || 'support@example.com'
   </div>
 
   <!-- Right side SVG -->
-  <div class="w-full lg:w-1/2 h-[100vh] relative overflow-hidden flex items-center justify-center">
+  <div class="flex overflow-hidden relative items-center justify-center h-[100vh] w-full lg:w-1/2">
     <svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
       <defs>
         <linearGradient id="a" x1="50%" x2="50%" y1="100%" y2="0%">

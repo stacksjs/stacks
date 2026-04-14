@@ -23,16 +23,16 @@ let devices = []
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" trend="{{ stat.change }}" />
     @endforeach
   </div>
 
   @if (topPages.length > 0 || sources.length > 0 || devices.length > 0)
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Top Pages -->
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
         :columns="{{ JSON.stringify([
           { key: 'page', label: 'Page' },
@@ -48,7 +48,7 @@ let devices = []
         @foreach (topPages as page)
           <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <td class="px-4 py-3">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ page.title }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ page.title }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ page.page }}</div>
             </td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ page.views }}</td>
@@ -61,17 +61,17 @@ let devices = []
 
     <!-- Traffic Sources -->
     <Card title="Traffic Sources">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (sources as source)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ source.source }}</div>
-              <div class="h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full mt-2 w-36">
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ source.source }}</div>
+              <div class="mt-2 h-1.5 w-36 bg-neutral-200 dark:bg-neutral-700 rounded-full">
                 <div class="h-full bg-blue-500 rounded-full" style="width: {{ source.percentage }};"></div>
               </div>
             </div>
             <div class="flex flex-col items-end">
-              <span class="text-[13px] font-semibold text-neutral-900 dark:text-white">{{ source.visitors }}</span>
+              <span class="font-semibold text-[13px] text-neutral-900 dark:text-white">{{ source.visitors }}</span>
               <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ source.percentage }}</span>
             </div>
           </div>
@@ -82,10 +82,10 @@ let devices = []
 
   <!-- Device Breakdown -->
   <Card title="Device Breakdown">
-    <div class="p-4 flex gap-8 justify-center">
+    <div class="flex gap-8 justify-center p-4">
       @foreach (devices as device)
         <div class="text-center">
-          <div class="text-3xl font-bold text-neutral-900 dark:text-white">{{ device.percentage }}%</div>
+          <div class="font-bold text-3xl text-neutral-900 dark:text-white">{{ device.percentage }}%</div>
           <div class="text-[13px] text-neutral-500 dark:text-neutral-400">{{ device.device }}</div>
         </div>
       @endforeach

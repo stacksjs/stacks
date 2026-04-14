@@ -7,7 +7,7 @@ const { href = '' } = defineProps<NavLinkProps>()
 </script>
 <a
   href="{{ href }}"
-  class="inline-block rounded-lg px-2 py-1 text-sm text-slate-700 hover:bg-slate-100 hover:text-slate-900"
+  class="inline-block px-2 py-1 text-slate-700 text-sm hover:text-slate-900 hover:bg-slate-100 rounded-lg"
 >
   <slot />
 </a>

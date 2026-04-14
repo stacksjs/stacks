@@ -44,6 +44,7 @@ buddy upgrade
 ```
 
 Menu options:
+
 - Dependencies
 - Framework
 - Bun
@@ -120,6 +121,7 @@ buddy upgrade --all
 ```
 
 Output:
+
 ```
 buddy upgrade
 
@@ -216,16 +218,19 @@ Security-related updates are prioritized:
 Before upgrading:
 
 1. **Commit current changes**
+
    ```bash
    git add . && git commit -m "chore: pre-upgrade snapshot"
    ```
 
 2. **Run tests**
+
    ```bash
    buddy test
    ```
 
 3. **Check for breaking changes**
+
    ```bash
    buddy outdated
    ```
@@ -235,16 +240,19 @@ Before upgrading:
 After upgrading:
 
 1. **Install new dependencies**
+
    ```bash
    buddy install
    ```
 
 2. **Run tests**
+
    ```bash
    buddy test
    ```
 
 3. **Check for deprecation warnings**
+
    ```bash
    buddy dev --verbose
    ```
@@ -260,6 +268,7 @@ Error: Failed to upgrade dependencies
 ```
 
 **Solutions**:
+
 1. Clear package cache: `buddy clean`
 2. Fresh install: `buddy fresh`
 3. Try with verbose: `buddy upgrade --verbose`
@@ -271,6 +280,7 @@ Error: Peer dependency conflict
 ```
 
 **Solutions**:
+
 1. Check conflicting packages
 2. Update related packages together
 3. Use `--force` flag (with caution)
@@ -282,6 +292,7 @@ Error: Permission denied
 ```
 
 **Solution**: Run with sudo:
+
 ```bash
 sudo buddy upgrade:binary
 ```
@@ -293,6 +304,7 @@ Error: Shell integration failed
 ```
 
 **Solutions**:
+
 1. Ensure Oh My Zsh is installed
 2. Check shell configuration file
 3. Restart terminal after upgrade
@@ -304,6 +316,7 @@ Warning: Bun version mismatch
 ```
 
 **Solution**: Upgrade Bun:
+
 ```bash
 buddy upgrade:bun
 ```
@@ -343,7 +356,7 @@ bun add @stacksjs/core@1.0.0
 Create a script for regular upgrades:
 
 ```bash
-#!/bin/bash
+# !/bin/bash
 # upgrade-all.sh
 
 echo "Checking for updates..."
@@ -373,22 +386,27 @@ name: Dependency Update
 
 on:
   schedule:
+
     - cron: '0 0 * * 0' # Weekly
 
 jobs:
   upgrade:
     runs-on: ubuntu-latest
     steps:
+
       - uses: actions/checkout@v3
       - uses: oven-sh/setup-bun@v1
 
       - name: Upgrade dependencies
+
         run: buddy upgrade:dependencies
 
       - name: Run tests
+
         run: buddy test
 
       - name: Create PR
+
         uses: peter-evans/create-pull-request@v5
         with:
           title: 'chore: upgrade dependencies'
@@ -399,6 +417,7 @@ jobs:
 ### Regular Updates
 
 Update dependencies regularly (weekly/monthly) to:
+
 - Get security fixes
 - Avoid large upgrade jumps
 - Keep current with features
@@ -414,6 +433,7 @@ buddy upgrade --dependencies && buddy test
 ### Review Changelogs
 
 Before major upgrades, review package changelogs for:
+
 - Breaking changes
 - Deprecations
 - Migration guides
@@ -424,11 +444,11 @@ Test upgrades in staging before production:
 
 ```bash
 # Staging
-APP_ENV=staging buddy upgrade --all
+APP*ENV=staging buddy upgrade --all
 buddy test
 
 # Production (after verification)
-APP_ENV=production buddy upgrade --all
+APP*ENV=production buddy upgrade --all
 ```
 
 ## Related Commands

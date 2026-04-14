@@ -13,7 +13,7 @@ Easily work with file paths.
 
 ```bash
 bun install -d @stacksjs/path
-# if stacks is installed, you can also use:
+# if stacks is installed, you can also use
 # import path from 'stacks/path'
 ```
 
@@ -25,7 +25,7 @@ import { filename, normalizeAliases, resolve, resolveAlias } from '@stacksjs/pat
 // and more...
 ```
 
-To view the full documentation, please visit [https://stacksjs.com/path](https://stacksjs.com/path).
+To view the full documentation, please visit [<https://stacksjs.com/pat>h](https://stacksjs.com/path).
 
 ## 🧪 Testing
 

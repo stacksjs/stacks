@@ -18,80 +18,80 @@ const { mysqlHost = 'stacks', mysqlPort = '3306', mysqlUsername = 'root', mysqlP
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-y divide-gray-900/10">
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+      <div class="divide-gray-900/10 divide-y">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               MySQL
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your MySQL driver settings.
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 sm:max-w-xl">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 sm:max-w-xl">
               <div class="sm:col-span-3">
-                <label for="mysql-host" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Host</label>
+                <label for="mysql-host" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Host</label>
                 <div class="mt-2">
                   <input
                     id="mysql-host"
                     type="text"
                     name="mysql-host"
                     value="{{ mysqlHost }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="mysql-port" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Port</label>
+                <label for="mysql-port" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Port</label>
                 <div class="mt-2">
                   <input
                     id="mysql-port"
                     type="text"
                     name="mysql-port"
                     value="{{ mysqlPort }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="mysql-username" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Username</label>
+                <label for="mysql-username" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Username</label>
                 <div class="mt-2">
                   <input
                     id="mysql-username"
                     type="text"
                     name="mysql-username"
                     value="{{ mysqlUsername }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="mysql-password" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Password</label>
+                <label for="mysql-password" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Password</label>
                 <div class="mt-2">
                   <input
                     id="mysql-password"
                     type="password"
                     name="mysql-password"
                     value="{{ mysqlPassword }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="mysql-database" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Database</label>
+                <label for="mysql-database" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Database</label>
                 <div class="mt-2">
                   <input
                     id="mysql-database"
                     type="text"
                     name="mysql-database"
                     value="{{ mysqlDatabase }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
@@ -99,53 +99,53 @@ const { mysqlHost = 'stacks', mysqlPort = '3306', mysqlUsername = 'root', mysqlP
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               SQLite
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your SQLite driver settings.
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6 sm:max-w-xl">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 sm:max-w-xl">
               <div class="sm:col-span-3">
-                <label for="sqlite-host" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Host</label>
+                <label for="sqlite-host" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Host</label>
                 <div class="mt-2">
                   <input
                     id="sqlite-host"
                     type="text"
                     name="sqlite-host"
                     value="{{ sqliteHost }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqlite-prefix" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Prefix</label>
+                <label for="sqlite-prefix" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Prefix</label>
                 <div class="mt-2">
                   <input
                     id="sqlite-prefix"
                     type="text"
                     name="sqlite-prefix"
                     value="{{ sqlitePrefix }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="sqlite-database" class="block text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Database</label>
+                <label for="sqlite-database" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100">Database</label>
                 <div class="mt-2">
                   <input
                     id="sqlite-database"
                     type="text"
                     name="sqlite-database"
                     value="{{ sqliteDatabase }}"
-                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
+                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
                   >
                 </div>
               </div>
@@ -154,13 +154,13 @@ const { mysqlHost = 'stacks', mysqlPort = '3306', mysqlUsername = 'root', mysqlP
         </div>
       </div>
     </main>
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

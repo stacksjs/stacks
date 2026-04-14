@@ -90,7 +90,7 @@ describe('Order Model', () => {
   it('creates an order', async () => {
     const order = await db.insertInto('orders')
       .values({ user_id: 1, total: 99.99 })
-      .returning('*')
+      .returning('_')
       .executeTakeFirst()
 
     expect(order?.total).toBe(99.99)
@@ -132,7 +132,7 @@ export const UserFactory = new Factory<User>({
     const data = { ...this.make(), ...attributes }
     return db.insertInto('users')
       .values(data)
-      .returning('*')
+      .returning('_')
       .executeTakeFirstOrThrow()
   },
 

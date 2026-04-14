@@ -32,7 +32,7 @@ name: '',
 
     <div class="flex inline gap-2 py-2 text-2xl">
       <a
-        class="i-carbon-logo-github mya inline-block text-current op30 transition duration-200 hover:op100"
+        class="inline-block text-current duration-200 transition i-carbon-logo-github mya op30 hover:op100"
         href="https://github.com/{{ data.github }}"
         target="_blank"
         rel="noopener noreferrer"
@@ -41,7 +41,7 @@ name: '',
 
       @if(data.sponsors)
         <a
-          class="i-carbon-favorite-filled mya inline-block text-current op30 transition duration-200 hover:op100"
+          class="inline-block text-current duration-200 transition i-carbon-favorite-filled mya op30 hover:op100"
           href="https://github.com/sponsors/{{ data.github }}"
           target="_blank"
           rel="noopener noreferrer"
@@ -52,9 +52,9 @@ name: '',
     </div>
 
     @if(data.functions.length > 0 || data.packages.length > 0)
-      <div class="grid grid-cols-[20px_1fr] gap-x-1 gap-y-2 w-5/6 mx-auto mb-2 items-start rounded bg-gray-100 p-3">
+      <div class="grid gap-x-1 gap-y-2 grid-cols-[20px_1fr] items-start mb-2 mx-auto p-3 w-5/6 bg-gray-100 rounded">
         @if(data.functions.length > 0)
-          <div class="i-carbon:function-math ma op50" title="Functions"></div>
+          <div class="ma op50 i-carbon:function-math" title="Functions"></div>
           <div class="flex flex-row flex-wrap gap-2 text-left text-sm">
             @foreach(data.functions as func)
               <a href="/{{ func }}" target="_blank">

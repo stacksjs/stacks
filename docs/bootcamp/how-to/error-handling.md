@@ -371,7 +371,7 @@ async function withRetry<T>(
       console.warn(`Attempt ${attempt} failed:`, error)
 
       if (attempt < maxRetries) {
-        const waitTime = delay * Math.pow(backoff, attempt - 1)
+        const waitTime = delay _ Math.pow(backoff, attempt - 1)
         await new Promise(resolve => setTimeout(resolve, waitTime))
       }
     }
@@ -446,7 +446,7 @@ function logError(
 ### Error Tracking Integration
 
 ```ts
-import * as Sentry from '@sentry/bun'
+import _ as Sentry from '@sentry/bun'
 
 // Initialize Sentry
 Sentry.init({

@@ -212,7 +212,7 @@ const getStatusVariant = (status) => {
 @title('Dashboard - Jobs')
 <div>
   <!-- Stats Overview -->
-  <div class="mb-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
     <StatsCard
       title="Total Jobs"
       value="71,897"
@@ -240,12 +240,12 @@ const getStatusVariant = (status) => {
   </div>
 
   <!-- Queue Performance Charts -->
-  <div class="grid grid-cols-1 gap-4 lg:grid-cols-2 mb-6">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
     <!-- Throughput Chart -->
     <Card variant="default" padding="lg">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Job Throughput</h3>
+          <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Throughput</h3>
           <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
         </div>
         <Select
@@ -255,10 +255,10 @@ const getStatusVariant = (status) => {
           class="w-36"
         />
       </div>
-      <div class="h-[280px] relative">
+      <div class="relative h-[280px]">
         @if(isLoading)
-          <div class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm z-10 rounded-lg">
-            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
+          <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
+            <div class="h-6 w-6 border-b-2 border-blue-500 rounded-full animate-spin" />
           </div>
         @endif
         <canvas id="chart_1"></canvas>
@@ -269,14 +269,14 @@ const getStatusVariant = (status) => {
     <Card variant="default" padding="lg">
       <div class="flex items-center justify-between mb-4">
         <div>
-          <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Job Wait Time</h3>
+          <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Wait Time</h3>
           <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Average time jobs spend in queue</p>
         </div>
       </div>
-      <div class="h-[280px] relative">
+      <div class="relative h-[280px]">
         @if(isLoading)
-          <div class="absolute inset-0 flex items-center justify-center bg-white/80 dark:bg-neutral-800/80 backdrop-blur-sm z-10 rounded-lg">
-            <div class="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500" />
+          <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
+            <div class="h-6 w-6 border-b-2 border-blue-500 rounded-full animate-spin" />
           </div>
         @endif
         <canvas id="chart_2"></canvas>
@@ -288,37 +288,37 @@ const getStatusVariant = (status) => {
   <Card variant="default" padding="none">
     <div class="px-5 py-4 border-b border-black/5 dark:border-white/5">
       <div class="flex items-center justify-between">
-        <h3 class="text-[14px] font-medium text-neutral-900 dark:text-white">Recent Jobs</h3>
+        <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Recent Jobs</h3>
         <RouterLink
           to="/jobs/history"
-          class="inline-flex items-center gap-1 text-[13px] text-blue-600 hover:text-blue-500 dark:text-blue-400"
+          class="inline-flex gap-1 items-center text-[13px] text-blue-600 dark:text-blue-400 hover:text-blue-500"
         >
           <span>View All</span>
-          <div class="i-hugeicons-arrow-right-01 h-3.5 w-3.5" />
+          <div class="h-3.5 w-3.5 i-hugeicons-arrow-right-01" />
         </RouterLink>
       </div>
     </div>
 
     <div class="overflow-x-auto">
-      <table class="min-w-full divide-y divide-black/5 dark:divide-white/5">
+      <table class="min-w-full divide-black/5 divide-y dark:divide-white/5">
         <thead>
           <tr class="bg-black/[0.02] dark:bg-white/[0.02]">
-            <th scope="col" class="py-3 pl-5 pr-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Job</th>
-            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Queue</th>
-            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Status</th>
-            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Runtime</th>
-            <th scope="col" class="px-3 py-3 text-left text-[11px] font-semibold uppercase tracking-wider text-neutral-500 dark:text-neutral-400">Started</th>
-            <th scope="col" class="relative py-3 pl-3 pr-5">
+            <th scope="col" class="pl-5 pr-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Job</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Queue</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Status</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Runtime</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Started</th>
+            <th scope="col" class="relative pl-3 pr-5 py-3">
               <span class="sr-only">Actions</span>
             </th>
           </tr>
         </thead>
-        <tbody class="divide-y divide-black/5 dark:divide-white/5">
+        <tbody class="divide-black/5 divide-y dark:divide-white/5">
           @foreach(recentJobs as job)
-            <tr class="hover:bg-black/[0.02] dark:hover:bg-white dark:bg-neutral-800/[0.02] transition-colors">
-              <td class="whitespace-nowrap py-3.5 pl-5 pr-3">
-                <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ job.name }}</div>
-                <div class="mt-1 flex items-center gap-1">
+            <tr class="dark:bg-neutral-800/[0.02] hover:bg-black/[0.02] dark:hover:bg-white transition-colors">
+              <td class="pl-5 pr-3 py-3.5 whitespace-nowrap">
+                <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ job.name }}</div>
+                <div class="flex gap-1 items-center mt-1">
                   @foreach(job.tags as tag)
                     <Badge size="xs" variant="default">
                       {{ tag }}
@@ -326,11 +326,11 @@ const getStatusVariant = (status) => {
                   @endforeach
                 </div>
               </td>
-              <td class="whitespace-nowrap px-3 py-3.5">
+              <td class="px-3 py-3.5 whitespace-nowrap">
                 <div class="text-[13px] text-neutral-900 dark:text-white">{{ job.queue }}</div>
                 <div class="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">Priority: {{ job.priority }}</div>
               </td>
-              <td class="whitespace-nowrap px-3 py-3.5">
+              <td class="px-3 py-3.5 whitespace-nowrap">
                 <Badge :variant="getStatusVariant(job.status)" size="sm">
                   {{ job.status }}
                 </Badge>
@@ -340,18 +340,18 @@ const getStatusVariant = (status) => {
                   </div>
                 @endif
               </td>
-              <td class="whitespace-nowrap px-3 py-3.5">
-                <div class="text-[13px] font-mono text-neutral-900 dark:text-white">
+              <td class="px-3 py-3.5 whitespace-nowrap">
+                <div class="font-mono text-[13px] text-neutral-900 dark:text-white">
                   {{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}
                 </div>
               </td>
-              <td class="whitespace-nowrap px-3 py-3.5 text-[12px] text-neutral-500 dark:text-neutral-400">
+              <td class="px-3 py-3.5 text-[12px] text-neutral-500 whitespace-nowrap dark:text-neutral-400">
                 <div>{{ job.started_at || '-' }}</div>
                 @if(job.completed_at)
                   <div>Completed: {{ job.completed_at }}</div>
                 @endif
               </td>
-              <td class="relative whitespace-nowrap py-3.5 pl-3 pr-5 text-right">
+              <td class="relative pl-3 pr-5 py-3.5 text-right whitespace-nowrap">
                 <Button
                   
                   :href="`/jobs/${job.id}`"

@@ -543,7 +543,7 @@ const delivery = await commerce.shippings.digitalDeliveries.store({
   orderId: order.id,
   type: 'download',
   fileUrl: 'https://cdn.example.com/files/ebook.pdf',
-  expiresAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000) // 7 days
+  expiresAt: new Date(Date.now() + 7 _ 24 _ 60 _ 60 _ 1000) // 7 days
 })
 
 // Create license key delivery
@@ -701,9 +701,9 @@ console.log(totals.total)
 | `products.fetch(filters)` | List products |
 | `products.update(id, data)` | Update product |
 | `products.destroy(id)` | Delete product |
-| `products.variants.*` | Variant operations |
-| `products.categories.*` | Category operations |
-| `products.reviews.*` | Review operations |
+| `products.variants._` | Variant operations |
+| `products.categories._` | Category operations |
+| `products.reviews._` | Review operations |
 
 ### Orders
 
@@ -727,7 +727,7 @@ console.log(totals.total)
 
 | Method | Description |
 |--------|-------------|
-| `shippings.shippingMethods.*` | Shipping methods |
-| `shippings.shippingZones.*` | Shipping zones |
-| `shippings.shippingRates.*` | Rate calculations |
+| `shippings.shippingMethods._` | Shipping methods |
+| `shippings.shippingZones._` | Shipping zones |
+| `shippings.shippingRates._` | Rate calculations |
 | `shippings.deliveryRoutes.*` | Delivery routes |

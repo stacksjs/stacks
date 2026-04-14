@@ -18,23 +18,23 @@ const { defaultQueue = 'sync', databaseTable = 'jobs', databaseQueue = 'default'
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-y divide-gray-900/10">
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+      <div class="divide-gray-900/10 divide-y">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Default Queue Settings
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your default Queue settings
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="type" class="block text-sm text-gray-900 font-medium leading-6">Default</label>
+                <label for="type" class="block font-medium leading-6 text-gray-900 text-sm">Default</label>
                 <div class="mt-2">
-                  <select id="type" name="type" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <select id="type" name="type" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                     <option {{ defaultQueue == 'sync' ? 'selected' : '' }}>sync</option>
                     <option {{ defaultQueue == 'database' ? 'selected' : '' }}>database</option>
                     <option {{ defaultQueue == 'redis' ? 'selected' : '' }}>redis</option>
@@ -46,158 +46,158 @@ const { defaultQueue = 'sync', databaseTable = 'jobs', databaseQueue = 'default'
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Sync Queue
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Sync Queue configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="sync-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
+                <label for="sync-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
                 <div class="mt-2">
-                  <input id="sync-driver" type="text" name="sync-driver" value="sync" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-neutral-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sync-driver" type="text" name="sync-driver" value="sync" disabled class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 bg-neutral-50 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm cursor-not-allowed">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Database Queue
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your database queue configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="db-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
+                <label for="db-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
                 <div class="mt-2">
-                  <input id="db-driver" type="text" name="db-driver" value="database" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-neutral-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="db-driver" type="text" name="db-driver" value="database" disabled class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 bg-neutral-50 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm cursor-not-allowed">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="db-table" class="block text-sm text-gray-900 font-medium leading-6">Table</label>
+                <label for="db-table" class="block font-medium leading-6 text-gray-900 text-sm">Table</label>
                 <div class="mt-2">
-                  <input id="db-table" type="text" name="db-table" value="{{ databaseTable }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="db-table" type="text" name="db-table" value="{{ databaseTable }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="db-queue" class="block text-sm text-gray-900 font-medium leading-6">Queue</label>
+                <label for="db-queue" class="block font-medium leading-6 text-gray-900 text-sm">Queue</label>
                 <div class="mt-2">
-                  <input id="db-queue" type="text" name="db-queue" value="{{ databaseQueue }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="db-queue" type="text" name="db-queue" value="{{ databaseQueue }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Redis Queue
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your redis queue configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="redis-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
+                <label for="redis-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
                 <div class="mt-2">
-                  <input id="redis-driver" type="text" name="redis-driver" value="redis" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-neutral-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="redis-driver" type="text" name="redis-driver" value="redis" disabled class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 bg-neutral-50 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm cursor-not-allowed">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="redis-connection" class="block text-sm text-gray-900 font-medium leading-6">Connection</label>
+                <label for="redis-connection" class="block font-medium leading-6 text-gray-900 text-sm">Connection</label>
                 <div class="mt-2">
-                  <input id="redis-connection" type="text" name="redis-connection" value="{{ redisConnection }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="redis-connection" type="text" name="redis-connection" value="{{ redisConnection }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="redis-queue" class="block text-sm text-gray-900 font-medium leading-6">Queue</label>
+                <label for="redis-queue" class="block font-medium leading-6 text-gray-900 text-sm">Queue</label>
                 <div class="mt-2">
-                  <input id="redis-queue" type="text" name="redis-queue" value="{{ redisQueue }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="redis-queue" type="text" name="redis-queue" value="{{ redisQueue }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               SQS Queue
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your sqs queue configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-3">
-                <label for="sqs-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
+                <label for="sqs-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
                 <div class="mt-2">
-                  <input id="sqs-driver" type="text" name="sqs-driver" value="sqs" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-neutral-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-driver" type="text" name="sqs-driver" value="sqs" disabled class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 bg-neutral-50 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm cursor-not-allowed">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqs-key" class="block text-sm text-gray-900 font-medium leading-6">Key</label>
+                <label for="sqs-key" class="block font-medium leading-6 text-gray-900 text-sm">Key</label>
                 <div class="mt-2">
-                  <input id="sqs-key" type="text" name="sqs-key" value="{{ sqsKey }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-key" type="text" name="sqs-key" value="{{ sqsKey }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqs-secret" class="block text-sm text-gray-900 font-medium leading-6">Secret</label>
+                <label for="sqs-secret" class="block font-medium leading-6 text-gray-900 text-sm">Secret</label>
                 <div class="mt-2">
-                  <input id="sqs-secret" type="password" name="sqs-secret" value="{{ sqsSecret }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-secret" type="password" name="sqs-secret" value="{{ sqsSecret }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqs-prefix" class="block text-sm text-gray-900 font-medium leading-6">Prefix</label>
+                <label for="sqs-prefix" class="block font-medium leading-6 text-gray-900 text-sm">Prefix</label>
                 <div class="mt-2">
-                  <input id="sqs-prefix" type="text" name="sqs-prefix" value="{{ sqsPrefix }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-prefix" type="text" name="sqs-prefix" value="{{ sqsPrefix }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqs-suffix" class="block text-sm text-gray-900 font-medium leading-6">Suffix</label>
+                <label for="sqs-suffix" class="block font-medium leading-6 text-gray-900 text-sm">Suffix</label>
                 <div class="mt-2">
-                  <input id="sqs-suffix" type="text" name="sqs-suffix" value="{{ sqsSuffix }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-suffix" type="text" name="sqs-suffix" value="{{ sqsSuffix }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqs-queue" class="block text-sm text-gray-900 font-medium leading-6">Queue</label>
+                <label for="sqs-queue" class="block font-medium leading-6 text-gray-900 text-sm">Queue</label>
                 <div class="mt-2">
-                  <input id="sqs-queue" type="text" name="sqs-queue" value="{{ sqsQueue }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-queue" type="text" name="sqs-queue" value="{{ sqsQueue }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="sqs-region" class="block text-sm text-gray-900 font-medium leading-6">Region</label>
+                <label for="sqs-region" class="block font-medium leading-6 text-gray-900 text-sm">Region</label>
                 <div class="mt-2">
-                  <input id="sqs-region" type="text" name="sqs-region" value="{{ sqsRegion }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="sqs-region" type="text" name="sqs-region" value="{{ sqsRegion }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
@@ -205,13 +205,13 @@ const { defaultQueue = 'sync', databaseTable = 'jobs', databaseQueue = 'default'
         </div>
       </div>
     </main>
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

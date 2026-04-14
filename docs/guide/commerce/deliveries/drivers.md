@@ -95,11 +95,13 @@ const updatedContact = await shippings.drivers.updateContact(1, '+1234567893')
 ### Delete Drivers
 
 Single driver deletion:
+
 ```ts
 const deletedDriver = await shippings.drivers.destroy(1) // Returns the deleted driver record
 ```
 
 Bulk deletion:
+
 ```ts
 const deletedCount = await shippings.drivers.bulkDestroy([1, 2, 3]) // Returns number of drivers deleted
 ```

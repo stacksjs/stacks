@@ -572,7 +572,7 @@ const users = await User.all()
 
 // With conditions
 const activeUsers = await User.where('status', 'active')
-  .orderBy('created_at', 'desc')
+  .orderBy('created*at', 'desc')
   .get()
 
 // Create
@@ -604,7 +604,7 @@ const users = await DB.table('users')
 
 // Joins
 const posts = await DB.table('posts')
-  .join('users', 'posts.user_id', '=', 'users.id')
+  .join('users', 'posts.user*id', '=', 'users.id')
   .select('posts.*', 'users.name as author')
   .get()
 
@@ -620,17 +620,17 @@ const avg = await DB.table('products').avg('price')
 // In a controller or action
 async index(request: RequestInstance) {
   const page = request.query('page', 1)
-  const perPage = request.query('per_page', 15)
+  const perPage = request.query('per*page', 15)
 
   const users = await User.paginate(page, perPage)
 
   return response.json({
     data: users.data,
     meta: {
-      current_page: users.currentPage,
-      per_page: users.perPage,
+      current*page: users.currentPage,
+      per*page: users.perPage,
       total: users.total,
-      last_page: users.lastPage,
+      last*page: users.lastPage,
     },
   })
 }
@@ -731,8 +731,8 @@ export default new Action({
       slug: slugify(title),
       content,
       excerpt: excerpt || content.substring(0, 200),
-      author_id: user.id,
-      published_at: null,
+      author*id: user.id,
+      published*at: null,
     })
 
     // Attach tags
@@ -767,12 +767,12 @@ export default new Action({
 
   async handle(request: RequestInstance) {
     const page = request.query('page', 1)
-    const perPage = request.query('per_page', 10)
+    const perPage = request.query('per*page', 10)
     const tag = request.query('tag')
 
-    let query = Post.where('published_at', '!=', null)
+    let query = Post.where('published*at', '!=', null)
       .with('author', 'tags')
-      .orderBy('published_at', 'desc')
+      .orderBy('published*at', 'desc')
 
     if (tag) {
       query = query.whereHas('tags', (q) => q.where('slug', tag))
@@ -788,13 +788,13 @@ export default new Action({
         excerpt: post.excerpt,
         author: post.author.name,
         tags: post.tags.map(t => t.name),
-        published_at: post.published_at,
+        published*at: post.published*at,
       })),
       meta: {
-        current_page: posts.currentPage,
-        per_page: posts.perPage,
+        current*page: posts.currentPage,
+        per*page: posts.perPage,
         total: posts.total,
-        last_page: posts.lastPage,
+        last*page: posts.lastPage,
       },
     })
   },

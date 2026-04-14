@@ -142,7 +142,7 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
             <h3 class="widget-title">All Categories</h3>
             <ul class="category-list">
               @foreach (allCategories as cat)
-                <li class="{{ cat.slug === categorySlug ? 'active' : '' }}">
+                <li class=": ? '' 'active' {{ }} === cat.slug categorySlug">
                   <a href="/blog/category/{{ cat.slug }}">
                     <span>{{ cat.name }}</span>
                     <span class="category-count">{{ cat.postCount }}</span>

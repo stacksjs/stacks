@@ -41,7 +41,7 @@ Initialize Tauri in your Stacks project:
 
 ```bash
 buddy desktop:init
-# Or manually:
+# Or manually
 bunx tauri init
 ```
 
@@ -236,19 +236,19 @@ async function close() {
 
 <div
   data-tauri-drag-region
-  class="h-8 bg-gray-100 dark:bg-gray-800 flex items-center justify-between px-4"
+  class="flex items-center justify-between px-4 h-8 bg-gray-100 dark:bg-gray-800"
 >
-  <div class="text-sm font-medium">My App</div>
+  <div class="font-medium text-sm">My App</div>
 
   <div class="flex gap-2">
-    <button onclick="minimize()" class="hover:bg-gray-200 p-1 rounded">
-      <i class="i-hugeicons-outline-minus h-4 w-4"></i>
+    <button onclick="minimize()" class="p-1 hover:bg-gray-200 rounded">
+      <i class="h-4 w-4 i-hugeicons-outline-minus"></i>
     </button>
-    <button onclick="toggleMaximize()" class="hover:bg-gray-200 p-1 rounded">
-      <i class="i-hugeicons-outline-square h-4 w-4"></i>
+    <button onclick="toggleMaximize()" class="p-1 hover:bg-gray-200 rounded">
+      <i class="h-4 w-4 i-hugeicons-outline-square"></i>
     </button>
-    <button onclick="close()" class="hover:bg-red-500 hover:text-white p-1 rounded">
-      <i class="i-hugeicons-outline-x h-4 w-4"></i>
+    <button onclick="close()" class="p-1 hover:text-white hover:bg-red-500 rounded">
+      <i class="h-4 w-4 i-hugeicons-outline-x"></i>
     </button>
   </div>
 </div>
@@ -287,43 +287,47 @@ use tauri::{
 };
 
 fn main() {
-    let quit = CustomMenuItem::new("quit".to_string(), "Quit");
-    let hide = CustomMenuItem::new("hide".to_string(), "Hide");
-    let show = CustomMenuItem::new("show".to_string(), "Show");
+    let quit = CustomMenuItem::new("quit".to*string(), "Quit");
+    let hide = CustomMenuItem::new("hide".to*string(), "Hide");
+    let show = CustomMenuItem::new("show".to*string(), "Show");
 
-    let tray_menu = SystemTrayMenu::new()
-        .add_item(show)
-        .add_item(hide)
-        .add_native_item(SystemTrayMenuItem::Separator)
-        .add_item(quit);
+    let tray*menu = SystemTrayMenu::new()
+        .add*item(show)
+        .add*item(hide)
+        .add*native*item(SystemTrayMenuItem::Separator)
+        .add*item(quit);
 
-    let system_tray = SystemTray::new().with_menu(tray_menu);
+    let system*tray = SystemTray::new().with*menu(tray*menu);
 
     tauri::Builder::default()
-        .system_tray(system_tray)
-        .on_system_tray_event(|app, event| match event {
+        .system*tray(system*tray)
+        .on*system*tray*event(|app, event| match event {
             SystemTrayEvent::LeftClick { .. } => {
-                let window = app.get_window("main").unwrap();
+                let window = app.get*window("main").unwrap();
                 window.show().unwrap();
-                window.set_focus().unwrap();
+                window.set*focus().unwrap();
             }
-            SystemTrayEvent::MenuItemClick { id, .. } => match id.as_str() {
+            SystemTrayEvent::MenuItemClick { id, .. } => match id.as*str() {
                 "quit" => {
                     std::process::exit(0);
                 }
                 "hide" => {
-                    let window = app.get_window("main").unwrap();
+                    let window = app.get*window("main").unwrap();
                     window.hide().unwrap();
                 }
                 "show" => {
-                    let window = app.get_window("main").unwrap();
+                    let window = app.get*window("main").unwrap();
                     window.show().unwrap();
                 }
-                _ => {}
+
+                * => {}
+
             },
-            _ => {}
+
+            * => {}
+
         })
-        .run(tauri::generate_context!())
+        .run(tauri::generate*context!())
         .expect("error while running tauri application");
 }
 ```
@@ -476,20 +480,20 @@ Call Rust functions from your frontend:
 
 ```rust
 // src-tauri/src/main.rs
-#[tauri::command]
+# [tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}!", name)
 }
 
-#[tauri::command]
-async fn read_file(path: String) -> Result<String, String> {
-    std::fs::read_to_string(path).map_err(|e| e.to_string())
+# [tauri::command]
+async fn read*file(path: String) -> Result<String, String> {
+    std::fs::read*to*string(path).map*err(|e| e.to*string())
 }
 
 fn main() {
     tauri::Builder::default()
-        .invoke_handler(tauri::generate_handler![greet, read_file])
-        .run(tauri::generate_context!())
+        .invoke*handler(tauri::generate*handler![greet, read*file])
+        .run(tauri::generate*context!())
         .expect("error while running tauri application");
 }
 ```
@@ -504,7 +508,7 @@ console.log(greeting) // "Hello, World!"
 
 // Call async Rust function
 try {
-  const content = await invoke('read_file', { path: '/path/to/file.txt' })
+  const content = await invoke('read*file', { path: '/path/to/file.txt' })
   console.log(content)
 } catch (error) {
   console.error('Failed to read file:', error)
@@ -517,12 +521,12 @@ Send events between frontend and backend:
 
 ```rust
 // Emit event from Rust
-#[tauri::command]
-fn start_processing(window: tauri::Window) {
+# [tauri::command]
+fn start*processing(window: tauri::Window) {
     std::thread::spawn(move || {
         for i in 0..100 {
             window.emit("progress", i).unwrap();
-            std::thread::sleep(std::time::Duration::from_millis(50));
+            std::thread::sleep(std::time::Duration::from*millis(50));
         }
         window.emit("complete", "Done!").unwrap();
     });
@@ -552,7 +556,7 @@ Run the desktop app in development:
 
 ```bash
 buddy desktop:dev
-# Or:
+# Or
 bunx tauri dev
 ```
 
@@ -564,7 +568,7 @@ Build distributable binaries:
 
 ```bash
 buddy desktop:build
-# Or:
+# Or
 bunx tauri build
 ```
 
@@ -583,10 +587,10 @@ Build for specific platforms:
 bunx tauri build --target universal-apple-darwin
 
 # Windows (from macOS/Linux requires cross-compilation setup)
-bunx tauri build --target x86_64-pc-windows-msvc
+bunx tauri build --target x86*64-pc-windows-msvc
 
 # Linux
-bunx tauri build --target x86_64-unknown-linux-gnu
+bunx tauri build --target x86*64-unknown-linux-gnu
 ```
 
 ## Auto-Updates
@@ -602,10 +606,10 @@ Enable automatic updates for your desktop app:
     "updater": {
       "active": true,
       "endpoints": [
-        "https://releases.example.com/{{target}}/{{current_version}}"
+        "https://releases.example.com/{{target}}/{{current*version}}"
       ],
       "dialog": true,
-      "pubkey": "YOUR_PUBLIC_KEY"
+      "pubkey": "YOUR*PUBLIC*KEY"
     }
   }
 }
@@ -687,24 +691,24 @@ function handleInput(e: Event) {
 }
 </script>
 
-<div class="h-screen flex flex-col">
+<div class="flex flex-col h-screen">
   <!-- Toolbar -->
-  <div class="h-12 bg-gray-100 dark:bg-gray-800 flex items-center px-4 gap-4 border-b">
+  <div class="flex gap-4 items-center px-4 h-12 bg-gray-100 dark:bg-gray-800 border-b">
     <button
       onclick="openNote()"
-      class="px-3 py-1 bg-blue-500 text-white rounded hover:bg-blue-600"
+      class="px-3 py-1 text-white bg-blue-500 hover:bg-blue-600 rounded"
     >
       Open
     </button>
     <button
       onclick="saveNote()"
-      class="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+      class="px-3 py-1 text-white bg-green-500 hover:bg-green-600 rounded"
     >
       Save
     </button>
 
     @if(currentFile.value)
-      <span class="text-sm text-gray-600">
+      <span class="text-gray-600 text-sm">
         {{ currentFile.value }}
         @if(isDirty.value)
           <span class="text-orange-500">*</span>
@@ -717,7 +721,7 @@ function handleInput(e: Event) {
   <textarea
     value="{{ content.value }}"
     oninput="handleInput(event)"
-    class="flex-1 p-4 font-mono text-sm resize-none focus:outline-none dark:bg-gray-900 dark:text-white"
+    class="flex-1 p-4 font-mono text-sm dark:text-white dark:bg-gray-900 focus:outline-none resize-none"
     placeholder="Start writing..."
   ></textarea>
 </div>

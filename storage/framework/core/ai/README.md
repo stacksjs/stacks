@@ -3,6 +3,7 @@
 This package contains a set of tools to help you build AI-powered applications.
 
 1. Request model access from AWS: <https://us-east-1.console.aws.amazon.com/bedrock/home?region=us-east-1#/modelaccess>
+
 2.
 
 ## ☘️ Features

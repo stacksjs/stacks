@@ -317,37 +317,37 @@ const refreshData = () => {
 
 @title('Queries - History')
 <div class="min-h-screen">
-  <header class="sticky top-0 z-10 flex flex-wrap items-center justify-between gap-6 bg-white px-4 py-4 shadow-sm dark:bg-neutral-900 sm:px-6 lg:px-8">
+  <header class="flex sticky top-0 z-10 flex-wrap gap-6 items-center justify-between px-4 py-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900 shadow-sm">
     <div>
-      <h1 class="text-lg text-gray-900 font-semibold leading-7 dark:text-white">
+      <h1 class="font-semibold leading-7 text-gray-900 text-lg dark:text-white">
         Query History
       </h1>
-      <p class="mt-1 text-sm text-gray-500 leading-6 dark:text-neutral-400">
+      <p class="mt-1 leading-6 text-gray-500 text-sm dark:text-neutral-400">
         View and analyze past database queries
       </p>
     </div>
-    <div class="flex flex-wrap items-center gap-3">
+    <div class="flex flex-wrap gap-3 items-center">
       <div class="inline-flex rounded-md shadow-sm">
         <button
           type="button"
-          class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'day' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          class="inline-flex relative items-center px-3 py-2 font-medium text-sm rounded-l-md"
+          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
           onclick="timeRange = 'day'"
         >
           Day
         </button>
         <button
           type="button"
-          class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'week' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm"
+          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
           onclick="timeRange = 'week'"
         >
           Week
         </button>
         <button
           type="button"
-          class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-medium"
-          :class="timeRange === 'month' ? 'bg-blue-600 text-white' : 'bg-white text-gray-700 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700'"
+          class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm rounded-r-md"
+          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
           onclick="timeRange = 'month'"
         >
           Month
@@ -357,7 +357,7 @@ const refreshData = () => {
         <select
           id="connection"
           name="connection"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
+          class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
           value="{{ selectedConnection }}"
         >
           <option value="all">All connections</option>
@@ -371,7 +371,7 @@ const refreshData = () => {
         <select
           id="status"
           name="status"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
+          class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
           value="{{ selectedStatus }}"
         >
           <option value="all">All statuses</option>
@@ -384,7 +384,7 @@ const refreshData = () => {
         <select
           id="type"
           name="type"
-          class="block w-full rounded-md border-gray-300 py-2 pl-3 pr-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
+          class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
           value="{{ selectedType }}"
         >
           <option value="all">All types</option>
@@ -396,13 +396,13 @@ const refreshData = () => {
         </select>
       </div>
       <div class="relative w-full sm:w-auto">
-        <div class="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
-          <div class="i-hugeicons-search-01 h-5 w-5 text-gray-400"></div>
+        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+          <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
         </div>
         <input
           type="text"
           value="{{ searchQuery }}"
-          class="block w-full rounded-md border-gray-300 py-2 pl-10 text-sm focus:border-blue-600 focus:outline-none focus:ring-blue-600 bg-white dark:bg-neutral-800 dark:border-neutral-700 dark:text-neutral-200"
+          class="block pl-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
           placeholder="Search queries..."
         />
       </div>
@@ -414,86 +414,86 @@ const refreshData = () => {
     <div class="mt-4">
       <div class="relative">
         @if(isLoading)
-          <div class="absolute inset-0 flex items-center justify-center bg-white/50 dark:bg-neutral-900/50 z-10">
-            <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-600 dark:text-blue-400"></div>
+          <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/50 dark:bg-neutral-900/50">
+            <div class="h-8 w-8 text-blue-600 dark:text-blue-400 animate-spin i-hugeicons-loading-01"></div>
           </div>
         @endif
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
+        <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
             <thead class="bg-gray-50 dark:bg-neutral-800">
               <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-white sm:pl-6">
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">
                   Query
                 </th>
-                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
+                <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                   Connection
                 </th>
-                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell">
+                <th scope="col" class="hidden sm:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                   Duration
                 </th>
-                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white lg:table-cell">
+                <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                   Model / Method
                 </th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white">
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                   Status
                 </th>
-                <th scope="col" class="hidden px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-white sm:table-cell">
+                <th scope="col" class="hidden sm:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
                   Executed At
                 </th>
-                <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                   <span class="sr-only">View</span>
                 </th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-900">
+            <tbody class="bg-white dark:bg-neutral-900 divide-gray-200 divide-y dark:divide-neutral-700">
               @foreach(filteredQueries as query)
                 <tr>
-                  <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
-                    <div class="flex items-center gap-2 mb-1">
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
+                    <div class="flex gap-2 items-center mb-1">
                       <span
-                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                        class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
                         :class="queryTypeBadges[getQueryType(query.query)]"
                       >
                         {{ getQueryType(query.query) }}
                       </span>
                       <div
-                        class="font-medium text-gray-900 dark:text-white font-mono text-xs overflow-hidden text-ellipsis"
+                        class="overflow-hidden font-medium font-mono text-ellipsis text-gray-900 text-xs dark:text-white"
                         :title="query.query"
                       >
                         {{ formatQuery(query.query) }}
                       </div>
                     </div>
-                    <div class="hidden text-gray-500 dark:text-neutral-400 xl:block mt-1">
+                    <div class="hidden xl:block mt-1 text-gray-500 dark:text-neutral-400">
                       @foreach(query.tags as tag)
-                        <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium mr-1">
+                        <span class="inline-flex items-center mr-1 px-2 py-1 font-medium text-xs rounded-md">
                           {{ tag }}
                         </span>
                       @endforeach
                     </div>
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 lg:table-cell">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                     {{ query.connection }}
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 sm:table-cell" :class="query.duration > 10 ? 'text-yellow-600 dark:text-yellow-400' : ''">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400" :class="dark:text-yellow-400' : ? '' 'text-yellow-600 > 10 query.duration">
                     {{ formatDuration(query.duration) }}
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 lg:table-cell">
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                     <div>{{ query.model || '-' }}</div>
-                    <div class="text-xs text-gray-400 dark:text-neutral-500">{{ query.method || '-' }}</div>
+                    <div class="text-gray-400 text-xs dark:text-neutral-500">{{ query.method || '-' }}</div>
                   </td>
                   <td class="px-3 py-4 text-sm">
                     <span
-                      class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium ring-1 ring-inset"
+                      class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
                       :class="getQueryStatusColor(query.status)"
                     >
                       {{ query.status }}
                     </span>
                   </td>
-                  <td class="hidden px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 sm:table-cell">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                     {{ query.executed_at }}
                   </td>
-                  <td class="relative py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
-                    <a :href="`/queries/${query.id}`" class="text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300">
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm">
+                    <a :href="`/queries/${query.id}`" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
                       View<span class="sr-only">, {{ query.id }}</span>
                     </a>
                   </td>
@@ -501,7 +501,7 @@ const refreshData = () => {
               @endforeach
               @if(filteredQueries.length === 0)
                 <tr>
-                  <td colspan="7" class="py-8 text-center text-sm text-gray-500 dark:text-neutral-400">
+                  <td colspan="7" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">
                     No queries found matching your criteria.
                   </td>
                 </tr>

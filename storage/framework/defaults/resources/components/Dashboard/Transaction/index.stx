@@ -25,57 +25,57 @@ function formatTimestampDate(timestamp) {
 </script>
 <div class="sm:flex sm:items-center">
   <div class="sm:flex-auto">
-    <h1 class="text-base text-gray-900 font-semibold leading-6">
+    <h1 class="font-semibold leading-6 text-base text-gray-900">
       Transaction History
     </h1>
-    <p class="mt-2 text-sm text-gray-700">
+    <p class="mt-2 text-gray-700 text-sm">
       A list with all your Stacks-relating transactions.
     </p>
   </div>
 </div>
 
-<div class="mt-8 flow-root">
-  <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-    <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-      <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-        <table class="min-w-full divide-y divide-gray-300">
+<div class="flow-root mt-8">
+  <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+    <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+      <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+        <table class="min-w-full divide-gray-300 divide-y">
           <thead class="bg-gray-50">
             <tr>
-              <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-6">
+              <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm">
                 Transaction
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
                 Date
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
                 Amount
               </th>
-              <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
                 Payment Method
               </th>
-              <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+              <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                 <span class="sr-only">Edit</span>
               </th>
             </tr>
           </thead>
 
-          <tbody class="bg-white divide-y divide-gray-200">
+          <tbody class="bg-white divide-gray-200 divide-y">
             @foreach(transactionHistory as transaction, index)
               <tr>
-                <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm text-gray-900 font-medium sm:pl-6">
+                <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">
                   Dashboard Subscription <em class="italic">({{ getTransactionType(transaction.name) }}ly)</em>
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
                   {{ formatTimestampDate(transaction.created_at) }}
                 </td>
-                <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500">
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
                   ${{ getUnitPrice(transaction.unit_price) }}
                 </td>
-                <td class="flex items-center whitespace-nowrap px-3 py-4 text-sm text-gray-500 space-x-2">
+                <td class="flex items-center px-3 py-4 space-x-2 text-gray-500 text-sm whitespace-nowrap">
                   <slot name="cardBrand" />
                   <span>**** **** **** {{ getLastDigits(transaction.payment_intent) }}</span>
                 </td>
-                <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
                   <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, Transaction</span></a>
                 </td>
               </tr>

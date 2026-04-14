@@ -416,6 +416,7 @@ Creates the migration for the queue jobs table.
 ### File Locations
 
 Generated files are placed in their appropriate directories:
+
 - Components: `resources/components/`
 - Models: `app/Models/`
 - Migrations: `database/migrations/`

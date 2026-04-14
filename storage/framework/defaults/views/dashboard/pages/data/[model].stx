@@ -59,16 +59,16 @@ function statusVariant(s) {
 </script>
   <div ref="pageRoot" class="p-6">
     <div class="mb-4">
-      <a href="/app#data-dashboard" class="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1">
-        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+      <a href="/app#data-dashboard" class="flex gap-1 items-center text-blue-600 text-sm dark:text-blue-400 hover:underline">
+        <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
         Back to Dashboard
       </a>
     </div>
     <!-- Header -->
     <div class="flex items-center justify-between mb-6">
       <div>
-        <h1 class="text-2xl font-bold text-gray-900 dark:text-white">{{ modelName }}</h1>
-        <p class="text-sm text-gray-500 dark:text-neutral-400 mt-1">
+        <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ modelName }}</h1>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
           @if(error)
             Table "{{ tableName }}" not found or error occurred
           @else
@@ -83,74 +83,74 @@ function statusVariant(s) {
     </div>
 
     <!-- Error State -->
-      <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-6">
-        <div class="flex items-center gap-3">
-          <div class="w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-            <span class="text-red-600 dark:text-red-400 text-xl">!</span>
+      <div class="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl dark:border-red-800">
+        <div class="flex gap-3 items-center">
+          <div class="flex items-center justify-center h-10 w-10 bg-red-100 dark:bg-red-900/30 rounded-full">
+            <span class="text-red-600 text-xl dark:text-red-400">!</span>
           </div>
           <div>
             <h3 class="font-semibold text-red-900 dark:text-red-200">Error Loading Data</h3>
-            <p class="text-sm text-red-700 dark:text-red-300">{{ error }}</p>
+            <p class="text-red-700 text-sm dark:text-red-300">{{ error }}</p>
           </div>
         </div>
       </div>
     @elseif(items.length === 0)
       <!-- Empty State -->
-      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-12 text-center">
-        <div class="w-16 h-16 rounded-full bg-gray-100 dark:bg-neutral-700 flex items-center justify-center mx-auto mb-4">
-          <span class="text-gray-400 text-2xl">0</span>
+      <div class="p-12 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+        <div class="flex items-center justify-center mb-4 mx-auto h-16 w-16 bg-gray-100 dark:bg-neutral-700 rounded-full">
+          <span class="text-2xl text-gray-400">0</span>
         </div>
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-2">No {{ modelName }} Found</h3>
-        <p class="text-gray-500 dark:text-neutral-400 mb-6">Get started by creating your first {{ modelName }}.</p>
+        <h3 class="mb-2 font-semibold text-gray-900 text-lg dark:text-white">No {{ modelName }} Found</h3>
+        <p class="mb-6 text-gray-500 dark:text-neutral-400">Get started by creating your first {{ modelName }}.</p>
         <Button variant="primary" size="sm">Create {{ modelName }}</Button>
       </div>
     @else
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-        <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ totalCount }}</div>
-          <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">Total Records</div>
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4 mb-6">
+        <div class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+          <div class="font-bold text-2xl text-gray-900 dark:text-white">{{ totalCount }}</div>
+          <div class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Total Records</div>
         </div>
-        <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
-          <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ recentCount }}</div>
-          <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">Added This Week</div>
+        <div class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+          <div class="font-bold text-2xl text-gray-900 dark:text-white">{{ recentCount }}</div>
+          <div class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Added This Week</div>
         </div>
         @foreach(statusKeys as sk)
-          <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-5">
-            <div class="text-2xl font-bold text-gray-900 dark:text-white">{{ statusBreakdown[sk] }}</div>
-            <div class="text-sm text-gray-500 dark:text-neutral-400 mt-1">{{ sk }}</div>
+          <div class="p-5 bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+            <div class="font-bold text-2xl text-gray-900 dark:text-white">{{ statusBreakdown[sk] }}</div>
+            <div class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ sk }}</div>
           </div>
         @endforeach
       </div>
 
       <div class="mb-4">
         <input type="text" id="modelSearch" placeholder="Search {{ modelName }}..."
-          class="px-4 py-2 text-sm border border-gray-300 dark:border-neutral-600 rounded-lg bg-white dark:bg-neutral-800 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500" >
+          class="px-4 py-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-gray-300 rounded-lg dark:border-neutral-600 focus:ring-2 focus:ring-blue-500" >
       </div>
 
       <!-- Data Table -->
-      <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 overflow-hidden">
+      <div class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
         @if (items.length > 0)
         <div class="overflow-x-auto">
           <table class="w-full">
             <thead class="bg-gray-50 dark:bg-neutral-700/50">
               <tr>
                 @foreach(columns as col)
-                  <th scope="col" class="text-left px-4 py-3 text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">
+                  <th scope="col" class="px-4 py-3 font-semibold text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400">
                     {{ col.label }}
                   </th>
                 @endforeach
-                <th scope="col" class="text-right px-4 py-3 text-xs font-semibold text-gray-500 dark:text-neutral-400 uppercase tracking-wider">
+                <th scope="col" class="px-4 py-3 font-semibold text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">
                   Actions
                 </th>
               </tr>
             </thead>
-            <tbody id="modelTableBody" class="divide-y divide-gray-100 dark:divide-neutral-700">
+            <tbody id="modelTableBody" class="divide-gray-100 divide-y dark:divide-neutral-700">
               @foreach(items as item)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/30">
                   @foreach(columns as col)
-                    <td class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                    <td class="px-4 py-3 text-gray-900 text-sm dark:text-white">
                       @if(col.name === 'id')
-                        <span class="font-mono text-xs bg-gray-100 dark:bg-neutral-700 px-2 py-1 rounded">{{ item[col.name] }}</span>
+                        <span class="px-2 py-1 font-mono text-xs bg-gray-100 dark:bg-neutral-700 rounded">{{ item[col.name] }}</span>
                       @elseif(col.name.includes('_at') || col.name.includes('date'))
                         <span class="text-gray-500 dark:text-neutral-400">{{ item[col.name] ? new Date(item[col.name]).toLocaleDateString() : '-' }}</span>
                       @elseif(col.name === 'status')
@@ -167,7 +167,7 @@ function statusVariant(s) {
 
                       @elseif(col.name.includes('_url') || col.name.includes('url'))
                         @if(item[col.name])
-                          <a href="{{ item[col.name] }}" class="text-blue-600 dark:text-blue-400 hover:underline text-xs" target="_blank">Link</a>
+                          <a href="{{ item[col.name] }}" class="text-blue-600 text-xs dark:text-blue-400 hover:underline" target="_blank">Link</a>
 
                           <span class="text-gray-400">-</span>
 
@@ -176,19 +176,19 @@ function statusVariant(s) {
                     </td>
                   @endforeach
                   <td class="px-4 py-3 text-right">
-                    <button class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" title="View">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" title="View">
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
                       </svg>
                     </button>
-                    <button class="text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 p-1" title="Edit">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button class="p-1 text-gray-400 hover:text-blue-600 dark:hover:text-blue-400" title="Edit">
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
                       </svg>
                     </button>
-                    <button class="text-gray-400 hover:text-red-600 dark:hover:text-red-400 p-1" title="Delete">
-                      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <button class="p-1 text-gray-400 hover:text-red-600 dark:hover:text-red-400" title="Delete">
+                      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
                       </svg>
                     </button>
@@ -199,20 +199,20 @@ function statusVariant(s) {
           </table>
         </div>
         @else
-          <div class="bg-white dark:bg-neutral-800 rounded-xl border border-gray-200 dark:border-neutral-700 p-8 text-center">
-            <p class="text-sm text-gray-500 dark:text-neutral-400">No data available</p>
+          <div class="p-8 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
+            <p class="text-gray-500 text-sm dark:text-neutral-400">No data available</p>
           </div>
 
         <!-- Pagination -->
-        <div class="px-4 py-3 border-t border-gray-200 dark:border-neutral-700 flex items-center justify-between">
-          <div class="text-sm text-gray-500 dark:text-neutral-400">
+        <div class="flex items-center justify-between px-4 py-3 border-gray-200 border-t dark:border-neutral-700">
+          <div class="text-gray-500 text-sm dark:text-neutral-400">
             Showing {{ items.length }} of {{ totalCount }} records
           </div>
           <div class="flex gap-2">
-            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded hover:bg-gray-50 dark:hover:bg-neutral-700 disabled:opacity-50" disabled>
+            <button class="px-3 py-1 text-sm hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded dark:border-neutral-600 disabled:opacity-50" disabled>
               Previous
             </button>
-            <button class="px-3 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded hover:bg-gray-50 dark:hover:bg-neutral-700">
+            <button class="px-3 py-1 text-sm hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded dark:border-neutral-600">
               Next
             </button>
           </div>

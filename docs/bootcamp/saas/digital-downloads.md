@@ -151,7 +151,7 @@ async function generateDownloadToken(
   const payload = {
     purchase_id: purchaseId,
     product_id: productId,
-    expires_at: Date.now() + (24 * 60 * 60 * 1000), // 24 hours
+    expires_at: Date.now() + (24 _ 60 _ 60 * 1000), // 24 hours
   }
 
   return encrypt(JSON.stringify(payload))

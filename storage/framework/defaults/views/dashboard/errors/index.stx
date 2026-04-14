@@ -175,36 +175,36 @@ const analyzeWithAI = async (errorId) => {
 </script>
 
 @title('Dashboard - Errors')
-<div class="min-h-screen py-8 dark:bg-neutral-800">
+<div class="py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base font-semibold leading-6 text-gray-900 dark:text-neutral-100">Error Tracking</h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Error Tracking</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
           Last 30 days error tracking and monitoring.
         </p>
       </div>
     </div>
 
     <!-- Stats Overview -->
-    <dl class="grid grid-cols-1 mt-5 gap-5 lg:grid-cols-3 sm:grid-cols-2">
+    <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
       <!-- Total Errors Card -->
-      <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+      <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
         <dt>
-          <div class="absolute rounded-md bg-red-500 p-3">
-            <div class="i-hugeicons-alert-02 h-6 w-6 text-white" />
+          <div class="absolute p-3 bg-red-500 rounded-md">
+            <div class="h-6 w-6 text-white i-hugeicons-alert-02" />
           </div>
-          <p class="ml-16 truncate text-sm text-gray-500 font-medium">
+          <p class="ml-16 font-medium text-gray-500 text-sm truncate">
             Total Unresolved Errors
           </p>
         </dt>
-        <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-          <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
+        <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+          <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
             2,847
           </p>
-          <p class="ml-2 flex items-baseline text-sm text-red-600 font-semibold">
-            <svg class="h-5 w-5 flex-shrink-0 self-center text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm">
+            <svg class="flex-shrink-0 self-center h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
             </svg>
             <span class="sr-only">Increased by</span>
@@ -214,21 +214,21 @@ const analyzeWithAI = async (errorId) => {
       </div>
 
       <!-- Resolved Issues Card -->
-      <div class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-800 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+      <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
         <dt>
-          <div class="absolute rounded-md bg-green-500 p-3">
-            <div class="i-hugeicons-checkmark-circle-02 h-6 w-6 text-white" />
+          <div class="absolute p-3 bg-green-500 rounded-md">
+            <div class="h-6 w-6 text-white i-hugeicons-checkmark-circle-02" />
           </div>
-          <p class="ml-16 truncate text-sm text-gray-500 font-medium">
+          <p class="ml-16 font-medium text-gray-500 text-sm truncate">
             Resolved Issues
           </p>
         </dt>
-        <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-          <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
+        <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+          <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
             1,624
           </p>
-          <p class="ml-2 flex items-baseline text-sm text-green-600 font-semibold">
-            <svg class="h-5 w-5 flex-shrink-0 self-center text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+          <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
+            <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
             </svg>
             <span class="sr-only">Increased by</span>
@@ -240,23 +240,23 @@ const analyzeWithAI = async (errorId) => {
 
     <!-- Tabs -->
     <div class="mt-8 border-b border-gray-200 dark:border-neutral-600">
-      <div class="flex justify-between items-center">
-        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+      <div class="flex items-center justify-between">
+        <nav class="flex -mb-px space-x-8" aria-label="Tabs">
           <button
             onclick="activeTab = 'active'"
-            class="{{ [
+            class="[
               activeTab === 'active'
                 ? 'border-gray-300 text-gray-700 dark:border-neutral-600 dark:text-neutral-300'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300',
               'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-            ] }}"
+            ] {{ }}"
           >
             Active Errors
             <span
-              class="{{ [
+              class="[
                 activeTab === 'active' ? 'bg-red-100 text-red-600 dark:bg-red-400/10 dark:text-red-400' : 'bg-gray-100 text-gray-900 dark:bg-neutral-600 dark:text-neutral-300',
                 'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
-              ] }}"
+              ] {{ }}"
             >
               {{ activeErrors.length }}
             </span>
@@ -264,19 +264,19 @@ const analyzeWithAI = async (errorId) => {
 
           <button
             onclick="activeTab = 'resolved'"
-            class="{{ [
+            class="[
               activeTab === 'resolved'
                 ? 'border-gray-300 text-gray-700 dark:border-neutral-600 dark:text-neutral-300'
                 : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300',
               'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
-            ] }}"
+            ] {{ }}"
           >
             Resolved
             <span
-              class="{{ [
+              class="[
                 activeTab === 'resolved' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-neutral-600 dark:text-neutral-300',
                 'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
-              ] }}"
+              ] {{ }}"
             >
               {{ resolvedErrors.length }}
             </span>
@@ -285,11 +285,11 @@ const analyzeWithAI = async (errorId) => {
 
         <!-- Environment Filter -->
         <div class="flex items-center">
-          <label for="environment-filter" class="mr-2 text-sm font-medium text-gray-700 dark:text-neutral-300">Environment:</label>
+          <label for="environment-filter" class="mr-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Environment:</label>
           <select
             id="environment-filter"
             value="{{ selectedEnvironment }}"
-            class="block w-32 rounded-md border-0 py-1.5 pl-3 pr-10 text-gray-900 ring-1 ring-inset ring-gray-300 focus:ring-2 focus:ring-blue-600 sm:text-sm sm:leading-6 dark:bg-neutral-700 dark:text-neutral-100 dark:ring-neutral-600"
+            class="block pl-3 pr-10 py-1.5 w-32 text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
           >
             <option value="all">All</option>
             <option value="production">Production</option>
@@ -300,114 +300,114 @@ const analyzeWithAI = async (errorId) => {
     </div>
 
     <!-- Error List -->
-    <div class="mt-8 flow-root">
-      <div class="-mx-4 -my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-        <div class="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
-          <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 dark:ring-neutral-700 rounded-lg">
-            <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 rounded-lg dark:ring-neutral-700 shadow">
+            <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-700">
                 <tr>
-                  <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 sm:pl-6">Error</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Type</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Environment</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Location</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 text-right">Last Seen</th>
-                  <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 text-right">Count</th>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Error</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Type</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Environment</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Location</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-100">Last Seen</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-100">Count</th>
                   @if(activeTab === 'resolved')
-                    <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Resolved</th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Resolved</th>
                   @endif
-                  <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
                     <span class="sr-only">Actions</span>
                   </th>
                 </tr>
               </thead>
-              <tbody class="divide-y divide-gray-200 dark:divide-neutral-600 bg-white dark:bg-neutral-800">
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-600">
                 @foreach(error in (activeTab === 'active' ? activeErrors : resolvedErrors))
                   <tr
                       class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
-                    <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm font-medium text-gray-900 dark:text-neutral-100 sm:pl-6">
+                    <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
                       {{ error.message }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                    <td class="px-3 py-4 text-sm whitespace-nowrap">
                       <span :class="['inline-flex items-center rounded-md px-2 py-1 text-xs font-medium', getTypeColor(error.type)]">
                         {{ error.type }}
                       </span>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm">
+                    <td class="px-3 py-4 text-sm whitespace-nowrap">
                       <span :class="['inline-flex items-center rounded-md px-2 py-1 text-xs font-medium', getEnvironmentColor(error.environment)]">
                         {{ error.environment }}
                       </span>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm font-mono text-gray-500 dark:text-neutral-400">
+                    <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                       <button
                         onclick="openInEditor(error.location)"
-                        class="hover:text-blue-600 dark:hover:text-blue-400 hover:underline focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded"
+                        class="hover:text-blue-600 hover:underline dark:hover:text-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                       >
                         {{ error.location }}
                       </button>
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
                       {{ error.lastSeen }}
                     </td>
-                    <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
                       {{ error.count }}
                     </td>
                     @if(activeTab === 'resolved')
-                      <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                         <div class="flex flex-col">
                           <span>{{ error.resolvedAt }}</span>
-                          <span class="text-xs text-gray-400">by {{ error.resolvedBy }}</span>
+                          <span class="text-gray-400 text-xs">by {{ error.resolvedBy }}</span>
                         </div>
                       </td>
                     @endif
-                    <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
+                    <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
                       <div class="inline-flex rounded-md shadow-sm" role="group">
                         @if(activeTab === 'active')
                           <Tooltip text="Mark as resolved" position="top" :dark="isDark" :usePortal="true">
                             <button
                               onclick="resolveError(error.id)"
                               type="button"
-                              class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-green-600 focus:z-10 dark:text-neutral-400 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-green-400"
+                              class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-600 text-sm dark:text-neutral-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600"
                               aria-label="Mark error as resolved"
                             >
-                              <div class="i-hugeicons-checkmark-circle-02 h-4 w-4" />
+                              <div class="h-4 w-4 i-hugeicons-checkmark-circle-02" />
                             </button>
                           </Tooltip>
                           <Tooltip text="Analyze with AI" position="top" :dark="isDark" :usePortal="true">
                             <button
                               onclick="analyzeWithAI(error.id)"
                               type="button"
-                              class="{{ [
+                              class="[
                                 'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-purple-600 focus:z-10 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-purple-400',
                                 isAiAnalyzing ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 dark:text-neutral-400'
-                              ] }}"
+                              ] {{ }}"
                               disabled="{{ isAiAnalyzing }}"
                               aria-label="Analyze error with AI"
                             >
-                              <div class="{{ [
+                              <div class="[
                                 'h-4 w-4',
                                 isAiAnalyzing ? 'i-hugeicons-arrow-path animate-spin' : 'i-hugeicons-sparkles'
-                              ] }}" />
+                              ] {{ }}" />
                             </button>
                           </Tooltip>
                         @endif
                         <Tooltip text="Share error details" position="top" :dark="isDark" :usePortal="true">
                           <button
                             type="button"
-                            class="relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-blue-600 focus:z-10 dark:text-neutral-400 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-blue-400"
-                            class="{{ { 'rounded-l-md': activeTab === 'resolved' } }}"
+                            class="inline-flex relative focus:z-10 items-center -ml-px px-3 py-2 font-semibold text-gray-600 text-sm dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600"
+                            class="'resolved' 'rounded-l-md': { {{ } }} === activeTab"
                             aria-label="Share error details"
                           >
-                            <div class="i-hugeicons-share-01 h-4 w-4" />
+                            <div class="h-4 w-4 i-hugeicons-share-01" />
                           </button>
                         </Tooltip>
                         <Tooltip text="View error details" position="top" :dark="isDark" :usePortal="true" alignment="right">
                           <button
                             type="button"
-                            class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold text-gray-600 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-indigo-600 focus:z-10 dark:text-neutral-400 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-indigo-400"
+                            class="inline-flex relative focus:z-10 items-center -ml-px px-3 py-2 font-semibold text-gray-600 text-sm dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600"
                             aria-label="View error details"
                           >
-                            <div class="i-hugeicons-view h-4 w-4" />
+                            <div class="h-4 w-4 i-hugeicons-view" />
                           </button>
                         </Tooltip>
                       </div>

@@ -20,7 +20,7 @@ import { changelogen } from '@stacksjs/git'
 // changelogen()
 ```
 
-To view the full documentation, please visit [https://stacksjs.com/git](https://stacksjs.com/git).
+To view the full documentation, please visit [<https://stacksjs.com/gi>t](https://stacksjs.com/git).
 
 ## 🧪 Testing
 

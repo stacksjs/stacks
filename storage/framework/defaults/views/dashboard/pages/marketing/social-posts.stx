@@ -26,21 +26,21 @@ function statusVariant(s) {
     <template #actions>
       <Button variant="secondary">Schedule</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         New Post
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-share-08" iconBg="primary" />
     @endforeach
   </div>
 
   <!-- Posts Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
       <FilterBar searchPlaceholder="Search posts...">
         <Select
@@ -70,16 +70,16 @@ function statusVariant(s) {
           <td class="px-4 py-3">
             <Badge variant="default" size="xs">{{ post.platform }}</Badge>
           </td>
-          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300 max-w-[300px] truncate">{{ post.content }}</td>
+          <td class="px-4 py-3 max-w-[300px] text-[13px] text-neutral-600 truncate dark:text-neutral-300">{{ post.content }}</td>
           <td class="px-4 py-3">
             <Badge variant="{{ statusVariant(post.status) }}" size="xs" dot>{{ post.status }}</Badge>
           </td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ post.engagement }}</td>
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ post.scheduled }}</td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-1">
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-view w-4 h-4"></div></Button>
+            <div class="flex gap-1 items-center">
+              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
+              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-view"></div></Button>
             </div>
           </td>
         </tr>

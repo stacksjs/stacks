@@ -12,23 +12,23 @@ interface ForumPostProps {
 
 const { id = '', authorName = '', authorAvatar = '', createdAt = '', likeCount = 0, isOriginalPost = false, title = '', isSolved = false } = defineProps<ForumPostProps>()
 </script>
-<div id="post-{{ id }}" class="border rounded-md mb-6">
-  <div class="bg-gray-50 px-4 py-3 flex items-center justify-between rounded-t-md">
-    <div class="flex items-center gap-2">
-      <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="w-6 h-6 rounded-full">
+<div id="post-{{ id }}" class="mb-6 border rounded-md">
+  <div class="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-t-md">
+    <div class="flex gap-2 items-center">
+      <img src="{{ authorAvatar }}" alt="{{ authorName }}" class="h-6 w-6 rounded-full">
       <span class="font-medium">{{ authorName }}</span>
-      <span class="text-xs text-gray-500">{{ createdAt }}</span>
+      <span class="text-gray-500 text-xs">{{ createdAt }}</span>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex gap-2 items-center">
       @if(isOriginalPost)
-        <button class="text-xs px-2 py-1 rounded border hover:bg-gray-100" data-action="bookmark">
-          <span class="i-hugeicons-bookmark mr-1"></span>
+        <button class="px-2 py-1 text-xs hover:bg-gray-100 border rounded" data-action="bookmark">
+          <span class="mr-1 i-hugeicons-bookmark"></span>
           Bookmark
         </button>
       @endif
-      <button class="text-xs px-2 py-1 rounded border hover:bg-gray-100" data-action="share">
-        <span class="i-hugeicons-share mr-1"></span>
+      <button class="px-2 py-1 text-xs hover:bg-gray-100 border rounded" data-action="share">
+        <span class="mr-1 i-hugeicons-share"></span>
         Share
       </button>
     </div>
@@ -36,34 +36,34 @@ const { id = '', authorName = '', authorAvatar = '', createdAt = '', likeCount =
 
   <div class="p-4">
     @if(isOriginalPost)
-      <h1 class="text-xl font-bold mb-4">{{ title }}</h1>
+      <h1 class="mb-4 font-bold text-xl">{{ title }}</h1>
     @endif
-    <div class="prose max-w-none">
+    <div class="max-w-none prose">
       <slot />
     </div>
   </div>
 
-  <div class="bg-gray-50 px-4 py-3 flex items-center justify-between rounded-b-md">
-    <div class="flex items-center gap-3 text-gray-500">
-      <button class="flex items-center gap-1 hover:text-primary" data-action="like" data-post-id="{{ id }}">
+  <div class="flex items-center justify-between px-4 py-3 bg-gray-50 rounded-b-md">
+    <div class="flex gap-3 items-center text-gray-500">
+      <button class="flex gap-1 items-center hover:text-primary" data-action="like" data-post-id="{{ id }}">
         <span class="i-hugeicons-heart"></span>
         <span>{{ likeCount }}</span>
       </button>
 
-      <button class="flex items-center gap-1 hover:text-primary" data-action="reply" data-post-id="{{ id }}">
+      <button class="flex gap-1 items-center hover:text-primary" data-action="reply" data-post-id="{{ id }}">
         <span class="i-hugeicons-chat"></span>
         <span>Reply</span>
       </button>
     </div>
 
-    <div class="flex items-center gap-2">
+    <div class="flex gap-2 items-center">
       @if(isOriginalPost && !isSolved)
-        <button class="text-xs px-2 py-1 rounded bg-success text-dark hover:opacity-90" data-action="mark-solution" data-post-id="{{ id }}">
+        <button class="px-2 py-1 text-dark text-xs bg-success rounded hover:opacity-90" data-action="mark-solution" data-post-id="{{ id }}">
           Mark as Solution
         </button>
       @endif
-      <button class="text-xs px-2 py-1 rounded border hover:bg-gray-100" data-action="report" data-post-id="{{ id }}">
-        <span class="i-hugeicons-flag mr-1"></span>
+      <button class="px-2 py-1 text-xs hover:bg-gray-100 border rounded" data-action="report" data-post-id="{{ id }}">
+        <span class="mr-1 i-hugeicons-flag"></span>
         Report
       </button>
     </div>

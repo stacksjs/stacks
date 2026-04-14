@@ -394,38 +394,38 @@ const statsCards = [
 </script>
 
 @title('Dashboard - Insights')
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <!-- Stats Overview -->
-  <div class="mb-8 px-4 lg:px-8 sm:px-6">
+  <div class="mb-8 px-4 sm:px-6 lg:px-8">
     <div>
-      <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
         System Overview
       </h3>
 
-      <dl class="mt-5 grid grid-cols-1 gap-5 lg:grid-cols-3 sm:grid-cols-2">
+      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
         @foreach(stat in statsCards)
           <div
-               class="relative overflow-hidden rounded-lg bg-white dark:bg-neutral-700 px-4 pt-5 shadow sm:px-6 sm:pt-6">
+               class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <dt>
-              <div class="absolute rounded-md bg-blue-500 p-3">
+              <div class="absolute p-3 bg-blue-500 rounded-md">
                 <div :class="[stat.icon, 'h-6 w-6 text-white']" />
               </div>
-              <p class="ml-16 truncate text-sm text-gray-500 dark:text-neutral-300 font-medium">
+              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">
                 {{ stat.title }}
               </p>
             </dt>
-            <dd class="ml-16 flex items-baseline pb-6 sm:pb-7">
-              <p class="text-2xl text-gray-900 dark:text-neutral-100 font-semibold">
+            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
                 {{ stat }}
               </p>
-              <p class="{{ [
+              <p class="[
                 'ml-2 flex items-baseline text-sm font-semibold',
                 stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-              ] }}">
+              ] {{ }}">
                 @if(stat.changeType === 'increase')
-                  <span class="i-hugeicons-arrow-up h-5 w-5 flex-shrink-0 self-center text-green-500" />
+                  <span class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-up" />
                 @else
-                  <span class="i-hugeicons-arrow-down-02 h-5 w-5 flex-shrink-0 self-center text-red-500" />
+                  <span class="flex-shrink-0 self-center h-5 w-5 text-red-500 i-hugeicons-arrow-down-02" />
                 @endif
                 {{ stat.change }}
               </p>
@@ -437,29 +437,29 @@ const statsCards = [
   </div>
 
   <!-- System Metrics -->
-  <div class="px-4 lg:px-8 sm:px-6">
+  <div class="px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
           System Metrics
         </h1>
-        <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
           Real-time monitoring of your system's performance and resource usage.
         </p>
       </div>
     </div>
 
-    <div class="mt-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-3 mt-8">
       <!-- CPU Usage -->
-      <div class="overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-gray-900 dark:text-neutral-100">CPU Usage</h3>
-            <span class="text-sm font-mono text-gray-500 dark:text-neutral-400">{{ systemMetrics.cpu }}%</span>
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">CPU Usage</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.cpu }}%</span>
           </div>
-          <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-neutral-600">
+          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
             <div
-              class="h-2 rounded-full bg-blue-500"
+              class="h-2 bg-blue-500 rounded-full"
               style="{{ { width: `${systemMetrics.cpu}%` } }}"
             ></div>
           </div>
@@ -470,17 +470,17 @@ const statsCards = [
       </div>
 
       <!-- Memory Usage -->
-      <div class="overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-gray-900 dark:text-neutral-100">Memory</h3>
-            <span class="text-sm font-mono text-gray-500 dark:text-neutral-400">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Memory</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">
               {{ systemMetrics.memory.used }}MB / {{ systemMetrics.memory.total }}MB
             </span>
           </div>
-          <div class="mt-2 h-2 rounded-full bg-gray-200 dark:bg-neutral-600">
+          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
             <div
-              class="h-2 rounded-full bg-blue-500"
+              class="h-2 bg-blue-500 rounded-full"
               style="{{ { width: `${(systemMetrics.memory.used / systemMetrics.memory.total) * 100}%` } }}"
             ></div>
           </div>
@@ -491,25 +491,25 @@ const statsCards = [
       </div>
 
       <!-- Storage Usage -->
-      <div class="overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="p-6">
           <div class="flex items-center justify-between">
-            <h3 class="text-sm font-medium text-gray-900 dark:text-neutral-100">Storage</h3>
-            <span class="text-sm font-mono text-gray-500 dark:text-neutral-400">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Storage</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">
               {{ systemMetrics.storage.used }}GB / {{ systemMetrics.storage.total }}GB
             </span>
           </div>
           <div class="mt-4 h-32">
             <canvas id="storageChart"></canvas>
           </div>
-          <div class="mt-4 flex justify-center space-x-4">
+          <div class="flex justify-center mt-4 space-x-4">
             <div class="flex items-center">
-              <div class="h-3 w-3 rounded-full bg-blue-500 mr-2"></div>
-              <span class="text-xs font-mono text-gray-500 dark:text-neutral-400">Used ({{ systemMetrics.storage.used }}GB)</span>
+              <div class="mr-2 h-3 w-3 bg-blue-500 rounded-full"></div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Used ({{ systemMetrics.storage.used }}GB)</span>
             </div>
             <div class="flex items-center">
-              <div class="h-3 w-3 rounded-full bg-gray-200 dark:bg-neutral-600 mr-2"></div>
-              <span class="text-xs font-mono text-gray-500 dark:text-neutral-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
+              <div class="mr-2 h-3 w-3 bg-gray-200 dark:bg-neutral-600 rounded-full"></div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
             </div>
           </div>
         </div>
@@ -518,22 +518,22 @@ const statsCards = [
   </div>
 
   <!-- Queue Monitoring & Cache Performance -->
-  <div class="mt-8 px-4 lg:px-8 sm:px-6">
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <div class="mt-8 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
       <!-- Queue Monitoring -->
       <div>
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
               Queue Monitoring
             </h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
               Real-time monitoring of your application's queue processing.
             </p>
           </div>
         </div>
 
-        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="p-6">
             <div class="space-y-8">
               <!-- Queue Stats -->
@@ -541,30 +541,24 @@ const statsCards = [
                 <div class="space-y-4">
                   <div class="flex items-center justify-between">
                     <div class="flex items-center space-x-2">
-                      <h4 class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800 dark:bg-neutral-600 dark:text-neutral-200">
+                      <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">
                         {{ name }}
                       </h4>
                     </div>
                     <div class="flex items-center space-x-3">
                       @foreach(value, status in stats)
-                        <div class="group relative">
+                        <div class="relative group">
                           <div class="flex items-center space-x-2 cursor-help"
-                             class="{{ {
-                               'text-blue-700 dark:text-blue-300': status === 'queued',
-                               'text-yellow-700 dark:text-yellow-300': status === 'processing',
-                               'text-green-700 dark:text-green-300': status === 'processed',
-                               'text-purple-700 dark:text-purple-300': status === 'released',
-                               'text-red-700 dark:text-red-300': status === 'failed'
-                             } }}">
+                             class="'failed' 'processed', 'processing', 'queued', 'released', 'text-blue-700 'text-green-700 'text-purple-700 'text-red-700 'text-yellow-700 { {{ } }} === === === === === status status status status status dark:text-blue-300': dark:text-green-300': dark:text-purple-300': dark:text-red-300': dark:text-yellow-300':">
                             <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
-                            <span class="text-xs font-mono">{{ value }}</span>
+                            <span class="font-mono text-xs">{{ value }}</span>
                           </div>
-                          <div class="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 hidden group-hover:block z-10">
+                          <div class="hidden group-hover:block absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2">
                             <div class="relative">
-                              <div class="px-2 py-1 text-xs font-medium text-white bg-gray-900 dark:bg-neutral-700 rounded shadow-lg whitespace-nowrap">
+                              <div class="px-2 py-1 font-medium text-white text-xs whitespace-nowrap bg-gray-900 dark:bg-neutral-700 rounded shadow-lg">
                                 {{ status.charAt(0).toUpperCase() + status.slice(1) }} Jobs
                               </div>
-                              <div class="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900 dark:border-t-gray-700"></div>
+                              <div class="absolute left-1/2 top-full border-4 border-t-gray-900 border-transparent dark:border-t-gray-700 -translate-x-1/2"></div>
                             </div>
                           </div>
                         </div>
@@ -574,14 +568,14 @@ const statsCards = [
 
                   <!-- Queue Chart -->
                   <div>
-                    <div class="flex items-center space-x-4 mb-2">
+                    <div class="flex items-center mb-2 space-x-4">
                       <div class="flex items-center space-x-2">
                         <div class="h-1 w-4 bg-green-500 rounded"></div>
-                        <span class="text-xs font-medium text-gray-500 dark:text-neutral-400">Processed</span>
+                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Processed</span>
                       </div>
                       <div class="flex items-center space-x-2">
                         <div class="h-1 w-4 bg-red-500 rounded"></div>
-                        <span class="text-xs font-medium text-gray-500 dark:text-neutral-400">Failed</span>
+                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Failed</span>
                       </div>
                     </div>
                     <div class="h-48">
@@ -599,30 +593,30 @@ const statsCards = [
       <div>
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
               Cache Performance
             </h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
               Real-time monitoring of your application's cache performance and hit rates.
             </p>
           </div>
         </div>
 
-        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="p-6">
             <!-- Main Stats -->
-            <div class="grid grid-cols-3 gap-8">
+            <div class="grid gap-8 grid-cols-3">
               <div class="text-center">
-                <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-neutral-100">{{ cache.hits }}</p>
-                <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-neutral-400">Hits</p>
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cache.hits }}</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hits</p>
               </div>
               <div class="text-center">
-                <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-neutral-100">{{ cache.misses }}</p>
-                <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-neutral-400">Misses</p>
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cache.misses }}</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Misses</p>
               </div>
               <div class="text-center">
-                <p class="text-3xl font-mono font-semibold text-gray-900 dark:text-neutral-100">{{ cache.hitRate }}%</p>
-                <p class="mt-1.5 text-sm font-medium text-gray-500 dark:text-neutral-400">Hit Rate</p>
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cache.hitRate }}%</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hit Rate</p>
               </div>
             </div>
 
@@ -631,35 +625,35 @@ const statsCards = [
               <div class="space-y-4">
                 @foreach(key in cache.keys)
                   <div
-                       class="rounded-lg border border-gray-100 dark:border-neutral-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                       class="p-4 border border-gray-100 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors">
                     <div class="flex items-center justify-between mb-3">
                       <div class="flex items-center space-x-3">
-                        <div class="h-2 w-2 rounded-full bg-blue-500"></div>
-                        <span class="text-sm font-mono font-medium text-gray-900 dark:text-neutral-100">{{ key.name }}</span>
+                        <div class="h-2 w-2 bg-blue-500 rounded-full"></div>
+                        <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.name }}</span>
                       </div>
                       <div class="flex items-center space-x-2">
-                        <span class="text-xs font-mono text-gray-500 dark:text-neutral-400">TTL: {{ key.ttl }}s</span>
-                        <span class="text-xs font-mono text-gray-400">|</span>
-                        <span class="text-xs font-mono text-gray-500 dark:text-neutral-400">{{ key.lastAccessed }}</span>
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">TTL: {{ key.ttl }}s</span>
+                        <span class="font-mono text-gray-400 text-xs">|</span>
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ key.lastAccessed }}</span>
                       </div>
                     </div>
 
                     <!-- Hit Rate Progress -->
                     <div class="flex items-center space-x-3">
-                      <div class="flex-1 h-2 rounded-full overflow-hidden bg-gray-200 dark:bg-neutral-600">
-                        <div class="h-full rounded-full bg-blue-500" style="{{ { width: `${key.hitRate}%` } }}"></div>
+                      <div class="overflow-hidden flex-1 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+                        <div class="h-full bg-blue-500 rounded-full" style="{{ { width: `${key.hitRate}%` } }}"></div>
                       </div>
-                      <span class="text-sm font-mono font-medium text-gray-900 dark:text-neutral-100">{{ key.hitRate }}%</span>
+                      <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.hitRate }}%</span>
                     </div>
 
                     <!-- Hits/Misses Stats -->
-                    <div class="mt-3 flex items-center space-x-4 text-xs">
+                    <div class="flex items-center mt-3 space-x-4 text-xs">
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 text-green-500" />
+                        <div class="h-4 w-4 text-green-500 i-hugeicons-checkmark-circle-02" />
                         <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.hits }} hits</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-x-circle h-4 w-4 text-red-500" />
+                        <div class="h-4 w-4 text-red-500 i-hugeicons-x-circle" />
                         <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.misses }} misses</span>
                       </div>
                     </div>
@@ -674,49 +668,49 @@ const statsCards = [
   </div>
 
   <!-- Exceptions & Slow Queries -->
-  <div class="mt-8 px-4 lg:px-8 sm:px-6">
-    <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+  <div class="mt-8 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
       <!-- Exceptions -->
       <div>
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
               Exceptions
             </h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
               Recent application exceptions and their occurrence rates.
             </p>
           </div>
         </div>
 
-        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="p-6">
             <div class="space-y-4">
               @foreach(exception in exceptions)
                 <div
-                     class="group relative rounded-lg border border-gray-200 dark:border-neutral-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                     class="relative p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
                   <div class="mb-3">
-                    <div class="font-mono text-sm text-gray-900 dark:text-neutral-100 leading-relaxed break-all">
+                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">
                       {{ exception.type }}
                     </div>
                   </div>
-                  <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-neutral-600 pt-3">
+                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
                     <div class="flex items-center space-x-2">
-                      <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
+                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square" />
                       <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.location }}</span>
                     </div>
                     <div class="flex items-center space-x-4">
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-clock-01 h-4 w-4 text-gray-400" />
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01" />
                         <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.latest }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-energy h-4 w-4 text-gray-400" />
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy" />
                         <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.count }}</span>
                       </div>
                     </div>
                   </div>
-                  <div class="absolute left-0 top-0 w-1 h-full bg-red-500 rounded-l-lg"></div>
+                  <div class="absolute left-0 top-0 h-full w-1 bg-red-500 rounded-l-lg"></div>
                 </div>
               @endforeach
             </div>
@@ -728,38 +722,38 @@ const statsCards = [
       <div>
         <div class="sm:flex sm:items-center">
           <div class="sm:flex-auto">
-            <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
               Slow Queries
             </h1>
-            <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
               Database queries that are taking longer than expected to execute.
             </p>
           </div>
         </div>
 
-        <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="p-6">
             <div class="space-y-4">
               @foreach(query in slowQueries)
                 <div
-                     class="group rounded-lg border border-gray-200 dark:border-neutral-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                     class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
                   <div class="mb-3">
-                    <div class="font-mono text-sm text-gray-900 dark:text-neutral-100 leading-relaxed break-all">
+                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">
                       {{ query.query }}
                     </div>
                   </div>
-                  <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-neutral-600 pt-3">
+                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
                     <div class="flex items-center space-x-2">
-                      <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
+                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square" />
                       <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.location }}</span>
                     </div>
                     <div class="flex items-center space-x-4">
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-clock-01 h-4 w-4 text-gray-400" />
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01" />
                         <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.count }}</span>
                       </div>
                       <div class="flex items-center space-x-1">
-                        <div class="i-hugeicons-energy h-4 w-4 text-gray-400" />
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy" />
                         <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.slowest }}ms</span>
                       </div>
                     </div>
@@ -774,55 +768,49 @@ const statsCards = [
 
     <!-- Slow Routes & Documentation -->
     <div class="mt-6">
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
         <!-- Slow Routes -->
         <div>
           <div class="sm:flex sm:items-center">
             <div class="sm:flex-auto">
-              <h1 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+              <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
                 Slow Routes
               </h1>
-              <p class="mt-2 text-sm text-gray-700 dark:text-neutral-300">
+              <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
                 Routes that are taking longer than expected to respond (>1000ms).
               </p>
             </div>
           </div>
 
-          <div class="mt-8 overflow-hidden rounded-lg bg-white dark:bg-neutral-700 shadow">
+          <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <div class="p-6">
               <div class="space-y-4">
                 @foreach(route in slowRoutes)
                   <div
-                       class="group rounded-lg border border-gray-200 dark:border-neutral-600 p-4 hover:border-blue-500 dark:hover:border-blue-400 transition-colors duration-150">
+                       class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
                     <div class="mb-3">
                       <div class="flex items-center space-x-3">
-                        <span class="px-2 py-1 text-xs font-medium rounded-md"
-                              class="{{ {
-                                'bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100': route.method === 'DELETE',
-                                'bg-green-100 text-green-700 dark:bg-green-900 dark:text-green-100': route.method === 'POST',
-                                'bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-100': route.method === 'GET',
-                                'bg-yellow-100 text-yellow-700 dark:bg-yellow-900 dark:text-yellow-100': route.method === 'PUT',
-                                'bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-100': route.method === 'PATCH'
-                              } }}">
+                        <span class="px-2 py-1 font-medium text-xs rounded-md"
+                              class="text-blue-700 text-green-700 text-purple-700 text-red-700 text-yellow-700 dark:bg-blue-900 dark:bg-green-900 dark:bg-purple-900 dark:bg-red-900 dark:bg-yellow-900 'bg-blue-100 'bg-green-100 'bg-purple-100 'bg-red-100 'bg-yellow-100 'DELETE', 'GET', 'PATCH' 'POST', 'PUT', { {{ } }} === === === === === route.method route.method route.method route.method route.method dark:text-blue-100': dark:text-green-100': dark:text-purple-100': dark:text-red-100': dark:text-yellow-100':">
                           {{ route.method }}
                         </span>
-                        <span class="font-mono text-sm text-gray-900 dark:text-neutral-100">{{ route.route }}</span>
+                        <span class="font-mono text-gray-900 text-sm dark:text-neutral-100">{{ route.route }}</span>
                       </div>
                       @if(route.action)
-                        <div class="mt-2 flex items-center space-x-2">
-                          <div class="i-hugeicons-code-bracket-square h-4 w-4 text-gray-400" />
-                          <span class="font-mono text-xs text-gray-500 dark:text-neutral-400">{{ route.action }}</span>
+                        <div class="flex items-center mt-2 space-x-2">
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square" />
+                          <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ route.action }}</span>
                         </div>
                       @endif
                     </div>
-                    <div class="flex items-center justify-between text-sm border-t border-gray-100 dark:border-neutral-600 pt-3">
+                    <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
                       <div class="flex items-center space-x-4">
                         <div class="flex items-center space-x-1">
-                          <div class="i-hugeicons-clock-01 h-4 w-4 text-gray-400" />
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01" />
                           <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.count }} requests</span>
                         </div>
                         <div class="flex items-center space-x-1">
-                          <div class="i-hugeicons-energy h-4 w-4 text-gray-400" />
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-energy" />
                           <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.slowest }}ms</span>
                         </div>
                       </div>
@@ -836,18 +824,18 @@ const statsCards = [
 
         <!-- Documentation Card -->
         <div>
-          <div class="overflow-hidden rounded-lg dark:bg-neutral-700 flex justify-center items-center h-full">
+          <div class="flex overflow-hidden items-center justify-center h-full dark:bg-neutral-700 rounded-lg">
             <div class="p-6">
               <div class="flex flex-col items-center text-center">
-                <div class="i-hugeicons-puzzle-piece h-12 w-12 text-blue-500 mb-4" />
-                <h3 class="text-lg font-medium text-gray-900 dark:text-neutral-100 mb-2">
+                <div class="mb-4 h-12 w-12 text-blue-500 i-hugeicons-puzzle-piece" />
+                <h3 class="mb-2 font-medium text-gray-900 text-lg dark:text-neutral-100">
                   Extend Your Dashboard
                 </h3>
-                <p class="text-sm text-gray-500 dark:text-neutral-400 mb-6 max-w-sm">
+                <p class="mb-6 max-w-sm text-gray-500 text-sm dark:text-neutral-400">
                   Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
                 </p>
-                <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 dark:focus:ring-offset-neutral-800">
-                  <div class="i-hugeicons-book-open h-5 w-5 mr-2" />
+                <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm">
+                  <div class="mr-2 h-5 w-5 i-hugeicons-book-open" />
                   Read the Documentation
                 </a>
               </div>

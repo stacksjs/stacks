@@ -11,10 +11,10 @@ const baseClass = 'duration-150 ease-in-out transition focus:ring-2 focus:ring-i
 const fullClass = classString + ' ' + baseClass + (loading ? ' opacity-75 disabled:cursor-not-allowed' : '')
 </script>
 
-<button type="button" class="{{ fullClass }}" @if(loading) disabled @endif>
+<button type="button" class="{{ }} fullClass" @if(loading) disabled @endif>
   @if(loading)
     <svg
-      class="mr-1 h-5 w-5 animate-spin text-gray-500 -ml-1"
+      class="-ml-1 mr-1 h-5 w-5 text-gray-500 animate-spin"
       fill="none"
       viewBox="0 0 24 24"
     >

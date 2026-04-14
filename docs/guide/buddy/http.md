@@ -251,6 +251,7 @@ Error: Connection refused
 ```
 
 **Solutions**:
+
 1. Ensure the server is running: `buddy dev:api`
 2. Check the correct port
 3. Verify firewall settings
@@ -262,6 +263,7 @@ Error: SSL certificate verification failed
 ```
 
 **Solution**: For local development, use `--verify=no`:
+
 ```bash
 buddy http --verify=no https://localhost:3000/api
 ```
@@ -273,6 +275,7 @@ Error: Request timed out
 ```
 
 **Solution**: Increase timeout:
+
 ```bash
 buddy http --timeout=30 slow-api.example.com
 ```
@@ -284,6 +287,7 @@ Error: Invalid JSON response
 ```
 
 **Solution**: View raw response:
+
 ```bash
 buddy http --body api.example.com/endpoint
 ```

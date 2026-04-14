@@ -96,11 +96,13 @@ const updatedActivity = await shippings.routes.updateLastActive(1)
 ### Delete Routes
 
 Single route deletion:
+
 ```ts
 await shippings.routes.destroy(1) // Replace 1 with the route ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await shippings.routes.bulkDestroy([1, 2, 3]) // Array of route IDs to delete
 ```

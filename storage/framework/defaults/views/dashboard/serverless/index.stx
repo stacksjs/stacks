@@ -685,34 +685,34 @@ const getEventTypeIcon = (type: string) => {
 </script>
 
 @title('Dashboard - Serverless')
-<div class="min-h-screen py-4 dark:bg-neutral-800 lg:py-8">
-  <div class="px-4 lg:px-8 sm:px-6">
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
     <!-- Header -->
     <div class="mb-8">
-      <div class="flex justify-between items-center">
+      <div class="flex items-center justify-between">
         <div>
-          <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
             Serverless Infrastructure
           </h3>
-          <p class="mt-2 text-sm text-gray-700 dark:text-neutral-400">
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">
             Visualize and manage your serverless AWS services and their relationships.
           </p>
         </div>
         <div class="flex items-center space-x-2">
           <button
             onclick="downloadSVG"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
+            class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
           >
-            <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             SVG
           </button>
           <button
             onclick="downloadPNG"
-            class="inline-flex items-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
+            class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
           >
-            <svg class="w-4 h-4 mr-1.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
             PNG
@@ -725,30 +725,30 @@ const getEventTypeIcon = (type: string) => {
     <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
         <div class="flex items-center justify-between mb-4">
-          <div class="flex items-center gap-2">
-            <h4 class="text-base font-medium text-gray-900 dark:text-neutral-100">Cloud Diagram</h4>
-            <div class="flex items-center justify-center w-8 h-8 text-[#FF9900]">
-              <div class="i-hugeicons-amazon w-6 h-6" />
+          <div class="flex gap-2 items-center">
+            <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Cloud Diagram</h4>
+            <div class="flex items-center justify-center h-8 w-8 text-[#FF9900]">
+              <div class="h-6 w-6 i-hugeicons-amazon" />
             </div>
           </div>
-          <div class="flex items-center gap-2">
+          <div class="flex gap-2 items-center">
             <button
               onclick="zoomIn"
-              class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
+              class="inline-flex items-center justify-center h-8 w-8 text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               <span class="sr-only">Zoom In</span>
-              <div class="i-hugeicons-plus-sign w-5 h-5" />
+              <div class="h-5 w-5 i-hugeicons-plus-sign" />
             </button>
             <button
               onclick="zoomOut"
-              class="inline-flex items-center justify-center w-8 h-8 text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
+              class="inline-flex items-center justify-center h-8 w-8 text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               <span class="sr-only">Zoom Out</span>
-              <div class="i-hugeicons-minus w-5 h-5" />
+              <div class="h-5 w-5 i-hugeicons-minus" />
             </button>
             <button
               onclick="resetZoom"
-              class="inline-flex items-center justify-center px-3 py-1.5 text-sm font-medium text-gray-700 dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 rounded-md shadow-sm ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
+              class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
             >
               Reset
             </button>
@@ -756,21 +756,21 @@ const getEventTypeIcon = (type: string) => {
         </div>
 
         <div class="relative">
-          <div ref="diagramContainer" class="w-full h-[600px] bg-neutral-800 rounded-lg" />
+          <div ref="diagramContainer" class="h-[600px] w-full bg-neutral-800 rounded-lg" />
 
           <!-- Service Details Panel -->
           @if(selectedNode)
             <div
-              class="absolute top-4 right-4 w-80 bg-white dark:bg-neutral-700 rounded-lg shadow-lg p-4"
+              class="absolute right-4 top-4 p-4 w-80 bg-white dark:bg-neutral-700 rounded-lg shadow-lg"
               @click.stop
             >
               <div class="flex items-center justify-between mb-4">
-                <h5 class="text-sm font-medium text-gray-900 dark:text-neutral-100">
+                <h5 class="font-medium text-gray-900 text-sm dark:text-neutral-100">
                   {{ selectedNode.name }}
                 </h5>
                 <button
                   onclick="selectedNode = null"
-                  class="text-gray-400 hover:text-gray-500 dark:text-neutral-300 dark:hover:text-gray-200"
+                  class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200"
                 >
                   <span class="sr-only">Close</span>
                   <div class="h-5 w-5">x</div>
@@ -778,22 +778,22 @@ const getEventTypeIcon = (type: string) => {
               </div>
 
               <div class="space-y-3">
-                <div class="flex items-center gap-2">
+                <div class="flex gap-2 items-center">
                   <div
-                    class="w-8 h-8 rounded-full flex items-center justify-center"
+                    class="flex items-center justify-center h-8 w-8 rounded-full"
                     style="{{ { backgroundColor: selectedNode.color + '20', color: selectedNode.color } }}"
                   >
                     <div :class="[selectedNode.icon, 'w-5 h-5']" />
                   </div>
                   <div>
-                    <p class="text-sm font-medium text-gray-900 dark:text-neutral-100">Type</p>
-                    <p class="text-sm text-gray-500 dark:text-neutral-400">
+                    <p class="font-medium text-gray-900 text-sm dark:text-neutral-100">Type</p>
+                    <p class="text-gray-500 text-sm dark:text-neutral-400">
                       {{ selectedNode.type.charAt(0).toUpperCase() + selectedNode.type.slice(1) }}
                     </p>
                   </div>
                 </div>
 
-                <div class="text-sm text-gray-500 dark:text-neutral-400">
+                <div class="text-gray-500 text-sm dark:text-neutral-400">
                   {{ selectedNode.description }}
                 </div>
               </div>
@@ -805,43 +805,43 @@ const getEventTypeIcon = (type: string) => {
 
     <!-- Server Events Table -->
     <div>
-      <div class="flex justify-between items-center mb-8 mt-16">
+      <div class="flex items-center justify-between mb-8 mt-16">
         <div>
-          <h3 class="text-base text-gray-900 dark:text-neutral-100 font-semibold leading-6">
+          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
             Recent Events
           </h3>
-          <p class="mt-2 text-sm text-gray-700 dark:text-neutral-400">
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">
             Latest server events and notifications from your AWS services.
           </p>
         </div>
       </div>
 
       <div class="inline-block min-w-full align-middle">
-        <div class="overflow-hidden shadow ring-1 ring-black ring-opacity-5 sm:rounded-lg">
-          <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-600">
+        <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
             <thead class="bg-gray-50 dark:bg-neutral-600">
               <tr>
-                <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 sm:pl-6">Type</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Service</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100">Message</th>
-                <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-100 text-right">Timestamp</th>
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Type</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Service</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Message</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-100">Timestamp</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-gray-200 dark:divide-neutral-700 bg-white dark:bg-neutral-700">
+            <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-700">
               @foreach(serverEvents as event)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
-                  <td class="whitespace-nowrap py-4 pl-4 pr-3 text-sm sm:pl-6">
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                     <div class="flex items-center">
                       <div :class="[getEventTypeIcon(event.type), getEventTypeColor(event.type), 'w-5 h-5']" />
                     </div>
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-900 dark:text-neutral-100">
+                  <td class="px-3 py-4 text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
                     {{ event.service }}
                   </td>
-                  <td class="px-3 py-4 text-sm text-gray-500 dark:text-neutral-400">
+                  <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                     {{ event.message }}
                   </td>
-                  <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-400 text-right">
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
                     {{ event.timestamp }}
                   </td>
                 </tr>

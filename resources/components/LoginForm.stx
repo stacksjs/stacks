@@ -21,7 +21,7 @@ const { id, icon, title, prompt, submitHandler } = withDefaults(
 </script>
 
 <template>
-  <div id="{{ id }}" class="login-form hidden">
+  <div id="{{ id }}" class="hidden login-form">
     <div class="login-form-background">
       <div class="login-form-container">
         <button class="login-close-btn" onclick="closeLoginScreens()">×</button>

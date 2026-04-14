@@ -17,15 +17,15 @@ let recentTaxes = []
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (taxSummary as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-calculator" iconBg="primary" />
     @endforeach
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Tax Rates by Region -->
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
         :columns="{{ JSON.stringify([
           { key: 'region', label: 'Region' },
@@ -40,7 +40,7 @@ let recentTaxes = []
       >
         @foreach (taxRates as tax)
           <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-            <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ tax.region }}</td>
+            <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ tax.region }}</td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ tax.rate }}</td>
             <td class="px-4 py-3">
               <Badge variant="default" size="xs">{{ tax.type }}</Badge>
@@ -54,7 +54,7 @@ let recentTaxes = []
     </div>
 
     <!-- Recent Tax Collections -->
-    <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
         :columns="{{ JSON.stringify([
           { key: 'order', label: 'Order' },
@@ -73,7 +73,7 @@ let recentTaxes = []
             <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ tax.order }}</td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ tax.subtotal }}</td>
             <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ tax.taxRate }}</td>
-            <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ tax.taxAmount }}</td>
+            <td class="px-4 py-3 font-semibold text-[13px] text-neutral-900 dark:text-white">{{ tax.taxAmount }}</td>
             <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ tax.region }}</td>
           </tr>
         @endforeach
@@ -86,27 +86,27 @@ let recentTaxes = []
     <div class="p-4 space-y-4">
       <div class="flex items-center justify-between">
         <div>
-          <div class="text-[13px] font-medium text-neutral-900 dark:text-white">Automatic Tax Calculation</div>
+          <div class="font-medium text-[13px] text-neutral-900 dark:text-white">Automatic Tax Calculation</div>
           <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Calculate taxes based on customer location</div>
         </div>
-        <label class="relative inline-flex items-center cursor-pointer">
+        <label class="inline-flex relative items-center cursor-pointer">
           <input type="checkbox" checked class="sr-only peer" />
-          <div class="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-blue-600"></div>
+          <div class="after:absolute after:left-[2px] after:top-[2px] after:content-[''] h-6 w-11 after:h-5 after:w-5 bg-neutral-200 after:bg-white dark:bg-neutral-700 peer-checked:bg-blue-600 rounded-full after:border after:border-neutral-300 after:rounded-full dark:border-neutral-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:after:border-white after:transition-all peer-checked:after:translate-x-full peer"></div>
         </label>
       </div>
       <div class="flex items-center justify-between">
         <div>
-          <div class="text-[13px] font-medium text-neutral-900 dark:text-white">Tax-Inclusive Pricing</div>
+          <div class="font-medium text-[13px] text-neutral-900 dark:text-white">Tax-Inclusive Pricing</div>
           <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Display prices with tax included</div>
         </div>
-        <label class="relative inline-flex items-center cursor-pointer">
+        <label class="inline-flex relative items-center cursor-pointer">
           <input type="checkbox" class="sr-only peer" />
-          <div class="w-11 h-6 bg-neutral-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 rounded-full peer dark:bg-neutral-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-neutral-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-neutral-600 peer-checked:bg-blue-600"></div>
+          <div class="after:absolute after:left-[2px] after:top-[2px] after:content-[''] h-6 w-11 after:h-5 after:w-5 bg-neutral-200 after:bg-white dark:bg-neutral-700 peer-checked:bg-blue-600 rounded-full after:border after:border-neutral-300 after:rounded-full dark:border-neutral-600 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-blue-300 peer-checked:after:border-white after:transition-all peer-checked:after:translate-x-full peer"></div>
         </label>
       </div>
       <div class="flex items-center justify-between">
         <div>
-          <div class="text-[13px] font-medium text-neutral-900 dark:text-white">Avalara Integration</div>
+          <div class="font-medium text-[13px] text-neutral-900 dark:text-white">Avalara Integration</div>
           <div class="text-[12px] text-neutral-500 dark:text-neutral-400">Use Avalara for tax compliance</div>
         </div>
         <Button variant="outline" size="xs">Configure</Button>

@@ -76,13 +76,13 @@ async function confirmDelete() {
   <PageHeader title="Orders" description="Manage commerce orders">
     <template #actions>
       <Button variant="primary" @click="showAddModal = true">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Add Order
       </Button>
     </template>
   </PageHeader>
 
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <!-- Filters -->
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
       <FilterBar searchPlaceholder="Search orders..." searchValue="{{ searchQuery }}" itemsPerPage="{{ itemsPerPage }}">
@@ -108,7 +108,7 @@ async function confirmDelete() {
     />
 
     <!-- Pagination -->
-    <div class="p-4 border-t border-neutral-200/60 dark:border-white/5">
+    <div class="p-4 border-neutral-200/60 border-t dark:border-white/5">
       <Pagination
         currentPage="{{ currentPage }}"
         totalPages="{{ Math.ceil(filteredOrders().length / itemsPerPage) }}"
@@ -132,7 +132,7 @@ async function confirmDelete() {
         label="Status"
         :options="{{ JSON.stringify(statuses.filter(s => s !== 'all').map(s => ({ value: s, label: s }))) }}"
       />
-      <div class="flex justify-end gap-2 pt-4 border-t border-neutral-200 dark:border-neutral-700">
+      <div class="flex gap-2 justify-end pt-4 border-neutral-200 border-t dark:border-neutral-700">
         <Button variant="secondary" data-modal-close>Cancel</Button>
         <Button variant="primary" type="submit">Add Order</Button>
       </div>

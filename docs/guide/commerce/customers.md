@@ -47,11 +47,13 @@ const updatedCustomer = await customers.update(1, {
 ### Delete Customers
 
 Single customer deletion:
+
 ```ts
 await customers.destroy(1) // Replace 1 with the customer ID to delete
 ```
 
 Bulk deletion:
+
 ```ts
 await customers.bulkDestroy([1, 2, 3]) // Array of customer IDs to delete
 ```

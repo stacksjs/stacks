@@ -3,24 +3,6 @@ title: Actions
 description: Learn how to create and use Actions in Stacks applications
 ---
 
-# Actions
-
-Actions are the primary way to handle business logic in Stacks applications. They encapsulate request handling, validation, and response formatting in a clean, reusable structure. Actions follow a Laravel-inspired pattern while leveraging TypeScript's type safety.
-
-## Introduction
-
-Actions replace traditional controllers for most use cases, providing:
-- Single-responsibility request handlers
-- Built-in request validation
-- Type-safe request/response handling
-- Composable and reusable logic
-- Queue job integration
-- Rate limiting configuration
-
-Actions are stored in `app/Actions/` and can be organized into subdirectories.
-
-## Creating Actions
-
 ### Basic Action Structure
 
 ```typescript

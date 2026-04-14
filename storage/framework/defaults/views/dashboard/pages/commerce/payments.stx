@@ -52,23 +52,23 @@ function statusVariant(s) {
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-credit-card" iconBg="primary" />
     @endforeach
   </div>
 
-  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
     <!-- Payment Methods -->
     <Card title="Payment Methods">
-      <div class="divide-y divide-neutral-100 dark:divide-neutral-700/50">
+      <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
         @foreach (paymentMethods as method)
-          <div class="flex items-center gap-3 p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <div class="flex gap-3 items-center p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
             <div class="flex-1 min-w-0">
-              <div class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ method.name }}</div>
+              <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ method.name }}</div>
               <div class="text-[12px] text-neutral-500 dark:text-neutral-400">via {{ method.provider }}</div>
             </div>
-            <div class="flex items-center gap-3">
+            <div class="flex gap-3 items-center">
               <span class="text-[13px] text-neutral-500 dark:text-neutral-400">{{ method.volume }}</span>
               <Badge variant="success" size="xs">{{ method.status }}</Badge>
             </div>
@@ -80,15 +80,15 @@ function statusVariant(s) {
     <!-- Payout Schedule -->
     <Card title="Payout Schedule">
       <div class="p-4 space-y-4">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
           <span class="text-[13px] text-neutral-500 dark:text-neutral-400">Next Payout</span>
-          <span class="text-[13px] font-semibold text-neutral-900 dark:text-white">$12,456.78</span>
+          <span class="font-semibold text-[13px] text-neutral-900 dark:text-white">$12,456.78</span>
         </div>
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
           <span class="text-[13px] text-neutral-500 dark:text-neutral-400">Payout Date</span>
           <span class="text-[13px] text-neutral-900 dark:text-white">January 20, 2024</span>
         </div>
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
           <span class="text-[13px] text-neutral-500 dark:text-neutral-400">Bank Account</span>
           <span class="text-[13px] text-neutral-900 dark:text-white">**** 4567</span>
         </div>
@@ -98,7 +98,7 @@ function statusVariant(s) {
   </div>
 
   <!-- Recent Transactions -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="{{ JSON.stringify([
         { key: 'id', label: 'Payment ID' },
@@ -117,10 +117,10 @@ function statusVariant(s) {
       @foreach (payments as payment)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <td class="px-4 py-3">
-            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded">{{ payment.id }}</code>
+            <code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ payment.id }}</code>
           </td>
           <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ payment.order }}</td>
-          <td class="px-4 py-3 text-[13px] font-semibold text-neutral-900 dark:text-white">{{ payment.amount }}</td>
+          <td class="px-4 py-3 font-semibold text-[13px] text-neutral-900 dark:text-white">{{ payment.amount }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ payment.method }}</td>
           <td class="px-4 py-3">
             <Badge variant="{{ statusVariant(payment.status) }}" size="xs" dot>{{ payment.status }}</Badge>

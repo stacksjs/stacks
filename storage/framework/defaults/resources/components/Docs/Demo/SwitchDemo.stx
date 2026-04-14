@@ -7,15 +7,15 @@ const { enabled = false } = defineProps<SwitchDemoProps>()
 </script>
 <div class="max-w-4xl">
     <DocsPlayground>
-      <div class="flex items-center gap-2 justify-center my-3">
+      <div class="flex gap-2 items-center justify-center my-3">
         <button
-          class="relative h-[38px] w-[74px] inline-flex shrink-0 cursor-pointer border-2 border-transparent rounded-full transition-colors duration-200 ease-in-out focus:outline-none focus-visible:ring-2 focus-visible:ring-white/75 {{ enabled ? 'bg-blue-500' : 'bg-gray-400' }}"
+          class="inline-flex relative shrink-0 h-[38px] w-[74px] border-2 border-transparent rounded-full focus-visible:ring-2 focus-visible:ring-white/75 focus:outline-none duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-blue-500' 'bg-gray-400' {{ }} enabled"
           data-action="toggle-switch"
         >
           <span class="sr-only">Use setting</span>
           <span
             aria-hidden="true"
-            class="pointer-events-none inline-block h-[34px] w-[34px] transform rounded-full bg-white shadow-lg ring-0 transition duration-200 ease-in-out {{ enabled ? 'translate-x-9' : 'translate-x-0' }}"
+            class="inline-block h-[34px] w-[34px] bg-white ring-0 rounded-full shadow-lg duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-9' {{ }} enabled"
           ></span>
         </button>
       </div>

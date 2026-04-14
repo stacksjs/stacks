@@ -1,17 +1,6 @@
 ---
 title: Quick Start
 ---
-
-# Quick Start
-
-This guide will help you get up and running with Stacks in just a few minutes. By the end, you will have a working application with an API route and a component.
-
-## Prerequisites
-
-Before you begin, ensure you have:
-
-- [Bun](https://bun.sh) installed (v1.1.29 or later)
-- A code editor (VS Code recommended with the Stacks extension)
 - Basic knowledge of TypeScript
 
 ## Installation
@@ -158,13 +147,13 @@ const description = props.description || 'Get started with Stacks'
 const showButton = props.showButton ?? true
 </script>
 
-<div class="rounded-lg bg-white p-6 shadow-md">
-  <h2 class="text-2xl font-bold text-gray-900">{{ title }}</h2>
+<div class="p-6 bg-white rounded-lg shadow-md">
+  <h2 class="font-bold text-2xl text-gray-900">{{ title }}</h2>
   <p class="mt-2 text-gray-600">{{ description }}</p>
 
   @if(showButton)
     <button
-      class="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white hover:bg-blue-700"
+      class="mt-4 px-4 py-2 text-white bg-blue-600 hover:bg-blue-700 rounded-md"
     >
       Get Started
     </button>
@@ -200,7 +189,7 @@ bun run dev
 
 This will start:
 
-- **API server** at `http://localhost:3000`
+- **API server** at `<http://localhost:3000>`
 - **Frontend dev server** with hot module replacement
 - **File watchers** for automatic rebuilds
 

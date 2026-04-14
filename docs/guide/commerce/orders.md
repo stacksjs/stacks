@@ -99,21 +99,25 @@ const updatedOrder = await orders.updateDeliveryInfo(1, {
 ### Delete Orders
 
 Single order deletion:
+
 ```ts
 await orders.destroy(1) // Replace 1 with the order ID to delete
 ```
 
 Soft delete (marks as CANCELED):
+
 ```ts
 await orders.softDelete(1) // Replace 1 with the order ID to soft delete
 ```
 
 Bulk deletion:
+
 ```ts
 await orders.bulkDestroy([1, 2, 3]) // Array of order IDs to delete
 ```
 
 Bulk soft delete:
+
 ```ts
 await orders.bulkSoftDelete([1, 2, 3]) // Array of order IDs to soft delete
 ```

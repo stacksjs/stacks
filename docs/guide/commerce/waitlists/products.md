@@ -133,11 +133,13 @@ const updatedPartySize = await waitlists.products.updatePartySize(1, 3)
 ### Delete Waitlist Products
 
 Single waitlist product deletion:
+
 ```ts
 const deletedProduct = await waitlists.products.destroy(1) // Returns the deleted product
 ```
 
 Bulk deletion:
+
 ```ts
 const deletedCount = await waitlists.products.bulkDestroy([1, 2, 3]) // Returns number of products deleted
 ```

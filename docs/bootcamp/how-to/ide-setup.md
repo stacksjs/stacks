@@ -108,7 +108,7 @@ Create or update `.vscode/settings.json`:
 
   // Search
   "search.exclude": {
-    "**/node_modules": true,
+    "**/node*modules": true,
     "**/dist": true,
     "**/storage/framework": true,
     "**/.git": true,
@@ -142,7 +142,7 @@ Create `.vscode/launch.json` for debugging:
       "args": ["dev"],
       "cwd": "${workspaceFolder}",
       "env": {
-        "NODE_ENV": "development"
+        "NODE*ENV": "development"
       }
     },
     {
@@ -244,7 +244,7 @@ Create `.vscode/stacks.code-snippets`:
       "",
       "export default new Model({",
       "  name: '${1:ModelName}',",
-      "  table: '${2:table_name}',",
+      "  table: '${2:table*name}',",
       "",
       "  fields: {",
       "    $0",
@@ -318,6 +318,7 @@ Create `.cursorrules`:
 # Stacks Development Rules
 
 ## Technology Stack
+
 - Runtime: Bun
 - Framework: Stacks.js
 - Language: TypeScript
@@ -326,6 +327,7 @@ Create `.cursorrules`:
 - Database: SQLite/MySQL with custom ORM
 
 ## Conventions
+
 - Use TypeScript for all code
 - Prefer async/await over callbacks
 - Use named exports
@@ -333,16 +335,19 @@ Create `.cursorrules`:
 - Keep functions small and focused
 
 ## File Structure
+
 - Actions go in app/Actions/
 - Models go in app/Models/
 - Components go in resources/components/
 - Tests go alongside source files with .test.ts extension
 
 ## Code Style
+
 - 2 spaces for indentation
 - Single quotes for strings
 - No semicolons (except where required)
 - Trailing commas in multiline
+
 ```
 
 ## WebStorm Setup
@@ -378,22 +383,22 @@ Create `~/.config/zed/settings.json`:
 ```json
 {
   "theme": "One Dark",
-  "buffer_font_family": "JetBrains Mono",
-  "buffer_font_size": 14,
-  "format_on_save": "on",
+  "buffer*font*family": "JetBrains Mono",
+  "buffer*font*size": 14,
+  "format*on*save": "on",
   "languages": {
     "TypeScript": {
-      "tab_size": 2,
+      "tab*size": 2,
       "formatter": "prettier"
     },
     "Vue": {
-      "tab_size": 2,
+      "tab*size": 2,
       "formatter": "prettier"
     }
   },
   "lsp": {
     "typescript-language-server": {
-      "initialization_options": {
+      "initialization*options": {
         "preferences": {
           "importModuleSpecifierPreference": "relative"
         }
@@ -414,20 +419,20 @@ root = true
 
 [*]
 charset = utf-8
-indent_style = space
-indent_size = 2
-end_of_line = lf
-insert_final_newline = true
-trim_trailing_whitespace = true
+indent*style = space
+indent*size = 2
+end*of*line = lf
+insert*final*newline = true
+trim*trailing*whitespace = true
 
 [*.md]
-trim_trailing_whitespace = false
+trim*trailing*whitespace = false
 
 [*.{yml,yaml}]
-indent_size = 2
+indent*size = 2
 
 [Makefile]
-indent_style = tab
+indent*style = tab
 ```
 
 ### Git Configuration
@@ -435,7 +440,9 @@ indent_style = tab
 Create `.gitattributes`:
 
 ```
+
 * text=auto eol=lf
+
 *.{cmd,[cC][mM][dD]} text eol=crlf
 *.{bat,[bB][aA][tT]} text eol=crlf
 bun.lockb binary
@@ -452,7 +459,7 @@ bun.lockb binary
 | Find in Files | `Ctrl+Shift+F` | `Cmd+Shift+F` |
 | Quick Fix | `Ctrl+.` | `Cmd+.` |
 | Rename Symbol | `F2` | `F2` |
-| Toggle Terminal | `` Ctrl+` `` | `` Cmd+` `` |
+| Toggle Terminal | ``Ctrl+```|``Cmd+``` |
 | Run Task | `Ctrl+Shift+B` | `Cmd+Shift+B` |
 | Format Document | `Shift+Alt+F` | `Shift+Option+F` |
 

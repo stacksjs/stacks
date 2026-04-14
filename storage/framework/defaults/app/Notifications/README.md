@@ -1,4 +1,4 @@
-# What are Notifications?
+# What are Notifications
 
 Notifications are a way to define a message that should be sent somewhere. It is a unified API to send a message across multiple channels, such as email, SMS, Push Notifications, and social channels.
 

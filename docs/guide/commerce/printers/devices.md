@@ -108,11 +108,13 @@ const updatedPrintCount = await devices.updatePrintCount(1, 150)
 ### Delete Devices
 
 Single device deletion:
+
 ```ts
 const deleted = await devices.destroy(1) // Returns true if successful
 ```
 
 Bulk deletion:
+
 ```ts
 const deletedCount = await devices.bulkDestroy([1, 2, 3]) // Returns number of devices deleted
 ```
