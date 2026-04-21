@@ -1,11 +1,20 @@
 import { execSync, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
+const sanitizeRevision = (revision: string): string => {
+  const value = revision.trim()
+
+  if (!/^[A-Za-z0-9._/-]+$/.test(value))
+    throw new Error(`Invalid git revision: ${value}`)
+
+  return value
+}
+
 // when log.debug is used, only log to file in production
 log.debug('Generating changelog')
-const fromRevision = await execSync('git describe --abbrev=0 --tags HEAD^')
+const fromRevision = sanitizeRevision(await execSync('git describe --abbrev=0 --tags HEAD^'))
 log.debug('FromRevision', fromRevision)
-const toRevision = await execSync('git describe')
+const toRevision = sanitizeRevision(await execSync('git describe'))
 log.debug('ToRevision', toRevision)
 const options = parseOptions()
 log.debug('Changelog Options', options)
