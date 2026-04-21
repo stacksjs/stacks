@@ -1,1 +1,0 @@
-storage/framework/defaults/views/dashboard/stx.config.ts
