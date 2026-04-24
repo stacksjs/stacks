@@ -495,7 +495,7 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken || accessToken.token !== plainToken)
+    if (!accessToken || accessToken.token !== hashToken(plainToken))
       return undefined
 
     if (accessToken.expires_at && new Date(String(accessToken.expires_at)) < new Date()) {

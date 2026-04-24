@@ -1514,6 +1514,7 @@ export interface Path {
   userMigrationsPath: (path?: string) => string
   userEventsPath: (path?: string) => string
   userJobsPath: (path?: string) => string
+  userControllersPath: (path?: string) => string
   userListenersPath: (path?: string) => string
   userMiddlewarePath: (path?: string) => string
   userModelsPath: (path?: string) => string
@@ -1650,6 +1651,7 @@ export const path: Path = {
   userMigrationsPath,
   userEventsPath,
   userJobsPath,
+  userControllersPath,
   userListenersPath,
   userMiddlewarePath,
   userModelsPath,
