@@ -123,6 +123,71 @@ function applySorting(query: any, sortParam: string | null, _table: string): any
   return query.orderBy(column, desc ? 'desc' : 'asc')
 }
 
+// Helper: extract bearer token from a request, falling back to the raw header
+// when the enhanced request hasn't attached a `bearerToken()` method.
+function bearerOf(req: EnhancedRequest): string | null {
+  const fn = (req as any).bearerToken
+  if (typeof fn === 'function') {
+    const t = fn.call(req)
+    if (t) return t
+  }
+  const auth = req.headers?.get?.('authorization') || req.headers?.get?.('Authorization') || ''
+  if (typeof auth === 'string' && auth.startsWith('Bearer '))
+    return auth.substring(7)
+  return null
+}
+
+// Helper: resolve the authed user via the @stacksjs/auth façade — used by the
+// `authedFill` model option to derive ownership-stamping fields like
+// `host_profile_id` from the requesting user. Returns null when unauthed.
+async function authedUserFromRequest(req: EnhancedRequest): Promise<any | null> {
+  const stored = (req as any)._authenticatedUser
+  if (stored) return stored
+  const token = bearerOf(req)
+  if (!token) return null
+  try {
+    const { Auth } = await import('@stacksjs/auth')
+    const user = await (Auth as any).getUserFromToken(token)
+    if (user) (req as any)._authenticatedUser = user
+    return user || null
+  }
+  catch {
+    return null
+  }
+}
+
+// Helper: apply a model's `authedFill` config for the given lifecycle hook.
+// Returns a partial object to merge into the insert/update payload.
+async function resolveAuthedFill(
+  model: any,
+  hook: 'creating' | 'updating',
+  user: any,
+  req: EnhancedRequest,
+): Promise<Record<string, any>> {
+  const cfg = model?.authedFill?.[hook]
+  if (!cfg) return {}
+  if (typeof cfg === 'function') {
+    try {
+      const result = await cfg(user, req)
+      return result && typeof result === 'object' ? result : {}
+    }
+    catch {
+      return {}
+    }
+  }
+  if (typeof cfg === 'object') {
+    const out: Record<string, any> = {}
+    for (const [field, getter] of Object.entries(cfg)) {
+      try {
+        out[field] = typeof getter === 'function' ? await (getter as any)(user, req) : getter
+      }
+      catch { /* ignore individual getter errors */ }
+    }
+    return out
+  }
+  return {}
+}
+
 // Register CRUD routes for each model with useApi trait
 for (const [modelName, model] of Object.entries(models)) {
   const useApi = model.traits?.useApi
@@ -241,6 +306,19 @@ for (const [modelName, model] of Object.entries(models)) {
         const body = await getRequestBody(req)
         const data = filterFillable(body, fillableFields)
 
+        // Stamp ownership / context-aware fields from the authed user before
+        // the body fillable check, so models can declare e.g.
+        //   authedFill: { creating: { host_profile_id: async (u) => ... } }
+        // and never have to ship a custom Store action just to attach FKs.
+        const authedUser = await authedUserFromRequest(req)
+        if (authedUser) {
+          const stamped = await resolveAuthedFill(model, 'creating', authedUser, req)
+          for (const [k, v] of Object.entries(stamped)) {
+            if (v !== undefined && v !== null && data[k] === undefined)
+              data[k] = v
+          }
+        }
+
         if (Object.keys(data).length === 0) {
           return jsonResponse({ error: 'No fillable fields provided' }, 422)
         }
@@ -281,6 +359,16 @@ for (const [modelName, model] of Object.entries(models)) {
         const id = (req as any).params?.id
         const body = await getRequestBody(req)
         const data = filterFillable(body, fillableFields)
+
+        // Apply authedFill.updating stamps (mirror of the Store path).
+        const authedUser = await authedUserFromRequest(req)
+        if (authedUser) {
+          const stamped = await resolveAuthedFill(model, 'updating', authedUser, req)
+          for (const [k, v] of Object.entries(stamped)) {
+            if (v !== undefined && v !== null && data[k] === undefined)
+              data[k] = v
+          }
+        }
 
         if (Object.keys(data).length === 0) {
           return jsonResponse({ error: 'No fillable fields provided' }, 422)

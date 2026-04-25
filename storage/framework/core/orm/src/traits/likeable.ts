@@ -23,17 +23,37 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
       return Number((result as any)?.count) || 0
     },
 
+    /**
+     * Record that user `userId` likes the row `id` of the parent model.
+     * Idempotent — duplicate calls just return the existing row instead of
+     * crashing on the unique (user_id, <fk>) constraint.
+     */
     async like(id: number, userId: number): Promise<any> {
-      return await db
-        .insertInto(likeTable as any)
-        .values({
-          [foreignKey]: id,
-          user_id: userId,
-          created_at: new Date(),
-          updated_at: new Date(),
-        })
-        .returningAll()
-        .executeTakeFirst()
+      const now = new Date().toISOString()
+      try {
+        return await db
+          .insertInto(likeTable as any)
+          .values({
+            [foreignKey]: id,
+            user_id: userId,
+            created_at: now,
+            updated_at: now,
+          })
+          .returningAll()
+          .executeTakeFirst()
+      }
+      catch (err) {
+        // Likely a unique-constraint violation (already liked) — return the
+        // existing row so callers don't have to special-case.
+        const existing = await db
+          .selectFrom(likeTable as any)
+          .where(foreignKey, '=', id)
+          .where('user_id', '=', userId)
+          .selectAll()
+          .executeTakeFirst()
+        if (existing) return existing
+        throw err
+      }
     },
 
     async unlike(id: number, userId: number): Promise<void> {
@@ -53,6 +73,19 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
         .executeTakeFirst()
 
       return !!result
+    },
+
+    /**
+     * Reverse lookup — every row in the parent model that the given user has
+     * liked. Returns just the parent FK values (cheap join in the action).
+     */
+    async likedBy(userId: number): Promise<number[]> {
+      const rows = await db
+        .selectFrom(likeTable as any)
+        .select([foreignKey])
+        .where('user_id', '=', userId)
+        .execute()
+      return rows.map((r: any) => Number(r[foreignKey])).filter(Boolean)
     },
   }
 }

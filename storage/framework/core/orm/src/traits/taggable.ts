@@ -32,8 +32,8 @@ export function createTaggableMethods(tableName: string) {
           slug: tag.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
           order: 0,
           is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .returningAll()
         .executeTakeFirst()

@@ -30,8 +30,8 @@ export function createCommentableMethods(tableName: string) {
           commentables_id: id,
           commentables_type: tableName,
           status: 'pending',
-          created_at: new Date(),
-          updated_at: new Date(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .returningAll()
         .executeTakeFirst()

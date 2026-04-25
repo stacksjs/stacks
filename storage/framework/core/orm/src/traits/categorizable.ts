@@ -44,8 +44,8 @@ export function createCategorizableMethods(tableName: string) {
             description: category.description,
             slug: category.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
             is_active: true,
-            created_at: new Date(),
-            updated_at: new Date(),
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
           })
           .returningAll()
           .executeTakeFirst()
@@ -57,8 +57,8 @@ export function createCategorizableMethods(tableName: string) {
           categorizable_id: id,
           categorizable_type: tableName,
           category_id: (categoryRecord as any).id,
-          created_at: new Date(),
-          updated_at: new Date(),
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
         })
         .returningAll()
         .executeTakeFirst()
