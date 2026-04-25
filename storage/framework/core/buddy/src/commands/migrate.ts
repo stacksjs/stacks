@@ -63,7 +63,8 @@ export function migrate(buddy: CLI): void {
     .alias('db:migrate')
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
-    .option('-a, --auth', descriptions.auth, { default: false })
+    .option('-a, --auth', descriptions.auth, { default: true })
+    .option('--no-auth', 'Skip auth/oauth table migrations')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions & { auth?: boolean }) => {
       log.debug('Running `buddy migrate` ...', options)
@@ -88,8 +89,8 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      // Run auth table migrations if --auth flag is provided
-      if (options.auth) {
+      // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
+      if (options.auth !== false) {
         log.info('Migrating auth tables...')
         try {
           const { migrateAuthTables } = await import('@stacksjs/database')
@@ -106,7 +107,7 @@ export function migrate(buddy: CLI): void {
 
       const APP_ENV = process.env.APP_ENV || 'local'
 
-      await outro(`Migrated your ${APP_ENV} database.${options.auth ? ' (including auth tables)' : ''}`, {
+      await outro(`Migrated your ${APP_ENV} database.${options.auth !== false ? ' (including auth tables)' : ''}`, {
         startTime: perf,
         useSeconds: true,
       })
@@ -119,7 +120,8 @@ export function migrate(buddy: CLI): void {
     .option('-d, --diff', 'Show the SQL that would be run', { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-s, --seed', 'Run database seeders after migration', { default: false })
-    .option('-a, --auth', descriptions.auth, { default: false })
+    .option('-a, --auth', descriptions.auth, { default: true })
+    .option('--no-auth', 'Skip auth/oauth table migrations')
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: MigrateOptions & { seed?: boolean, auth?: boolean }) => {
       log.debug('Running `buddy migrate:fresh` ...', options)
@@ -144,8 +146,8 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      // Run auth table migrations if --auth flag is provided
-      if (options.auth) {
+      // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
+      if (options.auth !== false) {
         log.info('Migrating auth tables...')
         try {
           const { migrateAuthTables } = await import('@stacksjs/database')
@@ -186,7 +188,7 @@ export function migrate(buddy: CLI): void {
       }
 
       const parts: string[] = []
-      if (options.auth) parts.push('auth tables')
+      if (options.auth !== false) parts.push('auth tables')
       if (options.seed) parts.push('seeded')
       const suffix = parts.length > 0 ? ` & ${parts.join(' & ')}` : ''
 

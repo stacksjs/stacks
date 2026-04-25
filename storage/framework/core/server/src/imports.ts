@@ -331,7 +331,11 @@ export function initiateImports(): void {
 export async function injectGlobalAutoImports(): Promise<void> {
   const errors: Error[] = []
 
-  // Models (Car, Booking, User, …) + functions from generated auto-imports
+  // Models + generated functions FIRST — the @stacksjs/orm package
+  // re-exports auto-imports/models from its main entry, so eagerly loading
+  // models here lets later imports of @stacksjs/orm (by Auth, etc.) hit
+  // the already-resolved namespace instead of triggering a TDZ-violating
+  // re-entry through the partially-evaluated module graph.
   try {
     const autoImportsPath = path.storagePath('framework/auto-imports/index.ts')
     const autoImports = await import(autoImportsPath)
@@ -341,15 +345,36 @@ export async function injectGlobalAutoImports(): Promise<void> {
     errors.push(err as Error)
   }
 
-  // Framework primitives used inside action handlers
+  // Framework primitives used inside userland code (Models, Actions, Jobs,
+  // Mail, Middleware, Policies, Listeners, Schedulers, Commands, helpers,
+  // …). Listing them here gives every framework user the same "no imports"
+  // ergonomics that framework defaults already enjoy. Type-only symbols
+  // (UserModel, Attributes, CLI, Events, …) are picked up through the
+  // bundler-plugin-generated `framework/types/server-auto-imports.d.ts`
+  // so they remain typecheck-visible without polluting runtime.
   const primitiveModules: Array<[string, string[]]> = [
     ['@stacksjs/actions', ['Action']],
-    ['@stacksjs/router', ['response', 'request', 'route']],
+    ['@stacksjs/router', ['response', 'request', 'route', 'Middleware', 'url']],
     ['@stacksjs/validation', ['schema']],
-    ['@stacksjs/auth', ['Auth', 'register']],
-    ['@stacksjs/events', ['dispatch', 'listen']],
+    ['@stacksjs/auth', ['Auth', 'register', 'sessionCheck']],
+    ['@stacksjs/events', ['dispatch', 'listen', 'emitter']],
     ['@stacksjs/logging', ['log']],
     ['@stacksjs/email', ['mail', 'template']],
+    ['@stacksjs/orm', ['defineModel']],
+    ['@stacksjs/queue', ['Job']],
+    ['@stacksjs/scheduler', ['schedule']],
+    ['@stacksjs/storage', ['storage', 'fs']],
+    ['@stacksjs/config', ['config']],
+    ['@stacksjs/security', ['makeHash', 'verifyHash']],
+    ['@stacksjs/collections', ['collect']],
+    ['@stacksjs/error-handling', ['HttpError', 'handleError']],
+    ['@stacksjs/path', ['path']],
+    ['@stacksjs/types', ['Every', 'ExitCode']],
+    ['@stacksjs/cli', ['quotes']],
+    ['@stacksjs/database', ['db', 'sql']],
+    ['@stacksjs/notifications', ['notify', 'useNotification', 'useEmail', 'useSMS', 'useChat', 'useDatabase']],
+    ['@stacksjs/realtime', ['emit', 'emitToUser', 'emitToUsers', 'createChannel', 'dispatchBroadcast']],
+    ['@stacksjs/i18n', ['I18n', 'setLocale', 'getLocale']],
   ]
 
   for (const [pkg, names] of primitiveModules) {
