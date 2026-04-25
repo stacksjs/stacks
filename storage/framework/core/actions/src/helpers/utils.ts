@@ -44,15 +44,29 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       else {
         const port = Number(process.env.PORT) || 3000
 
-        // Import and call serve function directly - no subprocess!
-        // Try standard resolution first, then fall back to pantry path
+        // Resolve serve(): prefer the project-vendored pantry copy so
+        // framework patches dropped into pantry/ take effect even when
+        // Bun's global install cache has an older bun-plugin-stx
+        // version. Fall back to the standard module resolver.
         let serve: any
         try {
-          ;({ serve } = await import('bun-plugin-stx/serve'))
-        }
-        catch {
           ;({ serve } = await import(p.projectPath('pantry/bun-plugin-stx/dist/serve.js')))
         }
+        catch {
+          ;({ serve } = await import('bun-plugin-stx/serve'))
+        }
+
+        // Cookie that signals an authenticated session. `setToken()` in
+        // the SPA mirrors the bearer token here so the SSR pass can
+        // gate /trips, /favorites, /host/*, /book/*, etc. without
+        // every project having to ship a custom serve.ts.
+        let authCookie = 'auth-token'
+        try {
+          const { config } = await import('@stacksjs/config')
+          authCookie = (config as any)?.auth?.defaultTokenName ?? authCookie
+        }
+        catch { /* config not available — keep default */ }
+
         await serve({
           patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
           port,
@@ -61,6 +75,10 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
           partialsDir: 'resources/components',
           fallbackPartialsDir: 'resources/views',
           quiet: true,
+          auth: {
+            cookieName: authCookie,
+            redirectTo: '/login',
+          },
         })
       }
 

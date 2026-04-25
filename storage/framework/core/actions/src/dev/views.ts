@@ -1,8 +1,16 @@
+import { config } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 
-// Check if the project has its own serve.ts — if so, use it directly.
-// This allows projects to define their own API routes, middleware, and config
-// while still using the stx dev server under the hood.
+/**
+ * Boot the views/SSR dev server.
+ *
+ * If the project ships its own `serve.ts` we hand off to it (escape
+ * hatch for custom needs). Otherwise we start the default stx serve
+ * with sensible Stacks-aware options — including a server-side auth
+ * gate that honours `definePageMeta({ middleware: ['auth'] })` on each
+ * page so projects don't need a custom serve wrapper just to keep
+ * /trips, /favorites, /host/* etc. behind a session.
+ */
 const projectServe = projectPath('serve.ts')
 
 try {
@@ -19,22 +27,27 @@ catch {
 }
 
 async function startDefaultServer() {
-  // Try standard resolution first, then fall back to pantry path
   let serve: any
+  // Prefer the project-vendored pantry copy so framework patches and
+  // bug fixes shipped via `cp` (or `pantry/install`) take effect even
+  // when the global Bun install cache has an older `bun-plugin-stx`.
   try {
-    ;({ serve } = await import('bun-plugin-stx/serve'))
-  }
-  catch {
     ;({ serve } = await import(projectPath('pantry/bun-plugin-stx/dist/serve.js')))
   }
+  catch {
+    ;({ serve } = await import('bun-plugin-stx/serve'))
+  }
 
-  // Run stx dev server for resources/views
   const userViewsPath = 'resources/views'
   const defaultViewsPath = 'storage/framework/defaults/resources/views'
   const userLayoutsPath = 'resources/layouts'
   const defaultLayoutsPath = 'storage/framework/defaults/resources/layouts'
   const userComponentsPath = 'resources/components'
   const preferredPort = Number(process.env.PORT) || 3000
+
+  // Cookie name the SPA writes when a user logs in. Defaults to whatever
+  // `config.auth.defaultTokenName` is set to, falling back to `auth-token`.
+  const authCookie = (config as any)?.auth?.defaultTokenName ?? 'auth-token'
 
   await serve({
     patterns: [userViewsPath, defaultViewsPath],
@@ -45,5 +58,9 @@ async function startDefaultServer() {
     fallbackLayoutsDir: defaultLayoutsPath,
     fallbackPartialsDir: defaultViewsPath,
     quiet: true,
-  })
+    auth: {
+      cookieName: authCookie,
+      redirectTo: '/login',
+    },
+  } as any)
 }

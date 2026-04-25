@@ -1,5 +1,32 @@
 import type { StacksOptions } from '@stacksjs/types'
-import { commandsPath, userDatabasePath } from '@stacksjs/path'
+import { commandsPath, projectPath, userDatabasePath } from '@stacksjs/path'
+
+/**
+ * Derive sane app defaults (name, url) from the project's package.json so
+ * a fresh project gets `Drivly` / `drivly.localhost` instead of the
+ * generic `Stacks` / `stacks.localhost` placeholders.
+ *
+ * Falls back to "Stacks"/"stacks.localhost" when package.json is absent
+ * or unreadable — `.env` and `config/app.ts` always win over both.
+ */
+function deriveAppDefaults(): { name: string, url: string } {
+  try {
+    const pkgPath = projectPath('package.json')
+    // eslint-disable-next-line ts/no-require-imports
+    const pkg = require(pkgPath) as { name?: string }
+    const raw = (pkg.name ?? '').trim()
+    if (!raw) return { name: 'Stacks', url: 'stacks.localhost' }
+    // Strip @scope/, replace separators, capitalise.
+    const slug = raw.replace(/^@[^/]+\//, '').toLowerCase()
+    const name = slug.replace(/[-_]+/g, ' ').replace(/(^|\s)\w/g, c => c.toUpperCase())
+    return { name, url: `${slug}.localhost` }
+  }
+  catch {
+    return { name: 'Stacks', url: 'stacks.localhost' }
+  }
+}
+
+const appDefaults = deriveAppDefaults()
 
 export const defaults: StacksOptions = {
   ai: {
@@ -46,10 +73,10 @@ export const defaults: StacksOptions = {
   // },
 
   app: {
-    name: 'Stacks',
+    name: appDefaults.name,
     description: 'A Stacks application.',
     env: 'local',
-    url: 'stacks.localhost',
+    url: appDefaults.url,
     debug: true,
     key: '',
     timezone: 'UTC',
