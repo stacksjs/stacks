@@ -286,7 +286,9 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   const docsUrl = docsDomain ? `https://${docsDomain}` : `http://localhost:${docsPort}`
   const dashboardUrl = dashboardDomain ? `https://${dashboardDomain}` : `http://localhost:${dashboardPort}`
 
-  // Print Vite-style unified output
+  // Print Vite-style unified output. Banner first so the user has the URLs
+  // while servers boot — the "ready" line lands later, once each backend
+  // actually accepts a TCP connection on its port.
   console.log()
   console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}`)
   console.log()
@@ -294,10 +296,6 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
   console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
   console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
-  if (startTime) {
-    const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
-    console.log(`\n  ${dim(`ready in ${elapsedMs.toFixed(2)} ms`)}`)
-  }
   if (options.verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
@@ -325,6 +323,36 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   // Start all servers silently — unified banner above handles output
   const quietOpts = { ...options, quiet: true }
   const a = await actions()
+
+  // Background readiness probes. Each resolves when the backend port accepts
+  // a TCP connection so the "ready in N ms" line below reflects the time at
+  // which the URLs above actually serve traffic — not just when the spawn
+  // calls returned. Probes run in parallel with the servers themselves.
+  const ports = [
+    { name: 'Frontend', port: frontendPort },
+    { name: 'API', port: apiPort },
+    { name: 'Docs', port: docsPort },
+    { name: 'Dashboard', port: dashboardPort },
+  ]
+  const readinessTimeoutMs = 30000
+  let readyAnnounced = false
+  Promise.all(ports.map(p => waitForPort(p.port, readinessTimeoutMs)))
+    .then((results) => {
+      if (readyAnnounced) return
+      readyAnnounced = true
+      const failed = results
+        .map((ok, i) => ok ? null : ports[i].name)
+        .filter((x): x is string => x !== null)
+      if (startTime) {
+        const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000
+        const summary = failed.length
+          ? `ready in ${(elapsedMs / 1000).toFixed(1)}s — ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
+          : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
+        console.log(`  ${dim(summary)}\n`)
+      }
+    })
+    .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
+
   await Promise.all([
     a.runFrontendDevServer(quietOpts).catch((error) => {
       if (options.verbose)
@@ -349,6 +377,34 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
       })
       : Promise.resolve(),
   ])
+}
+
+/**
+ * Resolve `true` once a TCP socket can be opened to localhost:port within
+ * `timeoutMs`. We don't issue HTTP — some backends (stx serve) take a
+ * second to render but bind early; a TCP connect is enough to say "the
+ * URL is live". Returns `false` if the port is still unreachable when
+ * the timeout fires.
+ */
+async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  const { Socket } = await import('node:net')
+  while (Date.now() < deadline) {
+    const ok = await new Promise<boolean>((resolve) => {
+      const sock = new Socket()
+      const done = (v: boolean) => {
+        sock.destroy()
+        resolve(v)
+      }
+      sock.once('connect', () => done(true))
+      sock.once('error', () => done(false))
+      sock.setTimeout(500, () => done(false))
+      sock.connect(port, '127.0.0.1')
+    })
+    if (ok) return true
+    await new Promise(r => setTimeout(r, 250))
+  }
+  return false
 }
 
 /**

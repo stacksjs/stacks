@@ -86,6 +86,29 @@ const commandGroups = {
   'info': ['about', 'doctor', 'list'],
 }
 
+// Per-CLI-instance set of loader keys we've already invoked. Prevents
+// double-registration when the same module is referenced under multiple aliases
+// (e.g. `down`/`up`/`status`/`maintenance`) or when cli.ts loads a module
+// directly (setup, key) before delegating the rest to the registry.
+const loadedRegistrars = new WeakMap<CLI, Set<string>>()
+
+function loaderKey(loader: CommandLoader): string {
+  return `${loader.path}#${loader.exportName}`
+}
+
+/** Mark a registrar as already invoked for this CLI so loadCommand skips it. */
+export function markLoaded(buddy: CLI, commandName: string): void {
+  const loader = commandRegistry[commandName]
+  if (!loader)
+    return
+  let set = loadedRegistrars.get(buddy)
+  if (!set) {
+    set = new Set()
+    loadedRegistrars.set(buddy, set)
+  }
+  set.add(loaderKey(loader))
+}
+
 /**
  * Load a specific command lazily
  */
@@ -96,6 +119,16 @@ export async function loadCommand(commandName: string, buddy: CLI): Promise<bool
     // Don't warn for unknown commands - they may be dynamically loaded later
     return false
   }
+
+  let set = loadedRegistrars.get(buddy)
+  if (!set) {
+    set = new Set()
+    loadedRegistrars.set(buddy, set)
+  }
+  const key = loaderKey(loader)
+  if (set.has(key))
+    return true
+  set.add(key)
 
   try {
     const module = await import(loader.path)
@@ -117,13 +150,31 @@ export async function loadCommand(commandName: string, buddy: CLI): Promise<bool
 }
 
 /**
- * Load multiple commands with timeout
+ * Load multiple commands with timeout.
+ *
+ * Many registry entries point at the same module (e.g. `down`, `up`, `status`,
+ * `maintenance` all share `./commands/maintenance.ts`, and `cloud:*` aliases
+ * share `./commands/cloud.ts`). Calling each registrar more than once would
+ * register the same sub-commands multiple times, which is what produces
+ * duplicate rows in `buddy list`. Dedupe by loader identity so each module's
+ * registrar runs at most once per CLI instance.
  */
 export async function loadCommands(commandNames: string[], buddy: CLI): Promise<void> {
   const timeout = (ms: number) => new Promise((_, reject) =>
     setTimeout(() => reject(new Error('timeout')), ms))
 
-  await Promise.all(commandNames.map(async (name) => {
+  const seen = new Set<string>()
+  const unique: string[] = []
+  for (const name of commandNames) {
+    const loader = commandRegistry[name]
+    const key = loader ? `${loader.path}#${loader.exportName}` : `name:${name}`
+    if (seen.has(key))
+      continue
+    seen.add(key)
+    unique.push(name)
+  }
+
+  await Promise.all(unique.map(async (name) => {
     try {
       await Promise.race([
         loadCommand(name, buddy),
@@ -163,15 +214,25 @@ export function getCommandNames(): string[] {
 }
 
 /**
- * Determine which commands to load based on CLI arguments
+ * Determine which commands to load based on CLI arguments.
+ *
+ * Help / no-command paths must load the full registry so the rendered help
+ * lists every command. Pure version flags only need `version`. A specific
+ * command (with or without `--help`) only needs that command's loader.
  */
 export function getCommandsToLoad(args: string[]): string[] {
   const requestedCommand = args[0]
+  const isVersionFlag = requestedCommand === '--version' || requestedCommand === '-v'
+  const isHelpFlag = requestedCommand === '--help' || requestedCommand === '-h'
+  const isHelpWord = requestedCommand === 'help'
 
-  if (!requestedCommand || requestedCommand.startsWith('-')) {
-    // No command or just flags, load minimal set
+  if (isVersionFlag)
     return ['version']
-  }
+
+  // No command, or help requested without a target command — load everything
+  // so help output reflects the full surface.
+  if (!requestedCommand || isHelpFlag || isHelpWord)
+    return Object.keys(commandRegistry)
 
   // Extract base command (before ':')
   const baseCommand = requestedCommand.split(':')[0]
@@ -195,6 +256,7 @@ export function getCommandsToLoad(args: string[]): string[] {
     }
   }
 
-  // Unknown command, load help commands
-  return ['version']
+  // Unknown command — load full surface so the user sees every option in the
+  // "did you mean?" / help fallback.
+  return Object.keys(commandRegistry)
 }

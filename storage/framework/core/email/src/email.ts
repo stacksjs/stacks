@@ -209,5 +209,29 @@ class Mail {
   }
 }
 
-// Export a singleton instance - reads default driver from config
-export const mail: Mail = new Mail({ defaultDriver: config.email.default || 'ses' })
+// Export a singleton instance — reads default driver from config lazily so
+// module-load order doesn't matter. Reading `config.email.default` here at
+// eval time hits a TDZ when the auto-imports barrel pulls in app/Jobs files
+// (which import @stacksjs/email) while @stacksjs/config is still resolving
+// its `await import('~/config/*')` chain. Deferring the read to first method
+// call sidesteps the cycle entirely without changing the public API.
+let _mail: Mail | undefined
+function getMail(): Mail {
+  if (!_mail) {
+    const driver = (config as any)?.email?.default
+      || process.env.MAIL_MAILER
+      || 'ses'
+    _mail = new Mail({ defaultDriver: driver as any })
+  }
+  return _mail
+}
+
+export const mail: Mail = new Proxy({} as Mail, {
+  get(_t, prop) {
+    return (getMail() as any)[prop]
+  },
+  set(_t, prop, value) {
+    ;(getMail() as any)[prop] = value
+    return true
+  },
+}) as Mail

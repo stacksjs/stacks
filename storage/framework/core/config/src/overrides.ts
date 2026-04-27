@@ -12,66 +12,102 @@ import type { StacksConfig } from '@stacksjs/types'
 // When SKIP_CONFIG_LOADING is set, return empty config to avoid parsing external TS files
 const skipConfigLoading = process.env.SKIP_CONFIG_LOADING === 'true'
 
-let ai, analytics, app, cache, cli, cloud, database, dns, email, errors, git, hashing, library, logging, notification, payment, ports, queue, realtime, saas, searchEngine, security, services, filesystems, team, ui
-
-if (!skipConfigLoading) {
-  // Development mode: Load config files normally
-  ai = (await import('~/config/ai')).default
-  analytics = (await import('~/config/analytics')).default
-  app = (await import('~/config/app')).default
-  cache = (await import('~/config/cache')).default
-  cli = (await import('~/config/cli')).default
-  cloud = (await import('~/config/cloud')).default
-  database = (await import('~/config/database')).default
-  dns = (await import('~/config/dns')).default
-  email = (await import('~/config/email')).default
-  errors = (await import('~/config/errors')).default
-  git = (await import('~/config/git')).default
-  hashing = (await import('~/config/hashing')).default
-  library = (await import('~/config/library')).default
-  logging = (await import('~/config/logging')).default
-  notification = (await import('~/config/notification')).default
-  payment = (await import('~/config/payment')).default
-  ports = (await import('~/config/ports')).default
-  queue = (await import('~/config/queue')).default
-  realtime = (await import('~/config/realtime')).default
-  saas = (await import('~/config/saas')).default
-  searchEngine = (await import('~/config/search-engine')).default
-  security = (await import('~/config/security')).default
-  services = (await import('~/config/services')).default
-  filesystems = (await import('~/config/filesystems')).default
-  team = (await import('~/config/team')).default
-  ui = (await import('~/config/ui')).default
+// `overrides` is exported synchronously, populated from `defaultsForOverrides`
+// on creation and *mutated in place* by `loadUserConfigs()` once the user's
+// `config/*.ts` files finish loading.
+//
+// Why not top-level `await import('~/config/*.ts')` like before: each user
+// config file pulls in framework helpers (e.g. `config/env.ts` imports
+// `@stacksjs/validation`). Those helpers eventually import @stacksjs/storage
+// → facade.ts → @stacksjs/config — a static cycle that, combined with TLA
+// in this file, leaves @stacksjs/router, @stacksjs/email, and any consumer
+// that reads `config.<key>` at module-eval time in TDZ. By making this
+// module synchronous, the consumer graph evaluates deterministically and
+// `loadUserConfigs()` patches in real values asynchronously in the background.
+function defaultsForOverrides(): StacksConfig {
+  return {
+    ai: {},
+    analytics: {},
+    app: { name: process.env.APP_NAME || 'Stacks', env: process.env.APP_ENV || 'production' },
+    cache: {},
+    cli: {},
+    cloud: {},
+    database: {},
+    dns: {},
+    realtime: {},
+    email: {},
+    errors: {},
+    git: {},
+    hashing: {},
+    library: {},
+    logging: {},
+    notification: {},
+    queue: {},
+    payment: {},
+    ports: {},
+    saas: {},
+    searchEngine: {},
+    security: {},
+    services: {},
+    filesystems: {},
+    team: {},
+    ui: {},
+  } as any
 }
 
-export const overrides: StacksConfig = {
-  ai: ai || {},
-  analytics: analytics || {},
-  app: app || { name: process.env.APP_NAME || 'Stacks', env: process.env.APP_ENV || 'production' },
-  cache: cache || {},
-  cli: cli || {},
-  cloud: cloud || {},
-  database: database || {},
-  dns: dns || {},
-  realtime: realtime || {},
-  // docs,
-  email: email || {},
-  errors: errors || {},
-  git: git || {},
-  hashing: hashing || {},
-  library: library || {},
-  logging: logging || {},
-  notification: notification || {},
-  queue: queue || {},
-  payment: payment || {},
-  ports: ports || {},
-  saas: saas || {},
-  searchEngine: searchEngine || {},
-  security: security || {},
-  services: services || {},
-  filesystems: filesystems || {},
-  team: team || {},
-  ui: ui || {},
-} as any
+export const overrides: StacksConfig = defaultsForOverrides()
+
+// Files we attempt to load. The key on the left is the property name on
+// `overrides`; the path on the right is the project-local config file.
+const userConfigs: Array<[keyof StacksConfig, string]> = [
+  ['ai', '~/config/ai'],
+  ['analytics', '~/config/analytics'],
+  ['app', '~/config/app'],
+  ['cache', '~/config/cache'],
+  ['cli', '~/config/cli'],
+  ['cloud', '~/config/cloud'],
+  ['database', '~/config/database'],
+  ['dns', '~/config/dns'],
+  ['email', '~/config/email'],
+  ['errors', '~/config/errors'],
+  ['git', '~/config/git'],
+  ['hashing', '~/config/hashing'],
+  ['library', '~/config/library'],
+  ['logging', '~/config/logging'],
+  ['notification', '~/config/notification'],
+  ['payment', '~/config/payment'],
+  ['ports', '~/config/ports'],
+  ['queue', '~/config/queue'],
+  ['realtime', '~/config/realtime'],
+  ['saas', '~/config/saas'],
+  ['searchEngine', '~/config/search-engine'],
+  ['security', '~/config/security'],
+  ['services', '~/config/services'],
+  ['filesystems', '~/config/filesystems'],
+  ['team', '~/config/team'],
+  ['ui', '~/config/ui'],
+]
+
+/**
+ * Load the project's `config/*.ts` files into `overrides` in the background.
+ * Each module is imported in parallel and merged on top of the synchronous
+ * default. Missing files fall back to `{}` silently — projects don't have to
+ * ship every config category.
+ *
+ * Returns a Promise so callers (e.g. `injectGlobalAutoImports`) can await
+ * config readiness when they need the real values rather than defaults.
+ */
+export const overridesReady: Promise<StacksConfig> = skipConfigLoading
+  ? Promise.resolve(overrides)
+  : Promise.all(userConfigs.map(async ([key, modulePath]) => {
+    try {
+      const mod = await import(modulePath)
+      if (mod?.default !== undefined)
+        ;(overrides as any)[key] = mod.default
+    }
+    catch {
+      // Project doesn't have this config file — leave the default in place.
+    }
+  })).then(() => overrides)
 
 export default overrides

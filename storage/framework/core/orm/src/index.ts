@@ -1,3 +1,12 @@
+// Force `@stacksjs/validation` to evaluate fully before any user model file
+// runs `import { schema } from '@stacksjs/validation'`. Without this priming
+// import, the auto-imports barrel triggers user models concurrently, and
+// later models in the barrel see `schema` in TDZ (the validator hasn't
+// reached its `export const schema = v` line yet because evaluation jumped
+// into the user model graph first). Pulling it in here at the top of every
+// `@stacksjs/orm` consumer's evaluation guarantees schema is bound first.
+import '@stacksjs/validation'
+
 export * from '../../../orm/src'
 export * from './db'
 export * from './subquery'
@@ -27,8 +36,15 @@ function autoConfigureOrm(): void {
 
 autoConfigureOrm()
 
-// Re-export all model instances so Actions can use: import { User } from '@stacksjs/orm'
-export * from '../../../auto-imports/models'
+// `@stacksjs/auth` (and other framework packages) statically imports
+// `User from '@stacksjs/orm'`, so we have to provide it here. Loading via
+// `await import` instead of `export *` keeps the rest of the model graph
+// out of orm's evaluation graph — only User is pulled in, and only after
+// orm has finished its own static-import phase. The await pauses orm's
+// module evaluation just long enough to bind User without re-introducing
+// the auto-imports → schema-TDZ cycle that re-exporting the whole barrel
+// would cause.
+export const User = (await import('../../../../../app/Models/User')).default
 
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions
@@ -53,13 +69,18 @@ export type {
 // Consumers: import type { UserModel, NewUser } from '@stacksjs/orm'
 // ---------------------------------------------------------------------------
 
-import type _User from '../../../auto-imports/models'
+// Use a relative import to the User model file directly. Bun's linker still
+// records `import type` paths for graph resolution, so importing through the
+// auto-imports barrel here would re-introduce the cycle that the removed
+// `export * from '../../../auto-imports/models'` (above) was meant to break.
+// The single-model path keeps the type chain narrow.
+import type _UserModel from '../../../../../app/Models/User'
 
 /** User model row type — inferred from the User model definition. */
-export type UserModel = ModelRowLoose<typeof _User.User>
+export type UserModel = ModelRowLoose<typeof _UserModel>
 
 /** Data required to create a new User — inferred fillable attributes. */
-export type NewUser = ModelCreateDataLoose<typeof _User.User>
+export type NewUser = ModelCreateDataLoose<typeof _UserModel>
 
 // ---------------------------------------------------------------------------
 // Polymorphic trait table types — used by @stacksjs/cms and database drivers.

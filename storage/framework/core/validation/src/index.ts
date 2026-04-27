@@ -1,12 +1,21 @@
-// Re-export everything from @stacksjs/ts-validation
+// Order matters: bind `schema` first so any consumer that imports it
+// transitively — validator.ts → schema, plus any user model that lands
+// inside the auto-imports barrel — sees the Proxy rather than an empty
+// namespace placeholder. With this export below the others, ESM consumers
+// arriving mid-evaluation through the auto-imports graph would race the
+// `export *` re-exports from `@stacksjs/ts-validation` (which also exports
+// a `schema` symbol) and see whichever binding was registered first.
+export { schema } from './schema'
+
+// Re-export everything from @stacksjs/ts-validation. The explicit `schema`
+// export above shadows ts-validation's own `schema` for `import { schema }
+// from '@stacksjs/validation'` consumers — which is what we want, since the
+// Proxy keeps `schema.<method>()` reactive across module-graph races.
 export * from '@stacksjs/ts-validation'
 
 // Export local validation helpers
 export * from './reporter'
 export * from './validator'
-
-// Export schema explicitly to avoid conflicts with ts-validation exports
-export { schema } from './schema'
 
 // Type guard utilities
 export function isString(value: unknown): value is string {

@@ -2,10 +2,41 @@ import type { ValidationType, Validator } from '@stacksjs/ts-validation'
 import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
-import { globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
 import { MessageProvider, setCustomMessages } from '@stacksjs/ts-validation'
-import { reportError, schema } from './'
+// Import directly from sibling files instead of the package's own `./` (which
+// would self-circular through `index.ts`'s re-exports and leave `schema` as
+// an empty namespace placeholder for any consumer that arrives mid-eval).
+import { reportError } from './reporter'
+import { schema } from './schema'
+
+// Inlined glob helper. Importing `globSync` from `@stacksjs/storage` would
+// pull in the storage facade, which statically imports `@stacksjs/config`.
+// `@stacksjs/config` has top-level await on every `~/config/*.ts`, including
+// `~/config/env`, which imports this very `@stacksjs/validation` package —
+// creating a static-import cycle through async config loading. The cycle
+// leaves `@stacksjs/router` (and anything else loaded later that goes
+// through @stacksjs/storage) in a TDZ state. Bun.Glob is what storage's
+// `globSync` wraps anyway; using it here makes validation truly leaf-node.
+function globSync(patterns: string[], options: { absolute?: boolean } = {}): string[] {
+  const results: string[] = []
+  for (const pattern of patterns) {
+    const isAbs = pattern.startsWith('/')
+    const slash = isAbs ? pattern.lastIndexOf('/') : -1
+    // Split into a base directory the glob walks from and a relative pattern
+    // it matches against. `Bun.Glob` doesn't accept absolute patterns, so for
+    // absolute inputs we anchor to the deepest static prefix.
+    const wildcardAt = pattern.indexOf('*')
+    const splitAt = wildcardAt === -1 ? slash : pattern.lastIndexOf('/', wildcardAt)
+    const cwd = splitAt > 0 ? pattern.slice(0, splitAt) : '.'
+    const rel = splitAt > 0 ? pattern.slice(splitAt + 1) : pattern
+    const glob = new Bun.Glob(rel)
+    for (const match of glob.scanSync({ cwd, onlyFiles: true })) {
+      results.push(options.absolute ? `${cwd}/${match}` : match)
+    }
+  }
+  return results
+}
 
 interface RequestData {
   [key: string]: any

@@ -3,10 +3,43 @@ import { defaults } from './defaults'
 import { overrides } from './overrides'
 
 // merged defaults and overrides
-export const config: StacksOptions = {
-  ...defaults,
-  ...overrides,
+//
+// `overrides` is mutated in the background by `overridesReady` after the
+// project's `config/*.ts` files load (see `./overrides.ts` for why we no
+// longer block module evaluation on top-level await). Spreading once would
+// freeze a snapshot of the empty-default state, so consumers reading
+// `config.email.default` later would see `undefined`. A Proxy that reads
+// `overrides[key]` first and falls back to `defaults[key]` on every access
+// keeps the export reactive without exposing the loading mechanism.
+function readMerged(prop: string): unknown {
+  // `overrides` is initialized synchronously with empty objects in
+  // `defaultsForOverrides()`, so a hit here always wins over `defaults`
+  // for any key the user has actually customized. Once user configs land,
+  // the same key returns the populated user object via this same accessor.
+  const o = (overrides as any)[prop]
+  if (o !== undefined && (typeof o !== 'object' || Object.keys(o).length > 0)) {
+    return o
+  }
+  return (defaults as any)[prop]
 }
+
+export const config: StacksOptions = new Proxy({} as StacksOptions, {
+  get(_target, prop: string) {
+    return readMerged(prop)
+  },
+  has(_target, prop) {
+    return prop in overrides || prop in defaults
+  },
+  ownKeys() {
+    return Array.from(new Set([...Object.keys(overrides), ...Object.keys(defaults)]))
+  },
+  getOwnPropertyDescriptor(_target, prop) {
+    if (typeof prop === 'string' && (prop in overrides || prop in defaults)) {
+      return { enumerable: true, configurable: true, writable: true, value: readMerged(prop) }
+    }
+    return undefined
+  },
+}) as StacksOptions
 
 // Database config is now initialized lazily in database/utils.ts when first accessed
 // This avoids circular dependency issues between config and database packages
