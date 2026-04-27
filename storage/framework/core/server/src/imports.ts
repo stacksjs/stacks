@@ -329,6 +329,15 @@ export function initiateImports(): void {
  * "no imports needed" ergonomics of framework default actions.
  */
 export async function injectGlobalAutoImports(): Promise<void> {
+  // Idempotency guard. Bun's hot-reload re-evaluates this module on every
+  // file change; without this guard each cycle would re-`Object.assign` the
+  // primitive bundle onto globalThis, which is fine for replacements but
+  // causes the auto-import barrel re-eval to leak duplicates of every
+  // user model/job/controller into the global namespace and slowly bloat
+  // the dev process. Once is enough.
+  if ((globalThis as { __stacksAutoImportsInjected?: boolean }).__stacksAutoImportsInjected) return
+  ;(globalThis as { __stacksAutoImportsInjected?: boolean }).__stacksAutoImportsInjected = true
+
   const errors: Error[] = []
 
   // Framework primitives FIRST. User models, jobs, mail classes, etc. read

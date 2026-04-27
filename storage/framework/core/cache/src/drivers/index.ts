@@ -96,6 +96,13 @@ export interface RedisOptions {
  */
 export class StacksCache implements CacheDriver {
   private manager: CacheManager
+  /**
+   * In-flight fetcher map for cache stampede prevention. When N concurrent
+   * callers all `remember()` the same missing key, we run the fetcher
+   * exactly once and let everyone await the same promise — instead of
+   * triggering N parallel DB hits / N API calls / N expensive computes.
+   */
+  private inflight = new Map<string, Promise<unknown>>()
 
   constructor(manager: CacheManager) {
     this.manager = manager
@@ -122,7 +129,26 @@ export class StacksCache implements CacheDriver {
   }
 
   async getOrSet<T>(key: string, fetcher: () => T | Promise<T>, ttl?: number): Promise<T> {
-    return await this.manager.fetch(key, fetcher, ttl)
+    // First check the cache directly (fast path).
+    const cached = await this.manager.get<T>(key)
+    if (cached !== undefined) return cached
+
+    // If another caller is already computing this key, wait for that result
+    // instead of starting a parallel fetch. This is what stops a cold cache
+    // from triggering N database hits when N requests land at the same instant.
+    const pending = this.inflight.get(key)
+    if (pending) return await (pending as Promise<T>)
+
+    const promise = (async () => {
+      try {
+        return await this.manager.fetch(key, fetcher, ttl)
+      }
+      finally {
+        this.inflight.delete(key)
+      }
+    })()
+    this.inflight.set(key, promise)
+    return await (promise as Promise<T>)
   }
 
   /**

@@ -154,13 +154,28 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
 }
 
 /**
+ * Convert a kebab-case / snake_case / lowercase identifier to PascalCase
+ * for middleware class file lookup. Plain capitalize-first failed for
+ * common shapes like `ensure-verified` (became `Ensure-verified` and
+ * the file `app/Middleware/EnsureVerified.ts` was missed).
+ */
+function toPascalCase(input: string): string {
+  if (!input) return input
+  return input
+    .split(/[-_\s]+/)
+    .filter(Boolean)
+    .map(part => part.charAt(0).toUpperCase() + part.slice(1))
+    .join('')
+}
+
+/**
  * Resolve a middleware alias to its class name
- * e.g., 'auth' → 'Auth', 'verified' → 'EnsureEmailIsVerified'
+ * e.g., 'auth' → 'Auth', 'verified' → 'EnsureEmailIsVerified',
+ *       'ensure-verified' → 'EnsureVerified'
  */
 async function resolveMiddlewareName(name: string): Promise<string> {
   const aliases = await getMiddlewareAliases()
-  // If there's an alias mapping, use it; otherwise capitalize the first letter
-  const resolved = aliases[name] || (name.charAt(0).toUpperCase() + name.slice(1))
+  const resolved = aliases[name] || toPascalCase(name)
   log.debug(`[middleware] Resolved: ${name} → ${resolved}`)
   return resolved
 }

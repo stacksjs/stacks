@@ -431,6 +431,12 @@ export class MCPClient {
 
   /**
    * Disconnect from the MCP server.
+   *
+   * Reject every still-pending request before clearing them — otherwise
+   * callers that `await client.callTool(...)` past a disconnect hang
+   * forever waiting for a response that will never arrive (the timeout
+   * inside sendRequest would have fired, but only if disconnect was
+   * called less than 30s into a request).
    */
   async disconnect(): Promise<void> {
     if (this.process) {
@@ -438,11 +444,15 @@ export class MCPClient {
       this.process = null
     }
 
+    for (const pending of this.pendingRequests.values()) {
+      try { pending.reject(new Error('MCP client disconnected')) } catch { /* ignore */ }
+    }
+    this.pendingRequests.clear()
+
     this.initialized = false
     this.tools = []
     this.resources = []
     this.prompts = []
-    this.pendingRequests.clear()
   }
 
   /**

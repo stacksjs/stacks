@@ -1,7 +1,17 @@
 import { ofetch } from 'ofetch'
 
+/**
+ * Loose payload type for `Fetch.{get,post,patch,put,destroy}`.
+ *
+ * GET sends this as a query string; POST/PATCH/PUT send it as a JSON body.
+ * Values are constrained to JSON-serializable primitives + nested
+ * arrays/objects so we catch unintentional `Function` / `Date` / `Symbol`
+ * payloads at the call site instead of seeing them silently coerced
+ * to `[object Object]` over the wire.
+ */
+type Primitive = string | number | boolean | null | undefined
 interface Params {
-  [key: string]: any // Replace 'any' with more specific types if possible
+  [key: string]: Primitive | Primitive[] | Params | Params[]
 }
 
 interface ApiFetch {
@@ -31,6 +41,14 @@ async function get(url: string, params?: Params, headers?: Headers): Promise<Fet
   return await ofetch(url, { method: 'GET', baseURL, params, headers })
 }
 
+// State-changing verbs send `params` as the request body, not as a query
+// string — POST/PATCH/PUT consumers expect `Fetch.post('/api/cars', { make: 'BMW' })`
+// to put `{ make: 'BMW' }` in the body, the way every Laravel/Inertia/axios
+// app on the planet does. The previous `params: params` shape forwarded
+// the payload to ofetch's `params` option, which serializes to the query
+// string — silently turning POSTs into "POST with empty body and url
+// noise" and 422'ing every fillable-required check on the server.
+
 async function post(url: string, params?: Params, headers?: Headers): Promise<any> {
   if (headers) {
     if (token)
@@ -43,7 +61,7 @@ async function post(url: string, params?: Params, headers?: Headers): Promise<an
     const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(url, {
       method: 'POST',
       baseURL,
-      params,
+      body: params,
       headers,
     })
 
@@ -69,7 +87,7 @@ async function patch(url: string, params?: Params, headers?: Headers): Promise<F
     const result = await ofetch(url, {
       method: 'PATCH',
       baseURL,
-      params,
+      body: params,
       headers,
     })
     loading = false
@@ -93,7 +111,7 @@ async function put(url: string, params?: Params, headers?: Headers): Promise<Fet
     const result = await ofetch(url, {
       method: 'PUT',
       baseURL,
-      params,
+      body: params,
       headers,
     })
     loading = false

@@ -380,7 +380,18 @@ export class Schedule implements UntimedSchedule {
       }
       runCount++
       try {
-        task()
+        const result = task()
+        // Handle promise-returning tasks: a rejection from an async task
+        // would otherwise become an unhandled rejection (the synchronous
+        // try/catch above can't see it). Now those route through the
+        // configured `.catch` handler just like sync errors do.
+        if (result && typeof (result as Promise<unknown>).then === 'function') {
+          (result as Promise<unknown>).catch((error: unknown) => {
+            if (this.options.catch) {
+              this.options.catch(error as Error)
+            }
+          })
+        }
       }
       catch (error) {
         if (this.options.catch) {

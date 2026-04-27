@@ -64,13 +64,23 @@ export function registerWebhookHandlers(handlerMap: Record<WebhookEventType, Web
 }
 
 /**
- * Construct and verify a webhook event from the raw request
+ * Construct and verify a webhook event from the raw request.
+ *
+ * `tolerance` (in seconds) controls how much clock skew between Stripe and
+ * this server is acceptable before signatures are rejected. Stripe's SDK
+ * default is 300s; tightening this is recommended in production but the
+ * previous code dropped the value entirely, so a configured tolerance was
+ * silently ignored.
  */
 export function constructEvent(
   payload: string | Buffer,
   signature: string,
   secret: string,
+  tolerance?: number,
 ): Stripe.Event {
+  if (tolerance != null && Number.isFinite(tolerance) && tolerance > 0) {
+    return stripe.webhooks.constructEvent(payload, signature, secret, tolerance)
+  }
   return stripe.webhooks.constructEvent(payload, signature, secret)
 }
 
@@ -111,7 +121,7 @@ export async function processWebhook(
   config: WebhookConfig,
 ): Promise<{ success: boolean, eventType?: string, error?: string }> {
   try {
-    const event = constructEvent(payload, signature, config.secret)
+    const event = constructEvent(payload, signature, config.secret, config.tolerance)
     const result = await handleWebhookEvent(event)
 
     return {

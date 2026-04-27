@@ -121,12 +121,16 @@ export function useAuth(): AuthComposable {
 
   async function logout() {
     try {
-      const token = localStorage.getItem('token')
-      if (token) {
+      // Read via the same `useStorage`-backed ref the rest of the composable
+      // uses. Reading localStorage directly here meant cross-tab logouts
+      // (token cleared in another tab via useStorage) were invisible to the
+      // request, so we'd POST /logout with a stale token and surface a 401.
+      const currentToken = token.value
+      if (currentToken) {
         await fetch(`${baseUrl}/logout`, {
           method: 'POST',
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${currentToken}`,
             Accept: 'application/json',
           },
         })
@@ -136,7 +140,10 @@ export function useAuth(): AuthComposable {
       console.error('Error during logout:', error)
     }
     finally {
-      localStorage.removeItem('token')
+      // useStorage's setter syncs the underlying localStorage so other tabs
+      // see the change via `storage` events. Setting localStorage manually
+      // would skip that broadcast.
+      token.value = null
       user.value = null
       isAuthenticated.value = false
     }

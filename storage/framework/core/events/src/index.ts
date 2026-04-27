@@ -107,8 +107,18 @@ export default function mitt<Events extends Record<EventType, unknown>>(
       if (handlers) {
         ;(handlers as EventHandlerList<Events[keyof Events]>).slice().forEach((handler) => {
           try {
-            if (evt !== undefined)
-              handler(evt)
+            if (evt !== undefined) {
+              const result = handler(evt)
+              // Async handlers used to silently leak unhandled rejections.
+              // Surface them on the same channel as sync errors so the user
+              // sees the failure instead of a mystery "unhandledRejection"
+              // log with no context about which event/handler was at fault.
+              if (result && typeof (result as Promise<unknown>).catch === 'function') {
+                (result as Promise<unknown>).catch((err: unknown) => {
+                  console.error(`[Events] Async handler error for '${String(type)}':`, err)
+                })
+              }
+            }
           }
           catch (err) {
             console.error(`[Events] Handler error for '${String(type)}':`, err)
@@ -128,7 +138,12 @@ export default function mitt<Events extends Record<EventType, unknown>>(
           if (regex.test(typeStr)) {
             ;(patternHandlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
               try {
-                handler(type, evt as any)
+                const result = handler(type, evt as any)
+                if (result && typeof (result as Promise<unknown>).catch === 'function') {
+                  (result as Promise<unknown>).catch((err: unknown) => {
+                    console.error(`[Events] Async pattern handler '${keyStr}' error for '${typeStr}':`, err)
+                  })
+                }
               }
               catch (err) {
                 console.error(`[Events] Pattern handler '${keyStr}' error for '${typeStr}':`, err)

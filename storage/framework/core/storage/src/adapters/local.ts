@@ -32,8 +32,16 @@ export class LocalStorageAdapter implements StorageAdapter {
 
   private resolvePath(path: string): string {
     const resolved = join(this.root, path)
-    // Prevent path traversal outside root directory
-    if (!resolved.startsWith(this.root)) {
+    // Prevent path traversal outside root directory.
+    // `startsWith(this.root)` is wrong on two fronts:
+    //   1. Windows: `\\` separator vs the `/` in `path` rolls into `\\..\\`
+    //      sequences that resolve cleanly to a sibling but pass startsWith.
+    //   2. Sibling-prefix collisions: root="/var/store" and resolved="/var/storefoo/..."
+    //      pass startsWith but escape the intended root.
+    // path.relative() returns something starting with `..` whenever the
+    // target is outside `from`, regardless of platform.
+    const rel = relative(this.root, resolved)
+    if (rel.startsWith('..') || rel.startsWith('../') || rel.startsWith('..\\')) {
       throw new Error(`Path traversal detected: '${path}' resolves outside storage root`)
     }
     return resolved

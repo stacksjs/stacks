@@ -12,12 +12,43 @@ function toAuthToken(value: string): AuthToken {
 }
 
 export class TokenManager {
+  /**
+   * Resolve the OAuth client id used to scope newly-issued personal-access
+   * tokens. Defaults to `1` (the personal-access client seeded by the
+   * default migrations) but pulls from the OAUTH_CLIENT_ID env var when
+   * set. Throws a clear error if the resolved client id doesn't actually
+   * exist in the database — the previous code blindly inserted with
+   * `oauth_client_id: 1` and surfaced a confusing FK violation when the
+   * client hadn't been seeded yet.
+   */
+  private static async resolveClientId(): Promise<number> {
+    const fromEnv = Number(process.env.OAUTH_CLIENT_ID)
+    const candidate = Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : 1
+    try {
+      const exists = await db.selectFrom('oauth_clients')
+        .where('id', '=', candidate)
+        .select('id')
+        .executeTakeFirst()
+      if (exists) return candidate
+    }
+    catch {
+      // oauth_clients table may not exist yet on first migrate — fall back to
+      // the candidate id so the FK error (if any) surfaces with a clear path.
+      return candidate
+    }
+    throw new HttpError(
+      500,
+      `OAuth client id=${candidate} does not exist. Run \`./buddy migrate\` (or seed an oauth_clients row) before issuing tokens.`,
+    )
+  }
+
   static async createAccessToken(user: { id: number }): Promise<AuthToken> {
     const token = randomBytes(40).toString('hex')
+    const clientId = await this.resolveClientId()
 
     const result = await db.insertInto('oauth_access_tokens')
       .values({
-        oauth_client_id: 1, // Fixed OAuth client ID
+        oauth_client_id: clientId,
         user_id: user.id,
         token,
         name: 'auth-token',

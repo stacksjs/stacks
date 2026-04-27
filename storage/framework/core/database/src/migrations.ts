@@ -305,6 +305,7 @@ async function ensureDatabaseExists(): Promise<void> {
  * Run database migrations
  */
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
+  const startedAt = Date.now()
   try {
     log.info('Migrating database...')
 
@@ -325,10 +326,17 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     log.debug(`[migration] Running migrations from: ${modelsDir}`)
     await qbExecuteMigration(modelsDir)
 
-    log.success('Database migration completed.')
+    log.success(`Database migration completed in ${Date.now() - startedAt}ms.`)
     return ok('Database migration completed.')
   }
   catch (error) {
+    // Surface enough context for the user to act on the failure: which
+    // migration directory, how long it ran before crashing, and the
+    // underlying error message. The previous bare "Migration failed"
+    // forced everyone to add their own debug logs.
+    const detail = error instanceof Error ? error.message : String(error)
+    log.error(`[migration] Failed after ${Date.now() - startedAt}ms: ${detail}`)
+    log.info('[migration] Run `./buddy migrate:fresh` to drop and recreate the schema if state is partial.')
     return err(handleError('Migration failed', error))
   }
 }

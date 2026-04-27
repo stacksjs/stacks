@@ -1,8 +1,18 @@
 
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
+import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { stripe } from '..'
+
+function defaultCurrency(): string {
+  // Source order: config.payment.currency → STRIPE_CURRENCY env → 'usd'.
+  // Hard-coding USD silently broke EU/GB merchants who shipped a config
+  // setting that the framework never read.
+  const cfg = (config as { payment?: { currency?: string }, billing?: { currency?: string } }) || {}
+  const fromConfig = cfg.payment?.currency || cfg.billing?.currency
+  return (fromConfig || process.env.STRIPE_CURRENCY || 'usd').toLowerCase()
+}
 
 export interface ManageCharge {
   createPayment: (user: UserModel, amount: number, options: Stripe.PaymentIntentCreateParams) => Promise<Stripe.Response<Stripe.PaymentIntent>>
@@ -14,8 +24,7 @@ export interface ManageCharge {
 export const manageCharge: ManageCharge = (() => {
   async function createPayment(user: UserModel, amount: number, options: Stripe.PaymentIntentCreateParams): Promise<Stripe.Response<Stripe.PaymentIntent>> {
     const defaultOptions: Stripe.PaymentIntentCreateParams = {
-      // TODO: This should be fetched from the config.
-      currency: 'usd',
+      currency: defaultCurrency(),
       amount,
     }
 

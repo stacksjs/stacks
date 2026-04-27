@@ -121,11 +121,21 @@ export async function notify(
     }),
   )
 
-  return results.map((result, index) => ({
-    channel: channels[index],
-    success: result.status === 'fulfilled',
-    error: result.status === 'rejected' ? result.reason : undefined,
-  }))
+  return results.map((result, index) => {
+    const channel = channels[index]
+    if (result.status === 'rejected') {
+      // Surface channel failures in the log even when the caller doesn't
+      // inspect the returned NotifyResult[] — silently failing fan-out
+      // notifications used to mask broken SMS/Slack/email config for days.
+      const reason = result.reason instanceof Error ? result.reason.message : String(result.reason)
+      log.warn(`[notify] ${channel} channel failed: ${reason}`)
+    }
+    return {
+      channel,
+      success: result.status === 'fulfilled',
+      error: result.status === 'rejected' ? result.reason : undefined,
+    }
+  })
 }
 
 export function notification(): ReturnType<typeof useNotification> {

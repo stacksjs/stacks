@@ -83,14 +83,29 @@ export function truncate(str: string, length: number, end = '...'): string {
 }
 
 /**
- * Generate a random string
+ * Generate a random string.
+ *
+ * Uses `crypto.getRandomValues()` so the result is suitable for tokens,
+ * password reset codes, API keys, and any other security-sensitive use —
+ * `Math.random()` is predictable and would let an attacker reproduce
+ * "random" tokens given enough sample output.
+ *
  * @category String
  */
 export function random(size = 16, dict: string = urlAlphabet): string {
-  let id = ''
-  let i = size
   const len = dict.length
-  while (i--) id += dict[(Math.random() * len) | 0]
+  // crypto.getRandomValues is available in Bun, Node ≥19, and all browsers.
+  // Falling back to Math.random would silently downgrade security; better
+  // to throw if the platform lacks it so the bug surfaces immediately.
+  const g = (globalThis as { crypto?: { getRandomValues?: (a: Uint8Array) => Uint8Array } })
+  if (!g.crypto?.getRandomValues)
+    throw new Error('[strings.random] crypto.getRandomValues is not available; cannot generate secure random string.')
+
+  const bytes = new Uint8Array(size)
+  g.crypto.getRandomValues(bytes)
+
+  let id = ''
+  for (let i = 0; i < size; i++) id += dict[bytes[i] % len]
   return id
 }
 

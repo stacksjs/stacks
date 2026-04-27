@@ -373,12 +373,24 @@ export async function validatePromoCode(code: string): Promise<Stripe.PromotionC
 // =============================================================================
 
 /**
- * Format amount for display
+ * Format amount for display.
+ *
+ * Currency defaults to the project's configured payment currency
+ * (`config.payment.currency` / `STRIPE_CURRENCY`), falling back to USD only
+ * when nothing else is set. Locale follows the same pattern via
+ * `config.app.locale` so EU merchants see €1.234,56 not $1,234.56.
  */
-export function formatAmount(amount: number, currency = 'usd'): string {
-  return new Intl.NumberFormat('en-US', {
+export function formatAmount(amount: number, currency?: string): string {
+  const cfg = ((globalThis as { config?: any }).config) || {}
+  const ccy = (currency
+    || cfg.payment?.currency
+    || cfg.billing?.currency
+    || process.env.STRIPE_CURRENCY
+    || 'usd').toLowerCase()
+  const locale = cfg.app?.locale || 'en-US'
+  return new Intl.NumberFormat(locale, {
     style: 'currency',
-    currency: currency.toUpperCase(),
+    currency: ccy.toUpperCase(),
   }).format(amount / 100)
 }
 
