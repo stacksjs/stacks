@@ -90,6 +90,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
  * Async validation rule type.
  * Return true if valid, or a string error message if invalid.
  */
+// eslint-disable-next-line pickier/no-unused-vars
 export type AsyncValidator = (value: unknown, params: RequestData) => Promise<boolean | string>
 
 // Custom rule registry

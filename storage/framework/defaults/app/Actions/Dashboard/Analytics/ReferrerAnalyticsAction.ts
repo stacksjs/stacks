@@ -26,6 +26,7 @@ export default new Action({
 
       // Use the aggregated stats summary to get the dashboard queries which include referrer data
       const queryApi = new AnalyticsQueryAPI(store)
+      // eslint-disable-next-line pickier/no-unused-vars
       const queries = queryApi.generateDashboardQueries({
         siteId: 'default',
         dateRange,

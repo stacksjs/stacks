@@ -5,7 +5,7 @@ export default new Action({
   description: 'Returns environment variable data for the dashboard.',
   method: 'GET',
   async handle() {
-    let environments = [
+    const environments = [
       { name: 'production', url: 'https://stacks.dev', status: 'healthy', lastDeploy: '2d ago', version: '1.2.3' },
       { name: 'staging', url: 'https://staging.stacks.dev', status: 'healthy', lastDeploy: '1h ago', version: '1.2.4-beta' },
       { name: 'development', url: 'http://localhost:3000', status: 'running', lastDeploy: 'Local', version: '1.2.4-dev' },

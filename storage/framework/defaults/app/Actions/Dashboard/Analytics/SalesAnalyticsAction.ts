@@ -11,6 +11,7 @@ export default new Action({
       const allOrders = await Order.all()
       const orderCount = allOrders.length
       const totalSales = allOrders.reduce((sum: number, o: any) => sum + (o.total_amount || 0), 0)
+      // eslint-disable-next-line pickier/no-unused-vars
       const avgOrderValue = orderCount > 0 ? totalSales / orderCount : 0
 
       const cancelledOrders = allOrders.filter((o: any) => o.status === 'cancelled')

@@ -15,6 +15,7 @@ export default new Action({
 
       const activeJobs = allJobs.filter(j => j.get('status') === 'processing' || j.get('status') === 'active').length
       const completedJobs = allJobs.filter(j => j.get('status') === 'completed' || j.get('status') === 'done').length
+      // eslint-disable-next-line pickier/no-unused-vars
       const pendingJobs = allJobs.filter(j => j.get('status') === 'pending' || j.get('status') === 'waiting').length
 
       // Group jobs by queue name

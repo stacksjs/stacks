@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 #--------------------------------------------------------------------------
 # Stacks buddy plugin for zsh
 #--------------------------------------------------------------------------
@@ -12,7 +13,7 @@
 buddy() {
   local buddy_path=$(_buddy_find)
 
-  if [ "$buddy_path" = "" ]; then
+  if [[ "$buddy_path" = "" ]]; then
     echo >&2 "shell: buddy not found. Are you in a Stacks directory? This only happens if you are not within a Stacks project, and buddy is not installed globally."
     return 1
   fi
@@ -24,21 +25,22 @@ buddy() {
 
   local buddy_start_time=$(date +%s)
 
-  eval $buddy_cmd $*
+  # shellcheck disable=SC2086
+  eval "$buddy_cmd" $*
 
   local buddy_exit_status=$? # Store the exit status so we can return it later
 
-  if [[ $1 = "make:"* && $BUDDY_OPEN_ON_MAKE_EDITOR != "" ]]; then
+  if [[ $1 = "make:"* && "$BUDDY_OPEN_ON_MAKE_EDITOR" != "" ]]; then
     # Find and open files created by buddy
     find \
     "$buddy_path/app" \
     "$buddy_path/tests" \
     -type f \
     -newermt "-$(($(date +%s) - $buddy_start_time + 1)) seconds" \
-    -exec $BUDDY_OPEN_ON_MAKE_EDITOR {} \; 2>/dev/null
+    -exec "$BUDDY_OPEN_ON_MAKE_EDITOR" {} \; 2>/dev/null
   fi
 
-  return $buddy_exit_status
+  return "$buddy_exit_status"
 }
 
 bud() {
@@ -90,15 +92,15 @@ compdef _buddy_add_completion buddy
 _buddy_find() {
   # First, try to find a globally installed buddy binary
   local global_buddy_path=$(which buddy)
-  if [ -n "$global_buddy_path" ]; then
+  if [[ -n "$global_buddy_path" ]]; then
     echo "$global_buddy_path"
     return 0
   fi
 
   # If not found globally, look for buddy up the file tree until the root directory
   local dir=.
-  until [ "$dir" -ef / ]; do
-    if [ -f "$dir/buddy" ]; then
+  until [[ "$dir" -ef / ]]; do
+    if [[ -f "$dir/buddy" ]]; then
       echo "$dir/buddy"
       return 0
     fi
@@ -110,7 +112,7 @@ _buddy_find() {
 }
 
 _buddy_add_completion() {
-  if [ "$(_buddy_find)" != "" ]; then
+  if [[ "$(_buddy_find)" != "" ]]; then
     compadd $(_buddy_get_command_list)
   fi
 }

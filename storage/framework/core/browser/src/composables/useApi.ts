@@ -36,6 +36,7 @@ export function initApi(options?: {
   baseUrl?: string
   onUnauthorized?: () => void
 }): void {
+  // eslint-disable-next-line pickier/no-unused-vars
   const stacksConfig = (globalThis as any).__STACKS_CONFIG__ || {}
   const baseUrl = options?.baseUrl || (
     typeof window !== 'undefined'

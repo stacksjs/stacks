@@ -398,7 +398,7 @@ export class ErrorPageHandler {
     ${frames.length > 0 ? `
     <div class="card">
       <div class="card-header">📚 Stack Trace</div>
-      ${frames.map((frame, i) => `
+      ${frames.map(frame => `
         <div class="stack-frame" onclick="this.classList.toggle('expanded')">
           <div class="frame-function">${escapeHtml(frame.function || '<anonymous>')}</div>
           <div class="frame-file">

@@ -175,6 +175,7 @@ async function createCompositeIndexMigration(model: Model, modelPath: string): P
   return migrationContent
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 async function createTableMigration(modelPath: string): Promise<void> {
   log.debug('createTableMigration modelPath:', modelPath)
 

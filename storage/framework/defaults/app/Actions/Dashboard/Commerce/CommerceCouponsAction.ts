@@ -19,6 +19,7 @@ export default new Action({
         status: String(r.get('status') || 'active'),
       }))
 
+      // eslint-disable-next-line pickier/no-unused-vars
       const totalCoupons = coupons.length
       const activeCount = coupons.filter(c => c.status === 'active').length
       const totalUses = coupons.reduce((s, c) => s + c.uses, 0)

@@ -9,8 +9,8 @@ export default new Action({
     const { join } = await import('node:path')
     const projectRoot = process.cwd()
 
-    let declared: Array<Record<string, unknown>> = []
-    let transitive: Array<Record<string, unknown>> = []
+    const declared: Array<Record<string, unknown>> = []
+    const transitive: Array<Record<string, unknown>> = []
     let workspaceCount = 0
     let thirdPartyCount = 0
     let transitiveCount = 0

@@ -160,6 +160,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   else await createTableMigration(modelPath)
 }
 
+// eslint-disable-next-line pickier/no-unused-vars
 async function createTableMigration(modelPath: string) {
   log.debug('createTableMigration modelPath:', modelPath)
 
