@@ -1,7 +1,8 @@
 export interface Message {
   name: string
   subject: string
-  to: string
+  /** Single recipient or batch — the driver fans out a single envelope. */
+  to: string | string[]
   from?: {
     name: string
     address: string

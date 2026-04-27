@@ -29,7 +29,13 @@ interface MailConfig {
 export class Email {
   public name: string
   public subject: string
-  public to: string
+  /**
+   * Recipient(s). Accepts either a single address or an array — the underlying
+   * driver fans out a single send across all recipients in one envelope, which
+   * matters for batch notifications (booking digests, marketing) where opening
+   * one transport per recipient would burn quota.
+   */
+  public to: string | string[]
   public from?: EmailFromAddress
   public template: string
   public handle?: () => Promise<EmailHandlerResult>
@@ -70,16 +76,17 @@ export class Email {
     return `<p>${this.template}</p>`
   }
 
-  async send(to?: string): Promise<EmailHandlerResult> {
-    const recipient = to || this.to
-    if (!recipient) {
+  async send(to?: string | string[]): Promise<EmailHandlerResult> {
+    const target = to ?? this.to
+    const recipients = Array.isArray(target) ? target : (target ? [target] : [])
+    if (recipients.length === 0) {
       throw new Error('No recipient specified for email')
     }
 
     try {
       // Use the mail singleton to send
       await mail.send({
-        to: [recipient],
+        to: recipients,
         from: this.from || {
           name: config.email.from?.name || 'Stacks',
           address: config.email.from?.address || 'no-reply@stacksjs.com',

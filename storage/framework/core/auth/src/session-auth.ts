@@ -48,9 +48,12 @@ export async function sessionLogin(email: string, password: string): Promise<{ u
       })
       .execute()
   }
-  catch {
-    // Sessions table may not exist — fall back gracefully
-    log.debug('[auth] Sessions table not available, session is memory-only')
+  catch (err) {
+    // Sessions table may not exist on a fresh DB — that's fine, fall back to
+    // a memory-only session. But surface the actual error so a misconfigured
+    // schema (renamed column, wrong driver) doesn't masquerade as
+    // "no sessions table" forever.
+    log.debug(`[auth] Sessions table not available, session is memory-only. err=${(err as Error).message}`)
   }
 
   return { user, sessionId }
@@ -67,8 +70,8 @@ export async function sessionLogout(sessionId: string): Promise<void> {
       .where('id', '=', sessionId)
       .execute()
   }
-  catch {
-    // Sessions table may not exist
+  catch (err) {
+    log.debug(`[auth] Session destroy failed: ${(err as Error).message}`)
   }
 }
 

@@ -27,8 +27,21 @@ route.use(cors().handle.bind(cors()))
 // Import routes
 await route.importRoutes()
 
-// Start server (URL shown by unified dev output)
-await route.serve({
-  port,
-  hostname: '127.0.0.1',
-})
+// Start server (URL shown by unified dev output). Surface EADDRINUSE with a
+// clear message — without this, the process exits with a stack trace that
+// mentions `bun.serve` and `os` errno, which sends users hunting for the
+// wrong cause when the actual fix is "another buddy dev is still running".
+try {
+  await route.serve({
+    port,
+    hostname: '127.0.0.1',
+  })
+}
+catch (err: any) {
+  const code = err?.code || err?.errno
+  if (code === 'EADDRINUSE' || String(err?.message || '').includes('EADDRINUSE')) {
+    console.error(`\n[dev/api] Port ${port} is already in use. Kill the other process and re-run \`./buddy dev\`, or set PORT_API to another port.\n`)
+    process.exit(1)
+  }
+  throw err
+}

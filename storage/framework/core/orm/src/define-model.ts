@@ -226,6 +226,21 @@ function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<s
     }
   }
 
+  // Writes also return ModelInstances. Wrapping them too means
+  // `const car = await Car.create(...); car.slug` works without the
+  // caller having to remember that create() comes back un-proxied.
+  const writeReturningInstance = ['create', 'firstOrCreate', 'updateOrCreate', 'make']
+  for (const method of writeReturningInstance) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = function (...args: any[]) {
+      const result = (original as Function).apply(this, args)
+      const apply = (r: any) => Array.isArray(r) ? r.map(x => wrapModelInstance(x, casts)) : wrapModelInstance(r, casts)
+      if (result && typeof (result as any).then === 'function') return (result as Promise<any>).then(apply)
+      return apply(result)
+    }
+  }
+
   const queryBuilderEntrypoints = [
     'query', 'where', 'orWhere', 'whereIn', 'whereNotIn', 'whereNull', 'whereNotNull',
     'whereLike', 'whereBetween', 'whereNotBetween', 'orderBy', 'orderByDesc',
@@ -293,11 +308,21 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   }
 
   // Model.update(id, data) — wrap where(pk, id).update(data) and re-read.
+  // Pre-checks that the row exists so we don't issue a no-op UPDATE that
+  // looks successful but actually changed nothing — callers who want
+  // strict semantics still see the same null vs row distinction, but
+  // misuse like `Model.update(undefined, ...)` now throws loudly instead
+  // of silently writing nothing.
   if (typeof baseModel.update !== 'function') {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
       if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
       if (!data || typeof data !== 'object' || Array.isArray(data))
         throw new Error(`[ORM] ${definition.name}.update requires a data object as the second argument`)
+      if (Object.keys(data).length === 0) {
+        log.debug(`[orm] ${definition.name}.update called with empty data — short-circuiting and returning current row`)
+        const f = baseModel.find as Function | undefined
+        return typeof f === 'function' ? await f.call(baseModel, id) : null
+      }
 
       await getWhere('update').call(baseModel, pk, id).update(data)
       const f = baseModel.find as Function | undefined
@@ -379,39 +404,117 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
       return await getCreate('updateOrCreate').call(baseModel, { ...attrs, ...values })
     }
   }
-}
 
-function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Record<string, CastType | CasterInterface>) {
-  const readMethods = ['find', 'findOrFail', 'first', 'get', 'all']
-  const writeMethods = ['create', 'update', 'firstOrCreate', 'updateOrCreate']
+  // Model.count() — total row count.
+  if (typeof baseModel.count !== 'function') {
+    baseModel.count = async function (): Promise<number> {
+      const q: any = baseModel
+      if (typeof q.query === 'function') {
+        const builder = q.query()
+        if (typeof builder?.count === 'function') {
+          const n = await builder.count()
+          return Number(n) || 0
+        }
+      }
+      const all = baseModel.all as Function | undefined
+      const get = baseModel.get as Function | undefined
+      if (typeof all === 'function') return ((await all.call(baseModel)) || []).length
+      if (typeof get === 'function') return ((await get.call(baseModel)) || []).length
+      return 0
+    }
+  }
 
-  for (const method of readMethods) {
-    const original = baseModel[method]
-    if (typeof original === 'function') {
-      baseModel[method] = async function (...args: any[]) {
-        log.debug(`[orm] Query ${String(baseModel.name || 'unknown')}: ${method}(${args.length ? JSON.stringify(args) : ''})`)
-        const result = await (original as Function).apply(this, args)
-        if (Array.isArray(result)) return result.map((r: any) => castAttributes(r, casts, 'get'))
-        if (result && typeof result === 'object') return castAttributes(result, casts, 'get')
-        return result
+  // Model.pluck('column') — flat array of one column's values across all rows.
+  if (typeof baseModel.pluck !== 'function') {
+    baseModel.pluck = async function <T = unknown>(column: string): Promise<T[]> {
+      if (!column || typeof column !== 'string')
+        throw new Error(`[ORM] ${definition.name}.pluck requires a column name`)
+      const all = baseModel.all as Function | undefined
+      const rows = typeof all === 'function' ? await all.call(baseModel) : []
+      return (rows || []).map((r: any) => r?.[column])
+    }
+  }
+
+  // Model.whereIn(column, values) — rows whose column matches any value in the list.
+  if (typeof baseModel.whereIn !== 'function') {
+    baseModel.whereIn = async function (column: string, values: ReadonlyArray<number | string>) {
+      if (!column || typeof column !== 'string')
+        throw new Error(`[ORM] ${definition.name}.whereIn requires a column name`)
+      if (!Array.isArray(values))
+        throw new Error(`[ORM] ${definition.name}.whereIn requires an array of values`)
+      if (values.length === 0) return []
+
+      const w = baseModel.where as Function | undefined
+      if (typeof w !== 'function') return []
+      const q: any = w.call(baseModel, column, 'in', values)
+      if (q && typeof q.get === 'function') return await q.get()
+      return await q
+    }
+  }
+
+  // Model.latest(column?='created_at') / Model.oldest — first row by timestamp.
+  const orderHelpers: ReadonlyArray<readonly ['latest' | 'oldest', 'asc' | 'desc']> = [
+    ['latest', 'desc'],
+    ['oldest', 'asc'],
+  ]
+  for (const [name, dir] of orderHelpers) {
+    if (typeof baseModel[name] !== 'function') {
+      baseModel[name] = async function (column: string = 'created_at') {
+        const q: any = baseModel
+        const builder = typeof q.query === 'function' ? q.query() : q
+        if (typeof builder?.orderBy === 'function') {
+          const ordered = builder.orderBy(column, dir)
+          if (typeof ordered.first === 'function') return await ordered.first()
+          if (typeof ordered.get === 'function') {
+            const rows = await ordered.get()
+            return rows?.[0] ?? null
+          }
+        }
+        const all = baseModel.all as Function | undefined
+        if (typeof all !== 'function') return null
+        const rows = (await all.call(baseModel)) || []
+        const sorted = [...rows].sort((a: any, b: any) => {
+          const av = a?.[column], bv = b?.[column]
+          if (av === bv) return 0
+          return (av > bv ? 1 : -1) * (dir === 'desc' ? -1 : 1)
+        })
+        return sorted[0] ?? null
       }
     }
   }
+}
+
+function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Record<string, CastType | CasterInterface>) {
+  // Read-side casts are handled inside `wrapModelInstance` so the proxy
+  // (and its `toJSON`/`update`/etc. methods) survives. Wrapping reads here
+  // again would `{ ...row }` the proxy and discard everything but the bare
+  // attribute bag, breaking `instance.toJSON()` / `instance.update()`.
+  const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate']
 
   for (const method of writeMethods) {
     const original = baseModel[method]
     if (typeof original === 'function') {
       baseModel[method] = async function (...args: any[]) {
         log.debug(`[orm] ${method.charAt(0).toUpperCase() + method.slice(1)} ${String(baseModel.name || 'unknown')}`, args[0])
-        // Cast the input data before writing
+        // Cast the input data before writing (booleans → 0/1, dates → ISO, …)
         if (args[0] && typeof args[0] === 'object' && !Array.isArray(args[0])) {
           args[0] = castAttributes(args[0], casts, 'set')
         }
-        const result = await (original as Function).apply(this, args)
-        // Cast the result back for reading
-        if (result && typeof result === 'object') return castAttributes(result, casts, 'get')
-        return result
+        return await (original as Function).apply(this, args)
       }
+    }
+  }
+
+  // Static `Model.update(id, data)` is added by addStaticHelpers (it doesn't
+  // exist on bun-query-builder's base model). Wrap separately so set-side
+  // casts apply to its data argument.
+  const origUpdate = baseModel.update
+  if (typeof origUpdate === 'function') {
+    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
+      const cast = data && typeof data === 'object' && !Array.isArray(data)
+        ? castAttributes(data, casts, 'set')
+        : data
+      return await (origUpdate as Function).call(this, id, cast)
     }
   }
 }

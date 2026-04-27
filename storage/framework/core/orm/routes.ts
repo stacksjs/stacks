@@ -9,6 +9,7 @@ import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { route } from '@stacksjs/router'
 import { projectPath } from '@stacksjs/path'
 import { setConfig, createQueryBuilder } from '@stacksjs/query-builder'
+import { HttpError } from '@stacksjs/error-handling'
 
 // Initialize query builder config from project's config/qb.ts
 const qbConfigPath = projectPath('config/qb.ts')
@@ -102,7 +103,10 @@ function jsonResponse(data: any, status = 200): Response {
   })
 }
 
-// Helper: get request body (uses pre-parsed body from stacks-router middleware, falls back to clone)
+// Helper: get request body (uses pre-parsed body from stacks-router middleware, falls back to clone).
+// Throws an HttpError on malformed JSON so the route handler can return 400 rather than silently
+// treating a corrupted payload as `{}` (which previously surfaced as "No fillable fields" 422s
+// and made debugging client bugs impossible).
 async function getRequestBody(req: EnhancedRequest): Promise<Record<string, any>> {
   if ((req as any).jsonBody && typeof (req as any).jsonBody === 'object') {
     return (req as any).jsonBody
@@ -110,7 +114,32 @@ async function getRequestBody(req: EnhancedRequest): Promise<Record<string, any>
   if ((req as any).formBody && typeof (req as any).formBody === 'object') {
     return (req as any).formBody
   }
-  return req.clone().json().catch(() => ({}))
+  try {
+    const parsed = await req.clone().json()
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  }
+  catch (err) {
+    throw new HttpError(400, `Invalid JSON body: ${(err as Error).message}`)
+  }
+}
+
+// Helper: coerce a primary-key-shaped value submitted by a client (bulk-delete IDs,
+// path params, etc.) into a number when the column looks numeric, or pass through
+// when it's a non-empty string (UUID, slug). Anything else becomes null and the
+// caller should reject with 422.
+function coerceId(raw: unknown): number | string | null {
+  if (raw == null) return null
+  if (typeof raw === 'number') return Number.isFinite(raw) && raw > 0 ? raw : null
+  if (typeof raw === 'string') {
+    const trimmed = raw.trim()
+    if (!trimmed) return null
+    if (/^\d+$/.test(trimmed)) {
+      const n = Number(trimmed)
+      return Number.isFinite(n) && n > 0 ? n : null
+    }
+    return trimmed
+  }
+  return null
 }
 
 // Helper: apply sort parameter to a query builder chain
@@ -278,6 +307,11 @@ for (const [modelName, model] of Object.entries(models)) {
         })
       }
       catch (err) {
+        if (err instanceof HttpError) {
+          const body: Record<string, unknown> = { error: err.message }
+          if (err.details !== undefined) body.details = err.details
+          return jsonResponse(body, err.status || 400)
+        }
         return jsonResponse({ error: `Failed to fetch ${uri}`, detail: String(err) }, 500)
       }
     })
@@ -287,10 +321,11 @@ for (const [modelName, model] of Object.entries(models)) {
   if (enabledRoutes.includes('show') && !routeExists('GET', `${basePath}/{id}`)) {
     route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
-        const id = (req as any).params?.id
+        const id = coerceId((req as any).params?.id)
 
-        // Validate ID parameter
-        if (!id || (typeof id === 'string' && id.trim() === '')) {
+        // Validate ID parameter — coerceId returns null for negatives,
+        // empty strings, NaN, etc., so this single check catches them all.
+        if (id == null) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }
 
@@ -303,6 +338,11 @@ for (const [modelName, model] of Object.entries(models)) {
         return jsonResponse({ data: stripHidden(result, hiddenFields) })
       }
       catch (err) {
+        if (err instanceof HttpError) {
+          const body: Record<string, unknown> = { error: err.message }
+          if (err.details !== undefined) body.details = err.details
+          return jsonResponse(body, err.status || 400)
+        }
         return jsonResponse({ error: `Failed to fetch ${modelName}`, detail: String(err) }, 500)
       }
     })
@@ -356,6 +396,11 @@ for (const [modelName, model] of Object.entries(models)) {
         return jsonResponse({ data: stripHidden(created, hiddenFields) }, 201)
       }
       catch (err) {
+        if (err instanceof HttpError) {
+          const body: Record<string, unknown> = { error: err.message }
+          if (err.details !== undefined) body.details = err.details
+          return jsonResponse(body, err.status || 400)
+        }
         return jsonResponse({ error: `Failed to create ${modelName}`, detail: String(err) }, 500)
       }
     })
@@ -365,7 +410,10 @@ for (const [modelName, model] of Object.entries(models)) {
   if (enabledRoutes.includes('update')) {
     const updateHandler = async (req: EnhancedRequest) => {
       try {
-        const id = (req as any).params?.id
+        const id = coerceId((req as any).params?.id)
+        if (id == null) {
+          return jsonResponse({ error: 'Invalid ID parameter' }, 400)
+        }
         const body = await getRequestBody(req)
         const data = filterFillable(body, fillableFields)
 
@@ -383,6 +431,14 @@ for (const [modelName, model] of Object.entries(models)) {
           return jsonResponse({ error: 'No fillable fields provided' }, 422)
         }
 
+        // 404 fast if the row doesn't exist — previously the UPDATE silently
+        // matched zero rows and we returned the request body as if it had
+        // succeeded, which masked legit "deleted between read and write" bugs.
+        const existing = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
+        if (!existing) {
+          return jsonResponse({ error: `${modelName} not found` }, 404)
+        }
+
         // Add updated_at timestamp
         if (model.traits?.useTimestamps !== false) {
           data.updated_at = new Date().toISOString()
@@ -391,17 +447,22 @@ for (const [modelName, model] of Object.entries(models)) {
         await (db as any).updateTable(table).set(data).where({ id }).execute()
 
         // Return the full updated record
-        let updated: any = { id, ...data }
+        let updated: any = { ...existing, ...data }
         try {
           const fetched = await (db as any).selectFrom(table).where({ id }).executeTakeFirst()
           if (fetched) updated = fetched
         } catch {
-          // Fall back to returning the input data
+          // Fall back to merging known existing + diff
         }
 
         return jsonResponse({ data: stripHidden(updated, hiddenFields) })
       }
       catch (err) {
+        if (err instanceof HttpError) {
+          const body: Record<string, unknown> = { error: err.message }
+          if (err.details !== undefined) body.details = err.details
+          return jsonResponse(body, err.status || 400)
+        }
         return jsonResponse({ error: `Failed to update ${modelName}`, detail: String(err) }, 500)
       }
     }
@@ -418,9 +479,8 @@ for (const [modelName, model] of Object.entries(models)) {
   if (enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
     route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
-        const id = (req as any).params?.id
-
-        if (!id || (typeof id === 'string' && id.trim() === '')) {
+        const id = coerceId((req as any).params?.id)
+        if (id == null) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }
 
@@ -429,6 +489,11 @@ for (const [modelName, model] of Object.entries(models)) {
         return new Response(null, { status: 204 })
       }
       catch (err) {
+        if (err instanceof HttpError) {
+          const body: Record<string, unknown> = { error: err.message }
+          if (err.details !== undefined) body.details = err.details
+          return jsonResponse(body, err.status || 400)
+        }
         return jsonResponse({ error: `Failed to delete ${modelName}`, detail: String(err) }, 500)
       }
     })
@@ -450,13 +515,32 @@ for (const [modelName, model] of Object.entries(models)) {
           return jsonResponse({ error: 'Cannot delete more than 100 records at once' }, 422)
         }
 
-        for (const id of ids) {
+        // Coerce + validate each ID before opening any transactions.
+        // A single bad ID inside a 100-element batch previously fell through
+        // to a SQL syntax error after partial deletes had already committed.
+        const validIds: Array<number | string> = []
+        const invalidIds: unknown[] = []
+        for (const raw of ids) {
+          const coerced = coerceId(raw)
+          if (coerced != null) validIds.push(coerced)
+          else invalidIds.push(raw)
+        }
+        if (invalidIds.length > 0) {
+          return jsonResponse({ error: 'Invalid IDs in batch', invalid: invalidIds }, 422)
+        }
+
+        for (const id of validIds) {
           await (db as any).deleteFrom(table).where({ id }).execute()
         }
 
-        return jsonResponse({ message: `Successfully deleted ${ids.length} ${uri}` })
+        return jsonResponse({ message: `Successfully deleted ${validIds.length} ${uri}` })
       }
       catch (err) {
+        if (err instanceof HttpError) {
+          const body: Record<string, unknown> = { error: err.message }
+          if (err.details !== undefined) body.details = err.details
+          return jsonResponse(body, err.status || 400)
+        }
         return jsonResponse({ error: `Failed to bulk delete ${uri}`, detail: String(err) }, 500)
       }
     })

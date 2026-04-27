@@ -328,14 +328,29 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
     }
   }
 
-  // Clean up child processes on exit to prevent orphaned processes
+  // Clean up child processes on exit to prevent orphaned processes.
+  //
+  // Two-phase shutdown: SIGTERM first to give STX serve / rpx / queue
+  // workers a chance to flush in-flight writes (sessions table, queue
+  // ack, log buffers). If anything is still alive after the grace
+  // window we follow up with SIGKILL on the whole process group. The
+  // previous "SIGKILL immediately" path corrupted dev sqlite files
+  // every now and then because writes were mid-flight.
   let isExiting = false
+  const SHUTDOWN_GRACE_MS = 1500
   const cleanup = () => {
     if (isExiting) return
     isExiting = true
-    // SIGKILL the entire process group (all children spawned by this process)
-    try { process.kill(0, 'SIGKILL') }
-    catch { process.exit(0) }
+    try { process.kill(-process.pid, 'SIGTERM') }
+    catch {
+      // Process group may not exist (e.g., not session leader) — try the
+      // current process only. Worst case the inner SIGKILL below cleans up.
+      try { process.kill(0, 'SIGTERM') } catch { /* ignore */ }
+    }
+    setTimeout(() => {
+      try { process.kill(0, 'SIGKILL') }
+      catch { process.exit(1) }
+    }, SHUTDOWN_GRACE_MS).unref()
   }
   process.on('SIGINT', cleanup)
   process.on('SIGTERM', cleanup)

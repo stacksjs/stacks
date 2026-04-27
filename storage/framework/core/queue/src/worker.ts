@@ -28,6 +28,27 @@ let workerRunning = false
 let workerId = ''
 
 /**
+ * Determine whether an error from a job handler should be retried.
+ *
+ * "Non-retryable" means: re-running the same job with the same payload will
+ * fail the same way every time. That's the case for client-shape errors
+ * (validation failures, 4xx HttpErrors, malformed input) — retrying just
+ * thrashes the queue. We DO retry on 5xx, network blips, and unknown errors.
+ */
+function isNonRetryableError(e: unknown): boolean {
+  if (!e || typeof e !== 'object') return false
+  const status = (e as { status?: unknown; statusCode?: unknown }).status
+    ?? (e as { statusCode?: unknown }).statusCode
+  if (typeof status === 'number' && status >= 400 && status < 500) return true
+  // Heuristic: validation failures from @stacksjs/validation throw HttpError(422).
+  // We catch it via the status check above; the name fallback covers cases
+  // where the error was wrapped or rethrown without preserving the prototype.
+  const name = (e as { name?: unknown }).name
+  if (typeof name === 'string' && (name === 'ValidationError' || name === 'ModelNotFoundError')) return true
+  return false
+}
+
+/**
  * Get the queue driver from environment
  */
 function getQueueDriver(): string {
@@ -538,6 +559,14 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
       }
 
       log.error(`[Queue] Redis job ${bunJob.id} failed: ${e}`)
+      // Don't retry "user input was bad" errors — validation failures, 4xx
+      // responses, and HttpErrors with 4xx status are deterministic: the
+      // exact same payload will fail the exact same way next time. Marking
+      // them retryable just burns the retry budget and floods failed_jobs.
+      if (isNonRetryableError(e)) {
+        log.info(`[Queue] Redis job ${bunJob.id} hit a non-retryable error — skipping retry`)
+        return // resolve without throw → bun-queue treats job as completed-with-error
+      }
       throw e // Let bun-queue handle retries
     }
     finally {

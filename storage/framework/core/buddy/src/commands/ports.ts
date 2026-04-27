@@ -136,8 +136,16 @@ async function getPortsForProjectPath(path: string, options: PortsOptions) {
     log.info(`Checking ports for project: ${italic(path)}`)
 
   $.cwd(path)
-  // load the .env file for the project
-  $.env(await import(`${path}/.env`))
+  // Load the .env file for the project. A malformed (or missing) .env should
+  // not abort `./buddy ports`. We log and fall through with the parent shell
+  // env so the command still produces useful output.
+  try {
+    $.env(await import(`${path}/.env`))
+  }
+  catch (err) {
+    if (!options.quiet)
+      log.warn(`[ports] Failed to load ${path}/.env (${(err as Error).message}). Falling back to current environment.`)
+  }
 
   const projectList = await $`./buddy projects:list --quiet`.text()
   log.debug('ProjectListResponse', projectList)

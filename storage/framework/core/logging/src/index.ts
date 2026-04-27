@@ -158,20 +158,24 @@ export const log: Log = {
   dump: async (...args: any[]) => {
     const message = formatMessage(...args)
     const logger = await getLogger()
-    logger.debug(`DUMP: ${message}`)
+    // `dump` is the user-facing fire-and-forget debug helper. Awaiting the
+    // write makes sure the message survives a quick `process.exit` after
+    // the call (otherwise the disk transport's pending write gets dropped
+    // and the user sees the dump line vanish).
+    await logger.debug(`DUMP: ${message}`)
   },
 
   dd: async (...args: any[]) => {
     const message = formatMessage(...args)
     const logger = await getLogger()
-    logger.error(message)
+    await logger.error(message)
     process.exit(ExitCode.FatalError)
   },
 
   echo: async (...args: any[]) => {
     const message = formatMessage(...args)
     const logger = await getLogger()
-    logger.info(`ECHO: ${message}`)
+    await logger.info(`ECHO: ${message}`)
   },
 
   time: (label: string) => {

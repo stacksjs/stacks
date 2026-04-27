@@ -9,18 +9,25 @@ const attemptStore = new Map<string, { attempts: number, lockedUntil: number }>(
 let lastEviction = Date.now()
 
 /**
- * Evict stale entries whose lockout has expired and whose attempts
- * have been consumed. This prevents unbounded memory growth.
+ * Evict stale entries. Runs at the eviction interval *or* when the store
+ * gets close to its max size, whichever fires first. Previously the size
+ * check was AND-gated against the interval, which meant a low-traffic
+ * server staying under MAX_STORE_SIZE would never evict and entries with
+ * cleared lockouts would linger forever.
  */
 function evictStaleEntries(): void {
   const now = Date.now()
-  if (now - lastEviction < EVICTION_INTERVAL && attemptStore.size < MAX_STORE_SIZE)
-    return
+  const intervalElapsed = now - lastEviction >= EVICTION_INTERVAL
+  const overCapacity = attemptStore.size >= MAX_STORE_SIZE
+  if (!intervalElapsed && !overCapacity) return
 
   lastEviction = now
   for (const [key, value] of attemptStore) {
-    // Remove entries whose lockout has expired
+    // Remove entries whose lockout has expired and that have no live attempts.
     if (value.lockedUntil > 0 && value.lockedUntil <= now) {
+      attemptStore.delete(key)
+    }
+    else if (value.lockedUntil === 0 && value.attempts === 0) {
       attemptStore.delete(key)
     }
   }

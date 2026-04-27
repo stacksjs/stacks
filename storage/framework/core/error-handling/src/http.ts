@@ -11,9 +11,18 @@ import type {
 } from './error-page'
 
 export class HttpError extends Error {
-  constructor(public status: number, message: string) {
+  /**
+   * Optional structured payload that will be serialized into the JSON
+   * error response (`{ error: message, details: ... }`). Used by validation
+   * to attach the per-field error map so clients can render inline messages
+   * instead of having to parse `JSON.stringify(errors)` out of `.message`.
+   */
+  public details?: unknown
+
+  constructor(public status: number, message: string, details?: unknown) {
     super(message)
     this.name = 'Server Error!'
+    if (details !== undefined) this.details = details
   }
 }
 

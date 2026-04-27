@@ -104,7 +104,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
     if (!result.valid) {
       reportError(result.errors as any)
-      throw new HttpError(422, JSON.stringify(result.errors))
+      throw new HttpError(422, 'Validation failed', { errors: result.errors })
     }
 
     return result
@@ -202,7 +202,7 @@ export async function validateFieldAsync(
     )
 
     if (Object.keys(asyncErrors).length > 0) {
-      throw new HttpError(422, JSON.stringify(asyncErrors))
+      throw new HttpError(422, 'Validation failed', { errors: asyncErrors })
     }
   }
 
@@ -233,7 +233,7 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
     const result = await validator.validate(params)
 
     if (!result.valid)
-      throw new HttpError(422, JSON.stringify(result.errors))
+      throw new HttpError(422, 'Validation failed', { errors: result.errors })
 
     return result
   }
