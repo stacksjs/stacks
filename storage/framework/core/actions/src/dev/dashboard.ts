@@ -50,16 +50,6 @@ function restoreConsole(): void {
 }
 
 async function startStxServer(): Promise<void> {
-  // Pre-warm `ts-broadcasting` so stx's static import of it lands cached.
-  // See dev/views.ts for the full reasoning — clarity@0.3.24's TLA stalls
-  // the chain when it's hit transitively through stx.
-  try {
-    await import('ts-broadcasting')
-  }
-  catch {
-    // optional — keep going if missing
-  }
-
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
     const mod = await import('bun-plugin-stx/serve')

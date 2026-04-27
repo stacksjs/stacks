@@ -89,34 +89,301 @@ function castAttributes(row: any, casts: Record<string, CastType | CasterInterfa
 }
 
 /**
- * Add a Laravel-style static `Model.update(id, data)` to the model.
- *
- * bun-query-builder ships only `instance.update(data)` and
- * `query.update(data)`, which means the common `Model.update(id, payload)`
- * call site (used heavily across Stacks app actions) silently 404's. This
- * wraps `where(pk, id).update(data)` so the ergonomic form just works and
- * returns the updated row (or null if no row matched).
+ * Internal keys on bun-query-builder's ModelInstance that should NOT leak
+ * through attribute-access proxies (would let `{ ...model }` dump the
+ * model's private bookkeeping into a response payload).
  */
-function addStaticUpdate(baseModel: Record<string, unknown>, definition: BQBModelDefinition) {
-  if (typeof baseModel.update === 'function') return // upstream provided one
+const MODEL_INSTANCE_INTERNAL_KEYS = new Set([
+  '_attributes', '_original', '_definition', '_hasSaved', '_relations',
+])
 
+const STACKS_PROXY_TAG = Symbol.for('stacks.modelInstanceProxy')
+
+/**
+ * Wrap a bun-query-builder ModelInstance in a Proxy that:
+ *
+ *   1. Forwards attribute reads to `_attributes` so `user.password` /
+ *      `car.slug` work (instead of returning undefined and silently
+ *      breaking auth, ownership checks, etc.).
+ *   2. Cleans up `{ ...instance }` spreads — only attribute keys appear,
+ *      not the model's private `_attributes` / `_original` / etc. fields.
+ *   3. Keeps every instance method (.update, .save, .toJSON, etc.) bound
+ *      to the underlying instance.
+ *
+ * Hidden fields (`hidden: true` attrs) are NOT auto-stripped — call
+ * `toAttrs(instance)` or `instance.toJSON()` for that. This proxy is about
+ * making direct property access work, not about output sanitization.
+ */
+function wrapModelInstance<T extends object>(
+  instance: T,
+  casts?: Record<string, CastType | CasterInterface>,
+): T {
+  if (!instance || typeof instance !== 'object') return instance
+  if ((instance as any)[STACKS_PROXY_TAG]) return instance
+  const attrs = (instance as any)._attributes
+  if (!attrs || typeof attrs !== 'object') return instance
+
+  // Apply read-side casts to attribute values once at wrap-time so every
+  // downstream access (`car.charges_enabled`, `{ ...car }`, `car.toJSON()`)
+  // sees the same correctly-typed value. SQLite stores booleans as 0/1
+  // strings — without this, `!!"0"` is `true` and ownership / capability
+  // checks silently invert.
+  if (casts && Object.keys(casts).length > 0) {
+    for (const [attr, castDef] of Object.entries(casts)) {
+      if (Object.prototype.hasOwnProperty.call(attrs, attr)) {
+        attrs[attr] = resolveCaster(castDef).get(attrs[attr])
+      }
+    }
+  }
+
+  return new Proxy(instance, {
+    get(target, prop, recv) {
+      if (prop === STACKS_PROXY_TAG) return true
+      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+        const a = (target as any)._attributes
+        if (a && Object.prototype.hasOwnProperty.call(a, prop)) return a[prop]
+      }
+      const v = Reflect.get(target, prop, target)
+      return typeof v === 'function' ? v.bind(target) : v
+    },
+    has(target, prop) {
+      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+        const a = (target as any)._attributes
+        if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
+      }
+      return Reflect.has(target, prop)
+    },
+    ownKeys(target) {
+      const a = (target as any)._attributes
+      return a ? Object.keys(a) : []
+    },
+    getOwnPropertyDescriptor(target, prop) {
+      if (typeof prop === 'string') {
+        const a = (target as any)._attributes
+        if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
+          return { configurable: true, enumerable: true, value: a[prop], writable: true }
+        }
+      }
+      return Object.getOwnPropertyDescriptor(target, prop)
+    },
+  }) as T
+}
+
+/**
+ * Wrap every read method on the static model so that returned ModelInstances
+ * (singletons or arrays) get the attribute-access proxy. Affects find,
+ * first, get, all, paginate, etc.
+ *
+ * Also wraps chainable `where(...)` / `query()` entry points so that the
+ * resulting ModelQueryBuilder applies the same proxy at each terminator
+ * — `Car.where(...).first()` should return a proxied instance, not a raw
+ * one.
+ */
+const QB_TERMINATORS = new Set(['get', 'first', 'last', 'firstOrFail', 'find', 'findOrFail', 'all', 'paginate'])
+
+function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInterface>): any {
+  if (!qb || typeof qb !== 'object') return qb
+  return new Proxy(qb, {
+    get(target, prop, recv) {
+      const v = Reflect.get(target, prop, recv)
+      if (typeof v !== 'function') return v
+      return function (this: any, ...args: any[]) {
+        const result = v.apply(target, args)
+        const finalize = (r: any) => {
+          if (QB_TERMINATORS.has(String(prop))) {
+            if (Array.isArray(r)) return r.map(x => wrapModelInstance(x, casts))
+            // paginate returns an object like { data: [...], meta: {...} }
+            if (r && Array.isArray((r as any).data)) {
+              return { ...r, data: (r as any).data.map((x: any) => wrapModelInstance(x, casts)) }
+            }
+            return wrapModelInstance(r, casts)
+          }
+          // Chainable — re-wrap if QueryBuilder-shaped
+          if (r && typeof r === 'object' && typeof (r as any).get === 'function') {
+            return wrapQueryBuilder(r, casts)
+          }
+          return r
+        }
+        if (result && typeof (result as any).then === 'function') {
+          return (result as Promise<any>).then(finalize)
+        }
+        return finalize(result)
+      }
+    },
+  })
+}
+
+function wrapReadsWithProxy(baseModel: Record<string, unknown>, casts?: Record<string, CastType | CasterInterface>) {
+  const directReads = ['find', 'first', 'last', 'all', 'firstOrFail', 'findOrFail', 'findMany']
+  for (const method of directReads) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = function (...args: any[]) {
+      const result = (original as Function).apply(this, args)
+      const apply = (r: any) => Array.isArray(r) ? r.map(x => wrapModelInstance(x, casts)) : wrapModelInstance(r, casts)
+      if (result && typeof (result as any).then === 'function') return (result as Promise<any>).then(apply)
+      return apply(result)
+    }
+  }
+
+  const queryBuilderEntrypoints = [
+    'query', 'where', 'orWhere', 'whereIn', 'whereNotIn', 'whereNull', 'whereNotNull',
+    'whereLike', 'whereBetween', 'whereNotBetween', 'orderBy', 'orderByDesc',
+    'select', 'with', 'limit', 'take', 'skip', 'latest', 'oldest',
+  ]
+  for (const method of queryBuilderEntrypoints) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = function (...args: any[]) {
+      const qb = (original as Function).apply(this, args)
+      return wrapQueryBuilder(qb, casts)
+    }
+  }
+}
+
+/**
+ * Thrown by `Model.findOrFail(id)` (and other strict lookups) when no row matches.
+ * Callers can `instanceof` against this to distinguish "missing" from other errors.
+ */
+export class ModelNotFoundError extends Error {
+  readonly model: string
+  readonly id: number | string | undefined
+
+  constructor(model: string, id?: number | string) {
+    super(id != null ? `[ORM] ${model} not found for id=${String(id)}` : `[ORM] No matching ${model} row`)
+    this.name = 'ModelNotFoundError'
+    this.model = model
+    this.id = id
+  }
+}
+
+/**
+ * Add Laravel-style static CRUD sugar to a Stacks model.
+ *
+ * bun-query-builder ships only the query-builder/instance forms
+ * (`instance.update(data)`, `query.update(data)`, `query.delete()`), which
+ * means the common static call sites used across Stacks app actions
+ * (`Model.update(id, payload)`, `Model.delete(id)`, `Model.findOrFail(id)`,
+ * `Model.firstOrCreate(...)`, `Model.updateOrCreate(...)`) all silently
+ * 404 or throw confusing errors. This installs the missing helpers and
+ * leaves any upstream-provided implementation untouched.
+ */
+function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBModelDefinition) {
   const pk = definition.primaryKey || 'id'
 
-  baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
-    if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
-    if (!data || typeof data !== 'object' || Array.isArray(data))
-      throw new Error(`[ORM] ${definition.name}.update requires a data object as the second argument`)
+  function getWhere(method: string): Function {
+    const w = baseModel.where
+    if (typeof w !== 'function')
+      throw new Error(`[ORM] ${definition.name}.${method} needs a working where(): the underlying query builder did not expose one`)
+    return w as Function
+  }
 
-    const where = (baseModel.where as Function).call(baseModel, pk, id)
-    await where.update(data)
-    const find = baseModel.find as Function
-    return find ? await find.call(baseModel, id) : null
+  function getFind(method: string): Function {
+    const f = baseModel.find
+    if (typeof f !== 'function')
+      throw new Error(`[ORM] ${definition.name}.${method} needs a working find(): the underlying query builder did not expose one`)
+    return f as Function
+  }
+
+  function getCreate(method: string): Function {
+    const c = baseModel.create
+    if (typeof c !== 'function')
+      throw new Error(`[ORM] ${definition.name}.${method} cannot create: the underlying query builder did not expose create()`)
+    return c as Function
+  }
+
+  // Model.update(id, data) — wrap where(pk, id).update(data) and re-read.
+  if (typeof baseModel.update !== 'function') {
+    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
+      if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
+      if (!data || typeof data !== 'object' || Array.isArray(data))
+        throw new Error(`[ORM] ${definition.name}.update requires a data object as the second argument`)
+
+      await getWhere('update').call(baseModel, pk, id).update(data)
+      const f = baseModel.find as Function | undefined
+      return typeof f === 'function' ? await f.call(baseModel, id) : null
+    }
+  }
+
+  // Model.delete(id) — wrap where(pk, id).delete() and report whether a row went away.
+  if (typeof baseModel.delete !== 'function') {
+    baseModel.delete = async function (id: number | string): Promise<boolean> {
+      if (id == null) throw new Error(`[ORM] ${definition.name}.delete requires an id as the first argument`)
+      const existed = await getFind('delete').call(baseModel, id)
+      if (!existed) return false
+      await getWhere('delete').call(baseModel, pk, id).delete()
+      return true
+    }
+  }
+
+  // Model.findOrFail(id) — strict variant that throws ModelNotFoundError.
+  if (typeof baseModel.findOrFail !== 'function') {
+    baseModel.findOrFail = async function (id: number | string) {
+      const row = await getFind('findOrFail').call(baseModel, id)
+      if (row == null) throw new ModelNotFoundError(definition.name, id)
+      return row
+    }
+  }
+
+  // Model.exists(id) — efficient `where(pk, id).count() > 0` check.
+  if (typeof baseModel.exists !== 'function') {
+    baseModel.exists = async function (id: number | string): Promise<boolean> {
+      if (id == null) return false
+      const q: any = getWhere('exists').call(baseModel, pk, id)
+      if (typeof q.count === 'function') {
+        const n = await q.count()
+        return Number(n) > 0
+      }
+      const f = baseModel.find as Function | undefined
+      return typeof f === 'function' ? (await f.call(baseModel, id)) != null : false
+    }
+  }
+
+  // Model.firstOrCreate(where, defaults?) — find by attrs, otherwise insert.
+  if (typeof baseModel.firstOrCreate !== 'function') {
+    baseModel.firstOrCreate = async function (
+      attrs: Record<string, unknown>,
+      defaults: Record<string, unknown> = {},
+    ) {
+      if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs))
+        throw new Error(`[ORM] ${definition.name}.firstOrCreate requires a where-attrs object`)
+
+      const q: any = getWhere('firstOrCreate').call(baseModel, attrs)
+      const existing = typeof q.first === 'function' ? await q.first() : await q
+      if (existing) return existing
+
+      return await getCreate('firstOrCreate').call(baseModel, { ...attrs, ...defaults })
+    }
+  }
+
+  // Model.updateOrCreate(where, attrs) — update if found, else create.
+  if (typeof baseModel.updateOrCreate !== 'function') {
+    baseModel.updateOrCreate = async function (
+      attrs: Record<string, unknown>,
+      values: Record<string, unknown>,
+    ) {
+      if (!attrs || typeof attrs !== 'object' || Array.isArray(attrs))
+        throw new Error(`[ORM] ${definition.name}.updateOrCreate requires a where-attrs object`)
+      if (!values || typeof values !== 'object' || Array.isArray(values))
+        throw new Error(`[ORM] ${definition.name}.updateOrCreate requires a values object`)
+
+      const q: any = getWhere('updateOrCreate').call(baseModel, attrs)
+      const existing = typeof q.first === 'function' ? await q.first() : await q
+      if (existing) {
+        const id = (existing as Record<string, unknown>)[pk]
+        await getWhere('updateOrCreate').call(baseModel, pk, id).update(values)
+        const f = baseModel.find as Function | undefined
+        return typeof f === 'function' ? await f.call(baseModel, id) : { ...existing, ...values }
+      }
+
+      return await getCreate('updateOrCreate').call(baseModel, { ...attrs, ...values })
+    }
   }
 }
 
 function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Record<string, CastType | CasterInterface>) {
-  const readMethods = ['find', 'first', 'get', 'all']
-  const writeMethods = ['create', 'update']
+  const readMethods = ['find', 'findOrFail', 'first', 'get', 'all']
+  const writeMethods = ['create', 'update', 'firstOrCreate', 'updateOrCreate']
 
   for (const method of readMethods) {
     const original = baseModel[method]
@@ -218,10 +485,21 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // Note: createModel's return type is declared as void in .d.ts but actually returns an object at runtime
   const baseModel = createModel(defWithHooks as TDef & BQBModelDefinition) as unknown as Record<string, unknown>
 
-  // Provide Laravel-style `Model.update(id, data)` sugar.
-  addStaticUpdate(baseModel, defWithHooks as BQBModelDefinition)
+  // Make ModelInstance attribute access ergonomic: `user.password`,
+  // `car.slug`, `{ ...booking }` all do the right thing instead of
+  // returning undefined / leaking private fields. Casts (when declared)
+  // are applied at the same boundary so `chargesEnabled === true` instead
+  // of `"0" === truthy`.
+  wrapReadsWithProxy(baseModel, definition.casts)
 
-  // Apply attribute casting if casts are defined
+  // Provide Laravel-style static CRUD sugar (update, delete, findOrFail,
+  // exists, firstOrCreate, updateOrCreate). Must run before the cast
+  // wrapper so it picks up the new `update`/`delete` and applies
+  // input/output casting consistently across both APIs.
+  addStaticHelpers(baseModel, defWithHooks as BQBModelDefinition)
+
+  // Write-side casts (e.g. JSON serialization on save) still need the
+  // legacy wrapper; reads are handled inside the proxy above.
   if (definition.casts && Object.keys(definition.casts).length > 0) {
     wrapQueryMethodsWithCasts(baseModel, definition.casts)
   }

@@ -34,20 +34,6 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         require('module').Module._initPaths?.()
       }
 
-      // Pre-warm `ts-broadcasting`. `@stacksjs/stx` statically imports it,
-      // and when stx is loaded transitively through `bun-plugin-stx/serve`'s
-      // dynamic import the chain stalls inside the bundled clarity TLA
-      // (clarity@0.3.24 has top-level `await loadConfig()`; clarity@0.3.25 —
-      // which removes it — hasn't been republished and propagated yet).
-      // Importing it here puts the module in the cache so subsequent stx
-      // evaluation completes without hanging.
-      try {
-        await import('ts-broadcasting')
-      }
-      catch {
-        // optional — keep going if missing
-      }
-
       // Check if the project has its own serve.ts — if so, use it directly.
       // This allows projects to define their own API routes, middleware, and config.
       const projectServe = p.projectPath('serve.ts')

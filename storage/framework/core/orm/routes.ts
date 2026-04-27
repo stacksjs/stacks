@@ -216,11 +216,20 @@ for (const [modelName, model] of Object.entries(models)) {
         let query = (db as any).selectFrom(table)
         query = applySorting(query, sort, table)
 
-        // Apply query string filters: ?status=active&name=foo filters by column values
+        // Apply query string filters: ?status=active&name=foo filters by column values.
+        // Reserved query params (pagination, sort, etc.) are skipped. Filter keys are
+        // validated against the model's declared attribute keys + system columns —
+        // an unknown key is ignored rather than emitted as raw SQL (e.g. `WHERE limit = ?`
+        // would blow up because `limit` is a SQL keyword).
+        const RESERVED = new Set(['page', 'per_page', 'sort', 'fields', 'search', 'include', 'limit', 'offset'])
+        const SYSTEM_COLUMNS = new Set(['id', 'uuid', 'created_at', 'updated_at', 'deleted_at'])
+        const validColumns = new Set([
+          ...Object.keys(model.attributes ?? {}),
+          ...SYSTEM_COLUMNS,
+        ])
         for (const [key, value] of url.searchParams.entries()) {
-          if (['page', 'per_page', 'sort', 'fields', 'search', 'include'].includes(key)) continue
-          // Only filter by valid column-like names (prevent injection)
-          if (/^[a-z_][a-z0-9_]*$/i.test(key) && value) {
+          if (RESERVED.has(key) || !value) continue
+          if (validColumns.has(key) && /^[a-z_][a-z0-9_]*$/i.test(key)) {
             query = query.where(key, '=', value)
           }
         }
