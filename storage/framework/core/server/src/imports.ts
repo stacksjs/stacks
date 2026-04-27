@@ -351,7 +351,7 @@ export async function injectGlobalAutoImports(): Promise<void> {
     ['@stacksjs/validation', ['schema']],
     ['@stacksjs/router', ['response', 'request', 'route', 'Middleware', 'url']],
     ['@stacksjs/storage', ['storage', 'fs']],
-    ['@stacksjs/orm', ['defineModel']],
+    ['@stacksjs/orm', ['defineModel', 'toAttrs']],
     ['@stacksjs/database', ['db', 'sql']],
     ['@stacksjs/email', ['mail', 'template']],
     ['@stacksjs/queue', ['Job']],

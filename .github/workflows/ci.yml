@@ -181,7 +181,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: bun buddy deploy production
+        run: bun buddy deploy production --yes
 
   deploy-stage:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (startsWith(github.ref, 'refs/tags/') && contains(github.ref, '-beta.'))
@@ -207,6 +207,15 @@ jobs:
       - name: Install Dependencies
         run: bun install
 
+      - name: Ensure .env Set
+        run: cp .env.example .env
+
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: bun buddy deploy staging --yes
+
   deploy-dev:
     if: (github.event_name == 'push' && github.ref == 'refs/heads/main') || (github.event_name == 'pull_request' && github.base_ref == 'main')
     needs: [lint, typecheck, test]
@@ -230,6 +239,15 @@ jobs:
 
       - name: Install Dependencies
         run: bun install
+
+      - name: Ensure .env Set
+        run: cp .env.example .env
+
+      - name: Deploy
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: bun buddy deploy development --yes
 
   publish-commit:
     runs-on: ubuntu-latest
