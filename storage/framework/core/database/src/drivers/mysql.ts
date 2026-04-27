@@ -54,30 +54,12 @@ export async function dropMysqlTables(): Promise<void> {
 }
 
 export async function generateMysqlMigration(modelPath: string): Promise<void> {
-  // check if any files are in the database folder
-  // const files = await fs.readdir(path.userMigrationsPath())
-
-  // if (files.length === 0) {
-  //   log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
-
-  //   // delete the *.ts files in the models folder
-  //   const modelFiles = await fs.readdir(path.frameworkPath('models'))
-
-  //   if (modelFiles.length) {
-  //     log.debug('No existing model files in framework path...')
-
-  //     for (const file of modelFiles) {
-  //       if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`models/${file}`))
-  //     }
-  //   }
-  // }
-
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`models/${fileName}`)
+  const copiedModelPath = path.frameworkPath(`cache/models/${fileName}`)
 
   let haveFieldsChanged = false
 
@@ -101,7 +83,7 @@ export async function generateMysqlMigration(modelPath: string): Promise<void> {
   }
 
   // store the fields of the model to a file
-  await Bun.$`cp ${modelPath} ${copiedModelPath}`
+  await Bun.$`mkdir -p ${path.frameworkPath('cache/models')} && cp ${modelPath} ${copiedModelPath}`
 
   // if the fields have changed, we need to create a new update migration
   // if the fields have not changed, we need to migrate the table
@@ -214,7 +196,7 @@ async function createTableMigration(modelPath: string): Promise<void> {
   const useUuid = model.traits?.useUuid || false
 
   if (useBillable && (tableName as string) === 'users')
-    await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
+    await createTableMigration(path.frameworkPath('defaults/app/Models/Subscription.ts'))
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

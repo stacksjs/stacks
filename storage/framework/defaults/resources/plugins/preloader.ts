@@ -136,10 +136,9 @@ async function loadAutoImports() {
 
   // 3. Load all defineModel()-based model instances into globalThis
   // This enables using Post.where('title', 'test') without imports
-  // Priority: user models > framework models > default models
+  // Priority: user models (app/Models) override framework defaults
   const modelDirs = [
     path.userModelsPath(),
-    path.storagePath('framework/models'),
     path.storagePath('framework/defaults/app/Models'),
   ]
 

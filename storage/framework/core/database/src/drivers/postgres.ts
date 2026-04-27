@@ -95,17 +95,18 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   const files = await (fs.readdir as any)(path.userMigrationsPath(''))
 
   if ((files as any).length === 0) {
-    log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
+    log.debug('No migrations found in the database folder, clearing the model snapshot cache...')
 
-    // delete the *.ts files in the models folder
-    const modelFiles = await (fs.readdir as any)(path.frameworkPath('models'))
+    const cacheDir = path.frameworkPath('cache/models')
 
-    if ((modelFiles as any).length) {
-      log.debug('No existing model files in framework path...')
+    if (fs.existsSync(cacheDir)) {
+      const modelFiles = await (fs.readdir as any)(cacheDir)
 
-      for (const file of modelFiles as any) {
-        if (file.endsWith('.ts'))
-          await (fs.unlink as any)(path.frameworkPath(`models/${file}`))
+      if ((modelFiles as any).length) {
+        for (const file of modelFiles as any) {
+          if (file.endsWith('.ts'))
+            await (fs.unlink as any)(path.frameworkPath(`cache/models/${file}`))
+        }
       }
     }
   }
@@ -115,7 +116,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   const tableName = getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`models/${fileName}`)
+  const copiedModelPath = path.frameworkPath(`cache/models/${fileName}`)
 
   let haveFieldsChanged = false
 
@@ -139,7 +140,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   }
 
   // store the fields of the model to a file
-  await Bun.$`cp ${modelPath} ${copiedModelPath}`
+  await Bun.$`mkdir -p ${path.frameworkPath('cache/models')} && cp ${modelPath} ${copiedModelPath}`
 
   // if the fields have changed, we need to create a new update migration
   // if the fields have not changed, we need to migrate the table
@@ -152,7 +153,7 @@ export async function generatePostgresMigration(modelPath: string): Promise<void
   const useBillable = model.traits?.billable || false
 
   if (useBillable && (tableName as string) === 'users')
-    await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
+    await createTableMigration(path.frameworkPath('defaults/app/Models/Subscription.ts'))
 
   if (haveFieldsChanged)
     await createAlterTableMigration(modelPath)
@@ -181,7 +182,7 @@ async function createTableMigration(modelPath: string) {
   const useUuid = model.traits?.useUuid || false
 
   if (useBillable && (tableName as string) === 'users')
-    await createTableMigration(path.storagePath('framework/models/generated/Subscription.ts'))
+    await createTableMigration(path.frameworkPath('defaults/app/Models/Subscription.ts'))
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`

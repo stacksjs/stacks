@@ -35,12 +35,17 @@ export async function deleteMigrationFiles(): Promise<void> {
 }
 
 export async function deleteFrameworkModels(): Promise<void> {
-  const modelFiles = await fs.promises.readdir(path.frameworkPath('models'))
+  const cacheDir = path.frameworkPath('cache/models')
+
+  if (!fs.existsSync(cacheDir))
+    return
+
+  const modelFiles = await fs.promises.readdir(cacheDir)
 
   if (modelFiles.length) {
     for (const modelFile of modelFiles) {
       if (modelFile.endsWith('.ts')) {
-        const modelPath = path.frameworkPath(`models/${modelFile}`)
+        const modelPath = path.frameworkPath(`cache/models/${modelFile}`)
 
         if (fs.existsSync(modelPath))
           await Bun.$`rm ${modelPath}`
@@ -50,7 +55,7 @@ export async function deleteFrameworkModels(): Promise<void> {
 }
 
 export async function getLastMigrationFields(modelName: string): Promise<AttributesElements> {
-  const oldModelPath = path.frameworkPath(`models/${modelName}`)
+  const oldModelPath = path.frameworkPath(`cache/models/${modelName}`)
   const model = (await import(oldModelPath)).default as Model
   let fields = {} as AttributesElements
 

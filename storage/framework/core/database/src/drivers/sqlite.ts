@@ -64,29 +64,12 @@ export function fetchTestSqliteFile(): string {
 }
 
 export async function generateSqliteMigration(modelPath: string): Promise<void> {
-  // check if any files are in the database folder
-  // const files = await fs.readdir(path.userMigrationsPath())
-
-  // if (files.length === 0) {
-  //   log.debug('No migrations found in the database folder, deleting all framework/database/*.json files...')
-
-  //   // delete the *.ts files in the models folder
-  //   const modelFiles = await fs.readdir(path.frameworkPath('models'))
-
-  //   if (modelFiles.length) {
-  //     log.debug('No existing model files in framework path...')
-
-  //     for (const file of modelFiles)
-  //       if (file.endsWith('.ts')) await fs.unlink(path.frameworkPath(`models/${file}`))
-  //   }
-  // }
-
   const model = (await import(modelPath)).default as Model
   const fileName = path.basename(modelPath)
   const tableName = await getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`models/${fileName}`)
+  const copiedModelPath = path.frameworkPath(`cache/models/${fileName}`)
 
   let haveFieldsChanged = false
 
@@ -110,7 +93,7 @@ export async function generateSqliteMigration(modelPath: string): Promise<void> 
   }
 
   // store the fields of the model to a file
-  await Bun.$`cp ${modelPath} ${copiedModelPath}`
+  await Bun.$`mkdir -p ${path.frameworkPath('cache/models')} && cp ${modelPath} ${copiedModelPath}`
 
   // if the fields have changed, we need to create a new update migration
   // if the fields have not changed, we need to migrate the table
@@ -138,7 +121,7 @@ export async function copyModelFiles(modelPath: string): Promise<void> {
   const tableName = await getTableName(model, modelPath)
 
   const fieldsString = JSON.stringify(model.attributes, null, 2) // Pretty print the JSON
-  const copiedModelPath = path.frameworkPath(`models/${fileName}`)
+  const copiedModelPath = path.frameworkPath(`cache/models/${fileName}`)
 
   // if the file exists, we need to check if the fields have changed
   if (fs.existsSync(copiedModelPath)) {
@@ -154,7 +137,7 @@ export async function copyModelFiles(modelPath: string): Promise<void> {
   }
 
   // store the fields of the model to a file
-  await Bun.$`cp ${modelPath} ${copiedModelPath}`
+  await Bun.$`mkdir -p ${path.frameworkPath('cache/models')} && cp ${modelPath} ${copiedModelPath}`
 }
 
 async function createTableMigration(modelPath: string) {
@@ -356,7 +339,7 @@ async function createAlterTableMigration(modelPath: string) {
   let hasChanged = false
 
   // Get the previous model to compare indexes
-  const oldModelPath = path.frameworkPath(`models/${modelName}.ts`)
+  const oldModelPath = path.frameworkPath(`cache/models/${modelName}.ts`)
   const oldModel = (await import(oldModelPath)).default as Model
 
   // Assuming you have a function to get the fields from the last migration

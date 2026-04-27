@@ -7,8 +7,9 @@ import type { SearchOptions } from './search-engine'
 /**
  * Model definition type - compatible with bun-query-builder
  *
- * Models can be defined in app/models/ or storage/framework/defaults/app/Models/
- * and are used to generate the ORM classes, migrations, and API routes.
+ * Models can be defined in app/Models/ (userland; overrides defaults by name)
+ * or storage/framework/defaults/app/Models/ (framework defaults), and are used
+ * to generate the ORM classes, migrations, and API routes.
  */
 export type Model = Partial<ModelOptions>
 

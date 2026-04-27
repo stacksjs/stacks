@@ -11,40 +11,48 @@
  * - Consumer files use properly typed patterns
  */
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const rootDir = resolve(import.meta.dir, '../../../../..')
 const coreOrmDir = join(rootDir, 'storage/framework/core/orm/src')
 const typesDir = join(rootDir, 'storage/framework/types')
-const frameworkModelsDir = join(rootDir, 'storage/framework/models')
 const defaultModelsDir = join(rootDir, 'storage/framework/defaults/app/Models')
+const userModelsDir = join(rootDir, 'app/Models')
 const cmsDir = join(rootDir, 'storage/framework/core/cms/src')
 const commerceDir = join(rootDir, 'storage/framework/core/commerce/src')
 const defaultActionsDir = join(rootDir, 'storage/framework/defaults/app/Actions')
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
-function getModelFiles(dir: string): string[] {
+function getModelFiles(dir: string): { file: string, fullPath: string }[] {
   if (!existsSync(dir)) return []
-  return readdirSync(dir).filter(f => {
-    if (!f.endsWith('.ts') || f === 'index.ts' || f.endsWith('.d.ts')) return false
-    const content = readFileSync(join(dir, f), 'utf-8').trim()
-    return content.length > 0
-  })
+  const out: { file: string, fullPath: string }[] = []
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) {
+      out.push(...getModelFiles(full))
+      continue
+    }
+    if (!entry.endsWith('.ts') || entry === 'index.ts' || entry.endsWith('.d.ts')) continue
+    const content = readFileSync(full, 'utf-8').trim()
+    if (content.length > 0) out.push({ file: entry, fullPath: full })
+  }
+  return out
 }
 
-function getAllModelNames(): string[] {
-  const fw = getModelFiles(frameworkModelsDir).map(f => f.replace('.ts', ''))
-  const def = getModelFiles(defaultModelsDir).map(f => f.replace('.ts', ''))
-  return [...new Set([...fw, ...def])]
+function findModel(name: string): string | undefined {
+  const all = [...getModelFiles(userModelsDir), ...getModelFiles(defaultModelsDir)]
+  return all.find(m => m.file === `${name}.ts`)?.fullPath
 }
 
 // ─── 1. defineModel definitions have narrow types ─────────────────────
 
 describe('defineModel definitions preserve literal types via as const', () => {
   test('Post model has narrow attribute keys', () => {
-    const content = readFileSync(join(frameworkModelsDir, 'Post.ts'), 'utf-8')
+    const postPath = findModel('Post')
+    expect(postPath).toBeDefined()
+    const content = readFileSync(postPath!, 'utf-8')
     // Should contain specific attribute names as object keys
     expect(content).toContain('title:')
     expect(content).toContain('content:')
@@ -55,12 +63,16 @@ describe('defineModel definitions preserve literal types via as const', () => {
   })
 
   test('Post model has narrow belongsTo relation', () => {
-    const content = readFileSync(join(frameworkModelsDir, 'Post.ts'), 'utf-8')
+    const postPath = findModel('Post')
+    expect(postPath).toBeDefined()
+    const content = readFileSync(postPath!, 'utf-8')
     expect(content).toContain("belongsTo: ['Author']")
   })
 
   test('User model has narrow attribute keys', () => {
-    const content = readFileSync(join(frameworkModelsDir, 'User.ts'), 'utf-8')
+    const userPath = findModel('User')
+    expect(userPath).toBeDefined()
+    const content = readFileSync(userPath!, 'utf-8')
     expect(content).toContain('name:')
     expect(content).toContain('email:')
     expect(content).toContain('password:')
@@ -68,13 +80,10 @@ describe('defineModel definitions preserve literal types via as const', () => {
   })
 
   test('all model files have name and table as string literals', () => {
-    const allModels = [
-      ...getModelFiles(frameworkModelsDir).map(f => ({ file: f, dir: frameworkModelsDir })),
-      ...getModelFiles(defaultModelsDir).map(f => ({ file: f, dir: defaultModelsDir })),
-    ]
+    const allModels = [...getModelFiles(userModelsDir), ...getModelFiles(defaultModelsDir)]
 
-    for (const { file, dir } of allModels) {
-      const content = readFileSync(join(dir, file), 'utf-8')
+    for (const { fullPath } of allModels) {
+      const content = readFileSync(fullPath, 'utf-8')
       // name should be a string literal like name: 'Post'
       expect(content).toMatch(/name:\s*'[A-Z]/)
       // table should be a string literal like table: 'posts'
@@ -86,36 +95,33 @@ describe('defineModel definitions preserve literal types via as const', () => {
 // ─── 2. Model files do NOT import generated types ─────────────────────
 
 describe('model files are self-contained (no generated type imports)', () => {
-  const allModels = [
-    ...getModelFiles(frameworkModelsDir).map(f => ({ file: f, dir: frameworkModelsDir })),
-    ...getModelFiles(defaultModelsDir).map(f => ({ file: f, dir: defaultModelsDir })),
-  ]
+  const allModels = [...getModelFiles(userModelsDir), ...getModelFiles(defaultModelsDir)]
 
-  for (const { file, dir } of allModels) {
+  for (const { file, fullPath } of allModels) {
     const modelName = file.replace('.ts', '')
 
     test(`${modelName}: imports defineModel from @stacksjs/orm`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toContain("import { defineModel } from '@stacksjs/orm'")
     })
 
     test(`${modelName}: does NOT import from orm/src/types`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).not.toContain('orm/src/types')
     })
 
     test(`${modelName}: does NOT import from orm/src/models`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).not.toContain('orm/src/models')
     })
 
     test(`${modelName}: does NOT import BaseOrm`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).not.toContain('BaseOrm')
     })
 
     test(`${modelName}: does NOT use satisfies Model`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).not.toContain('satisfies Model')
     })
   }
@@ -340,20 +346,18 @@ describe('server-auto-imports.d.ts covers all model definitions', () => {
   const autoImportsFile = join(typesDir, 'server-auto-imports.d.ts')
   const autoImportsContent = readFileSync(autoImportsFile, 'utf-8')
 
-  test('every framework model is declared as a global', () => {
-    const models = getModelFiles(frameworkModelsDir)
-    for (const file of models) {
+  test('every default model is declared as a global', () => {
+    const models = getModelFiles(defaultModelsDir)
+    for (const { file } of models) {
       const modelName = file.replace('.ts', '')
       expect(autoImportsContent).toContain(`const ${modelName}:`)
     }
   })
 
-  test('every default model is declared as a global (if not overridden)', () => {
-    const frameworkModelNames = new Set(getModelFiles(frameworkModelsDir).map(f => f.replace('.ts', '')))
-    const defaultModels = getModelFiles(defaultModelsDir)
-    for (const file of defaultModels) {
+  test('every user model override is declared as a global', () => {
+    const models = getModelFiles(userModelsDir)
+    for (const { file } of models) {
       const modelName = file.replace('.ts', '')
-      // Default models should appear unless overridden by framework model
       expect(autoImportsContent).toContain(`const ${modelName}:`)
     }
   })

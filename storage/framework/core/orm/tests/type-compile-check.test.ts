@@ -12,27 +12,34 @@
  * - Model definition files use defineModel with `as const`
  */
 import { describe, expect, test } from 'bun:test'
-import { existsSync, readFileSync, readdirSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { join, resolve } from 'node:path'
 
 const rootDir = resolve(import.meta.dir, '../../../../..')
 const coreOrmDir = join(rootDir, 'storage/framework/core/orm/src')
 const typesDir = join(rootDir, 'storage/framework/types')
-const frameworkModelsDir = join(rootDir, 'storage/framework/models')
 const defaultModelsDir = join(rootDir, 'storage/framework/defaults/app/Models')
+const userModelsDir = join(rootDir, 'app/Models')
 const actionFile = join(rootDir, 'storage/framework/core/actions/src/action.ts')
 const requestFile = join(rootDir, 'storage/framework/core/types/src/request.ts')
 const routerDir = join(rootDir, 'storage/framework/core/router/src')
 
 // ─── Helpers ──────────────────────────────────────────────────────────
 
-function getModelFiles(dir: string): string[] {
+function getModelFiles(dir: string): { file: string, fullPath: string }[] {
   if (!existsSync(dir)) return []
-  return readdirSync(dir).filter(f => {
-    if (!f.endsWith('.ts') || f === 'index.ts' || f.endsWith('.d.ts')) return false
-    const content = readFileSync(join(dir, f), 'utf-8').trim()
-    return content.length > 0
-  })
+  const out: { file: string, fullPath: string }[] = []
+  for (const entry of readdirSync(dir)) {
+    const full = join(dir, entry)
+    if (statSync(full).isDirectory()) {
+      out.push(...getModelFiles(full))
+      continue
+    }
+    if (!entry.endsWith('.ts') || entry === 'index.ts' || entry.endsWith('.d.ts')) continue
+    const content = readFileSync(full, 'utf-8').trim()
+    if (content.length > 0) out.push({ file: entry, fullPath: full })
+  }
+  return out
 }
 
 // ─── 1. model-types.ts type utilities ─────────────────────────────────
@@ -496,52 +503,49 @@ describe('RequestInstance<TFields> is generic with model-aware narrowing', () =>
 // ─── 9. Model definition files use defineModel with as const ──────────
 
 describe('model definition files use defineModel pattern', () => {
-  const frameworkModels = getModelFiles(frameworkModelsDir)
   const defaultModels = getModelFiles(defaultModelsDir)
-  const allModels = [
-    ...frameworkModels.map(f => ({ file: f, dir: frameworkModelsDir })),
-    ...defaultModels.map(f => ({ file: f, dir: defaultModelsDir })),
-  ]
+  const userModels = getModelFiles(userModelsDir)
+  const allModels = [...defaultModels, ...userModels]
 
-  test('should have model files in framework/models or defaults/app/Models', () => {
+  test('should have model files in app/Models or defaults/app/Models', () => {
     expect(allModels.length).toBeGreaterThan(30)
   })
 
-  for (const { file, dir } of allModels) {
+  for (const { file, fullPath } of allModels) {
     const modelName = file.replace('.ts', '')
 
     test(`${modelName}: uses defineModel()`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toContain('defineModel(')
     })
 
     test(`${modelName}: uses 'as const' for literal type preservation`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toContain('as const)')
     })
 
     test(`${modelName}: is a default export`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toContain('export default defineModel(')
     })
 
     test(`${modelName}: has name property`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toMatch(/name:\s*'/)
     })
 
     test(`${modelName}: has table property`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toMatch(/table:\s*'/)
     })
 
     test(`${modelName}: has attributes object`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).toContain('attributes:')
     })
 
     test(`${modelName}: does NOT use 'satisfies Model' pattern`, () => {
-      const content = readFileSync(join(dir, file), 'utf-8')
+      const content = readFileSync(fullPath, 'utf-8')
       expect(content).not.toContain('satisfies Model')
     })
   }
