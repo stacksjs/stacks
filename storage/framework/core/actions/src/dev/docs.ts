@@ -2,13 +2,25 @@ import { projectPath } from '@stacksjs/path'
 
 const port = Number(process.env.PORT_DOCS) || 3006
 
-// `@stacksjs/bunpress`'s dist bundles an older `@stacksjs/clarity` that has a
-// top-level `await loadConfig()`. When that chain stalls (or `bunfig` reads
-// a slow user config file), the whole module-evaluation hangs and `dev/docs`
-// never reaches its serve call, blocking dev startup. Race the import against
-// a 5s timeout so the docs server fails loudly instead of silently deadlocking
-// — the rest of the dev stack stays up. The proper fix is republishing
-// `@stacksjs/clarity` (no TLA) and `@stacksjs/bunpress` (with the new clarity).
+// Pre-warm `ts-broadcasting` so the bundled clarity chain inside it gets
+// initialized BEFORE `@stacksjs/bunpress` (which transitively pulls
+// ts-broadcasting in through stx) starts evaluating. Without this, bunpress
+// hangs on its bundled `var X=await loadConfig({ name:"clarity" })` for
+// the full process lifetime and the docs server never binds. clarity@0.3.25
+// removes the TLA at source — once it propagates, this preload becomes a
+// no-op and can be deleted.
+try {
+  await import('ts-broadcasting')
+}
+catch {
+  // optional — keep going if missing
+}
+
+// `@stacksjs/bunpress`'s dist still bundles an older `@stacksjs/clarity`
+// with a top-level `await loadConfig()`. The preload above usually neutralizes
+// it; race the import against a 10s timeout as a belt-and-braces guard so
+// that any new clarity-style hang fails loudly instead of silently
+// deadlocking the whole dev stack.
 const importTimeout = (ms: number) =>
   new Promise<never>((_, reject) =>
     setTimeout(() => reject(new Error(`@stacksjs/bunpress import timed out after ${ms}ms`)), ms),
@@ -18,7 +30,7 @@ let startServer: ((opts: any) => Promise<unknown>) | undefined
 try {
   ;({ startServer } = await Promise.race([
     import('@stacksjs/bunpress'),
-    importTimeout(5000),
+    importTimeout(10000),
   ]) as { startServer: (opts: any) => Promise<unknown> })
 }
 catch (err) {

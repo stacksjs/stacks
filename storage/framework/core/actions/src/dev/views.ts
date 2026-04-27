@@ -11,6 +11,23 @@ import { projectPath } from '@stacksjs/path'
  * page so projects don't need a custom serve wrapper just to keep
  * /trips, /favorites, /host/* etc. behind a session.
  */
+
+// Pre-warm `ts-broadcasting` BEFORE `@stacksjs/stx` ever lands in the
+// module graph. stx statically imports ts-broadcasting, and when both
+// arrive together through `bun-plugin-stx/serve`'s dynamic
+// `await import('@stacksjs/stx')` the bundled chain stalls inside one
+// of ts-broadcasting's `loadConfig({ name: 'clarity' })` top-level awaits
+// (clarity@0.3.24 hasn't been republished without TLA yet — see
+// ~/Code/Tools/clarity for the fix waiting to ship as 0.3.25). Importing
+// it first puts the module in the cache so stx's `import "ts-broadcasting"`
+// resolves instantly and the rest of stx's evaluation completes.
+try {
+  await import('ts-broadcasting')
+}
+catch {
+  // optional dep — keep going if missing
+}
+
 const projectServe = projectPath('serve.ts')
 
 try {

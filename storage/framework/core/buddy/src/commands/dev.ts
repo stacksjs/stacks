@@ -308,6 +308,26 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   // so they don't start their own (which would conflict on port 443)
   process.env.STACKS_PROXY_MANAGED = '1'
 
+  // Pre-flight: clean up orphaned bun processes from prior dev runs that
+  // didn't shut down cleanly (`pkill -9` from a foreground terminal exits
+  // the parent but leaves detached children holding `:3000`/`:3002`/etc).
+  // Without this, the readiness probe sees stale listeners and reports
+  // "ready in 0.0s" while the *new* backends never bind because their
+  // ports are already taken. Skipped when `STACKS_DEV_NO_KILL` is set
+  // (e.g. in CI where there's nothing to clean up).
+  if (process.env.STACKS_DEV_NO_KILL !== '1') {
+    try {
+      // Match `bun --watch storage/framework/core/actions/src/dev/*.ts`
+      // and any older `bun cli.ts dev` from this project. We deliberately
+      // don't use `pkill -f buddy` — the current process matches that.
+      await Bun.spawn(['pkill', '-9', '-f', 'bun --watch storage/framework/core/actions/src/dev/'], { stdout: 'ignore', stderr: 'ignore' }).exited
+      await new Promise(r => setTimeout(r, 200))
+    }
+    catch {
+      // pkill not available or no matches — fine, just continue
+    }
+  }
+
   // Clean up child processes on exit to prevent orphaned processes
   let isExiting = false
   const cleanup = () => {
@@ -380,26 +400,25 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
 }
 
 /**
- * Resolve `true` once a TCP socket can be opened to localhost:port within
- * `timeoutMs`. We don't issue HTTP — some backends (stx serve) take a
- * second to render but bind early; a TCP connect is enough to say "the
- * URL is live". Returns `false` if the port is still unreachable when
- * the timeout fires.
+ * Resolve `true` once an HTTP request to localhost:port returns *any*
+ * response (including 404, 500 — we just want to confirm the server is
+ * actually fielding requests, not just bound to the socket). A TCP-only
+ * probe was insufficient: stx serve and bun-router can hold the FD in
+ * LISTEN state for seconds before their request handler is wired, and
+ * the rpx proxy ALSO binds the upstream port (so a TCP probe was getting
+ * fooled by the proxy itself, not the backend behind it).
+ *
+ * Returns `false` if no HTTP response arrives before `timeoutMs`.
  */
 async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
   const deadline = Date.now() + timeoutMs
-  const { Socket } = await import('node:net')
   while (Date.now() < deadline) {
     const ok = await new Promise<boolean>((resolve) => {
-      const sock = new Socket()
-      const done = (v: boolean) => {
-        sock.destroy()
-        resolve(v)
-      }
-      sock.once('connect', () => done(true))
-      sock.once('error', () => done(false))
-      sock.setTimeout(500, () => done(false))
-      sock.connect(port, '127.0.0.1')
+      const ac = new AbortController()
+      const t = setTimeout(() => ac.abort(), 800)
+      fetch(`http://127.0.0.1:${port}/__health`, { signal: ac.signal, redirect: 'manual' })
+        .then(() => { clearTimeout(t); resolve(true) })
+        .catch(() => { clearTimeout(t); resolve(false) })
     })
     if (ok) return true
     await new Promise(r => setTimeout(r, 250))
