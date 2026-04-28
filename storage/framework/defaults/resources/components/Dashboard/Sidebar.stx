@@ -277,7 +277,7 @@ function getSidebarWidth() {
               <div class="sidebar-chevron"></div>
             </button>
             <ul class="sidebar-section-list">
-              @foreach(sectionContent[sectionKey].items as item)
+              @foreach((sectionContent[sectionKey] && sectionContent[sectionKey].items) || [] as item)
                 <li>
                   <a href="{{ item.to }}" class="sidebar-link"{{ item.mpa ? ' data-mpa="true"' : '' }}>
                     <span class="sidebar-icon">{{{ iconSvg(item.icon) }}}</span>

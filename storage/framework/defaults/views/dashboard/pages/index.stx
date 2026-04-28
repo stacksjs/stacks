@@ -1,131 +1,20 @@
+@extends('layouts/default')
+
+@section('content')
 <script server>
-useSeoMeta({ title: 'Dashboard' })
-
-const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
-
-let stats = []
-let quickLinks = []
-let services = []
-let activities = []
-
-try {
-  const res = await fetch(API_URL + '/dashboard/home')
-  if (res.ok) {
-    const json = await res.json()
-    stats = json.stats || []
-    quickLinks = json.quickLinks || []
-    services = json.services || []
-    activities = json.activities || []
-  }
-} catch (e) {
-  // API not available
-}
+// The dashboard's canonical landing page is `/home` — `/` exists only as
+// a courtesy redirect for users who hit the bare host. The previous
+// implementation duplicated the Home content with the older
+// <DashboardLayout> + Sidebar component pair, which (a) drifted from
+// the maintained /home view and (b) hit a known sidebar template bug
+// (`sectionContent[sectionKey].items is not an array`) under SSR.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Dashboard' })
 </script>
-<DashboardLayout pageTitle="Dashboard" pageDescription="Welcome back! Here's what's happening with your application.">
-
-<div class="p-6">
-    <!-- Header Actions -->
-    <div class="flex items-center justify-end gap-3 mb-8">
-      <button class="px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700">
-        Last 7 days
-      </button>
-      <button class="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700">
-        View Reports
-      </button>
-    </div>
-
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-      @foreach (stats as stat)
-        <div class="bg-white dark:bg-gray-800 rounded-xl p-5 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-shadow">
-          <div class="w-10 h-10 rounded-lg flex items-center justify-center mb-3 {{ stat.color === 'blue' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : stat.color === 'green' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : stat.color === 'orange' ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400' }}">
-            <span class="text-lg font-semibold">{{ stat.color === 'blue' ? 'U' : stat.color === 'green' ? 'P' : stat.color === 'orange' ? '$' : 'S' }}</span>
-          </div>
-          <div class="text-3xl font-bold text-gray-900 dark:text-white">{{ stat.value }}</div>
-          <div class="text-sm text-gray-500 dark:text-gray-400 mt-1">{{ stat.label }}</div>
-          <div class="inline-flex items-center gap-1 mt-2 px-2 py-1 rounded-md text-xs font-medium {{ stat.up ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' }}">
-            {{ stat.trend }} from last month
-          </div>
-        </div>
-      @endforeach
-    </div>
-
-    <!-- Two Column Layout -->
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
-      <!-- Quick Links -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-          <span class="font-semibold text-gray-900 dark:text-white">Quick Links</span>
-        </div>
-        <div class="divide-y divide-gray-100 dark:divide-gray-700">
-          @foreach (quickLinks as link)
-            <div class="flex items-center gap-4 p-4 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer transition-colors">
-              <div class="w-10 h-10 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-500 dark:text-gray-400">
-                <span class="text-sm font-medium">{{ link.title.charAt(0) }}</span>
-              </div>
-              <div class="flex-1">
-                <div class="font-medium text-gray-900 dark:text-white">{{ link.title }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">{{ link.description }}</div>
-              </div>
-            </div>
-          @endforeach
-        </div>
-      </div>
-
-      <!-- System Health -->
-      <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-        <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-          <span class="font-semibold text-gray-900 dark:text-white">System Health</span>
-          <span class="px-3 py-1 text-xs font-semibold rounded-full bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400">All Systems Operational</span>
-        </div>
-        <div class="divide-y divide-gray-100 dark:divide-gray-700">
-          @foreach (services as service)
-            <div class="flex items-center justify-between p-4">
-              <div>
-                <div class="font-medium text-gray-900 dark:text-white">{{ service.name }}</div>
-                <div class="text-sm text-gray-500 dark:text-gray-400">Latency: {{ service.latency }}</div>
-              </div>
-              <span class="px-3 py-1 text-xs font-semibold rounded-full {{ service.status === 'healthy' ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400' : 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400' }}">
-                {{ service.status }}
-              </span>
-            </div>
-          @endforeach
-        </div>
-      </div>
-    </div>
-
-    <!-- Recent Activity -->
-    <div class="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700">
-      <div class="flex items-center justify-between p-5 border-b border-gray-200 dark:border-gray-700">
-        <span class="font-semibold text-gray-900 dark:text-white">Recent Activity</span>
-        <button class="text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200">View All</button>
-      </div>
-      <div class="overflow-x-auto">
-        <table class="w-full">
-          <thead class="bg-gray-50 dark:bg-gray-700/50">
-            <tr class="bg-gray-50 dark:bg-gray-700/50">
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Activity</th>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">User</th>
-              <th class="text-left px-5 py-3 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Time</th>
-            </tr>
-          </thead>
-          <tbody class="divide-y divide-gray-100 dark:divide-gray-700">
-            @foreach (activities as activity)
-              <tr class="hover:bg-gray-50 dark:hover:bg-gray-700/30">
-                <td class="px-5 py-4">
-                  <span class="px-2.5 py-1 text-xs font-semibold rounded-full {{ activity.type === 'error' ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300' }}">
-                    {{ activity.type }}
-                  </span>
-                </td>
-                <td class="px-5 py-4 text-gray-900 dark:text-white">{{ activity.message }}</td>
-                <td class="px-5 py-4 text-gray-900 dark:text-white">{{ activity.user }}</td>
-                <td class="px-5 py-4 text-gray-500 dark:text-gray-400">{{ activity.time }}</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
-</div>
-</DashboardLayout>
+<meta http-equiv="refresh" content="0; url=/home">
+<noscript>
+  <p>Redirecting to <a href="/home">the dashboard</a>…</p>
+</noscript>
+<script client>
+window.location.replace('/home')
+</script>
+@endsection
