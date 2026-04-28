@@ -156,9 +156,14 @@ export function generate(buddy: CLI): void {
       })
     })
 
-  buddy.command('generate:migrations', 'Generate Migrations').action((options: GeneratorOptions) => {
+  buddy.command('generate:migrations', 'Generate Migrations').action(async (options: GeneratorOptions) => {
     log.debug('Running `buddy generate:migrations` ...', options)
-    // generateMigrations()
+    const { generateMigrations } = await import('@stacksjs/database')
+    const result = await generateMigrations()
+    if ((result as any)?.isErr) {
+      log.error('generateMigrations failed', (result as any).error)
+      process.exit(ExitCode.FatalError)
+    }
   })
 
   buddy

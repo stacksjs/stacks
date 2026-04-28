@@ -6,7 +6,7 @@
  */
 
 import type { Result } from '@stacksjs/error-handling'
-import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
@@ -90,7 +90,9 @@ function configureQueryBuilder(): void {
  * - Creating duplicate unique indexes on columns that already have UNIQUE constraints
  *   from inline table definitions (the index name differs but the constraint conflicts)
  *
- * This function rewrites incompatible migration files to no-ops.
+ * Files that would become no-ops are deleted from disk and recorded in the
+ * migrations tracking table so they're treated as "executed" — keeping the
+ * migrations/ directory clean instead of cluttered with `SELECT 1` stubs.
  */
 function preprocessSqliteMigrations(): void {
   const migrationsDir = join(process.cwd(), 'database', 'migrations')
@@ -102,6 +104,16 @@ function preprocessSqliteMigrations(): void {
     return // directory doesn't exist yet
   }
 
+  // Track which migrations we drop so we can mark them executed in the
+  // migrations table (otherwise the next generate run regenerates them).
+  const droppedMigrations: string[] = []
+  const dropMigration = (file: string, filePath: string, reason: string): void => {
+    log.info(`Dropping no-op migration (${reason}): ${file}`)
+    try { unlinkSync(filePath) }
+    catch { /* already gone */ }
+    droppedMigrations.push(file)
+  }
+
   const addConstraintPattern = /^\s*ALTER\s+TABLE\s+.+\s+ADD\s+CONSTRAINT\s+/i
   // Match CREATE UNIQUE INDEX — these are redundant in SQLite when the table
   // already defines the UNIQUE constraint inline during CREATE TABLE.
@@ -109,6 +121,22 @@ function preprocessSqliteMigrations(): void {
   const createUniqueIndexPattern = /^\s*CREATE\s+UNIQUE\s+INDEX\s+/i
   // Match ALTER TABLE ... DROP COLUMN — SQLite fails if the column doesn't exist
   const dropColumnPattern = /^\s*ALTER\s+TABLE\s+["']?(\w+)["']?\s+DROP\s+COLUMN\s+["']?(\w+)["']?\s*$/i
+  // Match CREATE TABLE — used to detect when buddy regenerates a CREATE TABLE
+  // migration for a table that already has an earlier create-table file.
+  const createTablePattern = /^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["']?(\w+)["']?/i
+
+  // First pass: index every "create-<table>-table.sql" by table name. The
+  // earliest (lowest-timestamp) wins. Anything later for the same table is
+  // a duplicate from buddy regenerating migrations for an already-modeled
+  // table — drop those instead of cluttering the directory.
+  const createTableEarliest = new Map<string, string>()
+  for (const file of files) {
+    const m = file.match(/^\d+-create-(\w+)-table\.sql$/)
+    if (!m) continue
+    const tableName = m[1]
+    const existing = createTableEarliest.get(tableName)
+    if (!existing || file < existing) createTableEarliest.set(tableName, file)
+  }
 
   // Open SQLite DB to check column existence for DROP COLUMN migrations
   const sqliteDbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
@@ -134,11 +162,23 @@ function preprocessSqliteMigrations(): void {
 
     if (statements.length === 0) continue
 
+    // Drop duplicate CREATE TABLE migrations — keep only the earliest one
+    // for each table. This handles the case where buddy regenerates a
+    // create-table migration for a table that's already modeled.
+    const createTableMatch = statements[0].match(createTablePattern)
+    if (createTableMatch) {
+      const tableName = createTableMatch[1]
+      const earliest = createTableEarliest.get(tableName)
+      if (earliest && earliest !== file) {
+        dropMigration(file, filePath, `duplicate create-table for "${tableName}" (kept ${earliest})`)
+        continue
+      }
+    }
+
     // Skip files that only contain ALTER TABLE ADD CONSTRAINT
     const allAddConstraint = statements.every(s => addConstraintPattern.test(s))
     if (allAddConstraint) {
-      log.info(`Skipping SQLite-incompatible migration: ${file}`)
-      writeFileSync(filePath, '-- Skipped: SQLite does not support ALTER TABLE ADD CONSTRAINT\nSELECT 1;\n')
+      dropMigration(file, filePath, 'SQLite does not support ALTER TABLE ADD CONSTRAINT')
       continue
     }
 
@@ -148,8 +188,7 @@ function preprocessSqliteMigrations(): void {
     // different name triggers SQLITE_CONSTRAINT_UNIQUE.
     const allCreateUniqueIndex = statements.every(s => createUniqueIndexPattern.test(s))
     if (allCreateUniqueIndex) {
-      log.info(`Skipping redundant unique index migration for SQLite: ${file}`)
-      writeFileSync(filePath, '-- Skipped: unique constraints already exist from table creation\nSELECT 1;\n')
+      dropMigration(file, filePath, 'unique constraint already inline on table')
       continue
     }
 
@@ -206,7 +245,7 @@ function preprocessSqliteMigrations(): void {
 
       if (modified) {
         if (filteredStatements.length === 0) {
-          writeFileSync(filePath, '-- Skipped: columns already absent from table\nSELECT 1;\n')
+          dropMigration(file, filePath, 'columns already absent from table')
         }
         else {
           writeFileSync(filePath, `${filteredStatements.join(';\n')};\n`)
@@ -219,6 +258,32 @@ function preprocessSqliteMigrations(): void {
   if (sqliteDb) {
     try { (sqliteDb as any).close() }
     catch { /* ignore */ }
+  }
+
+  // Record dropped migrations as executed so they don't get regenerated on
+  // the next `buddy generate:migrations` cycle. Without this, the same
+  // unique-index / add-constraint migrations would reappear every run.
+  if (droppedMigrations.length > 0) {
+    try {
+      const dbPath = join(process.cwd(), dbConfig.connections.sqlite.database || 'stacks.db')
+      if (existsSync(dbPath)) {
+        const { Database } = require('bun:sqlite')
+        const writeDb = new Database(dbPath)
+        try {
+          writeDb.exec(`CREATE TABLE IF NOT EXISTS migrations (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            migration TEXT NOT NULL UNIQUE,
+            executed_at DATETIME DEFAULT CURRENT_TIMESTAMP
+          )`)
+          const insert = writeDb.prepare('INSERT OR IGNORE INTO migrations (migration) VALUES (?)')
+          for (const migration of droppedMigrations) insert.run(migration)
+        }
+        finally { writeDb.close() }
+      }
+    }
+    catch (e) {
+      log.debug(`[migration] Could not record dropped migrations as executed: ${e}`)
+    }
   }
 }
 
