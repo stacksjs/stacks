@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Releases · Library · Dashboard' })
+
 let releases = []
 
 function statusVariant(s) {
@@ -53,7 +55,7 @@ function typeVariant(t) {
           <td class="px-4 py-3 font-semibold text-[13px] text-neutral-900 dark:text-white">
             {{ release.version }}
             @if (release.breaking)
-              <Badge variant="danger" size="xs" class="ml-2">Breaking</Badge>
+              <span class="ml-2"><Badge variant="danger" size="xs">Breaking</Badge></span>
             @endif
           </td>
           <td class="px-4 py-3">

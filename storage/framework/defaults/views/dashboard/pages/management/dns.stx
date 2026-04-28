@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Dns · Management · Dashboard' })
+
 let domains = []
 let records = []
 let stats = []
@@ -49,7 +51,7 @@ let stats = []
             </div>
           </div>
           <div class="flex gap-2 mt-4 pt-4 border-neutral-200/60 border-t dark:border-white/5">
-            <Button variant="outline" size="xs" class="flex-1">Manage</Button>
+            <div class="flex-1"><Button variant="outline" size="xs" :fullWidth="true">Manage</Button></div>
             <Button variant="ghost" size="xs">SSL</Button>
           </div>
         </div>

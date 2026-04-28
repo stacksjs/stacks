@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Comments · Content · Dashboard' })
+
 /**
  * Comments Moderation Page
  */
@@ -32,12 +34,15 @@ function statusVariant(s) {
     <StatsCard title="Spam" value="{{ stats.spam }}" icon="i-hugeicons-alert-diamond" iconBg="danger" />
   </div>
 
-  <!-- Filter Tabs -->
+  <!-- Filter Tabs — uses native <button> instead of the <Button> component
+       because component prop attributes are normalised into JS function
+       parameters at evaluation time, and `data-filter` (with a hyphen)
+       isn't a legal JS identifier so the template fails to compile. -->
   <div class="flex gap-2" id="filterTabs">
-    <Button data-filter="all" variant="primary" size="xs" class="filter-tab">All ({{ stats.total }})</Button>
-    <Button data-filter="pending" variant="ghost" size="xs" class="filter-tab">Pending ({{ stats.pending }})</Button>
-    <Button data-filter="approved" variant="ghost" size="xs" class="filter-tab">Approved ({{ stats.approved }})</Button>
-    <Button data-filter="spam" variant="ghost" size="xs" class="filter-tab">Spam ({{ stats.spam }})</Button>
+    <button data-filter="all" class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 select-none focus:outline-none active:scale-[0.98] text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-gradient-to-b from-blue-500 to-blue-600 text-white shadow-sm shadow-blue-600/25">All ({{ stats.total }})</button>
+    <button data-filter="pending" class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 select-none focus:outline-none active:scale-[0.98] text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8">Pending ({{ stats.pending }})</button>
+    <button data-filter="approved" class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 select-none focus:outline-none active:scale-[0.98] text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8">Approved ({{ stats.approved }})</button>
+    <button data-filter="spam" class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 select-none focus:outline-none active:scale-[0.98] text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8">Spam ({{ stats.spam }})</button>
   </div>
 
   <!-- Comments Table -->
@@ -72,18 +77,18 @@ function statusVariant(s) {
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ comment.date }}</td>
           <td class="px-4 py-3">
             <div class="flex gap-1 items-center">
-              <Button variant="ghost" size="xs" iconOnly class="approve-btn" data-id="{{ comment.id }}" title="Approve">
+              <button type="button" data-action="approve" data-id="{{ comment.id }}" title="Approve" class="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-black/5 dark:hover:bg-white/8 transition-colors">
                 <div class="h-4 w-4 text-green-600 i-hugeicons-checkmark-circle-02"></div>
-              </Button>
-              <Button variant="ghost" size="xs" iconOnly class="spam-btn" data-id="{{ comment.id }}" title="Mark as Spam">
+              </button>
+              <button type="button" data-action="spam" data-id="{{ comment.id }}" title="Mark as Spam" class="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-black/5 dark:hover:bg-white/8 transition-colors">
                 <div class="h-4 w-4 text-orange-600 i-hugeicons-alert-diamond"></div>
-              </Button>
-              <Button variant="ghost" size="xs" iconOnly class="view-btn" data-id="{{ comment.id }}" data-author="{{ comment.author }}" data-email="{{ comment.email }}" data-content="{{ comment.content }}" data-post="{{ comment.postTitle }}" data-date="{{ comment.date }}" data-ip="{{ comment.ip }}" title="View">
+              </button>
+              <button type="button" data-action="view" data-id="{{ comment.id }}" data-author="{{ comment.author }}" data-email="{{ comment.email }}" data-content="{{ comment.content }}" data-post="{{ comment.postTitle }}" data-date="{{ comment.date }}" data-ip="{{ comment.ip }}" title="View" class="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-black/5 dark:hover:bg-white/8 transition-colors">
                 <div class="h-4 w-4 text-blue-600 i-hugeicons-view"></div>
-              </Button>
-              <Button variant="ghost" size="xs" iconOnly class="delete-btn" data-id="{{ comment.id }}" title="Delete">
+              </button>
+              <button type="button" data-action="delete" data-id="{{ comment.id }}" title="Delete" class="inline-flex items-center justify-center h-6 w-6 rounded-md hover:bg-black/5 dark:hover:bg-white/8 transition-colors">
                 <div class="h-4 w-4 text-red-500 i-hugeicons-waste"></div>
-              </Button>
+              </button>
             </div>
           </td>
         </tr>
@@ -209,7 +214,7 @@ function filterComments(status) {
   el.querySelectorAll('.comment-row').forEach(row => {
     row.style.display = (status === 'all' || row.dataset.status === status) ? '' : 'none'
   })
-  el.querySelectorAll('.filter-tab').forEach(tab => {
+  el.querySelectorAll('[data-filter]').forEach(tab => {
     const isActive = tab.dataset.filter === status
     tab.classList.toggle('text-white', isActive)
     tab.classList.toggle('bg-blue-600', isActive)
@@ -229,19 +234,19 @@ onMount(function() {
   el.querySelector('#cancelDeleteBtn').onclick = closeModals
   el.querySelector('#confirmDeleteBtn').onclick = deleteComment
 
-  el.querySelectorAll('.filter-tab').forEach(tab => {
+  el.querySelectorAll('[data-filter]').forEach(tab => {
     tab.onclick = function() { filterComments(this.dataset.filter) }
   })
 
-  el.querySelectorAll('.approve-btn').forEach(btn => {
+  el.querySelectorAll('[data-action="approve"]').forEach(btn => {
     btn.onclick = function() { updateStatus(this.dataset.id, 'approved') }
   })
 
-  el.querySelectorAll('.spam-btn').forEach(btn => {
+  el.querySelectorAll('[data-action="spam"]').forEach(btn => {
     btn.onclick = function() { updateStatus(this.dataset.id, 'spam') }
   })
 
-  el.querySelectorAll('.view-btn').forEach(btn => {
+  el.querySelectorAll('[data-action="view"]').forEach(btn => {
     btn.onclick = function() {
       el.querySelector('#viewAuthor').textContent = this.dataset.author
       el.querySelector('#viewEmail').textContent = this.dataset.email
@@ -253,7 +258,7 @@ onMount(function() {
     }
   })
 
-  el.querySelectorAll('.delete-btn').forEach(btn => {
+  el.querySelectorAll('[data-action="delete"]').forEach(btn => {
     btn.onclick = function() { deleteCommentId = this.dataset.id; deleteModal.style.display = 'flex' }
   })
 

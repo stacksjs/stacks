@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Categories · Content · Dashboard' })
+
 /**
  * Categories Page
  */
@@ -62,8 +64,8 @@ try {
           </div>
         </div>
         <div class="flex gap-2 items-center justify-end pt-3 border-neutral-100 border-t dark:border-neutral-700">
-          <Button variant="ghost" size="xs" class="edit-category-btn" data-id="{{ category.id }}" data-name="{{ category.name }}" data-slug="{{ category.slug }}" data-description="{{ category.description }}">Edit</Button>
-          <Button variant="ghost" size="xs" class="delete-category-btn" data-id="{{ category.id }}"><span class="text-red-500">Delete</span></Button>
+          <button type="button" data-action="edit-category" data-id="{{ category.id }}" data-name="{{ category.name }}" data-slug="{{ category.slug }}" data-description="{{ category.description }}" class="inline-flex items-center justify-center font-medium text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 transition-colors">Edit</button>
+          <button type="button" data-action="delete-category" data-id="{{ category.id }}" class="inline-flex items-center justify-center font-medium text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 transition-colors"><span class="text-red-500">Delete</span></button>
         </div>
       </div>
     @endforeach
@@ -249,13 +251,13 @@ onMount(function() {
   el.querySelector('#confirmDeleteBtn').onclick = deleteCategory
   categoryForm.onsubmit = saveCategory
 
-  el.querySelectorAll('.edit-category-btn').forEach(btn => {
+  el.querySelectorAll('[data-action="edit-category"]').forEach(btn => {
     btn.onclick = function() {
       openEditCategoryModal(this.dataset.id, this.dataset.name, this.dataset.slug, this.dataset.description)
     }
   })
 
-  el.querySelectorAll('.delete-category-btn').forEach(btn => {
+  el.querySelectorAll('[data-action="delete-category"]').forEach(btn => {
     btn.onclick = function() { deleteCategoryId = this.dataset.id; deleteModal.style.display = 'flex' }
   })
 

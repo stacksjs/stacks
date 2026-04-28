@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Environment · Utilities · Dashboard' })
+
 const fs = await import('fs')
 const path = await import('path')
 
@@ -18,7 +20,15 @@ try {
       const [key, ...rest] = line.split('=')
       const value = rest.join('=').trim()
       const isSecret = /secret|password|key|token/i.test(key || '')
-      return { key: String(key || '').trim(), value: isSecret ? '--------' : value, secret: isSecret }
+      // `environments` lists which env files this var lives in. We start
+      // with .env (always); the prod check below appends 'Production' for
+      // any var that also exists there. Template iterates this array.
+      return {
+        key: String(key || '').trim(),
+        value: isSecret ? '--------' : value,
+        secret: isSecret,
+        environments: ['Development'],
+      }
     })
     environments = [
       { name: 'Development', file: '.env', variables: variables.length, status: 'Active' },
@@ -27,6 +37,10 @@ try {
     if (fs.existsSync(envProdPath)) {
       const prodLines = fs.readFileSync(envProdPath, 'utf-8').split('\n').filter(l => l.trim() && !l.trim().startsWith('#'))
       environments.push({ name: 'Production', file: '.env.production', variables: prodLines.length, status: 'Configured' })
+      const prodKeys = new Set(prodLines.map(l => l.split('=')[0].trim()))
+      for (const v of variables) {
+        if (prodKeys.has(v.key)) v.environments.push('Production')
+      }
     }
     stats = [
       { value: String(variables.length), label: 'Variables' },
@@ -89,7 +103,7 @@ function statusVariant(s) {
             </div>
           </div>
           <div class="mt-4 pt-4 border-neutral-200/60 border-t dark:border-white/5">
-            <Button variant="outline" size="xs" class="w-full">Configure</Button>
+            <Button variant="outline" size="xs" :fullWidth="true">Configure</Button>
           </div>
         </div>
       </Card>

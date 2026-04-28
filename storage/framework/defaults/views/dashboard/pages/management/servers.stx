@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Servers · Management · Dashboard' })
+
 let servers = []
 let stats = []
 

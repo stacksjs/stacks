@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Gift Cards · Commerce · Dashboard' })
+
 const { GiftCard } = await import('@stacksjs/orm')
 
 let giftCards = []
@@ -70,7 +72,7 @@ function statusVariant(s) {
           <label class="block mb-2 text-[12px] text-neutral-500 dark:text-neutral-400">Recipient Email (optional)</label>
           <input type="email" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" placeholder="email@example.com" />
         </div>
-        <Button variant="primary" class="w-full">Create Gift Card</Button>
+        <Button variant="primary" :fullWidth="true">Create Gift Card</Button>
       </div>
     </Card>
 
@@ -81,7 +83,7 @@ function statusVariant(s) {
           <label class="block mb-2 text-[12px] text-neutral-500 dark:text-neutral-400">Gift Card Code</label>
           <input type="text" class="px-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-2 focus:ring-blue-500" placeholder="GC-XXXX-XXXX" />
         </div>
-        <Button variant="secondary" class="w-full">Check Balance</Button>
+        <Button variant="secondary" :fullWidth="true">Check Balance</Button>
       </div>
     </Card>
   </div>

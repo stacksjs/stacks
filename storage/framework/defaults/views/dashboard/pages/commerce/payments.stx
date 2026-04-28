@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Payments · Commerce · Dashboard' })
+
 const { Payment } = await import('@stacksjs/orm')
 
 let payments = []
@@ -92,7 +94,7 @@ function statusVariant(s) {
           <span class="text-[13px] text-neutral-500 dark:text-neutral-400">Bank Account</span>
           <span class="text-[13px] text-neutral-900 dark:text-white">**** 4567</span>
         </div>
-        <Button variant="secondary" class="w-full">View Payout History</Button>
+        <Button variant="secondary" :fullWidth="true">View Payout History</Button>
       </div>
     </Card>
   </div>
