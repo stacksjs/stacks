@@ -1,197 +1,258 @@
-// thanks to mitt for the base of this wonderful functional event emitter
+/**
+ * Stacks event engine — a native, type-safe, async-aware pub/sub.
+ *
+ * Originally adapted from `mitt`; rewritten in-house to:
+ *   - Surface async handler errors on the same channel as sync ones
+ *     (mitt swallowed unhandled rejections)
+ *   - Support glob patterns (`user:*`, `*.created`) alongside `'*'` wildcard
+ *   - Add `once`, `removeAllListeners`, `listenerCount` for parity with
+ *     Node's EventEmitter ergonomics
+ *   - Add `dispatchAsync` that AWAITS handlers and returns their results,
+ *     so callers can express "fire this event AND wait until every
+ *     listener finishes" (booking:cancelled → wait for refund + email
+ *     before responding to the user)
+ *
+ * The legacy `mitt` export is preserved for backward compat — calling it
+ * gets you the same emitter you'd get from `createEmitter()`.
+ */
 
 import type { ModelEvents } from '@stacksjs/types'
 
 export type EventType = string | symbol
 
-// An event handler can take an optional event argument
-// and should not return a value
-export type Handler<T = unknown> = (_event: T) => void
-export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _event: T[keyof T]) => void
+export type Handler<T = unknown> = (_event: T) => void | Promise<void>
+export type WildcardHandler<T = Record<string, unknown>> = (_type: keyof T, _event: T[keyof T]) => void | Promise<void>
 
-// An array of all currently registered event handlers for a type
 export type EventHandlerList<T = unknown> = Array<Handler<T>>
 export type WildCardEventHandlerList<T = Record<string, unknown>> = Array<WildcardHandler<T>>
 
-// A map of event types and their corresponding event handlers.
 export type EventHandlerMap<Events extends Record<EventType, unknown>> = Map<
   keyof Events | '*',
   EventHandlerList<Events[keyof Events]> | WildCardEventHandlerList<Events>
 >
 
 export interface Emitter<Events extends Record<EventType, unknown>> {
+  /** Underlying handler map. Mutating it directly is supported but rarely needed. */
   all: EventHandlerMap<Events>
 
+  /** Register a handler for `type` (or `'*'` for every event, or a glob like `'user:*'`). */
   on: (<Key extends keyof Events>(_type: Key, _handler: Handler<Events[Key]>) => void) &
+    ((_type: '*', _handler: WildcardHandler<Events>) => void) &
+    ((_type: string, _handler: WildcardHandler<Events>) => void)
+
+  /** Register a handler that auto-removes after the first invocation. */
+  once: (<Key extends keyof Events>(_type: Key, _handler: Handler<Events[Key]>) => void) &
     ((_type: '*', _handler: WildcardHandler<Events>) => void)
 
+  /** Remove a single handler, or every handler for a type when handler is omitted. */
   off: (<Key extends keyof Events>(_type: Key, _handler?: Handler<Events[Key]>) => void) &
-    ((_type: '*', _handler?: WildcardHandler<Events>) => void)
+    ((_type: '*', _handler?: WildcardHandler<Events>) => void) &
+    ((_type: string, _handler?: WildcardHandler<Events>) => void)
 
+  /** Fire-and-forget. Async handler errors are logged but never propagated. */
   emit: (<Key extends keyof Events>(_type: Key, _event: Events[Key]) => void) &
     (<Key extends keyof Events>(_type: undefined extends Events[Key] ? Key : never) => void)
+
+  /**
+   * Awaitable dispatch — resolves once every matching handler (exact +
+   * pattern + wildcard) has finished. Use when downstream work has to
+   * complete before the caller continues (e.g. a booking cancel that
+   * must persist + refund + notify before returning a 200).
+   */
+  emitAsync: <Key extends keyof Events>(_type: Key, _event: Events[Key]) => Promise<unknown[]>
+
+  /** Drop every handler for a type (or every handler everywhere when omitted). */
+  removeAllListeners: (_type?: keyof Events | '*') => void
+
+  /** How many handlers are registered for a type — exact match only, no patterns. */
+  listenerCount: (_type: keyof Events | '*') => number
+}
+
+const ASYNC_HANDLER_TAG = Symbol.for('stacks.events.handler.error')
+
+function logAsyncError(label: string, type: EventType, err: unknown) {
+  // eslint-disable-next-line no-console
+  console.error(`[Events] ${label} for '${String(type)}':`, err)
+}
+
+function isPromiseLike(v: unknown): v is Promise<unknown> {
+  return !!v && typeof (v as Promise<unknown>).catch === 'function'
 }
 
 /**
- * Tiny (~200b) functional event emitter / pubsub.
+ * Create a fresh Stacks event emitter. Most consumers want the singleton
+ * exported below — call this directly only when you need an isolated bus
+ * (tests, child workers, plugin sandboxes).
  */
-export default function mitt<Events extends Record<EventType, unknown>>(
+export function createEmitter<Events extends Record<EventType, unknown>>(
   all?: EventHandlerMap<Events>,
 ): Emitter<Events> {
-  if (!all)
-    all = new Map()
+  const map = all ?? new Map<keyof Events | '*', any>()
 
-  return {
-    /**
-     * A Map of event names to registered handler functions.
-     */
-    all,
-
-    /**
-     * Register an event handler for the given type.
-     * @param {string|symbol} type Type of event to listen for, or `'*'` for all events
-     * @param {Function} handler Function to call in response to given event
-     * @memberOf mitt
-     */
-    on<Key extends keyof Events>(type: Key | '*', handler: Handler<Events[Key]> | WildcardHandler<Events>) {
-      const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = (
-        all as EventHandlerMap<Events>
-      ).get(type)
-      if (handlers) {
-        handlers.push(handler as Handler<Events[Key]> | WildcardHandler<Events>)
-      }
-      // Explicitly assert the type of the handler array being set in the map. Unsure if there is a better way to do this
-      else {
-        (all as EventHandlerMap<Events>).set(type, [handler] as
-        | EventHandlerList<Events[keyof Events]>
-        | WildCardEventHandlerList<Events>)
-      }
-    },
-
-    /**
-     * Remove an event handler for the given type.
-     * If `handler` is omitted, all handlers of the given type are removed.
-     * @param {string|symbol} type Type of event to unregister `handler` from (`'*'` to remove a wildcard handler)
-     * @param {Function} [handler] Handler function to remove
-     * @memberOf mitt
-     */
-    off<Key extends keyof Events>(type: Key | '*', handler?: Handler<Events[Key]> | WildcardHandler<Events>) {
-      const handlers: Array<Handler<Events[Key]> | WildcardHandler<Events>> | undefined = (
-        all as EventHandlerMap<Events>
-      ).get(type)
-      if (handlers) {
-        if (handler) {
-          const index = handlers.indexOf(handler as Handler<Events[Key]> | WildcardHandler<Events>)
-          if (index > -1)
-            handlers.splice(index, 1)
-        }
-        else {
-          ;(all as EventHandlerMap<Events>).set(type, [])
-        }
-      }
-    },
-
-    /**
-     * Invoke all handlers for the given type.
-     * If present, `'*'` handlers are invoked after type-matched handlers.
-     *
-     * Note: Manually firing '*' handlers is not supported.
-     *
-     * @param {string|symbol} type The event type to invoke
-     * @param {Any} [evt] Any value (object is recommended and powerful), passed to each handler
-     * @memberOf mitt
-     */
-    emit<Key extends keyof Events>(type: Key, evt?: Events[Key]) {
-      let handlers = (all as EventHandlerMap<Events>).get(type)
-
-      if (handlers) {
-        ;(handlers as EventHandlerList<Events[keyof Events]>).slice().forEach((handler) => {
-          try {
-            if (evt !== undefined) {
-              const result = handler(evt)
-              // Async handlers used to silently leak unhandled rejections.
-              // Surface them on the same channel as sync errors so the user
-              // sees the failure instead of a mystery "unhandledRejection"
-              // log with no context about which event/handler was at fault.
-              if (result && typeof (result as Promise<unknown>).catch === 'function') {
-                (result as Promise<unknown>).catch((err: unknown) => {
-                  console.error(`[Events] Async handler error for '${String(type)}':`, err)
-                })
-              }
-            }
-          }
-          catch (err) {
-            console.error(`[Events] Handler error for '${String(type)}':`, err)
-          }
-        })
-      }
-
-      // Pattern matching: fire handlers registered with glob-like patterns (e.g., 'user:*')
-      const typeStr = String(type)
-      ;(all as EventHandlerMap<Events>).forEach((patternHandlers, key) => {
-        const keyStr = String(key)
-        // Skip exact matches (already handled) and the '*' wildcard (handled below)
-        if (keyStr === typeStr || keyStr === '*') return
-        // Check glob patterns like 'user:*' or '*.created'
-        if (keyStr.includes('*')) {
-          const regex = new RegExp(`^${keyStr.replace(/\*/g, '.*')}$`)
-          if (regex.test(typeStr)) {
-            ;(patternHandlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
-              try {
-                const result = handler(type, evt as any)
-                if (result && typeof (result as Promise<unknown>).catch === 'function') {
-                  (result as Promise<unknown>).catch((err: unknown) => {
-                    console.error(`[Events] Async pattern handler '${keyStr}' error for '${typeStr}':`, err)
-                  })
-                }
-              }
-              catch (err) {
-                console.error(`[Events] Pattern handler '${keyStr}' error for '${typeStr}':`, err)
-              }
-            })
-          }
-        }
-      })
-
-      handlers = (all as EventHandlerMap<Events>).get('*')
-
-      if (handlers) {
-        ;(handlers as WildCardEventHandlerList<Events>).slice().forEach((handler) => {
-          try {
-            if (evt !== undefined)
-              handler(type, evt)
-          }
-          catch (err) {
-            console.error(`[Events] Wildcard handler error for '${String(type)}':`, err)
-          }
-        })
-      }
-    },
+  // Match a glob-pattern key (`user:*`, `*.created`) against a concrete event
+  // type. Compiled regexes are cached on the key string so the hot path
+  // doesn't recompile on every emit.
+  const patternCache = new Map<string, RegExp>()
+  const matchPattern = (key: string, type: string): boolean => {
+    let re = patternCache.get(key)
+    if (!re) {
+      // Preserve mitt's loose semantics: `*` is a glob (any chars) and
+      // every other char is treated as a literal regex char. We do NOT
+      // escape `.` because users in the wild rely on patterns like
+      // `*.created` matching `user:created` / `post-created` / etc.
+      // (treating `.` as "any char", not literal dot).
+      re = new RegExp(`^${key.replace(/\*/g, '.*')}$`)
+      patternCache.set(key, re)
+    }
+    return re.test(type)
   }
+
+  function on(type: any, handler: any) {
+    const list = map.get(type)
+    if (list) list.push(handler)
+    else map.set(type, [handler])
+  }
+
+  function once(type: any, handler: any) {
+    const wrapped: any = (...args: any[]) => {
+      off(type, wrapped)
+      return handler(...args)
+    }
+    // Tag so off-by-original-handler still works when caller stashed the
+    // original reference. Maintain a back-pointer for lookup.
+    wrapped[ASYNC_HANDLER_TAG] = handler
+    on(type, wrapped)
+  }
+
+  function off(type: any, handler?: any) {
+    const list = map.get(type)
+    if (!list) return
+    if (!handler) {
+      map.set(type, [])
+      return
+    }
+    for (let i = list.length - 1; i >= 0; i--) {
+      const h = list[i] as any
+      if (h === handler || h?.[ASYNC_HANDLER_TAG] === handler) list.splice(i, 1)
+    }
+  }
+
+  function removeAllListeners(type?: keyof Events | '*') {
+    if (type === undefined) map.clear()
+    else map.delete(type)
+  }
+
+  function listenerCount(type: keyof Events | '*'): number {
+    return map.get(type)?.length ?? 0
+  }
+
+  function emit(type: any, evt?: any) {
+    // Snapshot the relevant handler arrays so a handler that mutates the
+    // map (e.g. via `once` removal) doesn't trip iteration.
+    const exactHandlers = (map.get(type) as Handler<any>[] | undefined)?.slice()
+    const wildcardHandlers = (map.get('*') as WildcardHandler<any>[] | undefined)?.slice()
+
+    if (exactHandlers) {
+      for (const handler of exactHandlers) {
+        try {
+          // No undefined-skip — events with no payload (e.g. signals like
+          // `ping`, `ready`) are first-class. The previous `if (evt !==
+          // undefined)` guard inherited from mitt silently dropped those.
+          const result = handler(evt)
+          if (isPromiseLike(result))
+            result.catch(err => logAsyncError(`Async handler error`, type, err))
+        }
+        catch (err) {
+          logAsyncError(`Handler error`, type, err)
+        }
+      }
+    }
+
+    // Pattern match: 'user:*', '*.created', etc. Skip exact + literal '*'
+    // (handled separately below) so we don't double-fire.
+    const typeStr = String(type)
+    map.forEach((patternHandlers, key) => {
+      const keyStr = String(key)
+      if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
+      if (matchPattern(keyStr, typeStr)) {
+        for (const handler of (patternHandlers as WildcardHandler<any>[]).slice()) {
+          try {
+            const result = handler(type, evt)
+            if (isPromiseLike(result))
+              result.catch(err => logAsyncError(`Async pattern handler '${keyStr}' error`, type, err))
+          }
+          catch (err) {
+            logAsyncError(`Pattern handler '${keyStr}' error`, type, err)
+          }
+        }
+      }
+    })
+
+    if (wildcardHandlers) {
+      for (const handler of wildcardHandlers) {
+        try {
+          const result = handler(type, evt)
+          if (isPromiseLike(result))
+            result.catch(err => logAsyncError(`Async wildcard handler error`, type, err))
+        }
+        catch (err) {
+          logAsyncError(`Wildcard handler error`, type, err)
+        }
+      }
+    }
+  }
+
+  async function emitAsync(type: any, evt?: any): Promise<unknown[]> {
+    const results: unknown[] = []
+
+    const runAll = async (handlers: Handler<any>[] | WildcardHandler<any>[] | undefined, isWildcard: boolean) => {
+      if (!handlers) return
+      for (const handler of handlers.slice()) {
+        try {
+          const result = isWildcard ? (handler as WildcardHandler<any>)(type, evt) : (handler as Handler<any>)(evt)
+          results.push(isPromiseLike(result) ? await result : result)
+        }
+        catch (err) {
+          logAsyncError(`Awaited handler error`, type, err)
+          results.push(undefined)
+        }
+      }
+    }
+
+    await runAll(map.get(type) as Handler<any>[] | undefined, false)
+
+    const typeStr = String(type)
+    const patternKeys: string[] = []
+    map.forEach((_, key) => {
+      const keyStr = String(key)
+      if (keyStr === typeStr || keyStr === '*' || !keyStr.includes('*')) return
+      if (matchPattern(keyStr, typeStr)) patternKeys.push(keyStr)
+    })
+    for (const key of patternKeys)
+      await runAll(map.get(key) as WildcardHandler<any>[] | undefined, true)
+
+    await runAll(map.get('*') as WildcardHandler<any>[] | undefined, true)
+
+    return results
+  }
+
+  return { all: map, on, once, off, emit, emitAsync, removeAllListeners, listenerCount } as Emitter<Events>
 }
 
 /**
- * This module provides a simple, yet powerful, event bus for the application.
- *
- * TODO: https://vitejs.dev/guide/api-plugin.html#typescript-for-custom-events
- *
- * @example To fire an event, you may use any of the following approaches:
- * ```ts
- * useEvent('user:registered', { name: 'Chris'})
- * dispatch('user:registered', { name: 'Chris'})
- *
- * // alternatively, you may use the following:
- * events.emit('user:registered', { name: 'Chris'})
- * useEvents.emit('user:registered', { name: 'Chris'})
- * ````
- *
- * @example To capture an event, you may use any of the following approaches:
- * ```ts
- * useListen('user:registered', (user) => console.log(user))
- * listen('user:registered', (user) => console.log(user))
- * ```
+ * Backward-compatible alias for the legacy `mitt()` export. Behaves
+ * identically to {@link createEmitter}.
  */
+export const mitt = createEmitter
 
+// Default export keeps `import mitt from '@stacksjs/events'` shape working.
+export default createEmitter
+
+/**
+ * Application-wide event types. Listeners and dispatchers below are
+ * pre-typed to this map; user-defined event names land here via
+ * `ModelEvents` (model-emitted events) + the explicit auth events listed.
+ */
 export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
   'user:registered': Record<string, any>
   'user:logged-in': Record<string, any>
@@ -200,22 +261,35 @@ export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
   'user:password-changed': Record<string, any>
 }
 
-const events: Emitter<StacksEvents> = mitt<StacksEvents>()
+const events: Emitter<StacksEvents> = createEmitter<StacksEvents>()
 
-// Export clean, typed methods
 type Dispatch = <Key extends keyof StacksEvents>(type: Key, event: StacksEvents[Key]) => void
 type Listen = <Key extends keyof StacksEvents>(type: Key, handler: Handler<StacksEvents[Key]>) => void
 type Off = <Key extends keyof StacksEvents>(type: Key, handler?: Handler<StacksEvents[Key]>) => void
+type DispatchAsync = <Key extends keyof StacksEvents>(type: Key, event: StacksEvents[Key]) => Promise<unknown[]>
 
 const emitter: Emitter<StacksEvents> = events
 const useEvents: Emitter<StacksEvents> = events
 
 const dispatch: Dispatch = emitter.emit
+const dispatchAsync: DispatchAsync = emitter.emitAsync
 const useEvent: Dispatch = dispatch
 const all: EventHandlerMap<StacksEvents> = emitter.all
 const listen: Listen = emitter.on
 const useListen: Listen = emitter.on
-
+const once: Listen = emitter.once
 const off: Off = emitter.off
 
-export { all, dispatch, emitter, events, listen, mitt, off, useEvent, useEvents, useListen }
+export {
+  all,
+  dispatch,
+  dispatchAsync,
+  emitter,
+  events,
+  listen,
+  off,
+  once,
+  useEvent,
+  useEvents,
+  useListen,
+}
