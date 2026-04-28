@@ -163,6 +163,15 @@ export class Auth {
     if (!email)
       return false
 
+    // Per-email lockout enforcement. Without this check the framework
+    // recorded failed attempts but never actually refused new ones, so
+    // an attacker who'd burned through MAX_ATTEMPTS could keep trying.
+    // The per-IP throttle middleware on /api/auth/login is the first
+    // line; this is the second (in case the attacker rotates IPs but
+    // keeps targeting one inbox).
+    if (RateLimiter.isRateLimited(email))
+      return false
+
     const user = await User.where('email', '=', email).first()
     const authPass = credentials[password] || ''
 

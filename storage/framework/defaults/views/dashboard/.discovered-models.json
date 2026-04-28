@@ -54,6 +54,12 @@
     "hasDedicatedPage": false
   },
   {
+    "id": "deployment",
+    "name": "Deployment",
+    "icon": "tablecells.fill",
+    "hasDedicatedPage": false
+  },
+  {
     "id": "digital-delivery",
     "name": "DigitalDelivery",
     "icon": "arrow.down.doc.fill",
@@ -198,6 +204,12 @@
     "hasDedicatedPage": false
   },
   {
+    "id": "release",
+    "name": "Release",
+    "icon": "tablecells.fill",
+    "hasDedicatedPage": false
+  },
+  {
     "id": "review",
     "name": "Review",
     "icon": "star.fill",
@@ -228,6 +240,18 @@
     "hasDedicatedPage": false
   },
   {
+    "id": "subscriber",
+    "name": "Subscriber",
+    "icon": "envelope.open.fill",
+    "hasDedicatedPage": true
+  },
+  {
+    "id": "subscriber-email",
+    "name": "SubscriberEmail",
+    "icon": "envelope.fill",
+    "hasDedicatedPage": false
+  },
+  {
     "id": "subscription",
     "name": "Subscription",
     "icon": "repeat.circle.fill",
@@ -244,6 +268,12 @@
     "name": "TaxRate",
     "icon": "percent",
     "hasDedicatedPage": false
+  },
+  {
+    "id": "team",
+    "name": "Team",
+    "icon": "person.2.fill",
+    "hasDedicatedPage": true
   },
   {
     "id": "transaction",

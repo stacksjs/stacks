@@ -24,6 +24,55 @@ await injectGlobalAutoImports()
 // Enable CORS middleware
 route.use(cors().handle.bind(cors()))
 
+// Stamp X-Request-ID + start time on the request, then enrich the
+// outbound response with the id, Server-Timing, and (for generic 404s) the
+// requested path. Mounted at the global level (via route.use) so it
+// covers auto-CRUD routes that register OUTSIDE the user route groups in
+// routes/api.ts AND the bun-router-internal "no matching route" 404 path
+// that bypasses our stacks-router wrappers entirely.
+//
+// bun-router middleware uses the (request, next) → next() shape — we MUST
+// call next() and return its response so the pipeline continues.
+const SAFE_REQUEST_ID = /^[a-zA-Z0-9._-]{8,128}$/
+route.use(async (request: any, next: any) => {
+  const inbound = request?.headers?.get?.('x-request-id') || request?.headers?.get?.('X-Request-ID') || ''
+  const id = (typeof inbound === 'string' && SAFE_REQUEST_ID.test(inbound))
+    ? inbound
+    : crypto.randomUUID()
+  request._requestId = id
+  request._startNs = process.hrtime.bigint()
+
+  const response: Response = await next()
+
+  // Generic 404s come back as `{success:false, message:'Not Found'}` from
+  // bun-router with no path context. Enrich them so debugging client
+  // typos / stale SPA caches doesn't require server logs.
+  if (
+    response
+    && response.status === 404
+    && (response.headers.get('content-type') || '').includes('json')
+  ) {
+    try {
+      const body = await response.clone().json() as any
+      if (body && (body.message === 'Not Found' || body.error === 'Not Found')) {
+        const url = new URL(request.url)
+        const enriched = {
+          ...body,
+          path: url.pathname,
+          method: request.method,
+          request_id: id,
+        }
+        const headers = new Headers(response.headers)
+        headers.set('X-Request-ID', id)
+        return new Response(JSON.stringify(enriched), { status: 404, headers })
+      }
+    }
+    catch { /* malformed JSON — fall through */ }
+  }
+
+  return response
+})
+
 // Import routes
 await route.importRoutes()
 

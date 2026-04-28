@@ -113,6 +113,136 @@ const AUTO_CRUD_CASTERS: Record<string, { get: (v: unknown) => unknown, set: (v:
 function safeJSON(s: string): unknown { try { return JSON.parse(s) } catch { return s } }
 function safeJSONOrEmpty(s: string): unknown { try { return JSON.parse(s) } catch { return [] } }
 
+// Run each declared `validation.rule` against an incoming write payload.
+// Returns { valid: true } or { valid: false, errors }. Per-attribute custom
+// messages from `validation.message` override the rule's default text.
+//
+// Skips fields the caller never sent on PATCH requests so a partial update
+// doesn't trip a "required" rule on a sibling field that wasn't touched.
+function validateWriteBody(
+  data: Record<string, any>,
+  model: any,
+  hook: 'creating' | 'updating',
+): { valid: true } | { valid: false, errors: Record<string, string[]> } {
+  const attrs = model?.attributes ?? {}
+  const errors: Record<string, string[]> = {}
+  for (const [field, def] of Object.entries(attrs as Record<string, any>)) {
+    const rule: any = def?.validation?.rule
+    if (!rule || typeof rule.validate !== 'function') continue
+    const present = Object.prototype.hasOwnProperty.call(data, field)
+    if (!present && hook === 'updating') continue
+    const value = present ? data[field] : undefined
+    const result = rule.validate(value)
+    if (!result?.valid && Array.isArray(result?.errors) && result.errors.length > 0) {
+      errors[field] = result.errors.map((e: any) =>
+        def?.validation?.message?.[e?.code] ?? e?.message ?? 'invalid',
+      )
+    }
+  }
+  return Object.keys(errors).length === 0 ? { valid: true } : { valid: false, errors }
+}
+
+// Convert PascalCase model name to snake_case for default relation key
+// + FK convention (HostProfile → host_profile, host_profile_id).
+function toSnakeCase(s: string): string {
+  return s.replace(/([a-z\d])([A-Z])/g, '$1_$2').replace(/([A-Z])([A-Z][a-z])/g, '$1_$2').toLowerCase()
+}
+
+// Naive English pluralization for hasMany relation names. Matches
+// bun-query-builder's table-name convention (User → users, CarPhoto →
+// car_photos). Edge cases (mouse → mice, child → children) are not
+// covered — models that need them should override `useApi.uri`.
+function pluralize(s: string): string {
+  if (s.endsWith('y') && !/[aeiou]y$/i.test(s)) return `${s.slice(0, -1)}ies`
+  if (/(?:s|x|z|ch|sh)$/i.test(s)) return `${s}es`
+  return `${s}s`
+}
+
+/**
+ * Eager-load `belongsTo` + `hasMany` relations declared on a model and
+ * attach them under snake_case keys on each row. Hidden fields are
+ * recursively stripped from every loaded relation so a `?include=user`
+ * on a Booking can never leak the user's password hash even if a future
+ * model marks it fillable.
+ *
+ * Limited to one level of depth — `?include=user.host_profile` would
+ * need a recursive walker that's beyond the scope of the v1 implementation.
+ */
+async function applyIncludes(
+  rows: any[],
+  model: any,
+  includeParam: string,
+  modelsRegistry: Record<string, any>,
+): Promise<any[]> {
+  if (!rows.length) return rows
+  const requested = includeParam.split(',').map(s => s.trim()).filter(Boolean)
+  if (!requested.length) return rows
+
+  const belongsTo: string[] = Array.isArray(model.belongsTo) ? model.belongsTo : []
+  const hasMany: string[] = Array.isArray(model.hasMany) ? model.hasMany : []
+  const hasOne: string[] = Array.isArray(model.hasOne) ? model.hasOne : []
+
+  // Build a lookup: snake_case include key → { kind, modelName }
+  const allowed = new Map<string, { kind: 'belongsTo' | 'hasOne' | 'hasMany', modelName: string }>()
+  for (const m of belongsTo) allowed.set(toSnakeCase(m), { kind: 'belongsTo', modelName: m })
+  for (const m of hasOne) allowed.set(toSnakeCase(m), { kind: 'hasOne', modelName: m })
+  for (const m of hasMany) allowed.set(pluralize(toSnakeCase(m)), { kind: 'hasMany', modelName: m })
+
+  for (const include of requested) {
+    const meta = allowed.get(include)
+    if (!meta) continue // silently drop unknown includes — same shape as filter handling
+    const related = modelsRegistry[meta.modelName]
+    if (!related) continue
+    const relatedTable = related.table || pluralize(toSnakeCase(meta.modelName))
+    const relatedHidden = getHiddenFields(related)
+    const relatedAttrs = (id: any) => stripHidden(applyReadCasts(id, related), relatedHidden)
+
+    if (meta.kind === 'belongsTo' || meta.kind === 'hasOne') {
+      const fkOnParent = `${toSnakeCase(meta.modelName)}_id`
+      const ids = [...new Set(rows.map(r => r[fkOnParent]).filter(v => v != null))]
+      if (!ids.length) {
+        for (const r of rows) r[include] = null
+        continue
+      }
+      const childRows = await (db as any).selectFrom(relatedTable).whereIn('id', ids).get()
+      const byId = new Map<string, any>()
+      for (const cr of childRows ?? []) byId.set(String(cr.id), relatedAttrs(cr))
+      for (const r of rows) r[include] = byId.get(String(r[fkOnParent])) ?? null
+    }
+    else {
+      // hasMany: child rows have parent_id pointing back at us.
+      const parentName = String(model.name ?? '')
+      const fkOnChild = `${toSnakeCase(parentName)}_id`
+      const parentIds = [...new Set(rows.map(r => r.id).filter(v => v != null))]
+      if (!parentIds.length) {
+        for (const r of rows) r[include] = []
+        continue
+      }
+      const childRows = await (db as any).selectFrom(relatedTable).whereIn(fkOnChild, parentIds).get()
+      const grouped = new Map<string, any[]>()
+      for (const cr of childRows ?? []) {
+        const key = String(cr[fkOnChild])
+        const arr = grouped.get(key) ?? []
+        arr.push(relatedAttrs(cr))
+        grouped.set(key, arr)
+      }
+      for (const r of rows) r[include] = grouped.get(String(r.id)) ?? []
+    }
+  }
+  return rows
+}
+
+// Drop attribute keys flagged `hidden: true` from an incoming write body.
+// `hidden` already protects the response shape; this protects the request
+// shape so a curious client can't sneak `payment_intent_id` into a PATCH
+// even when the field is fillable for internal callers.
+function dropHiddenInputs(data: Record<string, any>, hiddenFields: string[]): Record<string, any> {
+  if (!hiddenFields.length) return data
+  const out: Record<string, any> = { ...data }
+  for (const f of hiddenFields) delete out[f]
+  return out
+}
+
 // Apply user-defined `set:` hooks (e.g. User.set.password = bcrypt) before
 // raw DB writes so the auto-CRUD store/update endpoints don't end up storing
 // plaintext where the model declared a transformation. Mirrors the helper
@@ -172,22 +302,56 @@ function jsonResponse(data: any, status = 200): Response {
   })
 }
 
+// Same as jsonResponse but stamps `request_id` into the body for error
+// envelopes. Pairs with the X-Request-ID response header so SPAs + RUM
+// tooling can correlate a user-facing error to a specific log line
+// without relying on header capture.
+function errorResponse(req: any, body: Record<string, any>, status = 400): Response {
+  const reqId = req?._requestId
+  const enriched = reqId ? { ...body, request_id: reqId } : body
+  return new Response(JSON.stringify(enriched), {
+    status,
+    headers: { 'Content-Type': 'application/json' },
+  })
+}
+
 // Helper: get request body (uses pre-parsed body from stacks-router middleware, falls back to clone).
 // Throws an HttpError on malformed JSON so the route handler can return 400 rather than silently
 // treating a corrupted payload as `{}` (which previously surfaced as "No fillable fields" 422s
 // and made debugging client bugs impossible).
+// Cap any single request body at this many bytes. 1 MB is generous for
+// JSON CRUD payloads (a 6-photo car listing is ~5 KB) but tight enough
+// that a hostile client can't park a 50 MB body and tie up the parser.
+// File uploads have their own multipart pipeline upstream and don't
+// route through this helper.
+const MAX_BODY_BYTES = 1_048_576
+
 async function getRequestBody(req: EnhancedRequest): Promise<Record<string, any>> {
+  // Body-size check runs FIRST so even pre-parsed bodies (jsonBody attached
+  // by upstream middleware) can't slip past the cap. We trust the
+  // advertised content-length header here — clients that lie about it
+  // get caught when the actual text is read below.
+  const contentLength = Number(req.headers?.get?.('content-length') ?? 0)
+  if (contentLength > MAX_BODY_BYTES)
+    throw new HttpError(413, `Request body exceeds ${MAX_BODY_BYTES}-byte limit`)
+
   if ((req as any).jsonBody && typeof (req as any).jsonBody === 'object') {
     return (req as any).jsonBody
   }
   if ((req as any).formBody && typeof (req as any).formBody === 'object') {
     return (req as any).formBody
   }
+
   try {
-    const parsed = await req.clone().json()
-    return parsed && typeof parsed === 'object' ? parsed : {}
+    const text = await req.clone().text()
+    if (text.length > MAX_BODY_BYTES)
+      throw new HttpError(413, `Request body exceeds ${MAX_BODY_BYTES}-byte limit`)
+    if (!text) return {}
+    const parsed = JSON.parse(text)
+    return parsed && typeof parsed === 'object' && !Array.isArray(parsed) ? parsed : {}
   }
   catch (err) {
+    if (err instanceof HttpError) throw err
     throw new HttpError(400, `Invalid JSON body: ${(err as Error).message}`)
   }
 }
@@ -211,14 +375,26 @@ function coerceId(raw: unknown): number | string | null {
   return null
 }
 
-// Helper: apply sort parameter to a query builder chain
+// Apply sort parameter to a query builder chain. Comma-separated tokens
+// each optionally `-` prefixed for descending. bun-query-builder's
+// `orderBy` is now compose-aware — chaining multiple calls produces a
+// single `ORDER BY a ASC, b DESC` clause.
+//
+// Examples:
+//   ?sort=name             → ORDER BY name ASC
+//   ?sort=-rating          → ORDER BY rating DESC
+//   ?sort=-rating,name     → ORDER BY rating DESC, name ASC
 function applySorting(query: any, sortParam: string | null, _table: string): any {
   if (!sortParam) return query
-  const desc = sortParam.startsWith('-')
-  const column = desc ? sortParam.slice(1) : sortParam
-  // Only allow alphanumeric and underscore column names to prevent injection
-  if (!/^\w+$/.test(column)) return query
-  return query.orderBy(column, desc ? 'desc' : 'asc')
+  const tokens = String(sortParam).split(',').map(t => t.trim()).filter(Boolean)
+  let q = query
+  for (const tok of tokens) {
+    const desc = tok.startsWith('-')
+    const column = desc ? tok.slice(1) : tok
+    if (!/^\w+$/.test(column)) continue
+    q = q.orderBy(column, desc ? 'desc' : 'asc')
+  }
+  return q
 }
 
 // Helper: extract bearer token from a request, falling back to the raw header
@@ -268,6 +444,17 @@ async function authedUserFromRequest(req: EnhancedRequest): Promise<any | null> 
 //
 // Returns the resolved owner value, or `null` if the model has no
 // ownership config (caller should treat as "no per-row check").
+// Helper: do row's ownership field value belong to the resolved owner?
+// Supports both scalar (single owner id) and array (set of allowed ids,
+// useful for two-hop ownership where a Photo's car_id must be ∈ the
+// authed host's owned car ids).
+function ownsRow(rowField: unknown, ownerValue: unknown): boolean {
+  if (rowField == null || ownerValue == null) return false
+  if (Array.isArray(ownerValue))
+    return ownerValue.some(v => String(v) === String(rowField))
+  return String(rowField) === String(ownerValue)
+}
+
 async function resolveOwnership(
   model: any,
   user: any,
@@ -395,7 +582,11 @@ for (const [modelName, model] of Object.entries(models)) {
         }
 
         const results = await query.limit(perPage).offset(offset).get()
-        const records = (results || []).map((r: any) => stripHidden(applyReadCasts(r, model), hiddenFields))
+        let records = (results || []).map((r: any) => stripHidden(applyReadCasts(r, model), hiddenFields))
+
+        const includeParam = url.searchParams.get('include')
+        if (includeParam)
+          records = await applyIncludes(records, model, includeParam, models)
 
         // Total count is opt-in via ?with_count=true. Skipping it by default
         // turns the index from "two queries every request" into "one", which
@@ -419,6 +610,13 @@ for (const [modelName, model] of Object.entries(models)) {
 
         const respHeaders: Record<string, string> = { 'Content-Type': 'application/json' }
         if (total !== undefined && !Number.isNaN(total)) respHeaders['X-Total-Count'] = String(total)
+        // Modest caching for unauthenticated browse — list views change
+        // less frequently than detail views and SPAs naturally re-hit them
+        // on navigation. Authed lists (which include user-specific filter
+        // results) carry a `Vary: Authorization` so caches don't merge
+        // them with the public response.
+        respHeaders['Cache-Control'] = 'public, max-age=15, must-revalidate'
+        respHeaders.Vary = 'Authorization'
 
         return new Response(JSON.stringify({
           data: records,
@@ -466,7 +664,34 @@ for (const [modelName, model] of Object.entries(models)) {
           return jsonResponse({ error: `${modelName} not found` }, 404)
         }
 
-        return jsonResponse({ data: stripHidden(applyReadCasts(result, model), hiddenFields) })
+        let payload: any = stripHidden(applyReadCasts(result, model), hiddenFields)
+
+        // ?include=user,host_profile,car_photos hydrates declared relations.
+        // Hidden fields are recursively stripped from each loaded relation.
+        const includeParam = url.searchParams.get('include')
+        if (includeParam) {
+          const [withRel] = await applyIncludes([payload], model, includeParam, models)
+          payload = withRel
+        }
+
+        // ETag derived from updated_at (or created_at) lets SPAs send
+        // If-None-Match and short-circuit re-renders. The 304 response is
+        // empty per spec — the client keeps its cached copy. Skip when the
+        // request is authed because per-user variants would poison shared
+        // caches.
+        const lastWrite = (payload as any)?.updated_at || (payload as any)?.created_at
+        const etag = lastWrite ? `W/"${(payload as any).id}-${String(lastWrite)}"` : undefined
+        const ifNoneMatch = req.headers?.get?.('if-none-match')
+        if (etag && ifNoneMatch && ifNoneMatch === etag) {
+          return new Response(null, { status: 304, headers: { ETag: etag } })
+        }
+
+        const headers: Record<string, string> = { 'Content-Type': 'application/json' }
+        if (etag) headers.ETag = etag
+        // Public caches default to a short TTL — long enough for SPA list/detail
+        // hops to share, short enough that a stale row clears within a minute.
+        headers['Cache-Control'] = 'public, max-age=30, must-revalidate'
+        return new Response(JSON.stringify({ data: payload }), { status: 200, headers })
       }
       catch (err) {
         if (err instanceof HttpError) {
@@ -484,7 +709,11 @@ for (const [modelName, model] of Object.entries(models)) {
     route.post(basePath, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
-        const data = filterFillable(body, fillableFields)
+        // Belt-and-suspenders: drop hidden inputs FIRST so a curious client
+        // can't sneak `payment_intent_id` etc. into a POST even if a future
+        // change accidentally flips them to fillable.
+        const safeBody = dropHiddenInputs(body, hiddenFields)
+        const data = filterFillable(safeBody, fillableFields)
 
         // Stamp ownership / context-aware fields from the authed user before
         // the body fillable check, so models can declare e.g.
@@ -502,6 +731,12 @@ for (const [modelName, model] of Object.entries(models)) {
         if (Object.keys(data).length === 0) {
           return jsonResponse({ error: 'No fillable fields provided' }, 422)
         }
+
+        // Run declared validation rules. Models declare `validation: { rule:
+        // schema.string().required().email() }` per attribute — without this
+        // call, those declarations were dead documentation.
+        const v = validateWriteBody(data, model, 'creating')
+        if (!v.valid) return jsonResponse({ error: 'Validation failed', errors: v.errors }, 422)
 
         // Add timestamps if model uses them
         if (model.traits?.useTimestamps !== false) {
@@ -553,7 +788,8 @@ for (const [modelName, model] of Object.entries(models)) {
           return jsonResponse({ error: 'Invalid ID parameter' }, 400)
         }
         const body = await getRequestBody(req)
-        const data = filterFillable(body, fillableFields)
+        const safeBody = dropHiddenInputs(body, hiddenFields)
+        const data = filterFillable(safeBody, fillableFields)
 
         // Apply authedFill.updating stamps (mirror of the Store path).
         const authedUser = await authedUserFromRequest(req)
@@ -568,6 +804,11 @@ for (const [modelName, model] of Object.entries(models)) {
         if (Object.keys(data).length === 0) {
           return jsonResponse({ error: 'No fillable fields provided' }, 422)
         }
+
+        // Run declared validation rules. Partial updates only validate fields
+        // the caller actually sent — see validateWriteBody for the rule.
+        const v = validateWriteBody(data, model, 'updating')
+        if (!v.valid) return jsonResponse({ error: 'Validation failed', errors: v.errors }, 422)
 
         // 404 fast if the row doesn't exist — previously the UPDATE silently
         // matched zero rows and we returned the request body as if it had
@@ -586,11 +827,11 @@ for (const [modelName, model] of Object.entries(models)) {
         if (own.enforced && !own.bypass) {
           if (!authedUser) return jsonResponse({ error: 'Auth required' }, 401)
           const rowOwner = (existing as Record<string, unknown>)[own.field]
-          if (rowOwner == null || own.value == null || String(rowOwner) !== String(own.value)) {
+          if (!ownsRow(rowOwner, own.value)) {
             return jsonResponse({ error: `Not your ${modelName}` }, 403)
           }
           // Also defend against the request trying to re-parent ownership.
-          if (own.field in data && String(data[own.field]) !== String(own.value)) {
+          if (own.field in data && !ownsRow(data[own.field], own.value)) {
             return jsonResponse({ error: `Cannot reassign ${modelName} ownership` }, 403)
           }
         }
@@ -658,7 +899,7 @@ for (const [modelName, model] of Object.entries(models)) {
         if (own.enforced && !own.bypass) {
           if (!authedUser) return jsonResponse({ error: 'Auth required' }, 401)
           const rowOwner = (existing as Record<string, unknown>)[own.field]
-          if (rowOwner == null || own.value == null || String(rowOwner) !== String(own.value)) {
+          if (!ownsRow(rowOwner, own.value)) {
             return jsonResponse({ error: `Not your ${modelName}` }, 403)
           }
         }
@@ -732,7 +973,7 @@ for (const [modelName, model] of Object.entries(models)) {
           const rows = await (db as any).selectFrom(table).select(['id', own.field]).execute()
           const ownedIds = new Set(
             (rows as Array<Record<string, unknown>>)
-              .filter(r => String(r[own.field]) === String(own.value))
+              .filter(r => ownsRow(r[own.field], own.value))
               .map(r => String(r.id)),
           )
           const notOwned = validIds.filter(id => !ownedIds.has(String(id)))
