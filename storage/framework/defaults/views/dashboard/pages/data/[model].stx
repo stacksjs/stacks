@@ -29,6 +29,15 @@ try {
   if (!/^[a-z][a-z0-9_]*$/.test(tableName))
     throw new Error('Invalid table name')
 
+  // If the table doesn't exist yet (model exists in app/Models but its
+  // migration hasn't been run, or the table lives in a different DB) we
+  // want the empty-state UI rather than a red "Error Loading Data" box.
+  // Skip the SELECTs entirely and let `items.length === 0` handle it.
+  const tableExists = !!db.query("SELECT 1 FROM sqlite_master WHERE type='table' AND name=?").get(tableName)
+  if (!tableExists) {
+    db.close()
+  }
+  else {
   const allItems = db.query(`SELECT * FROM ${tableName} ORDER BY rowid DESC LIMIT 200`).all()
   totalCount = (db.query(`SELECT COUNT(*) AS c FROM ${tableName}`).get() || { c: 0 }).c
   if (allItems.length > 0) {
@@ -62,6 +71,7 @@ try {
     }
   }
   db.close()
+  }
 } catch (e) {
   error = e && e.message ? e.message : 'DB not seeded'
 }
