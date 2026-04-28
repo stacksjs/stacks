@@ -35,19 +35,63 @@ export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
   return ok('All tables dropped successfully!') as any
 }
 
+/**
+ * Configure SQLite for the Stacks workload. Idempotent — the pragmas are
+ * cheap to re-apply, but each one is a no-op once set so repeated calls
+ * during dev hot-reload don't accumulate state.
+ *
+ * - WAL journaling: lets readers and a single writer proceed in parallel
+ *   instead of serializing every transaction. Critical for dev where the
+ *   API server, queue worker, and dashboard all hit the same file.
+ * - foreign_keys=ON: SQLite ships with FK enforcement OFF by default.
+ *   Without this, FK constraint violations are silently ignored — broken
+ *   relations land in the DB and fail later, far from the original write.
+ * - busy_timeout: backs off when the file is locked by another writer
+ *   instead of failing the whole query immediately.
+ */
+export async function configureSqlitePragmas(): Promise<void> {
+  try {
+    await db.unsafe('PRAGMA journal_mode = WAL').execute()
+    await db.unsafe('PRAGMA foreign_keys = ON').execute()
+    await db.unsafe('PRAGMA busy_timeout = 5000').execute()
+  }
+  catch (err) {
+    log.debug(`[sqlite] Failed to apply pragmas: ${(err as Error).message}`)
+  }
+}
+
 export async function dropSqliteTables(): Promise<void> {
   const userModelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
-  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS "${table}"`).execute()
-  await db.unsafe('DROP TABLE IF EXISTS "migrations"').execute()
-  await dropCommonTables()
+  // Validate table names are simple identifiers before splicing into raw SQL.
+  // Same defense-in-depth pattern as the MySQL driver — names come from
+  // information_schema today, but a future caller might pass user input.
+  const safeName = /^[a-z_][\w]*$/i
 
-  for (const userModel of userModelFiles) {
-    const userModelPath = (await import(userModel)).default
-    const pivotTables = await getPivotTables(userModelPath, userModel)
+  // Disable FK checks for the duration of the drop so we don't have to
+  // topo-sort the table list. SQLite keeps this off until pragma is reset.
+  await db.unsafe('PRAGMA foreign_keys = OFF').execute()
+  try {
+    for (const table of tables) {
+      if (!safeName.test(table)) throw new Error(`[sqlite] Refusing to drop table with unsafe name: ${table}`)
+      await db.unsafe(`DROP TABLE IF EXISTS "${table}"`).execute()
+    }
+    await db.unsafe('DROP TABLE IF EXISTS "migrations"').execute()
+    await dropCommonTables()
 
-    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}"`).execute()
+    for (const userModel of userModelFiles) {
+      const userModelPath = (await import(userModel)).default
+      const pivotTables = await getPivotTables(userModelPath, userModel)
+
+      for (const pivotTable of pivotTables) {
+        if (!safeName.test(pivotTable.table)) throw new Error(`[sqlite] Refusing to drop pivot table with unsafe name: ${pivotTable.table}`)
+        await db.unsafe(`DROP TABLE IF EXISTS "${pivotTable.table}"`).execute()
+      }
+    }
+  }
+  finally {
+    await db.unsafe('PRAGMA foreign_keys = ON').execute()
   }
 }
 

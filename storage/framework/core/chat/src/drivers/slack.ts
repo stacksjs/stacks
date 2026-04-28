@@ -57,9 +57,30 @@ export interface SlackAttachment {
 let config: SlackConfig = {}
 
 /**
- * Configure Slack with webhook URL or bot token
+ * Configure Slack with webhook URL or bot token.
+ *
+ * Validates that the webhook URL (when provided) is HTTPS pointing at
+ * Slack's webhook host. A misconfigured `http://` URL would leak the
+ * channel-specific token in plaintext to anyone watching network
+ * traffic; a typo'd domain would silently send messages to whatever
+ * server happens to accept them.
  */
 export function configure(options: SlackConfig): void {
+  if (options.webhookUrl) {
+    let parsed: URL
+    try {
+      parsed = new URL(options.webhookUrl)
+    }
+    catch {
+      throw new Error(`[chat/slack] webhookUrl is not a valid URL: ${options.webhookUrl}`)
+    }
+    if (parsed.protocol !== 'https:') {
+      throw new Error('[chat/slack] webhookUrl must use https:// — Slack does not accept plain HTTP webhooks.')
+    }
+    if (!/(^|\.)slack\.com$/i.test(parsed.hostname)) {
+      throw new Error(`[chat/slack] webhookUrl host "${parsed.hostname}" is not a Slack-owned domain.`)
+    }
+  }
   config = { ...config, ...options }
 }
 

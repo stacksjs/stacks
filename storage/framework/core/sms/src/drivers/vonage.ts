@@ -56,6 +56,19 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
       }
     }
 
+    // E.164 validation. Vonage's REST API silently accepts garbage formats
+    // and reports success at submit time, then refuses delivery later — so
+    // bad numbers used to look fine in app logs for hours before turning
+    // up as undelivered in the Vonage dashboard. Reject early instead.
+    if (!/^\+?[1-9]\d{1,14}$/.test(to)) {
+      return {
+        success: false,
+        to,
+        error: `Invalid E.164 phone number: ${to}. Expected +<country><number> with 8–15 digits.`,
+        provider: 'vonage',
+      }
+    }
+
     try {
       if (this.useMessagesApi) {
         return await this.sendWithMessagesApi(to, from, message)
@@ -273,12 +286,22 @@ export class VonageDriver implements SmsDriver, SmsVerificationDriver {
   }
 
   /**
-   * Get account balance
+   * Get account balance.
+   *
+   * Sends credentials via the Authorization header (Basic auth) instead
+   * of as URL query params. The previous form put apiSecret in the URL,
+   * which proxies, access logs, request-tracing tools, and browser
+   * history all happily preserve in plaintext. Header-based auth keeps
+   * the secret out of those well-known leakage paths.
    */
   async getBalance(): Promise<{ balance: number, currency: string }> {
-    const response = await fetch(
-      `${API_BASE}/account/get-balance?api_key=${this.config.apiKey}&api_secret=${this.config.apiSecret}`,
-    )
+    const auth = (typeof Buffer !== 'undefined'
+      ? Buffer.from(`${this.config.apiKey}:${this.config.apiSecret}`).toString('base64')
+      : btoa(`${this.config.apiKey}:${this.config.apiSecret}`))
+
+    const response = await fetch(`${API_BASE}/account/get-balance`, {
+      headers: { Authorization: `Basic ${auth}` },
+    })
 
     if (!response.ok) {
       throw new Error(`Vonage balance API error: ${response.status}`)

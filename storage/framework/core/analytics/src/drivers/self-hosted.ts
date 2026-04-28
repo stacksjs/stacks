@@ -61,9 +61,15 @@ export function generateSelfHostedScript(config: SelfHostedConfig): string {
     var x=new XMLHttpRequest();
     x.open('POST',api+'/collect',true);
     x.setRequestHeader('Content-Type','application/json');
+    // Strip the URL's query string before sending. location.href includes
+    // tokens / session IDs / search terms that shouldn't reach the
+    // analytics backend. Same goes for document.referrer when it points
+    // back to our own domain (path is fine, query is not).
+    var safeUrl=location.origin+location.pathname+location.hash;
+    var safeRef=d.referrer?d.referrer.split('?')[0]:'';
     x.send(JSON.stringify({
       s:site,sid:sid,e:e,p:p||{},
-      u:location.href,r:d.referrer,t:d.title,
+      u:safeUrl,r:safeRef,t:d.title,
       sw:screen.width,sh:screen.height
     }));
   }
@@ -118,7 +124,7 @@ function t(e,p){
 var x=new XMLHttpRequest();
 x.open('POST',api+'/collect',true);
 x.setRequestHeader('Content-Type','application/json');
-x.send(JSON.stringify({s:site,sid:sid,e:e,p:p||{},u:location.href,r:d.referrer,t:d.title,sw:screen.width,sh:screen.height}));
+var safeUrl=location.origin+location.pathname+location.hash;var safeRef=d.referrer?d.referrer.split('?')[0]:'';x.send(JSON.stringify({s:site,sid:sid,e:e,p:p||{},u:safeUrl,r:safeRef,t:d.title,sw:screen.width,sh:screen.height}));
 }
 function pv(){t('pageview');}
 ${hashTracking}

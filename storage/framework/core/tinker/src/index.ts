@@ -1,5 +1,5 @@
 import type { Subprocess } from 'bun'
-import { existsSync, readFileSync, writeFileSync, appendFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync, appendFileSync, chmodSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
@@ -171,10 +171,20 @@ export function readHistory(config?: TinkerConfig): string[] {
 
 /**
  * Append a single entry to the history file.
+ *
+ * The history file lives at `~/.stacks_tinker_history` and accumulates
+ * every expression a developer types — including any one-off pasted
+ * tokens, API keys, or DB credentials. Forcing 0600 permissions keeps
+ * the file readable only by the file's owner so other users on a shared
+ * machine can't grep it for accidentally-committed secrets.
  */
 export function appendHistory(entry: string, config?: TinkerConfig): void {
   const historyPath = getHistoryPath(config)
+  const isNew = !existsSync(historyPath)
   appendFileSync(historyPath, `${entry}\n`)
+  if (isNew) {
+    try { chmodSync(historyPath, 0o600) } catch { /* best-effort */ }
+  }
 
   // Trim history if it exceeds max size
   const maxSize = config?.historySize ?? 5000
@@ -183,6 +193,7 @@ export function appendHistory(entry: string, config?: TinkerConfig): void {
   if (entries.length > maxSize) {
     const trimmed = entries.slice(entries.length - maxSize)
     writeFileSync(historyPath, trimmed.join('\n') + '\n')
+    try { chmodSync(historyPath, 0o600) } catch { /* best-effort */ }
   }
 }
 

@@ -25,7 +25,15 @@ export class BunStorageAdapter implements StorageAdapter {
   }
 
   private resolvePath(path: string): string {
-    return join(this.root, path)
+    const resolved = join(this.root, path)
+    // Prevent path traversal — same defense as the local adapter. Without
+    // this, a caller passing `../../etc/passwd` would resolve outside the
+    // configured storage root because `join` happily normalizes `..`.
+    const rel = relative(this.root, resolved)
+    if (rel.startsWith('..') || rel.startsWith('../') || rel.startsWith('..\\')) {
+      throw new Error(`Path traversal detected: '${path}' resolves outside storage root`)
+    }
+    return resolved
   }
 
   async write(path: string, contents: FileContents): Promise<void> {

@@ -53,9 +53,28 @@ export interface DiscordMessage {
 let config: DiscordConfig = {}
 
 /**
- * Configure Discord with webhook URL or bot token
+ * Configure Discord with webhook URL or bot token.
+ *
+ * Validates that the webhook URL (when provided) is HTTPS pointing at
+ * Discord's host. Same reasoning as the Slack driver — `http://` URLs
+ * leak the webhook token; off-domain URLs are typo'd configuration.
  */
 export function configure(options: DiscordConfig): void {
+  if (options.webhookUrl) {
+    let parsed: URL
+    try {
+      parsed = new URL(options.webhookUrl)
+    }
+    catch {
+      throw new Error(`[chat/discord] webhookUrl is not a valid URL: ${options.webhookUrl}`)
+    }
+    if (parsed.protocol !== 'https:') {
+      throw new Error('[chat/discord] webhookUrl must use https://')
+    }
+    if (!/(^|\.)discord(?:app)?\.com$/i.test(parsed.hostname)) {
+      throw new Error(`[chat/discord] webhookUrl host "${parsed.hostname}" is not a Discord-owned domain.`)
+    }
+  }
   config = { ...config, ...options }
 }
 

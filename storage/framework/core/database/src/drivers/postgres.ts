@@ -260,13 +260,19 @@ async function createTableMigration(modelPath: string) {
 
   // Append created_at and updated_at columns if useTimestamps is true
   if (useTimestamps) {
-    migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-    migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+    // Use timestamptz on PostgreSQL — `timestamp` (without time zone)
+    // stores the wall-clock instant the writer's client *thought* was
+    // local time, which fractures across deployments running in
+    // different TZs. timestamptz normalizes everything to UTC at write
+    // and renders in the reader's session TZ, which is what app code
+    // assumes when it does `new Date(row.created_at)`.
+    migrationContent += `    .addColumn('created_at', 'timestamptz', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+    migrationContent += `    .addColumn('updated_at', 'timestamptz')\n`
   }
 
   // Append deleted_at column if useSoftDeletes is true
   if (useSoftDeletes)
-    migrationContent += `    .addColumn('deleted_at', 'timestamp')\n`
+    migrationContent += `    .addColumn('deleted_at', 'timestamptz')\n`
 
   migrationContent += `    .execute()\n`
 

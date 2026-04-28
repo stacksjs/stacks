@@ -263,6 +263,16 @@ export class S3StorageAdapter implements StorageAdapter {
     const key = this.prefixPath(path)
     const expiresIn = Math.floor(normalizeExpiryToMilliseconds(options.expiresIn) / 1000)
 
+    // S3 pre-signed URLs are clamped to [60s, 7 days]. Anything outside
+    // that range is silently rejected by AWS at sign time and surfaces as
+    // a 403 to the eventual viewer — better to fail loudly here so the
+    // caller fixes their config.
+    const MIN_EXPIRY = 60
+    const MAX_EXPIRY = 7 * 24 * 60 * 60
+    if (!Number.isFinite(expiresIn) || expiresIn < MIN_EXPIRY || expiresIn > MAX_EXPIRY) {
+      throw new RangeError(`[storage/s3] temporaryUrl expiresIn must be between 60s and 7 days (got ${expiresIn}s)`)
+    }
+
     return await this.client.getSignedUrl({
       bucket: this.bucket,
       key,

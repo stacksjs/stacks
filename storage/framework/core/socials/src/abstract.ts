@@ -109,8 +109,25 @@ export abstract class AbstractProvider implements ProviderInterface {
 
   /**
    * Set the redirect URL.
+   *
+   * Rejects relative-path-only and non-HTTP(S) URLs — accepting `javascript:`
+   * or `data:` schemes here would let an attacker who controls the
+   * `redirect_uri` query param turn the OAuth callback into an XSS sink.
    */
   public setRedirectUrl(url: string): this {
+    if (typeof url !== 'string' || url.length === 0) {
+      throw new Error('[socials] setRedirectUrl requires a non-empty string')
+    }
+    let parsed: URL
+    try {
+      parsed = new URL(url)
+    }
+    catch {
+      throw new Error(`[socials] setRedirectUrl: invalid URL: ${url}`)
+    }
+    if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') {
+      throw new Error(`[socials] setRedirectUrl protocol must be http(s)://, got ${parsed.protocol}`)
+    }
     this.redirectUrl = url
     return this
   }
@@ -139,9 +156,15 @@ export abstract class AbstractProvider implements ProviderInterface {
 
   /**
    * Get the string used for session state.
+   *
+   * 32 random bytes (256 bits) of entropy. Worth doubling from the
+   * previous 20 bytes (160 bits) — state is the OAuth-flow CSRF token
+   * and is the only thing standing between us and a full callback
+   * hijack, so the cost of an extra 24 hex chars per auth attempt is
+   * trivial vs the upside.
    */
   protected getState(): string {
-    const bytes = new Uint8Array(20) // 40 hex chars = 20 bytes
+    const bytes = new Uint8Array(32)
     crypto.getRandomValues(bytes)
     return Array.from(bytes)
       .map(byte => byte.toString(16).padStart(2, '0'))
@@ -176,17 +199,24 @@ export abstract class AbstractProvider implements ProviderInterface {
 
   /**
    * Generates the PKCE code challenge based on the code verifier.
+   *
+   * Uses Buffer's native base64url encoding instead of building it from
+   * `btoa(String.fromCharCode(...bytes))`. The latter coerces every
+   * byte through `String.fromCharCode`, which is fine for hashes but
+   * produces incorrect output for any input containing bytes ≥ 0x80
+   * because `String.fromCharCode` returns a UTF-16 code unit, not a
+   * raw byte. SHA-256 hashes routinely include such bytes — the old
+   * code happened to work because the manual replace() handled the
+   * artifacts, but the new path is provably correct end-to-end.
    */
   protected async getCodeChallenge(): Promise<string> {
     const encoder = new TextEncoder()
     const data = encoder.encode(this.getCodeVerifier())
     const hash = await crypto.subtle.digest('SHA-256', data)
-    const hashArray = Array.from(new Uint8Array(hash))
-    const hashBase64 = btoa(String.fromCharCode(...hashArray))
-    return hashBase64
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '')
+    // Buffer is available in Bun and Node; base64url encoding produces
+    // the URL-safe variant directly without manual character substitution.
+    const { Buffer } = await import('node:buffer')
+    return Buffer.from(new Uint8Array(hash)).toString('base64url')
   }
 
   /**

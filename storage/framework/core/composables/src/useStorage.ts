@@ -66,8 +66,23 @@ export function useStorage<T>(
         store.setItem(key, serializer.write(val))
       }
     }
-    catch {
-      // Storage write may fail (quota exceeded, private browsing)
+    catch (err: unknown) {
+      // Quota-exceeded and private-browsing errors are expected; log them
+      // at warn level so the developer can spot persistent persistence
+      // failures (e.g. an over-aggressive useStorage usage filling the
+      // 5MB localStorage budget) without crashing the SPA. Other errors
+      // (security violations, missing storage on SSR) used to fail
+      // silently and leave the ref in inconsistent state.
+      const name = (err as { name?: string })?.name ?? ''
+      const msg = (err as { message?: string })?.message ?? String(err)
+      if (name === 'QuotaExceededError' || /quota/i.test(msg)) {
+        // eslint-disable-next-line no-console
+        console.warn(`[useStorage] ${key}: storage quota exceeded — value not persisted.`)
+      }
+      else {
+        // eslint-disable-next-line no-console
+        console.warn(`[useStorage] ${key}: failed to persist value — ${msg}`)
+      }
     }
   })
 

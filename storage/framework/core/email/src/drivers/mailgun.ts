@@ -115,7 +115,15 @@ export class MailgunDriver extends BaseEmailDriver {
     return addresses.map((addr) => {
       if (typeof addr === 'string')
         return addr
-      return addr.name ? `${addr.name} <${addr.address}>` : addr.address
+      if (!addr.name) return addr.address
+      // Same RFC 5322 quoting we use in base.ts — Mailgun forwards the
+      // header verbatim to the receiving SMTP server, so unquoted
+      // commas/quotes/angle-brackets in display names break addressing.
+      const needsQuoting = /[",()<>[\]:;@\\]/.test(addr.name)
+      const safeName = needsQuoting
+        ? `"${addr.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+        : addr.name
+      return `${safeName} <${addr.address}>`
     })
   }
 

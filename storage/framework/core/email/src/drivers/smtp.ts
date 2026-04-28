@@ -9,6 +9,20 @@ import { template } from '../template'
 import { BaseEmailDriver } from './base'
 
 /**
+ * Encode an SMTP header value with RFC 2047 base64 encoding when it
+ * contains non-ASCII characters. Without this, subjects like
+ * "Encore d'idées" or "你好" produce headers that violate RFC 5322 (which
+ * mandates 7-bit ASCII for headers) and get mangled or rejected by
+ * downstream relays.
+ */
+function encodeRfc2047IfNeeded(value: string): string {
+  // eslint-disable-next-line no-control-regex
+  if (/^[\x00-\x7F]*$/.test(value)) return value
+  const encoded = Buffer.from(value, 'utf-8').toString('base64')
+  return `=?UTF-8?B?${encoded}?=`
+}
+
+/**
  * SMTP Driver for email sending
  * Works with any SMTP server: Mailtrap, Mailgun, SendGrid, SES, etc.
  * Supports STARTTLS (port 587) and direct TLS (port 465)
@@ -116,7 +130,7 @@ export class SMTPDriver extends BaseEmailDriver {
     lines.push(`To: ${to}`)
     if (cc)
       lines.push(`Cc: ${cc}`)
-    lines.push(`Subject: ${subject}`)
+    lines.push(`Subject: ${encodeRfc2047IfNeeded(subject)}`)
     lines.push(`MIME-Version: 1.0`)
     lines.push(`Date: ${new Date().toUTCString()}`)
     lines.push(`Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2)}@${config.email.domain || 'localhost'}>`)
