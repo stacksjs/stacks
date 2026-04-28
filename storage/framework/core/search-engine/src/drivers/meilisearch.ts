@@ -44,8 +44,31 @@ async function addDocument(indexName: string, params: any): Promise<EnqueuedTask
   return await client().index(indexName).addDocuments([params])
 }
 
+/**
+ * Meilisearch caps a single addDocuments() call at 100MB by default and
+ * gets unhappy with very large batches even when they fit. Splitting at
+ * 1000 docs is the official recommendation — each chunk gets enqueued
+ * as its own task and progresses independently. Returning the *first*
+ * task preserves the existing single-task return shape; callers wanting
+ * full progress should switch to `addDocumentsInBatches` when ready.
+ */
 async function addDocuments(indexName: string, params: any[]): Promise<EnqueuedTask> {
-  return await client().index(indexName).addDocuments(params)
+  const MAX_BATCH = 1000
+  if (!Array.isArray(params)) {
+    throw new TypeError('[search/meilisearch] addDocuments requires an array of documents')
+  }
+  if (params.length <= MAX_BATCH) {
+    return await client().index(indexName).addDocuments(params)
+  }
+
+  let firstTask: EnqueuedTask | undefined
+  for (let i = 0; i < params.length; i += MAX_BATCH) {
+    const chunk = params.slice(i, i + MAX_BATCH)
+    const task = await client().index(indexName).addDocuments(chunk)
+    if (!firstTask) firstTask = task
+  }
+  // Non-null assertion safe: input length > 0 implies at least one chunk ran.
+  return firstTask!
 }
 
 async function getIndex(name: string): Promise<Index<Record<string, any>>> {
@@ -232,18 +255,30 @@ async function resetDictionary(index: string): Promise<EnqueuedTask> {
   return client().index(index).resetDictionary()
 }
 
+/**
+ * Convert a `{ field: value }` map into Meilisearch filter expressions.
+ *
+ * Field names go straight into the filter DSL — Meilisearch parses them
+ * as identifiers, so we restrict to safe identifier characters
+ * (`[a-z0-9_]` plus dot for nested paths). Without the check, a key
+ * like `"category';TRUNCATE INDEX;'"` would close the filter and inject
+ * arbitrary DSL fragments. Values are still single-quote-escaped.
+ */
+const SAFE_FILTER_FIELD = /^[a-z_][\w]*(\.[a-z_][\w]*)*$/i
+
 function convertToFilter(jsonData: any): string[] {
   if (!jsonData) return []
 
   const filters: string[] = []
 
   for (const key in jsonData) {
-    if (Object.prototype.hasOwnProperty.call(jsonData, key)) {
-      const value = jsonData[key]
-      // Escape single quotes in values to prevent filter injection
-      const escaped = String(value).replace(/'/g, "\\'")
-      filters.push(`${key}='${escaped}'`)
+    if (!Object.prototype.hasOwnProperty.call(jsonData, key)) continue
+    if (!SAFE_FILTER_FIELD.test(key)) {
+      throw new Error(`[search/meilisearch] Refusing to build filter with unsafe field name: ${key}`)
     }
+    const value = jsonData[key]
+    const escaped = String(value).replace(/'/g, "\\'")
+    filters.push(`${key}='${escaped}'`)
   }
 
   return filters

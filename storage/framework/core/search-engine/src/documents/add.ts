@@ -26,9 +26,26 @@ export async function importModelDocuments(modelOption?: string): Promise<Ok<str
 
         const documents = await ormModelInstance.all()
 
+        // Per-document try/catch so one bad row doesn't abort the entire
+        // re-index. The previous behavior was: hit a malformed
+        // toSearchableObject() return value, throw out of the inner loop,
+        // and skip every remaining model. Now we count and report skipped
+        // rows so operators know what didn't make it.
+        let imported = 0
+        let skipped = 0
         for (const document of documents) {
-          await addDocument(tableName, document.toSearchableObject())
+          try {
+            const searchable = document.toSearchableObject?.()
+            if (searchable == null) { skipped++; continue }
+            await addDocument(tableName, searchable)
+            imported++
+          }
+          catch (err) {
+            skipped++
+            log.warn(`[search] Skipped ${modelName}#${document.id ?? '?'}: ${(err as Error).message}`)
+          }
         }
+        log.info(`[search] ${modelName}: imported ${imported}, skipped ${skipped}`)
       }
     }
 

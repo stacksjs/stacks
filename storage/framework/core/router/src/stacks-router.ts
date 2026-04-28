@@ -278,7 +278,16 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         const middleware = await loadMiddleware(middlewareName)
         if (middleware && typeof middleware.handle === 'function') {
           try {
-            await middleware.handle(enhancedReq)
+            // 30s middleware budget. A misbehaving middleware that hangs
+            // (e.g. waits forever on a deadlocked external service) used
+            // to lock the entire request handler indefinitely; the
+            // timeout surfaces it as a 500 instead, freeing the worker
+            // to keep serving other requests.
+            const MIDDLEWARE_TIMEOUT_MS = 30_000
+            const timeoutPromise = new Promise<never>((_, reject) =>
+              setTimeout(() => reject(new Error(`Middleware '${middlewareName}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)), MIDDLEWARE_TIMEOUT_MS),
+            )
+            await Promise.race([middleware.handle(enhancedReq), timeoutPromise])
           }
           catch (error) {
             // Middleware threw an error — always convert to a proper HTTP response
@@ -303,6 +312,60 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
       // Clear tracked queries after each request to prevent accumulation
       clearTrackedQueries()
+
+      // Echo X-Request-ID + Server-Timing on every response, AND stitch
+      // the request_id into JSON error bodies so SPA error toasts can show
+      // it (and bug reports can include it). For 4xx/5xx JSON responses
+      // we rebuild the body once with `request_id` added; for 2xx/3xx we
+      // only touch headers.
+      const reqId = (enhancedReq as any)._requestId as string | undefined
+      const startNs = (enhancedReq as any)._startNs as bigint | undefined
+      const durMs = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
+
+      const setHeaders = (h: Headers) => {
+        if (reqId) h.set('X-Request-ID', reqId)
+        if (durMs != null) h.set('Server-Timing', `total;dur=${durMs.toFixed(1)}`)
+      }
+
+      if (response && typeof (response as any).headers?.set === 'function') {
+        const isErrorJson = response.status >= 400
+          && (response.headers.get('content-type') || '').includes('json')
+
+        // Inject request_id into JSON error bodies for SPA-side correlation.
+        if (isErrorJson && reqId) {
+          try {
+            const text = await response.clone().text()
+            const parsed = JSON.parse(text)
+            if (parsed && typeof parsed === 'object' && !('request_id' in parsed)) {
+              const newHeaders = new Headers(response.headers)
+              setHeaders(newHeaders)
+              return new Response(JSON.stringify({ ...parsed, request_id: reqId }), {
+                status: response.status,
+                statusText: response.statusText,
+                headers: newHeaders,
+              })
+            }
+          }
+          catch { /* malformed JSON — fall through to header-only rewrite */ }
+        }
+
+        try {
+          setHeaders(response.headers)
+        }
+        catch {
+          try {
+            const cloned = response.clone()
+            const newHeaders = new Headers(response.headers)
+            setHeaders(newHeaders)
+            return new Response(cloned.body, {
+              status: response.status,
+              statusText: response.statusText,
+              headers: newHeaders,
+            })
+          }
+          catch { /* if cloning also fails, keep the original response */ }
+        }
+      }
 
       return response
     })
@@ -1250,7 +1313,33 @@ export async function serverResponse(request: Request, _body?: string): Promise<
   }
   await routesLoadPromise
 
-  return route.handleRequest(request)
+  const response = await route.handleRequest(request)
+
+  // Enrich generic 404s with the requested path so client-side debugging
+  // (typo'd endpoint, missing route in api.ts, stale SPA cache) is one
+  // grep away. Only rewrite the framework's default `Not Found` body —
+  // user 404s with their own message stay untouched.
+  if (response.status === 404 && response.headers.get('content-type')?.includes('json')) {
+    try {
+      const body = await response.clone().json() as any
+      const isGeneric = body?.message === 'Not Found' || body?.error === 'Not Found'
+      if (isGeneric) {
+        const url = new URL(request.url)
+        const enriched = {
+          ...body,
+          path: url.pathname,
+          method: request.method,
+        }
+        return new Response(JSON.stringify(enriched), {
+          status: 404,
+          headers: response.headers,
+        })
+      }
+    }
+    catch { /* not parseable JSON — leave the original response alone */ }
+  }
+
+  return response
 }
 
 // Export serve function that uses the default router

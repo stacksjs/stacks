@@ -145,11 +145,17 @@ export async function runBroadcast(name: string, payload?: any): Promise<void> {
 }
 
 /**
- * Alias for runBroadcast
+ * Alias for runBroadcast.
  *
  * @example
  * await broadcast('OrderCreated', { orderId: 123 })
  */
 export async function broadcast(name: string, payload?: any): Promise<void> {
+  // Validate the event name eagerly — empty / non-string names go through
+  // ts-broadcasting and surface as confusing wire-format errors deep
+  // inside the channel multiplexer instead of where the bug originated.
+  if (typeof name !== 'string' || name.trim().length === 0) {
+    throw new Error('[realtime] broadcast() requires a non-empty event name')
+  }
   await runBroadcast(name, payload)
 }

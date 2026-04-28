@@ -848,8 +848,30 @@ async function pruneBatchesFromRedis(olderThanHours: number): Promise<number> {
 /**
  * Record that a job in a batch completed successfully.
  * Called by the worker after a batch job finishes.
+ *
+ * Uses an atomic decrement on the database so two concurrent workers
+ * finishing batch jobs at the same instant don't both read pending=N
+ * and both write pending=N-1 — that race used to leave the counter
+ * stuck above zero and the batch's `then`/`finally` callbacks never
+ * fired. Falls back to read-modify-write (with a debug log) when the
+ * driver doesn't expose atomic SQL.
  */
 export async function recordBatchJobCompletion(batchId: string): Promise<void> {
+  // Try the atomic path first.
+  try {
+    const { db, sql } = await import('@stacksjs/database')
+    const result: any = await (db as any)
+      .updateTable('job_batches')
+      .set({ pending_jobs: sql`GREATEST(pending_jobs - 1, 0)` })
+      .where('id', '=', batchId)
+      .where('pending_jobs', '>', 0)
+      .execute()
+    void result
+  }
+  catch (err) {
+    log.debug(`[Batch] Atomic decrement unavailable, falling back to read-modify-write: ${(err as Error).message}`)
+  }
+
   const record = await getBatchRecord(batchId)
   if (!record) return
 

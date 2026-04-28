@@ -153,17 +153,28 @@ const SENSITIVE_PATTERNS = [
 ]
 
 /**
- * Sanitize object by hiding sensitive fields
+ * Sanitize object by hiding sensitive fields.
+ *
+ * Walks objects + arrays, redacting any field whose key matches a
+ * sensitive pattern (token/password/secret/etc). Cycle-safe via a
+ * WeakSet — a circular request body (or an Express-style req object
+ * that links back to itself through `req.connection.server.connections`)
+ * used to send the recursion past `MAX_SANITIZE_DEPTH` and silently
+ * truncate; cycle detection keeps the structure intact while still
+ * bounding work.
  */
 const MAX_SANITIZE_DEPTH = 10
+const CIRCULAR_PLACEHOLDER = '[Circular]'
 
-function sanitizeData(data: unknown, depth = 0): unknown {
+function sanitizeData(data: unknown, depth = 0, seen: WeakSet<object> = new WeakSet()): unknown {
   if (!data || typeof data !== 'object' || depth >= MAX_SANITIZE_DEPTH) {
     return data
   }
+  if (seen.has(data as object)) return CIRCULAR_PLACEHOLDER
+  seen.add(data as object)
 
   if (Array.isArray(data)) {
-    return data.map(item => sanitizeData(item, depth + 1))
+    return data.map(item => sanitizeData(item, depth + 1, seen))
   }
 
   const sanitized: Record<string, unknown> = {}
@@ -173,7 +184,7 @@ function sanitizeData(data: unknown, depth = 0): unknown {
       sanitized[key] = '********'
     }
     else if (typeof value === 'object' && value !== null) {
-      sanitized[key] = sanitizeData(value, depth + 1)
+      sanitized[key] = sanitizeData(value, depth + 1, seen)
     }
     else {
       sanitized[key] = value
@@ -299,30 +310,42 @@ export async function createErrorResponse(
 
     // Check if request wants JSON (API request)
     const acceptHeader = request.headers.get('Accept') || ''
+    const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
     if (acceptHeader.includes('application/json') && !acceptHeader.includes('text/html')) {
-      // Return JSON error for API requests
+      // Return JSON error for API requests. In production, strip the
+      // stack trace and recent-queries log — those leak file paths,
+      // function names, query shapes, and (potentially) parameter
+      // values that an attacker can use to fingerprint the deployment.
+      // The dev/staging response keeps them for fast debugging.
+      const details: Record<string, unknown> = { handler: options?.handlerPath }
+      if (!isProduction) {
+        details.stack = error.stack?.split('\n').slice(0, 10)
+        details.queries = getRecentQueries().slice(-10)
+      }
       return new Response(
         buildErrorJson({
           error: error.name || 'Error',
           message: error.message,
           status,
-          details: {
-            handler: options?.handlerPath,
-            stack: error.stack?.split('\n').slice(0, 10),
-            queries: getRecentQueries().slice(-10),
-          },
+          details,
         }),
         { status, headers: getJsonHeadersFull() },
       )
     }
 
-    // Return HTML error page
+    // Return HTML error page. CORS origin: prefer the configured APP_URL.
+    // Wildcard `*` for CORS on a 5xx response is safe-ish (no credentials),
+    // but it's better DX to reflect the configured origin so curl/Postman
+    // see consistent behavior with successful responses.
+    const corsOrigin = process.env.APP_URL
+      ? (process.env.APP_URL.startsWith('http') ? process.env.APP_URL : `https://${process.env.APP_URL}`)
+      : (isProduction ? request.headers.get('origin') ?? 'null' : '*')
     const html = handler.render(error, status)
     return new Response(html, {
       status,
       headers: {
         'Content-Type': 'text/html; charset=utf-8',
-        'Access-Control-Allow-Origin': process.env.APP_URL ? `https://${process.env.APP_URL}` : '*',
+        'Access-Control-Allow-Origin': corsOrigin,
       },
     })
   }

@@ -328,11 +328,24 @@ async function check(ability: string, user: UserModel | null, ...args: any[]): P
 }
 
 /**
- * Normalize a gate/policy result to AuthorizationResponse
+ * Normalize a gate/policy result to AuthorizationResponse.
+ *
+ * Strictly accepts only boolean or AuthorizationResponse. The previous
+ * `result ? allow() : deny()` form interpreted ANY truthy value as
+ * "allow" — a policy that accidentally returned `await User.find(id)`
+ * (a user object) would be treated as authorization granted, even
+ * though the policy author meant "fetched the user as a side effect,
+ * not deciding on permission". Failing loudly catches the bug.
  */
 function normalizeResponse(result: boolean | AuthorizationResponse): AuthorizationResponse {
   if (result instanceof AuthorizationResponse) {
     return result
+  }
+  if (typeof result !== 'boolean') {
+    throw new TypeError(
+      `[gate] Policy must return boolean or AuthorizationResponse; got ${typeof result}. `
+      + 'If you returned a model/value by mistake, return `true`/`false` instead.',
+    )
   }
   return result ? AuthorizationResponse.allow() : AuthorizationResponse.deny()
 }

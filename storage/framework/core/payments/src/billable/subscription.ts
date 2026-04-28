@@ -91,9 +91,16 @@ export const manageSubscription: SubscriptionManager = (() => {
       throw new Error('No subscription items found in the subscription')
     }
 
-    await stripe.subscriptionItems.update(subscriptionItemId, {
-      price: newPrice.id,
-      quantity: 1,
+    // Update via the parent subscription so we can pass proration_behavior.
+    // Without create_prorations, switching mid-cycle either (a) charges
+    // the full new price immediately while still inside the previous
+    // billing period, or (b) bills the new price at the next renewal
+    // with no credit for the partial month — both of which surprise
+    // customers and trigger chargebacks. create_prorations is the
+    // Stripe-recommended default for plan-switch flows.
+    await stripe.subscriptions.update(subscriptionId, {
+      items: [{ id: subscriptionItemId, price: newPrice.id, quantity: 1 }],
+      proration_behavior: 'create_prorations',
     })
 
     const updatedSubscription = await stripe.subscriptions.retrieve(subscriptionId)
