@@ -15,7 +15,7 @@ const { text = '', position = 'bottom', dark = false, alignment = 'center' } = d
     <slot />
 
     <span
-      class="position : ? '' 'dark-tooltip' {{ {{ }} }} }} align-{{ alignment dark tooltip"
+      class="tooltip {{ position }} {{ dark ? 'dark-tooltip' : '' }} align-{{ alignment }}"
       data-tooltip-text
     >
       {{ text }}

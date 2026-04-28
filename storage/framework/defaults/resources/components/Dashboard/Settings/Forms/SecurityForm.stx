@@ -15,25 +15,25 @@ const { rateLimitPerMinute = '1000', countryCodes = 'RU,IN', ipAddresses = '56.1
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-gray-900/10 divide-y">
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+      <div class="divide-y divide-gray-900/10">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Firewall
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your firewall settings.
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="col-span-2">
-                <label for="firewall-enabled" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Enabled</label>
+                <label for="firewall-enabled" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Enabled</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} firewallEnabled"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ firewallEnabled ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ firewallEnabled ? 'true' : 'false' }}"
                     data-action="toggle-firewall"
@@ -41,17 +41,17 @@ const { rateLimitPerMinute = '1000', countryCodes = 'RU,IN', ipAddresses = '56.1
                     <span class="sr-only">Firewall Enabled</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} firewallEnabled"
+                      class="pointer-events-none inline-block h-5 w-5 {{ firewallEnabled ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="ip-reputation" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Use Ip Reputation Lists</label>
+                <label for="ip-reputation" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Use Ip Reputation Lists</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} useIpReputationLists"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ useIpReputationLists ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ useIpReputationLists ? 'true' : 'false' }}"
                     data-action="toggle-ip-reputation"
@@ -59,17 +59,17 @@ const { rateLimitPerMinute = '1000', countryCodes = 'RU,IN', ipAddresses = '56.1
                     <span class="sr-only">Use Ip Reputation Lists</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} useIpReputationLists"
+                      class="pointer-events-none inline-block h-5 w-5 {{ useIpReputationLists ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="bad-inputs" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Use Known Bad Inputs Rule Set</label>
+                <label for="bad-inputs" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Use Known Bad Inputs Rule Set</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} useKnownBadInputs"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ useKnownBadInputs ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ useKnownBadInputs ? 'true' : 'false' }}"
                     data-action="toggle-bad-inputs"
@@ -77,51 +77,51 @@ const { rateLimitPerMinute = '1000', countryCodes = 'RU,IN', ipAddresses = '56.1
                     <span class="sr-only">Use Known Bad Inputs</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} useKnownBadInputs"
+                      class="pointer-events-none inline-block h-5 w-5 {{ useKnownBadInputs ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="rate-limit" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Rate Limit per minute</label>
+                <label for="rate-limit" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Rate Limit per minute</label>
                 <div class="mt-2">
                   <input
                     id="rate-limit"
                     name="rate-limit"
                     type="text"
                     value="{{ rateLimitPerMinute }}"
-                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="country-codes" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Country Codes</label>
+                <label for="country-codes" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Country Codes</label>
                 <div class="mt-2">
                   <input
                     id="country-codes"
                     name="country-codes"
                     type="text"
                     value="{{ countryCodes }}"
-                    class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
+                    class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500"
                   >
                 </div>
               </div>
               <div class="sm:col-span-full">
-                <label for="ip-addresses" class="block font-medium leading-6 text-gray-900 text-sm">IP Addresses</label>
+                <label for="ip-addresses" class="block text-sm text-gray-900 font-medium leading-6">IP Addresses</label>
                 <div class="mt-2">
-                  <input id="ip-addresses" type="text" name="ip-addresses" value="{{ ipAddresses }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="ip-addresses" type="text" name="ip-addresses" value="{{ ipAddresses }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="query-string" class="block font-medium leading-6 text-gray-900 text-sm">Query String</label>
+                <label for="query-string" class="block text-sm text-gray-900 font-medium leading-6">Query String</label>
                 <div class="mt-2">
-                  <input id="query-string" type="text" name="query-string" value="{{ queryString }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="query-string" type="text" name="query-string" value="{{ queryString }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="http-headers" class="block font-medium leading-6 text-gray-900 text-sm">HTTP Headers</label>
+                <label for="http-headers" class="block text-sm text-gray-900 font-medium leading-6">HTTP Headers</label>
                 <div class="mt-2">
-                  <input id="http-headers" type="text" name="http-headers" value="{{ httpHeaders }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="http-headers" type="text" name="http-headers" value="{{ httpHeaders }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
             </div>
@@ -129,13 +129,13 @@ const { rateLimitPerMinute = '1000', countryCodes = 'RU,IN', ipAddresses = '56.1
         </div>
       </div>
     </main>
-    <div class="flex gap-x-6 items-center justify-end mt-6">
-      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
         Cancel
       </button>
       <button
         type="submit"
-        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
+        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
       >
         Save
       </button>

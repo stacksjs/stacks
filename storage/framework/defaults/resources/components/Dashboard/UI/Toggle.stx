@@ -32,7 +32,7 @@ const translateSizes = {
 
 const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
 </script>
-<div class="flex gap-3 items-center justify-end' cursor-not-allowed' : : ? ? '' '' 'flex-row-reverse 'left' 'opacity-60 {{ {{ }} }} === disabled labelPosition">
+<div class="flex items-center gap-3 {{ labelPosition === 'left' ? 'flex-row-reverse justify-end' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
     <input
       type="checkbox"
       id="{{ toggleId }}"
@@ -43,10 +43,10 @@ const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
     >
     <label
       for="{{ toggleId }}"
-      class="inline-flex relative shrink-0 bg-black/15 dark:bg-white/20 peer-checked:bg-green-500 rounded-full focus-within:ring-2 focus-within:ring-blue-500/40 opacity-40' duration-150 transition-all : ? 'cursor-not-allowed 'cursor-pointer' {{ {{ }} }} disabled trackSizes[size]"
+      class="relative inline-flex shrink-0 rounded-full transition-all duration-150 focus-within:ring-2 focus-within:ring-blue-500/40 {{ trackSizes[size] }} {{ disabled ? 'cursor-not-allowed opacity-40' : 'cursor-pointer' }} peer-checked:bg-green-500 bg-black/15 dark:bg-white/20"
     >
       <span
-        class="inline-block bg-white ring-0 rounded-full shadow-sm duration-150 ease-in-out transition-transform translate-x-0.5 translateSizes[size] pointer-events-none {{ }} }} thumbSizes[size] peer-checked:{{"
+        class="pointer-events-none inline-block rounded-full bg-white shadow-sm ring-0 transition-transform duration-150 ease-in-out {{ thumbSizes[size] }} peer-checked:{{ translateSizes[size] }} translate-x-0.5"
       ></span>
     </label>
 
@@ -55,13 +55,13 @@ const toggleId = id || 'toggle-' + Math.random().toString(36).slice(2, 11)
         @if(label)
           <label
             for="{{ toggleId }}"
-            class="font-medium text-[13px] tracking-tight dark:text-neutral-200' dark:text-neutral-600' : : ? ? '' 'cursor-pointer' 'text-neutral-400 'text-neutral-700 {{ {{ }} }} disabled disabled"
+            class="text-[13px] font-medium tracking-tight {{ disabled ? 'text-neutral-400 dark:text-neutral-600' : 'text-neutral-700 dark:text-neutral-200' }} {{ disabled ? '' : 'cursor-pointer' }}"
           >
             {{ label }}
           </label>
         @endif
         @if(description)
-          <p class="mt-0.5 text-[12px] dark:text-neutral-400' dark:text-neutral-600' : ? 'text-neutral-300 'text-neutral-500 {{ }} disabled">
+          <p class="text-[12px] mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
             {{ description }}
           </p>
         @endif

@@ -18,7 +18,7 @@ const widthClasses = {
 
 const alignClass = align === 'right' ? 'right-0' : 'left-0'
 </script>
-<div ref="pageRoot" class="inline-block relative text-left" data-dropdown="{{ id }}">
+<div ref="pageRoot" class="relative inline-block text-left" data-dropdown="{{ id }}">
     <!-- Trigger -->
     <div data-dropdown-trigger>
       {{ triggerSlot }}
@@ -27,7 +27,7 @@ const alignClass = align === 'right' ? 'right-0' : 'left-0'
     <!-- Menu - macOS popover style -->
     <div
       data-dropdown-menu
-      class="hidden absolute z-50 mt-1.5 py-1 bg-white/95 dark:bg-neutral-800/95 border border-black/10 rounded-lg dark:border-white/10 focus:outline-none shadow-black/10 shadow-lg dark:shadow-black/30 backdrop-blur-xl backdrop-saturate-150 origin-top-right {{ {{ }} }} alignClass widthClasses[width]"
+      class="absolute z-50 mt-1.5 {{ widthClasses[width] }} {{ alignClass }} origin-top-right bg-white/95 dark:bg-neutral-800/95 backdrop-blur-xl backdrop-saturate-150 rounded-lg shadow-lg shadow-black/10 dark:shadow-black/30 border border-black/10 dark:border-white/10 py-1 focus:outline-none hidden"
     >
       <slot />
     </div>

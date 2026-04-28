@@ -12,7 +12,7 @@ const { modelValue = '', tabs = [] } = defineProps<TabNavigationProps>()
       <select
         id="tabs"
         name="tabs"
-        class="block w-full dark:text-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-blue-500"
+        class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
       >
         @foreach(tabs as tab)
           <option value="{{ tab }}" {{ tab == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
@@ -21,11 +21,11 @@ const { modelValue = '', tabs = [] } = defineProps<TabNavigationProps>()
     </div>
     <div class="hidden sm:block">
       <div class="border-b border-gray-200 dark:border-neutral-700">
-        <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
           @foreach(tabs as tab)
             <a
               href="{{ tab.href }}"
-              class="px-1 py-4 font-medium text-blue-600 text-gray-500 text-sm whitespace-nowrap dark:text-blue-400' dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300' border-b-2 dark:border-blue-400 hover:border-gray-300 dark:hover:border-gray-600 : ? 'border-blue-500 'border-transparent {{ }} == modelValue tab"
+              class="{{ tab == modelValue ? 'border-blue-500 text-blue-600 dark:border-blue-400 dark:text-blue-400' : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:border-gray-600 dark:hover:text-gray-300' }} whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium"
             >
               {{ tab.name }}
             </a>

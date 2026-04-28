@@ -21,7 +21,7 @@ const sizeClasses = {
 
 const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
 </script>
-<div class="flex relative cursor-not-allowed' : : ? ? '' '' 'gap-3' 'opacity-60 {{ {{ }} }} || description disabled label">
+<div class="relative flex {{ label || description ? 'gap-3' : '' }} {{ disabled ? 'opacity-60 cursor-not-allowed' : '' }}">
     <div class="flex items-start pt-0.5">
       <input
         type="checkbox"
@@ -33,9 +33,9 @@ const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
       >
       <label
         for="{{ checkboxId }}"
-        class="flex relative items-center justify-center bg-white dark:bg-neutral-900 peer-checked:bg-blue-600 border-2 border-neutral-300 rounded dark:border-neutral-600 hover:border-blue-400 peer-checked:border-blue-600 dark:hover:border-blue-500 duration-150 transition-all : : ? ? '' '' 'border-red-500' 'cursor-pointer' {{ {{ {{ }} }} }} disabled error sizeClasses[size].checkbox"
+        class="{{ sizeClasses[size].checkbox }} relative rounded transition-all duration-150 flex items-center justify-center border-2 {{ disabled ? '' : 'cursor-pointer' }} peer-checked:bg-blue-600 peer-checked:border-blue-600 bg-white dark:bg-neutral-900 border-neutral-300 dark:border-neutral-600 hover:border-blue-400 dark:hover:border-blue-500 {{ error ? 'border-red-500' : '' }}"
       >
-        <svg class="hidden peer-checked:block text-white {{ }} sizeClasses[size].checkbox" viewBox="0 0 20 20" fill="currentColor">
+        <svg class="{{ sizeClasses[size].checkbox }} text-white hidden peer-checked:block" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd"></path>
         </svg>
       </label>
@@ -46,13 +46,13 @@ const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
         @if(label)
           <label
             for="{{ checkboxId }}"
-            class="font-medium dark:text-neutral-200 dark:text-neutral-500 cursor-not-allowed' cursor-pointer' : ? 'text-neutral-400 'text-neutral-700 {{ {{ }} }} disabled sizeClasses[size].text"
+            class="{{ sizeClasses[size].text }} font-medium {{ disabled ? 'text-neutral-400 dark:text-neutral-500 cursor-not-allowed' : 'text-neutral-700 dark:text-neutral-200 cursor-pointer' }}"
           >
             {{ label }}
           </label>
         @endif
         @if(description)
-          <p class="mt-0.5 dark:text-neutral-400' dark:text-neutral-600' : ? 'text-neutral-300 'text-neutral-500 {{ {{ }} }} disabled sizeClasses[size].desc">
+          <p class="{{ sizeClasses[size].desc }} mt-0.5 {{ disabled ? 'text-neutral-300 dark:text-neutral-600' : 'text-neutral-500 dark:text-neutral-400' }}">
             {{ description }}
           </p>
         @endif
@@ -61,7 +61,7 @@ const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
   </div>
 
   @if(error)
-    <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
+    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
   @endif
 <style>
 input:checked + label {

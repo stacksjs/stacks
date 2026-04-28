@@ -40,7 +40,7 @@ const { title, value, description = '', trend = '', icon = '' } = defineProps<Wi
       <div class="widget-description">{{ description }}</div>
     @endif
     @if (trend)
-      <div class=": ? 'negative' 'positive' {{ }} trend.startsWith('+') widget-trend">
+      <div class="widget-trend {{ trend.startsWith('+') ? 'positive' : 'negative' }}">
         {{ trend }}
       </div>
     @endif

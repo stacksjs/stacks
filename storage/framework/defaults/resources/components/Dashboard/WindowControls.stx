@@ -39,17 +39,17 @@ function getVariant() {
 </script>
 @if(getVariant() === 'macos')
     <!-- macOS-style traffic light controls -->
-    <div class="flex items-center {{ }} getGapClass() group">
+    <div class="flex items-center {{ getGapClass() }} group">
       <!-- Close button (red) -->
       <button
         type="button"
-        class="relative bg-[#ff5f57] hover:bg-[#ff5f57] rounded-full focus:outline-none focus:ring-2 focus:ring-red-500/50 transition-colors {{ }} getSizeClass()"
+        class="relative {{ getSizeClass() }} rounded-full bg-[#ff5f57] hover:bg-[#ff5f57] transition-colors focus:outline-none focus:ring-2 focus:ring-red-500/50"
         data-action="window-close"
         title="Close"
       >
         <span class="sr-only">Close</span>
         <!-- X icon on hover -->
-        <svg class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#4d0000] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="absolute inset-0 m-auto w-1.5 h-1.5 text-[#4d0000] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>
@@ -57,13 +57,13 @@ function getVariant() {
       <!-- Minimize button (yellow) -->
       <button
         type="button"
-        class="relative bg-[#febc2e] hover:bg-[#febc2e] rounded-full focus:outline-none focus:ring-2 focus:ring-yellow-500/50 transition-colors {{ }} getSizeClass()"
+        class="relative {{ getSizeClass() }} rounded-full bg-[#febc2e] hover:bg-[#febc2e] transition-colors focus:outline-none focus:ring-2 focus:ring-yellow-500/50"
         data-action="window-minimize"
         title="Minimize"
       >
         <span class="sr-only">Minimize</span>
         <!-- Minus icon on hover -->
-        <svg class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#995700] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="absolute inset-0 m-auto w-1.5 h-1.5 text-[#995700] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M5 12h14"></path>
         </svg>
       </button>
@@ -71,13 +71,13 @@ function getVariant() {
       <!-- Maximize button (green) -->
       <button
         type="button"
-        class="relative bg-[#28c840] hover:bg-[#28c840] rounded-full focus:outline-none focus:ring-2 focus:ring-green-500/50 transition-colors {{ }} getSizeClass()"
+        class="relative {{ getSizeClass() }} rounded-full bg-[#28c840] hover:bg-[#28c840] transition-colors focus:outline-none focus:ring-2 focus:ring-green-500/50"
         data-action="window-maximize"
         title="Maximize"
       >
         <span class="sr-only">Maximize</span>
         <!-- Expand icon on hover -->
-        <svg class="absolute inset-0 m-auto h-1.5 w-1.5 text-[#006500] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="absolute inset-0 m-auto w-1.5 h-1.5 text-[#006500] opacity-0 group-hover:opacity-100 transition-opacity" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M4 14h6m0 0v6m0-6L3 21M20 10h-6m0 0V4m0 6l7-7"></path>
         </svg>
       </button>
@@ -91,7 +91,7 @@ function getVariant() {
         data-action="window-minimize"
         title="Minimize"
       >
-        <svg class="h-3 w-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="w-3 h-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M5 12h14"></path>
         </svg>
       </button>
@@ -101,17 +101,17 @@ function getVariant() {
         data-action="window-maximize"
         title="Maximize"
       >
-        <svg class="h-3 w-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="w-3 h-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <rect x="4" y="4" width="16" height="16" rx="2"></rect>
         </svg>
       </button>
       <button
         type="button"
-        class="p-1.5 hover:text-white hover:bg-red-500 rounded transition-colors"
+        class="p-1.5 hover:bg-red-500 hover:text-white rounded transition-colors"
         data-action="window-close"
         title="Close"
       >
-        <svg class="h-3 w-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+        <svg class="w-3 h-3 text-neutral-600 dark:text-neutral-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
           <path d="M6 18L18 6M6 6l12 12"></path>
         </svg>
       </button>

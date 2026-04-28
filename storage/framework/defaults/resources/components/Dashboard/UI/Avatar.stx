@@ -77,19 +77,19 @@ function getBgColorIndex(fullName) {
 
 const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
 </script>
-<div class="inline-flex relative flex-shrink-0">
+<div class="relative inline-flex flex-shrink-0">
     @if(src)
       <img
         src="{{ src }}"
         alt="{{ alt || name || 'Avatar' }}"
-        class="object-cover {{ {{ }} }} radiusClasses[rounded] sizeClasses[size]"
+        class="object-cover {{ sizeClasses[size] }} {{ radiusClasses[rounded] }}"
       >
     @else
-      <div class="inline-flex items-center justify-center font-medium {{ {{ {{ }} }} }} bgColor radiusClasses[rounded] sizeClasses[size]">
+      <div class="inline-flex items-center justify-center font-medium {{ sizeClasses[size] }} {{ radiusClasses[rounded] }} {{ bgColor }}">
         @if(initials)
           <span>{{ initials }}</span>
         @else
-          <svg class="h-1/2 w-1/2 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="w-1/2 h-1/2 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
           </svg>
         @endif
@@ -97,6 +97,6 @@ const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-n
     @endif
 
     @if(status)
-      <span class="absolute bottom-0 right-0 ring-2 ring-white rounded-full dark:ring-neutral-900 {{ {{ }} }} statusColors[status] statusSizes[size]"></span>
+      <span class="absolute bottom-0 right-0 rounded-full ring-2 ring-white dark:ring-neutral-900 {{ statusColors[status] }} {{ statusSizes[size] }}"></span>
     @endif
   </div>

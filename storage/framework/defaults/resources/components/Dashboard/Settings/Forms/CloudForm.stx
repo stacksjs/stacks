@@ -53,23 +53,23 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-gray-900/10 divide-y">
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+      <div class="divide-y divide-gray-900/10">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Default Cloud Settings
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your default cloud settings
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="type" class="block font-medium leading-6 text-gray-900 text-sm">Type</label>
+                <label for="type" class="block text-sm text-gray-900 font-medium leading-6">Type</label>
                 <div class="mt-2">
-                  <select id="type" name="type" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <select id="type" name="type" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                     <option {{ type == 'serverless' ? 'selected' : '' }}>serverless</option>
                     <option disabled {{ type == 'server' ? 'selected' : '' }}>server</option>
                   </select>
@@ -77,18 +77,18 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
               </div>
 
               <div class="sm:col-span-3">
-                <label for="driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
+                <label for="driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="driver" type="text" name="driver" value="{{ driver }}" disabled class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 bg-neutral-50 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm cursor-not-allowed">
+                  <input id="driver" type="text" name="driver" value="{{ driver }}" disabled class="block w-full cursor-not-allowed border-0 rounded-md bg-neutral-50 py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="enable-ai" class="block font-medium leading-6 text-gray-900 text-sm">Enable AI</label>
+                <label for="enable-ai" class="block text-sm text-gray-900 font-medium leading-6">Enable AI</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} enableAI"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ enableAI ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ enableAI ? 'true' : 'false' }}"
                     data-action="toggle-enable-ai"
@@ -96,17 +96,17 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
                     <span class="sr-only">Enable AI</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} enableAI"
+                      class="pointer-events-none inline-block h-5 w-5 {{ enableAI ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="enable-cli" class="block font-medium leading-6 text-gray-900 text-sm">Enable CLI</label>
+                <label for="enable-cli" class="block text-sm text-gray-900 font-medium leading-6">Enable CLI</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} enableCLI"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ enableCLI ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ enableCLI ? 'true' : 'false' }}"
                     data-action="toggle-enable-cli"
@@ -114,17 +114,17 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
                     <span class="sr-only">Enable CLI</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} enableCLI"
+                      class="pointer-events-none inline-block h-5 w-5 {{ enableCLI ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="enable-docs" class="block font-medium leading-6 text-gray-900 text-sm">Enable Docs</label>
+                <label for="enable-docs" class="block text-sm text-gray-900 font-medium leading-6">Enable Docs</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} enableDocs"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ enableDocs ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ enableDocs ? 'true' : 'false' }}"
                     data-action="toggle-enable-docs"
@@ -132,17 +132,17 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
                     <span class="sr-only">Enable Docs</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} enableDocs"
+                      class="pointer-events-none inline-block h-5 w-5 {{ enableDocs ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="enable-fs" class="block font-medium leading-6 text-gray-900 text-sm">Enable File System</label>
+                <label for="enable-fs" class="block text-sm text-gray-900 font-medium leading-6">Enable File System</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} enableFileSystem"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ enableFileSystem ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ enableFileSystem ? 'true' : 'false' }}"
                     data-action="toggle-enable-fs"
@@ -150,88 +150,88 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
                     <span class="sr-only">Enable File System</span>
                     <span
                       aria-hidden="true"
-                      class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} enableFileSystem"
+                      class="pointer-events-none inline-block h-5 w-5 {{ enableFileSystem ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                     ></span>
                   </button>
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="env" class="block font-medium leading-6 text-gray-900 text-sm">Environments</label>
+                <label for="env" class="block text-sm text-gray-900 font-medium leading-6">Environments</label>
                 <div class="mt-2">
-                  <input id="env" type="text" name="env" placeholder="https://test.test" value="{{ environments }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="env" type="text" name="env" placeholder="https://test.test" value="{{ environments }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">Api</h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">Update your api settings.</p>
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">Api</h2>
+            <p class="mt-1 text-sm text-gray-600 leading-6">Update your api settings.</p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="col-span-2">
-                <label for="api-deploy" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Deploy</label>
+                <label for="api-deploy" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Deploy</label>
                 <div class="mt-2">
                   <button
                     type="button"
-                    class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} apiDeploy"
+                    class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ apiDeploy ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                     role="switch"
                     aria-checked="{{ apiDeploy ? 'true' : 'false' }}"
                     data-action="toggle-api-deploy"
                   >
                     <span class="sr-only">Api Deploy</span>
-                    <span aria-hidden="true" class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} apiDeploy"></span>
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {{ apiDeploy ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-full">
-                <label for="api-description" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Description</label>
+                <label for="api-description" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Description</label>
                 <div class="mt-2">
-                  <input id="api-description" type="text" value="{{ apiDescription }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="api-description" type="text" value="{{ apiDescription }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
 
               <div class="col-span-2">
-                <label for="api-prefix" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Prefix</label>
+                <label for="api-prefix" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Prefix</label>
                 <div class="mt-2">
-                  <input id="api-prefix" name="prefix" type="text" value="{{ apiPrefix }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="api-prefix" name="prefix" type="text" value="{{ apiPrefix }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="api-memory-size" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Memory Size(MB)</label>
+                <label for="api-memory-size" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Memory Size(MB)</label>
                 <div class="mt-2">
-                  <input id="api-memory-size" name="memory-size" type="text" value="{{ apiMemorySize }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="api-memory-size" name="memory-size" type="text" value="{{ apiMemorySize }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="api-prewarm" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Prewarn</label>
+                <label for="api-prewarm" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Prewarn</label>
                 <div class="mt-2">
-                  <input id="api-prewarm" name="prewarm" type="text" value="{{ apiPrewarm }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="api-prewarm" name="prewarm" type="text" value="{{ apiPrewarm }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="api-timeout" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Timeout</label>
+                <label for="api-timeout" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Timeout</label>
                 <div class="mt-2">
-                  <input id="api-timeout" name="timeout" type="text" value="{{ apiTimeout }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="api-timeout" name="timeout" type="text" value="{{ apiTimeout }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-full">
                 <fieldset>
-                  <legend class="leading-6 text-gray-900 text-sm">Available Routes</legend>
-                  <div class="grid gap-y-6 grid-cols-1 sm:gap-x-4 sm:grid-cols-3 mt-2">
+                  <legend class="text-sm text-gray-900 leading-6">Available Routes</legend>
+                  <div class="grid grid-cols-1 mt-2 gap-y-6 sm:grid-cols-3 sm:gap-x-4">
                     @foreach(routes as route)
-                      <label class="flex relative p-4 bg-white border ring-2 ring-indigo-600' rounded-lg focus:outline-none shadow-sm cursor-pointer : ? 'border-gray-300' 'border-indigo-600 {{ }} route.available">
+                      <label class="relative flex cursor-pointer border {{ route.available ? 'border-indigo-600 ring-2 ring-indigo-600' : 'border-gray-300' }} rounded-lg bg-white p-4 shadow-sm focus:outline-none">
                         <input type="radio" name="project-type" value="{{ route.name }}" class="sr-only">
                         <span class="flex flex-1">
                           <span class="flex flex-col">
-                            <span class="block font-medium text-gray-900 text-sm">{{ route.name }}</span>
-                            <span class="flex items-center mt-1 text-gray-500 text-sm">{{ route.description }}</span>
-                            <span class="mt-6 font-medium text-sm : ? 'text-gray-500' 'text-gray-900' {{ }} route.available">{{ route.available ? 'Available' : 'Not Available' }}</span>
+                            <span class="block text-sm text-gray-900 font-medium">{{ route.name }}</span>
+                            <span class="mt-1 flex items-center text-sm text-gray-500">{{ route.description }}</span>
+                            <span class="mt-6 text-sm {{ route.available ? 'text-gray-900' : 'text-gray-500' }} font-medium">{{ route.available ? 'Available' : 'Not Available' }}</span>
                           </span>
                         </span>
                         @if(route.available)
@@ -239,7 +239,7 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
                             <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.857-9.809a.75.75 0 00-1.214-.882l-3.483 4.79-1.88-1.88a.75.75 0 10-1.06 1.061l2.5 2.5a.75.75 0 001.137-.089l4-5.5z" clip-rule="evenodd" />
                           </svg>
                         @endif
-                        <span class="absolute border-2 rounded-lg pointer-events-none -inset-px" aria-hidden="true"></span>
+                        <span class="pointer-events-none absolute border-2 rounded-lg -inset-px" aria-hidden="true"></span>
                       </label>
                     @endforeach
                   </div>
@@ -249,96 +249,96 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">Firewall</h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">Update your firewall settings.</p>
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">Firewall</h2>
+            <p class="mt-1 text-sm text-gray-600 leading-6">Update your firewall settings.</p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="col-span-2">
-                <label for="firewall-enabled" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Enabled</label>
+                <label for="firewall-enabled" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Enabled</label>
                 <div class="mt-2">
-                  <button type="button" class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} firewallEnabled" role="switch" aria-checked="{{ firewallEnabled ? 'true' : 'false' }}" data-action="toggle-firewall">
+                  <button type="button" class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ firewallEnabled ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" role="switch" aria-checked="{{ firewallEnabled ? 'true' : 'false' }}" data-action="toggle-firewall">
                     <span class="sr-only">Firewall Enabled</span>
-                    <span aria-hidden="true" class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} firewallEnabled"></span>
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {{ firewallEnabled ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="firewall-ip-rep" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Use Ip Reputation Lists</label>
+                <label for="firewall-ip-rep" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Use Ip Reputation Lists</label>
                 <div class="mt-2">
-                  <button type="button" class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} firewallIpReputation" role="switch" data-action="toggle-firewall-ip-rep">
+                  <button type="button" class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ firewallIpReputation ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" role="switch" data-action="toggle-firewall-ip-rep">
                     <span class="sr-only">Use Ip Reputation Lists</span>
-                    <span aria-hidden="true" class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} firewallIpReputation"></span>
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {{ firewallIpReputation ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="firewall-bad-inputs" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Use Known Bad Inputs Rule Set</label>
+                <label for="firewall-bad-inputs" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Use Known Bad Inputs Rule Set</label>
                 <div class="mt-2">
-                  <button type="button" class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} firewallBadInputs" role="switch" data-action="toggle-firewall-bad-inputs">
+                  <button type="button" class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ firewallBadInputs ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" role="switch" data-action="toggle-firewall-bad-inputs">
                     <span class="sr-only">Use Known Bad Inputs</span>
-                    <span aria-hidden="true" class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} firewallBadInputs"></span>
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {{ firewallBadInputs ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                   </button>
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="firewall-rate-limit" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Rate Limit per minute</label>
+                <label for="firewall-rate-limit" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Rate Limit per minute</label>
                 <div class="mt-2">
-                  <input id="firewall-rate-limit" name="limit-per-minute" type="text" value="{{ firewallRateLimit }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="firewall-rate-limit" name="limit-per-minute" type="text" value="{{ firewallRateLimit }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="col-span-2">
-                <label for="firewall-country-codes" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Country Codes</label>
+                <label for="firewall-country-codes" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Country Codes</label>
                 <div class="mt-2">
-                  <input id="firewall-country-codes" name="country-codes" type="text" value="{{ firewallCountryCodes }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="firewall-country-codes" name="country-codes" type="text" value="{{ firewallCountryCodes }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-full">
-                <label for="firewall-ip-addresses" class="block font-medium leading-6 text-gray-900 text-sm">IP Addresses</label>
+                <label for="firewall-ip-addresses" class="block text-sm text-gray-900 font-medium leading-6">IP Addresses</label>
                 <div class="mt-2">
-                  <input id="firewall-ip-addresses" type="text" name="ip-addresses" value="{{ firewallIpAddresses }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="firewall-ip-addresses" type="text" name="ip-addresses" value="{{ firewallIpAddresses }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="firewall-query-string" class="block font-medium leading-6 text-gray-900 text-sm">Query String</label>
+                <label for="firewall-query-string" class="block text-sm text-gray-900 font-medium leading-6">Query String</label>
                 <div class="mt-2">
-                  <input id="firewall-query-string" type="text" name="query-string" value="{{ firewallQueryString }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="firewall-query-string" type="text" name="query-string" value="{{ firewallQueryString }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="firewall-http-headers" class="block font-medium leading-6 text-gray-900 text-sm">HTTP Headers</label>
+                <label for="firewall-http-headers" class="block text-sm text-gray-900 font-medium leading-6">HTTP Headers</label>
                 <div class="mt-2">
-                  <input id="firewall-http-headers" type="text" name="http-headers" value="{{ firewallHttpHeaders }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="firewall-http-headers" type="text" name="http-headers" value="{{ firewallHttpHeaders }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">CDN (Content Delivery Network)</h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">Update your CDN settings.</p>
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">CDN (Content Delivery Network)</h2>
+            <p class="mt-1 text-sm text-gray-600 leading-6">Update your CDN settings.</p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6">
+            <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="cdn-compress" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Compress</label>
+                <label for="cdn-compress" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Compress</label>
                 <div class="mt-2">
-                  <button type="button" class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} cdnCompress" role="switch" data-action="toggle-cdn-compress">
+                  <button type="button" class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ cdnCompress ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" role="switch" data-action="toggle-cdn-compress">
                     <span class="sr-only">Compress</span>
-                    <span aria-hidden="true" class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} cdnCompress"></span>
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {{ cdnCompress ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                   </button>
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-allowed-methods" class="block font-medium leading-6 text-gray-900 text-sm">Allowed Methods</label>
+                <label for="cdn-allowed-methods" class="block text-sm text-gray-900 font-medium leading-6">Allowed Methods</label>
                 <div class="mt-2">
-                  <select id="cdn-allowed-methods" name="allowed-methods" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <select id="cdn-allowed-methods" name="allowed-methods" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                     <option {{ cdnAllowedMethods == 'ALL' ? 'selected' : '' }}>ALL</option>
                     <option {{ cdnAllowedMethods == 'GET_HEAD' ? 'selected' : '' }}>GET_HEAD</option>
                     <option {{ cdnAllowedMethods == 'GET_HEAD_OPTIONS' ? 'selected' : '' }}>GET_HEAD_OPTIONS</option>
@@ -346,42 +346,42 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-cached-methods" class="block font-medium leading-6 text-gray-900 text-sm">Cached Methods</label>
+                <label for="cdn-cached-methods" class="block text-sm text-gray-900 font-medium leading-6">Cached Methods</label>
                 <div class="mt-2">
-                  <select id="cdn-cached-methods" name="cached-methods" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <select id="cdn-cached-methods" name="cached-methods" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                     <option {{ cdnCachedMethods == 'GET_HEAD' ? 'selected' : '' }}>GET_HEAD</option>
                     <option {{ cdnCachedMethods == 'GET_HEAD_OPTIONS' ? 'selected' : '' }}>GET_HEAD_OPTIONS</option>
                   </select>
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-origin-shield" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Origin Shield Region</label>
+                <label for="cdn-origin-shield" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Origin Shield Region</label>
                 <div class="mt-2">
-                  <input id="cdn-origin-shield" name="origin-shield" type="text" value="{{ cdnOriginShieldRegion }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-origin-shield" name="origin-shield" type="text" value="{{ cdnOriginShieldRegion }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-default-ttl" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Default TTL</label>
+                <label for="cdn-default-ttl" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Default TTL</label>
                 <div class="mt-2">
-                  <input id="cdn-default-ttl" name="default-ttl" type="text" value="{{ cdnDefaultTTL }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-default-ttl" name="default-ttl" type="text" value="{{ cdnDefaultTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-min-ttl" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Min TTL</label>
+                <label for="cdn-min-ttl" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Min TTL</label>
                 <div class="mt-2">
-                  <input id="cdn-min-ttl" name="min-ttl" type="text" value="{{ cdnMinTTL }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-min-ttl" name="min-ttl" type="text" value="{{ cdnMinTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-max-ttl" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Max TTL</label>
+                <label for="cdn-max-ttl" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Max TTL</label>
                 <div class="mt-2">
-                  <input id="cdn-max-ttl" name="max-ttl" type="text" value="{{ cdnMaxTTL }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-max-ttl" name="max-ttl" type="text" value="{{ cdnMaxTTL }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-3">
-                <label for="cdn-cookie-behavior" class="block font-medium leading-6 text-gray-900 text-sm">Cookie Behavior</label>
+                <label for="cdn-cookie-behavior" class="block text-sm text-gray-900 font-medium leading-6">Cookie Behavior</label>
                 <div class="mt-2">
-                  <select id="cdn-cookie-behavior" name="cookie-behavior" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <select id="cdn-cookie-behavior" name="cookie-behavior" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                     <option {{ cdnCookieBehavior == 'none' ? 'selected' : '' }}>none</option>
                     <option {{ cdnCookieBehavior == 'allowList' ? 'selected' : '' }}>allowList</option>
                     <option {{ cdnCookieBehavior == 'all' ? 'selected' : '' }}>all</option>
@@ -390,43 +390,43 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
               </div>
 
               <div class="sm:col-span-full">
-                <label for="cdn-cookies-label" class="block text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Cookies</label>
+                <label for="cdn-cookies-label" class="block cursor-pointer text-sm text-gray-900 dark:text-neutral-100">Cookies</label>
               </div>
               <div class="sm:col-span-2">
-                <label for="cdn-cookies" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Cookies</label>
+                <label for="cdn-cookies" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Cookies</label>
                 <div class="mt-2">
-                  <input id="cdn-cookies" name="cookies" type="text" value="{{ cdnCookies }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-cookies" name="cookies" type="text" value="{{ cdnCookies }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="cdn-headers" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Headers</label>
+                <label for="cdn-headers" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Headers</label>
                 <div class="mt-2">
-                  <input id="cdn-headers" name="headers" type="text" value="{{ cdnHeaders }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-headers" name="headers" type="text" value="{{ cdnHeaders }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="cdn-query-strings" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Query Strings</label>
+                <label for="cdn-query-strings" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Query Strings</label>
                 <div class="mt-2">
-                  <input id="cdn-query-strings" name="query-strings" type="text" value="{{ cdnQueryStrings }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-query-strings" name="query-strings" type="text" value="{{ cdnQueryStrings }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="cdn-realtime-logs" class="block font-semibold text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Real Time Logs</label>
+                <label for="cdn-realtime-logs" class="block cursor-pointer text-sm text-gray-900 font-semibold dark:text-neutral-100">Real Time Logs</label>
               </div>
               <div class="sm:col-span-2">
-                <label for="cdn-realtime-enabled" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Enabled</label>
+                <label for="cdn-realtime-enabled" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Enabled</label>
                 <div class="mt-2">
-                  <button type="button" class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} cdnRealTimeLogsEnabled" role="switch" data-action="toggle-cdn-realtime">
+                  <button type="button" class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ cdnRealTimeLogsEnabled ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600" role="switch" data-action="toggle-cdn-realtime">
                     <span class="sr-only">Enabled</span>
-                    <span aria-hidden="true" class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} cdnRealTimeLogsEnabled"></span>
+                    <span aria-hidden="true" class="pointer-events-none inline-block h-5 w-5 {{ cdnRealTimeLogsEnabled ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"></span>
                   </button>
                 </div>
               </div>
               <div class="sm:col-span-2">
-                <label for="cdn-sampling-rate" class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100 cursor-pointer">Sampling Rate</label>
+                <label for="cdn-sampling-rate" class="block cursor-pointer text-sm text-gray-900 font-medium leading-6 dark:text-neutral-100">Sampling Rate</label>
                 <div class="mt-2">
-                  <input id="cdn-sampling-rate" name="sampling-rate" type="text" value="{{ cdnSamplingRate }}" class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm">
+                  <input id="cdn-sampling-rate" name="sampling-rate" type="text" value="{{ cdnSamplingRate }}" class="block w-full border border-gray-300 rounded-md px-4 py-2 text-gray-900 shadow-sm dark:border-neutral-600 required:border-red-500 focus:border-none dark:bg-neutral-800 dark:text-neutral-100 dark:text-neutral-200 focus:ring-2 focus:ring-blue-500">
                 </div>
               </div>
             </div>
@@ -434,8 +434,8 @@ const { type = 'serverless', driver = 'aws', environments = 'production,staging,
         </div>
       </div>
     </main>
-    <div class="flex gap-x-6 items-center justify-end mt-6">
-      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">Cancel</button>
-      <button type="submit" class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm">Save</button>
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">Cancel</button>
+      <button type="submit" class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline">Save</button>
     </div>
   </form>

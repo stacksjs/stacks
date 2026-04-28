@@ -8,13 +8,13 @@ const { to = '', active = false } = defineProps<IconButtonProps>()
 </script>
 <a
   href="{{ to }}"
-  class="flex flex-row gap-2 items-center p-1 text-gray-600' dark:text-blue-300 'dark:bg-neutral-700 bg-neutral-50 bg-primary rounded-md : ? '' {{ }} active"
+  class="bg-primary flex flex-row items-center gap-2 rounded-md p-1 {{ active ? 'dark:bg-neutral-700 bg-neutral-50 dark:text-blue-300 text-gray-600' : '' }}"
 >
-  <div class="flex relative items-center justify-center p-1 bg-gray-8 rounded-md">
+  <div class="relative flex items-center justify-center rounded-md bg-gray-8 p-1">
     <span class="h-6 w-6 text-white"></span>
   </div>
 
-  <span class="!text-sm text-gray-8">
+  <span class="text-gray-8 !text-sm">
     <slot />
   </span>
 </a>

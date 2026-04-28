@@ -58,105 +58,105 @@ function truncateMessage(message, maxLength = 60) {
 }
 </script>
 <div class="overflow-hidden">
-  <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+  <table class="min-w-full divide-y divide-gray-300 dark:divide-neutral-700">
     <thead class="bg-gray-50 dark:bg-neutral-700">
       <tr>
-        <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-          <button class="inline-flex items-center group" data-action="sort" data-column="type">
+        <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm font-semibold text-gray-900 sm:pl-6 dark:text-neutral-200">
+          <button class="group inline-flex items-center" data-action="sort" data-column="type">
             Error
-            <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+            <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
               @if(sortBy == 'type')
-                <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} == sortOrder"></div>
+                <div class="{{ sortOrder == 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
               @else
-                <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
               @endif
             </span>
           </button>
         </th>
-        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-          <button class="inline-flex items-center group" data-action="sort" data-column="count">
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
+          <button class="group inline-flex items-center" data-action="sort" data-column="count">
             Events
-            <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+            <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
               @if(sortBy == 'count')
-                <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} == sortOrder"></div>
+                <div class="{{ sortOrder == 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
               @else
-                <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
               @endif
             </span>
           </button>
         </th>
-        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-          <button class="inline-flex items-center group" data-action="sort" data-column="last_seen">
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
+          <button class="group inline-flex items-center" data-action="sort" data-column="last_seen">
             Last Seen
-            <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+            <span class="ml-2 flex-none rounded text-gray-400 group-hover:visible group-focus:visible">
               @if(sortBy == 'last_seen')
-                <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} == sortOrder"></div>
+                <div class="{{ sortOrder == 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
               @else
-                <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                <div class="i-hugeicons-arrows-up-down h-4 w-4"></div>
               @endif
             </span>
           </button>
         </th>
-        <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+        <th scope="col" class="px-3 py-3.5 text-left text-sm font-semibold text-gray-900 dark:text-neutral-200">
           Status
         </th>
-        <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+        <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-6">
           <span class="sr-only">Actions</span>
         </th>
       </tr>
     </thead>
-    <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+    <tbody class="divide-y divide-gray-200 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
       @foreach(errors as error)
         <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer" data-action="view" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
-          <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
+          <td class="py-4 pl-4 pr-3 text-sm sm:pl-6">
             <div class="flex flex-col">
-              <div class="flex gap-2 items-center">
-                <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md {{ }} getTypeClass(error.type)">
+              <div class="flex items-center gap-2">
+                <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ getTypeClass(error.type) }}">
                   {{ error.type }}
                 </span>
               </div>
-              <div class="mt-1 font-medium text-gray-900 dark:text-white">
+              <div class="mt-1 text-gray-900 dark:text-white font-medium">
                 {{ truncateMessage(error.message) }}
               </div>
-              <div class="mt-0.5 text-gray-500 text-xs dark:text-neutral-400">
+              <div class="text-gray-500 dark:text-neutral-400 text-xs mt-0.5">
                 First seen: {{ formatTimeAgo(error.first_seen) }}
               </div>
             </div>
           </td>
-          <td class="px-3 py-4 text-sm whitespace-nowrap">
+          <td class="whitespace-nowrap px-3 py-4 text-sm">
             <div class="flex items-center">
-              <span class="inline-flex items-center justify-center px-2 h-6 min-w-[24px] font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full">
+              <span class="inline-flex items-center justify-center h-6 min-w-[24px] px-2 rounded-full bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-300 font-medium text-xs">
                 {{ error.count }}
               </span>
             </div>
           </td>
-          <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+          <td class="whitespace-nowrap px-3 py-4 text-sm text-gray-500 dark:text-neutral-300">
             {{ formatTimeAgo(error.last_seen) }}
           </td>
-          <td class="px-3 py-4 text-sm whitespace-nowrap">
-            <span class="inline-flex items-center px-2 py-1 capitalize font-medium text-xs rounded-md {{ }} getStatusClass(error.status)">
+          <td class="whitespace-nowrap px-3 py-4 text-sm">
+            <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium capitalize {{ getStatusClass(error.status) }}">
               {{ error.status }}
             </span>
           </td>
-          <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+          <td class="relative whitespace-nowrap py-4 pl-3 pr-4 text-right text-sm font-medium sm:pr-6">
             <div class="flex items-center justify-end space-x-2">
               @if(error.status != 'resolved')
-                <button type="button" title="Mark as resolved" class="text-green-400 dark:text-green-400 hover:text-green-600 dark:hover:text-green-300 duration-150 transition-colors" data-action="resolve" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
-                  <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
+                <button type="button" title="Mark as resolved" class="text-green-400 transition-colors duration-150 hover:text-green-600 dark:text-green-400 dark:hover:text-green-300" data-action="resolve" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                  <div class="i-hugeicons-checkmark-circle-02 h-5 w-5"></div>
                 </button>
               @endif
               @if(error.status == 'resolved')
-                <button type="button" title="Reopen" class="text-yellow-400 dark:text-yellow-400 hover:text-yellow-600 dark:hover:text-yellow-300 duration-150 transition-colors" data-action="unresolve" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
-                  <div class="h-5 w-5 i-hugeicons-refresh"></div>
+                <button type="button" title="Reopen" class="text-yellow-400 transition-colors duration-150 hover:text-yellow-600 dark:text-yellow-400 dark:hover:text-yellow-300" data-action="unresolve" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                  <div class="i-hugeicons-refresh h-5 w-5"></div>
                 </button>
               @endif
               @if(error.status != 'ignored')
-                <button type="button" title="Ignore" class="text-gray-400 dark:text-neutral-400 hover:text-gray-600 dark:hover:text-gray-300 duration-150 transition-colors" data-action="ignore" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
-                  <div class="h-5 w-5 i-hugeicons-eye-off"></div>
+                <button type="button" title="Ignore" class="text-gray-400 transition-colors duration-150 hover:text-gray-600 dark:text-neutral-400 dark:hover:text-gray-300" data-action="ignore" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                  <div class="i-hugeicons-eye-off h-5 w-5"></div>
                 </button>
               @endif
-              <button type="button" title="Delete" class="text-red-400 dark:text-red-400 hover:text-red-600 dark:hover:text-red-300 duration-150 transition-colors" data-action="delete" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
-                <div class="h-5 w-5 i-hugeicons-waste"></div>
+              <button type="button" title="Delete" class="text-red-400 transition-colors duration-150 hover:text-red-600 dark:text-red-400 dark:hover:text-red-300" data-action="delete" data-error-type="{{ error.type }}" data-error-message="{{ error.message }}">
+                <div class="i-hugeicons-waste h-5 w-5"></div>
               </button>
             </div>
           </td>
@@ -166,9 +166,9 @@ function truncateMessage(message, maxLength = 60) {
         <tr>
           <td colspan="5" class="px-6 py-12 text-center">
             <div class="flex flex-col items-center">
-              <div class="h-12 w-12 text-green-400 i-hugeicons-checkmark-circle-02"></div>
-              <h3 class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No errors found</h3>
-              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+              <div class="i-hugeicons-checkmark-circle-02 h-12 w-12 text-green-400"></div>
+              <h3 class="mt-2 text-sm font-medium text-gray-900 dark:text-white">No errors found</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">
                 @if(searchQuery || statusFilter != 'all' || typeFilter != 'all')
                   Try adjusting your filters
                 @else

@@ -55,15 +55,15 @@ function getPageUrl(page) {
   return baseUrl ? `${baseUrl}?page=${page}` : `?page=${page}`
 }
 </script>
-<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
     <!-- Left: Items info & per page selector -->
-    <div class="flex gap-4 items-center text-neutral-500 text-sm dark:text-neutral-400">
+    <div class="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
       <!-- Items per page -->
       @if(showItemsPerPage && itemsPerPage)
-        <div class="flex gap-2 items-center">
+        <div class="flex items-center gap-2">
           <span>Show</span>
           <select
-            class="text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-neutral-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500"
+            class="rounded-md border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-sm focus:ring-blue-500 focus:border-blue-500"
             data-items-per-page
           >
             @foreach(itemsPerPageOptions as option)
@@ -79,11 +79,11 @@ function getPageUrl(page) {
       <!-- Total items info -->
       @if(showTotalItems && totalItems > 0)
         <div>
-          <span class="font-medium text-neutral-700 dark:text-neutral-200">
+          <span class="text-neutral-700 dark:text-neutral-200 font-medium">
             {{ itemRangeStart }}-{{ itemRangeEnd }}
           </span>
           of
-          <span class="font-medium text-neutral-700 dark:text-neutral-200">
+          <span class="text-neutral-700 dark:text-neutral-200 font-medium">
             {{ totalItems }}
           </span>
           items
@@ -92,13 +92,13 @@ function getPageUrl(page) {
     </div>
 
     <!-- Right: Page navigation -->
-    <nav class="flex gap-1 items-center" aria-label="Pagination">
+    <nav class="flex items-center gap-1" aria-label="Pagination">
       <!-- Previous button -->
       <a
         href="{{ currentPage > 1 ? getPageUrl(currentPage - 1) : '#' }}"
-        class="p-2 font-medium text-sm dark:text-neutral-400 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800' rounded-lg transition-colors cursor-not-allowed pointer-events-none' : ? 'text-neutral-300 'text-neutral-500 {{ }} == 1 currentPage"
+        class="p-2 rounded-lg text-sm font-medium transition-colors {{ currentPage == 1 ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed pointer-events-none' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       >
-        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
+        <div class="i-hugeicons-arrow-left-01 w-5 h-5"></div>
       </a>
 
       <!-- Page numbers -->
@@ -108,7 +108,7 @@ function getPageUrl(page) {
         @else
           <a
             href="{{ getPageUrl(page) }}"
-            class="flex items-center justify-center px-3 h-9 min-w-[2.25rem] font-medium text-sm text-white' dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800' rounded-lg transition-colors : ? 'bg-blue-600 'text-neutral-600 {{ }} == currentPage page"
+            class="min-w-[2.25rem] h-9 px-3 rounded-lg text-sm font-medium transition-colors flex items-center justify-center {{ page == currentPage ? 'bg-blue-600 text-white' : 'text-neutral-600 hover:text-neutral-800 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
           >
             {{ page }}
           </a>
@@ -118,9 +118,9 @@ function getPageUrl(page) {
       <!-- Next button -->
       <a
         href="{{ currentPage < totalPages ? getPageUrl(currentPage + 1) : '#' }}"
-        class="p-2 font-medium text-sm dark:text-neutral-400 dark:text-neutral-600 hover:text-neutral-700 dark:hover:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-800' rounded-lg transition-colors cursor-not-allowed pointer-events-none' : ? 'text-neutral-300 'text-neutral-500 {{ }} == currentPage totalPages"
+        class="p-2 rounded-lg text-sm font-medium transition-colors {{ currentPage == totalPages ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed pointer-events-none' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       >
-        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
+        <div class="i-hugeicons-arrow-right-01 w-5 h-5"></div>
       </a>
     </nav>
   </div>

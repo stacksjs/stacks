@@ -43,10 +43,10 @@ const classes = getClasses()
 @if(href)
     <a
       href="{{ href }}"
-      class="{{ }} classes"
+      class="{{ classes }}"
     >
       <!-- Leading icon slot -->
-      <span class="flex items-center justify-center h-4 w-4 text-current opacity-70">
+      <span class="w-4 h-4 flex items-center justify-center text-current opacity-70">
         {{ iconSlot }}
       </span>
 
@@ -61,11 +61,11 @@ const classes = getClasses()
   @else
     <button
       type="button"
-      class="{{ }} classes"
+      class="{{ classes }}"
       @if(disabled) disabled @endif
     >
       <!-- Leading icon slot -->
-      <span class="flex items-center justify-center h-4 w-4 text-current opacity-70">
+      <span class="w-4 h-4 flex items-center justify-center text-current opacity-70">
         {{ iconSlot }}
       </span>
 

@@ -29,29 +29,29 @@ const trendClasses = {
   neutral: 'text-neutral-500 dark:text-neutral-400'
 }
 </script>
-<div class="p-5 bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5 hover:shadow-black/5 hover:shadow-md dark:hover:shadow-black/20 duration-150 transition-all">
+<div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5 p-5 transition-all duration-150 hover:shadow-md hover:shadow-black/5 dark:hover:shadow-black/20">
     <div class="flex items-start justify-between">
       <div class="flex-1 min-w-0">
-        <p class="font-medium text-[13px] text-neutral-500 tracking-tight truncate dark:text-neutral-400">
+        <p class="text-[13px] font-medium text-neutral-500 dark:text-neutral-400 truncate tracking-tight">
           {{ title }}
         </p>
 
-        <div class="flex gap-2 items-baseline mt-1.5">
+        <div class="mt-1.5 flex items-baseline gap-2">
           @if(loading)
             <div class="h-7 w-20 bg-black/5 dark:bg-white/10 rounded-md animate-pulse"></div>
           @else
-            <p class="font-semibold text-[22px] text-neutral-900 tracking-tight dark:text-white">
+            <p class="text-[22px] font-semibold text-neutral-900 dark:text-white tracking-tight">
               {{ value }}
             </p>
 
             @if(trend !== null)
-              <span class="inline-flex items-center font-medium text-[12px] {{ }} trendClasses[trendDirection]">
+              <span class="inline-flex items-center text-[12px] font-medium {{ trendClasses[trendDirection] }}">
                 @if(trendDirection == 'up')
-                  <svg class="mr-0.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M5 15l7-7 7 7"></path>
                   </svg>
                 @elseif(trendDirection == 'down')
-                  <svg class="mr-0.5 h-3.5 w-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <svg class="h-3.5 w-3.5 mr-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M19 9l-7 7-7-7"></path>
                   </svg>
                 @endif
@@ -69,8 +69,8 @@ const trendClasses = {
       </div>
 
       @if(icon)
-        <div class="flex-shrink-0 p-2.5 rounded-lg {{ }} iconBgClasses[iconBg]">
-          <div class="h-5 w-5 {{ }} icon"></div>
+        <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconBgClasses[iconBg] }}">
+          <div class="{{ icon }} h-5 w-5"></div>
         </div>
       @endif
     </div>

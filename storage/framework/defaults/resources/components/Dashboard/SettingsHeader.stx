@@ -10,73 +10,73 @@ const { currentPath = '/settings/ai' } = defineProps<SettingsHeaderProps>()
     <nav class="flex overflow-x-auto py-4">
       <ul
         role="list"
-        class="flex flex-none gap-x-6 px-4 sm:px-6 lg:px-8 min-w-full font-semibold leading-6 text-gray-600 text-sm"
+        class="min-w-full flex flex-none gap-x-6 px-4 text-sm text-gray-600 font-semibold leading-6 lg:px-8 sm:px-6"
       >
         <li>
-          <a href="/settings/ai" class=": ? '' '/settings/ai' 'text-blue-600' {{ }} == currentPath">AI</a>
+          <a href="/settings/ai" class="{{ currentPath == '/settings/ai' ? 'text-blue-600' : '' }}">AI</a>
         </li>
         <li>
-          <a href="/settings/analytics" class=": ? '' '/settings/analytics' 'text-blue-600' {{ }} == currentPath">Analytics</a>
+          <a href="/settings/analytics" class="{{ currentPath == '/settings/analytics' ? 'text-blue-600' : '' }}">Analytics</a>
         </li>
         <li>
-          <a href="/settings/app" class=": ? '' '/settings/app' 'text-blue-600' {{ }} == currentPath">App</a>
+          <a href="/settings/app" class="{{ currentPath == '/settings/app' ? 'text-blue-600' : '' }}">App</a>
         </li>
         <li>
-          <a href="/settings/cache" class=": ? '' '/settings/cache' 'text-blue-600' {{ }} == currentPath">Cache</a>
+          <a href="/settings/cache" class="{{ currentPath == '/settings/cache' ? 'text-blue-600' : '' }}">Cache</a>
         </li>
         <li>
-          <a href="/settings/cli" class=": ? '' '/settings/cli' 'text-blue-600' {{ }} == currentPath">CLI</a>
+          <a href="/settings/cli" class="{{ currentPath == '/settings/cli' ? 'text-blue-600' : '' }}">CLI</a>
         </li>
         <li>
-          <a href="/settings/cloud" class=": ? '' '/settings/cloud' 'text-blue-600' {{ }} == currentPath">Cloud</a>
+          <a href="/settings/cloud" class="{{ currentPath == '/settings/cloud' ? 'text-blue-600' : '' }}">Cloud</a>
         </li>
         <li>
-          <a href="/settings/database" class=": ? '' '/settings/database' 'text-blue-600' {{ }} == currentPath">Database</a>
+          <a href="/settings/database" class="{{ currentPath == '/settings/database' ? 'text-blue-600' : '' }}">Database</a>
         </li>
         <li>
-          <a href="/settings/dns" class=": ? '' '/settings/dns' 'text-blue-600' {{ }} == currentPath">DNS</a>
+          <a href="/settings/dns" class="{{ currentPath == '/settings/dns' ? 'text-blue-600' : '' }}">DNS</a>
         </li>
         <li>
-          <a href="/settings/email" class=": ? '' '/settings/email' 'text-blue-600' {{ }} == currentPath">Email</a>
+          <a href="/settings/email" class="{{ currentPath == '/settings/email' ? 'text-blue-600' : '' }}">Email</a>
         </li>
         <li>
-          <a href="/settings/file-systems" class=": ? '' '/settings/file-systems' 'text-blue-600' {{ }} == currentPath">File Systems</a>
+          <a href="/settings/file-systems" class="{{ currentPath == '/settings/file-systems' ? 'text-blue-600' : '' }}">File Systems</a>
         </li>
         <li>
-          <a href="/settings/hashing" class=": ? '' '/settings/hashing' 'text-blue-600' {{ }} == currentPath">Hashing</a>
+          <a href="/settings/hashing" class="{{ currentPath == '/settings/hashing' ? 'text-blue-600' : '' }}">Hashing</a>
         </li>
         <li>
-          <a href="/settings/languages" class=": ? '' '/settings/languages' 'text-blue-600' {{ }} == currentPath">Languages</a>
+          <a href="/settings/languages" class="{{ currentPath == '/settings/languages' ? 'text-blue-600' : '' }}">Languages</a>
         </li>
         <li>
-          <a href="/settings/library" class=": ? '' '/settings/library' 'text-blue-600' {{ }} == currentPath">Library</a>
+          <a href="/settings/library" class="{{ currentPath == '/settings/library' ? 'text-blue-600' : '' }}">Library</a>
         </li>
         <li>
-          <a href="/settings/native" class=": ? '' '/settings/native' 'text-blue-600' {{ }} == currentPath">Native</a>
+          <a href="/settings/native" class="{{ currentPath == '/settings/native' ? 'text-blue-600' : '' }}">Native</a>
         </li>
         <li>
-          <a href="/settings/mail" class=": ? '' '/settings/mail' 'text-blue-600' {{ }} == currentPath">Mail</a>
+          <a href="/settings/mail" class="{{ currentPath == '/settings/mail' ? 'text-blue-600' : '' }}">Mail</a>
         </li>
         <li>
-          <a href="/settings/queue" class=": ? '' '/settings/queue' 'text-blue-600' {{ }} == currentPath">Queue</a>
+          <a href="/settings/queue" class="{{ currentPath == '/settings/queue' ? 'text-blue-600' : '' }}">Queue</a>
         </li>
         <li>
-          <a href="/settings/search-engine" class=": ? '' '/settings/search-engine' 'text-blue-600' {{ }} == currentPath">Search Engine</a>
+          <a href="/settings/search-engine" class="{{ currentPath == '/settings/search-engine' ? 'text-blue-600' : '' }}">Search Engine</a>
         </li>
         <li>
-          <a href="/settings/security" class=": ? '' '/settings/security' 'text-blue-600' {{ }} == currentPath">Security</a>
+          <a href="/settings/security" class="{{ currentPath == '/settings/security' ? 'text-blue-600' : '' }}">Security</a>
         </li>
         <li>
-          <a href="/settings/services" class=": ? '' '/settings/services' 'text-blue-600' {{ }} == currentPath">Services</a>
+          <a href="/settings/services" class="{{ currentPath == '/settings/services' ? 'text-blue-600' : '' }}">Services</a>
         </li>
         <li>
-          <a href="/settings/storage" class=": ? '' '/settings/storage' 'text-blue-600' {{ }} == currentPath">Storage</a>
+          <a href="/settings/storage" class="{{ currentPath == '/settings/storage' ? 'text-blue-600' : '' }}">Storage</a>
         </li>
         <li>
-          <a href="/settings/team" class=": ? '' '/settings/team' 'text-blue-600' {{ }} == currentPath">Team</a>
+          <a href="/settings/team" class="{{ currentPath == '/settings/team' ? 'text-blue-600' : '' }}">Team</a>
         </li>
         <li>
-          <a href="/settings/ui" class=": ? '' '/settings/ui' 'text-blue-600' {{ }} == currentPath">UI</a>
+          <a href="/settings/ui" class="{{ currentPath == '/settings/ui' ? 'text-blue-600' : '' }}">UI</a>
         </li>
       </ul>
     </nav>

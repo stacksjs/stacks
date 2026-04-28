@@ -24,12 +24,12 @@ function getAlignClass(align) {
     }
   }
 </script>
-<div class="overflow-hidden relative bg-white dark:bg-neutral-900 border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
+<div class="relative overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 bg-white dark:bg-neutral-900 shadow-sm">
   <!-- Loading overlay -->
   @if(loading)
-    <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm">
-      <div class="flex gap-2 items-center text-neutral-500 dark:text-neutral-400">
-        <div class="h-5 w-5 animate-spin i-hugeicons-loading-03"></div>
+    <div class="absolute inset-0 z-10 flex items-center justify-center bg-white/80 dark:bg-neutral-900/80 backdrop-blur-sm">
+      <div class="flex items-center gap-2 text-neutral-500 dark:text-neutral-400">
+        <div class="i-hugeicons-loading-03 w-5 h-5 animate-spin"></div>
         <span class="text-sm">Loading...</span>
       </div>
     </div>
@@ -38,15 +38,15 @@ function getAlignClass(align) {
   <div class="overflow-x-auto">
     <table class="w-full">
       <!-- Header -->
-      <thead class="top-0 z-10' bg-stone-50/80 dark:bg-neutral-800/50 : ? '' 'sticky {{ }} stickyHeader">
+      <thead class="bg-stone-50/80 dark:bg-neutral-800/50 {{ stickyHeader ? 'sticky top-0 z-10' : '' }}">
         <tr>
           <!-- Selection checkbox column -->
           @if(selectable)
-            <th class="pl-6 pr-2 py-3 w-12">
+            <th class="w-12 pl-6 pr-2 py-3">
               <div class="flex items-center justify-center">
                 <input
                   type="checkbox"
-                  class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-stone-300 rounded dark:border-neutral-600 focus:ring-blue-500"
+                  class="h-4 w-4 rounded border-stone-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
                   data-select-all
                 >
               </div>
@@ -56,14 +56,14 @@ function getAlignClass(align) {
           <!-- Data columns -->
           @foreach(columns as column, index)
             <th
-              class="pr-4 font-semibold text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400 hover:text-stone-700 dark:hover:text-neutral-200' !selectable select-none : : : ? ? ? '' '' 'cursor-pointer 'pl-4' 'pl-6' 'py-2' 'py-3.5' {{ {{ {{ {{ {{ }} }} }} }} }} && === || 0 column.class column.sortable compact getAlignClass(column.align) index"
+              class="{{ index === 0 && !selectable ? 'pl-6' : 'pl-4' }} pr-4 text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400 {{ compact ? 'py-2' : 'py-3.5' }} {{ getAlignClass(column.align) }} {{ column.sortable ? 'cursor-pointer select-none hover:text-stone-700 dark:hover:text-neutral-200' : '' }} {{ column.class || '' }}"
               @if(column.width) style="width: {{ column.width }}" @endif
               data-column="{{ column.key }}"
             >
-              <div class="inline-flex gap-1.5 items-center">
+              <div class="inline-flex items-center gap-1.5">
                 <span>{{ column.label }}</span>
                 @if(column.sortable)
-                  <div class="h-3.5 w-3.5 opacity-30 i-hugeicons-arrow-up-down-01"></div>
+                  <div class="i-hugeicons-arrow-up-down-01 w-3.5 h-3.5 opacity-30"></div>
                 @endif
               </div>
             </th>
@@ -71,25 +71,25 @@ function getAlignClass(align) {
 
           <!-- Actions column slot -->
           @if($slots.actions)
-            <th class="px-4 py-3 w-12"></th>
+            <th class="w-12 px-4 py-3"></th>
           @endif
         </tr>
       </thead>
 
       <!-- Body -->
-      <tbody class="divide-stone-100 dark:divide-neutral-700' : ? 'divide-y 'divide-y-0' {{ }} striped">
+      <tbody class="{{ striped ? 'divide-y-0' : 'divide-y divide-stone-100 dark:divide-neutral-700' }}">
         @foreach(data as row, rowIndex)
           <tr
-            class="'hover:bg-stone-50/50 dark:bg-neutral-800/25' dark:hover:bg-neutral-800/50' transition-colors : : ? ? '' '' 'bg-stone-50/30 {{ {{ }} }} && % == 1 2 hoverable rowIndex striped"
+            class="{{ hoverable ? 'hover:bg-stone-50/50 dark:hover:bg-neutral-800/50' : '' }} {{ striped && rowIndex % 2 == 1 ? 'bg-stone-50/30 dark:bg-neutral-800/25' : '' }} transition-colors"
             data-row-id="{{ row[rowKey] }}"
           >
             <!-- Selection checkbox -->
             @if(selectable)
-              <td class="pl-6 pr-2 w-12 : ? 'py-2' 'py-3.5' {{ }} compact">
+              <td class="w-12 pl-6 pr-2 {{ compact ? 'py-2' : 'py-3.5' }}">
                 <div class="flex items-center justify-center">
                   <input
                     type="checkbox"
-                    class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-stone-300 rounded dark:border-neutral-600 focus:ring-blue-500"
+                    class="h-4 w-4 rounded border-stone-300 text-blue-600 focus:ring-blue-500 dark:border-neutral-600 dark:bg-neutral-700"
                     data-row-select
                   >
                 </div>
@@ -98,14 +98,14 @@ function getAlignClass(align) {
 
             <!-- Data cells -->
             @foreach(columns as column, colIndex)
-              <td class="pr-4 text-sm text-stone-700 dark:text-neutral-200 !selectable : : ? ? '' 'pl-4' 'pl-6' 'py-2' 'py-3.5' {{ {{ {{ {{ }} }} }} }} && === || 0 colIndex column.class compact getAlignClass(column.align)">
+              <td class="{{ colIndex === 0 && !selectable ? 'pl-6' : 'pl-4' }} pr-4 text-sm text-stone-700 dark:text-neutral-200 {{ compact ? 'py-2' : 'py-3.5' }} {{ getAlignClass(column.align) }} {{ column.class || '' }}">
                 {{ row[column.key] }}
               </td>
             @endforeach
 
             <!-- Actions cell -->
             @if($slots.actions)
-              <td class="px-4 w-12 : ? 'py-2' 'py-3' {{ }} compact">
+              <td class="w-12 px-4 {{ compact ? 'py-2' : 'py-3' }}">
                 <slot name="actions" />
               </td>
             @endif
@@ -117,17 +117,17 @@ function getAlignClass(align) {
 
   <!-- Empty state -->
   @if(data.length == 0 && !loading)
-    <div class="flex flex-col items-center justify-center px-4 py-12">
+    <div class="flex flex-col items-center justify-center py-12 px-4">
       @if($slots.empty)
         <slot name="empty" />
       @else
-        <div class="mb-3 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-full">
-          <div class="h-6 w-6 text-neutral-400 i-hugeicons-inbox-01"></div>
+        <div class="mb-3 p-3 rounded-full bg-neutral-100 dark:bg-neutral-800">
+          <div class="i-hugeicons-inbox-01 w-6 h-6 text-neutral-400"></div>
         </div>
-        <p class="font-medium text-neutral-700 text-sm dark:text-neutral-200">
+        <p class="text-sm font-medium text-neutral-700 dark:text-neutral-200">
           {{ emptyTitle }}
         </p>
-        <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
           {{ emptyDescription }}
         </p>
       @endif
@@ -136,7 +136,7 @@ function getAlignClass(align) {
 
   <!-- Footer slot -->
   @if($slots.footer)
-    <div class="px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25 border-neutral-200 border-t dark:border-neutral-700">
+    <div class="border-t border-neutral-200 dark:border-neutral-700 px-4 py-3 bg-neutral-50/50 dark:bg-neutral-800/25">
       <slot name="footer" />
     </div>
   @endif

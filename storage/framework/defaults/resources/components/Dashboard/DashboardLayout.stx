@@ -65,14 +65,14 @@ function shouldShowWebSidebar() {
   <!-- Mobile sidebar overlay -->
   @if(isMobileMenuOpen && isMobile)
     <div
-      class="lg:hidden fixed inset-0 z-40 bg-black/50 backdrop-blur-sm duration-300 transition-opacity"
+      class="fixed inset-0 z-40 bg-black/50 backdrop-blur-sm lg:hidden transition-opacity duration-300"
       data-action="close-mobile-menu"
     ></div>
   @endif
 
   <!-- Mobile sidebar (web-based, only when no native sidebar) -->
   @if(isMobileMenuOpen && isMobile && shouldShowWebSidebar())
-    <div class="lg:hidden fixed inset-y-0 left-0 z-50 w-64 duration-300 transition-transform dashboard-web-sidebar">
+    <div class="dashboard-web-sidebar fixed inset-y-0 left-0 z-50 w-64 lg:hidden transition-transform duration-300">
       <Sidebar />
     </div>
   @endif
@@ -86,7 +86,7 @@ function shouldShowWebSidebar() {
 
   <!-- Main content area -->
   <div
-    class="flex flex-col min-h-screen duration-300 transition-all dashboard-main-content"
+    class="dashboard-main-content flex flex-col min-h-screen transition-all duration-300"
     style="{{ getMainContentStyle() }}"
   >
     <!-- Navbar -->
@@ -100,18 +100,18 @@ function shouldShowWebSidebar() {
 
     <!-- Page header slot -->
     @if($slots.header)
-      <div class="bg-white dark:bg-neutral-900 border-b border-neutral-200 dark:border-neutral-800">
-        <div class="mx-auto' px-4 py-4 lg:px-6 : ? '' 'max-w-7xl {{ }} fullWidth">
+      <div class="border-b border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div class="px-4 lg:px-6 py-4 {{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
           <slot name="header">
             <!-- Default page header -->
             @if(pageTitle)
-              <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">
+                  <h1 class="text-2xl font-semibold text-neutral-900 dark:text-white">
                     {{ pageTitle }}
                   </h1>
                   @if(pageDescription)
-                    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+                    <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
                       {{ pageDescription }}
                     </p>
                   @endif
@@ -125,16 +125,16 @@ function shouldShowWebSidebar() {
     @endif
 
     <!-- Main content -->
-    <main class="flex-1 py-6' lg:px-6 : ? '' 'px-4 {{ }} noPadding">
-      <div class="mx-auto' : ? '' 'max-w-7xl {{ }} fullWidth">
+    <main class="{{ noPadding ? '' : 'px-4 lg:px-6 py-6' }} flex-1">
+      <div class="{{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
         <slot />
       </div>
     </main>
 
     <!-- Footer slot -->
     @if($slots.footer)
-      <footer class="bg-white dark:bg-neutral-900 border-neutral-200 border-t dark:border-neutral-800">
-        <div class="mx-auto' px-4 py-4 lg:px-6 : ? '' 'max-w-7xl {{ }} fullWidth">
+      <footer class="border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900">
+        <div class="px-4 lg:px-6 py-4 {{ fullWidth ? '' : 'max-w-7xl mx-auto' }}">
           <slot name="footer" />
         </div>
       </footer>

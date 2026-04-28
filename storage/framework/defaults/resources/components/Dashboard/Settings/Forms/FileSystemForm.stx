@@ -26,23 +26,23 @@ const { defaultDisk = 'local', localDriver = 'local', localRoot = 'storage', pub
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-gray-900/10 divide-y">
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+      <div class="divide-y divide-gray-900/10">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Default File System Settings
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your default File System settings
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="default-disk" class="block font-medium leading-6 text-gray-900 text-sm">Default</label>
+                <label for="default-disk" class="block text-sm text-gray-900 font-medium leading-6">Default</label>
                 <div class="mt-2">
-                  <select id="default-disk" name="default-disk" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <select id="default-disk" name="default-disk" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                     <option {{ defaultDisk == 'local' ? 'selected' : '' }}>local</option>
                     <option {{ defaultDisk == 'public' ? 'selected' : '' }}>public</option>
                     <option {{ defaultDisk == 'private' ? 'selected' : '' }}>private</option>
@@ -55,68 +55,68 @@ const { defaultDisk = 'local', localDriver = 'local', localRoot = 'storage', pub
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Local Disk
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your local disk configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="local-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
+                <label for="local-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="local-driver" type="text" name="local-driver" value="{{ localDriver }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="local-driver" type="text" name="local-driver" value="{{ localDriver }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="local-root" class="block font-medium leading-6 text-gray-900 text-sm">Root</label>
+                <label for="local-root" class="block text-sm text-gray-900 font-medium leading-6">Root</label>
                 <div class="mt-2">
-                  <input id="local-root" type="text" name="local-root" value="{{ localRoot }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="local-root" type="text" name="local-root" value="{{ localRoot }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Public Disk
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your public disk configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="public-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
+                <label for="public-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="public-driver" type="text" name="public-driver" value="{{ publicDriver }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="public-driver" type="text" name="public-driver" value="{{ publicDriver }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="public-root" class="block font-medium leading-6 text-gray-900 text-sm">Root</label>
+                <label for="public-root" class="block text-sm text-gray-900 font-medium leading-6">Root</label>
                 <div class="mt-2">
-                  <input id="public-root" type="text" name="public-root" value="{{ publicRoot }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="public-root" type="text" name="public-root" value="{{ publicRoot }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="public-visibility" class="block font-medium leading-6 text-gray-900 text-sm">Visibility</label>
-                <div class="flex gap-x-4 items-center">
+                <label for="public-visibility" class="block text-sm text-gray-900 font-medium leading-6">Visibility</label>
+                <div class="flex items-center gap-x-4">
                   <div class="mt-2">
                     <button
                       type="button"
-                      class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} publicVisibility"
+                      class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ publicVisibility ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                       role="switch"
                       aria-checked="{{ publicVisibility ? 'true' : 'false' }}"
                       data-action="toggle-public-visibility"
@@ -124,50 +124,50 @@ const { defaultDisk = 'local', localDriver = 'local', localRoot = 'storage', pub
                       <span class="sr-only">Public Visibility</span>
                       <span
                         aria-hidden="true"
-                        class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} publicVisibility"
+                        class="pointer-events-none inline-block h-5 w-5 {{ publicVisibility ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                       ></span>
                     </button>
                   </div>
-                  <span class="font-medium leading-6 text-gray-900 text-sm">Public</span>
+                  <span class="text-sm text-gray-900 font-medium leading-6">Public</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               Private Disk
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your private disk configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="private-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
+                <label for="private-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="private-driver" type="text" name="private-driver" value="{{ privateDriver }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="private-driver" type="text" name="private-driver" value="{{ privateDriver }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="private-root" class="block font-medium leading-6 text-gray-900 text-sm">Root</label>
+                <label for="private-root" class="block text-sm text-gray-900 font-medium leading-6">Root</label>
                 <div class="mt-2">
-                  <input id="private-root" type="text" name="private-root" value="{{ privateRoot }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="private-root" type="text" name="private-root" value="{{ privateRoot }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="private-visibility" class="block font-medium leading-6 text-gray-900 text-sm">Visibility</label>
-                <div class="flex gap-x-4 items-center">
+                <label for="private-visibility" class="block text-sm text-gray-900 font-medium leading-6">Visibility</label>
+                <div class="flex items-center gap-x-4">
                   <div class="mt-2">
                     <button
                       type="button"
-                      class="inline-flex relative flex-shrink-0 h-6 w-11 border-2 border-transparent rounded-full focus:outline-none focus:ring-2 focus:ring-indigo-600 focus:ring-offset-2 duration-200 ease-in-out transition-colors cursor-pointer : ? 'bg-gray-200' 'bg-indigo-600' {{ }} privateVisibility"
+                      class="relative h-6 w-11 inline-flex flex-shrink-0 cursor-pointer border-2 border-transparent rounded-full {{ privateVisibility ? 'bg-indigo-600' : 'bg-gray-200' }} transition-colors duration-200 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-600"
                       role="switch"
                       aria-checked="{{ privateVisibility ? 'true' : 'false' }}"
                       data-action="toggle-private-visibility"
@@ -175,69 +175,69 @@ const { defaultDisk = 'local', localDriver = 'local', localRoot = 'storage', pub
                       <span class="sr-only">Private Visibility</span>
                       <span
                         aria-hidden="true"
-                        class="inline-block h-5 w-5 bg-white ring-0 rounded-full shadow duration-200 ease-in-out transition transform pointer-events-none : ? 'translate-x-0' 'translate-x-5' {{ }} privateVisibility"
+                        class="pointer-events-none inline-block h-5 w-5 {{ privateVisibility ? 'translate-x-5' : 'translate-x-0' }} transform rounded-full bg-white shadow ring-0 transition duration-200 ease-in-out"
                       ></span>
                     </button>
                   </div>
-                  <span class="font-medium leading-6 text-gray-900 text-sm">Private</span>
+                  <span class="text-sm text-gray-900 font-medium leading-6">Private</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               EFS Disk
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your EFS disk configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="efs-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
+                <label for="efs-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="efs-driver" type="text" name="efs-driver" value="{{ efsDriver }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="efs-driver" type="text" name="efs-driver" value="{{ efsDriver }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="efs-root" class="block font-medium leading-6 text-gray-900 text-sm">Root</label>
+                <label for="efs-root" class="block text-sm text-gray-900 font-medium leading-6">Root</label>
                 <div class="mt-2">
-                  <input id="efs-root" type="text" name="efs-root" value="{{ efsRoot }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="efs-root" type="text" name="efs-root" value="{{ efsRoot }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
+        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
           <div>
-            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
               S3 Disk
             </h2>
-            <p class="mt-1 leading-6 text-gray-600 text-sm">
+            <p class="mt-1 text-sm text-gray-600 leading-6">
               Update your S3 disk configurations
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
+            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
               <div class="sm:col-span-3">
-                <label for="s3-driver" class="block font-medium leading-6 text-gray-900 text-sm">Driver</label>
+                <label for="s3-driver" class="block text-sm text-gray-900 font-medium leading-6">Driver</label>
                 <div class="mt-2">
-                  <input id="s3-driver" type="text" name="s3-driver" value="{{ s3Driver }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="s3-driver" type="text" name="s3-driver" value="{{ s3Driver }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
 
               <div class="sm:col-span-3">
-                <label for="s3-root" class="block font-medium leading-6 text-gray-900 text-sm">Root</label>
+                <label for="s3-root" class="block text-sm text-gray-900 font-medium leading-6">Root</label>
                 <div class="mt-2">
-                  <input id="s3-root" type="text" name="s3-root" value="{{ s3Root }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
+                  <input id="s3-root" type="text" name="s3-root" value="{{ s3Root }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
                 </div>
               </div>
             </div>
@@ -245,13 +245,13 @@ const { defaultDisk = 'local', localDriver = 'local', localRoot = 'storage', pub
         </div>
       </div>
     </main>
-    <div class="flex gap-x-6 items-center justify-end mt-6">
-      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
+    <div class="mt-6 flex items-center justify-end gap-x-6">
+      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
         Cancel
       </button>
       <button
         type="submit"
-        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
+        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
       >
         Save
       </button>

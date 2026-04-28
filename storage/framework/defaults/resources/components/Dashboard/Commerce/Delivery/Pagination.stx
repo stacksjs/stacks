@@ -51,18 +51,18 @@ const totalPages = Math.ceil(totalItems / itemsPerPage)
 
   const displayedPages = getDisplayedPages()
 </script>
-<div class="flex items-center justify-between mt-5 px-4 py-3 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
-    <div class="flex sm:hidden flex-1 justify-between">
+<div class="mt-5 flex items-center justify-between border-t border-gray-200 dark:border-neutral-700 px-4 py-3 sm:px-6">
+    <div class="flex flex-1 justify-between sm:hidden">
       <a
         href="#"
-        class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 cursor-not-allowed' : ? '' 'opacity-50 {{ }} == 1 currentPage"
+        class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 {{ currentPage == 1 ? 'opacity-50 cursor-not-allowed' : '' }}"
         data-action="prev"
       >
         Previous
       </a>
       <a
         href="#"
-        class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 cursor-not-allowed' : ? '' 'opacity-50 {{ }} == currentPage totalPages"
+        class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700 {{ currentPage == totalPages ? 'opacity-50 cursor-not-allowed' : '' }}"
         data-action="next"
       >
         Next
@@ -70,7 +70,7 @@ const totalPages = Math.ceil(totalItems / itemsPerPage)
     </div>
     <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
       <div>
-        <p class="text-gray-700 text-sm dark:text-neutral-300">
+        <p class="text-sm text-gray-700 dark:text-neutral-300">
           Showing
           <span class="font-medium">{{ startItem }}</span>
           to
@@ -81,28 +81,28 @@ const totalPages = Math.ceil(totalItems / itemsPerPage)
         </p>
       </div>
       <div>
-        <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+        <nav class="isolate inline-flex -space-x-px rounded-md shadow-sm" aria-label="Pagination">
           <a
             href="#"
-            class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-700 focus:outline-offset-0 cursor-not-allowed' : ? '' 'opacity-50 {{ }} == 1 currentPage"
+            class="relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-700 dark:hover:bg-neutral-700 {{ currentPage == 1 ? 'opacity-50 cursor-not-allowed' : '' }}"
             data-action="prev"
           >
             <span class="sr-only">Previous</span>
-            <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
+            <div class="i-hugeicons-arrow-left-01 h-5 w-5"></div>
           </a>
 
           @foreach(displayedPages as page)
             @if(page != '...')
               <a
                 href="#"
-                class="inline-flex inline-flex z-10 focus:z-20 focus:z-20 items-center items-center px-4 px-4 py-2 py-2 font-semibold font-semibold text-gray-900 text-sm text-sm text-white dark:text-neutral-200 bg-blue-600 dark:bg-blue-700' hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus:outline-offset-0 cursor-pointer : ? 'relative 'relative {{ }} == currentPage page"
+                class="{{ page == currentPage ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-700 dark:hover:bg-neutral-700' }} cursor-pointer"
                 data-action="page"
                 data-page="{{ page }}"
               >
                 {{ page }}
               </a>
             @else
-              <span class="inline-flex relative items-center px-4 py-2 font-semibold text-gray-700 text-sm dark:text-neutral-400 ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 focus:outline-offset-0">
+              <span class="relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-700 ring-1 ring-inset ring-gray-300 focus:outline-offset-0 dark:text-neutral-400 dark:ring-neutral-700">
                 ...
               </span>
             @endif
@@ -110,11 +110,11 @@ const totalPages = Math.ceil(totalItems / itemsPerPage)
 
           <a
             href="#"
-            class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-700 focus:outline-offset-0 cursor-not-allowed' : ? '' 'opacity-50 {{ }} == currentPage totalPages"
+            class="relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:ring-neutral-700 dark:hover:bg-neutral-700 {{ currentPage == totalPages ? 'opacity-50 cursor-not-allowed' : '' }}"
             data-action="next"
           >
             <span class="sr-only">Next</span>
-            <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
+            <div class="i-hugeicons-arrow-right-01 h-5 w-5"></div>
           </a>
         </nav>
       </div>

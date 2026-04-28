@@ -45,12 +45,12 @@ const sizeClasses = {
 
   const inputId = id || 'input-' + Math.random().toString(36).slice(2, 11)
 </script>
-<div class=": ? '' 'w-full' {{ }} fullWidth">
+<div class="{{ fullWidth ? 'w-full' : '' }}">
   @if(label)
-    <label for="{{ inputId }}" class="block mb-1.5 font-medium text-[13px] tracking-tight dark:text-neutral-400' dark:text-red-400' : ? 'text-red-600 'text-stone-600 {{ }} error">
+    <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
       {{ label }}
       @if(required)
-        <span class="ml-0.5 text-red-500">*</span>
+        <span class="text-red-500 ml-0.5">*</span>
       @endif
     </label>
   @endif
@@ -62,7 +62,7 @@ const sizeClasses = {
       value="{{ value }}"
       placeholder="{{ placeholder }}"
       name="{{ name }}"
-      class="{{ }} inputClass"
+      class="{{ inputClass }}"
       @if(disabled) disabled @endif
       @if(readonly) readonly @endif
       @if(required) required @endif
@@ -70,7 +70,7 @@ const sizeClasses = {
   </div>
 
   @if(error)
-    <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
+    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
   @elseif(hint)
     <p class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ hint }}</p>
   @endif

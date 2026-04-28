@@ -10,24 +10,24 @@ interface EmptyStateProps {
 
 const { icon = 'i-hugeicons-folder-02', title = '', description = '', actionLabel = '', actionIcon = '', actionHref = '' } = defineProps<EmptyStateProps>()
 </script>
-<div class="flex flex-col items-center justify-center px-4 py-12 text-center">
+<div class="flex flex-col items-center justify-center py-12 px-4 text-center">
     <!-- Icon -->
-    <div class="mb-4 p-4 bg-neutral-100 dark:bg-neutral-800 rounded-full">
+    <div class="mb-4 p-4 rounded-full bg-neutral-100 dark:bg-neutral-800">
       @if(iconSlot)
         {{ iconSlot }}
       @else
-        <div class="h-8 w-8 text-neutral-400 dark:text-neutral-500 {{ }} icon"></div>
+        <div class="{{ icon }} w-8 h-8 text-neutral-400 dark:text-neutral-500"></div>
       @endif
     </div>
 
     <!-- Title -->
-    <h3 class="mb-1 font-medium text-lg text-neutral-900 dark:text-white">
+    <h3 class="text-lg font-medium text-neutral-900 dark:text-white mb-1">
       {{ title }}
     </h3>
 
     <!-- Description -->
     @if(description)
-      <p class="mb-6 max-w-sm text-neutral-500 text-sm dark:text-neutral-400">
+      <p class="text-sm text-neutral-500 dark:text-neutral-400 max-w-sm mb-6">
         {{ description }}
       </p>
     @endif
@@ -36,10 +36,10 @@ const { icon = 'i-hugeicons-folder-02', title = '', description = '', actionLabe
     @if(actionLabel)
       <a
         href="{{ actionHref || '#' }}"
-        class="inline-flex gap-2 items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900 transition-colors"
+        class="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-900"
       >
         @if(actionIcon)
-          <div class="h-4 w-4 {{ }} actionIcon"></div>
+          <div class="{{ actionIcon }} w-4 h-4"></div>
         @endif
         {{ actionLabel }}
       </a>

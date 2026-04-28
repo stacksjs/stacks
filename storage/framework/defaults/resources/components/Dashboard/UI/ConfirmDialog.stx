@@ -21,36 +21,36 @@ const iconNames = {
 }
 </script>
 @if(isOpen)
-  <div ref="pageRoot" class="fixed inset-0 overflow-y-auto z-50">
+  <div ref="pageRoot" class="fixed inset-0 z-50 overflow-y-auto">
     <div class="fixed inset-0 bg-black/50 backdrop-blur-sm" data-modal-overlay></div>
 
-    <div class="flex items-center justify-center p-4 min-h-full">
-      <div class="relative p-6 max-w-md w-full bg-white dark:bg-neutral-900 rounded-xl shadow-2xl">
-        <div class="flex gap-4 items-start">
-          <div class="flex-shrink-0 p-2.5 rounded-lg {{ }} iconClasses[variant]">
-            <div class="h-5 w-5 {{ }} iconNames[variant]"></div>
+    <div class="flex min-h-full p-4 items-center justify-center">
+      <div class="relative w-full max-w-md rounded-xl bg-white dark:bg-neutral-900 shadow-2xl p-6">
+        <div class="flex items-start gap-4">
+          <div class="p-2.5 rounded-lg flex-shrink-0 {{ iconClasses[variant] }}">
+            <div class="{{ iconNames[variant] }} w-5 h-5"></div>
           </div>
           <div class="flex-1 min-w-0">
-            <h3 class="font-semibold text-lg text-neutral-900 dark:text-white">
+            <h3 class="text-lg font-semibold text-neutral-900 dark:text-white">
               {{ title }}
             </h3>
-            <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">
+            <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">
               {{ description }}
             </p>
           </div>
         </div>
 
-        <div class="flex gap-2 items-center justify-end mt-6">
+        <div class="flex items-center justify-end gap-2 mt-6">
           <button
             type="button"
-            class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-[13px] text-neutral-800 tracking-tight dark:text-neutral-100 bg-white/80 dark:bg-white/10 hover:bg-white dark:hover:bg-white/15 border border-black/10 rounded-lg dark:border-white/10 shadow-sm duration-150 transition-all"
+            class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 text-[13px] px-3 py-1.5 rounded-lg bg-white/80 dark:bg-white/10 text-neutral-800 dark:text-neutral-100 border border-black/10 dark:border-white/10 shadow-sm hover:bg-white dark:hover:bg-white/15"
             data-modal-close
           >
             {{ cancelLabel }}
           </button>
           <button
             type="button"
-            class="inline-flex items-center justify-center px-3 py-1.5 font-medium text-[13px] text-white tracking-tight bg-gradient-to-b from-red-500 to-red-600 hover:from-red-400 hover:to-red-500 rounded-lg shadow-red-600/25 shadow-sm duration-150 transition-all"
+            class="inline-flex items-center justify-center font-medium tracking-tight transition-all duration-150 text-[13px] px-3 py-1.5 rounded-lg bg-gradient-to-b from-red-500 to-red-600 text-white shadow-sm shadow-red-600/25 hover:from-red-400 hover:to-red-500"
             data-confirm-action
           >
             {{ confirmLabel }}

@@ -21,11 +21,11 @@ interface TableProps {
 const { columns, data, striped, hoverable } = defineProps<TableProps>()
 </script>
 <div class="dashboard-table-container">
-    <table class=": : ? ? '' '' 'hoverable' 'striped' {{ {{ }} }} dashboard-table hoverable striped">
+    <table class="dashboard-table {{ striped ? 'striped' : '' }} {{ hoverable ? 'hoverable' : '' }}">
       <thead>
         <tr>
           @foreach (columns as column)
-            <th class=": ? '' 'text-' {{ }} + column.align column.align">
+            <th class="{{ column.align ? 'text-' + column.align : '' }}">
               {{ column.label }}
             </th>
           @endforeach
@@ -35,7 +35,7 @@ const { columns, data, striped, hoverable } = defineProps<TableProps>()
         @foreach (data as row)
           <tr>
             @foreach (columns as column)
-              <td class=": ? '' 'text-' {{ }} + column.align column.align">
+              <td class="{{ column.align ? 'text-' + column.align : '' }}">
                 @if (column.render)
                   {{ column.render(row[column.key], row) }}
                 @else
