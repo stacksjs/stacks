@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Queue · App · Dashboard' })
+
 const { Job } = await import('@stacksjs/orm')
 
 let queues = []

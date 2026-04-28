@@ -1,4 +1,6 @@
 <script server>
+useSeoMeta({ title: 'Dashboard' })
+
 const API_URL = 'http://localhost:' + (process.env.PORT_API || '3008')
 
 let stats = []

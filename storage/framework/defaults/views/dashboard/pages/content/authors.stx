@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Authors · Content · Dashboard' })
+
 /**
  * Authors Page
  */

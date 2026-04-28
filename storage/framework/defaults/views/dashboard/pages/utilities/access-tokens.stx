@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Access Tokens · Utilities · Dashboard' })
+
 let tokens = []
 let stats = []
 let scopes = []

@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Posts · Content · Dashboard' })
+
 /**
  * Posts Page
  */

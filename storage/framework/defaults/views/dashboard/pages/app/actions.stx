@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Actions · App · Dashboard' })
+
 let actions = []
 
 try {

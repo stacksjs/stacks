@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Serverless · Management · Dashboard' })
+
 let functions = []
 let stats = []
 let edges = []

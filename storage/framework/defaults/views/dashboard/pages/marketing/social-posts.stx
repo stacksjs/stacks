@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Social Posts · Marketing · Dashboard' })
+
 let posts = []
 let stats = []
 let platformOptions = [

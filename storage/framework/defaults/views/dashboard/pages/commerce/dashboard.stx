@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Dashboard · Commerce · Dashboard' })
+
 const { Order, Product } = await import('@stacksjs/orm')
 
 let stats = []

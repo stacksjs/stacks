@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Buddy · Utilities · Dashboard' })
+
 let commands = []
 let recentOutput = ''
 let stats = []

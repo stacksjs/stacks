@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Mailboxes · Management · Dashboard' })
+
 let mailboxes = []
 let aliases = []
 let stats = []

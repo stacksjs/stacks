@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Subscribers · Data · Dashboard' })
+
 const { Subscriber } = await import('@stacksjs/orm')
 
 let subscribers = []

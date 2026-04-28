@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Seo · Content · Dashboard' })
+
 /**
  * SEO Settings Page
  *

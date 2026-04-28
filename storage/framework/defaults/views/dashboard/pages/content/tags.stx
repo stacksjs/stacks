@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Tags · Content · Dashboard' })
+
 /**
  * Tags Page
  *

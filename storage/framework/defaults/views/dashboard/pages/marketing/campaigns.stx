@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+useSeoMeta({ title: 'Campaigns · Marketing · Dashboard' })
+
 let campaigns = []
 let stats = []
 
