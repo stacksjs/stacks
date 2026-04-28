@@ -15,37 +15,55 @@ let statusBreakdown = {}
 let statusKeys = []
 
 try {
-  const orm = await import('@stacksjs/orm')
-  const pascalName = modelSlug.split('-').map((s) => s.charAt(0).toUpperCase() + s.slice(1)).join('')
-  const ModelClass = orm[pascalName]
-  if (ModelClass) {
-    const allItems = await ModelClass.orderBy('created_at', 'desc').get()
-    totalCount = allItems.length
-    if (allItems.length > 0) {
-      const first = allItems[0]
-      const attrs = first.getAttributes ? first.getAttributes() : {}
-      columns = Object.keys(attrs).filter(k => !['password', 'token', 'secret'].includes(k))
-      items = allItems.map(item => {
-        const row = {}
-        columns.forEach(col => { row[col] = String(item.get(col) || '') })
-        return row
-      })
-      const now = new Date()
-      recentCount = allItems.filter(item => {
-        const d = new Date(String(item.get('created_at') || ''))
-        return (now.getTime() - d.getTime()) < 7 * 24 * 60 * 60 * 1000
+  // Read the table directly via bun:sqlite. Going through the ORM here
+  // would force-import every project model class for every dashboard page
+  // load, and only `User` is re-exported from `@stacksjs/orm` anyway.
+  // Direct SQL keeps the dynamic viewer fast and dependency-free, and lets
+  // it work for every model in the discovered manifest.
+  const { Database } = await import('bun:sqlite')
+  const dbPath = process.env.DB_DATABASE_PATH || `${process.cwd()}/database/stacks.sqlite`
+  const db = new Database(dbPath, { readonly: true })
+
+  // Validate identifier — table names come from URL slug, so refuse anything
+  // that isn't a clean snake_case identifier before interpolating into SQL.
+  if (!/^[a-z][a-z0-9_]*$/.test(tableName))
+    throw new Error('Invalid table name')
+
+  const allItems = db.query(`SELECT * FROM ${tableName} ORDER BY rowid DESC LIMIT 200`).all()
+  totalCount = (db.query(`SELECT COUNT(*) AS c FROM ${tableName}`).get() || { c: 0 }).c
+  if (allItems.length > 0) {
+    const colNames = Object.keys(allItems[0]).filter(k => !['password', 'token', 'secret', 'remember_token', 'two_factor_secret'].includes(k))
+    columns = colNames.map(name => ({
+      name,
+      label: name.replace(/_/g, ' ').replace(/\b\w/g, m => m.toUpperCase()),
+    }))
+    items = allItems.map(row => {
+      const out = {}
+      for (const name of colNames) {
+        let v = row[name]
+        if (v && typeof v === 'object') v = JSON.stringify(v)
+        out[name] = v == null ? '' : String(v)
+      }
+      return out
+    })
+    const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000
+    if (colNames.includes('created_at')) {
+      recentCount = allItems.filter((r) => {
+        const t = Date.parse(String(r.created_at || ''))
+        return Number.isFinite(t) && t > weekAgoMs
       }).length
-      allItems.forEach(item => {
-        const s = String(item.get('status') || 'N/A')
+    }
+    if (colNames.includes('status')) {
+      for (const r of allItems) {
+        const s = String(r.status ?? 'N/A')
         statusBreakdown[s] = (statusBreakdown[s] || 0) + 1
-      })
+      }
       statusKeys = Object.keys(statusBreakdown)
     }
-  } else {
-    error = 'Model not found: ' + pascalName
   }
+  db.close()
 } catch (e) {
-  error = 'DB not seeded'
+  error = e && e.message ? e.message : 'DB not seeded'
 }
 
 function statusVariant(s) {
@@ -82,7 +100,8 @@ function statusVariant(s) {
       </div>
     </div>
 
-    <!-- Error State -->
+    @if(error)
+      <!-- Error State -->
       <div class="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl dark:border-red-800">
         <div class="flex gap-3 items-center">
           <div class="flex items-center justify-center h-10 w-10 bg-red-100 dark:bg-red-900/30 rounded-full">
@@ -162,17 +181,18 @@ function statusVariant(s) {
                       @elseif(col.name.startsWith('is_') || col.name.startsWith('has_'))
                         @if(item[col.name])
                           <Badge variant="success" size="sm">Yes</Badge>
-
+                        @else
                           <Badge variant="default" size="sm">No</Badge>
-
+                        @endif
                       @elseif(col.name.includes('_url') || col.name.includes('url'))
                         @if(item[col.name])
                           <a href="{{ item[col.name] }}" class="text-blue-600 text-xs dark:text-blue-400 hover:underline" target="_blank">Link</a>
-
+                        @else
                           <span class="text-gray-400">-</span>
-
+                        @endif
+                      @else
                         {{ item[col.name] !== null && item[col.name] !== undefined ? item[col.name] : '-' }}
-
+                      @endif
                     </td>
                   @endforeach
                   <td class="px-4 py-3 text-right">
@@ -202,6 +222,7 @@ function statusVariant(s) {
           <div class="p-8 text-center bg-white dark:bg-neutral-800 border border-gray-200 rounded-xl dark:border-neutral-700">
             <p class="text-gray-500 text-sm dark:text-neutral-400">No data available</p>
           </div>
+        @endif
 
         <!-- Pagination -->
         <div class="flex items-center justify-between px-4 py-3 border-gray-200 border-t dark:border-neutral-700">
