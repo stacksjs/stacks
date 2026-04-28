@@ -2,8 +2,8 @@
 
 @section('content')
 <script server>
-useSeoMeta({ title: 'Functions · Library · Dashboard' })
-
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Functions · Library · Dashboard' })
 const fs = await import('fs')
 const path = await import('path')
 

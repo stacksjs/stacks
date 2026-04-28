@@ -2,8 +2,8 @@
 
 @section('content')
 <script server>
-useSeoMeta({ title: 'Realtime · App · Dashboard' })
-
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Realtime · App · Dashboard' })
 // Data available when full dev server runs (buddy dev)
 let channels = []
 let stats = { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }

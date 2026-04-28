@@ -2,8 +2,8 @@
 
 @section('content')
 <script server>
-useSeoMeta({ title: 'Products · Commerce · Dashboard' })
-
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Products · Commerce · Dashboard' })
 const { Product } = await import('@stacksjs/orm')
 
 let products = []

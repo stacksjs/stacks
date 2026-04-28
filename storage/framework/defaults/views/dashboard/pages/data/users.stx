@@ -2,8 +2,8 @@
 
 @section('content')
 <script server>
-useSeoMeta({ title: 'Users · Data · Dashboard' })
-
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Users · Data · Dashboard' })
 // Read directly from SQLite. The bun-query-builder ORM's `.get(key)` accessor
 // currently returns the validator function (e.g. `function text() { return
 // new TextValidator }`) for several attributes, which would render as raw

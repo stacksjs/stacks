@@ -2,8 +2,8 @@
 
 @section('content')
 <script server>
-useSeoMeta({ title: 'Servers · Management · Dashboard' })
-
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Servers · Management · Dashboard' })
 let servers = []
 let stats = []
 

@@ -2,8 +2,8 @@
 
 @section('content')
 <script server>
-useSeoMeta({ title: 'Home · Dashboard' })
-
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Home · Dashboard' })
 // Defensive ORM lookups so a missing model class doesn't blow up the
 // whole page. `await orm.User.all().catch(...)` only catches if `.all()`
 // returns a Promise; if `orm.User` itself is undefined the property
