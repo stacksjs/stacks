@@ -20,6 +20,25 @@ import type {
 const API_BASE = 'https://api.twilio.com/2010-04-01'
 const VERIFY_API_BASE = 'https://verify.twilio.com/v2'
 
+/**
+ * Twilio's free tier rate-limits to 60 messages/sec; bulk sends past
+ * that hit 429s. Honor the Retry-After header on 429/503 with up to
+ * three retries (exponential backoff) before giving up. Anything
+ * outside that band falls through to the original error path.
+ */
+async function fetchWithRetry(url: string, init: RequestInit, maxRetries = 3): Promise<Response> {
+  let attempt = 0
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const response = await fetch(url, init)
+    if (response.status !== 429 && response.status !== 503) return response
+    if (attempt >= maxRetries) return response
+    const retryAfter = Number(response.headers.get('retry-after')) || (2 ** attempt)
+    await new Promise(r => setTimeout(r, Math.min(retryAfter, 30) * 1000))
+    attempt++
+  }
+}
+
 export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
   private config: TwilioConfig
   private verifyServiceSid?: string
@@ -76,7 +95,7 @@ export class TwilioDriver implements SmsDriver, SmsVerificationDriver {
         }
       }
 
-      const response = await fetch(
+      const response = await fetchWithRetry(
         `${API_BASE}/Accounts/${this.config.accountSid}/Messages.json`,
         {
           method: 'POST',

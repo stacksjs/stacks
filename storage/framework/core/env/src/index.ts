@@ -15,9 +15,16 @@ const handler: ProxyHandler<StacksEnv> = {
     if (typeof value === 'string' && /^\d+$/.test(value) && !value.startsWith('0') && NUMERIC_SUFFIXES.some(s => key.endsWith(s)))
       return Number(value)
 
-    // if value is a string but only contains boolean values, return it as a boolean
-    if (typeof value === 'string' && /^true|false$/.test(value))
-      return value === 'true'
+    // If the string value looks like a boolean, coerce it. Use a case-
+    // insensitive match so common variants like "TRUE" / "False" / "true"
+    // all behave the same — earlier behavior coerced "true" but left
+    // "TRUE" as the literal string "TRUE", which is truthy and silently
+    // broke `if (env.SOMETHING) {}` flips on case-sensitive shells.
+    if (typeof value === 'string') {
+      const lower = value.toLowerCase()
+      if (lower === 'true') return true
+      if (lower === 'false') return false
+    }
 
     return value
   },
@@ -69,6 +76,27 @@ export function validateEnv(envProxy: StacksEnv = env): string[] {
   }
 
   return errors
+}
+
+/**
+ * Assert that every key in `keys` is set on `process.env` (non-empty).
+ *
+ * Use this at boot to fail fast on misconfigured environments —
+ * `requireEnv(['APP_KEY', 'STRIPE_SECRET'])` throws a single error
+ * listing every missing key, which is much friendlier than "your
+ * Stripe API key is empty" mid-checkout. Returns the env proxy so it
+ * can be chained: `const envOk = requireEnv([...])`.
+ */
+export function requireEnv(keys: ReadonlyArray<string>, envProxy: StacksEnv = env): StacksEnv {
+  const missing: string[] = []
+  for (const key of keys) {
+    const value = envProxy[key]
+    if (value === undefined || value === '' || value === null) missing.push(key)
+  }
+  if (missing.length > 0) {
+    throw new Error(`[env] Missing required environment variable(s): ${missing.join(', ')}. Set them in .env or your process environment before booting.`)
+  }
+  return envProxy
 }
 
 export * from './types'

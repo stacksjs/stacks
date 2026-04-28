@@ -166,6 +166,10 @@ export async function tcpWhois(
 
   if (!proxy) {
     const socket = new Net.Socket()
+    // 30s socket timeout — without this, an unresponsive WHOIS server
+    // (or a network partition) leaves the lookup hanging indefinitely
+    // and any caller awaiting it freezes alongside it.
+    socket.setTimeout(30_000)
     return new Promise((resolve, reject) => {
       try {
         socket.connect({ port, host: server }, () => {
@@ -180,6 +184,11 @@ export async function tcpWhois(
 
         socket.on('error', (error) => {
           reject(error)
+        })
+
+        socket.on('timeout', () => {
+          socket.destroy()
+          reject(new Error(`WHOIS request to ${server}:${port} timed out after 30s`))
         })
       }
       catch (e) {
@@ -358,11 +367,15 @@ export async function batchWhois(
 
     for (let i = 0; i < domains.length; i += threads) {
       const batch = domains.slice(i, i + threads)
-      response = await Promise.all(
+      // Accumulate batch results — the previous `response = await Promise.all(...)`
+      // overwrote the array each iteration, so a 100-domain batch with
+      // threads=10 returned only the last 10 entries instead of all 100.
+      const batchResults = await Promise.all(
         batch.map(async (domain) => {
           return await whois(domain, parse, options)
         }),
       )
+      response.push(...batchResults)
     }
   }
   else {

@@ -123,8 +123,18 @@ export class SlackDriver extends BaseChatDriver {
   }
 
   private async sendViaWebhook(message: ChatMessage): Promise<{ ts?: string }> {
+    // Slack rejects messages over 40k characters and silently truncates
+    // `text` for the in-channel preview — wrap the limit so callers see
+    // the truncation explicitly via the `… [truncated]` suffix instead
+    // of mysterious clipped messages.
+    const SLACK_TEXT_LIMIT = 40000
+    const rawText = message.content || message.subject || ''
+    const text = rawText.length > SLACK_TEXT_LIMIT
+      ? `${rawText.slice(0, SLACK_TEXT_LIMIT - 14)}… [truncated]`
+      : rawText
+
     const payload: SlackMessage = {
-      text: message.content || message.subject,
+      text,
       username: message.from as any,
       mrkdwn: true,
     }

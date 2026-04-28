@@ -172,7 +172,11 @@ export function last<T>(array: readonly T[]): T | undefined {
 }
 
 /**
- * Remove an item from Array
+ * Remove an item from Array.
+ *
+ * **Mutates the input array** via splice — the original reference shrinks
+ * by one element. If you need a non-destructive version, use
+ * `array.filter(x => x !== value)` instead.
  *
  * @category Array
  * @example

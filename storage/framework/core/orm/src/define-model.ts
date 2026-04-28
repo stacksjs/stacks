@@ -146,12 +146,52 @@ function wrapModelInstance<T extends object>(
       const v = Reflect.get(target, prop, target)
       return typeof v === 'function' ? v.bind(target) : v
     },
+    set(target, prop, value, recv) {
+      // Writes to existing attribute keys go through to `_attributes` so
+      // `inst.status = 'x'; await inst.save()` actually persists. Without
+      // this, the default-set lands the value as an own property on the
+      // underlying instance — invisible to save() (which iterates
+      // `_attributes`) AND triggering a Proxy invariant violation on the
+      // next read because our getOwnPropertyDescriptor still claims the
+      // value comes from `_attributes`.
+      //
+      // We delegate to the instance's `set(key, value)` method when present
+      // because it also snapshots `_original` for dirty tracking — without
+      // that snapshot, getChanges() returns `{}` and save() becomes a no-op.
+      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+        const a = (target as any)._attributes
+        const setter = (target as any).set
+        if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
+          if (typeof setter === 'function') setter.call(target, prop, value)
+          else a[prop] = value
+          return true
+        }
+        // New attribute key not yet in _attributes — still write through
+        // so `inst.newField = x` followed by save() works.
+        if (a && !(prop in (target as object))) {
+          if (typeof setter === 'function') setter.call(target, prop, value)
+          else a[prop] = value
+          return true
+        }
+      }
+      return Reflect.set(target, prop, value, recv)
+    },
     has(target, prop) {
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
         const a = (target as any)._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
       }
       return Reflect.has(target, prop)
+    },
+    deleteProperty(target, prop) {
+      if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
+        const a = (target as any)._attributes
+        if (a && Object.prototype.hasOwnProperty.call(a, prop)) {
+          delete a[prop]
+          return true
+        }
+      }
+      return Reflect.deleteProperty(target, prop)
     },
     ownKeys(target) {
       const a = (target as any)._attributes
@@ -273,6 +313,37 @@ export class ModelNotFoundError extends Error {
 }
 
 /**
+ * Run a model's user-defined `set:` hooks against an arbitrary write
+ * payload. Used by Model.update(id, data) (and the auto-CRUD update path
+ * via the duplicated helper in routes.ts) to keep static-write call sites
+ * from bypassing the same hashing / serialization the instance.save()
+ * pipeline would have applied.
+ *
+ * For each `set: { foo: (attrs) => ... }` declared on the model, when
+ * `data.foo` is present, replaces it with the setter's result. The setter
+ * is called with the merged-attribute view so it can read sibling fields
+ * if needed (e.g. password setter that wants the user's email for salting).
+ */
+async function applyDefinedSetters(
+  definition: BQBModelDefinition,
+  data: Record<string, unknown>,
+): Promise<Record<string, unknown>> {
+  const setters = (definition as any).set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
+  if (!setters || typeof setters !== 'object') return data
+  const out: Record<string, unknown> = { ...data }
+  for (const [key, fn] of Object.entries(setters)) {
+    if (typeof fn !== 'function' || !(key in out)) continue
+    try {
+      out[key] = await fn(out)
+    }
+    catch (err) {
+      log.error(`[orm] ${definition.name}.set.${key} threw — skipping setter`, err)
+    }
+  }
+  return out
+}
+
+/**
  * Add Laravel-style static CRUD sugar to a Stacks model.
  *
  * bun-query-builder ships only the query-builder/instance forms
@@ -313,6 +384,11 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // strict semantics still see the same null vs row distinction, but
   // misuse like `Model.update(undefined, ...)` now throws loudly instead
   // of silently writing nothing.
+  //
+  // SECURITY: also runs user-defined `set:` hooks (e.g. User.set.password
+  // = bcrypt). Without this, `User.update(id, { password: 'plain' })`
+  // would store plaintext because raw query.update() bypasses the
+  // ModelInstance.save() pipeline entirely.
   if (typeof baseModel.update !== 'function') {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
       if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
@@ -324,7 +400,9 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         return typeof f === 'function' ? await f.call(baseModel, id) : null
       }
 
-      await getWhere('update').call(baseModel, pk, id).update(data)
+      const finalData = await applyDefinedSetters(definition, data)
+
+      await getWhere('update').call(baseModel, pk, id).update(finalData)
       const f = baseModel.find as Function | undefined
       return typeof f === 'function' ? await f.call(baseModel, id) : null
     }

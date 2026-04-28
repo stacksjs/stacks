@@ -61,5 +61,20 @@ export async function startRepl(config: ReplConfig = {}): Promise<{ exitCode: nu
     }
   }
 
-  return startTinker(config)
+  // Wrap startTinker so we always restore the terminal to cooked mode if
+  // the inner REPL throws — without this, an uncaught error from a user
+  // expression leaves stdin in raw mode and the parent shell becomes
+  // unresponsive (every keystroke shows up as a control sequence).
+  try {
+    return await startTinker(config)
+  }
+  finally {
+    try {
+      const { stdin } = await import('node:process')
+      if (stdin.isTTY && typeof stdin.setRawMode === 'function') {
+        stdin.setRawMode(false)
+      }
+    }
+    catch { /* ignore — best-effort restore */ }
+  }
 }

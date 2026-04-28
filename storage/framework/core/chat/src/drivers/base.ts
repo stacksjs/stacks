@@ -35,14 +35,19 @@ export abstract class BaseChatDriver implements ChatDriver {
   }
 
   /**
-   * Error handler with standard formatting
+   * Error handler with standard formatting.
+   *
+   * Sanitizes URLs out of the captured `err.stack` before logging — Slack
+   * / Discord / Teams webhook URLs *are* secrets, and stack traces from a
+   * `fetch(webhookUrl)` failure embed the URL verbatim, making the secret
+   * grep-able in plaintext logs and any log aggregator pipe.
    */
   protected async handleError(error: unknown, message: ChatMessage): Promise<ChatResult> {
     const err = error instanceof Error ? error : new Error(String(error))
 
     log.error(`[${this.name}] Message sending failed`, {
       error: err.message,
-      stack: err.stack,
+      stack: err.stack?.replace(/https?:\/\/[^\s)\]"']+/g, '[REDACTED-URL]'),
       to: message.to,
       subject: message.subject,
     })

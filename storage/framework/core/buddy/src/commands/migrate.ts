@@ -1,11 +1,44 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
-import { existsSync, readdirSync } from 'node:fs'
+import { existsSync, mkdirSync, openSync, readdirSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
-import { appPath, frameworkPath } from '@stacksjs/path'
+import { appPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+
+/**
+ * File-based migration lock so two `buddy migrate` runs can't race each
+ * other on the same database. Returns a `release()` callback even when
+ * the lock isn't acquired so callers don't have to special-case.
+ *
+ * O_EXCL guarantees we either create the lockfile atomically or fail —
+ * this is the standard "single-writer" pattern that doesn't depend on
+ * any DB-level advisory lock and works on every supported OS.
+ */
+function acquireMigrationLock(): { acquired: boolean, release: () => void } {
+  const lockDir = projectPath('.stacks')
+  const lockFile = `${lockDir}/migrations.lock`
+  try {
+    if (!existsSync(lockDir)) mkdirSync(lockDir, { recursive: true })
+    // O_CREAT | O_EXCL | O_WRONLY = 0o102 — atomic create-or-fail
+    const fd = openSync(lockFile, 0o102)
+    try { /* fd not needed — close immediately */ } finally { /* close happens via release */ }
+    void fd
+    return {
+      acquired: true,
+      release: () => {
+        try { rmSync(lockFile, { force: true }) } catch { /* ignore */ }
+      },
+    }
+  }
+  catch {
+    return {
+      acquired: false,
+      release: () => {/* never acquired, nothing to free */},
+    }
+  }
+}
 
 /**
  * Count model files in a directory (recursively)
@@ -78,7 +111,17 @@ export function migrate(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      const result = await runAction(Action.Migrate, options)
+      // Acquire a project-local migration lock to prevent two concurrent
+      // runs from interleaving DDL on the same database. Two parallel
+      // `buddy migrate` invocations on the same project used to corrupt
+      // the migration table by both inserting the same row name.
+      const lock = acquireMigrationLock()
+      if (!lock.acquired) {
+        log.error('Another migration is already running (.stacks/migrations.lock exists). Wait for it to finish, or remove the lockfile if it is stale.')
+        process.exit(ExitCode.FatalError)
+      }
+
+      const result = await runAction(Action.Migrate, options).finally(() => lock.release())
 
       if (result.isErr) {
         await outro(

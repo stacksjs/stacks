@@ -67,3 +67,57 @@ export enum Response {
   HTTP_NOT_EXTENDED = 510,
   HTTP_NETWORK_AUTHENTICATION_REQUIRED = 511,
 }
+
+/**
+ * `fetch` wrapper that aborts after `timeoutMs` and honors `Retry-After`
+ * on 429/503 responses with exponential backoff.
+ *
+ * Platform `fetch()` has no timeout — a misbehaving upstream that accepts
+ * the connection but never sends bytes leaves the caller hanging forever.
+ * Worse, every driver (Stripe webhooks, Twilio, AI providers) shares the
+ * same code path, so one slow upstream cascades into stalled queue
+ * workers. This wrapper keeps the `fetch(input, init)` API but adds a
+ * budget so failure modes stay bounded.
+ *
+ * @param input  URL or Request, exactly like fetch
+ * @param init   RequestInit + { timeoutMs?: number, retry?: number }
+ *               - timeoutMs (default 30_000) — overall request budget
+ *               - retry (default 0)         — retry count on 429/503
+ *
+ * @example
+ * ```ts
+ * const res = await fetchWithBudget('https://api.example.com', {
+ *   method: 'POST',
+ *   body: JSON.stringify(payload),
+ *   timeoutMs: 5000,
+ *   retry: 3,
+ * })
+ * ```
+ */
+export async function fetchWithBudget(
+  input: RequestInfo | URL,
+  init: RequestInit & { timeoutMs?: number, retry?: number } = {},
+): Promise<globalThis.Response> {
+  const { timeoutMs = 30_000, retry = 0, ...rest } = init
+  let attempt = 0
+
+  // eslint-disable-next-line no-constant-condition
+  while (true) {
+    const ac = new AbortController()
+    const timeoutHandle = setTimeout(() => ac.abort(new Error(`Request timed out after ${timeoutMs}ms`)), timeoutMs)
+    try {
+      const response = await fetch(input, { ...rest, signal: ac.signal })
+      if ((response.status === 429 || response.status === 503) && attempt < retry) {
+        const ra = Number(response.headers.get('retry-after'))
+        const delay = (Number.isFinite(ra) && ra > 0 ? ra : 2 ** attempt) * 1000
+        await new Promise(r => setTimeout(r, Math.min(delay, 30_000)))
+        attempt++
+        continue
+      }
+      return response
+    }
+    finally {
+      clearTimeout(timeoutHandle)
+    }
+  }
+}

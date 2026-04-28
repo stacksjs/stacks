@@ -301,6 +301,33 @@ export function md5Encode(password: string): string {
   return md5(password)
 }
 
+/**
+ * Constant-time string comparison.
+ *
+ * Use this to compare opaque tokens (CSRF tokens, signed URL signatures,
+ * webhook HMACs, API keys). A naive `a === b` compares character-by-
+ * character and short-circuits on the first mismatch, so the time the
+ * comparison takes leaks information about how many leading characters
+ * matched — enough for a remote attacker to brute-force the rest.
+ *
+ * Strings of different lengths are reported as unequal in constant time
+ * so length itself doesn't leak.
+ */
+export function timingSafeEqualString(a: string, b: string): boolean {
+  // Equalize length first so the timingSafeEqual call below sees buffers
+  // of identical length even when `a.length !== b.length`. We still
+  // return false in that case — the equal-length comparison is just to
+  // keep the work-shape constant.
+  const ab = Buffer.from(a)
+  const bb = Buffer.from(b)
+  if (ab.length !== bb.length) {
+    // Compare against itself to keep timing constant, then return false.
+    timingSafeEqual(ab, ab)
+    return false
+  }
+  return timingSafeEqual(ab, bb)
+}
+
 // Function-based exports (preferred API)
 export {
   make as hashMake,

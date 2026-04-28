@@ -101,6 +101,9 @@ export function test(buddy: CLI): void {
         startTime: perf,
         useSeconds: true,
       })
+      // Explicit success exit so CI pipelines see a deterministic 0
+      // instead of relying on the implicit "no thrown error" exit code.
+      process.exit(ExitCode.Success)
     })
 
   buddy

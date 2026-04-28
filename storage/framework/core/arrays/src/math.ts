@@ -100,7 +100,13 @@ export function sum(array: readonly number[]): number {
 }
 
 /**
- * Returns the product of an array of numbers
+ * Returns the product of an array of numbers.
+ *
+ * Throws when an intermediate product exceeds `Number.MAX_SAFE_INTEGER` —
+ * silently returning a precision-lossy float made downstream comparisons
+ * (e.g. inventory totals, distance calcs) lie without any signal that
+ * the result was unreliable.
+ *
  * @param array
  * @category Array
  * @example
@@ -109,7 +115,14 @@ export function sum(array: readonly number[]): number {
  * ```
  */
 export function product(array: readonly number[]): number {
-  return array.reduce((acc, cur) => acc * cur, 1)
+  let acc = 1
+  for (const cur of array) {
+    acc *= cur
+    if (Number.isFinite(acc) && Math.abs(acc) > Number.MAX_SAFE_INTEGER) {
+      throw new RangeError(`[arrays.product] Result exceeds Number.MAX_SAFE_INTEGER (${Number.MAX_SAFE_INTEGER}); use BigInt for large products.`)
+    }
+  }
+  return acc
 }
 
 /**
