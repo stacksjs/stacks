@@ -12,11 +12,11 @@ let salesTeam = []
 
   <PageHeader title="Sales Analytics" description="Detailed sales performance">
     <template #actions>
-      <Select :options="{{ JSON.stringify([
+      <Select :options="[
         { value: '7d', label: 'Last 7 days' },
         { value: '30d', label: 'Last 30 days' },
         { value: '90d', label: 'Last 90 days' },
-      ]) }}" size="sm" />
+      ]" size="sm" />
       <Button variant="primary">Export</Button>
     </template>
   </PageHeader>
@@ -32,12 +32,12 @@ let salesTeam = []
   <!-- Daily Sales -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'date', label: 'Date' },
         { key: 'sales', label: 'Sales' },
         { key: 'orders', label: 'Orders' },
         { key: 'avgOrder', label: 'Avg Order' },
-      ]) }}"
+      ]"
       :data="dailySales"
       emptyTitle="No sales data"
       emptyDescription="Daily sales will appear once orders are processed"

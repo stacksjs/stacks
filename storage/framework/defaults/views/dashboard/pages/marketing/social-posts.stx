@@ -45,21 +45,21 @@ function statusVariant(s) {
       <FilterBar searchPlaceholder="Search posts...">
         <Select
           placeholder="All Platforms"
-          :options="{{ JSON.stringify(platformOptions) }}"
+          :options="platformOptions"
           size="sm"
         />
       </FilterBar>
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'platform', label: 'Platform' },
         { key: 'content', label: 'Content' },
         { key: 'status', label: 'Status' },
         { key: 'engagement', label: 'Engagement' },
         { key: 'scheduled', label: 'Scheduled' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="posts"
       emptyTitle="No social posts yet"
       emptyDescription="Create and schedule social media posts"

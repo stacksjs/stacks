@@ -35,14 +35,14 @@ function typeVariant(t) {
   <!-- Releases Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'version', label: 'Version' },
         { key: 'type', label: 'Type' },
         { key: 'status', label: 'Status' },
         { key: 'changes', label: 'Changes' },
         { key: 'date', label: 'Date' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="releases"
       emptyTitle="No releases yet"
       emptyDescription="Releases will appear here after you publish your first version"

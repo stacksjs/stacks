@@ -44,13 +44,13 @@ function statusVariant(s) {
   <!-- Pages Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'title', label: 'Title' },
         { key: 'slug', label: 'URL' },
         { key: 'status', label: 'Status' },
         { key: 'updated', label: 'Last Updated' },
         { key: 'actions', label: '' },
-      ]) }}"
+      ]"
       :data="pages"
       emptyTitle="No pages yet"
       emptyDescription="Create your first page to get started"

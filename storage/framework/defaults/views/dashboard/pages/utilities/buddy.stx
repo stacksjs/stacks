@@ -39,13 +39,13 @@ function statusVariant(s) {
       </div>
 
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'command', label: 'Command' },
           { key: 'description', label: 'Description' },
           { key: 'lastRun', label: 'Last Run' },
           { key: 'status', label: 'Status' },
           { key: 'actions', label: '' }
-        ]) }}"
+        ]"
         :data="commands"
         emptyTitle="No commands"
         emptyDescription="Available commands will appear here"

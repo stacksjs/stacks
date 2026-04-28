@@ -27,12 +27,12 @@ let recentTaxes = []
     <!-- Tax Rates by Region -->
     <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'region', label: 'Region' },
           { key: 'rate', label: 'Rate' },
           { key: 'type', label: 'Type' },
           { key: 'status', label: 'Status' },
-        ]) }}"
+        ]"
         :data="taxRates"
         emptyTitle="No tax rates"
         emptyDescription="Add tax rates for your regions"
@@ -56,13 +56,13 @@ let recentTaxes = []
     <!-- Recent Tax Collections -->
     <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'order', label: 'Order' },
           { key: 'subtotal', label: 'Subtotal' },
           { key: 'taxRate', label: 'Rate' },
           { key: 'taxAmount', label: 'Tax' },
           { key: 'region', label: 'Region' },
-        ]) }}"
+        ]"
         :data="recentTaxes"
         emptyTitle="No tax collections"
         emptyDescription="Tax collection data will appear here"

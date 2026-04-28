@@ -54,7 +54,7 @@ function statusVariant(s) {
   <!-- Coupons Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'code', label: 'Code' },
         { key: 'type', label: 'Type' },
         { key: 'value', label: 'Value' },
@@ -63,7 +63,7 @@ function statusVariant(s) {
         { key: 'expires', label: 'Expires' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' },
-      ]) }}"
+      ]"
       :data="coupons"
       emptyTitle="No coupons yet"
       emptyDescription="Create your first coupon to get started"

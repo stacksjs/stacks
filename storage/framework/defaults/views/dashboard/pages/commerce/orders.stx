@@ -71,7 +71,7 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
   <!-- Orders Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'id', label: 'Order ID' },
         { key: 'customer', label: 'Customer' },
         { key: 'items', label: 'Items' },
@@ -80,7 +80,7 @@ const filters = ['All', 'Pending', 'Processing', 'Shipped', 'Delivered', 'Cancel
         { key: 'status', label: 'Status' },
         { key: 'date', label: 'Date' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="orders"
       emptyTitle="No orders found"
       emptyDescription="Orders will appear here once customers place them"

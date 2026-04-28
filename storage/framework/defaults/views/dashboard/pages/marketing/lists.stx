@@ -31,14 +31,14 @@ let stats = []
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'List Name' },
         { key: 'members', label: 'Members' },
         { key: 'growth', label: 'Growth (7d)' },
         { key: 'lastSent', label: 'Last Sent' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="lists"
       emptyTitle="No email lists yet"
       emptyDescription="Create your first email list to start collecting subscribers"

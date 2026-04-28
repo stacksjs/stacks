@@ -12,12 +12,12 @@ let devices = []
 
   <PageHeader title="Web Analytics" description="Website traffic and engagement">
     <template #actions>
-      <Select :options="{{ JSON.stringify([
+      <Select :options="[
         { value: '7d', label: 'Last 7 days' },
         { value: '30d', label: 'Last 30 days' },
         { value: '90d', label: 'Last 90 days' },
         { value: '1y', label: 'This year' },
-      ]) }}" size="sm" />
+      ]" size="sm" />
       <Button variant="primary">Export</Button>
     </template>
   </PageHeader>
@@ -34,12 +34,12 @@ let devices = []
     <!-- Top Pages -->
     <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'page', label: 'Page' },
           { key: 'views', label: 'Views' },
           { key: 'unique', label: 'Unique' },
           { key: 'avgTime', label: 'Avg Time' },
-        ]) }}"
+        ]"
         :data="topPages"
         emptyTitle="No page data"
         emptyDescription="Page analytics will appear once traffic is recorded"

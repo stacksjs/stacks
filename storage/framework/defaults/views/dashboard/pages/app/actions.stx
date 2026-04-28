@@ -61,14 +61,14 @@ function statusVariant(s) {
   <!-- Actions Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Action' },
         { key: 'type', label: 'Type' },
         { key: 'runs', label: 'Runs (30d)' },
         { key: 'avgTime', label: 'Avg Time' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="actions"
       emptyTitle="No actions found"
       emptyDescription="Actions will appear here once they are created"

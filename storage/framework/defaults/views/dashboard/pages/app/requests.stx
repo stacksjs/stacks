@@ -56,13 +56,13 @@ function methodVariant(m) {
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'method', label: 'Method' },
         { key: 'path', label: 'Path' },
         { key: 'status', label: 'Status' },
         { key: 'time', label: 'Time' },
         { key: 'timestamp', label: 'Timestamp' }
-      ]) }}"
+      ]"
       :data="requests"
       emptyTitle="No requests recorded"
       emptyDescription="API requests will appear here once traffic is received"

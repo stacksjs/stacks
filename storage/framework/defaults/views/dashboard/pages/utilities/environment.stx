@@ -103,12 +103,12 @@ function statusVariant(s) {
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'key', label: 'Key' },
         { key: 'value', label: 'Value' },
         { key: 'environments', label: 'Environments' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="variables"
       emptyTitle="No environment variables"
       emptyDescription="Add a .env file to see variables here"

@@ -69,21 +69,21 @@ function statusVariant(s) {
       <FilterBar searchPlaceholder="Search subscribers...">
         <Select
           placeholder="All Plans"
-          :options="{{ JSON.stringify(planOptions) }}"
+          :options="planOptions"
           size="sm"
         />
       </FilterBar>
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'email', label: 'Email' },
         { key: 'name', label: 'Name' },
         { key: 'plan', label: 'Plan' },
         { key: 'status', label: 'Status' },
         { key: 'subscribed', label: 'Subscribed' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="subscribers"
       emptyTitle="No subscribers found"
       emptyDescription="Subscribers will appear here once they sign up"

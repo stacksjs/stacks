@@ -39,13 +39,13 @@ function statusVariant(s) {
   <!-- Commands Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Command' },
         { key: 'description', label: 'Description' },
         { key: 'lastRun', label: 'Last Run' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="commands"
       emptyTitle="No commands found"
       emptyDescription="CLI commands will appear here once discovered"

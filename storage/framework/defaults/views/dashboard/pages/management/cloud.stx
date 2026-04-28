@@ -61,14 +61,14 @@ let resources = []
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Name' },
         { key: 'type', label: 'Type' },
         { key: 'provider', label: 'Provider' },
         { key: 'status', label: 'Status' },
         { key: 'cost', label: 'Cost' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="resources"
       emptyTitle="No resources"
       emptyDescription="Cloud resources will appear here"

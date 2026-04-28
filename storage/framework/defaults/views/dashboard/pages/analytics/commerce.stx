@@ -12,12 +12,12 @@ let revenueByChannel = []
 
   <PageHeader title="Commerce Analytics" description="Sales and revenue insights">
     <template #actions>
-      <Select :options="{{ JSON.stringify([
+      <Select :options="[
         { value: '7d', label: 'Last 7 days' },
         { value: '30d', label: 'Last 30 days' },
         { value: '90d', label: 'Last 90 days' },
         { value: '1y', label: 'This year' },
-      ]) }}" size="sm" />
+      ]" size="sm" />
       <Button variant="primary">Export</Button>
     </template>
   </PageHeader>
@@ -34,12 +34,12 @@ let revenueByChannel = []
     <!-- Top Products -->
     <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'name', label: 'Product' },
           { key: 'revenue', label: 'Revenue' },
           { key: 'units', label: 'Units' },
           { key: 'growth', label: 'Growth' },
-        ]) }}"
+        ]"
         :data="topProducts"
         emptyTitle="No product data"
         emptyDescription="Product analytics will appear once sales are recorded"

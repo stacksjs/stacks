@@ -19,27 +19,27 @@ function statusVariant(s) {
     <template #actions>
       <Button variant="secondary">SSH Console</Button>
       <Button variant="primary">
-        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
+        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
         Add Server
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-server-01" iconBg="primary" />
     @endforeach
   </div>
 
   <!-- Servers Table -->
-  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">All Servers</span>
+      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">All Servers</span>
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Server' },
         { key: 'ip', label: 'IP Address' },
         { key: 'cpu', label: 'CPU' },
@@ -48,7 +48,7 @@ function statusVariant(s) {
         { key: 'status', label: 'Status' },
         { key: 'uptime', label: 'Uptime' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="servers"
       emptyTitle="No servers configured"
       emptyDescription="Add server connections to monitor them"
@@ -56,29 +56,29 @@ function statusVariant(s) {
     >
       @foreach (servers as server)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ server.name }}</td>
+          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ server.name }}</td>
           <td class="px-4 py-3">
-            <code class="px-1.5 py-0.5 font-mono text-neutral-700 text-xs dark:text-neutral-300 bg-neutral-100 dark:bg-neutral-700 rounded">{{ server.ip }}</code>
+            <code class="text-xs font-mono px-1.5 py-0.5 bg-neutral-100 dark:bg-neutral-700 rounded text-neutral-700 dark:text-neutral-300">{{ server.ip }}</code>
           </td>
           <td class="px-4 py-3">
-            <div class="flex gap-2 items-center">
-              <div class="overflow-hidden h-1.5 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-full">
-                <div class="h-full rounded-full : : ? ? 'bg-amber-500' 'bg-green-500' 'bg-red-500' {{ }} > > 60 80 server.cpu server.cpu" style="width: {{ server.cpu }}%;"></div>
+            <div class="flex items-center gap-2">
+              <div class="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                <div class="h-full rounded-full {{ server.cpu > 80 ? 'bg-red-500' : server.cpu > 60 ? 'bg-amber-500' : 'bg-green-500' }}" style="width: {{ server.cpu }}%;"></div>
               </div>
               <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ server.cpu }}%</span>
             </div>
           </td>
           <td class="px-4 py-3">
-            <div class="flex gap-2 items-center">
-              <div class="overflow-hidden h-1.5 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-full">
-                <div class="h-full rounded-full : : ? ? 'bg-amber-500' 'bg-green-500' 'bg-red-500' {{ }} > > 60 80 server.memory server.memory" style="width: {{ server.memory }}%;"></div>
+            <div class="flex items-center gap-2">
+              <div class="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+                <div class="h-full rounded-full {{ server.memory > 80 ? 'bg-red-500' : server.memory > 60 ? 'bg-amber-500' : 'bg-green-500' }}" style="width: {{ server.memory }}%;"></div>
               </div>
               <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ server.memory }}%</span>
             </div>
           </td>
           <td class="px-4 py-3">
-            <div class="flex gap-2 items-center">
-              <div class="overflow-hidden h-1.5 w-16 bg-neutral-200 dark:bg-neutral-700 rounded-full">
+            <div class="flex items-center gap-2">
+              <div class="w-16 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
                 <div class="h-full bg-blue-500 rounded-full" style="width: {{ server.disk }}%;"></div>
               </div>
               <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ server.disk }}%</span>
@@ -89,7 +89,7 @@ function statusVariant(s) {
           </td>
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ server.uptime }}</td>
           <td class="px-4 py-3">
-            <div class="flex gap-1 items-center">
+            <div class="flex items-center gap-1">
               <Button variant="ghost" size="xs">SSH</Button>
               <Button variant="ghost" size="xs">Manage</Button>
             </div>

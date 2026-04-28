@@ -23,7 +23,7 @@ function statusVariant(s) {
     @if (deployments.length > 0)
     <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'id', label: 'Deployment' },
           { key: 'status', label: 'Status' },
           { key: 'branch', label: 'Branch' },
@@ -31,7 +31,7 @@ function statusVariant(s) {
           { key: 'author', label: 'Author' },
           { key: 'duration', label: 'Duration' },
           { key: 'time', label: 'Time' }
-        ]) }}"
+        ]"
         :data="deployments"
         emptyTitle="No deployments yet"
         emptyDescription="Deploy your application using buddy deploy to see deployment history."

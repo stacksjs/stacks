@@ -71,7 +71,7 @@ function statusVariant(s) {
   <!-- Active Shipments -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'id', label: 'Shipment ID' },
         { key: 'order', label: 'Order' },
         { key: 'carrier', label: 'Carrier' },
@@ -79,7 +79,7 @@ function statusVariant(s) {
         { key: 'status', label: 'Status' },
         { key: 'eta', label: 'ETA' },
         { key: 'actions', label: '' },
-      ]) }}"
+      ]"
       :data="shipments"
       emptyTitle="No active shipments"
       emptyDescription="Shipments will appear here once orders are fulfilled"

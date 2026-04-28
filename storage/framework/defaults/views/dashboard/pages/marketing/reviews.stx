@@ -49,19 +49,19 @@ function statusVariant(s) {
       <FilterBar searchPlaceholder="Search reviews...">
         <Select
           placeholder="All Statuses"
-          :options="{{ JSON.stringify(statusOptions) }}"
+          :options="statusOptions"
           size="sm"
         />
         <Select
           placeholder="All Ratings"
-          :options="{{ JSON.stringify(ratingOptions) }}"
+          :options="ratingOptions"
           size="sm"
         />
       </FilterBar>
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'product', label: 'Product' },
         { key: 'author', label: 'Author' },
         { key: 'rating', label: 'Rating' },
@@ -69,7 +69,7 @@ function statusVariant(s) {
         { key: 'status', label: 'Status' },
         { key: 'date', label: 'Date' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="reviews"
       emptyTitle="No reviews yet"
       emptyDescription="Customer reviews will appear here once submitted"

@@ -43,14 +43,14 @@ function statusVariant(s) {
   <!-- Comments Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'author', label: 'Author' },
         { key: 'content', label: 'Comment' },
         { key: 'postTitle', label: 'Post' },
         { key: 'status', label: 'Status' },
         { key: 'date', label: 'Date' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="comments"
       emptyTitle="No comments"
       emptyDescription="Comments will appear here when visitors leave feedback"

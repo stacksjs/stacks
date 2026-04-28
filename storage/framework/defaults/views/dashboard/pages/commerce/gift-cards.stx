@@ -89,7 +89,7 @@ function statusVariant(s) {
   <!-- Recent Gift Cards -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'code', label: 'Code' },
         { key: 'balance', label: 'Balance' },
         { key: 'initial', label: 'Initial' },
@@ -97,7 +97,7 @@ function statusVariant(s) {
         { key: 'status', label: 'Status' },
         { key: 'created', label: 'Created' },
         { key: 'actions', label: '' },
-      ]) }}"
+      ]"
       :data="giftCards"
       emptyTitle="No gift cards yet"
       emptyDescription="Create your first gift card to get started"

@@ -64,14 +64,14 @@ function statusVariant(s) {
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Package' },
         { key: 'version', label: 'Current' },
         { key: 'latest', label: 'Latest' },
         { key: 'type', label: 'Type' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="packages"
       emptyTitle="No packages found"
       emptyDescription="Dependencies will appear here from package.json"

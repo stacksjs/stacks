@@ -12,11 +12,11 @@ let authors = []
 
   <PageHeader title="Blog Analytics" description="Content performance metrics">
     <template #actions>
-      <Select :options="{{ JSON.stringify([
+      <Select :options="[
         { value: '7d', label: 'Last 7 days' },
         { value: '30d', label: 'Last 30 days' },
         { value: '90d', label: 'Last 90 days' },
-      ]) }}" size="sm" />
+      ]" size="sm" />
       <Button variant="primary">Export</Button>
     </template>
   </PageHeader>
@@ -32,13 +32,13 @@ let authors = []
   <!-- Top Posts -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'title', label: 'Title' },
         { key: 'views', label: 'Views' },
         { key: 'comments', label: 'Comments' },
         { key: 'shares', label: 'Shares' },
         { key: 'published', label: 'Published' },
-      ]) }}"
+      ]"
       :data="topPosts"
       emptyTitle="No posts yet"
       emptyDescription="Publish posts and analytics will appear here"

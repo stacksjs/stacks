@@ -62,14 +62,14 @@ try {
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'domain', label: 'Domain' },
         { key: 'mailboxes', label: 'Mailboxes' },
         { key: 'status', label: 'Status' },
         { key: 'dkim', label: 'DKIM' },
         { key: 'spf', label: 'SPF' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="domains"
       emptyTitle="No email domains"
       emptyDescription="Configure an email domain to get started"
@@ -99,12 +99,12 @@ try {
       </div>
 
       <DataTable
-        :columns="{{ JSON.stringify([
+        :columns="[
           { key: 'email', label: 'Email' },
           { key: 'type', label: 'Type' },
           { key: 'storage', label: 'Storage' },
           { key: 'status', label: 'Status' }
-        ]) }}"
+        ]"
         :data="mailboxes"
         emptyTitle="No mailboxes"
         emptyDescription="Create a mailbox to get started"

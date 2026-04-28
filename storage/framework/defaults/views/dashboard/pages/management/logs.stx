@@ -68,12 +68,12 @@ const timeFilters = ['Last hour', 'Last 24h', 'Last 7d']
         <FilterBar searchPlaceholder="Search logs...">
           <Select
             placeholder="All Levels"
-            :options="{{ JSON.stringify(levels.map(l => ({ value: l, label: l }))) }}"
+            :options="levels.map(l => ({ value: l, label: l }))"
             size="sm"
           />
           <Select
             placeholder="All Sources"
-            :options="{{ JSON.stringify(sources.map(s => ({ value: s, label: s }))) }}"
+            :options="sources.map(s => ({ value: s, label: s }))"
             size="sm"
           />
         </FilterBar>
@@ -86,12 +86,12 @@ const timeFilters = ['Last hour', 'Last 24h', 'Last 7d']
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'timestamp', label: 'Timestamp' },
         { key: 'level', label: 'Level' },
         { key: 'source', label: 'Source' },
         { key: 'message', label: 'Message' }
-      ]) }}"
+      ]"
       :data="logs"
       emptyTitle="No logs found"
       emptyDescription="Logs will appear here as your application runs"

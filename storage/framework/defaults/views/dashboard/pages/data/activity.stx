@@ -36,20 +36,20 @@ function typeVariant(s) {
       <FilterBar searchPlaceholder="Search activity...">
         <Select
           placeholder="All Types"
-          :options="{{ JSON.stringify(filterOptions) }}"
+          :options="filterOptions"
           size="sm"
         />
       </FilterBar>
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'action', label: 'Action' },
         { key: 'table', label: 'Table' },
         { key: 'user', label: 'User' },
         { key: 'time', label: 'Time' },
         { key: 'type', label: 'Type' }
-      ]) }}"
+      ]"
       :data="activities"
       emptyTitle="No activity recorded"
       emptyDescription="Database changes will appear here once activity is tracked"

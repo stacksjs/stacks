@@ -36,13 +36,13 @@ try {
   <!-- Functions Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Function' },
         { key: 'category', label: 'Category' },
         { key: 'description', label: 'Description' },
         { key: 'calls', label: 'Calls (30d)' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="functions"
       emptyTitle="No functions found"
       emptyDescription="Functions will appear here when added to resources/functions"

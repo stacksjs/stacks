@@ -54,13 +54,13 @@ function statusVariant(s) {
   <!-- Notifications Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'type', label: 'Type' },
         { key: 'recipient', label: 'Recipient' },
         { key: 'subject', label: 'Subject' },
         { key: 'status', label: 'Status' },
         { key: 'time', label: 'Time' }
-      ]) }}"
+      ]"
       :data="notifications"
       emptyTitle="No notifications"
       emptyDescription="Notifications will appear here when events are triggered"

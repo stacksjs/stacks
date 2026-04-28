@@ -40,7 +40,7 @@ function statusVariant(s) {
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Name' },
         { key: 'token', label: 'Token' },
         { key: 'scopes', label: 'Scopes' },
@@ -48,7 +48,7 @@ function statusVariant(s) {
         { key: 'created', label: 'Created' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="tokens"
       emptyTitle="No tokens"
       emptyDescription="Create API tokens to authenticate services"

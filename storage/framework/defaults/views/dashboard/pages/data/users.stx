@@ -63,21 +63,21 @@ const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
       <FilterBar searchPlaceholder="Search users...">
         <Select
           placeholder="All Roles"
-          :options="{{ JSON.stringify(roles.map(r => ({ value: r, label: r }))) }}"
+          :options="roles.map(r => ({ value: r, label: r }))"
           size="sm"
         />
       </FilterBar>
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'User' },
         { key: 'email', label: 'Email' },
         { key: 'role', label: 'Role' },
         { key: 'status', label: 'Status' },
         { key: 'lastLogin', label: 'Last Login' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="users"
       emptyTitle="No users found"
       emptyDescription="Users will appear here once they register"

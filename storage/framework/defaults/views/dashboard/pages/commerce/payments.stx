@@ -100,7 +100,7 @@ function statusVariant(s) {
   <!-- Recent Transactions -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'id', label: 'Payment ID' },
         { key: 'order', label: 'Order' },
         { key: 'amount', label: 'Amount' },
@@ -108,7 +108,7 @@ function statusVariant(s) {
         { key: 'status', label: 'Status' },
         { key: 'date', label: 'Date' },
         { key: 'actions', label: '' },
-      ]) }}"
+      ]"
       :data="payments"
       emptyTitle="No transactions yet"
       emptyDescription="Transactions will appear here once payments are processed"

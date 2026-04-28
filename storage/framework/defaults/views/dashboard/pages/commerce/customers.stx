@@ -63,7 +63,7 @@ function statusVariant(s) {
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'name', label: 'Customer' },
         { key: 'email', label: 'Email' },
         { key: 'orders', label: 'Orders' },
@@ -71,7 +71,7 @@ function statusVariant(s) {
         { key: 'lastOrder', label: 'Last Order' },
         { key: 'status', label: 'Status' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="customers"
       emptyTitle="No customers found"
       emptyDescription="Customers will appear here once they register or place orders"

@@ -68,14 +68,14 @@ let stats = []
     </div>
 
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'type', label: 'Type' },
         { key: 'name', label: 'Name' },
         { key: 'value', label: 'Value' },
         { key: 'ttl', label: 'TTL' },
         { key: 'proxied', label: 'Proxied' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="records"
       emptyTitle="No DNS records"
       emptyDescription="Add DNS records for your domains"

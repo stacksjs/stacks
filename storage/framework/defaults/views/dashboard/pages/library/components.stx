@@ -48,7 +48,7 @@ try {
     <FilterBar searchPlaceholder="Search components...">
       <Select
         placeholder="All Categories"
-        :options="{{ JSON.stringify(categoryOptions) }}"
+        :options="categoryOptions"
         size="sm"
       />
     </FilterBar>

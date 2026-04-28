@@ -82,14 +82,14 @@ const statusOptions = [
   <!-- Posts Table -->
   <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
-      :columns="{{ JSON.stringify([
+      :columns="[
         { key: 'title', label: 'Title' },
         { key: 'status', label: 'Status' },
         { key: 'author', label: 'Author' },
         { key: 'date', label: 'Date' },
         { key: 'views', label: 'Views' },
         { key: 'actions', label: '' }
-      ]) }}"
+      ]"
       :data="posts"
       emptyTitle="No posts found"
       emptyDescription="Create your first post to get started"
@@ -134,7 +134,7 @@ const statusOptions = [
         <Select
           label="Status"
           placeholder="Select status"
-          :options="{{ JSON.stringify(statusOptions) }}"
+          :options="statusOptions"
         />
         <Select
           label="Category"
