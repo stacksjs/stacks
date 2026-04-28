@@ -3,169 +3,18 @@ title: Views
 description: Learn about STX templating and view rendering in Stacks applications
 ---
 
-### Creating a View
-
-```html
-<!-- resources/views/welcome.stx -->
-<template>
-  <div class="container">
-    <h1>{{ title }}</h1>
-    <p>Welcome to {{ appName }}!</p>
-  </div>
-</template>
-
-<script lang="ts">
-import { ref } from 'vue'
-
-const title = ref('Hello, World!')
-const appName = 'Stacks'
-</script>
-
-<style scoped>
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem;
-}
-
-h1 {
-  color: #333;
-  font-size: 2.5rem;
-}
-</style>
-```
-
-### Interpolation
-
-Use double curly braces for data interpolation:
-
-```html
-<template>
-  <!-- Basic interpolation -->
-  <p>{{ message }}</p>
-
-  <!-- Expressions -->
-  <p>{{ count + 1 }}</p>
-  <p>{{ user.name.toUpperCase() }}</p>
-  <p>{{ items.length > 0 ? 'Has items' : 'Empty' }}</p>
-
-  <!-- HTML escaping (safe by default) -->
-  <p>{{ userInput }}</p>
-
-  <!-- Raw HTML (use with caution) -->
-  <div v-html="rawHtml"></div>
-</template>
-```
-
-## Blade-Style Directives
-
-### Conditional Rendering
-
-#### @if / @else / @elseif
-
-```html
-<template>
-  @if(user.isAdmin)
-    <AdminDashboard />
-  @elseif(user.isModerator)
-    <ModeratorDashboard />
-  @else
-    <UserDashboard />
-  @endif
-
-  @if(posts.length > 0)
-    <PostList :posts="posts" />
-  @else
-    <EmptyState message="No posts yet" />
-  @endif
-</template>
-```
-
-#### @unless
-
-```html
-<template>
-  @unless(user.isGuest)
-    <WelcomeBack :user="user" />
-  @endunless
-</template>
-```
-
-#### @isset / @empty
-
-```html
-<template>
-  @isset(user.profile)
-    <ProfileCard :profile="user.profile" />
-  @endisset
-
-  @empty(notifications)
-    <p>No new notifications</p>
-  @endempty
-</template>
-```
-
-### Loops
-
-#### @foreach
-
-```html
-<template>
-  <ul>
-    @foreach(items as item)
-      <li>{{ item.name }}</li>
-    @endforeach
-  </ul>
-
-  <!-- With index -->
-  <ul>
-    @foreach(items as item, index)
-      <li>{{ index + 1 }}. {{ item.name }}</li>
-    @endforeach
-  </ul>
-
-  <!-- With key-value pairs -->
-  <dl>
-    @foreach(user as key, value)
-      <dt>{{ key }}</dt>
-      <dd>{{ value }}</dd>
-    @endforeach
-  </dl>
-</template>
-```
-
-#### @for
-
-```html
-<template>
-  @for(let i = 0; i < 5; i++)
-    <div class="item">Item {{ i + 1 }}</div>
-  @endfor
-</template>
-```
-
-#### @forelse
-
-Handle empty collections gracefully:
-
-```html
-<template>
-  @forelse(posts as post)
-    <PostCard :post="post" />
-  @empty
-    <EmptyState message="No posts to display" />
-  @endforelse
-</template>
 ```
 
 #### @while
 
 ```html
+
 <template>
   @while(items.length > 0)
     <div>{{ items.pop() }}</div>
   @endwhile
 </template>
+
 ```
 
 ### Loop Variables
@@ -173,6 +22,7 @@ Handle empty collections gracefully:
 Within loops, special variables are available:
 
 ```html
+
 <template>
   @foreach(items as item)
     <div>
@@ -205,6 +55,7 @@ Within loops, special variables are available:
     </div>
   @endforeach
 </template>
+
 ```
 
 ### Including Partials
@@ -212,6 +63,7 @@ Within loops, special variables are available:
 #### @include
 
 ```html
+
 <template>
   <div class="page">
     @include('partials/header')
@@ -226,6 +78,7 @@ Within loops, special variables are available:
     @include('partials/footer')
   </div>
 </template>
+
 ```
 
 #### @includeIf
@@ -233,9 +86,11 @@ Within loops, special variables are available:
 Include only if the partial exists:
 
 ```html
+
 <template>
   @includeIf('partials/optional-banner')
 </template>
+
 ```
 
 #### @includeWhen
@@ -243,10 +98,12 @@ Include only if the partial exists:
 Conditional include:
 
 ```html
+
 <template>
   @includeWhen(user.isAdmin, 'partials/admin-tools')
   @includeUnless(user.isGuest, 'partials/user-menu')
 </template>
+
 ```
 
 #### @includeFirst
@@ -254,9 +111,11 @@ Conditional include:
 Include the first existing partial:
 
 ```html
+
 <template>
   @includeFirst(['custom/header', 'default/header'])
 </template>
+
 ```
 
 ### Slots
@@ -264,6 +123,7 @@ Include the first existing partial:
 #### @slot / @endslot
 
 ```html
+
 <!-- resources/components/Card.stx -->
 <template>
   <div class="card">
@@ -284,11 +144,13 @@ Include the first existing partial:
     </div>
   </div>
 </template>
+
 ```
 
 Usage:
 
 ```html
+
 <template>
   <Card>
     <template #header>
@@ -302,6 +164,7 @@ Usage:
     </template>
   </Card>
 </template>
+
 ```
 
 ### Stack and Push
@@ -309,6 +172,7 @@ Usage:
 Collect content from child views:
 
 ```html
+
 <!-- Layout -->
 <template>
   <html>
@@ -335,6 +199,7 @@ Collect content from child views:
     <script src="/custom.js"></script>
   @endpush
 </template>
+
 ```
 
 ### Raw Output
@@ -344,6 +209,7 @@ Collect content from child views:
 Prevent STX from processing content:
 
 ```html
+
 <template>
   @verbatim
     <div>
@@ -352,16 +218,19 @@ Prevent STX from processing content:
     </div>
   @endverbatim
 </template>
+
 ```
 
 ### Comments
 
 ```html
+
 <template>
   {{-- This comment will not appear in the rendered HTML --}}
 
   <!-- This HTML comment will appear in output -->
 </template>
+
 ```
 
 ## Component Usage
@@ -369,6 +238,7 @@ Prevent STX from processing content:
 ### Importing Components
 
 ```html
+
 <template>
   <div>
     <Header />
@@ -388,11 +258,13 @@ import Footer from '@/components/Footer.stx'
 
 const sidebarCollapsed = ref(false)
 </script>
+
 ```
 
 ### Passing Props
 
 ```html
+
 <!-- Parent -->
 <template>
   <UserCard
@@ -425,11 +297,13 @@ const props = withDefaults(defineProps<Props>(), {
 
 const sizeClass = computed(() => `size-${props.size}`)
 </script>
+
 ```
 
 ### Component Slots
 
 ```html
+
 <!-- Modal.stx -->
 <template>
   <div class="modal" v-if="isOpen">
@@ -465,11 +339,13 @@ function close() {
   emit('close')
 }
 </script>
+
 ```
 
 Usage:
 
 ```html
+
 <template>
   <Modal :is-open="showModal" @close="showModal = false">
     <template #header>
@@ -484,6 +360,7 @@ Usage:
     </template>
   </Modal>
 </template>
+
 ```
 
 ### Scoped Slots
@@ -491,6 +368,7 @@ Usage:
 Pass data to slot content:
 
 ```html
+
 <!-- DataList.stx -->
 <template>
   <ul>
@@ -510,6 +388,7 @@ Pass data to slot content:
     </template>
   </DataList>
 </template>
+
 ```
 
 ## Scoped Styles
@@ -517,6 +396,7 @@ Pass data to slot content:
 ### Basic Scoped Styles
 
 ```html
+
 <style scoped>
 /* These styles only apply to this component */
 .container {
@@ -527,6 +407,7 @@ h1 {
   color: blue;
 }
 </style>
+
 ```
 
 ### Deep Selectors
@@ -534,6 +415,7 @@ h1 {
 Target child component elements:
 
 ```html
+
 <style scoped>
 /* Target elements inside child components */
 :deep(.child-class) {
@@ -545,6 +427,7 @@ Target child component elements:
   color: red;
 }
 </style>
+
 ```
 
 ### Slotted Selectors
@@ -552,11 +435,13 @@ Target child component elements:
 Style slotted content:
 
 ```html
+
 <style scoped>
 :slotted(p) {
   color: gray;
 }
 </style>
+
 ```
 
 ### Global Styles
@@ -564,6 +449,7 @@ Style slotted content:
 Apply styles globally from a component:
 
 ```html
+
 <style>
 /* Global styles */
 body {
@@ -577,6 +463,7 @@ body {
   max-width: 800px;
 }
 </style>
+
 ```
 
 ## TypeScript Integration
@@ -584,6 +471,7 @@ body {
 ### Script Setup
 
 ```html
+
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import type { User } from '@/types'
@@ -632,11 +520,13 @@ defineExpose({
   refresh: fetchUser,
 })
 </script>
+
 ```
 
 ### Type-Safe Templates
 
 ```html
+
 <template>
   <div>
     <!-- TypeScript provides autocomplete and type checking -->
@@ -661,6 +551,7 @@ const user = ref<User>({
   email: 'john@example.com',
 })
 </script>
+
 ```
 
 ## Layouts
@@ -668,6 +559,7 @@ const user = ref<User>({
 ### Defining a Layout
 
 ```html
+
 <!-- resources/layouts/Default.stx -->
 <template>
   <div class="app">
@@ -688,11 +580,13 @@ const user = ref<User>({
 import Header from '@/components/Header.stx'
 import Footer from '@/components/Footer.stx'
 </script>
+
 ```
 
 ### Using a Layout
 
 ```html
+
 <!-- resources/views/home.stx -->
 <template>
   <DefaultLayout>
@@ -709,6 +603,7 @@ import Footer from '@/components/Footer.stx'
 <script setup lang="ts">
 import DefaultLayout from '@/layouts/Default.stx'
 </script>
+
 ```
 
 ## Edge Cases and Gotchas
@@ -718,6 +613,7 @@ import DefaultLayout from '@/layouts/Default.stx'
 Directives are whitespace-sensitive:
 
 ```html
+
 <!-- Correct -->
 @if(condition)
   Content
@@ -727,6 +623,7 @@ Directives are whitespace-sensitive:
 @if (condition)
   Content
 @endif
+
 ```
 
 ### Escaping Directive Syntax
@@ -734,6 +631,7 @@ Directives are whitespace-sensitive:
 Use `@@` to escape directive syntax:
 
 ```html
+
 <template>
   <!-- Outputs: @if(condition) -->
   @@if(condition)
@@ -741,6 +639,7 @@ Use `@@` to escape directive syntax:
   <!-- Outputs: {{ variable }} -->
   @{{ variable }}
 </template>
+
 ```
 
 ### Component Name Casing
@@ -748,11 +647,13 @@ Use `@@` to escape directive syntax:
 Components can be used in PascalCase or kebab-case:
 
 ```html
+
 <template>
   <!-- Both are valid -->
   <MyComponent />
   <my-component />
 </template>
+
 ```
 
 ### Reactive Props
@@ -760,6 +661,7 @@ Components can be used in PascalCase or kebab-case:
 Props are readonly; use computed or local refs for mutations:
 
 ```html
+
 <script setup lang="ts">
 const props = defineProps<{ value: string }>()
 
@@ -772,6 +674,7 @@ watch(() => props.value, (newVal) => {
   localValue.value = newVal
 })
 </script>
+
 ```
 
 ### Async Components
@@ -779,6 +682,7 @@ watch(() => props.value, (newVal) => {
 Load components lazily:
 
 ```html
+
 <script setup lang="ts">
 import { defineAsyncComponent } from 'vue'
 
@@ -795,6 +699,7 @@ const HeavyComponent = defineAsyncComponent(() =>
     </template>
   </Suspense>
 </template>
+
 ```
 
 ## API Reference

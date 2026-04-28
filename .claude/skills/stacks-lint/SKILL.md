@@ -1,6 +1,6 @@
 ---
 name: stacks-lint
-description: Use when linting or formatting code in a Stacks project. CRITICAL - always use pickier, NEVER eslint directly. Run 'bunx --bun pickier .' to lint, 'bunx --bun pickier . --fix' to auto-fix. For unused variables, prefer eslint-disable-next-line comments over underscore prefix. Covers @stacksjs/lint and config/lint.ts.
+description: Use when linting or formatting code in a Stacks project. CRITICAL - always use pickier, NEVER eslint directly. Run 'bunx --bun pickier .' to lint, 'bunx --bun pickier . --fix' to auto-fix. For unused variables, prefer eslint-disable-next-line comments over underscore prefix. Covers @stacksjs/lint and config/code-style.ts.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -15,7 +15,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 
 ## Key Paths
 - Lint package: `storage/framework/core/lint/` (package: `@stacksjs/lint`)
-- Configuration: `config/lint.ts`
+- Configuration: `config/code-style.ts` (auto-loaded via pickier's bunfig alias `code-style`; pickier handles both linting and formatting)
 - Lint command source: `storage/framework/core/buddy/src/commands/lint.ts`
 
 ## Package Details
@@ -62,7 +62,7 @@ bun run format
 bun run format:check
 ```
 
-## config/lint.ts (PickierOptions)
+## config/code-style.ts (PickierOptions)
 
 The actual configuration used by the project. This is the source of truth for all lint settings:
 
@@ -173,7 +173,7 @@ buddy
 ## Gotchas
 - Pickier is the Stacks linting tool -- it wraps eslint with Stacks-specific config
 - **NEVER** run `eslint` directly -- always go through `bunx --bun pickier` or `buddy lint`
-- The `config/lint.ts` file exports a `PickierOptions` object -- not an eslint config
+- The `config/code-style.ts` file exports a `PickierOptions` object -- not an eslint config (auto-discovered by pickier via bunfig alias `code-style`)
 - The project intentionally allows `console.*` calls (`noConsole: 'off'`, `'no-console': 'off'`)
 - The project intentionally allows `debugger` statements (`noDebugger: 'off'`)
 - Top-level await is allowed (`'ts/no-top-level-await': 'off'`)

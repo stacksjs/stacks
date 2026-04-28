@@ -2,163 +2,6 @@
 title: Actions
 description: Learn how to create and use Actions in Stacks applications
 ---
-
-### Basic Action Structure
-
-```typescript
-// app/Actions/HelloAction.ts
-import { Action } from '@stacksjs/actions'
-import { response } from '@stacksjs/router'
-
-export default new Action({
-  name: 'Hello Action',
-  description: 'Returns a hello message',
-  method: 'GET',
-
-  async handle() {
-    return response.json({
-      message: 'Hello, World!',
-    })
-  },
-})
-```
-
-### Action with Request Handling
-
-```typescript
-// app/Actions/User/CreateUserAction.ts
-import type { Request } from '@stacksjs/router'
-import { Action } from '@stacksjs/actions'
-import { User } from '@stacksjs/orm'
-import { response } from '@stacksjs/router'
-import { schema } from '@stacksjs/validation'
-
-export default new Action({
-  name: 'Create User',
-  description: 'Creates a new user account',
-  method: 'POST',
-
-  validations: {
-    name: {
-      rule: schema.string().min(2).max(100),
-      message: {
-        min: 'Name must be at least 2 characters',
-        max: 'Name cannot exceed 100 characters',
-      },
-    },
-    email: {
-      rule: schema.string().email(),
-      message: 'Please provide a valid email address',
-    },
-    password: {
-      rule: schema.string().min(8),
-      message: {
-        min: 'Password must be at least 8 characters',
-      },
-    },
-  },
-
-  async handle(request: Request) {
-    const user = await User.create({
-      name: request.get('name'),
-      email: request.get('email'),
-      password: await hash(request.get('password')),
-    })
-
-    return response.json({
-      message: 'User created successfully',
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
-    })
-  },
-})
-```
-
-## Action Options
-
-### Complete Options Interface
-
-```typescript
-interface ActionOptions {
-  // Identification
-  name?: string                    // Display name
-  description?: string             // Description for documentation
-
-  // HTTP Configuration
-  method?: 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
-  path?: string                    // Route path (optional)
-
-  // Validation
-  validations?: ActionValidations  // Input validation rules
-
-  // Queue/Job Configuration
-  rate?: string                    // Cron schedule (e.g., '* * * * *')
-  tries?: number                   // Retry attempts (default: 3)
-  backoff?: number                 // Backoff delay in seconds
-  enabled?: boolean                // Enable/disable the action
-
-  // Model binding
-  model?: string                   // Associated model name
-
-  // Handler
-  handle: (request?: Request) => Promise<any> | any
-}
-```
-
-### Example with All Options
-
-```typescript
-import { Action } from '@stacksjs/actions'
-import { Every } from '@stacksjs/types'
-
-export default new Action({
-  name: 'Process Payment',
-  description: 'Processes a payment transaction',
-  method: 'POST',
-  path: '/payments/process',
-  model: 'Payment',
-
-  // Retry configuration for queued execution
-  tries: 5,
-  backoff: 10,
-  rate: Every.Hour,
-  enabled: true,
-
-  validations: {
-    amount: {
-      rule: schema.number().min(1),
-      message: 'Amount must be at least 1',
-    },
-    currency: {
-      rule: schema.enum(['USD', 'EUR', 'GBP']),
-      message: 'Invalid currency',
-    },
-  },
-
-  async handle(request) {
-    // Payment processing logic
-  },
-})
-```
-
-## Request Handling
-
-### Accessing Request Data
-
-The `request` object provides Laravel-style helper methods:
-
-```typescript
-async handle(request: Request) {
-  // Get single value with optional default
-  const name = request.get('name', 'Anonymous')
-  const email = request.get<string>('email')
-
-  // Get all input data
-  const allData = request.all()
-
   // Get specific keys only
   const credentials = request.only<{ email: string; password: string }>([
     'email',
@@ -195,11 +38,13 @@ async handle(request: Request) {
     // ...
   }
 }
+
 ```
 
 ### Type-Safe Input Methods
 
 ```typescript
+
 async handle(request: Request) {
   // String input
   const title = request.string('title', '')
@@ -216,6 +61,7 @@ async handle(request: Request) {
   // Array input
   const tags = request.array<string>('tags')
 }
+
 ```
 
 ### Route Parameters
@@ -223,6 +69,7 @@ async handle(request: Request) {
 Access route parameters:
 
 ```typescript
+
 // Route: /users/{id}/posts/{postId}
 async handle(request: Request) {
   const userId = request.params.id
@@ -231,6 +78,7 @@ async handle(request: Request) {
   // Or using get method
   const id = request.get('id')
 }
+
 ```
 
 ### File Uploads
@@ -238,6 +86,7 @@ async handle(request: Request) {
 Handle file uploads:
 
 ```typescript
+
 async handle(request: Request) {
   // Get single file
   const avatar = request.file('avatar')
@@ -269,6 +118,7 @@ async handle(request: Request) {
   // Get all files
   const allFiles = request.allFiles()
 }
+
 ```
 
 ### Authentication
@@ -276,6 +126,7 @@ async handle(request: Request) {
 Access authenticated user:
 
 ```typescript
+
 async handle(request: Request) {
   // Get authenticated user (set by auth middleware)
   const user = await request.user()
@@ -296,6 +147,7 @@ async handle(request: Request) {
     return response.forbidden('Admin access required')
   }
 }
+
 ```
 
 ## Validation
@@ -303,6 +155,7 @@ async handle(request: Request) {
 ### Defining Validation Rules
 
 ```typescript
+
 import { schema } from '@stacksjs/validation'
 
 export default new Action({
@@ -354,6 +207,7 @@ export default new Action({
     // If validation fails, returns 422 with errors
   },
 })
+
 ```
 
 ### Validation Response
@@ -361,6 +215,7 @@ export default new Action({
 When validation fails, the action returns a 422 response:
 
 ```json
+
 {
   "error": "Validation failed",
   "errors": {
@@ -368,6 +223,7 @@ When validation fails, the action returns a 422 response:
     "password": ["Password must be at least 8 characters"]
   }
 }
+
 ```
 
 ## Response Helpers
@@ -375,6 +231,7 @@ When validation fails, the action returns a 422 response:
 ### JSON Response
 
 ```typescript
+
 import { response } from '@stacksjs/router'
 
 async handle(request) {
@@ -387,19 +244,23 @@ async handle(request) {
   // With status code
   return response.json({ created: true }, 201)
 }
+
 ```
 
 ### Text Response
 
 ```typescript
+
 async handle() {
   return response.text('Hello, World!')
 }
+
 ```
 
 ### Error Responses
 
 ```typescript
+
 import { response } from '@stacksjs/router'
 
 async handle(request) {
@@ -420,11 +281,13 @@ async handle(request) {
   // 500 Server Error
   return response.serverError('Something went wrong')
 }
+
 ```
 
 ### Custom Response
 
 ```typescript
+
 async handle() {
   return new Response(JSON.stringify({ custom: true }), {
     status: 200,
@@ -434,6 +297,7 @@ async handle() {
     },
   })
 }
+
 ```
 
 ## Action Composition
@@ -441,6 +305,7 @@ async handle() {
 ### Calling Other Actions
 
 ```typescript
+
 import { runAction } from '@stacksjs/actions'
 
 export default new Action({
@@ -460,6 +325,7 @@ export default new Action({
     return response.json({ order })
   },
 })
+
 ```
 
 ### Shared Logic
@@ -467,6 +333,7 @@ export default new Action({
 Extract shared logic into helper functions:
 
 ```typescript
+
 // app/Actions/helpers/validation.ts
 export async function validateUser(userId: number): Promise<User | null> {
   const user = await User.find(userId)
@@ -486,6 +353,7 @@ export default new Action({
     return response.json({ user })
   },
 })
+
 ```
 
 ## Dependency Injection
@@ -493,6 +361,7 @@ export default new Action({
 ### Using Services
 
 ```typescript
+
 import { Action } from '@stacksjs/actions'
 import { PaymentService } from '@/services/PaymentService'
 import { EmailService } from '@/services/EmailService'
@@ -514,11 +383,13 @@ export default new Action({
     return response.json({ payment })
   },
 })
+
 ```
 
 ### Configuration Access
 
 ```typescript
+
 import { config } from '@stacksjs/config'
 
 export default new Action({
@@ -529,6 +400,7 @@ export default new Action({
     // Use configuration
   },
 })
+
 ```
 
 ## Async Actions
@@ -536,6 +408,7 @@ export default new Action({
 ### Long-Running Operations
 
 ```typescript
+
 export default new Action({
   name: 'Generate Report',
 
@@ -556,11 +429,13 @@ export default new Action({
     })
   },
 })
+
 ```
 
 ### Streaming Responses
 
 ```typescript
+
 export default new Action({
   name: 'Stream Data',
 
@@ -584,6 +459,7 @@ export default new Action({
     })
   },
 })
+
 ```
 
 ## Action Middleware
@@ -593,10 +469,12 @@ export default new Action({
 Apply middleware when routing to an action:
 
 ```typescript
+
 // routes/api.ts
 route.post('/admin/settings', 'Actions/Admin/UpdateSettingsAction')
   .middleware('auth')
   .middleware('abilities:admin')
+
 ```
 
 ### Action-Based Authorization
@@ -604,6 +482,7 @@ route.post('/admin/settings', 'Actions/Admin/UpdateSettingsAction')
 Check permissions within the action:
 
 ```typescript
+
 export default new Action({
   async handle(request) {
     const user = await request.user()
@@ -619,6 +498,7 @@ export default new Action({
     // Proceed with action
   },
 })
+
 ```
 
 ## Error Handling
@@ -626,6 +506,7 @@ export default new Action({
 ### Throwing HTTP Errors
 
 ```typescript
+
 import { HttpError } from '@stacksjs/error-handling'
 
 export default new Action({
@@ -643,11 +524,13 @@ export default new Action({
     return response.json({ user })
   },
 })
+
 ```
 
 ### Try-Catch Pattern
 
 ```typescript
+
 import { handleError } from '@stacksjs/error-handling'
 
 export default new Action({
@@ -661,6 +544,7 @@ export default new Action({
     }
   },
 })
+
 ```
 
 ## Edge Cases and Gotchas
@@ -670,6 +554,7 @@ export default new Action({
 The request body can only be read once. Stacks handles this automatically, but be aware when using raw request methods:
 
 ```typescript
+
 async handle(request) {
   // Use request.all() or request.get() instead of request.json()
   const data = request.all()
@@ -677,6 +562,7 @@ async handle(request) {
   // Don't do this:
   // const body = await request.json() // May fail if already consumed
 }
+
 ```
 
 ### Async Validation
@@ -684,6 +570,7 @@ async handle(request) {
 Validation runs synchronously before `handle()`. For async validation (like uniqueness checks), validate within the handler:
 
 ```typescript
+
 async handle(request) {
   const email = request.get('email')
 
@@ -697,6 +584,7 @@ async handle(request) {
 
   // Proceed with creation
 }
+
 ```
 
 ### File Upload Limits
@@ -704,10 +592,12 @@ async handle(request) {
 Configure file upload limits in your server configuration:
 
 ```typescript
+
 // config/server.ts
 export default {
   maxRequestBodySize: 50 * 1024 * 1024, // 50MB
 }
+
 ```
 
 ## API Reference
@@ -715,6 +605,7 @@ export default {
 ### Action Class
 
 ```typescript
+
 class Action {
   constructor(options: ActionOptions)
 
@@ -730,6 +621,7 @@ class Action {
   model?: string
   handle: (request?: Request) => Promise<any> | any
 }
+
 ```
 
 ### Request Methods

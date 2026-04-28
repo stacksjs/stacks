@@ -1,102 +1,6 @@
 ---
 title: Quick Start
 ---
-- Basic knowledge of TypeScript
-
-## Installation
-
-Create a new Stacks project using the following command:
-
-```bash
-bun create stacks my-app
-```
-
-This command will:
-
-1. Scaffold a new Stacks project in the `my-app` directory
-2. Install all dependencies automatically
-3. Configure your development environment
-
-Once complete, navigate to your new project:
-
-```bash
-cd my-app
-```
-
-## Project Structure
-
-Your new Stacks project has the following structure:
-
-```
-my-app/
-├── app/
-│   ├── Actions/           # Business logic and API handlers
-│   ├── Commands/          # CLI commands
-│   ├── Controllers/       # HTTP controllers
-│   ├── Jobs/              # Background jobs
-│   ├── Middleware/        # Request middleware
-│   ├── Models/            # Database models
-│   ├── Notifications/     # Notification classes
-│   ├── Policies/          # Authorization policies
-│   ├── Gates.ts           # Authorization gates
-│   ├── Middleware.ts      # Middleware aliases
-│   └── Routes.ts          # Route file registry
-├── config/                # Application configuration
-├── database/
-│   └── migrations/        # Database migrations
-├── public/                # Static assets
-├── resources/
-│   ├── assets/            # Images, fonts, etc.
-│   ├── components/        # UI components (.stx files)
-│   ├── functions/         # Composable functions
-│   ├── layouts/           # Layout templates
-│   └── views/             # Page views (.stx files)
-├── routes/
-│   └── api.ts             # API route definitions
-├── storage/               # Application storage
-├── tests/                 # Test files
-├── .env                   # Environment variables
-├── package.json           # Dependencies and scripts
-└── buddy                  # Stacks CLI
-```
-
-### Key Directories
-
-| Directory | Purpose |
-|-----------|---------|
-| `app/Actions` | Contains your business logic. Actions can be used as API handlers, CLI commands, job workers, and more. |
-| `app/Middleware` | Request/response middleware for authentication, logging, rate limiting, etc. |
-| `app/Models` | Database model definitions with relationships and validation rules. |
-| `resources/components` | Reusable UI components using `.stx` syntax (HTML + minimal JS). |
-| `resources/views` | Page templates and layouts. |
-| `routes/` | API and web route definitions. |
-| `config/` | All application configuration files. |
-
-## Your First API Route
-
-Open `routes/api.ts` and add a simple route:
-
-```typescript
-import { route, response } from '@stacksjs/router'
-
-// A simple GET route
-route.get('/hello', () => response.json({ message: 'Hello, World!' }))
-
-// A route with parameters
-route.get('/users/{id}', (request) => {
-  const id = request.params.id
-  return response.json({ userId: id })
-})
-
-// Using an Action handler
-route.post('/subscribe', 'Actions/SubscribeAction')
-```
-
-### Creating an Action
-
-Actions are the backbone of your application logic. Create a new action in `app/Actions/SubscribeAction.ts`:
-
-```typescript
 import { Action } from '@stacksjs/actions'
 import { response } from '@stacksjs/router'
 import { schema } from '@stacksjs/validation'
@@ -131,6 +35,7 @@ export default new Action({
     })
   },
 })
+
 ```
 
 ## Your First Component
@@ -140,6 +45,7 @@ Stacks uses `.stx` files for components, which combine HTML with minimal JavaScr
 Create a new component in `resources/components/WelcomeCard.stx`:
 
 ```html
+
 <script server>
 // Props with defaults
 const title = props.title || 'Welcome'
@@ -159,6 +65,7 @@ const showButton = props.showButton ?? true
     </button>
   @endif
 </div>
+
 ```
 
 ### Using Your Component
@@ -166,11 +73,13 @@ const showButton = props.showButton ?? true
 Use the component in any view or other component:
 
 ```html
+
 <WelcomeCard
   title="Hello, Developer!"
   description="Start building amazing things with Stacks."
   :showButton="true"
 />
+
 ```
 
 ## Running the Development Server
@@ -178,13 +87,17 @@ Use the component in any view or other component:
 Start your development server with:
 
 ```bash
+
 ./buddy dev
+
 ```
 
 Or use the npm script:
 
 ```bash
+
 bun run dev
+
 ```
 
 This will start:
@@ -196,23 +109,31 @@ This will start:
 ### Other Useful Commands
 
 ```bash
+
 # Run tests
+
 ./buddy test
 
 # Lint your code
+
 ./buddy lint
 
 # Format code
+
 ./buddy format
 
 # Generate types
+
 ./buddy generate
 
 # Build for production
+
 ./buddy build
 
 # Deploy to cloud
+
 ./buddy deploy
+
 ```
 
 ## Next Steps
