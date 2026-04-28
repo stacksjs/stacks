@@ -2,7 +2,14 @@
 
 @section('content')
 <script server>
-const { User } = await import('@stacksjs/orm')
+useSeoMeta({ title: 'Users · Data · Dashboard' })
+
+// Read directly from SQLite. The bun-query-builder ORM's `.get(key)` accessor
+// currently returns the validator function (e.g. `function text() { return
+// new TextValidator }`) for several attributes, which would render as raw
+// JS source in the table. Direct row access avoids that entire layer.
+const { Database } = await import('bun:sqlite')
+const dbPath = process.env.DB_DATABASE_PATH || `${process.cwd()}/database/stacks.sqlite`
 
 let users = []
 let totalCount = 0
@@ -11,21 +18,26 @@ let adminCount = 0
 let newCount = 0
 
 try {
-  const allUsers = await User.orderBy('created_at', 'desc').get()
-  users = allUsers.map(u => ({
-    id: String(u.get('id') || ''),
-    name: String(u.get('name') || ''),
-    email: String(u.get('email') || ''),
-    role: String(u.get('role') || 'User'),
-    status: String(u.get('status') || 'Active'),
-    lastLogin: String(u.get('last_login_at') || u.get('updated_at') || ''),
+  const db = new Database(dbPath, { readonly: true })
+  const rows = db.query('SELECT * FROM users ORDER BY created_at DESC').all()
+  users = rows.map(r => ({
+    id: String(r.id ?? ''),
+    name: String(r.name ?? ''),
+    email: String(r.email ?? ''),
+    role: String(r.role ?? 'User'),
+    status: String(r.status ?? 'Active'),
+    lastLogin: String(r.last_login_at ?? r.updated_at ?? ''),
   }))
-  totalCount = allUsers.length
-  activeCount = allUsers.filter(u => String(u.get('status') || '').toLowerCase() === 'active').length
-  adminCount = allUsers.filter(u => String(u.get('role') || '').toLowerCase() === 'admin').length
-  const weekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000
-  newCount = allUsers.filter(u => new Date(String(u.get('created_at') || '')).getTime() > weekAgo).length
-} catch (e) { /* DB not seeded */ }
+  totalCount = rows.length
+  activeCount = users.filter(u => u.status.toLowerCase() === 'active').length
+  adminCount = users.filter(u => u.role.toLowerCase() === 'admin').length
+  const weekAgoMs = Date.now() - 7 * 24 * 60 * 60 * 1000
+  newCount = rows.filter((r) => {
+    const t = Date.parse(String(r.created_at ?? ''))
+    return Number.isFinite(t) && t > weekAgoMs
+  }).length
+  db.close()
+} catch (e) { /* DB not seeded or table missing */ }
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()
@@ -95,10 +107,13 @@ const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
           </td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ user.email }}</td>
           <td class="px-4 py-3">
-            <Badge variant="default" size="xs">{{ user.role }}</Badge>
+            <span class="inline-flex items-center font-medium tracking-tight text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-300">{{ user.role }}</span>
           </td>
           <td class="px-4 py-3">
-            <Badge variant="{{ statusVariant(user.status) }}" size="xs" dot>{{ user.status }}</Badge>
+            <span class="inline-flex items-center font-medium tracking-tight text-[10px] px-1.5 py-0.5 rounded-full {{ statusVariant(user.status) === 'success' ? 'bg-green-500/15 text-green-600' : statusVariant(user.status) === 'warning' ? 'bg-orange-500/15 text-orange-600' : statusVariant(user.status) === 'danger' ? 'bg-red-500/15 text-red-600' : 'bg-black/[0.06] text-neutral-600' }}">
+              <span class="w-1.5 h-1.5 rounded-full mr-1.5 {{ statusVariant(user.status) === 'success' ? 'bg-green-500' : statusVariant(user.status) === 'warning' ? 'bg-orange-500' : statusVariant(user.status) === 'danger' ? 'bg-red-500' : 'bg-neutral-400' }}"></span>
+              {{ user.status }}
+            </span>
           </td>
           <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ user.lastLogin }}</td>
           <td class="px-4 py-3">
