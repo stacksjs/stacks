@@ -6,11 +6,15 @@
  * automatically be injected into the Bun process.
  */
 
-// Skip preloader for fast commands to maximize startup speed
-// These commands don't need env loading
+// Skip preloader for fast CLI commands (e.g. `buddy dev`, `buddy --version`) to
+// maximize startup speed. We must NOT skip when running a server script directly
+// (e.g. `bun --watch storage/framework/core/actions/src/dev/api.ts`) — Bun
+// consumes `--watch` so `args` ends up empty in that subprocess, which used to
+// trip the `args.length === 0` short-circuit and silently disable auto-imports.
 const args = process.argv.slice(2)
 const fastCommands = ['dev', 'build', 'test', 'lint', '--version', '-v', 'version', '--help', '-h', 'help']
-const skipPreloader = args.length === 0 || fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`))
+const isRepl = !process.argv[1]
+const skipPreloader = isRepl || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
 if (!skipPreloader) {
   // Detect production/deployment commands and set environment accordingly BEFORE loading env files
@@ -47,8 +51,10 @@ if (!skipPreloader) {
 // await import('bun-plugin-stx')
 
 // Auto-import ALL Stacks framework modules into globalThis
-// This allows using Action, response, Activity, etc. without ANY imports
-async function loadAutoImports() {
+// This allows using Action, response, Activity, etc. without ANY imports.
+// Exported so server entrypoints (e.g. `dev/api.ts`) can opt back in
+// explicitly when needed — see #1835 root cause 3.
+export async function loadAutoImports() {
   const { Glob } = await import('bun')
   const path = await import('@stacksjs/path')
 
@@ -239,8 +245,10 @@ async function loadAutoImports() {
 }
 
 // Load auto-imports for server/API contexts (serve, any server process)
-// Skip for fast commands (dev, build, test, etc.) and CLI info commands
-const skipAutoImports = skipPreloader || ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0])
+// Skip for fast commands (dev, build, test, etc.) and CLI info commands.
+// `args[0]` may be undefined when running a script directly (e.g. dev subprocess);
+// guard so .includes() doesn't accidentally treat that as a CLI info command.
+const skipAutoImports = skipPreloader || (args.length > 0 && ['--version', '-v', 'version', '--help', '-h', 'help'].includes(args[0]))
 if (!skipAutoImports) {
   await loadAutoImports()
 

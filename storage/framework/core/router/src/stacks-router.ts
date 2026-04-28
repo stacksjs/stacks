@@ -1205,6 +1205,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       }
       catch (error) {
         log.error('Failed to load route registry:', error)
+        throw error
       }
 
       // Load ORM-generated API routes

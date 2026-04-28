@@ -471,7 +471,7 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
     // Use multi-proxy mode so rpx generates a SINGLE cert covering all domains
     await startProxies({
       proxies: [
-        { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
+        { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: true }] },
         { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
         { from: `localhost:${docsPort}`, to: docsDomain, cleanUrls: false },
         { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
