@@ -50,8 +50,8 @@ const buttonClass = [
   variantClasses[variant]
 ].join(' ')
 </script>
-@if(href)
-    <a href="{{ href }}" class="{{ buttonClass }}" @if(disabled) aria-disabled="true" @endif>
+@if(href && href.length > 0)
+    <a href="{{ href }}" class="{{ buttonClass }}" aria-disabled="{{ disabled ? 'true' : 'false' }}">
       @if(loading)
         <svg class="animate-spin h-3.5 w-3.5 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
@@ -61,7 +61,7 @@ const buttonClass = [
       <slot />
     </a>
   @else
-    <button type="{{ type }}" class="{{ buttonClass }}" @if(disabled || loading) disabled @endif>
+    <button type="{{ type }}" class="{{ buttonClass }}" {{ (disabled || loading) ? 'disabled' : '' }}>
       @if(loading)
         <svg class="animate-spin h-3.5 w-3.5 {{ iconOnly ? '' : '-ml-0.5 mr-1.5' }}" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
           <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>

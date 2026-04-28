@@ -1,12 +1,15 @@
 <script>
 interface TooltipProps {
-  text?: string
+  label?: string
   position?: string
   dark?: boolean
   alignment?: string
 }
 
-const { text = '', position = 'bottom', dark = false, alignment = 'center' } = defineProps<TooltipProps>()
+// `label` (was `text`) holds the tooltip body. The original `text` prop
+// collided with the auto-imported text() validator from @stacksjs/validation,
+// which leaked the validator function source into the rendered tooltip.
+const { label = '', position = 'bottom', dark = false, alignment = 'center' } = defineProps<TooltipProps>()
 </script>
 <div
     class="tooltip-container"
@@ -18,7 +21,7 @@ const { text = '', position = 'bottom', dark = false, alignment = 'center' } = d
       class="tooltip {{ position }} {{ dark ? 'dark-tooltip' : '' }} align-{{ alignment }}"
       data-tooltip-text
     >
-      {{ text }}
+      {{ label }}
     </span>
   </div>
 <style>

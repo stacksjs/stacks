@@ -1,14 +1,18 @@
-<script>
+<script server>
 interface BadgeProps {
   variant?: 'default' | 'primary' | 'success' | 'warning' | 'danger' | 'info'
   size?: 'xs' | 'sm' | 'md' | 'lg'
   rounded?: 'default' | 'full'
   outline?: boolean
   dot?: boolean
-  text?: string
 }
 
-const { variant = 'default', size = 'sm', rounded = 'full', outline = false, dot = false, text = '' } = defineProps<BadgeProps>()
+const { variant = 'default', size = 'sm', rounded = 'full', outline = false, dot = false } = defineProps<BadgeProps>()
+// `text` was removed as a prop because `text` is auto-imported as a
+// global from @stacksjs/validation (the schema text() validator). Even
+// when no caller passes `text`, the global shadows the prop default and
+// `{{ text }}` rendered the validator function source into every Badge.
+// Use the slot for the badge label instead.
 
 const sizeClasses = {
   xs: 'text-[10px] px-1.5 py-0.5',
@@ -58,5 +62,5 @@ const dotClass = 'w-1.5 h-1.5 rounded-full mr-1.5 ' + dotColors[variant]
     @if(dot)
       <span class="{{ dotClass }}"></span>
     @endif
-    {{ text }}<slot />
+    <slot />
   </span>
