@@ -32,9 +32,15 @@ export class GoogleProvider extends AbstractProvider implements ProviderInterfac
       clientId: config.services.google?.clientId ?? '',
       clientSecret: config.services.google?.clientSecret ?? '',
       redirectUrl: config.services.google?.redirectUrl ?? '',
+      // Minimal default scopes: openid + email is enough to identify a
+      // returning user. The previous default also requested
+      // userinfo.profile, which grants `name`, `picture`, `locale`, and
+      // `gender`. Apps that actually need those should opt in via
+      // config.services.google.scopes — silently collecting it on every
+      // signin violated GDPR's data-minimization principle.
       scopes: config.services.google?.scopes ?? [
-        'https://www.googleapis.com/auth/userinfo.profile',
-        'https://www.googleapis.com/auth/userinfo.email',
+        'openid',
+        'email',
       ],
     }
 

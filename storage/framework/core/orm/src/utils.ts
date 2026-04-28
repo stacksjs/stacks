@@ -477,8 +477,18 @@ export async function extractFields(model: Model, modelFile: string): Promise<Mo
 
   const fieldKeys = Object.keys(fields)
   const rules: string[] = []
+  // Guard against the model file having been moved/deleted since the
+  // generator ran. Bun.file().text() throws an opaque ENOENT in that
+  // case; catching it lets us produce a useful "no rules extracted"
+  // result instead of failing the whole migration codegen run.
   const file = Bun.file(modelFile)
-  const code = await file.text()
+  let code = ''
+  try {
+    if (await file.exists()) code = await file.text()
+  }
+  catch {
+    code = ''
+  }
   const regex = /rule:.*$/gm
   let match: RegExpExecArray | null
   match = regex.exec(code)

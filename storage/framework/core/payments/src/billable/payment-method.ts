@@ -126,9 +126,14 @@ export const managePaymentMethod: ManagePaymentMethod = (() => {
       throw new Error('Invalid payment method: missing required card details')
     }
 
+    // last4 is an opaque identifier, not a quantity. Casting to Number
+    // silently drops leading zeros — a card ending in "0042" was being
+    // stored as 42 and rendered as "•••• 42" instead of "•••• 0042",
+    // which both looked wrong and broke the "match the card on file"
+    // re-charge comparison. Keep it as a string everywhere.
     const method = {
       type: 'card',
-      last_four: Number(paymentMethod.card.last4),
+      last_four: String(paymentMethod.card.last4),
       brand: paymentMethod.card.brand,
       exp_year: paymentMethod.card.exp_year,
       exp_month: paymentMethod.card.exp_month,

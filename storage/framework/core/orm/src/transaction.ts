@@ -7,6 +7,14 @@
 
 import { db } from '@stacksjs/database'
 
+/**
+ * Transaction handle. Aliases the project's `db` type so callers get
+ * the same fluent query API inside the callback as outside, without
+ * the previous untyped `(tx: any)` signature that erased intellisense
+ * and let typo'd column names slip through to runtime.
+ */
+export type TransactionHandle = typeof db
+
 export interface TransactionOptions {
   /** Number of retry attempts for retriable transaction errors */
   retries?: number
@@ -35,7 +43,7 @@ export interface TransactionOptions {
  * ```
  */
 export async function transaction<T>(
-  callback: (tx: any) => Promise<T>,
+  callback: (tx: TransactionHandle) => Promise<T>,
   options?: TransactionOptions,
 ): Promise<T> {
   return await db.transaction(callback, options)
@@ -66,7 +74,7 @@ export function transactionBuilder(callback: () => Promise<void>): Promise<void>
  * })
  * ```
  */
-export async function savepoint<T>(callback: (sp: any) => Promise<T>): Promise<T> {
+export async function savepoint<T>(callback: (sp: TransactionHandle) => Promise<T>): Promise<T> {
   return await db.savepoint(callback)
 }
 
@@ -86,7 +94,7 @@ export async function savepoint<T>(callback: (sp: any) => Promise<T>): Promise<T
  * ```
  */
 export function transactional<TArgs extends any[], R>(
-  fn: (tx: any, ...args: TArgs) => Promise<R>,
+  fn: (tx: TransactionHandle, ...args: TArgs) => Promise<R>,
   options?: TransactionOptions,
 ): (...args: TArgs) => Promise<R> {
   return db.transactional(fn, options)

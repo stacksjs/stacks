@@ -17,7 +17,11 @@ export function types(buddy: CLI): void {
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (options: CliOptions) => {
       log.debug('Running `buddy types:generate` ...', options)
-      await generateTypes()
+      // Pass options through so --project / --verbose actually affect
+      // codegen. Previously the generator ran with default config no
+      // matter what the user typed, which was confusing for monorepo
+      // users targeting a specific sub-project via --project.
+      await generateTypes(options as any)
     })
 
   buddy

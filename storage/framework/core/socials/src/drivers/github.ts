@@ -83,7 +83,11 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
       id: userResponse.data.id.toString(),
       nickname: userResponse.data.login,
       name: userResponse.data.name,
-      email: this.getEmail(emailsResponse.data),
+      // Fall back to the public profile email when /user/emails returns
+      // nothing — that endpoint can be empty (no `user:email` scope, or
+      // the user hides every address). The profile's email field, when
+      // present, is the publicly-listed one which is fine for sign-up.
+      email: this.getEmail(emailsResponse.data) ?? userResponse.data.email ?? null,
       avatar: userResponse.data.avatar_url,
       token,
       raw: userResponse.data,
@@ -92,12 +96,17 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
 
   /**
    * Get the primary email from the list of emails.
+   *
+   * Order of preference: primary AND verified > primary > verified > first.
+   * Verifiedness matters for security — using an unverified email lets
+   * an attacker register it on GitHub and then impersonate the owner
+   * via "sign in with GitHub".
    */
   protected getEmail(emails: GitHubEmail[]): string | null {
-    const primaryEmail = emails.find(email => email.primary)
-    const verifiedEmail = emails.find(email => email.verified)
-
-    return (primaryEmail || verifiedEmail || emails[0])?.email ?? null
+    if (!Array.isArray(emails) || emails.length === 0) return null
+    const primaryAndVerified = emails.find(e => e.primary && e.verified)
+    const verified = emails.find(e => e.verified)
+    return (primaryAndVerified || verified || emails.find(e => e.primary) || emails[0])?.email ?? null
   }
 
   /**

@@ -141,14 +141,24 @@ export class SendGridDriver extends BaseEmailDriver {
 
       if (!response.ok) {
         const errorData = await response.json()
-        throw new Error(`SendGrid API error: ${response.status} - ${JSON.stringify(errorData)}`)
+        const err = new Error(`SendGrid API error: ${response.status} - ${JSON.stringify(errorData)}`) as Error & { status?: number }
+        err.status = response.status
+        throw err
       }
 
       log.info(`[${this.name}] Email sent successfully`, { attempt })
       return response
     }
     catch (error: unknown) {
-      if (attempt < (config.services.sendgrid?.maxRetries ?? 3)) {
+      // Don't retry deterministic failures. 401/403 mean the API key is
+      // bad or revoked; 400 means the request shape is wrong; 422 means
+      // SendGrid validated the payload as malformed. Retrying any of
+      // those wastes the retry budget and floods their abuse log with
+      // identical bad requests. We DO retry on 5xx, 429 (rate-limited),
+      // and unknown network errors.
+      const status = (error as { status?: number })?.status
+      const nonRetryable = typeof status === 'number' && status >= 400 && status < 500 && status !== 429
+      if (!nonRetryable && attempt < (config.services.sendgrid?.maxRetries ?? 3)) {
         const retryTimeout = config.services.sendgrid?.retryTimeout ?? 1000
         log.warn(`[${this.name}] Email send failed, retrying (${attempt}/${config.services.sendgrid?.maxRetries ?? 3})`)
         await new Promise(resolve => setTimeout(resolve, retryTimeout))

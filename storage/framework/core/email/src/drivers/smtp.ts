@@ -23,6 +23,28 @@ function encodeRfc2047IfNeeded(value: string): string {
 }
 
 /**
+ * SMTP envelope-address validator.
+ *
+ * SMTP commands are CRLF-terminated, so any user-controlled address
+ * containing `\r` / `\n` lets an attacker inject a fresh command into
+ * the conversation (the classic "BCC injection" vector — slip
+ * `victim@example.com\r\nRCPT TO:<attacker@evil.com>` into a `to`
+ * field and the server happily accepts a hidden recipient). The
+ * regex below rejects every shape that isn't a plain `local@domain`
+ * with no whitespace, control chars, angle brackets, quotes, or
+ * backslashes — which is intentionally tighter than full RFC 5321
+ * because the broader form (display names, comments, source routes)
+ * has no business reaching this transport.
+ */
+const ENVELOPE_ADDRESS = /^[^\s<>"\\\r\n\t]+@[^\s<>"\\\r\n\t]+$/
+
+function assertEnvelopeAddress(addr: string, role: string): void {
+  if (typeof addr !== 'string' || !ENVELOPE_ADDRESS.test(addr)) {
+    throw new Error(`[smtp] Refusing to send: ${role} envelope address contains forbidden characters or is malformed: ${JSON.stringify(addr)}`)
+  }
+}
+
+/**
  * SMTP Driver for email sending
  * Works with any SMTP server: Mailtrap, Mailgun, SendGrid, SES, etc.
  * Supports STARTTLS (port 587) and direct TLS (port 465)
@@ -289,6 +311,10 @@ export class SMTPDriver extends BaseEmailDriver {
             await sendCommand(Buffer.from(smtpConfig.username).toString('base64'))
             await sendCommand(Buffer.from(smtpConfig.password).toString('base64'))
           }
+
+          // SMTP command injection guard — see assertEnvelopeAddress below.
+          assertEnvelopeAddress(from, 'MAIL FROM')
+          for (const recipient of to) assertEnvelopeAddress(recipient, 'RCPT TO')
 
           // Send email
           await sendCommand(`MAIL FROM:<${from}>`)
