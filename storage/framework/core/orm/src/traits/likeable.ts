@@ -29,6 +29,12 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
      * crashing on the unique (user_id, <fk>) constraint.
      */
     async like(id: number, userId: number): Promise<any> {
+      if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {
+        throw new Error(`[orm/likeable] like requires a positive numeric id (received ${String(id)})`)
+      }
+      if (typeof userId !== 'number' || !Number.isFinite(userId) || userId <= 0) {
+        throw new Error(`[orm/likeable] like requires a positive numeric userId (received ${String(userId)})`)
+      }
       const now = new Date().toISOString()
       try {
         return await db
@@ -42,9 +48,21 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
           .returningAll()
           .executeTakeFirst()
       }
-      catch (err) {
-        // Likely a unique-constraint violation (already liked) — return the
-        // existing row so callers don't have to special-case.
+      catch (err: unknown) {
+        // Distinguish unique-constraint violations from "real" errors.
+        // SQLite reports SQLITE_CONSTRAINT_UNIQUE; MySQL throws ER_DUP_ENTRY
+        // (errno 1062); Postgres uses code 23505. If the error doesn't
+        // match any of those, treat it as fatal and surface it instead of
+        // silently swallowing a (e.g.) connection-lost error.
+        const e = err as { code?: string, errno?: number, message?: string }
+        const looksLikeDuplicate
+          = e.code === 'SQLITE_CONSTRAINT_UNIQUE'
+          || e.code === 'SQLITE_CONSTRAINT'
+          || e.code === '23505'
+          || e.errno === 1062
+          || /unique|duplicate/i.test(e.message ?? '')
+        if (!looksLikeDuplicate) throw err
+
         const existing = await db
           .selectFrom(likeTable as any)
           .where(foreignKey, '=', id)

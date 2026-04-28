@@ -96,15 +96,22 @@ export class RedisQueue<T = any> {
   }
 
   /**
-   * Build Redis URL from config
+   * Build Redis URL from config.
+   *
+   * URL-encodes the password so special characters (`@`, `:`, `/`, `?`)
+   * don't break the URL parser. A password like `p@ss:w0rd!` previously
+   * produced `redis://:p@ss:w0rd!@host:6379/0` which the parser
+   * interpreted as host=`ss:w0rd!`, leaving the actual server
+   * unreachable. Same goes for `host` (in case of IDN domains) and `db`
+   * is forced to a non-negative integer.
    */
   private buildRedisUrl(redis: NonNullable<RedisConnectionConfig['redis']>): string {
     const host = redis.host || 'localhost'
     const port = redis.port || 6379
-    const password = redis.password ? `:${redis.password}@` : ''
-    const db = redis.db || 0
+    const passwordSegment = redis.password ? `:${encodeURIComponent(redis.password)}@` : ''
+    const db = Number.isFinite(redis.db) && (redis.db as number) >= 0 ? redis.db : 0
 
-    return `redis://${password}${host}:${port}/${db}`
+    return `redis://${passwordSegment}${host}:${port}/${db}`
   }
 
   /**

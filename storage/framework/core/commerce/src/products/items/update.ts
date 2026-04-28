@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 import { formatDate } from '@stacksjs/orm'
 type ProductJsonResponse = ModelRow<typeof Product>
 type ProductUpdate = UpdateModelData<typeof Product>
@@ -122,6 +122,48 @@ export async function updateAvailability(
 
     throw error
   }
+}
+
+/**
+ * Atomically decrement (or increment) a product's inventory count by `delta`.
+ *
+ * Returns the updated row, or `null` if the requested decrement would push
+ * inventory below zero — that's how callers detect "we sold the last one"
+ * during checkout. The conditional UPDATE means two parallel checkout
+ * requests can't both observe stock=1 and both succeed; the second one
+ * matches zero rows and the function returns null. Existing
+ * `updateInventory(id, count)` keeps the previous "set absolute count"
+ * semantics for admin tooling.
+ */
+export async function adjustInventory(
+  id: number,
+  delta: number,
+): Promise<ProductJsonResponse | null> {
+  if (!Number.isFinite(delta) || delta === 0) {
+    throw new Error('[commerce/inventory] adjustInventory delta must be a non-zero finite number')
+  }
+
+  const result: any = await db
+    .updateTable('products')
+    .set({
+      inventory_count: sql`inventory_count + ${delta}`,
+      updated_at: formatDate(new Date()),
+    })
+    .where('id', '=', id)
+    // Guard against negative stock when decrementing.
+    .where(sql`inventory_count + ${delta}`, '>=', 0)
+    .execute()
+
+  // Drivers report affected rows differently — handle the common shapes.
+  const affected = Number(
+    result?.numUpdatedRows
+    ?? result?.[0]?.numUpdatedRows
+    ?? result?.numAffectedRows
+    ?? 0,
+  )
+
+  if (!affected) return null
+  return (await fetchById(id)) ?? null
 }
 
 /**

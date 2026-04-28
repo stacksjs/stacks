@@ -105,8 +105,20 @@ export const overridesReady: Promise<StacksConfig> = skipConfigLoading
       if (mod?.default !== undefined)
         ;(overrides as any)[key] = mod.default
     }
-    catch {
-      // Project doesn't have this config file — leave the default in place.
+    catch (err: unknown) {
+      // Distinguish "file simply doesn't exist" from "file exists but is
+      // malformed". The first is the common case (projects don't ship
+      // every config category) and is fine to silence. The second is a
+      // bug that used to silently fall through to defaults — surface it
+      // on stderr so users can spot the typo / syntax error in their
+      // config file.
+      const code = (err as { code?: string })?.code
+      const msg = (err as { message?: string })?.message ?? String(err)
+      const isMissing = code === 'ERR_MODULE_NOT_FOUND' || code === 'MODULE_NOT_FOUND' || /Cannot find module/i.test(msg)
+      if (!isMissing) {
+        // eslint-disable-next-line no-console
+        console.warn(`[config] Failed to load ${String(key)} config from ${modulePath}: ${msg}`)
+      }
     }
   })).then(() => overrides)
 

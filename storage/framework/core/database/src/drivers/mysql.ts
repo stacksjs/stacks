@@ -42,14 +42,29 @@ export async function dropMysqlTables(): Promise<void> {
   const modelFiles = globSync([path.userModelsPath('*.ts'), path.storagePath('framework/defaults/app/Models/**/*.ts')], { absolute: true })
   const tables = await fetchTables()
 
-  for (const table of tables) await db.unsafe(`DROP TABLE IF EXISTS \`${table}\``).execute()
+  for (const table of tables) {
+    // Validate table name comes from `fetchTables()` (i.e. information_schema)
+    // and matches a safe identifier pattern before splicing into raw SQL.
+    // Even though our caller is internal, treating this as untrusted input
+    // catches bugs where a name accidentally contains a backtick or
+    // whitespace and protects against future callers passing user input.
+    if (!/^[a-z_][\w]*$/i.test(table)) {
+      throw new Error(`[mysql] Refusing to drop table with unsafe name: ${table}`)
+    }
+    await db.unsafe(`DROP TABLE IF EXISTS \`${table}\``).execute()
+  }
   await dropCommonTables()
 
   for (const userModel of modelFiles) {
     const userModelPath = (await import(userModel)).default
     const pivotTables = await getPivotTables(userModelPath, userModel)
 
-    for (const pivotTable of pivotTables) await db.unsafe(`DROP TABLE IF EXISTS \`${pivotTable.table}\``).execute()
+    for (const pivotTable of pivotTables) {
+      if (!/^[a-z_][\w]*$/i.test(pivotTable.table)) {
+        throw new Error(`[mysql] Refusing to drop pivot table with unsafe name: ${pivotTable.table}`)
+      }
+      await db.unsafe(`DROP TABLE IF EXISTS \`${pivotTable.table}\``).execute()
+    }
   }
 }
 

@@ -73,6 +73,22 @@ export async function send(message: ExpoPushMessage): Promise<PushResult> {
       ttl: message.ttl,
     }))
 
+    // Expo enforces a 4 KiB per-message payload limit. Anything past that
+    // is rejected by the receiving devices (or silently dropped). Validate
+    // up front so the caller gets a clear error rather than a confusing
+    // 200-OK-but-no-delivery experience. Per-message check, not whole-batch.
+    const EXPO_PER_MESSAGE_LIMIT = 4096
+    for (const msg of payload) {
+      const size = new TextEncoder().encode(JSON.stringify(msg)).length
+      if (size > EXPO_PER_MESSAGE_LIMIT) {
+        return {
+          success: false,
+          provider: 'expo',
+          message: `Expo message payload (${size} bytes) exceeds 4 KiB per-message limit`,
+        }
+      }
+    }
+
     const response = await fetch(EXPO_PUSH_URL, {
       method: 'POST',
       headers: {

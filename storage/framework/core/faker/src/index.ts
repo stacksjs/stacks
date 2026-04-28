@@ -142,11 +142,24 @@ const helpers = {
   },
   arrayElements<T>(array: T[], count?: number): T[] {
     const n = count ?? Math.floor(Math.random() * array.length) + 1
-    const shuffled = [...array].sort(() => Math.random() - 0.5)
-    return shuffled.slice(0, Math.min(n, array.length))
+    return helpers.shuffle(array).slice(0, Math.min(n, array.length))
   },
+  /**
+   * Fisher-Yates shuffle. Returns a new array; the input is not mutated.
+   *
+   * Why not `[...array].sort(() => Math.random() - 0.5)`: that idiom is
+   * heavily biased — V8 / JSC's stable sort calls the comparator a
+   * variable number of times depending on input length, which means
+   * elements near the start are ~3x more likely to remain near the start
+   * than elements in the middle. Real Fisher-Yates is unbiased.
+   */
   shuffle<T>(array: T[]): T[] {
-    return [...array].sort(() => Math.random() - 0.5)
+    const a = [...array]
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1))
+      ;[a[i], a[j]] = [a[j], a[i]]
+    }
+    return a
   },
   maybe<T>(callback: () => T, options?: { probability?: number }): T | undefined {
     const probability = options?.probability ?? 0.5

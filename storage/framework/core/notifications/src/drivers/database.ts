@@ -33,7 +33,19 @@ export const DatabaseNotificationDriver = {
       } as any)
       .execute()
 
-    const insertId = Number((result as any)?.[0]?.insertId ?? 0)
+    // Driver-aware insertId extraction. MySQL exposes
+    // `result[0].insertId`, Postgres returns `insertId` on the top-level
+    // result object (when RETURNING is used), and SQLite reports
+    // `insertId` directly. Coalesce all three so the returned record
+    // carries the actual primary key regardless of driver.
+    const r = result as any
+    const insertId = Number(
+      r?.[0]?.insertId
+      ?? r?.insertId
+      ?? r?.lastInsertRowid
+      ?? r?.lastInsertId
+      ?? 0,
+    )
 
     log.info(`Database notification sent to user ${options.userId}: ${options.type}`)
 

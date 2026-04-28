@@ -1,8 +1,20 @@
 import { db, sql } from '@stacksjs/database'
 
+/**
+ * Validate the parent record id passed to a trait method. Negative or
+ * non-finite IDs used to silently return empty arrays / 0 counts and
+ * masked legitimate "I'm passing the wrong variable" bugs upstream.
+ */
+function assertId(id: unknown, method: string): asserts id is number {
+  if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {
+    throw new Error(`[orm/taggable] ${method} requires a positive numeric id (received ${String(id)})`)
+  }
+}
+
 export function createTaggableMethods(tableName: string) {
   return {
     async tags(id: number): Promise<any[]> {
+      assertId(id, 'tags')
       return await db
         .selectFrom('taggable')
         .where('taggable_id', '=', id)
@@ -12,6 +24,7 @@ export function createTaggableMethods(tableName: string) {
     },
 
     async tagCount(id: number): Promise<number> {
+      assertId(id, 'tagCount')
       const result = await db
         .selectFrom('taggable')
         .select(sql`count(*) as count`)
@@ -23,6 +36,10 @@ export function createTaggableMethods(tableName: string) {
     },
 
     async addTag(id: number, tag: { name: string, description?: string }): Promise<any> {
+      assertId(id, 'addTag')
+      if (!tag || typeof tag.name !== 'string' || tag.name.trim().length === 0) {
+        throw new Error('[orm/taggable] addTag requires a non-empty tag.name')
+      }
       return await db
         .insertInto('taggable')
         .values({

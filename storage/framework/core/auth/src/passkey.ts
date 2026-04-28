@@ -74,9 +74,22 @@ export async function setCurrentRegistrationOptions(
   user: UserModel,
   verified: VerifiedRegistrationResponse,
 ): Promise<void> {
+  // WebAuthn registrations without a credential id or public key are
+  // useless for future authentication — inserting `id: ''` would create
+  // a "passkey" that nothing can ever match. Reject up front so the
+  // caller sees a clear error instead of a soft-fail at next login.
+  const credentialId = verified.registrationInfo?.credential.id
+  const credentialPublicKey = verified.registrationInfo?.credential.publicKey
+  if (!credentialId) {
+    throw new Error('[auth/passkey] WebAuthn registration response is missing credential.id')
+  }
+  if (!credentialPublicKey) {
+    throw new Error('[auth/passkey] WebAuthn registration response is missing credential.publicKey')
+  }
+
   const passkeyData: PasskeyInsertable = {
-    id: verified.registrationInfo?.credential.id || '',
-    cred_public_key: JSON.stringify(verified.registrationInfo?.credential.publicKey),
+    id: credentialId,
+    cred_public_key: JSON.stringify(credentialPublicKey),
     user_id: user.id as number,
     webauthn_user_id: user.email || '',
     counter: verified.registrationInfo?.credential.counter || 0,

@@ -41,7 +41,13 @@ export abstract class BaseEmailDriver implements EmailDriver {
   }
 
   /**
-   * Formats email addresses to standard format
+   * Formats email addresses to standard format.
+   *
+   * Display names that contain quotes, commas, parentheses, brackets, or
+   * angle brackets violate RFC 5322 unless wrapped in double quotes —
+   * otherwise SMTP servers may misparse "Smith, John <j@x.com>" as two
+   * recipients ("Smith" and "John <j@x.com>"). Quote-wrap any name that
+   * contains a special character.
    */
   protected formatAddresses(addresses: string | string[] | EmailAddress[] | undefined): string[] {
     if (!addresses)
@@ -54,7 +60,12 @@ export abstract class BaseEmailDriver implements EmailDriver {
     return addresses.map((addr) => {
       if (typeof addr === 'string')
         return addr
-      return addr.name ? `${addr.name} <${addr.address}>` : addr.address
+      if (!addr.name) return addr.address
+      const needsQuoting = /[",()<>[\]:;@\\]/.test(addr.name)
+      const safeName = needsQuoting
+        ? `"${addr.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+        : addr.name
+      return `${safeName} <${addr.address}>`
     })
   }
 

@@ -136,8 +136,13 @@ export class FailedJobNotifier {
 
       if (!this.batchTimeout) {
         this.batchTimeout = setTimeout(() => {
+          this.batchTimeout = null
           this.flushBatch().catch(error => log.error('Failed to flush notification batch:', error))
         }, this.config.batchInterval || 60000)
+        // .unref() so a pending batch doesn't keep the event loop alive
+        // past process shutdown — without this, queue workers couldn't
+        // exit cleanly for up to `batchInterval` ms after receiving SIGTERM.
+        this.batchTimeout.unref?.()
       }
 
       return
@@ -156,9 +161,25 @@ export class FailedJobNotifier {
 
     const batch = [...this.pendingBatch]
     this.pendingBatch = []
-    this.batchTimeout = null
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout)
+      this.batchTimeout = null
+    }
 
     await this.sendNotifications(batch)
+  }
+
+  /**
+   * Cancel any pending batch timer and flush in-flight notifications.
+   * Call this from your shutdown hook so queue workers can exit cleanly
+   * without leaking the batch interval timer.
+   */
+  async shutdown(): Promise<void> {
+    if (this.batchTimeout) {
+      clearTimeout(this.batchTimeout)
+      this.batchTimeout = null
+    }
+    await this.flushBatch().catch(error => log.error('Failed to flush notification batch on shutdown:', error))
   }
 
   /**

@@ -29,6 +29,25 @@ export function generateGoogle(link: CalendarLink): string {
   return url
 }
 
+/**
+ * Re-anchor a Date in another timezone for calendar URL formatting.
+ *
+ * This is a known-fuzzy operation: we serialize the date through
+ * `toLocaleString` in the target timezone, then re-parse that string as
+ * if it were local time. The original code did exactly that and it
+ * works for the common "I want my Google Calendar to show this in my
+ * local TZ" case, but it goes wrong across DST transitions and on
+ * servers running in UTC where the parsed string lands an hour off.
+ *
+ * For URL generation the imprecision is acceptable; for any downstream
+ * use, prefer `Intl.DateTimeFormat(...).format(date)` directly. We
+ * normalize the Locale to en-US explicitly so 24-hour locales (de-DE,
+ * fr-FR) don't return strings that Date can't parse.
+ */
 function convertTZ(date: Date | string, tzString: string): Date {
-  return new Date((typeof date === 'string' ? new Date(date) : date).toLocaleString('en-US', { timeZone: tzString }))
+  const d = typeof date === 'string' ? new Date(date) : date
+  if (!tzString) return d
+  const formatted = d.toLocaleString('en-US', { timeZone: tzString })
+  const parsed = new Date(formatted)
+  return Number.isNaN(parsed.getTime()) ? d : parsed
 }

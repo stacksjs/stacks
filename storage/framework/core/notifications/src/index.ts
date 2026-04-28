@@ -78,6 +78,12 @@ export async function notify(
         case 'email': {
           const driver = useEmail()
           if (driver && typeof driver === 'object' && 'send' in driver) {
+            // Fail loudly when the recipient is missing the channel-specific
+            // contact — silently no-op'ing meant a forgotten `email` field
+            // looked like a successful notification dispatch.
+            if (!recipient.email) {
+              throw new Error('[notify] email channel requires recipient.email')
+            }
             await (driver as any).send({
               to: recipient.email,
               subject: payload.subject,
@@ -89,6 +95,9 @@ export async function notify(
         case 'sms': {
           const driver = useSMS()
           if (driver && typeof driver === 'object' && 'send' in driver) {
+            if (!recipient.phone) {
+              throw new Error('[notify] sms channel requires recipient.phone')
+            }
             await (driver as any).send({
               to: recipient.phone,
               body: payload.body,
