@@ -65,7 +65,6 @@ const sidebarRoutes = {
   'settings': '/utilities/settings',
 }
 
-// Handle Craft native sidebar selection events
 window.craft = window.craft || {}
 window.craft._sidebarSelectHandler = (event) => {
   const url = sidebarRoutes[event.itemId]
@@ -76,6 +75,114 @@ window.craft._sidebarSelectHandler = (event) => {
 }
 </script>
 
+<script client>
+// Craft sidebar detection — runs once when this script tag executes.
+//
+// Three signals each independently indicate that Craft is injecting its
+// own native macOS sidebar; the web sidebar should hide so we don't
+// end up with two:
+//   1. `window.__craftNativeSidebar` — set by Craft's WKUserScript at load
+//   2. `window.craft.window` — Craft's JS bridge API is bound
+//   3. `?native-sidebar=1` — fallback URL param the dev server appends
+//
+// `data-has-stacks-sidebar` is stamped on <html> unconditionally; the
+// global stylesheet injected below keys the body gutter off it.
+document.documentElement.setAttribute('data-has-stacks-sidebar', 'true')
+var hasFlag = Boolean(window.__craftNativeSidebar)
+var hasApi = Boolean(window.craft && window.craft.window)
+var hasParam = window.location.search.indexOf('native-sidebar=1') !== -1
+if (hasFlag || hasApi || hasParam) {
+  window.__craftNativeSidebar = true
+  document.documentElement.setAttribute('data-craft-native-sidebar', 'true')
+}
+
+// Inject the body-gutter + Craft-hide rules once. The id guard makes
+// the script idempotent across re-renders / SPA navigation.
+if (!document.getElementById('stacks-sidebar-globals')) {
+  var s = document.createElement('style')
+  s.id = 'stacks-sidebar-globals'
+  s.textContent = [
+    'html[data-has-stacks-sidebar] body { padding-left: 240px; transition: padding-left 0.2s ease; }',
+    "html[data-craft-native-sidebar='true'] .sidebar-root { display: none !important; }",
+    "html[data-craft-native-sidebar='true'] body { padding-left: 0 !important; }",
+    '@media (max-width: 1023px) { html[data-has-stacks-sidebar] body { padding-left: 0; } }',
+  ].join('\n')
+  document.head.appendChild(s)
+}
+
+// Restore each section's collapsed state from localStorage. Runs once
+// after the static section markup is in the DOM.
+;(function () {
+  try {
+    var c = JSON.parse(localStorage.getItem('sidebar-collapsed') || '{}')
+    var secs = document.querySelectorAll('.sidebar-section[data-section]')
+    for (var i = 0; i < secs.length; i++) {
+      var k = secs[i].getAttribute('data-section')
+      if (k && c[k]) secs[i].classList.add('collapsed')
+    }
+  }
+  catch (e) { /* localStorage unavailable — sections render expanded */ }
+})()
+</script>
+
+<script server>
+// Build the entire sidebar nav on the server side, then drop the
+// pre-rendered HTML chunks directly into the layout via raw
+// triple-brace interpolation. The chunks include sections, leaf items,
+// per-model rows for every dynamic user model, and inline SVG icons.
+//
+// Why this lives inline here rather than going through the Sidebar
+// component as props: prop bindings on component invocations in this
+// STX version silently arrive as undefined regardless of how the
+// expression is shaped, so we sidestep the component-boundary
+// crossing entirely. Inline triple-brace interpolation of these same
+// identifiers does work.
+// Imported from framework-defaults (not from project-level
+// `resources/functions/`) so this layout works in any Stacks project
+// without requiring the user to drop a sidebar helper into their own
+// resources tree. The `..` chain goes:
+//   layouts/ -> dashboard/ -> views/ -> defaults/ -> resources/functions/dashboard/sidebar
+import { buildSidebarChunks } from '../../../resources/functions/dashboard/sidebar'
+
+const _sb = buildSidebarChunks()
+const stacksSidebarTop = _sb.top
+const stacksSidebarNav = _sb.nav
+const stacksSidebarBottom = _sb.bottom
+</script>
+
+<!--
+  Sidebar (web). The fixed-position panel sits in the left 240px of
+  the viewport; the global stylesheet injected by the script above
+  reserves a matching `padding-left` on <body> so the rest of the
+  page (navbar, main, footer) flows after it. When Craft is hosting
+  the dashboard in a native window, its WKUserScript stamps
+  `data-craft-native-sidebar='true'` on <html> and the same stylesheet
+  hides this panel + zeroes the gutter so the native macOS sidebar
+  is the only one on screen.
+-->
+<div class="sidebar-root">
+  <div class="sidebar-fixed">
+    <div class="sidebar-inner">
+      <div class="sidebar-logo">
+        <a href="/" class="sidebar-logo-link">
+          <img class="sidebar-logo-img" src="/images/logos/logo.svg" alt="Stacks.js">
+        </a>
+      </div>
+
+      <nav class="sidebar-nav">
+        {{{ stacksSidebarTop }}}
+        {{{ stacksSidebarNav }}}
+      </nav>
+
+      <div class="sidebar-bottom">
+        {{{ stacksSidebarBottom }}}
+      </div>
+    </div>
+  </div>
+</div>
+
+<NavbarModern currentPath="{{ typeof currentPath === 'string' ? currentPath : '/' }}" />
+
 <main data-stx-content>
   @slot('content')
 </main>
@@ -84,4 +191,180 @@ window.craft._sidebarSelectHandler = (event) => {
 body {
   @apply bg-neutral-100 dark:bg-neutral-950;
 }
+
+/* Sidebar core — duplicated here from Sidebar.stx (rather than
+   referenced via a component import) because in this STX version the
+   layout's <Sidebar /> prop bindings don't actually reach the
+   component, so we render inline. The styling lives next to the
+   markup it shapes. */
+.sidebar-root {
+  position: relative;
+}
+
+.sidebar-fixed {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: 240px;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+}
+
+.sidebar-inner {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background: #ffffff;
+  border-right: 1px solid #f0f0f0;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+.sidebar-logo {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  padding: 0 16px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.sidebar-logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+}
+
+.sidebar-logo-img {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.sidebar-nav {
+  flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  padding: 8px 8px 16px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+}
+
+.sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: #4b5563;
+  text-decoration: none;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.sidebar-link:hover {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.sidebar-link-home {
+  margin-bottom: 6px;
+  color: #111827;
+}
+
+.sidebar-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+.sidebar-link:hover .sidebar-icon {
+  color: #111827;
+}
+
+.sidebar-section {
+  margin-bottom: 4px;
+}
+
+.sidebar-section-label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 26px;
+  margin-top: 8px;
+  padding: 0 10px;
+  background: transparent;
+  border: 0;
+  font-family: inherit;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #9ca3af;
+  cursor: pointer;
+  user-select: none;
+}
+
+.sidebar-section-label:hover {
+  color: #6b7280;
+}
+
+.sidebar-chevron {
+  width: 8px;
+  height: 8px;
+  position: relative;
+  transition: transform 0.15s ease;
+}
+
+.sidebar-chevron::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-left: 1.5px solid currentColor;
+  border-bottom: 1.5px solid currentColor;
+  transform: rotate(-45deg);
+  transform-origin: center;
+}
+
+.sidebar-section.collapsed .sidebar-chevron::before {
+  transform: rotate(-135deg);
+}
+
+.sidebar-section.collapsed .sidebar-section-list {
+  display: none;
+}
+
+.sidebar-section-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-section-list li {
+  margin: 0;
+  padding: 0;
+}
+
+.sidebar-bottom {
+  flex-shrink: 0;
+  padding: 12px;
+  border-top: 1px solid #f0f0f0;
+  margin-top: auto;
+}
+
+.sidebar-nav::-webkit-scrollbar { width: 4px; }
+.sidebar-nav::-webkit-scrollbar-track { background: transparent; }
+.sidebar-nav::-webkit-scrollbar-thumb { background: #e5e7eb; border-radius: 4px; }
+.sidebar-nav::-webkit-scrollbar-thumb:hover { background: #d1d5db; }
 </style>

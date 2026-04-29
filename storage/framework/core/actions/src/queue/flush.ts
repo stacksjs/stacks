@@ -37,6 +37,12 @@ try {
   process.exit(0)
 }
 catch (error) {
+  const message = error instanceof Error ? error.message : String(error)
+  if (/no such table:\s*(?:jobs|failed_jobs)\b/i.test(message)) {
+    process.stdout.write('Queue tables are not set up yet.\n')
+    process.stdout.write('Run `buddy queue:table` to create the migrations, then `buddy migrate` to apply them.\n')
+    process.exit(0)
+  }
   log.error('Failed to flush failed jobs', error)
   process.exit(1)
 }

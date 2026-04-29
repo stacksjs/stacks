@@ -1,9 +1,9 @@
-import { faker as baseFaker } from 'ts-mocker'
-import type { Faker as BaseFaker } from 'ts-mocker'
+import { faker as baseFaker } from '@stacksjs/ts-faker'
+import type { Faker as BaseFaker } from '@stacksjs/ts-faker'
 
 /**
  * Compatibility layer for @faker-js/faker API
- * ts-mocker uses different module names, so we create aliases
+ * @stacksjs/ts-faker uses different module names, so we create aliases
  */
 
 // datatype module for boolean, number generation (compatibility with @faker-js/faker)
@@ -80,7 +80,7 @@ const company = {
     return baseFaker.company.name()
   },
   catchPhrase(): string {
-    // ts-mocker might not have catchPhrase, generate similar content
+    // @stacksjs/ts-faker might not have catchPhrase, generate similar content
     return baseFaker.company.buzzPhrase?.() ?? `${baseFaker.word.adjective()} ${baseFaker.word.noun()}`
   },
   buzzPhrase(): string {
@@ -132,6 +132,53 @@ const vehicle = {
     const colors = ['Black', 'White', 'Silver', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Orange', 'Yellow']
     return colors[Math.floor(Math.random() * colors.length)]
   },
+}
+
+// date module enhancements — fills in @faker-js/faker methods that
+// @stacksjs/ts-faker hasn't shipped yet, while preserving every method @stacksjs/ts-faker
+// already provides. We DON'T use `{ ...baseFaker.date, … }` here: @stacksjs/ts-faker's
+// DateModule is a class instance, so a plain object spread drops every
+// prototype method (`past`, `future`, `recent`, `soon`, etc.). Using a Proxy
+// keeps the original instance untouched and only intercepts birthdate().
+const date = new Proxy(baseFaker.date as any, {
+  get(target, prop, receiver) {
+    if (prop === 'birthdate') {
+      return birthdate
+    }
+    const value = Reflect.get(target, prop, receiver)
+    return typeof value === 'function' ? value.bind(target) : value
+  },
+})
+
+/**
+ * Generate a random date of birth.
+ *
+ * Two modes match @faker-js/faker so factories migrate cleanly:
+ *
+ * - `mode: 'age'` (default) — `min`/`max` are ages in years; the result
+ *   sits in `[min, max]` years before `refDate`.
+ * - `mode: 'year'` — `min`/`max` are calendar years.
+ *
+ * Defaults match @faker-js/faker (18–80 years old, age mode).
+ *
+ * @example faker.date.birthdate({ min: 21, max: 70, mode: 'age' })
+ */
+function birthdate(options?: { min?: number, max?: number, mode?: 'age' | 'year', refDate?: Date }): Date {
+  const mode = options?.mode ?? 'age'
+  const refDate = options?.refDate ?? new Date()
+  if (mode === 'year') {
+    const minYear = options?.min ?? 1900
+    const maxYear = options?.max ?? refDate.getUTCFullYear()
+    const from = new Date(Date.UTC(minYear, 0, 1))
+    const to = new Date(Date.UTC(maxYear, 11, 31, 23, 59, 59, 999))
+    return baseFaker.date.between({ from, to })
+  }
+  const minAge = Math.max(0, options?.min ?? 18)
+  const maxAge = Math.max(minAge, options?.max ?? 80)
+  const ms = (yrs: number): number => yrs * 365.25 * 24 * 60 * 60 * 1000
+  const from = new Date(refDate.getTime() - ms(maxAge))
+  const to = new Date(refDate.getTime() - ms(minAge))
+  return baseFaker.date.between({ from, to })
 }
 
 // helpers module enhancements for @faker-js/faker compatibility
@@ -272,6 +319,7 @@ export const faker = {
   company,
   vehicle,
   helpers,
+  date,
 }
 
 export type Faker = BaseFaker

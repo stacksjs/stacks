@@ -104,9 +104,12 @@ route.group({ prefix: '/dashboard' }, () => {
   route.get('/buddy', 'Actions/Dashboard/BuddyDashboardAction')
   route.get('/actions/list', 'Actions/Dashboard/Actions/GetActions')
   route.get('/settings', 'Actions/Dashboard/Settings/SettingsIndexAction')
+  // Dashboard's omnisearch endpoint. Lived at root `/search` until users
+  // building a public site discovered it shadowed `resources/views/search.stx`
+  // (a registered route always wins over a same-path stx file). Now scoped
+  // under /dashboard so userland keeps `/search` for their own pages.
+  route.get('/search', 'Actions/Dashboard/Search/GlobalSearchAction')
 })
-
-route.get('/search', 'Actions/Dashboard/Search/GlobalSearchAction')
 
 // ============================================================================
 // Payments

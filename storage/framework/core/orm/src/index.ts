@@ -46,6 +46,15 @@ autoConfigureOrm()
 // would cause.
 export const User = (await import('../../../../../app/Models/User')).default
 
+// Same lazy-export pattern for the two queue framework models. The CLI
+// commands `buddy queue:status`, `queue:failed`, `queue:flush`,
+// `queue:inspect`, `queue:monitor`, `queue:clear` import them as
+// `import { Job, FailedJob } from '@stacksjs/orm'`. We `await import` from
+// the framework defaults to avoid pulling the full models barrel in (which
+// re-introduces the schema-TDZ cycle the User comment above describes).
+export const Job = (await import('../../../defaults/app/Models/Job')).default
+export const FailedJob = (await import('../../../defaults/app/Models/FailedJob')).default
+
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions
 export type {

@@ -83,8 +83,10 @@ async function searchDirectory(directory: string): Promise<string[]> {
           await fs.access(storagePath)
           storageDirFound = true
         }
-        catch (error) {
-          console.error(`Error accessing directory ${storagePath}:`, error)
+        catch {
+          // Not a Stacks project — most directories named `storage` won't have
+          // a framework/core/buddy inside. Swallow silently so the project
+          // scan stays quiet across unrelated user code.
         }
       }
 

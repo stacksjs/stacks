@@ -92,6 +92,21 @@ try {
   process.exit(0)
 }
 catch (error) {
+  // The framework's queue uses jobs/failed_jobs tables, but those tables only
+  // exist after running `buddy queue:table` and migrating. Surfacing the raw
+  // SQLite error here meant `queue:status` exited 1 with a confusing stack
+  // trace on every fresh project. Detect the missing-table case and point
+  // the user at the right command instead.
+  const message = error instanceof Error ? error.message : String(error)
+  if (/no such table:\s*(?:jobs|failed_jobs)\b/i.test(message)) {
+    // log.* is buffered through the project logger and may not flush before
+    // process.exit() in a non-TTY subprocess (the buddy runner pipes stdout).
+    // Use direct stdout writes so the user always sees the actionable
+    // message, even when running via `buddy queue:status`.
+    process.stdout.write('Queue tables are not set up yet.\n')
+    process.stdout.write('Run `buddy queue:table` to create the migrations, then `buddy migrate` to apply them.\n')
+    process.exit(0)
+  }
   log.error('Failed to get queue status', error)
   process.exit(1)
 }

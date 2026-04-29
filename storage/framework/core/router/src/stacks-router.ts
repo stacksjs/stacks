@@ -293,13 +293,16 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             // Middleware threw an error — always convert to a proper HTTP response
             log.debug(`[middleware] Blocked by: ${middlewareName}`)
             const err = error instanceof Error ? error : new Error(String(error))
-            if ('statusCode' in err) {
+            // Accept both `statusCode` (Express convention) and `status`
+            // (HttpError convention) so framework auth/validation throws
+            // surface as 4xx instead of falling through to a 500 page.
+            if ('statusCode' in err || 'status' in err) {
               return await createMiddlewareErrorResponse(
-                err as Error & { statusCode: number },
+                err as Error & { statusCode?: number, status?: number },
                 enhancedReq,
               )
             }
-            // No statusCode — treat as 500 and return an error response
+            // No status — treat as 500 and return an error response
             // instead of re-throwing which would crash the handler
             log.error(`[Router] Middleware '${middlewareName}' threw an unexpected error:`, err)
             return await createErrorResponse(err, enhancedReq, { status: 500 })

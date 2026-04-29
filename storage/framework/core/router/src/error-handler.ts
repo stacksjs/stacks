@@ -371,12 +371,20 @@ export async function createErrorResponse(
 
 /**
  * Create a middleware error response (401, 403, etc.)
+ *
+ * Reads `statusCode` OR `status` off the error so both shapes are honored:
+ * - middleware that throws `Object.assign(new Error('msg'), { statusCode: 401 })`
+ * - framework HttpError instances where the field is named `status`
+ *
+ * Without the `status` fallback, every `HttpError(401, …)` throw from auth or
+ * validation middleware leaks out as a 500 with an Ignition error page —
+ * which is what we used to ship for `GET /api/me` without a token.
  */
 export async function createMiddlewareErrorResponse(
-  error: Error & { statusCode?: number },
+  error: Error & { statusCode?: number, status?: number },
   request: Request | EnhancedRequest,
 ): Promise<Response> {
-  const status = error.statusCode || 500
+  const status = error.statusCode ?? error.status ?? 500
   const isDevelopment = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
 
   // For 4xx errors, return JSON in both dev and prod

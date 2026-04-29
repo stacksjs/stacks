@@ -42,6 +42,15 @@ try {
   process.exit(0)
 }
 catch (error) {
+  // Surface a helpful prompt when the queue tables haven't been created yet,
+  // matching queue:status behaviour. Without this, fresh projects see an
+  // SQLite error stack instead of an actionable next step.
+  const message = error instanceof Error ? error.message : String(error)
+  if (/no such table:\s*(?:jobs|failed_jobs)\b/i.test(message)) {
+    process.stdout.write('Queue tables are not set up yet.\n')
+    process.stdout.write('Run `buddy queue:table` to create the migrations, then `buddy migrate` to apply them.\n')
+    process.exit(0)
+  }
   log.error('Failed to fetch failed jobs', error)
   process.exit(1)
 }
