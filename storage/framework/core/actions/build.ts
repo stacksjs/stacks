@@ -15,7 +15,7 @@
 import { readdir } from 'node:fs/promises'
 import { join, relative } from 'node:path'
 import { dts } from 'bun-plugin-dtsx'
-import { intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -54,26 +54,7 @@ const result = await Bun.build({
 
   entrypoints,
 
-  // Mark every framework-internal package as external so dist files don't
-  // re-bundle them (and so users can swap them out via node_modules). All
-  // other deps (ts-faker, bun-query-builder, etc.) are also resolved at
-  // runtime via node_modules — the bundler shouldn't try to inline them.
-  external: [
-    '@stacksjs/*',
-    'bun',
-    'bun:*',
-    'node:*',
-    // In-house peers we keep external so they update independently:
-    //   - ts-md     — markdown parser used by the component-meta extractor
-    //   - @craft-native/ts — desktop runtime, only loaded by `dev/dashboard`
-    'ts-md',
-    '@craft-native/ts',
-    // Project-local resources imported by certain generators. They're a
-    // userland concern (top-level pantry.yaml, etc.) and don't belong in
-    // the actions package's bundle.
-    '*.yaml',
-    '*.yml',
-  ],
+  external: frameworkExternal(['bun', 'bun:*', 'node:*']),
 
   plugins: [
     dts({

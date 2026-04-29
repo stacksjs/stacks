@@ -28,6 +28,15 @@ type Action = ActionPath | ActionName | string
  *      framework dev).
  *
  * Returns the first candidate that exists on disk, or `null` if none do.
+ *
+ * Note on resolution mechanics: we first locate the package root via
+ * `import.meta.resolve('@stacksjs/actions/package.json')` and then build
+ * subpaths off it manually. Going through the `./*` exports map doesn't
+ * work because the `bun` condition rewrites `dist/src/foo.js` to
+ * `src/dist/src/foo.js` (the conditional remap happens with `*` substituted
+ * into the pattern's right-hand side). Looking up the package root once
+ * and joining gives us a direct on-disk path regardless of the exports
+ * field shape.
  */
 async function resolveActionFile(action: string): Promise<string | null> {
   const candidates: string[] = []
@@ -35,17 +44,19 @@ async function resolveActionFile(action: string): Promise<string | null> {
   // 1) User override path (legacy framework directory)
   candidates.push(p.actionsPath(`src/${action}.ts`))
 
-  // 2/3) Published package — try minified JS first, source TS as fallback.
-  //      `import.meta.resolve` returns a `file://` URL we convert to a path;
-  //      wrapped in try/catch because the package may not be installed at
-  //      all when the framework is fully self-contained.
-  for (const sub of [`dist/src/${action}.js`, `src/${action}.ts`]) {
-    try {
-      const url = import.meta.resolve(`@stacksjs/actions/${sub}`)
-      if (url) candidates.push(new URL(url).pathname)
+  // 2/3) Find the @stacksjs/actions package root, then look for a built
+  //      action JS alongside its TS source. Wrapped in try/catch because
+  //      the package may not be installed at all in some layouts.
+  try {
+    const pkgUrl = import.meta.resolve('@stacksjs/actions/package.json')
+    if (pkgUrl) {
+      const pkgPath = new URL(pkgUrl).pathname
+      const pkgRoot = pkgPath.slice(0, pkgPath.lastIndexOf('/'))
+      candidates.push(`${pkgRoot}/dist/src/${action}.js`)
+      candidates.push(`${pkgRoot}/src/${action}.ts`)
     }
-    catch { /* package not installed or subpath blocked — try next */ }
   }
+  catch { /* package not installed — skip, fall through to override only */ }
 
   for (const candidate of candidates) {
     if (await Bun.file(candidate).exists()) return candidate

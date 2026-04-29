@@ -65,3 +65,47 @@ export async function intro(options: { dir: string, pkgName?: string, styled?: b
 }
 
 export * from './utils'
+
+/**
+ * Standard `external` list for framework package bundlers.
+ *
+ * Every package's `build.ts` should spread this into its `Bun.build({ external })`
+ * so optional peers and other framework packages stay out of each individual
+ * bundle. Without it, transitive imports through the queue or tunnel modules
+ * surface as "Could not resolve: bun-queue" style build failures the moment a
+ * project hasn't `bun add`-ed those peers.
+ *
+ * Pass extra package-specific entries as `extras` and they'll be merged in.
+ *
+ * Notably absent: `sharp`, `vue-component-meta`, `@aws-sdk/*`. We don't ship
+ * any of those — image work goes through the in-house `ts-images` (formerly
+ * `imgx`), template metadata is parsed by our own STX-aware extractor, and
+ * AWS interactions go through `ts-cloud` / our wrappers. If a build error
+ * complains about one of those, the right fix is to remove the import, not
+ * to add it back here.
+ */
+export function frameworkExternal(extras: string[] = []): string[] {
+  return [
+    // Every other framework package — they're peer-resolved at runtime via
+    // node_modules. Leaving them external keeps bundles small and lets the
+    // user's installed version win over the bundling package's snapshot.
+    '@stacksjs/*',
+    // Optional peers that aren't pulled into every project. Marking them
+    // external makes the static-import-failure noise go away during build,
+    // and the missing-module surfaces only when the dependent action runs.
+    'bun-queue',
+    'ioredis',
+    'localtunnels',
+    'localtunnels/*',
+    '@craft-native/ts',
+    'ts-md',
+    // Search drivers (only one is active at a time)
+    'meilisearch',
+    'algoliasearch',
+    '@opensearch-project/opensearch',
+    // Project-local resources occasionally imported by generators.
+    '*.yaml',
+    '*.yml',
+    ...extras,
+  ]
+}

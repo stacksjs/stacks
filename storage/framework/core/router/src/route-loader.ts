@@ -59,11 +59,20 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
 }
 
 /**
- * Load framework default routes from storage/framework/defaults/routes/
+ * Load framework default routes from storage/framework/defaults/routes/.
+ * Resolved through @stacksjs/path so the same import works whether this
+ * package runs from the workspace (`storage/framework/core/router/`) or
+ * from `node_modules/@stacksjs/router/` — the relative-path version
+ * `../../../defaults/routes/dashboard` only ever resolved under the
+ * workspace layout.
  */
 async function loadFrameworkRoutes(): Promise<void> {
   try {
-    await import('../../../defaults/routes/dashboard')
+    const { frameworkPath } = await import('@stacksjs/path')
+    const dashboardRoutesPath = frameworkPath('defaults/routes/dashboard.ts')
+    if (await Bun.file(dashboardRoutesPath).exists()) {
+      await import(dashboardRoutesPath)
+    }
   }
   catch (error) {
     // Framework routes are optional — don't crash if they don't exist
@@ -77,16 +86,22 @@ async function loadFrameworkRoutes(): Promise<void> {
 /**
  * Import a route file from the routes directory
  */
-async function importRouteFile(path: string): Promise<void> {
+async function importRouteFile(routeName: string): Promise<void> {
   // Remove .ts extension if present
-  const cleanPath = path.replace(/\.ts$/, '')
+  const cleanPath = routeName.replace(/\.ts$/, '')
 
   // Prevent path traversal
   if (cleanPath.includes('..') || cleanPath.startsWith('/')) {
     throw new Error(`Invalid route path: ${cleanPath}`)
   }
 
-  await import(`../../../../../routes/${cleanPath}`)
+  // Resolve `routes/<name>` against the project root via @stacksjs/path so
+  // the import works whether this package is loaded from the workspace
+  // (`storage/framework/core/router/`) or from `node_modules/@stacksjs/router/`.
+  // The relative-path version `../../../../../routes/${cleanPath}` only
+  // resolved correctly under the workspace layout.
+  const { projectPath } = await import('@stacksjs/path')
+  await import(projectPath(`routes/${cleanPath}`))
 }
 
 /**

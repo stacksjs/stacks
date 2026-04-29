@@ -7,7 +7,8 @@
 // `@stacksjs/orm` consumer's evaluation guarantees schema is bound first.
 import '@stacksjs/validation'
 
-export * from '../../../orm/src'
+export * from './utils/prunable'
+export type { PrunableOptions } from './utils/prunable'
 export * from './db'
 export * from './subquery'
 export * from './transaction'
@@ -44,36 +45,44 @@ autoConfigureOrm()
 // module evaluation just long enough to bind User without re-introducing
 // the auto-imports → schema-TDZ cycle that re-exporting the whole barrel
 // would cause.
-export const User = (await import('../../../../../app/Models/User')).default
-
-// Same lazy-export pattern for the two queue framework models. The CLI
-// commands `buddy queue:status`, `queue:failed`, `queue:flush`,
-// `queue:inspect`, `queue:monitor`, `queue:clear` import them as
-// `import { Job, FailedJob } from '@stacksjs/orm'`. We `await import` so the
-// rest of the model graph stays out of orm's static-evaluation phase (same
-// schema-TDZ avoidance the User comment above describes).
 //
-// Prefer the userland publication (`app/Models/Job.ts` etc., dropped in by
-// `buddy publish:model Job`) so projects that customize the queue model —
-// renamed columns, extra observers, custom traits — see their version.
-// Fall back to the framework default when the user hasn't published one.
-async function loadModel(modelName: string): Promise<any> {
-  // Userland override: `app/Models/<name>.ts`. The path is 5 levels up from
-  // this file (`storage/framework/core/orm/src/index.ts` → project root →
-  // `app/Models/`).
-  const userPath = `../../../../../app/Models/${modelName}`
+// `loadUserlandModel` resolves the project root using `@stacksjs/path`,
+// not a relative `../../../../../` path. The relative depth differs
+// between the two layouts this package can run from:
+//   - workspace: `storage/framework/core/orm/src/index.ts` → 5 ups
+//   - installed: `node_modules/@stacksjs/orm/src/index.ts` → 4 ups
+// projectPath() handles both because it walks up looking for the project
+// root (package.json with no parent), so the same code works regardless.
+async function loadUserlandModel(modelName: string): Promise<any> {
+  const { path } = await import('@stacksjs/path')
+  // 1) User override at app/Models/<Name>.ts
+  const userPath = path.userModelsPath(`${modelName}.ts`)
   try {
-    const userFile = Bun.file(new URL(`${userPath}.ts`, import.meta.url).pathname)
-    if (await userFile.exists()) {
+    if (await Bun.file(userPath).exists()) {
       return (await import(userPath)).default
     }
   }
   catch { /* fall through to framework default */ }
-  return (await import(`../../../defaults/app/Models/${modelName}`)).default
+  // 2) Framework default at storage/framework/defaults/app/Models/<Name>.ts
+  //    Resolved via the framework path helper instead of a relative `..`
+  //    so it works whether this package is loaded from
+  //    `storage/framework/core/orm/` (workspace) or
+  //    `node_modules/@stacksjs/orm/` (installed).
+  const defaultPath = path.frameworkPath(`defaults/app/Models/${modelName}.ts`)
+  return (await import(defaultPath)).default
 }
 
-export const Job = await loadModel('Job')
-export const FailedJob = await loadModel('FailedJob')
+export const User = await loadUserlandModel('User')
+
+// Same lazy-export pattern for the two queue framework models. The CLI
+// commands `buddy queue:status`, `queue:failed`, `queue:flush`,
+// `queue:inspect`, `queue:monitor`, `queue:clear` import them as
+// `import { Job, FailedJob } from '@stacksjs/orm'`. Prefer the userland
+// publication (`app/Models/Job.ts`, dropped in by `buddy publish:model
+// Job`) so projects that customize the queue model — renamed columns,
+// extra observers, custom traits — see their version.
+export const Job = await loadUserlandModel('Job')
+export const FailedJob = await loadUserlandModel('FailedJob')
 
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions

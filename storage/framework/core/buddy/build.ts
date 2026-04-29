@@ -1,5 +1,5 @@
 import { dts } from 'bun-plugin-dtsx'
-import { intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro } from '../build/src'
 import { version } from './package.json'
 
 const { startTime } = await intro({
@@ -18,32 +18,7 @@ const result = await Bun.build({
   // sourcemap: 'linked',
   minify: true,
 
-  external: [
-    '@stacksjs/ai',
-    '@stacksjs/actions',
-    '@stacksjs/cli',
-    '@stacksjs/cloud',
-    '@stacksjs/config',
-    '@stacksjs/database',
-    '@stacksjs/dns',
-    '@stacksjs/enums',
-    '@stacksjs/env',
-    '@stacksjs/error-handling',
-    '@stacksjs/logging',
-    '@stacksjs/orm',
-    '@stacksjs/path',
-    '@stacksjs/rpx',
-    '@stacksjs/security',
-    '@stacksjs/server',
-    '@stacksjs/storage',
-    '@stacksjs/types',
-    '@stacksjs/utils',
-    '@stacksjs/validation',
-    '@stacksjs/ts-cloud',
-    '@stacksjs/clapp',
-    'ts-security-crypto',
-    'bun-query-builder',
-  ],
+  external: frameworkExternal(['ts-security-crypto', 'bun-query-builder']),
 
   plugins: [dts({ root: '.', outdir: './dist' })],
 })

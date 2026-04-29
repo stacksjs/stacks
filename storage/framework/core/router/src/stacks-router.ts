@@ -1203,7 +1203,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       log.debug('[router] Loading user routes from registry...')
       try {
         const { loadRoutes } = await import('./route-loader')
-        const routeRegistry = (await import('../../../../../app/Routes')).default
+        // Resolve `app/Routes.ts` against the project root via @stacksjs/path
+        // so this works under both layouts (workspace vs installed package).
+        // The hardcoded `../../../../../app/Routes` path only resolved when
+        // the router lived at `storage/framework/core/router/src/`.
+        const { appPath } = await import('@stacksjs/path')
+        const routeRegistry = (await import(appPath('Routes.ts'))).default
         await loadRoutes(routeRegistry)
       }
       catch (error) {
@@ -1211,14 +1216,27 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         throw error
       }
 
-      // Load ORM-generated API routes
+      // Load ORM-generated API routes. The generator writes a project-local
+      // routes file; we accept both locations:
+      //   - `storage/framework/orm/routes.ts` (canonical, outside the core
+      //     package so it survives when @stacksjs/orm is npm-installed)
+      //   - `storage/framework/core/orm/routes.ts` (legacy, inside the core
+      //     workspace package)
       log.debug('[router] Loading ORM routes...')
-      try {
-        const ormRoutesPath = p.frameworkPath('core/orm/routes.ts')
-        await import(ormRoutesPath)
-      }
-      catch (error) {
-        log.debug('ORM routes not available:', error)
+      const ormRoutesCandidates = [
+        p.frameworkPath('orm/routes.ts'),
+        p.frameworkPath('core/orm/routes.ts'),
+      ]
+      for (const candidate of ormRoutesCandidates) {
+        try {
+          if (await Bun.file(candidate).exists()) {
+            await import(candidate)
+            break
+          }
+        }
+        catch (error) {
+          log.debug(`ORM routes load failed for ${candidate}:`, error)
+        }
       }
 
       // Load routes from discovered packages

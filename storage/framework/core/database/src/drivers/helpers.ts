@@ -29,7 +29,7 @@ import { log } from '@stacksjs/logging'
 // acyclic. Both packages live in the same monorepo, so this stays valid.
 // Already pointing at the leaf utils file (rather than the orm barrel) for
 // the same cycle-avoidance reason captured at the top of this file.
-import { getTableName } from '../../../orm/src/utils'
+import { getTableName } from '@stacksjs/orm'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'

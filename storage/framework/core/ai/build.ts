@@ -1,5 +1,5 @@
 import { dts } from 'bun-plugin-dtsx'
-import { intro, outro } from '../build/src'
+import { frameworkExternal, intro, outro } from '../build/src'
 
 const { startTime } = await intro({
   dir: import.meta.dir,
@@ -13,12 +13,7 @@ const result = await Bun.build({
   // sourcemap: 'linked',
   target: 'bun',
   minify: true,
-  external: [
-    '@anthropic-ai/claude-agent-sdk',
-    '@stacksjs/ts-cloud',
-    '@stacksjs/cli',
-    '@stacksjs/config',
-  ],
+  external: frameworkExternal(['@anthropic-ai/claude-agent-sdk']),
   plugins: [
     dts({
       root: '.',

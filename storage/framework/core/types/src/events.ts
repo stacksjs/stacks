@@ -29,4 +29,9 @@ export interface Events {
   [key: string]: string[]
 }
 
-export * from '../../../types/events'
+// `storage/framework/types/events.ts` is a project-generated declaration
+// (one entry per model: `'<name>:created' | '<name>:updated' | …`). Use
+// `export type *` so Bun erases the import at runtime — the file lives in
+// the consumer project, not in the published `@stacksjs/types` package, so
+// a value-level `export *` would fail to resolve once the package ships.
+export type * from '../../../types/events'
