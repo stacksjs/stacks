@@ -56,6 +56,21 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
           ;({ serve } = await import('bun-plugin-stx/serve'))
         }
 
+        // Pre-resolve stx the same way. The pantry-vendored serve.js does
+        // a bare-specifier `import('@stacksjs/stx')` — Bun walks up
+        // node_modules from the importer's location, finds a stale copy
+        // there before pantry, and ships it. Pass the pantry copy
+        // explicitly via the `stxModule` option so layout resolution
+        // (@extends('layouts/...') with layoutsDir) matches the patched
+        // behaviour the rest of the framework expects.
+        let stxModule: any
+        try {
+          const vendoredStx = p.projectPath('pantry/@stacksjs/stx/dist/index.js')
+          if (await Bun.file(vendoredStx).exists())
+            stxModule = await import(vendoredStx)
+        }
+        catch { /* fall through — serve() will resolve its own */ }
+
         // Cookie that signals an authenticated session. `setToken()` in
         // the SPA mirrors the bearer token here so the SSR pass can
         // gate /trips, /favorites, /host/*, /book/*, etc. without
@@ -75,6 +90,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
           partialsDir: 'resources/components',
           fallbackPartialsDir: 'resources/views',
           quiet: true,
+          ...(stxModule && { stxModule }),
           auth: {
             cookieName: authCookie,
             redirectTo: '/login',

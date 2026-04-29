@@ -60,6 +60,20 @@ async function startStxServer(): Promise<void> {
     serve = mod.serve
   }
 
+  // Pre-resolve stx from pantry. Bun's bare-specifier resolver finds the
+  // stale `node_modules/@stacksjs/stx` first when serve.js does
+  // `import('@stacksjs/stx')`, which breaks @extends/layoutsDir. Pass the
+  // pantry copy via the `stxModule` option (see ServeOptions) so the
+  // dashboard's layout resolution stays consistent with the other dev
+  // servers.
+  let stxModule: any
+  try {
+    const vendoredStx = projectPath('pantry/@stacksjs/stx/dist/index.js')
+    if (await Bun.file(vendoredStx).exists())
+      stxModule = await import(vendoredStx)
+  }
+  catch { /* fall through */ }
+
   // serve() starts a long-lived server — do NOT await it.
   // It resolves only when the server stops, which is never during dev.
   const serverPromise = serve({
@@ -69,7 +83,8 @@ async function startStxServer(): Promise<void> {
     layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
     quiet: true,
-  })
+    ...(stxModule && { stxModule }),
+  } as any)
 
   serverPromise.catch((err: Error) => {
     restoreConsole()
