@@ -49,11 +49,31 @@ export const User = (await import('../../../../../app/Models/User')).default
 // Same lazy-export pattern for the two queue framework models. The CLI
 // commands `buddy queue:status`, `queue:failed`, `queue:flush`,
 // `queue:inspect`, `queue:monitor`, `queue:clear` import them as
-// `import { Job, FailedJob } from '@stacksjs/orm'`. We `await import` from
-// the framework defaults to avoid pulling the full models barrel in (which
-// re-introduces the schema-TDZ cycle the User comment above describes).
-export const Job = (await import('../../../defaults/app/Models/Job')).default
-export const FailedJob = (await import('../../../defaults/app/Models/FailedJob')).default
+// `import { Job, FailedJob } from '@stacksjs/orm'`. We `await import` so the
+// rest of the model graph stays out of orm's static-evaluation phase (same
+// schema-TDZ avoidance the User comment above describes).
+//
+// Prefer the userland publication (`app/Models/Job.ts` etc., dropped in by
+// `buddy publish:model Job`) so projects that customize the queue model —
+// renamed columns, extra observers, custom traits — see their version.
+// Fall back to the framework default when the user hasn't published one.
+async function loadModel(modelName: string): Promise<any> {
+  // Userland override: `app/Models/<name>.ts`. The path is 5 levels up from
+  // this file (`storage/framework/core/orm/src/index.ts` → project root →
+  // `app/Models/`).
+  const userPath = `../../../../../app/Models/${modelName}`
+  try {
+    const userFile = Bun.file(new URL(`${userPath}.ts`, import.meta.url).pathname)
+    if (await userFile.exists()) {
+      return (await import(userPath)).default
+    }
+  }
+  catch { /* fall through to framework default */ }
+  return (await import(`../../../defaults/app/Models/${modelName}`)).default
+}
+
+export const Job = await loadModel('Job')
+export const FailedJob = await loadModel('FailedJob')
 
 // Re-export type utilities from bun-query-builder so consumers can infer
 // model types directly from defineModel() definitions

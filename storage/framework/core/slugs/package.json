@@ -9,11 +9,11 @@
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/plugins#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/slugs#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/plugins"
+    "directory": "./storage/framework/core/slugs"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"

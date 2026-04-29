@@ -13,6 +13,47 @@ type ActionName = string // TODO: narrow this by automating its generation
 type Action = ActionPath | ActionName | string
 
 /**
+ * Resolve a core-action name (e.g. `route/list`, `queue/status`, `dev/api`) to
+ * an on-disk file path that `bun` can execute.
+ *
+ * Resolution order:
+ *   1. `storage/framework/core/actions/src/<action>.ts` — userland override
+ *      (kept first so `buddy publish:core actions` still wins).
+ *   2. `@stacksjs/actions/dist/src/<action>.js` — published, minified JS.
+ *      Preferred over TS source because each action invocation is its own
+ *      `bun` subprocess — minified JS skips transpilation and parses faster
+ *      on cold start.
+ *   3. `@stacksjs/actions/src/<action>.ts` — TS source. Final fallback for
+ *      installs that ship source but no dist (workspace links during
+ *      framework dev).
+ *
+ * Returns the first candidate that exists on disk, or `null` if none do.
+ */
+async function resolveActionFile(action: string): Promise<string | null> {
+  const candidates: string[] = []
+
+  // 1) User override path (legacy framework directory)
+  candidates.push(p.actionsPath(`src/${action}.ts`))
+
+  // 2/3) Published package — try minified JS first, source TS as fallback.
+  //      `import.meta.resolve` returns a `file://` URL we convert to a path;
+  //      wrapped in try/catch because the package may not be installed at
+  //      all when the framework is fully self-contained.
+  for (const sub of [`dist/src/${action}.js`, `src/${action}.ts`]) {
+    try {
+      const url = import.meta.resolve(`@stacksjs/actions/${sub}`)
+      if (url) candidates.push(new URL(url).pathname)
+    }
+    catch { /* package not installed or subpath blocked — try next */ }
+  }
+
+  for (const candidate of candidates) {
+    if (await Bun.file(candidate).exists()) return candidate
+  }
+  return null
+}
+
+/**
  * Run an Action the Stacks way.
  *
  * @param action The action to invoke.
@@ -151,8 +192,24 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
     }
   }
 
-  // or else, just run the action normally by assuming the action is core Action,  stored in p.actionsPath
-  const path = p.relativeActionsPath(`src/${action}.ts`)
+  // Resolve the core action file. Three locations are tried, in order, so a
+  // project can opt into shipping `storage/framework/core` (legacy / override)
+  // OR rely solely on the installed `@stacksjs/actions` package:
+  //
+  //   1. `storage/framework/core/actions/src/<action>.ts` — userland override,
+  //      same path the framework has always used. If the file exists here it
+  //      always wins, so `buddy publish:core actions` keeps working.
+  //   2. `node_modules/@stacksjs/actions/src/<action>.ts` — published TS source
+  //      (the package's `./*` export pattern lets `bun` execute it directly).
+  //   3. `node_modules/@stacksjs/actions/dist/src/<action>.js` — fallback for
+  //      published builds that ship JS only.
+  //
+  // Bun resolves either an absolute path or a `bun .../foo.ts` arg the same
+  // way, so we just pick the first existing candidate and hand it to `bun`.
+  const path = await resolveActionFile(action)
+  if (!path) {
+    return err(`Action '${action}' not found in storage/framework/core/actions/src or @stacksjs/actions`) as any
+  }
   log.debug(`[action] Resolved: ${action} → ${path}`)
 
   // Use --watch for dev actions to enable hot reloading

@@ -6,9 +6,41 @@ PANTRY_LOCAL_BIN="${ROOT_DIR}/pantry/.bin"
 PANTRY_DIR="${ROOT_DIR}/pantry"
 USER_LOCAL_BIN="${HOME}/.local/bin"
 PANTRY_INSTALLER="${ROOT_DIR}/storage/framework/scripts/pantry-install"
-BUDDY_ENTRY="${ROOT_DIR}/storage/framework/core/buddy/src/cli.ts"
 PANTRY_BOOTSTRAP_TIMEOUT_SECONDS="${PANTRY_BOOTSTRAP_TIMEOUT_SECONDS:-600}"
 PANTRY_DEPENDENCIES_TIMEOUT_SECONDS="${PANTRY_DEPENDENCIES_TIMEOUT_SECONDS:-1200}"
+
+# Resolve which CLI entrypoint to invoke. Resolution order matches the
+# action-runner fallback chain in `@stacksjs/actions`:
+#
+#   1. `storage/framework/core/buddy/src/cli.ts`  — userland override (legacy
+#      "framework lives in the project" layout). Kept FIRST so projects that
+#      have published buddy via `buddy publish:core buddy` still win.
+#   2. `node_modules/@stacksjs/buddy/src/cli.ts`  — installed package, TS source
+#      (workspace symlink or a real npm install with `src/` shipped).
+#   3. `node_modules/@stacksjs/buddy/dist/cli.js` — published JS-only build.
+#
+# If none of these are present the script bails with a clear message instead
+# of `bun` exploding on a missing file.
+resolve_buddy_entry() {
+  for candidate in \
+    "${ROOT_DIR}/storage/framework/core/buddy/src/cli.ts" \
+    "${ROOT_DIR}/node_modules/@stacksjs/buddy/src/cli.ts" \
+    "${ROOT_DIR}/node_modules/@stacksjs/buddy/dist/cli.js" \
+  ; do
+    if [ -f "${candidate}" ]; then
+      echo "${candidate}"
+      return 0
+    fi
+  done
+  return 1
+}
+
+if ! BUDDY_ENTRY=$(resolve_buddy_entry); then
+  echo "buddy: could not locate CLI entrypoint." >&2
+  echo "  Tried: storage/framework/core/buddy/src/cli.ts, node_modules/@stacksjs/buddy/{src/cli.ts,dist/cli.js}." >&2
+  echo "  Run \`bun install\` or \`buddy publish:core buddy\` to make the CLI available." >&2
+  exit 1
+fi
 
 run_with_timeout() {
   timeout_seconds="$1"

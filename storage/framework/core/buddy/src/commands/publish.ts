@@ -1,6 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import { existsSync, mkdirSync } from 'node:fs'
-import { dirname } from 'node:path'
+import { cp, readdir, stat } from 'node:fs/promises'
+import { dirname, resolve } from 'node:path'
 import process from 'node:process'
 import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
@@ -18,7 +19,9 @@ export function publish(buddy: CLI): void {
     model: 'Publish a default model from storage/framework/defaults/app/Models/ to app/Models/',
     controller: 'Publish a default controller from storage/framework/defaults/app/Controllers/ to app/Controllers/',
     middleware: 'Publish a default middleware from storage/framework/defaults/app/Middleware/ to app/Middleware/',
+    core: 'Publish a framework package source from node_modules/@stacksjs/<pkg>/ into storage/framework/core/<pkg>/ for editing',
     name: 'The name of the resource to publish (e.g. Cart, User)',
+    pkg: 'The name of the framework package (e.g. router, orm, faker — without @stacksjs/ prefix)',
     force: 'Overwrite an existing userland file',
     verbose: 'Enable verbose output',
   }
@@ -66,6 +69,14 @@ export function publish(buddy: CLI): void {
     })
 
   buddy
+    .command('publish:core <pkg>', descriptions.core)
+    .option('--force', descriptions.force, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (pkg: string, options: PublishOptions) => {
+      await publishCorePackage(pkg, !!options.force)
+    })
+
+  buddy
     .command('publish [resource] [name]', descriptions.command)
     .option('--force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -97,13 +108,14 @@ export function publish(buddy: CLI): void {
           userDir: path.userMiddlewarePath(),
           force: !!options.force,
         }),
+        core: () => publishCorePackage(name, !!options.force),
       }
 
       const handler = dispatch[resource.toLowerCase()]
 
       if (!handler) {
         log.error(`Unknown publishable resource: ${italic(resource)}`)
-        log.info('Available: model, controller, middleware')
+        log.info('Available: model, controller, middleware, core')
         process.exit(ExitCode.FatalError)
       }
 
@@ -122,6 +134,107 @@ interface PublishContext {
   defaultsDir: string
   userDir: string
   force: boolean
+}
+
+/**
+ * Publish a framework package's source into `storage/framework/core/<pkg>/`
+ * so the user can edit it. Mirrors the pattern of `publish:model`: copy the
+ * canonical default into userland, then let local edits take precedence at
+ * runtime (the action runner / module resolver checks the framework dir
+ * before falling through to `node_modules`).
+ *
+ * Source is preferred over dist so the published copy is editable. We
+ * exclude `node_modules` and `dist` from the copy to keep the userland
+ * footprint small — they get rebuilt on demand.
+ */
+async function publishCorePackage(pkg: string, force: boolean): Promise<void> {
+  // Normalize: accept `router`, `@stacksjs/router`, or `core/router`.
+  const shortName = pkg
+    .replace(/^@stacksjs\//, '')
+    .replace(/^core\//, '')
+
+  // Use process.stderr.write directly for error paths: the framework logger
+  // is buffered and may not flush before `process.exit`, causing the user
+  // to see an empty terminal instead of the actionable message.
+  const fail = (msg: string, hint?: string): never => {
+    process.stderr.write(`${msg}\n`)
+    if (hint) process.stderr.write(`  ${hint}\n`)
+    process.exit(ExitCode.FatalError)
+  }
+
+  if (!shortName || shortName.includes('/') || shortName.includes('..')) {
+    fail(
+      `Invalid package name: ${pkg}`,
+      'Use a short name like `router` or the fully qualified `@stacksjs/router`.',
+    )
+  }
+
+  const sourceDir = resolve(process.cwd(), 'node_modules', '@stacksjs', shortName)
+  const targetDir = path.frameworkPath(`core/${shortName}`)
+
+  // Verify the source exists and is a directory (symlink or real).
+  try {
+    const info = await stat(sourceDir)
+    if (!info.isDirectory()) {
+      fail(`${sourceDir} is not a directory.`)
+    }
+  }
+  catch {
+    fail(
+      `Could not find @stacksjs/${shortName} in node_modules.`,
+      'Run `bun install` first, or check the package name.',
+    )
+  }
+
+  // Refuse to clobber an existing override unless --force was passed —
+  // protects in-progress edits the user hasn't committed yet.
+  if (existsSync(targetDir) && !force) {
+    fail(
+      `Already published: ${targetDir.replace(`${process.cwd()}/`, '')}`,
+      'Pass --force to overwrite.',
+    )
+  }
+
+  // Copy the package, skipping anything regenerable. `node_modules` would
+  // duplicate the entire dependency tree (slow + huge); `dist` is a build
+  // artifact — `bun install` + a build step rebuild both.
+  mkdirSync(dirname(targetDir), { recursive: true })
+
+  const SKIP = new Set(['node_modules', 'dist', '.bun', '.cache', 'tsconfig.tsbuildinfo'])
+  let copied = 0
+  await copyTreeFiltered(sourceDir, targetDir, SKIP, () => copied++)
+
+  log.success(`Published @stacksjs/${shortName} → ${italic(targetDir.replace(`${process.cwd()}/`, ''))} (${copied} files)`)
+  log.info('Edit freely — local changes win over the installed package.')
+}
+
+/**
+ * Recursive copy that skips the entries in `skip` at every depth. Resolves
+ * symlinks to their targets so a workspace-linked package gets a real copy
+ * (otherwise the "override" would just be a pointer back into node_modules).
+ */
+async function copyTreeFiltered(
+  sourceDir: string,
+  targetDir: string,
+  skip: Set<string>,
+  onFile: () => void,
+): Promise<void> {
+  // dereference: true makes symlinked source files materialize as real files in the target
+  // recursive: true is fast (uses fs.cp under the hood) but we need filtering, so we walk manually.
+  mkdirSync(targetDir, { recursive: true })
+  const entries = await readdir(sourceDir, { withFileTypes: true })
+  for (const entry of entries) {
+    if (skip.has(entry.name)) continue
+    const src = `${sourceDir}/${entry.name}`
+    const dst = `${targetDir}/${entry.name}`
+    if (entry.isDirectory()) {
+      await copyTreeFiltered(src, dst, skip, onFile)
+      continue
+    }
+    // Files (and symlinks to files) get materialized.
+    await cp(src, dst, { force: true, dereference: true })
+    onFile()
+  }
 }
 
 async function publishResource(ctx: PublishContext): Promise<void> {
