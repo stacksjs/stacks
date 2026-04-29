@@ -62,10 +62,10 @@ try {
   <!-- Storage Info -->
   <Card title="Storage">
     <div class="p-4">
-      <div class="flex justify-between items-center mb-3">
+      <div class="flex items-center justify-between mb-3">
         <span class="text-[13px] text-neutral-500 dark:text-neutral-400">{{ storage.used }} GB of {{ storage.total }} GB used</span>
       </div>
-      <div class="h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+      <div class="overflow-hidden h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full">
         <div class="h-full bg-blue-600 rounded-full" style="width: {{ storage.percentage }}%"></div>
       </div>
     </div>
@@ -73,7 +73,7 @@ try {
 
   <!-- Files Table -->
   @if (files.length > 0)
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="[
         { key: 'name', label: 'Name' },
@@ -90,11 +90,11 @@ try {
       @foreach (files as file)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <td class="px-4 py-3">
-            <div class="flex items-center gap-3">
-              <div class="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-neutral-700 flex items-center justify-center">
+            <div class="flex gap-3 items-center">
+              <div class="flex items-center justify-center h-9 w-9 bg-neutral-100 dark:bg-neutral-700 rounded-lg">
                 <div class="{{ file.type === 'image' ? 'i-hugeicons-image-01' : file.type === 'document' ? 'i-hugeicons-file-01' : 'i-hugeicons-folder-01' }} w-5 h-5 text-neutral-500 dark:text-neutral-400"></div>
               </div>
-              <span class="text-[13px] font-medium text-neutral-900 dark:text-white">{{ file.name }}</span>
+              <span class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ file.name }}</span>
             </div>
           </td>
           <td class="px-4 py-3">

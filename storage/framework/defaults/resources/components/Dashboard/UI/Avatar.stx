@@ -77,7 +77,7 @@ function getBgColorIndex(fullName) {
 
 const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-neutral-500 dark:bg-white/10 dark:text-neutral-400'
 </script>
-<div class="relative inline-flex flex-shrink-0">
+<div class="inline-flex relative flex-shrink-0">
     @if(src)
       <img
         src="{{ src }}"
@@ -89,7 +89,7 @@ const bgColor = name ? bgColors[getBgColorIndex(name)] : 'bg-black/[0.06] text-n
         @if(initials)
           <span>{{ initials }}</span>
         @else
-          <svg class="w-1/2 h-1/2 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
+          <svg class="h-1/2 w-1/2 text-neutral-400" fill="currentColor" viewBox="0 0 20 20">
             <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"></path>
           </svg>
         @endif

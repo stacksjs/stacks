@@ -12,7 +12,7 @@ const { modelValue = '', tabs = [] } = defineProps<TabNavigationProps>()
       <select
         id="tabs"
         name="tabs"
-        class="block w-full rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500 dark:border-neutral-700 dark:bg-neutral-800 dark:text-white"
+        class="block w-full dark:text-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-500 focus:ring-blue-500"
       >
         @foreach(tabs as tab)
           <option value="{{ tab }}" {{ tab == modelValue ? 'selected' : '' }}>{{ tab.name }}</option>
@@ -21,7 +21,7 @@ const { modelValue = '', tabs = [] } = defineProps<TabNavigationProps>()
     </div>
     <div class="hidden sm:block">
       <div class="border-b border-gray-200 dark:border-neutral-700">
-        <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+        <nav class="flex -mb-px space-x-8" aria-label="Tabs">
           @foreach(tabs as tab)
             <a
               href="{{ tab.href }}"

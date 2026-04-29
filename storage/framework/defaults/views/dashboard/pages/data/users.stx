@@ -107,7 +107,7 @@ const roles = ['All Roles', 'Admin', 'Editor', 'Author', 'Subscriber', 'User']
           </td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ user.email }}</td>
           <td class="px-4 py-3">
-            <span class="inline-flex items-center font-medium tracking-tight text-[10px] px-1.5 py-0.5 rounded-full bg-black/[0.06] text-neutral-600 dark:bg-white/10 dark:text-neutral-300">{{ user.role }}</span>
+            <span class="inline-flex items-center px-1.5 py-0.5 font-medium text-[10px] text-neutral-600 tracking-tight dark:text-neutral-300 bg-black/[0.06] dark:bg-white/10 rounded-full">{{ user.role }}</span>
           </td>
           <td class="px-4 py-3">
             <span class="inline-flex items-center font-medium tracking-tight text-[10px] px-1.5 py-0.5 rounded-full {{ statusVariant(user.status) === 'success' ? 'bg-green-500/15 text-green-600' : statusVariant(user.status) === 'warning' ? 'bg-orange-500/15 text-orange-600' : statusVariant(user.status) === 'danger' ? 'bg-red-500/15 text-red-600' : 'bg-black/[0.06] text-neutral-600' }}">

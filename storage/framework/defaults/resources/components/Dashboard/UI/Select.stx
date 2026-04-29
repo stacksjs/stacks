@@ -42,7 +42,7 @@ const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
 </script>
 <div class="relative">
     @if(label)
-      <label for="{{ selectId }}" class="block text-[13px] font-medium text-neutral-600 dark:text-neutral-400 mb-1.5 tracking-tight">
+      <label for="{{ selectId }}" class="block mb-1.5 font-medium text-[13px] text-neutral-600 tracking-tight dark:text-neutral-400">
         {{ label }}
         @if(required)
           <span class="text-red-500">*</span>
@@ -71,8 +71,8 @@ const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
           </option>
         @endforeach
       </select>
-      <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center pr-2">
-        <div class="i-hugeicons-arrow-down-01 w-3.5 h-3.5 text-neutral-400"></div>
+      <div class="flex absolute inset-y-0 right-0 items-center pr-2 pointer-events-none">
+        <div class="h-3.5 w-3.5 text-neutral-400 i-hugeicons-arrow-down-01"></div>
       </div>
     </div>
 

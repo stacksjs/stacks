@@ -47,112 +47,112 @@ function isSelected(productId) {
   }
 </script>
 <!-- Products table -->
-  <div class="overflow-hidden rounded-xl border border-stone-200/80 dark:border-neutral-700 shadow-sm">
-    <table class="min-w-full divide-y divide-stone-100 dark:divide-neutral-700">
+  <div class="overflow-hidden border border-stone-200/80 rounded-xl dark:border-neutral-700 shadow-sm">
+    <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
       <thead class="bg-stone-50/80 dark:bg-neutral-800">
         <tr>
-          <th scope="col" class="w-10 py-3.5 pl-4 pr-1">
+          <th scope="col" class="pl-4 pr-1 py-3.5 w-10">
             <input
               type="checkbox"
-              class="w-4 h-4 rounded border-stone-300 dark:border-neutral-600 text-blue-500 focus:ring-blue-500/40 focus:ring-offset-0 bg-white dark:bg-neutral-800 cursor-pointer"
+              class="h-4 w-4 text-blue-500 bg-white dark:bg-neutral-800 border-stone-300 rounded dark:border-neutral-600 focus:ring-blue-500/40 focus:ring-offset-0 cursor-pointer"
               :checked="allSelected"
               @change="toggleSelectAll"
             />
           </th>
-          <th scope="col" class="py-3.5 pl-2 pr-3 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
-            <button class="group inline-flex items-center" data-action="sort" data-column="name">
+          <th scope="col" class="pl-2 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+            <button class="inline-flex items-center group" data-action="sort" data-column="name">
               Product
-              <span class="ml-2 flex-none rounded text-stone-400 group-hover:visible group-focus:visible">
+              <span class="group-focus:visible group-hover:visible flex-none ml-2 text-stone-400 rounded">
                 @if(sortBy == 'name')
                   <div class="{{ sortOrder == 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-3.5 w-3.5"></div>
                 @else
-                  <div class="i-hugeicons-arrows-up-down h-3.5 w-3.5"></div>
+                  <div class="h-3.5 w-3.5 i-hugeicons-arrows-up-down"></div>
                 @endif
               </span>
             </button>
           </th>
-          <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Manufacturer</th>
-          <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Category</th>
-          <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
-            <button class="group inline-flex items-center" data-action="sort" data-column="price">
+          <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Manufacturer</th>
+          <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Category</th>
+          <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+            <button class="inline-flex items-center group" data-action="sort" data-column="price">
               Price
-              <span class="ml-2 flex-none rounded text-stone-400 group-hover:visible group-focus:visible">
+              <span class="group-focus:visible group-hover:visible flex-none ml-2 text-stone-400 rounded">
                 @if(sortBy == 'price')
                   <div class="{{ sortOrder == 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-3.5 w-3.5"></div>
                 @else
-                  <div class="i-hugeicons-arrows-up-down h-3.5 w-3.5"></div>
+                  <div class="h-3.5 w-3.5 i-hugeicons-arrows-up-down"></div>
                 @endif
               </span>
             </button>
           </th>
-          <th scope="col" class="px-3 py-3.5 text-left text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Status</th>
-          <th scope="col" class="px-3 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">Inventory</th>
-          <th scope="col" class="px-3 py-3.5 text-right text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-neutral-400">
-            <button class="group inline-flex items-center" data-action="sort" data-column="created_at">
+          <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Status</th>
+          <th scope="col" class="px-3 py-3.5 font-semibold text-right text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Inventory</th>
+          <th scope="col" class="px-3 py-3.5 font-semibold text-right text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+            <button class="inline-flex items-center group" data-action="sort" data-column="created_at">
               Created At
-              <span class="ml-2 flex-none rounded text-stone-400 group-hover:visible group-focus:visible">
+              <span class="group-focus:visible group-hover:visible flex-none ml-2 text-stone-400 rounded">
                 @if(sortBy == 'created_at')
                   <div class="{{ sortOrder == 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-3.5 w-3.5"></div>
                 @else
-                  <div class="i-hugeicons-arrows-up-down h-3.5 w-3.5"></div>
+                  <div class="h-3.5 w-3.5 i-hugeicons-arrows-up-down"></div>
                 @endif
               </span>
             </button>
           </th>
-          <th scope="col" class="relative py-3.5 pl-3 pr-6">
+          <th scope="col" class="relative pl-3 pr-6 py-3.5">
             <span class="sr-only">Actions</span>
           </th>
         </tr>
       </thead>
-      <tbody class="divide-y divide-stone-100 bg-white dark:divide-neutral-700 dark:bg-neutral-800">
+      <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
         @foreach(products as product)
           <tr class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
-            <td class="whitespace-nowrap py-3.5 pl-6 pr-3 text-sm">
+            <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
               <div class="flex items-center">
-                <div class="h-10 w-10 flex-shrink-0">
-                  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="h-10 w-10 rounded-lg object-cover">
+                <div class="flex-shrink-0 h-10 w-10">
+                  <img src="{{ product.image_url }}" alt="{{ product.name }}" class="object-cover h-10 w-10 rounded-lg">
                 </div>
                 <div class="ml-4">
                   <div class="font-medium text-stone-800 dark:text-white">{{ product.name }}</div>
-                  <div class="text-xs text-stone-500 dark:text-neutral-400 mt-1">
+                  <div class="mt-1 text-stone-500 text-xs dark:text-neutral-400">
                     {{ product.description.substring(0, 50) }}{{ product.description.length > 50 ? '...' : '' }}
                   </div>
                 </div>
               </div>
             </td>
-            <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400">
+            <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
               {{ product.manufacturer?.name || 'N/A' }}
             </td>
-            <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400">
+            <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
               {{ product.category?.name || 'N/A' }}
             </td>
-            <td class="whitespace-nowrap px-3 py-3.5 text-sm">
+            <td class="px-3 py-3.5 text-sm whitespace-nowrap">
               <div class="font-medium text-stone-800 dark:text-white">${{ product.price.toFixed(2) }}</div>
             </td>
-            <td class="whitespace-nowrap px-3 py-3.5 text-sm">
+            <td class="px-3 py-3.5 text-sm whitespace-nowrap">
               <span class="inline-flex items-center rounded-full px-2 py-1 text-xs font-medium {{ getStatusClass(product.is_available) }}">
                 {{ getStatusText(product.is_available) }}
               </span>
             </td>
-            <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400 text-right">{{ product.inventory_count }}</td>
-            <td class="whitespace-nowrap px-3 py-3.5 text-sm text-stone-500 dark:text-neutral-400 text-right">{{ formatDate(product.created_at) }}</td>
-            <td class="relative whitespace-nowrap py-3.5 pl-3 pr-6 text-right text-sm font-medium">
+            <td class="px-3 py-3.5 text-right text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">{{ product.inventory_count }}</td>
+            <td class="px-3 py-3.5 text-right text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">{{ formatDate(product.created_at) }}</td>
+            <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
               <div class="flex items-center justify-end space-x-2">
                 <button
                   type="button"
-                  class="text-stone-400 transition-colors duration-150 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
+                  class="text-stone-400 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 duration-150 transition-colors"
                   data-action="view"
                   data-product-id="{{ product.id }}"
                 >
-                  <div class="i-hugeicons-view h-5 w-5"></div>
+                  <div class="h-5 w-5 i-hugeicons-view"></div>
                 </button>
                 <button
                   type="button"
-                  class="text-stone-400 transition-colors duration-150 hover:text-blue-600 dark:text-neutral-400 dark:hover:text-blue-400"
+                  class="text-stone-400 dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 duration-150 transition-colors"
                   data-action="edit"
                   data-product-id="{{ product.id }}"
                 >
-                  <div class="i-hugeicons-edit-01 h-5 w-5"></div>
+                  <div class="h-5 w-5 i-hugeicons-edit-01"></div>
                 </button>
               </div>
             </td>

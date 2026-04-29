@@ -30,7 +30,7 @@ const { id = 'modal-' + Math.random().toString(36).slice(2, 11), show = true } =
     <div class="absolute right-0 top-0 pr-4 pt-4">
       <button
         type="button"
-        class="text-gray-400 transition duration-150 ease-in-out focus:text-gray-500 hover:text-neutral-500 focus:outline-none"
+        class="text-gray-400 focus:text-gray-500 hover:text-neutral-500 focus:outline-none duration-150 ease-in-out transition"
         aria-label="Close"
         data-action="close"
       >
@@ -43,7 +43,7 @@ const { id = 'modal-' + Math.random().toString(36).slice(2, 11), show = true } =
       <slot name="body" />
     </div>
 
-    <div class="mt-5 sm:mt-4 sm:flex sm:flex-row-reverse space-y-4 md:space-y-0">
+    <div class="sm:flex sm:flex-row-reverse mt-5 space-y-4 sm:mt-4 md:space-y-0">
       <slot name="actions" />
     </div>
   </div>

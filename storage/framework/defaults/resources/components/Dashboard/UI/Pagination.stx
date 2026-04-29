@@ -55,15 +55,15 @@ function getPageUrl(page) {
   return baseUrl ? `${baseUrl}?page=${page}` : `?page=${page}`
 }
 </script>
-<div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+<div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
     <!-- Left: Items info & per page selector -->
-    <div class="flex items-center gap-4 text-sm text-neutral-500 dark:text-neutral-400">
+    <div class="flex gap-4 items-center text-neutral-500 text-sm dark:text-neutral-400">
       <!-- Items per page -->
       @if(showItemsPerPage && itemsPerPage)
-        <div class="flex items-center gap-2">
+        <div class="flex gap-2 items-center">
           <span>Show</span>
           <select
-            class="rounded-md border-neutral-300 dark:border-neutral-600 bg-white dark:bg-neutral-800 text-neutral-700 dark:text-neutral-200 text-sm focus:ring-blue-500 focus:border-blue-500"
+            class="text-neutral-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-neutral-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500"
             data-items-per-page
           >
             @foreach(itemsPerPageOptions as option)
@@ -79,11 +79,11 @@ function getPageUrl(page) {
       <!-- Total items info -->
       @if(showTotalItems && totalItems > 0)
         <div>
-          <span class="text-neutral-700 dark:text-neutral-200 font-medium">
+          <span class="font-medium text-neutral-700 dark:text-neutral-200">
             {{ itemRangeStart }}-{{ itemRangeEnd }}
           </span>
           of
-          <span class="text-neutral-700 dark:text-neutral-200 font-medium">
+          <span class="font-medium text-neutral-700 dark:text-neutral-200">
             {{ totalItems }}
           </span>
           items
@@ -92,13 +92,13 @@ function getPageUrl(page) {
     </div>
 
     <!-- Right: Page navigation -->
-    <nav class="flex items-center gap-1" aria-label="Pagination">
+    <nav class="flex gap-1 items-center" aria-label="Pagination">
       <!-- Previous button -->
       <a
         href="{{ currentPage > 1 ? getPageUrl(currentPage - 1) : '#' }}"
         class="p-2 rounded-lg text-sm font-medium transition-colors {{ currentPage == 1 ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed pointer-events-none' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       >
-        <div class="i-hugeicons-arrow-left-01 w-5 h-5"></div>
+        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
       </a>
 
       <!-- Page numbers -->
@@ -120,7 +120,7 @@ function getPageUrl(page) {
         href="{{ currentPage < totalPages ? getPageUrl(currentPage + 1) : '#' }}"
         class="p-2 rounded-lg text-sm font-medium transition-colors {{ currentPage == totalPages ? 'text-neutral-300 dark:text-neutral-600 cursor-not-allowed pointer-events-none' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       >
-        <div class="i-hugeicons-arrow-right-01 w-5 h-5"></div>
+        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
       </a>
     </nav>
   </div>

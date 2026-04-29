@@ -19,50 +19,50 @@ const { appName = 'Stacks', appKey = '', appUrl = 'stacks.localhost', descriptio
 </script>
 <form>
     <div class="space-y-12">
-      <div class="border-b border-gray-900/10 pb-12">
-        <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+      <div class="pb-12 border-b border-gray-900/10">
+        <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6">
           <div class="sm:col-span-3">
-            <label for="name" class="block text-sm text-gray-900 font-medium leading-6">App Name</label>
+            <label for="name" class="block font-medium leading-6 text-gray-900 text-sm">App Name</label>
             <div class="mt-2">
-              <input id="name" type="text" name="name" placeholder="App Name" value="{{ appName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="name" type="text" name="name" placeholder="App Name" value="{{ appName }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
           <div class="sm:col-span-3">
-            <label for="key" class="block text-sm text-gray-900 font-medium leading-6">App Key</label>
+            <label for="key" class="block font-medium leading-6 text-gray-900 text-sm">App Key</label>
             <div class="mt-2">
-              <input id="key" type="text" name="key" placeholder="" value="{{ appKey }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="key" type="text" name="key" placeholder="" value="{{ appKey }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
           <div class="sm:col-span-3">
-            <label for="url" class="block text-sm text-gray-900 font-medium leading-6">App Url</label>
+            <label for="url" class="block font-medium leading-6 text-gray-900 text-sm">App Url</label>
             <div class="mt-2">
-              <input id="url" type="text" name="url" placeholder="https://test.test" value="{{ appUrl }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="url" type="text" name="url" placeholder="https://test.test" value="{{ appUrl }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
 
           <div class="sm:col-span-full">
-            <label for="description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
+            <label for="description" class="block font-medium leading-6 text-gray-900 text-sm">Description</label>
             <div class="mt-2">
-              <textarea id="description" name="description" rows="3" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">{{ description }}</textarea>
+              <textarea id="description" name="description" rows="3" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">{{ description }}</textarea>
             </div>
           </div>
 
           <div class="sm:col-span-3">
-            <label for="env" class="block text-sm text-gray-900 font-medium leading-6">Environment</label>
+            <label for="env" class="block font-medium leading-6 text-gray-900 text-sm">Environment</label>
             <div class="mt-2">
-              <input id="env" type="text" name="env" placeholder="production" value="{{ environment }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="env" type="text" name="env" placeholder="production" value="{{ environment }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
 
           <div class="sm:col-span-3">
-            <label for="redirects" class="block text-sm text-gray-900 font-medium leading-6">Redirect Urls</label>
+            <label for="redirects" class="block font-medium leading-6 text-gray-900 text-sm">Redirect Urls</label>
             <div class="mt-2">
-              <input id="redirects" type="text" name="redirects" placeholder="https://test.test" value="{{ redirectUrls }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="redirects" type="text" name="redirects" placeholder="https://test.test" value="{{ redirectUrls }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
 
           <div class="sm:col-span-2">
-            <label for="app-debug" class="block text-sm text-gray-900 font-medium leading-6">App Debug</label>
+            <label for="app-debug" class="block font-medium leading-6 text-gray-900 text-sm">App Debug</label>
             <div class="mt-2">
               <button
                 type="button"
@@ -80,7 +80,7 @@ const { appName = 'Stacks', appKey = '', appUrl = 'stacks.localhost', descriptio
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label for="maintenance-mode" class="block text-sm text-gray-900 font-medium leading-6">Maintenance Mode</label>
+            <label for="maintenance-mode" class="block font-medium leading-6 text-gray-900 text-sm">Maintenance Mode</label>
             <div class="mt-2">
               <button
                 type="button"
@@ -98,7 +98,7 @@ const { appName = 'Stacks', appKey = '', appUrl = 'stacks.localhost', descriptio
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label for="doc-mode" class="block text-sm text-gray-900 font-medium leading-6">Doc Mode</label>
+            <label for="doc-mode" class="block font-medium leading-6 text-gray-900 text-sm">Doc Mode</label>
             <div class="mt-2">
               <button
                 type="button"
@@ -117,39 +117,39 @@ const { appName = 'Stacks', appKey = '', appUrl = 'stacks.localhost', descriptio
           </div>
 
           <div class="sm:col-span-2">
-            <label for="timezone" class="block text-sm text-gray-900 font-medium leading-6">Timezone</label>
+            <label for="timezone" class="block font-medium leading-6 text-gray-900 text-sm">Timezone</label>
             <div class="mt-2">
-              <input id="timezone" type="text" name="timezone" placeholder="UTC" value="{{ timezone }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="timezone" type="text" name="timezone" placeholder="UTC" value="{{ timezone }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label for="locale" class="block text-sm text-gray-900 font-medium leading-6">Locale</label>
+            <label for="locale" class="block font-medium leading-6 text-gray-900 text-sm">Locale</label>
             <div class="mt-2">
-              <input id="locale" type="text" name="locale" placeholder="UTC" value="{{ locale }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="locale" type="text" name="locale" placeholder="UTC" value="{{ locale }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label for="fallback-locale" class="block text-sm text-gray-900 font-medium leading-6">Fallback Locale</label>
+            <label for="fallback-locale" class="block font-medium leading-6 text-gray-900 text-sm">Fallback Locale</label>
             <div class="mt-2">
-              <input id="fallback-locale" type="text" name="fallback-locale" placeholder="UTC" value="{{ fallbackLocale }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="fallback-locale" type="text" name="fallback-locale" placeholder="UTC" value="{{ fallbackLocale }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
           <div class="sm:col-span-2">
-            <label for="cipher" class="block text-sm text-gray-900 font-medium leading-6">Cipher</label>
+            <label for="cipher" class="block font-medium leading-6 text-gray-900 text-sm">Cipher</label>
             <div class="mt-2">
-              <input id="cipher" type="text" name="cipher" placeholder="AES-256-CBC" value="{{ cipher }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="cipher" type="text" name="cipher" placeholder="AES-256-CBC" value="{{ cipher }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
         </div>
       </div>
     </div>
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

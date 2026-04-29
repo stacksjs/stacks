@@ -10,7 +10,7 @@ const { currentPath = '/settings/ai' } = defineProps<SettingsHeaderProps>()
     <nav class="flex overflow-x-auto py-4">
       <ul
         role="list"
-        class="min-w-full flex flex-none gap-x-6 px-4 text-sm text-gray-600 font-semibold leading-6 lg:px-8 sm:px-6"
+        class="flex flex-none gap-x-6 px-4 sm:px-6 lg:px-8 min-w-full font-semibold leading-6 text-gray-600 text-sm"
       >
         <li>
           <a href="/settings/ai" class="{{ currentPath == '/settings/ai' ? 'text-blue-600' : '' }}">AI</a>

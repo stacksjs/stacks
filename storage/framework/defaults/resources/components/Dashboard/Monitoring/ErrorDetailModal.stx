@@ -64,18 +64,18 @@ function formatTimeAgo(dateString) {
 }
 </script>
 @if(isOpen && error)
-<div class="fixed inset-0 z-50 overflow-y-auto">
-  <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+<div class="fixed inset-0 overflow-y-auto z-50">
+  <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
     <!-- Backdrop -->
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity dark:bg-neutral-900 dark:bg-opacity-75" data-action="close"></div>
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" data-action="close"></div>
 
     <!-- Modal panel -->
-    <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-4xl dark:bg-neutral-800">
+    <div class="overflow-hidden relative sm:my-8 sm:max-w-4xl sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
       <!-- Header -->
-      <div class="border-b border-gray-200 dark:border-neutral-700 px-6 py-4">
+      <div class="px-6 py-4 border-b border-gray-200 dark:border-neutral-700">
         <div class="flex items-start justify-between">
           <div class="flex-1">
-            <div class="flex items-center gap-3">
+            <div class="flex gap-3 items-center">
               <span class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ getTypeClass(error.type) }}">
                 {{ error.type }}
               </span>
@@ -83,51 +83,51 @@ function formatTimeAgo(dateString) {
                 {{ error.status }}
               </span>
             </div>
-            <h3 class="mt-2 text-lg font-semibold text-gray-900 dark:text-white break-words">
+            <h3 class="mt-2 break-words font-semibold text-gray-900 text-lg dark:text-white">
               {{ error.message }}
             </h3>
-            <div class="mt-1 flex items-center gap-4 text-sm text-gray-500 dark:text-neutral-400">
+            <div class="flex gap-4 items-center mt-1 text-gray-500 text-sm dark:text-neutral-400">
               <span class="flex items-center">
-                <div class="i-hugeicons-time-02 h-4 w-4 mr-1"></div>
+                <div class="mr-1 h-4 w-4 i-hugeicons-time-02"></div>
                 First seen: {{ formatTimeAgo(error.first_seen) }}
               </span>
               <span class="flex items-center">
-                <div class="i-hugeicons-clock-02 h-4 w-4 mr-1"></div>
+                <div class="mr-1 h-4 w-4 i-hugeicons-clock-02"></div>
                 Last seen: {{ formatTimeAgo(error.last_seen) }}
               </span>
               <span class="flex items-center">
-                <div class="i-hugeicons-chart-line-data-01 h-4 w-4 mr-1"></div>
+                <div class="mr-1 h-4 w-4 i-hugeicons-chart-line-data-01"></div>
                 {{ error.count }} events
               </span>
             </div>
           </div>
-          <button type="button" class="rounded-md text-gray-400 hover:text-gray-500 focus:outline-none" data-action="close">
-            <div class="i-hugeicons-cancel-01 h-6 w-6"></div>
+          <button type="button" class="text-gray-400 hover:text-gray-500 rounded-md focus:outline-none" data-action="close">
+            <div class="h-6 w-6 i-hugeicons-cancel-01"></div>
           </button>
         </div>
 
         <!-- Action buttons -->
-        <div class="mt-4 flex gap-2">
+        <div class="flex gap-2 mt-4">
           @if(error.status != 'resolved')
-            <button type="button" class="inline-flex items-center rounded-md bg-green-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-green-500" data-action="resolve">
-              <div class="i-hugeicons-checkmark-circle-02 h-4 w-4 mr-1"></div>
+            <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-green-600 hover:bg-green-500 rounded-md shadow-sm" data-action="resolve">
+              <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
               Resolve
             </button>
           @endif
           @if(error.status == 'resolved')
-            <button type="button" class="inline-flex items-center rounded-md bg-yellow-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-yellow-500" data-action="unresolve">
-              <div class="i-hugeicons-refresh h-4 w-4 mr-1"></div>
+            <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-yellow-600 hover:bg-yellow-500 rounded-md shadow-sm" data-action="unresolve">
+              <div class="mr-1 h-4 w-4 i-hugeicons-refresh"></div>
               Reopen
             </button>
           @endif
           @if(error.status != 'ignored')
-            <button type="button" class="inline-flex items-center rounded-md bg-gray-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-gray-500" data-action="ignore">
-              <div class="i-hugeicons-eye-off h-4 w-4 mr-1"></div>
+            <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-gray-600 hover:bg-gray-500 rounded-md shadow-sm" data-action="ignore">
+              <div class="mr-1 h-4 w-4 i-hugeicons-eye-off"></div>
               Ignore
             </button>
           @endif
-          <button type="button" class="inline-flex items-center rounded-md bg-red-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-red-500" data-action="delete">
-            <div class="i-hugeicons-waste h-4 w-4 mr-1"></div>
+          <button type="button" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md shadow-sm" data-action="delete">
+            <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
             Delete
           </button>
         </div>
@@ -146,34 +146,34 @@ function formatTimeAgo(dateString) {
       </div>
 
       <!-- Content -->
-      <div class="px-6 py-4 max-h-[60vh] overflow-y-auto">
+      <div class="overflow-y-auto px-6 py-4 max-h-[60vh]">
         <!-- Details Tab -->
         @if(activeTab == 'details')
           <!-- Stack Trace -->
           @if(error.stack)
             <div class="mb-6">
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Stack Trace</h4>
-              <pre class="bg-gray-900 text-gray-100 p-4 rounded-lg overflow-x-auto text-xs leading-relaxed font-mono">{{ error.stack }}</pre>
+              <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Stack Trace</h4>
+              <pre class="overflow-x-auto p-4 font-mono leading-relaxed text-gray-100 text-xs bg-gray-900 rounded-lg">{{ error.stack }}</pre>
             </div>
           @endif
 
           <!-- Error Info -->
-          <div class="grid grid-cols-2 gap-4">
+          <div class="grid gap-4 grid-cols-2">
             <div>
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Error Type</h4>
-              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ error.type }}</p>
+              <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Error Type</h4>
+              <p class="text-gray-600 text-sm dark:text-neutral-300">{{ error.type }}</p>
             </div>
             <div>
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Total Occurrences</h4>
-              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ error.count }}</p>
+              <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Total Occurrences</h4>
+              <p class="text-gray-600 text-sm dark:text-neutral-300">{{ error.count }}</p>
             </div>
             <div>
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">First Occurrence</h4>
-              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ formatDate(error.first_seen) }}</p>
+              <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">First Occurrence</h4>
+              <p class="text-gray-600 text-sm dark:text-neutral-300">{{ formatDate(error.first_seen) }}</p>
             </div>
             <div>
-              <h4 class="text-sm font-medium text-gray-900 dark:text-white mb-2">Last Occurrence</h4>
-              <p class="text-sm text-gray-600 dark:text-neutral-300">{{ formatDate(error.last_seen) }}</p>
+              <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Last Occurrence</h4>
+              <p class="text-gray-600 text-sm dark:text-neutral-300">{{ formatDate(error.last_seen) }}</p>
             </div>
           </div>
         @endif
@@ -182,26 +182,26 @@ function formatTimeAgo(dateString) {
         @if(activeTab == 'events')
           @if(isLoading)
             <div class="flex items-center justify-center py-8">
-              <div class="i-hugeicons-loading-01 h-8 w-8 animate-spin text-blue-500"></div>
+              <div class="h-8 w-8 text-blue-500 animate-spin i-hugeicons-loading-01"></div>
             </div>
           @elseif(errorInstances.length == 0)
-            <div class="text-center py-8 text-gray-500 dark:text-neutral-400">
+            <div class="py-8 text-center text-gray-500 dark:text-neutral-400">
               No individual events found
             </div>
           @else
             <div class="space-y-3">
               @foreach(errorInstances as instance)
-                <div class="bg-gray-50 dark:bg-neutral-700 rounded-lg p-4">
+                <div class="p-4 bg-gray-50 dark:bg-neutral-700 rounded-lg">
                   <div class="flex items-start justify-between">
                     <div class="flex-1">
-                      <div class="flex items-center gap-2 text-sm">
+                      <div class="flex gap-2 items-center text-sm">
                         <span class="text-gray-500 dark:text-neutral-400">Event #{{ instance.id }}</span>
                         <span class="text-gray-400">|</span>
                         <span class="text-gray-600 dark:text-neutral-300">{{ formatDate(instance.created_at) }}</span>
                       </div>
-                      <p class="mt-1 text-sm text-gray-900 dark:text-white">{{ instance.message }}</p>
+                      <p class="mt-1 text-gray-900 text-sm dark:text-white">{{ instance.message }}</p>
                       @if(instance.additional_info)
-                        <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400">
+                        <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
                           {{ instance.additional_info }}
                         </p>
                       @endif
@@ -215,9 +215,9 @@ function formatTimeAgo(dateString) {
       </div>
 
       <!-- Footer -->
-      <div class="border-t border-gray-200 dark:border-neutral-700 px-6 py-4">
+      <div class="px-6 py-4 border-gray-200 border-t dark:border-neutral-700">
         <div class="flex justify-end">
-          <button type="button" class="rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 dark:bg-neutral-700 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-600" data-action="close">
+          <button type="button" class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm" data-action="close">
             Close
           </button>
         </div>

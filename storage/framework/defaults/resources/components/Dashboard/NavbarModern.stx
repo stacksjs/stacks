@@ -41,22 +41,22 @@ function getNotificationCount() {
   return notificationCount
 }
 </script>
-<header class="sticky top-0 z-40 h-14 flex items-center gap-4 bg-white/80 dark:bg-neutral-900/80 backdrop-blur-xl border-b border-neutral-200/50 dark:border-neutral-700/50 px-4">
+<header class="flex sticky top-0 z-40 gap-4 items-center px-4 h-14 bg-white/80 dark:bg-neutral-900/80 border-b border-neutral-200/50 dark:border-neutral-700/50 backdrop-blur-xl">
   <!-- Breadcrumb navigation -->
-  <nav class="hidden lg:flex items-center gap-2 text-sm">
+  <nav class="hidden lg:flex gap-2 items-center text-sm">
     <a href="/" class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors">
-      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path>
       </svg>
     </a>
     @foreach(getBreadcrumb(currentPath || '/') as crumb)
       <span class="text-neutral-300 dark:text-neutral-600">/</span>
       @if(!crumb.isLast)
-        <a href="{{ crumb.path }}" class="text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200 transition-colors">
+        <a href="{{ crumb.path }}" class="text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors">
           {{ crumb.label }}
         </a>
       @else
-        <span class="text-neutral-700 dark:text-neutral-200 font-medium">{{ crumb.label }}</span>
+        <span class="font-medium text-neutral-700 dark:text-neutral-200">{{ crumb.label }}</span>
       @endif
     @endforeach
   </nav>
@@ -66,20 +66,20 @@ function getNotificationCount() {
 
   <!-- Search -->
   <div class="hidden sm:flex items-center">
-    <div class="relative flex items-center w-56 lg:w-64">
-      <svg class="absolute left-3 w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <div class="flex relative items-center w-56 lg:w-64">
+      <svg class="absolute left-3 h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
       </svg>
       <input
         type="text"
         placeholder="Search..."
-        class="w-full pl-10 pr-16 py-2 text-sm bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg text-neutral-900 dark:text-white placeholder:text-neutral-400 focus:outline-none focus:ring-2 focus:ring-blue-500/40 cursor-pointer"
+        class="pl-10 pr-16 py-2 w-full text-neutral-900 text-sm dark:text-white placeholder:text-neutral-400 bg-neutral-100 dark:bg-neutral-800 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/40 cursor-pointer"
         readonly
         @click="$emit('open-search')"
         @focus="$emit('open-search')"
       />
-      <div class="absolute right-3 flex items-center">
-        <kbd class="hidden lg:inline-flex px-1.5 py-0.5 text-[10px] font-medium text-neutral-400 bg-white dark:bg-neutral-700 border border-neutral-200 dark:border-neutral-600 rounded shadow-sm">
+      <div class="flex absolute right-3 items-center">
+        <kbd class="hidden lg:inline-flex px-1.5 py-0.5 font-medium text-[10px] text-neutral-400 bg-white dark:bg-neutral-700 border border-neutral-200 rounded dark:border-neutral-600 shadow-sm">
           ⌘K
         </kbd>
       </div>
@@ -87,14 +87,14 @@ function getNotificationCount() {
   </div>
 
   <!-- Right section -->
-  <div class="flex items-center gap-2">
+  <div class="flex gap-2 items-center">
     <!-- Bug/Errors -->
     <a
       href="/monitoring/errors"
       class="p-2 rounded-lg transition-colors {{ isActiveRoute('/monitoring/errors') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="Error Tracking"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"></path>
       </svg>
     </a>
@@ -105,7 +105,7 @@ function getNotificationCount() {
       class="p-2 rounded-lg transition-colors {{ isActiveRoute('/health') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="System Health"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path>
       </svg>
     </a>
@@ -116,60 +116,60 @@ function getNotificationCount() {
       class="relative p-2 rounded-lg transition-colors {{ isActiveRoute('/notifications') ? 'text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30' : 'text-neutral-500 hover:text-neutral-700 hover:bg-neutral-100 dark:text-neutral-400 dark:hover:text-neutral-200 dark:hover:bg-neutral-800' }}"
       title="Notifications"
     >
-      <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <svg class="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
       </svg>
       @if(getNotificationCount() > 0)
-        <span class="absolute top-1 right-1 flex items-center justify-center min-w-[16px] h-4 px-1 text-[10px] font-bold text-white bg-red-500 rounded-full">
+        <span class="flex absolute right-1 top-1 items-center justify-center px-1 h-4 min-w-[16px] font-bold text-[10px] text-white bg-red-500 rounded-full">
           {{ getNotificationCount() > 9 ? '9+' : getNotificationCount() }}
         </span>
       @endif
     </a>
 
     <!-- Separator -->
-    <div class="w-px h-6 bg-neutral-200 dark:bg-neutral-700 mx-1"></div>
+    <div class="mx-1 h-6 w-px bg-neutral-200 dark:bg-neutral-700"></div>
 
     <!-- User dropdown -->
     <div class="relative" data-dropdown="user">
       <button
         type="button"
-        class="flex items-center gap-2 p-1 rounded-lg transition-colors hover:bg-neutral-100 dark:hover:bg-neutral-800"
+        class="flex gap-2 items-center p-1 hover:bg-neutral-100 dark:hover:bg-neutral-800 rounded-lg transition-colors"
         data-action="toggle-dropdown"
       >
         <img
           src="{{ getUser().avatar }}"
           alt="{{ getUser().name }}"
-          class="w-8 h-8 rounded-full object-cover"
+          class="object-cover h-8 w-8 rounded-full"
         />
-        <span class="hidden lg:block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+        <span class="hidden lg:block font-medium text-neutral-700 text-sm dark:text-neutral-200">
           {{ getUser().name }}
         </span>
-        <svg class="hidden lg:block w-4 h-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <svg class="hidden lg:block h-4 w-4 text-neutral-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path>
         </svg>
       </button>
 
       <!-- Dropdown menu -->
-      <div class="hidden absolute right-0 mt-2 w-56 bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-neutral-200 dark:border-neutral-700 py-1 z-50" data-dropdown-content>
+      <div class="hidden absolute right-0 z-50 mt-2 py-1 w-56 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 shadow-lg" data-dropdown-content>
         <div class="px-4 py-3 border-b border-neutral-200 dark:border-neutral-700">
-          <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ getUser().name }}</p>
-          <p class="text-xs text-neutral-500 dark:text-neutral-400 truncate">{{ getUser().email }}</p>
+          <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ getUser().name }}</p>
+          <p class="text-neutral-500 text-xs truncate dark:text-neutral-400">{{ getUser().email }}</p>
         </div>
         <div class="py-1">
-          <a href="/profile" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          <a href="/profile" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
             Your Profile
           </a>
-          <a href="/settings" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          <a href="/settings" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
             Settings
           </a>
-          <a href="/billing" class="flex items-center gap-3 px-4 py-2 text-sm text-neutral-700 dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
+          <a href="/billing" class="flex gap-3 items-center px-4 py-2 text-neutral-700 text-sm dark:text-neutral-300 hover:bg-neutral-100 dark:hover:bg-neutral-700">
             Billing
           </a>
         </div>
-        <div class="border-t border-neutral-200 dark:border-neutral-700 py-1">
+        <div class="py-1 border-neutral-200 border-t dark:border-neutral-700">
           <button
             type="button"
-            class="flex items-center gap-3 w-full px-4 py-2 text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
+            class="flex gap-3 items-center px-4 py-2 w-full text-red-600 text-sm dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20"
             data-action="logout"
           >
             Sign out

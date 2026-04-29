@@ -50,7 +50,7 @@ const sizeClasses = {
     <label for="{{ inputId }}" class="block text-[13px] font-medium mb-1.5 tracking-tight {{ error ? 'text-red-600 dark:text-red-400' : 'text-stone-600 dark:text-neutral-400' }}">
       {{ label }}
       @if(required)
-        <span class="text-red-500 ml-0.5">*</span>
+        <span class="ml-0.5 text-red-500">*</span>
       @endif
     </label>
   @endif
@@ -70,7 +70,7 @@ const sizeClasses = {
   </div>
 
   @if(error)
-    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+    <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
   @elseif(hint)
     <p class="mt-1.5 text-sm text-stone-500 dark:text-neutral-400">{{ hint }}</p>
   @endif

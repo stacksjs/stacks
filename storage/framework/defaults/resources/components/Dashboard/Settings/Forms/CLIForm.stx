@@ -10,10 +10,10 @@ const { name = 'My Custom CLI', description = 'My Custom CLI', command = 'my-cus
 </script>
 <form>
     <div class="space-y-12">
-      <div class="border-b border-gray-900/10 pb-12">
-        <div class="grid grid-cols-1 gap-x-6 gap-y-8 sm:grid-cols-6">
+      <div class="pb-12 border-b border-gray-900/10">
+        <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6">
           <div class="sm:col-span-full">
-            <label for="deploy" class="block text-sm text-gray-900 font-medium leading-6">Deploy</label>
+            <label for="deploy" class="block font-medium leading-6 text-gray-900 text-sm">Deploy</label>
             <div class="mt-2">
               <button
                 type="button"
@@ -31,34 +31,34 @@ const { name = 'My Custom CLI', description = 'My Custom CLI', command = 'my-cus
             </div>
           </div>
           <div class="sm:col-span-3">
-            <label for="name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
+            <label for="name" class="block font-medium leading-6 text-gray-900 text-sm">Name</label>
             <div class="mt-2">
-              <input id="name" type="text" name="name" placeholder="My Custom CLI" value="{{ name }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="name" type="text" name="name" placeholder="My Custom CLI" value="{{ name }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
           <div class="sm:col-span-full">
-            <label for="description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
+            <label for="description" class="block font-medium leading-6 text-gray-900 text-sm">Description</label>
             <div class="mt-2">
-              <textarea id="description" name="description" rows="3" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">{{ description }}</textarea>
+              <textarea id="description" name="description" rows="3" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">{{ description }}</textarea>
             </div>
           </div>
           <div class="sm:col-span-3">
-            <label for="command" class="block text-sm text-gray-900 font-medium leading-6">Command</label>
+            <label for="command" class="block font-medium leading-6 text-gray-900 text-sm">Command</label>
             <div class="mt-2">
-              <input id="command" type="text" name="command" placeholder="my-custom-cli" value="{{ command }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+              <input id="command" type="text" name="command" placeholder="my-custom-cli" value="{{ command }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

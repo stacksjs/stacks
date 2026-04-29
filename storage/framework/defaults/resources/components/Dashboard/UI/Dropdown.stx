@@ -18,7 +18,7 @@ const widthClasses = {
 
 const alignClass = align === 'right' ? 'right-0' : 'left-0'
 </script>
-<div ref="pageRoot" class="relative inline-block text-left" data-dropdown="{{ id }}">
+<div ref="pageRoot" class="inline-block relative text-left" data-dropdown="{{ id }}">
     <!-- Trigger -->
     <div data-dropdown-trigger>
       {{ triggerSlot }}

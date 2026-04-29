@@ -22,17 +22,17 @@ const { columns = [], data = [], striped = false, emptyTitle = 'No data found', 
         @endforeach
       </tr>
     </thead>
-    <tbody class="divide-y divide-neutral-100 dark:divide-white/5">
+    <tbody class="divide-neutral-100 divide-y dark:divide-white/5">
       @if(data.length > 0)
         <slot />
       @else
         <tr>
           <td colspan="{{ columns.length }}" class="px-4 py-12">
             <div class="flex flex-col items-center justify-center text-center">
-              <div class="mb-3 p-3 rounded-full bg-neutral-100 dark:bg-neutral-800">
+              <div class="mb-3 p-3 bg-neutral-100 dark:bg-neutral-800 rounded-full">
                 <div class="{{ emptyIcon }} w-6 h-6 text-neutral-400 dark:text-neutral-500"></div>
               </div>
-              <p class="text-sm font-medium text-neutral-900 dark:text-white">{{ emptyTitle }}</p>
+              <p class="font-medium text-neutral-900 text-sm dark:text-white">{{ emptyTitle }}</p>
               @if(emptyDescription)
                 <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">{{ emptyDescription }}</p>
               @endif

@@ -34,73 +34,73 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
 <form>
     <main class="border-b border-gray-900/10">
       <!-- Settings forms -->
-      <div class="divide-y divide-gray-900/10">
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+      <div class="divide-gray-900/10 divide-y">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Library Base Configurations
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Library Configuration
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-2">
-                <label for="library-name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
+                <label for="library-name" class="block font-medium leading-6 text-gray-900 text-sm">Name</label>
                 <div class="mt-2">
-                  <input id="library-name" type="text" name="library-name" value="{{ libraryName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="library-name" type="text" name="library-name" value="{{ libraryName }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="library-owner" class="block text-sm text-gray-900 font-medium leading-6">Owner</label>
+                <label for="library-owner" class="block font-medium leading-6 text-gray-900 text-sm">Owner</label>
                 <div class="mt-2">
-                  <input id="library-owner" type="text" name="library-owner" value="{{ libraryOwner }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="library-owner" type="text" name="library-owner" value="{{ libraryOwner }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="library-repo" class="block text-sm text-gray-900 font-medium leading-6">Repository</label>
+                <label for="library-repo" class="block font-medium leading-6 text-gray-900 text-sm">Repository</label>
                 <div class="mt-2">
-                  <input id="library-repo" type="text" name="library-repo" value="{{ libraryRepository }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="library-repo" type="text" name="library-repo" value="{{ libraryRepository }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="library-license" class="block text-sm text-gray-900 font-medium leading-6">License</label>
+                <label for="library-license" class="block font-medium leading-6 text-gray-900 text-sm">License</label>
                 <div class="mt-2">
-                  <input id="library-license" type="text" name="library-license" value="{{ libraryLicense }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="library-license" type="text" name="library-license" value="{{ libraryLicense }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="library-author" class="block text-sm text-gray-900 font-medium leading-6">Author</label>
+                <label for="library-author" class="block font-medium leading-6 text-gray-900 text-sm">Author</label>
                 <div class="mt-2">
-                  <input id="library-author" type="text" name="library-author" value="{{ libraryAuthor }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="library-author" type="text" name="library-author" value="{{ libraryAuthor }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="library-lang" class="block text-sm text-gray-900 font-medium leading-6">Default Language</label>
+                <label for="library-lang" class="block font-medium leading-6 text-gray-900 text-sm">Default Language</label>
                 <div class="mt-2">
-                  <select id="library-lang" name="library-lang" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:max-w-xs sm:text-sm sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <select id="library-lang" name="library-lang" class="block py-1.5 w-full sm:max-w-xs text-gray-900 sm:leading-6 sm:text-sm border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                     <option {{ libraryDefaultLanguage == 'en' ? 'selected' : '' }}>en</option>
                   </select>
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="library-contributors" class="block text-sm text-gray-900 font-medium leading-6">Contributors</label>
+                <label for="library-contributors" class="block font-medium leading-6 text-gray-900 text-sm">Contributors</label>
                 <div class="mt-2">
-                  <input id="library-contributors" type="text" name="library-contributors" value="{{ libraryContributors }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="library-contributors" type="text" name="library-contributors" value="{{ libraryContributors }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="library-releaseable" class="block text-sm text-gray-900 font-medium leading-6">Releaseable</label>
-                <div class="flex items-center gap-x-4">
+                <label for="library-releaseable" class="block font-medium leading-6 text-gray-900 text-sm">Releaseable</label>
+                <div class="flex gap-x-4 items-center">
                   <div class="mt-2">
                     <button
                       type="button"
@@ -122,42 +122,42 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Library Functions
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Library Functions Configuration
             </p>
           </div>
 
           <div class="md:col-span-2">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-2">
-                <label for="fn-name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
+                <label for="fn-name" class="block font-medium leading-6 text-gray-900 text-sm">Name</label>
                 <div class="mt-2">
-                  <input id="fn-name" type="text" name="fn-name" value="{{ functionsName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="fn-name" type="text" name="fn-name" value="{{ functionsName }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="fn-description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
+                <label for="fn-description" class="block font-medium leading-6 text-gray-900 text-sm">Description</label>
                 <div class="mt-2">
-                  <input id="fn-description" type="text" name="fn-description" value="{{ functionsDescription }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="fn-description" type="text" name="fn-description" value="{{ functionsDescription }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="fn-keywords" class="block text-sm text-gray-900 font-medium leading-6">Keywords</label>
+                <label for="fn-keywords" class="block font-medium leading-6 text-gray-900 text-sm">Keywords</label>
                 <div class="mt-2">
-                  <input id="fn-keywords" type="text" name="fn-keywords" value="{{ functionsKeywords }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="fn-keywords" type="text" name="fn-keywords" value="{{ functionsKeywords }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-2">
-                <label for="fn-sourcemap" class="block text-sm text-gray-900 font-medium leading-6">Should Generate Sourcemap</label>
-                <div class="flex items-center gap-x-4">
+                <label for="fn-sourcemap" class="block font-medium leading-6 text-gray-900 text-sm">Should Generate Sourcemap</label>
+                <div class="flex gap-x-4 items-center">
                   <div class="mt-2">
                     <button
                       type="button"
@@ -177,96 +177,96 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
               </div>
 
               <div class="sm:col-span-full">
-                <label for="fn-files" class="block text-sm text-gray-900 font-medium leading-6">Files</label>
+                <label for="fn-files" class="block font-medium leading-6 text-gray-900 text-sm">Files</label>
                 <div class="mt-2">
-                  <input id="fn-files" type="text" name="fn-files" value="{{ functionsFiles }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="fn-files" type="text" name="fn-files" value="{{ functionsFiles }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Vue Components Configurations
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Vue Components Configuration
             </p>
           </div>
 
           <div class="md:col-span-full">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-2">
-                <label for="stx-name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
+                <label for="stx-name" class="block font-medium leading-6 text-gray-900 text-sm">Name</label>
                 <div class="mt-2">
-                  <input id="stx-name" type="text" name="stx-name" value="{{ stxComponentsName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="stx-name" type="text" name="stx-name" value="{{ stxComponentsName }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-4">
-                <label for="stx-keywords" class="block text-sm text-gray-900 font-medium leading-6">Keywords</label>
+                <label for="stx-keywords" class="block font-medium leading-6 text-gray-900 text-sm">Keywords</label>
                 <div class="mt-2">
-                  <input id="stx-keywords" type="text" name="stx-keywords" value="{{ stxComponentsKeywords }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="stx-keywords" type="text" name="stx-keywords" value="{{ stxComponentsKeywords }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="stx-description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
+                <label for="stx-description" class="block font-medium leading-6 text-gray-900 text-sm">Description</label>
                 <div class="mt-2">
-                  <input id="stx-description" type="text" name="stx-description" value="{{ stxComponentsDescription }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="stx-description" type="text" name="stx-description" value="{{ stxComponentsDescription }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <div class="mb-4 flex justify-between">
+                <div class="flex justify-between mb-4">
                   <div>
-                    <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+                    <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
                       Vue Components Tags
                     </h2>
-                    <p class="mt-1 text-sm text-gray-600 leading-6">
+                    <p class="mt-1 leading-6 text-gray-600 text-sm">
                       Update Vue Components Tags, click on the button to show modal to add new tag
                     </p>
                   </div>
 
-                  <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                    <button type="button" class="block rounded-md bg-gray-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" data-action="add-vue-tag">
+                  <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
+                    <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-gray-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm" data-action="add-vue-tag">
                       Add Tag
                     </button>
                   </div>
                 </div>
 
-                <div class="mt-8 flow-root">
-                  <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-                    <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-                      <table class="min-w-full divide-y divide-gray-300">
+                <div class="flow-root mt-8">
+                  <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+                      <table class="min-w-full divide-gray-300 divide-y">
                         <thead>
                           <tr>
-                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-0">Name(s)</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">Attributes</th>
-                            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0"><span class="sr-only">Actions</span></th>
+                            <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm">Name(s)</th>
+                            <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">Attributes</th>
+                            <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0"><span class="sr-only">Actions</span></th>
                           </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white divide-gray-200 divide-y">
                           @foreach(stxComponentsTags as tag)
                             <tr>
-                              <td class="whitespace-nowrap py-5 text-sm sm:pl-0">
+                              <td class="py-5 sm:pl-0 text-sm whitespace-nowrap">
                                 <div class="flex items-center">
                                   <div class="ml-4">
-                                    <div class="text-gray-900 font-semibold">{{ tag.names }}</div>
+                                    <div class="font-semibold text-gray-900">{{ tag.names }}</div>
                                     <div class="mt-4 text-gray-500">{{ tag.description }}</div>
                                   </div>
                                 </div>
                               </td>
-                              <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-                                <div class="flex items-center gap-x-4">
-                                  {<span class="text-gray-900 font-semibold">{{ tag.attributes }}</span>},
+                              <td class="px-3 py-5 text-gray-500 text-sm whitespace-nowrap">
+                                <div class="flex gap-x-4 items-center">
+                                  {<span class="font-semibold text-gray-900">{{ tag.attributes }}</span>},
                                 </div>
                               </td>
-                              <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                                <a href="#" class="text-gray-400 font-semibold hover:text-gray-600" data-action="delete">Delete</a>
-                                <a href="#" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="edit">Edit</a>
+                              <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                                <a href="#" class="font-semibold text-gray-400 hover:text-gray-600" data-action="delete">Delete</a>
+                                <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="edit">Edit</a>
                               </td>
                             </tr>
                           @endforeach
@@ -280,87 +280,87 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
           </div>
         </div>
 
-        <div class="grid grid-cols-1 max-w-7xl gap-x-8 gap-y-10 py-16 md:grid-cols-3">
+        <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 py-16 max-w-7xl">
           <div>
-            <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+            <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
               Web Components Configurations
             </h2>
-            <p class="mt-1 text-sm text-gray-600 leading-6">
+            <p class="mt-1 leading-6 text-gray-600 text-sm">
               Update your Web Components Configuration
             </p>
           </div>
 
           <div class="md:col-span-full">
-            <div class="grid grid-cols-1 w-full gap-x-6 gap-y-8 sm:grid-cols-6">
+            <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 w-full">
               <div class="sm:col-span-2">
-                <label for="wc-name" class="block text-sm text-gray-900 font-medium leading-6">Name</label>
+                <label for="wc-name" class="block font-medium leading-6 text-gray-900 text-sm">Name</label>
                 <div class="mt-2">
-                  <input id="wc-name" type="text" name="wc-name" value="{{ webComponentsName }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="wc-name" type="text" name="wc-name" value="{{ webComponentsName }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-4">
-                <label for="wc-keywords" class="block text-sm text-gray-900 font-medium leading-6">Keywords</label>
+                <label for="wc-keywords" class="block font-medium leading-6 text-gray-900 text-sm">Keywords</label>
                 <div class="mt-2">
-                  <input id="wc-keywords" type="text" name="wc-keywords" value="{{ webComponentsKeywords }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="wc-keywords" type="text" name="wc-keywords" value="{{ webComponentsKeywords }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <label for="wc-description" class="block text-sm text-gray-900 font-medium leading-6">Description</label>
+                <label for="wc-description" class="block font-medium leading-6 text-gray-900 text-sm">Description</label>
                 <div class="mt-2">
-                  <input id="wc-description" type="text" name="wc-description" value="{{ webComponentsDescription }}" class="block w-full border-0 rounded-md py-1.5 text-gray-900 shadow-sm ring-1 ring-gray-300 ring-inset sm:text-sm placeholder:text-gray-400 sm:leading-6 focus:ring-2 focus:ring-indigo-600 focus:ring-inset">
+                  <input id="wc-description" type="text" name="wc-description" value="{{ webComponentsDescription }}" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-md focus:ring-2 focus:ring-indigo-600 focus:ring-inset shadow-sm">
                 </div>
               </div>
 
               <div class="sm:col-span-full">
-                <div class="mb-4 flex justify-between">
+                <div class="flex justify-between mb-4">
                   <div>
-                    <h2 class="text-base text-gray-900 font-semibold leading-7 dark:text-neutral-100">
+                    <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
                       Web Components Tags
                     </h2>
-                    <p class="mt-1 text-sm text-gray-600 leading-6">
+                    <p class="mt-1 leading-6 text-gray-600 text-sm">
                       Update Web Components Tags, click on the button to show modal to add new tag
                     </p>
                   </div>
 
-                  <div class="mt-4 sm:ml-16 sm:mt-0 sm:flex-none">
-                    <button type="button" class="block rounded-md bg-gray-600 px-3 py-2 text-center text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline" data-action="add-wc-tag">
+                  <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
+                    <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-gray-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm" data-action="add-wc-tag">
                       Add Tag
                     </button>
                   </div>
                 </div>
 
-                <div class="mt-8 flow-root">
-                  <div class="overflow-x-auto -mx-4 -my-2 lg:-mx-8 sm:-mx-6">
-                    <div class="inline-block min-w-full py-2 align-middle lg:px-8 sm:px-6">
-                      <table class="min-w-full divide-y divide-gray-300">
+                <div class="flow-root mt-8">
+                  <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+                    <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+                      <table class="min-w-full divide-gray-300 divide-y">
                         <thead>
                           <tr>
-                            <th scope="col" class="py-3.5 pl-4 pr-3 text-left text-sm text-gray-900 font-semibold sm:pl-0">Name(s)</th>
-                            <th scope="col" class="px-3 py-3.5 text-left text-sm text-gray-900 font-semibold">Attributes</th>
-                            <th scope="col" class="relative py-3.5 pl-3 pr-4 sm:pr-0"><span class="sr-only">Actions</span></th>
+                            <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-0 font-semibold text-gray-900 text-left text-sm">Name(s)</th>
+                            <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">Attributes</th>
+                            <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-0"><span class="sr-only">Actions</span></th>
                           </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
+                        <tbody class="bg-white divide-gray-200 divide-y">
                           @foreach(webComponentsTags as tag)
                             <tr>
-                              <td class="whitespace-nowrap py-5 text-sm sm:pl-0">
+                              <td class="py-5 sm:pl-0 text-sm whitespace-nowrap">
                                 <div class="flex items-center">
                                   <div class="ml-4">
-                                    <div class="text-gray-900 font-semibold">{{ tag.names }}</div>
+                                    <div class="font-semibold text-gray-900">{{ tag.names }}</div>
                                     <div class="mt-4 text-gray-500">{{ tag.description }}</div>
                                   </div>
                                 </div>
                               </td>
-                              <td class="whitespace-nowrap px-3 py-5 text-sm text-gray-500">
-                                <div class="flex items-center gap-x-4">
-                                  {<span class="text-gray-900 font-semibold">{{ tag.attributes }}</span>},
+                              <td class="px-3 py-5 text-gray-500 text-sm whitespace-nowrap">
+                                <div class="flex gap-x-4 items-center">
+                                  {<span class="font-semibold text-gray-900">{{ tag.attributes }}</span>},
                                 </div>
                               </td>
-                              <td class="py-4 pl-3 pr-4 text-right text-sm font-medium space-x-6 sm:pr-0">
-                                <a href="#" class="text-gray-400 font-semibold hover:text-gray-600" data-action="delete">Delete</a>
-                                <a href="#" class="text-indigo-600 font-semibold hover:text-indigo-900" data-action="edit">Edit</a>
+                              <td class="pl-3 pr-4 py-4 space-x-6 sm:pr-0 font-medium text-right text-sm">
+                                <a href="#" class="font-semibold text-gray-400 hover:text-gray-600" data-action="delete">Delete</a>
+                                <a href="#" class="font-semibold text-indigo-600 hover:text-indigo-900" data-action="edit">Edit</a>
                               </td>
                             </tr>
                           @endforeach
@@ -375,13 +375,13 @@ const { libraryName = 'hello-world', libraryOwner = '@stacksjs', libraryReposito
         </div>
       </div>
     </main>
-    <div class="mt-6 flex items-center justify-end gap-x-6">
-      <button type="button" class="text-sm text-gray-900 font-semibold leading-6">
+    <div class="flex gap-x-6 items-center justify-end mt-6">
+      <button type="button" class="font-semibold leading-6 text-gray-900 text-sm">
         Cancel
       </button>
       <button
         type="submit"
-        class="rounded-md bg-indigo-600 px-3 py-2 text-sm text-white font-semibold shadow-sm hover:bg-indigo-500 focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 focus-visible:outline"
+        class="px-3 py-2 font-semibold text-sm text-white bg-indigo-600 hover:bg-indigo-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-indigo-600 focus-visible:outline-offset-2 shadow-sm"
       >
         Save
       </button>

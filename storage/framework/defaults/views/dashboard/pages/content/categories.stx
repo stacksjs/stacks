@@ -64,8 +64,8 @@ try {
           </div>
         </div>
         <div class="flex gap-2 items-center justify-end pt-3 border-neutral-100 border-t dark:border-neutral-700">
-          <button type="button" data-action="edit-category" data-id="{{ category.id }}" data-name="{{ category.name }}" data-slug="{{ category.slug }}" data-description="{{ category.description }}" class="inline-flex items-center justify-center font-medium text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 transition-colors">Edit</button>
-          <button type="button" data-action="delete-category" data-id="{{ category.id }}" class="inline-flex items-center justify-center font-medium text-[12px] px-2.5 py-1 rounded-md gap-1.5 h-7 bg-transparent text-neutral-600 dark:text-neutral-300 hover:bg-black/5 dark:hover:bg-white/8 transition-colors"><span class="text-red-500">Delete</span></button>
+          <button type="button" data-action="edit-category" data-id="{{ category.id }}" data-name="{{ category.name }}" data-slug="{{ category.slug }}" data-description="{{ category.description }}" class="inline-flex gap-1.5 items-center justify-center px-2.5 py-1 h-7 font-medium text-[12px] text-neutral-600 dark:text-neutral-300 bg-transparent hover:bg-black/5 dark:hover:bg-white/8 rounded-md transition-colors">Edit</button>
+          <button type="button" data-action="delete-category" data-id="{{ category.id }}" class="inline-flex gap-1.5 items-center justify-center px-2.5 py-1 h-7 font-medium text-[12px] text-neutral-600 dark:text-neutral-300 bg-transparent hover:bg-black/5 dark:hover:bg-white/8 rounded-md transition-colors"><span class="text-red-500">Delete</span></button>
         </div>
       </div>
     @endforeach

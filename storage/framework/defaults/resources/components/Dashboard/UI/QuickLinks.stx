@@ -6,25 +6,25 @@ interface QuickLinksProps {
 
 const { title = 'Quick Links', links = [] } = defineProps<QuickLinksProps>()
 </script>
-<div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+<div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
   <div class="p-5 border-b border-neutral-200/60 dark:border-white/5">
-    <h3 class="text-[14px] font-semibold text-neutral-900 dark:text-white tracking-tight">{{ title }}</h3>
+    <h3 class="font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ title }}</h3>
   </div>
-  <div class="divide-y divide-neutral-100 dark:divide-white/5">
+  <div class="divide-neutral-100 divide-y dark:divide-white/5">
     @foreach(links as link)
-      <a href="{{ link.href || '#' }}" class="flex items-center gap-3.5 px-5 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
-        <div class="w-9 h-9 rounded-lg bg-neutral-100 dark:bg-white/10 flex items-center justify-center flex-shrink-0">
+      <a href="{{ link.href || '#' }}" class="flex gap-3.5 items-center px-5 py-3.5 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors group">
+        <div class="flex flex-shrink-0 items-center justify-center h-9 w-9 bg-neutral-100 dark:bg-white/10 rounded-lg">
           @if(link.icon)
             <div class="{{ link.icon }} w-4.5 h-4.5 text-neutral-500 dark:text-neutral-400"></div>
           @else
-            <span class="text-[13px] font-semibold text-neutral-500 dark:text-neutral-400">{{ link.title.charAt(0) }}</span>
+            <span class="font-semibold text-[13px] text-neutral-500 dark:text-neutral-400">{{ link.title.charAt(0) }}</span>
           @endif
         </div>
         <div class="flex-1 min-w-0">
-          <div class="text-[13px] font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ link.title }}</div>
-          <div class="text-[12px] text-neutral-500 dark:text-neutral-400 truncate">{{ link.description }}</div>
+          <div class="font-medium text-[13px] text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ link.title }}</div>
+          <div class="text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ link.description }}</div>
         </div>
-        <div class="i-hugeicons-arrow-right-01 w-4 h-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-400 dark:group-hover:text-neutral-500 transition-colors flex-shrink-0"></div>
+        <div class="flex-shrink-0 h-4 w-4 text-neutral-300 dark:text-neutral-600 group-hover:text-neutral-400 dark:group-hover:text-neutral-500 transition-colors i-hugeicons-arrow-right-01"></div>
       </a>
     @endforeach
   </div>

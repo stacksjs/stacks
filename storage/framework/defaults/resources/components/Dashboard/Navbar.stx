@@ -27,40 +27,40 @@ function getNavbarClasses() {
 <div
   class="sticky top-0 z-10 h-16 flex shrink-0 items-center gap-x-4 border-b border-gray-200 bg-white px-4 shadow-sm sm:gap-x-6 dark:border-neutral-600 dark:bg-neutral-900 lg:px-8 sm:px-6 transition-all duration-300 {{ getNavbarClasses() }}"
 >
-  <button type="button" class="p-2.5 text-gray-700 -m-2.5 lg:hidden" title="Open sidebar">
+  <button type="button" class="lg:hidden -m-2.5 p-2.5 text-gray-700" title="Open sidebar">
     <span class="sr-only">Open sidebar</span>
-    <div class="i-hugeicons-menu-01 h-6 w-6"></div>
+    <div class="h-6 w-6 i-hugeicons-menu-01"></div>
   </button>
 
   <!-- Separator -->
-  <div class="h-6 w-px bg-gray-200 lg:hidden" aria-hidden="true"></div>
+  <div class="lg:hidden h-6 w-px bg-gray-200" aria-hidden="true"></div>
 
-  <div class="flex flex-1 self-stretch gap-x-4 lg:gap-x-6">
+  <div class="flex flex-1 gap-x-4 self-stretch lg:gap-x-6">
     <form
-      class="relative flex flex-1"
+      class="flex relative flex-1"
       action="#"
       method="GET"
     >
       <label for="search-field" class="sr-only">Search</label>
 
-      <div class="i-hugeicons-search-01 pointer-events-none absolute inset-y-0 left-0 h-full w-5 text-gray-400"></div>
+      <div class="absolute inset-y-0 left-0 h-full w-5 text-gray-400 pointer-events-none i-hugeicons-search-01"></div>
       <input
         id="search-field"
-        class="block h-full w-full border-none py-0 pl-8 pr-0 text-gray-900 dark:bg-neutral-900 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 focus:ring-0"
+        class="block pl-8 pr-0 py-0 h-full w-full text-gray-900 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-900 border-none focus:ring-0"
         placeholder="Search..."
         type="search"
         name="search"
       >
     </form>
 
-    <div class="flex items-center gap-x-4 lg:gap-x-6">
+    <div class="flex gap-x-4 items-center lg:gap-x-6">
       <button type="button" class="header-icon-button" title="View Errors">
         <span class="sr-only">View Errors</span>
         <a
           href="/errors"
           class="header-link {{ isActiveRoute('/errors') ? 'active-header-link' : '' }}"
         >
-          <div class="i-hugeicons-alert-01 h-6 w-6 transition duration-150 ease-in-out"></div>
+          <div class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-alert-01"></div>
         </a>
       </button>
 
@@ -70,7 +70,7 @@ function getNavbarClasses() {
           href="/health"
           class="header-link {{ isActiveRoute('/health') ? 'active-header-link' : '' }}"
         >
-          <div class="i-hugeicons-health h-6 w-6 transition duration-150 ease-in-out"></div>
+          <div class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-health"></div>
         </a>
       </button>
 
@@ -80,7 +80,7 @@ function getNavbarClasses() {
           href="/insights"
           class="header-link {{ isActiveRoute('/insights') ? 'active-header-link' : '' }}"
         >
-          <div class="i-hugeicons-pulse-01 h-6 w-6 transition duration-150 ease-in-out"></div>
+          <div class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-pulse-01"></div>
         </a>
       </button>
 
@@ -90,7 +90,7 @@ function getNavbarClasses() {
           href="/inbox"
           class="header-link {{ isActiveRoute('/inbox') ? 'active-header-link' : '' }}"
         >
-          <div class="i-hugeicons-mail-02 h-6 w-6 transition duration-150 ease-in-out"></div>
+          <div class="h-6 w-6 duration-150 ease-in-out transition i-hugeicons-mail-02"></div>
         </a>
       </button>
 
@@ -100,7 +100,7 @@ function getNavbarClasses() {
           href="/notifications"
           class="header-link {{ isActiveRoute('/notifications') ? 'active-header-link' : '' }}"
         >
-          <div class="i-hugeicons-notification-02 h-6 w-6"></div>
+          <div class="h-6 w-6 i-hugeicons-notification-02"></div>
         </a>
       </button>
 
@@ -116,7 +116,7 @@ function getNavbarClasses() {
           <button
             id="user-menu-button"
             type="button"
-            class="relative flex rounded-full bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white focus:ring-offset-gray-800"
+            class="flex relative text-sm bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-gray-800 focus:ring-white"
             aria-expanded="false"
             aria-haspopup="true"
             data-action="toggle-dropdown"
@@ -129,26 +129,26 @@ function getNavbarClasses() {
         </div>
 
         @if(showDropdown)
-          <div class="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white dark:bg-neutral-800 py-1 shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
-            <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Your Profile</a>
-            <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Documentation</a>
-            <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Billing</a>
-            <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Settings</a>
-            <a id="user-menu-item-2" href="#" class="block px-4 py-2 text-sm text-gray-700 dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1" data-action="logout">Sign out</a>
+          <div class="absolute right-0 z-10 mt-2 py-1 w-48 bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 rounded-md focus:outline-none shadow-lg origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="user-menu-button" tabindex="-1">
+            <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Your Profile</a>
+            <a id="user-menu-item-0" href="#" class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Documentation</a>
+            <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Billing</a>
+            <a id="user-menu-item-1" href="#" class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1">Settings</a>
+            <a id="user-menu-item-2" href="#" class="block px-4 py-2 text-gray-700 text-sm dark:text-neutral-200 hover:bg-gray-100 dark:hover:bg-neutral-700" role="menuitem" tabindex="-1" data-action="logout">Sign out</a>
             <a
               id="user-menu-item-4"
               href="#"
-              class="my-1 flex justify-between px-4 py-2 text-sm text-gray-500 dark:text-neutral-400 leading-6 hover:bg-neutral-50 hover:text-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-gray-200"
+              class="flex justify-between my-1 px-4 py-2 leading-6 text-gray-500 text-sm dark:text-neutral-400 hover:text-neutral-600 dark:hover:text-gray-200 hover:bg-neutral-50 dark:hover:bg-neutral-700"
               role="menuitem"
               tabindex="-1"
             >
-              <label for="small" class="mr-2 self-center text-sm text-gray-500 dark:text-neutral-300">
+              <label for="small" class="self-center mr-2 text-gray-500 text-sm dark:text-neutral-300">
                 Theme
               </label>
 
               <select
                 id="small"
-                class="border border-gray-300 rounded-lg bg-gray-50 text-sm text-gray-500 dark:border-neutral-600 focus:border-blue-500 dark:bg-neutral-700 dark:text-white focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500 dark:placeholder-gray-400"
+                class="dark:placeholder-gray-400 text-gray-500 text-sm dark:text-white bg-gray-50 dark:bg-neutral-700 border border-gray-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 dark:focus:border-blue-500 dark:focus:ring-blue-500"
                 data-model="theme"
               >
                 <option value="light">Light</option>

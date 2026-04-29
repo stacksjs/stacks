@@ -14,14 +14,14 @@ let edges = []
     <template #actions>
       <Button variant="secondary">View Logs</Button>
       <Button variant="primary">
-        <div class="i-hugeicons-plus-sign h-4 w-4"></div>
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Deploy Function
       </Button>
     </template>
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" icon="i-hugeicons-zap" iconBg="primary" />
     @endforeach
@@ -29,9 +29,9 @@ let edges = []
 
   @if (functions.length > 0 || edges.length > 0)
   <!-- Functions Table -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Functions</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Functions</span>
     </div>
 
     <DataTable
@@ -51,7 +51,7 @@ let edges = []
     >
       @foreach (functions as fn)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ fn.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ fn.name }}</td>
           <td class="px-4 py-3">
             <Badge variant="default" size="xs">{{ fn.runtime }}</Badge>
           </td>
@@ -62,9 +62,9 @@ let edges = []
             <Badge variant="success" size="xs" dot>{{ fn.status }}</Badge>
           </td>
           <td class="px-4 py-3">
-            <div class="flex items-center gap-1">
+            <div class="flex gap-1 items-center">
               <Button variant="ghost" size="xs">Logs</Button>
-              <Button variant="ghost" size="xs" iconOnly><div class="i-hugeicons-edit-01 w-4 h-4"></div></Button>
+              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
             </div>
           </td>
         </tr>
@@ -75,13 +75,13 @@ let edges = []
   <!-- Edge Locations -->
   <Card>
     <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <span class="text-[14px] font-semibold text-neutral-900 dark:text-white">Edge Locations</span>
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Edge Locations</span>
     </div>
-    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 p-4">
+    <div class="grid gap-4 grid-cols-2 lg:grid-cols-4 p-4">
       @foreach (edges as edge)
-        <div class="text-center p-4 rounded-lg bg-neutral-50 dark:bg-neutral-800">
-          <div class="text-[14px] font-semibold text-neutral-900 dark:text-white">{{ edge.region }}</div>
-          <div class="text-xl font-bold text-blue-600 dark:text-blue-400 mt-2">{{ edge.latency }}</div>
+        <div class="p-4 text-center bg-neutral-50 dark:bg-neutral-800 rounded-lg">
+          <div class="font-semibold text-[14px] text-neutral-900 dark:text-white">{{ edge.region }}</div>
+          <div class="mt-2 font-bold text-blue-600 text-xl dark:text-blue-400">{{ edge.latency }}</div>
           <div class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ edge.requests }} requests</div>
         </div>
       @endforeach

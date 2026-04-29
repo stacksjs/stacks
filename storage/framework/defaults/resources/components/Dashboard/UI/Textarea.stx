@@ -50,7 +50,7 @@ const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
     @if(label || (showCount && maxLength))
       <div class="flex items-center justify-between mb-1.5">
         @if(label)
-          <label for="{{ textareaId }}" class="block text-sm font-medium text-neutral-700 dark:text-neutral-200">
+          <label for="{{ textareaId }}" class="block font-medium text-neutral-700 text-sm dark:text-neutral-200">
             {{ label }}
             @if(required)
               <span class="text-red-500">*</span>
@@ -58,7 +58,7 @@ const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
           </label>
         @endif
         @if(showCount && maxLength)
-          <span class="text-xs text-neutral-400 dark:text-neutral-500">
+          <span class="text-neutral-400 text-xs dark:text-neutral-500">
             <span data-char-count>{{ value.length || 0 }}</span>/{{ maxLength }}
           </span>
         @endif
@@ -79,15 +79,15 @@ const textareaId = id || 'textarea-' + Math.random().toString(36).slice(2, 11)
       >{{ value }}</textarea>
 
       @if(showCount && !maxLength)
-        <span class="absolute bottom-2 right-2 text-xs text-neutral-400 dark:text-neutral-500 bg-white dark:bg-neutral-900 px-1">
+        <span class="absolute bottom-2 right-2 px-1 text-neutral-400 text-xs dark:text-neutral-500 bg-white dark:bg-neutral-900">
           <span data-char-count>{{ value.length || 0 }}</span> characters
         </span>
       @endif
     </div>
 
     @if(error)
-      <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+      <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
     @elseif(hint)
-      <p class="mt-1.5 text-sm text-neutral-500 dark:text-neutral-400">{{ hint }}</p>
+      <p class="mt-1.5 text-neutral-500 text-sm dark:text-neutral-400">{{ hint }}</p>
     @endif
   </div>

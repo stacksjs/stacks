@@ -8,14 +8,14 @@ interface DropdownProps {
 
 const { label = '', open = false, elements = [], id = 'dropdown-nav-' + Math.random().toString(36).slice(2, 11) } = defineProps<DropdownProps>()
 </script>
-<div ref="pageRoot" class="flex flex-col gap-y-2 overflow-hidden" data-dropdown-nav="{{ id }}">
-  <a class="flex items-center justify-between gap-x-2 cursor-pointer" data-toggle>
-    <span class="text-sm text-dark font-medium">
+<div ref="pageRoot" class="flex overflow-hidden flex-col gap-y-2" data-dropdown-nav="{{ id }}">
+  <a class="flex gap-x-2 items-center justify-between cursor-pointer" data-toggle>
+    <span class="font-medium text-dark text-sm">
       {{ label }}
     </span>
 
     <span class="i-hugeicons-chevron-down" data-icon-closed></span>
-    <span class="i-hugeicons-minus hidden" data-icon-open></span>
+    <span class="hidden i-hugeicons-minus" data-icon-open></span>
   </a>
 
   <ul data-list class="{{ open ? '' : 'hidden' }}">

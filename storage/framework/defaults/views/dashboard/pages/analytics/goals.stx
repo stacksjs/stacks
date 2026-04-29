@@ -27,7 +27,7 @@ function statusVariant(s) {
   </PageHeader>
 
   <!-- Stats -->
-  <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-4">
     @foreach (stats as stat)
       <StatsCard :title="stat.label" value="{{ stat.value }}" />
     @endforeach
@@ -35,7 +35,7 @@ function statusVariant(s) {
 
   @if (goals.length > 0 || conversions.length > 0)
   <!-- Goal Progress -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="[
         { key: 'name', label: 'Goal' },
@@ -52,10 +52,10 @@ function statusVariant(s) {
     >
       @foreach (goals as goal)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ goal.name }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ goal.name }}</td>
           <td class="px-4 py-3 w-48">
-            <div class="flex items-center gap-2">
-              <div class="flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full overflow-hidden">
+            <div class="flex gap-2 items-center">
+              <div class="overflow-hidden flex-1 h-1.5 bg-neutral-200 dark:bg-neutral-700 rounded-full">
                 <div class="h-full rounded-full {{ goal.status === 'completed' ? 'bg-green-500' : goal.status === 'at_risk' ? 'bg-amber-500' : 'bg-blue-500' }}" style="width: {{ Math.min(goal.progress, 100) }}%;"></div>
               </div>
               <span class="text-[12px] text-neutral-500 dark:text-neutral-400">{{ goal.progress.toFixed(1) }}%</span>
@@ -75,7 +75,7 @@ function statusVariant(s) {
   </div>
 
   <!-- Conversion Funnels -->
-  <div class="bg-white dark:bg-neutral-800/90 rounded-xl border border-black/5 dark:border-white/5">
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
     <DataTable
       :columns="[
         { key: 'funnel', label: 'Funnel' },
@@ -90,10 +90,10 @@ function statusVariant(s) {
     >
       @foreach (conversions as conv)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3 text-[13px] font-medium text-neutral-900 dark:text-white">{{ conv.funnel }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ conv.funnel }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ conv.visitors }}</td>
           <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ conv.conversions }}</td>
-          <td class="px-4 py-3 text-[13px] font-semibold text-green-600 dark:text-green-400">{{ conv.rate }}</td>
+          <td class="px-4 py-3 font-semibold text-[13px] text-green-600 dark:text-green-400">{{ conv.rate }}</td>
         </tr>
       @endforeach
     </DataTable>

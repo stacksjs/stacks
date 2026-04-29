@@ -61,7 +61,7 @@ const checkboxId = id || 'checkbox-' + Math.random().toString(36).slice(2, 11)
   </div>
 
   @if(error)
-    <p class="mt-1.5 text-sm text-red-600 dark:text-red-400">{{ error }}</p>
+    <p class="mt-1.5 text-red-600 text-sm dark:text-red-400">{{ error }}</p>
   @endif
 <style>
 input:checked + label {
