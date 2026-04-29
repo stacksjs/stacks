@@ -936,7 +936,7 @@
       "devDependencies": {
         "@stacksjs/validation": "workspace:*",
         "@types/bun": "^1.3.11",
-        "typescript": "^5.9.3",
+        "typescript": "^6.0.3",
       },
     },
     "storage/framework/core/ui": {
@@ -2257,7 +2257,7 @@
 
     "@stacksjs/testing/@stacksjs/ts-cloud": ["@stacksjs/ts-cloud@0.1.14", "", { "dependencies": { "fast-xml-parser": "^5.4.2", "ts-cloud-aws-types": "0.1.14", "ts-cloud-core": "0.1.14", "ts-cloud-types": "0.1.14" }, "bin": { "cloud": "./dist/bin/cli.js" } }, "sha512-/uIJSR9QJm6WvaMxWx8OAC4kMdkamgpFiIG0J2+Qs+EPMoQXEJHI2wujhTrJFgwnf7ucuqd+qHU6Er4klEW8Cg=="],
 
-    "@stacksjs/types/typescript": ["typescript@5.9.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-jl1vZzPDinLr9eUt3J/t7V6FgNEw9QjvBPdysz9KfQDD41fQrC2Y4vKQdiaUpFT4bXlb1RHhLpp8wtm6M5TgSw=="],
+    "@stacksjs/types/typescript": ["typescript@6.0.3", "", { "bin": { "tsc": "bin/tsc", "tsserver": "bin/tsserver" } }, "sha512-y2TvuxSZPDyQakkFRPZHKFm+KKVqIisdg9/CZwm9ftvKXLP8NRWj38/ODjNbr43SsoXqNuAisEf1GdCxqWcdBw=="],
 
     "@textlint/linter-formatter/pluralize": ["pluralize@2.0.0", "", {}, "sha512-TqNZzQCD4S42De9IfnnBvILN7HAW7riLqsCyp8lgjXeysyPlX5HhqKAcJHHHb9XskE4/a+7VGC9zzx8Ls0jOAw=="],
 
