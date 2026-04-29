@@ -10,11 +10,15 @@ import { existsSync, readdirSync, readFileSync, unlinkSync, writeFileSync } from
 import { join } from 'node:path'
 import { log as _log } from '@stacksjs/logging'
 
-// Defensive log wrapper to handle cases where log methods might not be initialized
+// Defensive log wrapper to handle cases where log methods might not be initialized.
+// Without `error` here, the catch block at runDatabaseMigration() throws
+// "log.error is not a function", which masked the underlying migration error
+// in the dev-server output.
 const log = {
   info: (...args: any[]) => typeof _log?.info === 'function' ? _log.info(...args) : console.log(...args),
   success: (msg: string) => typeof _log?.success === 'function' ? _log.success(msg) : console.log(msg),
   warn: (msg: string) => typeof _log?.warn === 'function' ? _log.warn(msg) : console.warn(msg),
+  error: (...args: any[]) => typeof _log?.error === 'function' ? _log.error(...args) : console.error(...args),
   debug: (...args: any[]) => typeof _log?.debug === 'function' ? _log.debug(...args) : console.debug(...args),
 }
 import { err, handleError, ok } from '@stacksjs/error-handling'

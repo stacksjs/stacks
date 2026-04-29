@@ -5,7 +5,9 @@ function italic(str: string): string {
 }
 import { path } from '@stacksjs/path'
 import { db } from '../../utils'
-import { hasMigrationBeenCreated } from '../index'
+// Import from `../helpers` (not `../index`) to avoid re-entering the
+// drivers barrel — see `../helpers.ts` for the cycle-deadlock rationale.
+import { hasMigrationBeenCreated } from '../helpers'
 
 // bun-query-builder utilities are used via db.unsafe() for raw SQL
 

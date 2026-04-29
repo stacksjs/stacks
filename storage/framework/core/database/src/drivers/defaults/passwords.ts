@@ -4,7 +4,9 @@ function italic(str: string): string {
   return `\x1B[3m${str}\x1B[23m`
 }
 import { path } from '@stacksjs/path'
-import { hasMigrationBeenCreated } from '../index'
+// Import from `../helpers` (not `../index`) to avoid re-entering the
+// drivers barrel — see `../helpers.ts` for the cycle-deadlock rationale.
+import { hasMigrationBeenCreated } from '../helpers'
 
 // SQLite/MySQL version
 export async function createPasswordResetsTable(): Promise<void> {

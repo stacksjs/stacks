@@ -1,5 +1,5 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
-import { existsSync, mkdirSync, openSync, readdirSync, rmSync } from 'node:fs'
+import { closeSync, existsSync, mkdirSync, openSync, readdirSync, rmSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
@@ -21,10 +21,14 @@ function acquireMigrationLock(): { acquired: boolean, release: () => void } {
   const lockFile = `${lockDir}/migrations.lock`
   try {
     if (!existsSync(lockDir)) mkdirSync(lockDir, { recursive: true })
-    // O_CREAT | O_EXCL | O_WRONLY = 0o102 — atomic create-or-fail
-    const fd = openSync(lockFile, 0o102)
-    try { /* fd not needed — close immediately */ } finally { /* close happens via release */ }
-    void fd
+    // 'wx' = O_WRONLY | O_CREAT | O_EXCL via Node's portable string mode.
+    // The previous numeric flag (0o102) was hard-coded to Linux's bit
+    // layout — on macOS that bit pattern omits O_CREAT entirely, so the
+    // lock acquisition ALWAYS failed with ENOENT (no such file), which
+    // tripped the "already running" branch and silently exited the
+    // entire migrate command via process.exit() with no visible reason.
+    const fd = openSync(lockFile, 'wx')
+    try { closeSync(fd) } catch { /* ignore */ }
     return {
       acquired: true,
       release: () => {

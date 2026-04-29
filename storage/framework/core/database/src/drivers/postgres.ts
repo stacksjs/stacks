@@ -6,12 +6,18 @@ import { log } from '@stacksjs/logging'
 function italic(str: string): string {
   return `\x1B[3m${str}\x1B[23m`
 }
-import { createPasswordResetsTable, db } from '@stacksjs/database'
+// Local relative imports — see drivers/mysql.ts for the cycle-deadlock rationale.
+import { db } from '../utils'
+import { createPasswordResetsTable } from './defaults/passwords'
 import { ok } from '@stacksjs/error-handling'
-import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
+// Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
+// we go around the orm barrel.
+import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '../../../orm/src/utils'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { plural, snakeCase } from '@stacksjs/strings'
+// Import from `./helpers` (not `.`) to avoid re-entering the drivers
+// barrel — see `./helpers.ts` for the cycle-deadlock rationale.
 import {
   arrangeColumns,
   checkPivotMigration,
@@ -24,7 +30,7 @@ import {
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
-} from '.'
+} from './helpers'
 
 import {
   createPostgresCategorizableTable,

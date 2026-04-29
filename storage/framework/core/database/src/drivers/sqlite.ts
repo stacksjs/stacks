@@ -6,12 +6,17 @@ function italic(str: string): string {
   return `\x1B[3m${str}\x1B[23m`
 }
 import { app } from '@stacksjs/config'
-import { db } from '@stacksjs/database'
+// Local relative import — see drivers/mysql.ts for the cycle-deadlock rationale.
+import { db } from '../utils'
 import { ok } from '@stacksjs/error-handling'
-import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
+// Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
+// we go around the orm barrel.
+import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '../../../orm/src/utils'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
+// Import from `./helpers` (not `.`) to avoid re-entering the drivers
+// barrel — see `./helpers.ts` for the cycle-deadlock rationale.
 import {
   arrangeColumns,
   checkPivotMigration,
@@ -24,7 +29,7 @@ import {
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
-} from '.'
+} from './helpers'
 import { dropCommonTables } from './defaults/traits'
 
 export async function resetSqliteDatabase(): Promise<Ok<string, never>> {
@@ -208,6 +213,7 @@ async function createTableMigration(modelPath: string) {
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  // eslint-disable-next-line pickier/no-unused-vars -- `db` is the parameter name in the generated migration's exported `up()`, not in this scope
   migrationContent += `export async function up(db: Database<any>) {\n`
   migrationContent += `  await (db as any).schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
@@ -355,6 +361,7 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+    // eslint-disable-next-line pickier/no-unused-vars -- `db` is the parameter name in the generated migration's exported `up()`, not in this scope
     migrationContent += `export async function up(db: Database<any>) {\n`
     migrationContent += `  await (db as any).schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
@@ -398,6 +405,7 @@ async function createAlterTableMigration(modelPath: string) {
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
+  // eslint-disable-next-line pickier/no-unused-vars -- `db` is the parameter name in the generated migration's exported `up()`, not in this scope
   migrationContent += `export async function up(db: Database<any>) {\n`
 
   if (fieldsToAdd.length || fieldsToRemove.length) {

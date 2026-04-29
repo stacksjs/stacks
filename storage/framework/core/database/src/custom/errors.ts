@@ -1,7 +1,10 @@
 import { log } from '@stacksjs/logging'
 import { database } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { hasTableBeenMigrated } from '../drivers'
+// Pull from the leaf helpers file directly rather than the drivers barrel —
+// the barrel re-exports every driver, which has its own load cycle. Going
+// through a leaf file keeps the load graph for `custom/errors` acyclic.
+import { hasTableBeenMigrated } from '../drivers/helpers'
 
 export async function createErrorsTable(): Promise<void> {
   if (['sqlite', 'mysql'].includes(getDriver())) {

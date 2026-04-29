@@ -6,13 +6,24 @@ import { log } from '@stacksjs/logging'
 function italic(str: string): string {
   return `\x1B[3m${str}\x1B[23m`
 }
-import { createPasswordResetsTable, db } from '@stacksjs/database'
+// Local relative imports rather than '@stacksjs/database' — the package's
+// own root re-exports `./drivers/*`, so importing it from inside a driver
+// creates a self-cycle that deadlocks bun's module loader (60s @ 99% CPU)
+// when @stacksjs/database is imported at top-level outside the framework's
+// preloader context (e.g. by `bun test`).
+import { db } from '../utils'
+import { createPasswordResetsTable } from './defaults/passwords'
 import { ok } from '@stacksjs/error-handling'
-import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '@stacksjs/orm'
+// Deep import to the leaf orm/utils file — see drivers/helpers.ts for why
+// we go around the orm barrel (the barrel re-exports `./db` which loops
+// back into @stacksjs/database and deadlocks bun's loader).
+import { fetchOtherModelRelations, getModelName, getPivotTables, getTableName } from '../../../orm/src/utils'
 
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { snakeCase } from '@stacksjs/strings'
+// Import from `./helpers` (not `.`) to avoid re-entering the drivers
+// barrel — see `./helpers.ts` for the cycle-deadlock rationale.
 import {
   arrangeColumns,
   checkPivotMigration,
@@ -26,7 +37,7 @@ import {
   isArrayEqual,
   mapFieldTypeToColumnType,
   pluckChanges,
-} from '.'
+} from './helpers'
 
 import { createCategorizableTable, createCommentablesTable, createCommentUpvoteMigration, createPasskeyMigration, createQueryLogsTable, createTaggablesTable, createTaggableTable, dropCommonTables } from './defaults/traits'
 
