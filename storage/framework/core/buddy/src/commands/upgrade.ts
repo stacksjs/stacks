@@ -12,6 +12,8 @@ export function upgrade(buddy: CLI): void {
     canary: 'Upgrade to the latest canary (development) build',
     stable: 'Switch back to the latest stable release',
     force: 'Force re-download, bypassing cache and version checks',
+    from: 'Sync from a local stacks checkout (e.g. ~/Code/stacks). Skips GitHub.',
+    noPostinstall: 'Skip post-sync hooks (auto-imports, bun install, migrate)',
     verbose: 'Enable verbose output',
     dependencies: 'Upgrade your dependencies (pantry.yaml & package.json)',
     bun: 'Upgrade Bun to the latest version',
@@ -28,9 +30,17 @@ export function upgrade(buddy: CLI): void {
     .option('--canary', descriptions.canary, { default: false })
     .option('--stable', descriptions.stable, { default: false })
     .option('-f, --force', descriptions.force, { default: false })
+    .option('--from <path>', descriptions.from)
+    // No `default` here — cac treats `--no-postinstall` as a negation flag and
+    // would set `postinstall: false` by default if we passed `default: false`,
+    // making the script silently skip post-sync hooks even when the user did
+    // not pass the flag. Letting cac handle the default keeps the natural
+    // behavior: hooks run unless `--no-postinstall` is explicitly given.
+    .option('--no-postinstall', descriptions.noPostinstall)
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('update')
     .example('buddy upgrade')
+    .example('buddy upgrade --from ~/Code/stacks')
     .example('buddy upgrade --version 0.70.23')
     .example('buddy upgrade --canary')
     .example('buddy upgrade --stable')
@@ -38,8 +48,19 @@ export function upgrade(buddy: CLI): void {
     .action(async (options: UpgradeOptions) => {
       log.debug('Running `buddy upgrade` ...', options)
 
+      // cac parses `--no-postinstall` as `{ postinstall: false }`. The
+      // shared `buddyOptions` serializer used by `runAction` drops keys
+      // whose value is `false`, so the flag would silently disappear on
+      // the way to the action. Re-emit it as a true boolean the action
+      // already understands.
+      const opts: UpgradeOptions = { ...options }
+      if (opts.postinstall === false) {
+        delete (opts as Record<string, unknown>).postinstall
+        opts.noPostinstall = true
+      }
+
       const perf = await intro('buddy upgrade')
-      const result = await runAction(Action.UpgradeFramework, options)
+      const result = await runAction(Action.UpgradeFramework, opts)
 
       if (result.isErr) {
         await outro(

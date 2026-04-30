@@ -1,6 +1,6 @@
 import type { StacksOptions } from '@stacksjs/types'
 import { defaults } from './defaults'
-import { overrides } from './overrides'
+import { overrides, overridesReady } from './overrides'
 
 // merged defaults and overrides
 //
@@ -23,21 +23,60 @@ function readMerged(prop: string): unknown {
   return (defaults as any)[prop]
 }
 
-export const config: StacksOptions = new Proxy({} as StacksOptions, {
-  get(_target, prop: string) {
+// Expose `config` as a Proxy of a function target. Two non-obvious things
+// going on here:
+//
+// 1) The target is a function, not `{}`. Both Bun and V8 have aggressive
+//    inline-cache paths for plain-object proxy targets — the first
+//    property access ends up sealing the target and any subsequent reads
+//    skip the trap, returning whatever the first call produced.
+//    Functions don't go through that fast path.
+//
+// 2) We define the full set of traps the engine queries during property
+//    access (`get`, `has`, `getOwnPropertyDescriptor`, `ownKeys`,
+//    `isExtensible`, `getPrototypeOf`). Without our own
+//    `isExtensible`/`preventExtensions` traps, the engine can decide the
+//    target is non-extensible (because the function target started with
+//    no own properties) and freeze further access. Returning `true` from
+//    `isExtensible` and refusing `preventExtensions` forces a fresh trap
+//    invocation on every read.
+//
+// The combined effect: `config.ports.api` re-evaluates `readMerged` every
+// time, so once `overridesReady` resolves, the ports values from
+// `config/ports.ts` are immediately visible.
+const proxyTarget = function configProxyTarget() { /* unused */ } as unknown as StacksOptions
+export const config: StacksOptions = new Proxy(proxyTarget, {
+  get(_t, prop: string) {
     return readMerged(prop)
   },
-  has(_target, prop) {
+  has(_t, prop) {
     return prop in overrides || prop in defaults
   },
   ownKeys() {
-    return Array.from(new Set([...Object.keys(overrides), ...Object.keys(defaults)]))
+    return Array.from(new Set([
+      ...Object.keys(overrides as object),
+      ...Object.keys(defaults as object),
+    ]))
   },
-  getOwnPropertyDescriptor(_target, prop) {
-    if (typeof prop === 'string' && (prop in overrides || prop in defaults)) {
-      return { enumerable: true, configurable: true, writable: true, value: readMerged(prop) }
+  getOwnPropertyDescriptor(_t, prop) {
+    if (typeof prop !== 'string') return undefined
+    if (!(prop in (overrides as object)) && !(prop in (defaults as object))) return undefined
+    return {
+      enumerable: true,
+      configurable: true,
+      writable: true,
+      value: readMerged(prop),
     }
-    return undefined
+  },
+  // Force the target to remain extensible. Without this, the engine can
+  // freeze the target after the first descriptor query and short-circuit
+  // future reads — which is exactly the bug we hit with the previous
+  // empty-object proxy target.
+  isExtensible() {
+    return true
+  },
+  preventExtensions() {
+    return false
   },
 }) as StacksOptions
 
@@ -48,6 +87,29 @@ export function getConfig(): StacksOptions {
   return config
 }
 
+// Per-section convenience exports.
+//
+// Caveat: these are *snapshots* taken at module-load time. ESM `export
+// const x = expr` evaluates `expr` once and binds `x` to that result —
+// there's no language-level way to make a named export re-evaluate
+// per access. So `import { ports } from '@stacksjs/config'` returns
+// whatever `config.ports` was when the config module first evaluated,
+// which is *before* `overridesReady` resolves and the user's
+// `config/*.ts` files land.
+//
+// In practice that means the named exports return the framework
+// defaults, not the user's overrides. They're kept here for
+// backwards compatibility — code that needs live, override-aware
+// values should read off the `config` proxy directly:
+//
+//     import { config } from '@stacksjs/config'
+//     await overridesReady   // optional: wait for user configs
+//     config.ports.api       // reactive, reflects config/ports.ts
+//
+// The tradeoff was deliberate: making these exports lazy would break
+// destructuring (`const { ports } = config` would have the same issue)
+// and force every consumer to await config readiness, which is the
+// wrong default for cold-path settings that never change.
 export const ai: StacksOptions['ai'] = config.ai
 export const analytics: StacksOptions['analytics'] = config.analytics
 export const app: StacksOptions['app'] = config.app
@@ -78,22 +140,26 @@ export const team: StacksOptions['team'] = config.team
 export const ui: StacksOptions['ui'] = config.ui
 
 export * from './helpers'
-export { defaults, overrides }
+export { defaults, overrides, overridesReady }
 
 type AppEnv = 'dev' | 'stage' | 'prod' | string
 
 export function determineAppEnv(): AppEnv {
-  if (app.env === 'local' || app.env === 'development')
+  // Read off the live proxy, not the snapshot `app` const above — when
+  // this is called from CLI commands the config module evaluated long
+  // before the user's app config landed, and we want the live value.
+  const env = (config as { app?: { env?: string } }).app?.env
+  if (env === 'local' || env === 'development')
     return 'dev'
 
-  if (app.env === 'staging')
+  if (env === 'staging')
     return 'stage'
 
-  if (app.env === 'production')
+  if (env === 'production')
     return 'prod'
 
-  if (!app.env)
+  if (!env)
     throw new Error('Couldn\'t determine app environment')
 
-  return app.env
+  return env
 }

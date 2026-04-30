@@ -69,3 +69,13 @@ pantry
 
 # Build artifact directory used by docs/build steps — never tracked.
 storage/framework/cache/
+
+# Persisted by `buddy update` to remember whether the project is following the
+# `stable` or `canary` channel. Local preference only — the channel choice
+# doesn't need to be shared across team members or CI.
+.stacks-channel
+
+# Temp directory used during a `buddy update` GitHub fetch. Cleaned up by the
+# upgrade action on success but listed here to keep stray copies (e.g. from a
+# kill -9'd run) out of commits.
+.tmp-upgrade/

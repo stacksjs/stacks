@@ -25,6 +25,7 @@ const sidebarRoutes = {
   'commands': '/app/commands',
   'queue': '/app/queue',
   'jobs': '/app/jobs',
+  'inbox': '/app/inbox',
   'queries': '/app/queries',
   'notifications': '/app/notifications',
   'data-dashboard': '/data/dashboard',

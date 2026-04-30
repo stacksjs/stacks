@@ -1,0 +1,134 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+// Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Inbox · App · Dashboard' })
+
+const { readdir, readFile, stat } = await import('node:fs/promises')
+const { join } = await import('node:path')
+const { logsPath } = await import('@stacksjs/path')
+
+const driver = String(process.env.MAIL_MAILER || process.env.MAIL_DRIVER || 'log')
+let emails = []
+let totalEmails = 0
+let dirInUse = ''
+
+try {
+  // Mirror the InboxIndexAction: read every captured .html file from the
+  // log driver's output directory. The action also merges in the in-memory
+  // capture buffer, but at SSR time the dashboard process and the API
+  // process are separate, so we only have authoritative data on disk.
+  dirInUse = process.env.LOG_MAIL_DIR || logsPath('mail')
+  const names = await readdir(dirInUse)
+  const htmlFiles = names.filter(n => n.endsWith('.html'))
+
+  emails = await Promise.all(htmlFiles.map(async (name) => {
+    const filePath = join(dirInUse, name)
+    const [body, info] = await Promise.all([readFile(filePath, 'utf8'), stat(filePath)])
+    const headerMatch = body.match(/<!--([\s\S]*?)-->/)
+    const header = headerMatch?.[1] || ''
+    const grab = (label) => {
+      const m = header.match(new RegExp(label + ':\\s*([^\\n]+)', 'i'))
+      return (m?.[1] || '').trim()
+    }
+    const visible = body.replace(/<!--[\s\S]*?-->/, '')
+    const preview = visible
+      .replace(/<style[\s\S]*?<\/style>/gi, '')
+      .replace(/<script[\s\S]*?<\/script>/gi, '')
+      .replace(/<[^>]+>/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, 140)
+
+    return {
+      id: name,
+      from: grab('From'),
+      to: grab('To'),
+      subject: grab('Subject') || name.replace(/\.html$/, ''),
+      preview,
+      sentAt: (header.match(/at\s+([^\n]+)/)?.[1] || '').trim() || info.mtime.toISOString(),
+      size: info.size,
+    }
+  }))
+
+  emails.sort((a, b) => new Date(b.sentAt).getTime() - new Date(a.sentAt).getTime())
+  totalEmails = emails.length
+}
+catch (e) {
+  // Directory doesn't exist yet — no mail has been captured.
+}
+
+function formatSentAt(iso) {
+  if (!iso) return '-'
+  const d = new Date(iso)
+  if (Number.isNaN(d.getTime())) return iso
+  return d.toLocaleString()
+}
+
+function formatSize(bytes) {
+  if (!bytes) return '0 B'
+  if (bytes < 1024) return bytes + ' B'
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB'
+  return (bytes / (1024 * 1024)).toFixed(1) + ' MB'
+}
+</script>
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Inbox" description="Transactional emails captured by the {{ driver }} mail driver.">
+    <template #actions>
+      <Button variant="secondary" href="/management/mailboxes">
+        <div class="h-4 w-4 i-hugeicons-mail-02"></div>
+        Mailboxes
+      </Button>
+    </template>
+  </PageHeader>
+
+  <!-- Stats -->
+  <div class="grid gap-4 grid-cols-2 md:grid-cols-3">
+    <StatsCard title="Captured" value="{{ totalEmails }}" icon="i-hugeicons-mail-02" iconBg="primary" />
+    <StatsCard title="Driver" value="{{ driver }}" icon="i-hugeicons-cube-02" iconBg="info" />
+    <StatsCard title="Storage" :value="dirInUse || 'no captures yet'" icon="i-hugeicons-folder-02" iconBg="success" />
+  </div>
+
+  <!-- Emails Table -->
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Recent transactional emails</span>
+    </div>
+
+    <DataTable
+      :columns="[
+        { key: 'subject', label: 'Subject' },
+        { key: 'to', label: 'To' },
+        { key: 'from', label: 'From' },
+        { key: 'sentAt', label: 'Sent' },
+        { key: 'size', label: 'Size' }
+      ]"
+      :data="emails"
+      emptyTitle="No transactional emails yet"
+      emptyDescription="Trigger an email from your app — anything sent through the framework's mail singleton lands here while MAIL_MAILER=log."
+      emptyIcon="i-hugeicons-mail-02"
+    >
+      @foreach(emails as email)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 max-w-md">
+            <div class="font-medium text-[13px] text-neutral-900 truncate dark:text-white">{{ email.subject }}</div>
+            <div class="mt-0.5 text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ email.preview }}</div>
+          </td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ email.to }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ email.from }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 whitespace-nowrap dark:text-neutral-400">{{ formatSentAt(email.sentAt) }}</td>
+          <td class="px-4 py-3 font-mono text-[12px] text-neutral-500 whitespace-nowrap dark:text-neutral-400">{{ formatSize(email.size) }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+
+  @if(driver === 'log')
+    <div class="p-3 text-[12px] text-neutral-500 bg-neutral-50 dark:bg-white/[0.02] rounded-lg dark:text-neutral-400">
+      The <code class="font-mono">log</code> driver writes captured emails to <code class="font-mono">{{ dirInUse }}</code>. To deliver real mail in production, switch <code class="font-mono">MAIL_MAILER</code> in <code class="font-mono">.env</code> to <code class="font-mono">ses</code>, <code class="font-mono">sendgrid</code>, <code class="font-mono">mailgun</code>, <code class="font-mono">mailtrap</code>, or <code class="font-mono">smtp</code>; this view stays useful as a local preview either way.
+    </div>
+  @endif
+</div>
+@endsection

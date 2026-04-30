@@ -205,6 +205,7 @@ export function buildSidebarConfig(baseRoute: string, discoveredModels: Discover
           { id: 'commands', label: 'Commands', icon: 'terminal.fill', url: `${baseRoute}/app/commands` },
           { id: 'queue', label: 'Queue', icon: 'list.bullet.rectangle.fill', url: `${baseRoute}/app/queue` },
           { id: 'jobs', label: 'Jobs', icon: 'briefcase.fill', url: `${baseRoute}/app/jobs` },
+          { id: 'inbox', label: 'Inbox', icon: 'tray.full.fill', url: `${baseRoute}/app/inbox` },
           { id: 'queries', label: 'Queries', icon: 'magnifyingglass.circle.fill', url: `${baseRoute}/app/queries` },
           { id: 'notifications', label: 'Notifications', icon: 'bell.fill', url: `${baseRoute}/app/notifications` },
         ],

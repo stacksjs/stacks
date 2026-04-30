@@ -297,14 +297,14 @@ export type MakeOptions = {
   [key in MakeStringOption]: string
 } & CliOptions
 
-export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force' | 'canary' | 'stable'
+export type UpgradeBoolean = 'framework' | 'dependencies' | 'bun' | 'shell' | 'binary' | 'all' | 'force' | 'canary' | 'stable' | 'noPostinstall' | 'postinstall'
 
-export type UpgradeString = 'version'
+export type UpgradeString = 'version' | 'from'
 
 export type UpgradeOptions = {
-  [key in UpgradeBoolean]: boolean
+  [key in UpgradeBoolean]?: boolean
 } & {
-  [key in UpgradeString]: string
+  [key in UpgradeString]?: string
 } & CliOptions
 
 export type ExamplesString = 'version'

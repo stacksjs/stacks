@@ -252,7 +252,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   return async (req: EnhancedRequest) => {
     // Parse body and enhance request first
     await parseRequestBody(req)
-    const enhancedReq = enhanceWithLaravelMethods(req)
+    const enhancedReq = enhanceRequest(req)
 
     // Run the entire request handling within the request context
     // This allows Auth and other services to access the current request
@@ -642,10 +642,62 @@ function formatResult(result: unknown): Response {
  * Wrap a handler that might be a string path
  */
 /**
- * Add Laravel-style helper methods to request if not already present
+ * Attach the small set of request helpers our middleware and actions
+ * always assume are present — `bearerToken`, `getParam`, `cookie`,
+ * `params`. The names follow Laravel's convention because that's what
+ * Stacks userland already expects, but the implementation here doesn't
+ * depend on any Laravel runtime.
  */
-function enhanceWithLaravelMethods(req: EnhancedRequest): EnhancedRequest {
-  // If methods already exist, return as-is
+function ensureBearerTokenAndParams(req: EnhancedRequest): void {
+  if (typeof (req as any).bearerToken !== 'function') {
+    ;(req as any).bearerToken = (): string | null => {
+      const auth = req.headers.get('authorization') || req.headers.get('Authorization') || ''
+      return auth.startsWith('Bearer ') ? auth.slice(7) : null
+    }
+  }
+  if (typeof (req as any).getParam !== 'function') {
+    ;(req as any).getParam = <T = string>(name: string, defaultValue?: T): T | undefined => {
+      const params = (req as any).params
+      const value = params?.[name] as T | undefined
+      return value !== undefined ? value : defaultValue
+    }
+  }
+  if (typeof (req as any).cookie !== 'function') {
+    ;(req as any).cookie = (name: string, defaultValue?: string): string | null => {
+      const header = req.headers.get('cookie') || ''
+      for (const part of header.split(';')) {
+        const [k, ...rest] = part.trim().split('=')
+        if (k === name) return decodeURIComponent(rest.join('='))
+      }
+      return defaultValue ?? null
+    }
+  }
+  if (!(req as any).params) {
+    ;(req as any).params = {}
+  }
+}
+
+/**
+ * Decorate the incoming request with the helpers the framework's
+ * middleware and actions assume are always available.
+ *
+ * Method set: `bearerToken`, `getParam`, `cookie`, `params`, plus the
+ * Laravel-style input helpers (`get`, `string`, `integer`, `float`,
+ * `boolean`, `array`, `input`, `query`, etc.). Names follow Laravel's
+ * convention because that's the API surface stacks userland already
+ * expects, but none of this depends on Laravel at runtime.
+ */
+function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
+  // Always (re-)attach `bearerToken`, `getParam`, `cookie`, `params`.
+  // Different bun-router versions wire these up differently — some only
+  // attach them when `applyMacros` is explicitly invoked. Doing it here
+  // unconditionally is a defense-in-depth hedge that guarantees Auth.ts
+  // and the 100+ `request.getParam('id')` callers see them on every
+  // request, regardless of which bun-router happens to be installed.
+  ensureBearerTokenAndParams(req)
+
+  // The big input-helper bundle below is only added when bun-router
+  // didn't already attach it — `req.get` is our cheap presence sniff.
   if (typeof (req as any).get === 'function') {
     return req
   }
@@ -879,7 +931,7 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerF
           await parseRequestBody(req)
 
           // Enhance request with Laravel-style methods
-          req = enhanceWithLaravelMethods(req)
+          req = enhanceRequest(req)
         }
 
         const resolvedHandler = await resolveStringHandler(handlerPath)

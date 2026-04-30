@@ -1,12 +1,25 @@
+// This file is a script entry — `bun --watch dev/api.ts`. Top-level await is
+// intentional throughout: we need the user's config to land before reading
+// the port, and the global auto-imports must be injected before
+// `route.importRoutes()` runs. Disabling the lint at the file level keeps
+// the rule active everywhere else in the codebase.
+/* eslint-disable ts/no-top-level-await */
 import { existsSync } from 'node:fs'
+import process from 'node:process'
 import { parseOptions } from '@stacksjs/cli'
-import { config } from '@stacksjs/config'
+import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
 import { cors, route } from '@stacksjs/router'
 import { generateAutoImportFiles, injectGlobalAutoImports } from '@stacksjs/server'
 
 const _options = parseOptions()
-const port = config.ports?.api || 3008
+
+// Wait for the user's config/*.ts files to land before reading the port.
+// Without this, `config.ports?.api` returns the framework default (3008)
+// because the user config loader runs in the background and hasn't
+// resolved yet. Env var wins so users can override via .env / shell.
+await overridesReady
+const port = Number(process.env.PORT_API) || config.ports?.api || 3008
 
 // Regenerate the model + function auto-import manifest ONLY when missing —
 // regenerating on every boot (and thus every hot-reload cycle) triggers an

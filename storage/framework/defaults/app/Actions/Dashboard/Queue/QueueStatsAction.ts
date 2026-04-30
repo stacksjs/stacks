@@ -1,9 +1,22 @@
 import { Action } from '@stacksjs/actions'
-import { Job, FailedJob } from '@stacksjs/orm'
+import { FailedJob, Job } from '@stacksjs/orm'
+import { getGlobalMetrics } from '@stacksjs/queue'
+
+interface QueueBucket {
+  pending: number
+  active: number
+  completed: number
+  failed: number
+  total: number
+}
+
+const isPending = (status: string) => status === 'pending' || status === 'waiting' || status === 'queued'
+const isActive = (status: string) => status === 'processing' || status === 'active'
+const isCompleted = (status: string) => status === 'completed' || status === 'done'
 
 export default new Action({
   name: 'QueueStatsAction',
-  description: 'Returns queue statistics.',
+  description: 'Returns aggregated queue statistics from the jobs/failed_jobs tables and the in-memory metrics tracker.',
   method: 'GET',
   async handle() {
     try {
@@ -13,24 +26,30 @@ export default new Action({
         Job.all(),
       ])
 
-      const activeJobs = allJobs.filter(j => j.get('status') === 'processing' || j.get('status') === 'active').length
-      const completedJobs = allJobs.filter(j => j.get('status') === 'completed' || j.get('status') === 'done').length
-      // eslint-disable-next-line pickier/no-unused-vars
-      const pendingJobs = allJobs.filter(j => j.get('status') === 'pending' || j.get('status') === 'waiting').length
+      const queueMap: Record<string, QueueBucket> = {}
+      let active = 0
+      let completed = 0
 
-      // Group jobs by queue name
-      const queueMap: Record<string, { pending: number, active: number, completed: number, failed: number, total: number }> = {}
       for (const j of allJobs) {
-        const qName = String(j.get('queue') || 'default')
-        if (!queueMap[qName]) {
-          queueMap[qName] = { pending: 0, active: 0, completed: 0, failed: 0, total: 0 }
+        const queueName = String(j.get('queue') || 'default')
+        const status = String(j.get('status') || 'pending')
+
+        if (!queueMap[queueName]) {
+          queueMap[queueName] = { pending: 0, active: 0, completed: 0, failed: 0, total: 0 }
         }
-        queueMap[qName].total++
-        const status = String(j.get('status') || '')
-        if (status === 'pending' || status === 'waiting') queueMap[qName].pending++
-        else if (status === 'processing' || status === 'active') queueMap[qName].active++
-        else if (status === 'completed' || status === 'done') queueMap[qName].completed++
-        else if (status === 'failed') queueMap[qName].failed++
+        const bucket = queueMap[queueName]
+        bucket.total++
+
+        if (isPending(status)) bucket.pending++
+        else if (isActive(status)) {
+          bucket.active++
+          active++
+        }
+        else if (isCompleted(status)) {
+          bucket.completed++
+          completed++
+        }
+        else if (status === 'failed') bucket.failed++
       }
 
       const queues = Object.entries(queueMap).map(([name, data]) => ({
@@ -43,13 +62,19 @@ export default new Action({
         total: data.total,
       }))
 
+      // The in-memory metrics tracker only sees jobs processed since the
+      // current API process started, so it complements (not replaces) the DB
+      // counts. If the process just booted there's nothing here yet.
+      const metrics = getGlobalMetrics().getMetrics()
+
       const stats = {
         totalQueues: queues.length,
         totalJobs,
-        activeJobs,
-        completedJobs,
+        activeJobs: active,
+        completedJobs: completed,
         failedJobs: failedJobCount,
-        throughputPerMinute: 0,
+        throughputPerMinute: metrics.throughputPerMinute,
+        averageProcessingTimeMs: Math.round(metrics.averageDuration),
       }
 
       return { queues, stats, queueConnected: true }
@@ -57,7 +82,15 @@ export default new Action({
     catch {
       return {
         queues: [],
-        stats: { totalQueues: 0, totalJobs: 0, activeJobs: 0, completedJobs: 0, failedJobs: 0, throughputPerMinute: 0 },
+        stats: {
+          totalQueues: 0,
+          totalJobs: 0,
+          activeJobs: 0,
+          completedJobs: 0,
+          failedJobs: 0,
+          throughputPerMinute: 0,
+          averageProcessingTimeMs: 0,
+        },
         queueConnected: false,
       }
     }

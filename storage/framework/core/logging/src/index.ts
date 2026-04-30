@@ -100,6 +100,28 @@ export interface Log {
   dd: (...args: any[]) => Promise<void>
   echo: (...args: any[]) => Promise<void>
   time: (label: string) => (metadata?: Record<string, any>) => Promise<void>
+  /**
+   * Synchronously write to stderr without going through the async file
+   * logger. Use right before `process.exit` — the async `log.warn` /
+   * `log.error` paths return a Promise, and `process.exit` kills the
+   * runtime before that Promise resolves, so the message vanishes.
+   */
+  syncWarn: (msg: string) => void
+  syncError: (msg: string) => void
+  /**
+   * Synchronously print a message to stderr and exit. Wraps the
+   * "log a fatal then die" pattern so callers can't accidentally race
+   * the async logger against `process.exit`.
+   *
+   * @example
+   * if (!options.force) log.fatal('Aborting: clean state required')
+   */
+  fatal: (msg: string, exitCode?: number) => never
+  /**
+   * Await pending async log writes so a subsequent `process.exit` doesn't
+   * truncate the output. Cheap when nothing is buffered.
+   */
+  flush: () => Promise<void>
 }
 
 export type ErrorMessage = string
@@ -185,6 +207,40 @@ export const log: Log = {
       const logger = await getLogger()
       const meta = metadata ? ` ${JSON.stringify(metadata)}` : ''
       await logger.info(`${label}: ${duration.toFixed(2)}ms${meta}`)
+    }
+  },
+
+  syncWarn: (msg: string) => {
+    // Direct stderr write — does not go through the async logger pipeline,
+    // so the byte hits the TTY before the next instruction. Use this
+    // immediately before `process.exit`.
+    process.stderr.write(`${msg}\n`)
+  },
+
+  syncError: (msg: string) => {
+    process.stderr.write(`${msg}\n`)
+  },
+
+  fatal: (msg: string, exitCode = ExitCode.FatalError): never => {
+    process.stderr.write(`${msg}\n`)
+    process.exit(exitCode)
+  },
+
+  flush: async (): Promise<void> => {
+    // If the logger never initialized there's nothing to flush — `getLogger`
+    // would create one we don't need. Same for the init-in-flight case;
+    // those callers already have a Promise to await.
+    if (!_logger && !_loggerInitPromise) return
+    try {
+      const logger = await getLogger()
+      // `clarity`'s Logger exposes a `flush()` for transports that buffer.
+      // It's optional in the type, so we call it dynamically and ignore
+      // the case where the runtime instance doesn't have one.
+      const maybeFlush = (logger as unknown as { flush?: () => Promise<void> }).flush
+      if (typeof maybeFlush === 'function') await maybeFlush.call(logger)
+    }
+    catch {
+      // Best-effort — never let flush fail crash a shutdown path.
     }
   },
 }
