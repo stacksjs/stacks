@@ -249,16 +249,44 @@ export const mitt = createEmitter
 export default createEmitter
 
 /**
+ * Concrete payload shape for the auth-related events. Keeping these
+ * narrow (instead of `Record<string, any>`) means listeners don't need to
+ * cast or guess what fields are present — the handler signature reflects
+ * what RegisterAction / LoginAction actually dispatch.
+ */
+export interface UserRegisteredEvent {
+  id?: number | string
+  email: string
+  name?: string
+  /** Convenience alias of `email` for SendWelcomeEmail-style listeners. */
+  to?: string
+}
+
+export interface UserLoggedInEvent {
+  id: number | string
+  email: string
+}
+
+export interface UserLoggedOutEvent {
+  id: number | string
+}
+
+export interface UserPasswordEvent {
+  id: number | string
+  email: string
+}
+
+/**
  * Application-wide event types. Listeners and dispatchers below are
  * pre-typed to this map; user-defined event names land here via
  * `ModelEvents` (model-emitted events) + the explicit auth events listed.
  */
 export interface StacksEvents extends ModelEvents, Record<EventType, unknown> {
-  'user:registered': Record<string, any>
-  'user:logged-in': Record<string, any>
-  'user:logged-out': Record<string, any>
-  'user:password-reset': Record<string, any>
-  'user:password-changed': Record<string, any>
+  'user:registered': UserRegisteredEvent
+  'user:logged-in': UserLoggedInEvent
+  'user:logged-out': UserLoggedOutEvent
+  'user:password-reset': UserPasswordEvent
+  'user:password-changed': UserPasswordEvent
 }
 
 const events: Emitter<StacksEvents> = createEmitter<StacksEvents>()

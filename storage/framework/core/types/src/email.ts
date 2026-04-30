@@ -277,7 +277,7 @@ export interface EmailOptions {
   server: EmailServerConfig
   notifications?: EmailNotificationsConfig
 
-  default: 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
+  default: 'log' | 'ses' | 'sendgrid' | 'mailgun' | 'mailtrap' | 'smtp'
 }
 
 export type EmailConfig = Partial<EmailOptions>

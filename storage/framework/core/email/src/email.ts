@@ -1,6 +1,7 @@
 import type { EmailDriver, EmailMessage, EmailResult } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import type { Message } from './types'
+import { LogEmailDriver } from './drivers/log'
 import { MailgunDriver } from './drivers/mailgun'
 import { MailtrapDriver } from './drivers/mailtrap'
 import { SendGridDriver } from './drivers/sendgrid'
@@ -124,6 +125,7 @@ class Mail {
   }
 
   private registerDefaultDrivers(): void {
+    this.drivers.set('log', new LogEmailDriver())
     this.drivers.set('ses', new SESDriver())
     this.drivers.set('sendgrid', new SendGridDriver())
     this.drivers.set('mailgun', new MailgunDriver())

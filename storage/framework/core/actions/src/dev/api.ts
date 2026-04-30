@@ -21,6 +21,28 @@ if (!existsSync(modelsIndex))
 // the "no imports needed" ergonomics of framework default actions.
 await injectGlobalAutoImports()
 
+// Boot the user's event listener registry. Without this, every dispatch()
+// inside an action (booking:created, payment:succeeded, car:updated, etc.)
+// is fire-and-silently-forgotten — emitter.on('*') is never registered.
+// The legacy `storage/framework/api/dev.ts` had this call, but the current
+// dev API entrypoint (this file) was missing it, so all listener-driven
+// flows (welcome emails, booking confirmations, search reindex) were
+// silently broken in dev. Wrap in try/catch so a missing/broken
+// app/Listener.ts can't crash the API boot.
+try {
+  const listenerPath = path.appPath('Listener.ts')
+  if (existsSync(listenerPath)) {
+    const listener = await import(listenerPath)
+    if (typeof listener.handleEvents === 'function') {
+      await listener.handleEvents()
+    }
+  }
+}
+catch (err) {
+  const { log } = await import('@stacksjs/cli')
+  log.warn(`[api:dev] failed to bootstrap event listeners — dispatched events will be ignored: ${(err as Error).message}`)
+}
+
 // Enable CORS middleware
 route.use(cors().handle.bind(cors()))
 

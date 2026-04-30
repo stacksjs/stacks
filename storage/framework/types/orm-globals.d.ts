@@ -19,6 +19,8 @@
  * })
  */
 
+import type { UserLoggedInEvent as _UserLoggedInEvent, UserLoggedOutEvent as _UserLoggedOutEvent, UserPasswordEvent as _UserPasswordEvent, UserRegisteredEvent as _UserRegisteredEvent } from '@stacksjs/events'
+import type { NotificationChannel as _NotificationChannel } from '@stacksjs/notifications'
 import type { ModelRow as _ModelRow, NewModelData as _NewModelData, UpdateModelData as _UpdateModelData } from '@stacksjs/orm'
 import type { RequestInstance as _RequestInstance } from '@stacksjs/types'
 
@@ -71,4 +73,22 @@ declare global {
   type RequestInstance<TModel = never> = [TModel] extends [never]
     ? _RequestInstance
     : _RequestInstance<_ModelRow<TModel>>
+
+  /**
+   * Auth event payloads — surfaced as globals so listener actions in
+   * `app/Actions/` can type their `handle(input)` parameter without an
+   * explicit import (matching the rest of Stacks' "no imports needed"
+   * authoring style).
+   */
+  type UserRegisteredEvent = _UserRegisteredEvent
+  type UserLoggedInEvent = _UserLoggedInEvent
+  type UserLoggedOutEvent = _UserLoggedOutEvent
+  type UserPasswordEvent = _UserPasswordEvent
+
+  /**
+   * Channel name accepted by `notify()`. Lifted to a global so listener
+   * actions can declare `const channels: NotificationChannel[] = []`
+   * without importing from `@stacksjs/notifications`.
+   */
+  type NotificationChannel = _NotificationChannel
 }

@@ -142,6 +142,17 @@ function wrapModelInstance<T extends object>(
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
         const a = (target as any)._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return a[prop]
+        // Eloquent-style relation access: after `Booking.query().with('user').first()`
+        // the renter is reachable as `booking.user` instead of forcing every
+        // call site through `booking.getRelation('user')`. If the relation
+        // wasn't eager-loaded, this still returns undefined — callers should
+        // either load it via `.with(name)` or use the explicit accessor.
+        const rels = (target as any)._relations
+        if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) {
+          const related = rels[prop]
+          if (Array.isArray(related)) return related.map(x => wrapModelInstance(x, casts))
+          return wrapModelInstance(related, casts)
+        }
       }
       const v = Reflect.get(target, prop, target)
       return typeof v === 'function' ? v.bind(target) : v
@@ -180,6 +191,8 @@ function wrapModelInstance<T extends object>(
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
         const a = (target as any)._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return true
+        const rels = (target as any)._relations
+        if (rels && Object.prototype.hasOwnProperty.call(rels, prop)) return true
       }
       return Reflect.has(target, prop)
     },
