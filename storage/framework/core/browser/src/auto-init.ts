@@ -19,7 +19,7 @@ import {
   createBrowserDb,
   createBrowserModel,
   isBrowser,
-} from 'bun-query-builder'
+} from 'bun-query-builder/browser'
 
 // Composables from core framework
 import * as Composables from './composables'

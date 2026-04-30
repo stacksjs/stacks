@@ -7,7 +7,7 @@
  * This eliminates the need for code generation - models are loaded at runtime.
  */
 
-import { createBrowserModel } from 'bun-query-builder'
+import { createBrowserModel } from 'bun-query-builder/browser'
 
 // Dynamically import all model definitions from app/Models/
 // Uses import.meta.glob in Vite context (build time), or empty map in Bun/Node context

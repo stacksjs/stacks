@@ -9,7 +9,7 @@
  * model imports needed here.
  */
 
-import { configureBrowser, browserAuth } from 'bun-query-builder'
+import { configureBrowser, browserAuth } from 'bun-query-builder/browser'
 
 /**
  * Initialize the API client with custom configuration
