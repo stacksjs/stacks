@@ -31,7 +31,7 @@ const { type = 'line', data, options = {}, height = '300px' } = defineProps<Char
       <canvas ref="chartCanvas"></canvas>
 
       <script client>
-      import Chart from 'chart.js/auto'
+      import Chart from '@stacksjs/charts'
 
             </script>
     -->

@@ -1,5 +1,3 @@
-import { ofetch } from 'ofetch'
-
 /**
  * Loose payload type for `Fetch.{get,post,patch,put,destroy}`.
  *
@@ -26,125 +24,110 @@ interface ApiFetch {
   token: string
 }
 
-type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array>
+type FetchResponse = string | Blob | ArrayBuffer | ReadableStream<Uint8Array> | object
 
 let loading = false
 let token = ''
 const baseURL = '/'
 
-async function get(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) {
-    if (token)
-      headers.set('Authorization', `Bearer ${token}`)
+function appendParam(search: URLSearchParams, key: string, value: unknown): void {
+  if (value === undefined || value === null)
+    return
+  if (Array.isArray(value)) {
+    for (const v of value) appendParam(search, key, v)
+    return
   }
-
-  return await ofetch(url, { method: 'GET', baseURL, params, headers })
+  if (typeof value === 'object') {
+    search.append(key, JSON.stringify(value))
+    return
+  }
+  search.append(key, String(value))
 }
 
-// State-changing verbs send `params` as the request body, not as a query
-// string — POST/PATCH/PUT consumers expect `Fetch.post('/api/cars', { make: 'BMW' })`
-// to put `{ make: 'BMW' }` in the body, the way every Laravel/Inertia/axios
-// app on the planet does. The previous `params: params` shape forwarded
-// the payload to ofetch's `params` option, which serializes to the query
-// string — silently turning POSTs into "POST with empty body and url
-// noise" and 422'ing every fillable-required check on the server.
+function buildUrl(url: string, params?: Params): string {
+  const absolute = /^https?:\/\//i.test(url)
+  const full = absolute ? url : `${baseURL.replace(/\/$/, '')}/${url.replace(/^\//, '')}`
+  if (!params || Object.keys(params).length === 0)
+    return full
+  const search = new URLSearchParams()
+  for (const [key, value] of Object.entries(params)) appendParam(search, key, value)
+  const qs = search.toString()
+  if (!qs)
+    return full
+  return full.includes('?') ? `${full}&${qs}` : `${full}?${qs}`
+}
 
-async function post(url: string, params?: Params, headers?: Headers): Promise<any> {
-  if (headers) {
-    if (token)
-      headers.set('Authorization', `Bearer ${token}`)
+function applyAuth(headers?: Headers): Headers {
+  const h = headers ?? new Headers()
+  if (token && !h.has('Authorization'))
+    h.set('Authorization', `Bearer ${token}`)
+  return h
+}
+
+async function parseBody(response: Response): Promise<FetchResponse> {
+  const contentType = response.headers.get('content-type') ?? ''
+  if (contentType.includes('application/json'))
+    return await response.json()
+  if (contentType.startsWith('text/') || contentType.includes('xml'))
+    return await response.text()
+  return await response.blob()
+}
+
+async function request(
+  method: 'GET' | 'POST' | 'PATCH' | 'PUT' | 'DELETE',
+  url: string,
+  params?: Params,
+  headers?: Headers,
+): Promise<FetchResponse> {
+  const sendsBody = method !== 'GET' && method !== 'DELETE'
+  const finalUrl = sendsBody ? buildUrl(url) : buildUrl(url, params)
+  const finalHeaders = applyAuth(headers)
+  const init: RequestInit = { method, headers: finalHeaders }
+
+  if (sendsBody && params !== undefined) {
+    if (!finalHeaders.has('Content-Type'))
+      finalHeaders.set('Content-Type', 'application/json')
+    init.body = JSON.stringify(params)
   }
 
-  loading = true
+  if (sendsBody)
+    loading = true
 
   try {
-    const result: string | FetchResponse | Blob | ArrayBuffer | ReadableStream<Uint8Array> = await ofetch(url, {
-      method: 'POST',
-      baseURL,
-      body: params,
-      headers,
-    })
-
-    loading = false
-    return result
+    const response = await fetch(finalUrl, init)
+    if (!response.ok) {
+      const errorBody = await parseBody(response).catch(() => null)
+      const error: any = new Error(`Request failed with status ${response.status}`)
+      error.status = response.status
+      error.data = errorBody
+      throw error
+    }
+    return await parseBody(response)
   }
-  catch (err: any) {
-    loading = false
-
-    throw err
+  finally {
+    if (sendsBody)
+      loading = false
   }
+}
+
+async function get(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
+  return await request('GET', url, params, headers)
+}
+
+async function post(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
+  return await request('POST', url, params, headers)
 }
 
 async function patch(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) {
-    if (token)
-      headers.set('Authorization', `Bearer ${token}`)
-  }
-
-  loading = true
-
-  try {
-    const result = await ofetch(url, {
-      method: 'PATCH',
-      baseURL,
-      body: params,
-      headers,
-    })
-    loading = false
-    return result
-  }
-  catch (err) {
-    loading = false
-    throw err
-  }
+  return await request('PATCH', url, params, headers)
 }
 
 async function put(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) {
-    if (token)
-      headers.set('Authorization', `Bearer ${token}`)
-  }
-
-  loading = true
-
-  try {
-    const result = await ofetch(url, {
-      method: 'PUT',
-      baseURL,
-      body: params,
-      headers,
-    })
-    loading = false
-    return result
-  }
-  catch (err) {
-    loading = false
-    throw err
-  }
+  return await request('PUT', url, params, headers)
 }
 
 async function destroy(url: string, params?: Params, headers?: Headers): Promise<FetchResponse> {
-  if (headers) {
-    if (token)
-      headers.set('Authorization', `Bearer ${token}`)
-  }
-
-  loading = true
-
-  try {
-    const result = await ofetch(url, {
-      method: 'DELETE',
-      baseURL,
-      params,
-      headers,
-    })
-    loading = false
-    return result
-  }
-  catch (err) {
-    loading = false
-    throw err
-  }
+  return await request('DELETE', url, params, headers)
 }
 
 function setToken(authToken: string): void {

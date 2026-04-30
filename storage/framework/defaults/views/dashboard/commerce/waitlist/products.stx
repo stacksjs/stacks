@@ -1566,7 +1566,7 @@ function updateCharts() {
   @endif
 </main>
 <script client>
-const { Chart, registerables } = await import('chart.js/auto')
+const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
 initProductChart()

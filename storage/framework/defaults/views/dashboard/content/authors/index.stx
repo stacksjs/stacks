@@ -1488,7 +1488,7 @@ const getRoleBadgeClass = (role: string): string => {
 </style>
 
 <script client>
-const { Chart, registerables } = await import('chart.js/auto')
+const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
 const chart_1_ctx = document.getElementById('chart_1')

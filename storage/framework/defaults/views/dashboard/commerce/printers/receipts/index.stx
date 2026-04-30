@@ -305,7 +305,7 @@ const totalPages = 1105
 </div>
 
 <script client>
-const { Chart, registerables } = await import('chart.js/auto')
+const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
 const chart_1_ctx = document.getElementById('chart_1')

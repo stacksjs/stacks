@@ -66,3 +66,6 @@ discovered-packages.json
 /headwind
 /bun-plugin-stx
 pantry
+
+# Build artifact directory used by docs/build steps — never tracked.
+storage/framework/cache/

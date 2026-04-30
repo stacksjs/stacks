@@ -1,29 +1,30 @@
 {
-  "name": "@stacksjs/realtime",
+  "name": "@stacksjs/charts",
   "type": "module",
   "version": "0.70.23",
-  "description": "The Stacks realtime integration. Built on top of ts-broadcasting.",
+  "description": "Chart rendering for Stacks. Built on ts-charts (D3 in TypeScript).",
   "author": "Chris Breuer",
   "contributors": [
     "Chris Breuer <chris@stacksjs.com>"
   ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
-  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/realtime#readme",
+  "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/charts#readme",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/stacksjs/stacks.git",
-    "directory": "./storage/framework/core/realtime"
+    "directory": "./storage/framework/core/charts"
   },
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
   "keywords": [
-    "realtime",
-    "broadcasting",
-    "websocket",
+    "charts",
+    "visualization",
+    "canvas",
     "stacks",
-    "ts-broadcasting"
+    "ts-charts",
+    "d3"
   ],
   "exports": {
     ".": {
@@ -48,7 +49,8 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "ts-broadcasting": "^0.0.5"
+    "@ts-charts/scale": "^0.2.0",
+    "@ts-charts/format": "^0.2.0"
   },
   "devDependencies": {
     "better-dx": "^0.2.5"
