@@ -1,0 +1,47 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Billing · Utilities · Dashboard' })
+const subRows = await safeAll(Subscription)
+const txnRows = await safeAll(PaymentTransaction)
+const subscriptions = subRows.map(s => ({
+  customer: String(safeGet(s, 'customer_name', safeGet(s, 'name', '—'))),
+  plan: String(safeGet(s, 'plan', safeGet(s, 'tier', '—'))),
+  amount: '$' + Number(safeGet(s, 'amount', 0)).toFixed(2),
+  status: String(safeGet(s, 'status', 'active')),
+  renewsAt: formatRelative(safeGet(s, 'renews_at', safeGet(s, 'expires_at', null))),
+}))
+const totalMRR = subRows.reduce((s, sub) => s + (Number(safeGet(sub, 'amount', 0)) || 0), 0)
+const stats = [
+  { value: String(subscriptions.length), label: 'Subscriptions' },
+  { value: '$' + totalMRR.toFixed(2), label: 'MRR' },
+  { value: String(subscriptions.filter(s => s.status === 'active').length), label: 'Active' },
+  { value: String(txnRows.length), label: 'Transactions' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Billing" description="Subscriptions and revenue" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-invoice" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'customer', label: 'Customer' },{ key: 'plan', label: 'Plan' },{ key: 'amount', label: 'Amount' },{ key: 'status', label: 'Status' },{ key: 'renewsAt', label: 'Renews' }]"
+      :data="subscriptions" emptyTitle="No subscriptions" emptyIcon="i-hugeicons-invoice"
+    >
+      @foreach (subscriptions as s)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ s.customer }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs">{{ s.plan }}</Badge></td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ s.amount }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs" dot>{{ s.status }}</Badge></td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ s.renewsAt }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

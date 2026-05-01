@@ -1,0 +1,48 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Shipping Zones · Dashboard' })
+
+const M = typeof ShippingZone !== 'undefined' ? ShippingZone : null
+const rawRows = await safeAll(M)
+const rows = rawRows.map(r => ({
+  id: String(safeGet(r, 'id', '')),
+  name: String(safeGet(r, 'name', '—')),
+  countries: String(safeGet(r, 'countries', '—')),
+  shipping_method_id: String(safeGet(r, 'shipping_method_id', '—')),
+  created_at: formatRelative(safeGet(r, 'created_at', null)),
+}))
+const stats = [
+  { value: String(rows.length), label: 'Total Shipping Zones' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Shipping Zones" description="Delivery service areas" />
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-database-01" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'name', label: 'Name' }, { key: 'countries', label: 'Countries' }, { key: 'shipping_method_id', label: 'Method' }, { key: 'created_at', label: 'Created' }]"
+      :data="rows"
+      emptyTitle="No shipping zones"
+      emptyDescription="Shipping Zones will appear here once seeded"
+      emptyIcon="i-hugeicons-database-01"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.name }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.countries }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.shipping_method_id }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ row.created_at }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

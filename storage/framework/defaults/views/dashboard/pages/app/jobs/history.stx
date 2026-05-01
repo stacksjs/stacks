@@ -1,0 +1,76 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Job History · App · Dashboard' })
+const [allRows, failedRows] = await Promise.all([safeAll(Job), safeAll(FailedJob)])
+const all = allRows.map(j => ({
+  name: String(safeGet(j, 'name', safeGet(j, 'job_name', 'job'))),
+  queue: String(safeGet(j, 'queue', 'default')),
+  attempts: Number(safeGet(j, 'attempts', 0)),
+  status: String(safeGet(j, 'status', 'completed')),
+  ranAt: formatRelative(safeGet(j, 'completed_at', safeGet(j, 'created_at', null))),
+}))
+const failed = failedRows.map(j => ({
+  name: String(safeGet(j, 'name', 'job')),
+  queue: String(safeGet(j, 'queue', 'default')),
+  exception: String(safeGet(j, 'exception', safeGet(j, 'error', '—'))).slice(0, 80),
+  failedAt: formatRelative(safeGet(j, 'failed_at', safeGet(j, 'created_at', null))),
+}))
+const stats = [
+  { value: String(all.length), label: 'Run' },
+  { value: String(all.filter(j => j.status === 'completed').length), label: 'Completed' },
+  { value: String(failed.length), label: 'Failed' },
+  { value: String(all.reduce((s, j) => s + j.attempts, 0)), label: 'Total Attempts' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Job History" description="Past job runs and failures" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-clock-02" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">Recent Runs</span>
+    </div>
+    <DataTable
+      :columns="[{ key: 'name', label: 'Job' },{ key: 'queue', label: 'Queue' },{ key: 'attempts', label: 'Attempts' },{ key: 'status', label: 'Status' },{ key: 'ranAt', label: 'When' }]"
+      :data="all" emptyTitle="No history yet" emptyDescription="Past jobs will appear here once dispatched" emptyIcon="i-hugeicons-clock-02"
+    >
+      @foreach (all as j)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ j.name }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs">{{ j.queue }}</Badge></td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ j.attempts }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs" dot>{{ j.status }}</Badge></td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ j.ranAt }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+
+  @if (failed.length > 0)
+    <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+      <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
+        <span class="font-semibold text-[14px] text-red-600 dark:text-red-400">Failed Jobs</span>
+      </div>
+      <DataTable
+        :columns="[{ key: 'name', label: 'Job' },{ key: 'queue', label: 'Queue' },{ key: 'exception', label: 'Error' },{ key: 'failedAt', label: 'Failed' }]"
+        :data="failed" emptyTitle="No failures" emptyIcon="i-hugeicons-alert-02"
+      >
+        @foreach (failed as j)
+          <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+            <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ j.name }}</td>
+            <td class="px-4 py-3"><Badge variant="default" size="xs">{{ j.queue }}</Badge></td>
+            <td class="px-4 py-3 text-[12px] text-red-600 dark:text-red-400">{{ j.exception }}</td>
+            <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ j.failedAt }}</td>
+          </tr>
+        @endforeach
+      </DataTable>
+    </div>
+  @endif
+</div>
+@endsection

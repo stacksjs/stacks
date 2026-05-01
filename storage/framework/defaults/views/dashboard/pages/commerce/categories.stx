@@ -1,0 +1,61 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Categories · Commerce · Dashboard' })
+
+const rows = await safeAll(Category)
+const categories = rows.map(c => ({
+  id: String(safeGet(c, 'id', '')),
+  name: String(safeGet(c, 'name', '—')),
+  slug: String(safeGet(c, 'slug', '')),
+  description: String(safeGet(c, 'description', '')),
+  productCount: Number(safeGet(c, 'product_count', 0)) || 0,
+  isActive: Boolean(safeGet(c, 'is_active', true)),
+  createdAt: formatRelative(safeGet(c, 'created_at', null)),
+}))
+const stats = [
+  { value: String(categories.length), label: 'Total Categories' },
+  { value: String(categories.filter(c => c.isActive).length), label: 'Active' },
+  { value: String(categories.reduce((s, c) => s + c.productCount, 0)), label: 'Products Tagged' },
+  { value: String(new Set(categories.map(c => c.slug)).size), label: 'Unique Slugs' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Categories" description="Product categories" />
+
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-tags" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[
+        { key: 'name', label: 'Name' },
+        { key: 'slug', label: 'Slug' },
+        { key: 'productCount', label: 'Products' },
+        { key: 'isActive', label: 'Active' },
+        { key: 'createdAt', label: 'Created' }
+      ]"
+      :data="categories"
+      emptyTitle="No categories"
+      emptyDescription="Categories will appear here once added"
+      emptyIcon="i-hugeicons-tag-01"
+    >
+      @foreach (categories as cat)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ cat.name }}</td>
+          <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ cat.slug }}</code></td>
+          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ cat.productCount }}</td>
+          <td class="px-4 py-3">
+            <Badge variant="{{ cat.isActive ? 'success' : 'default' }}" size="xs" dot>{{ cat.isActive ? 'active' : 'inactive' }}</Badge>
+          </td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ cat.createdAt }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

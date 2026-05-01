@@ -1,0 +1,38 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Query History · App · Dashboard' })
+const logRows = await safeAll(Log)
+const queries = logRows
+  .filter(l => /select|insert|update|delete/i.test(String(safeGet(l, 'message', ''))))
+  .map(l => ({
+    sql: String(safeGet(l, 'message', '')).slice(0, 200),
+    duration: String(safeGet(l, 'duration', safeGet(l, 'time', '—'))) + 'ms',
+    when: formatRelative(safeGet(l, 'created_at', null)),
+  }))
+const stats = [{ value: String(queries.length), label: 'Queries Logged' }]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Query History" description="Recent database queries" />
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-search" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'sql', label: 'Query' },{ key: 'duration', label: 'Duration' },{ key: 'when', label: 'When' }]"
+      :data="queries" emptyTitle="No queries logged" emptyIcon="i-hugeicons-search"
+    >
+      @foreach (queries as q)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ q.sql }}</code></td>
+          <td class="px-4 py-3 font-mono text-[12px] text-neutral-500 dark:text-neutral-400">{{ q.duration }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ q.when }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

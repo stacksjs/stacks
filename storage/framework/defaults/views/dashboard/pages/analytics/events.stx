@@ -1,0 +1,41 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Events · Analytics · Dashboard' })
+const events = await getEventStats()
+const rows = Object.entries(events.byEvent).map(([event, count]) => ({
+  event,
+  count: Number(count).toLocaleString(),
+  share: events.total > 0 ? ((Number(count) / events.total) * 100).toFixed(1) + '%' : '0%',
+})).sort((a, b) => Number(b.count.replace(/,/g, '')) - Number(a.count.replace(/,/g, '')))
+const stats = [
+  { value: String(events.total), label: 'Total Events' },
+  { value: String(Object.keys(events.byEvent).length), label: 'Unique Events' },
+  { value: String(events.perDay.reduce((s, d) => s + d.count, 0)), label: '30d Events' },
+  { value: rows[0]?.event || '—', label: 'Top Event' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Events" description="Custom event tracking" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-bolt" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'event', label: 'Event' },{ key: 'count', label: 'Count' },{ key: 'share', label: 'Share' }]"
+      :data="rows" emptyTitle="No events tracked" emptyDescription="Events appear here once dispatched" emptyIcon="i-hugeicons-bolt"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ row.event }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.count }}</td>
+          <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ row.share }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

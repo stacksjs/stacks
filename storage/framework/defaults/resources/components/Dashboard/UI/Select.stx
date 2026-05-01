@@ -63,11 +63,11 @@ const selectId = id || 'select-' + Math.random().toString(36).slice(2, 11)
         @endif
         @foreach(options as option)
           <option
-            value="{{ option }}"
-            @if(option.disabled) disabled @endif
-            @if(option == value) selected @endif
+            value="{{ typeof option === 'object' && option !== null ? (option.value ?? option.id ?? option.label ?? '') : option }}"
+            @if(option && option.disabled) disabled @endif
+            @if((typeof option === 'object' && option !== null ? option.value : option) == value) selected @endif
           >
-            {{ option.label }}
+            {{ typeof option === 'object' && option !== null ? (option.label ?? option.text ?? option.value ?? '') : option }}
           </option>
         @endforeach
       </select>

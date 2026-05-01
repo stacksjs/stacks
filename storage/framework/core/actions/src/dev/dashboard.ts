@@ -100,6 +100,116 @@ async function startStxServer(): Promise<void> {
   }
   catch { /* fall through */ }
 
+  // Mount the config-editor API routes. The settings UI talks to these
+  // to list config files, read their resolved values, and write edits
+  // back to disk. They run in the dashboard server's process so they
+  // share the same fs cwd and don't need a second port to be open.
+  const { listConfigFiles, readConfig, updateConfigKey } = await import(
+    storagePath('framework/defaults/resources/functions/dashboard/config-io.ts')
+  )
+  const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
+    '/api/config/list': async () => {
+      try {
+        return Response.json({ ok: true, files: listConfigFiles() })
+      }
+      catch (e) {
+        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
+      }
+    },
+    '/api/config/read': async (req: Request) => {
+      try {
+        const url = new URL(req.url)
+        const name = url.searchParams.get('name') || ''
+        if (!/^[\w-]+$/.test(name))
+          return Response.json({ ok: false, error: 'Invalid config name' }, { status: 400 })
+        const result = await readConfig(name)
+        if (!result)
+          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
+        // Strip the raw source from the response — the UI only needs
+        // values + field metadata. Source ships with the read for the
+        // monaco viewer (see /api/config/source).
+        return Response.json({ ok: true, name, fields: result.fields, values: result.values })
+      }
+      catch (e) {
+        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
+      }
+    },
+    '/api/config/source': async (req: Request) => {
+      try {
+        const url = new URL(req.url)
+        const name = url.searchParams.get('name') || ''
+        if (!/^[\w-]+$/.test(name))
+          return Response.json({ ok: false, error: 'Invalid config name' }, { status: 400 })
+        const result = await readConfig(name)
+        if (!result)
+          return Response.json({ ok: false, error: 'Not found' }, { status: 404 })
+        return new Response(result.source, { headers: { 'content-type': 'text/plain; charset=utf-8' } })
+      }
+      catch (e) {
+        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
+      }
+    },
+    '/api/config/update': async (req: Request) => {
+      if (req.method !== 'POST')
+        return Response.json({ ok: false, error: 'Method not allowed' }, { status: 405 })
+      try {
+        const body = (await req.json()) as { file?: string, key?: string, value?: any, updates?: Array<{ path?: string, key?: string, value?: any }> }
+        // Accept two shapes:
+        //   1) { file, key, value }                 — single key edit
+        //   2) { file, updates: [{ path|key, value }] } — batch (used by services.stx)
+        const file = body.file?.replace(/\.ts$/, '')
+        if (!file || !/^[\w-]+$/.test(file))
+          return Response.json({ ok: false, error: 'Invalid file' }, { status: 400 })
+
+        const updates: Array<{ key: string, value: any }> = []
+        if (Array.isArray(body.updates)) {
+          for (const u of body.updates) {
+            const k = u.key ?? u.path
+            if (typeof k === 'string') updates.push({ key: k, value: u.value })
+          }
+        }
+        else if (body.key) {
+          updates.push({ key: body.key, value: body.value })
+        }
+        if (updates.length === 0)
+          return Response.json({ ok: false, error: 'No updates supplied' }, { status: 400 })
+
+        const results: Array<{ key: string, ok: boolean, error?: string, newValue?: any }> = []
+        for (const u of updates) {
+          try {
+            const r = await updateConfigKey(file, u.key, coerce(u.value))
+            results.push({ key: u.key, ok: true, newValue: r.newValue })
+          }
+          catch (err) {
+            results.push({ key: u.key, ok: false, error: (err as Error)?.message })
+          }
+        }
+        const allOk = results.every(r => r.ok)
+        // Always return HTTP 200 so the response is well-formed; the
+        // caller checks `body.ok` to know whether anything failed.
+        // Returning 207 here triggers a Bun internal RangeError under
+        // the bun-router fallback path used by the dashboard server.
+        return Response.json({ ok: allOk, file, results })
+      }
+      catch (e) {
+        return Response.json({ ok: false, error: (e as Error)?.message }, { status: 500 })
+      }
+    },
+  }
+
+  // Coerce string-encoded form values back to the shape we want to
+  // serialize. The HTML form posts everything as strings, but the writer
+  // needs real booleans / numbers so the .ts file gets `true` instead
+  // of `'true'`.
+  function coerce(v: any): string | number | boolean {
+    if (typeof v === 'boolean' || typeof v === 'number') return v
+    if (v === 'true') return true
+    if (v === 'false') return false
+    if (v === '' || v == null) return ''
+    if (typeof v === 'string' && /^-?\d+(?:\.\d+)?$/.test(v)) return Number(v)
+    return String(v)
+  }
+
   // serve() starts a long-lived server — do NOT await it.
   // It resolves only when the server stops, which is never during dev.
   const serverPromise = serve({
@@ -109,6 +219,7 @@ async function startStxServer(): Promise<void> {
     layoutsDir: dashboardPath,
     partialsDir: dashboardPath,
     quiet: true,
+    routes: configRoutes,
     ...(stxModule && { stxModule }),
   } as any)
 
@@ -314,6 +425,14 @@ const appIconPath = (await Bun.file(userIconPath).exists())
   ? userIconPath
   : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
 
+// Native sidebar mode: Craft renders a real NSOutlineView populated
+// from `sidebarConfig`. The web sidebar self-hides via the layout's
+// `?native-sidebar=1` URL signal, so users only ever see one nav.
+//
+// If `sidebarConfig` round-tripping ever breaks again (Craft fell back
+// to its Finder placeholder before because the config didn't survive
+// argv/file passing), set `nativeSidebar: false` and the web sidebar
+// stays visible — see the layout for the matching detection logic.
 const app = createApp({
   url: initialUrl,
   quiet: !verbose,

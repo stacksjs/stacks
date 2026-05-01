@@ -1,0 +1,42 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Devices · Analytics · Dashboard' })
+const breakdown = await getDeviceBreakdown()
+const total = breakdown.reduce((s, b) => s + b.count, 0)
+const rows = breakdown.map(b => ({
+  device: b.value,
+  visitors: b.count.toLocaleString(),
+  share: total > 0 ? ((b.count / total) * 100).toFixed(1) + '%' : '0%',
+}))
+const stats = [
+  { value: String(breakdown.length), label: 'Device Types' },
+  { value: total.toLocaleString(), label: 'Sessions' },
+  { value: rows[0]?.device || '—', label: 'Top Device' },
+  { value: rows[0]?.share || '—', label: 'Top Share' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Devices" description="Visitor device categories" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-package" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'device', label: 'Device' },{ key: 'visitors', label: 'Visitors' },{ key: 'share', label: 'Share' }]"
+      :data="rows" emptyTitle="No device data" emptyDescription="Device breakdown appears once requests are tracked" emptyIcon="i-hugeicons-package"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ row.device }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.visitors }}</td>
+          <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ row.share }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

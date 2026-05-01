@@ -1,0 +1,42 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Referrers · Analytics · Dashboard' })
+const breakdown = await getTopReferrers(20)
+const total = breakdown.reduce((s, b) => s + b.count, 0)
+const rows = breakdown.map(b => ({
+  source: b.value || 'direct',
+  visits: b.count.toLocaleString(),
+  share: total > 0 ? ((b.count / total) * 100).toFixed(1) + '%' : '0%',
+}))
+const stats = [
+  { value: String(breakdown.length), label: 'Sources' },
+  { value: total.toLocaleString(), label: 'Visits' },
+  { value: rows[0]?.source || '—', label: 'Top Source' },
+  { value: rows[0]?.share || '—', label: 'Top Share' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Referrers" description="Where visitors come from" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-link" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'source', label: 'Source' },{ key: 'visits', label: 'Visits' },{ key: 'share', label: 'Share' }]"
+      :data="rows" emptyTitle="No referrer data" emptyDescription="Referrers appear once requests are tracked" emptyIcon="i-hugeicons-link"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ row.source }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.visits }}</td>
+          <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ row.share }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

@@ -8,7 +8,7 @@ import type { AiConfig } from '@stacksjs/types'
  * have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
-  default: 'meta.llama2-70b-chat-v1',
+  default: 'openai',
 
   models: [
     // 'amazon.titan-embed-text-v1',

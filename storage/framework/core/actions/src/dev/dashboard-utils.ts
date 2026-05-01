@@ -213,9 +213,19 @@ export function buildSidebarConfig(baseRoute: string, discoveredModels: Discover
       {
         id: 'data',
         title: 'Data',
+        // We now bump Craft's inline-argv limit to 256 KiB (see the
+        // comment in pantry/@craft-native/ts/dist/index.js — the native
+        // binary doesn't recognise --sidebar-config-file, so anything
+        // that overflows the inline ceiling silently turns into the
+        // Finder placeholder). With the new ceiling we can include
+        // every discovered model again without breaking the round-trip.
         items: [
           { id: 'data-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/data/dashboard` },
           { id: 'activity', label: 'Activity', icon: 'waveform.path.ecg', url: `${baseRoute}/data/activity` },
+          { id: 'users', label: 'Users', icon: 'person.crop.circle.fill', url: `${baseRoute}/data/users` },
+          { id: 'teams', label: 'Teams', icon: 'person.3.fill', url: `${baseRoute}/data/teams` },
+          { id: 'subscribers', label: 'Subscribers', icon: 'envelope.fill', url: `${baseRoute}/data/subscribers` },
+          { id: 'data-models', label: 'All Models', icon: 'square.grid.2x2.fill', url: `${baseRoute}/data/models` },
           ...discoveredModels.map(model => ({
             id: `model-${model.id}`,
             label: model.name,
@@ -287,7 +297,12 @@ export function buildSidebarConfig(baseRoute: string, discoveredModels: Discover
   }
 }
 
-/** Build the initial URL with native-sidebar flag */
+/**
+ * Build the URL the Craft window opens to. The `native-sidebar=1` query
+ * param signals the layout that Craft is rendering the sidebar natively,
+ * so the layout can suppress its own HTML sidebar and let the macOS
+ * NSOutlineView own that 240px column.
+ */
 export function buildDashboardUrl(port: number): string {
   return `http://localhost:${port}/home?native-sidebar=1`
 }

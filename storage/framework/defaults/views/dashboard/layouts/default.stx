@@ -77,17 +77,17 @@ window.craft._sidebarSelectHandler = (event) => {
 </script>
 
 <script client>
-// Craft sidebar detection — runs once when this script tag executes.
+// Sidebar layout — the web sidebar renders in browsers; the native
+// Craft sidebar takes over inside the macOS window. We pick which one
+// is "active" off three signals:
+//   1. `?native-sidebar=1` — appended to the dashboard URL by
+//      dashboard-utils.buildDashboardUrl when nativeSidebar is enabled
+//   2. `window.__craftNativeSidebar` — set by Craft's WKUserScript
+//   3. `window.craft.window` — Craft's JS bridge is bound (window mode)
 //
-// Three signals each independently indicate that Craft is injecting its
-// own native macOS sidebar; the web sidebar should hide so we don't
-// end up with two:
-//   1. `window.__craftNativeSidebar` — set by Craft's WKUserScript at load
-//   2. `window.craft.window` — Craft's JS bridge API is bound
-//   3. `?native-sidebar=1` — fallback URL param the dev server appends
-//
-// `data-has-stacks-sidebar` is stamped on <html> unconditionally; the
-// global stylesheet injected below keys the body gutter off it.
+// When any of those say "native is active", the HTML sidebar self-
+// hides and the body padding is zeroed so the native NSOutlineView
+// owns that column.
 document.documentElement.setAttribute('data-has-stacks-sidebar', 'true')
 var hasFlag = Boolean(window.__craftNativeSidebar)
 var hasApi = Boolean(window.craft && window.craft.window)

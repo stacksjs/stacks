@@ -1,0 +1,50 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Reviews · Dashboard' })
+
+const M = typeof Review !== 'undefined' ? Review : null
+const rawRows = await safeAll(M)
+const rows = rawRows.map(r => ({
+  id: String(safeGet(r, 'id', '')),
+  reviewer_name: String(safeGet(r, 'reviewer_name', '—')),
+  rating: String(safeGet(r, 'rating', '—')),
+  title: String(safeGet(r, 'title', '—')),
+  status: String(safeGet(r, 'status', '—')).toLowerCase(),
+  created_at: formatRelative(safeGet(r, 'created_at', null)),
+}))
+const stats = [
+  { value: String(rows.length), label: 'Total Reviews' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Reviews" description="Product reviews" />
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-database-01" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'reviewer_name', label: 'Reviewer' }, { key: 'rating', label: 'Rating' }, { key: 'title', label: 'Title' }, { key: 'status', label: 'Status' }, { key: 'created_at', label: 'Date' }]"
+      :data="rows"
+      emptyTitle="No reviews"
+      emptyDescription="Reviews will appear here once seeded"
+      emptyIcon="i-hugeicons-database-01"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.reviewer_name }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.rating }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.title }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs" dot>{{ row.status }}</Badge></td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ row.created_at }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

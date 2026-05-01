@@ -1,0 +1,50 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Digital Delivery · Dashboard' })
+
+const M = typeof DigitalDelivery !== 'undefined' ? DigitalDelivery : null
+const rawRows = await safeAll(M)
+const rows = rawRows.map(r => ({
+  id: String(safeGet(r, 'id', '')),
+  customer_name: String(safeGet(r, 'customer_name', '—')),
+  product_name: String(safeGet(r, 'product_name', '—')),
+  download_count: String(safeGet(r, 'download_count', '—')),
+  status: String(safeGet(r, 'status', '—')).toLowerCase(),
+  delivered_at: formatRelative(safeGet(r, 'delivered_at', null)),
+}))
+const stats = [
+  { value: String(rows.length), label: 'Total Digital Delivery' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Digital Delivery" description="Digital product downloads" />
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-database-01" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'customer_name', label: 'Customer' }, { key: 'product_name', label: 'Product' }, { key: 'download_count', label: 'Downloads' }, { key: 'status', label: 'Status' }, { key: 'delivered_at', label: 'Delivered' }]"
+      :data="rows"
+      emptyTitle="No digital delivery"
+      emptyDescription="Digital Delivery will appear here once seeded"
+      emptyIcon="i-hugeicons-database-01"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.customer_name }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.product_name }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.download_count }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs" dot>{{ row.status }}</Badge></td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ row.delivered_at }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

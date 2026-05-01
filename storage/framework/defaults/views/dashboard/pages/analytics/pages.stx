@@ -1,0 +1,42 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Top Pages · Analytics · Dashboard' })
+const breakdown = await getTopPages(20)
+const total = breakdown.reduce((s, b) => s + b.count, 0)
+const rows = breakdown.map(b => ({
+  path: b.value || '/',
+  views: b.count.toLocaleString(),
+  share: total > 0 ? ((b.count / total) * 100).toFixed(1) + '%' : '0%',
+}))
+const stats = [
+  { value: String(breakdown.length), label: 'Pages' },
+  { value: total.toLocaleString(), label: 'Views' },
+  { value: rows[0]?.path || '—', label: 'Top Page' },
+  { value: rows[0]?.share || '—', label: 'Top Share' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Top Pages" description="Most-viewed URLs" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-document" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'path', label: 'Path' },{ key: 'views', label: 'Views' },{ key: 'share', label: 'Share' }]"
+      :data="rows" emptyTitle="No page data" emptyDescription="Top pages appear once requests are tracked" emptyIcon="i-hugeicons-document"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ row.path }}</code></td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.views }}</td>
+          <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ row.share }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

@@ -1,0 +1,50 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Delivery Routes · Dashboard' })
+
+const M = typeof DeliveryRoute !== 'undefined' ? DeliveryRoute : null
+const rawRows = await safeAll(M)
+const rows = rawRows.map(r => ({
+  id: String(safeGet(r, 'id', '')),
+  route_number: String(safeGet(r, 'route_number', '—')),
+  driver_id: String(safeGet(r, 'driver_id', '—')),
+  stops_count: String(safeGet(r, 'stops_count', '—')),
+  status: String(safeGet(r, 'status', '—')).toLowerCase(),
+  created_at: formatRelative(safeGet(r, 'created_at', null)),
+}))
+const stats = [
+  { value: String(rows.length), label: 'Total Delivery Routes' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Delivery Routes" description="Active delivery routes" />
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-database-01" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'route_number', label: 'Route' }, { key: 'driver_id', label: 'Driver' }, { key: 'stops_count', label: 'Stops' }, { key: 'status', label: 'Status' }, { key: 'created_at', label: 'Created' }]"
+      :data="rows"
+      emptyTitle="No delivery routes"
+      emptyDescription="Delivery Routes will appear here once seeded"
+      emptyIcon="i-hugeicons-database-01"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.route_number }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.driver_id }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.stops_count }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs" dot>{{ row.status }}</Badge></td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ row.created_at }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

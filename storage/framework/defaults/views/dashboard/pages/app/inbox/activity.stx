@@ -1,0 +1,43 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Mail Activity · App · Dashboard' })
+const subRows = await safeAll(SubscriberEmail)
+const items = subRows.map(s => ({
+  to: String(safeGet(s, 'email', '—')),
+  subject: String(safeGet(s, 'subject', '—')),
+  status: String(safeGet(s, 'status', 'sent')),
+  sentAt: formatRelative(safeGet(s, 'sent_at', safeGet(s, 'created_at', null))),
+}))
+const stats = [
+  { value: String(items.length), label: 'Total Emails' },
+  { value: String(items.filter(i => i.status === 'sent' || i.status === 'delivered').length), label: 'Delivered' },
+  { value: String(items.filter(i => i.status === 'failed' || i.status === 'bounced').length), label: 'Failed' },
+  { value: String(items.filter(i => i.status === 'opened').length), label: 'Opened' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Mail Activity" description="Outbound email log" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-mail-02" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'to', label: 'To' },{ key: 'subject', label: 'Subject' },{ key: 'status', label: 'Status' },{ key: 'sentAt', label: 'Sent' }]"
+      :data="items" emptyTitle="No mail activity" emptyIcon="i-hugeicons-mail-02"
+    >
+      @foreach (items as i)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ i.to }}</td>
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ i.subject }}</td>
+          <td class="px-4 py-3"><Badge variant="default" size="xs" dot>{{ i.status }}</Badge></td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ i.sentAt }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

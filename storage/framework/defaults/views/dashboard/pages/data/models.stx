@@ -1,0 +1,55 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Models · Data · Dashboard' })
+
+const probes = ['User', 'Team', 'Subscriber', 'Post', 'Page', 'Author', 'Comment', 'Tag',
+  'Activity', 'Deployment', 'Release', 'Notification', 'Job', 'FailedJob', 'Log', 'Request',
+  'Campaign', 'EmailList', 'SocialPost', 'Order', 'OrderItem', 'Cart', 'CartItem',
+  'Customer', 'Product', 'ProductVariant', 'ProductUnit', 'Manufacturer', 'Category',
+  'Coupon', 'GiftCard', 'LicenseKey', 'Review', 'Receipt', 'PrintDevice',
+  'ShippingMethod', 'ShippingRate', 'ShippingZone', 'DeliveryRoute', 'DigitalDelivery',
+  'Driver', 'TaxRate', 'WaitlistProduct', 'WaitlistRestaurant', 'LoyaltyPoint',
+  'LoyaltyReward', 'Payment', 'PaymentMethod', 'PaymentTransaction', 'Transaction',
+  'Subscription', 'Websocket']
+
+const g = globalThis
+const models = await Promise.all(probes.map(async (name) => {
+  const M = g[name]
+  const rows = await safeAll(M)
+  return { name, hasModel: Boolean(M), rowCount: rows.length, table: M?.table || '—' }
+}))
+
+const stats = [
+  { value: String(models.length), label: 'Models Discovered' },
+  { value: String(models.filter(m => m.rowCount > 0).length), label: 'Populated' },
+  { value: models.reduce((s, m) => s + m.rowCount, 0).toLocaleString(), label: 'Total Rows' },
+  { value: String(models.filter(m => m.hasModel).length), label: 'Loadable' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="All Models" description="Every framework + user model auto-loaded" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-table" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'name', label: 'Model' },{ key: 'table', label: 'Table' },{ key: 'rowCount', label: 'Rows' }]"
+      :data="models" emptyTitle="No models" emptyIcon="i-hugeicons-table"
+    >
+      @foreach (models as m)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">
+            <a href="/data/{{ m.name.toLowerCase() }}" class="hover:text-blue-600 dark:hover:text-blue-400">{{ m.name }}</a>
+          </td>
+          <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ m.table }}</code></td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ m.rowCount }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

@@ -1,0 +1,48 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Units · Dashboard' })
+
+const M = typeof ProductUnit !== 'undefined' ? ProductUnit : null
+const rawRows = await safeAll(M)
+const rows = rawRows.map(r => ({
+  id: String(safeGet(r, 'id', '')),
+  name: String(safeGet(r, 'name', '—')),
+  abbreviation: String(safeGet(r, 'abbreviation', '—')),
+  unit_type: String(safeGet(r, 'unit_type', '—')),
+  created_at: formatRelative(safeGet(r, 'created_at', null)),
+}))
+const stats = [
+  { value: String(rows.length), label: 'Total Units' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Units" description="Product units of measure" />
+
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-database-01" iconBg="primary" />
+    @endforeach
+  </div>
+
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'name', label: 'Name' }, { key: 'abbreviation', label: 'Abbr' }, { key: 'unit_type', label: 'Type' }, { key: 'created_at', label: 'Created' }]"
+      :data="rows"
+      emptyTitle="No units"
+      emptyDescription="Units will appear here once seeded"
+      emptyIcon="i-hugeicons-database-01"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.name }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.abbreviation }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.unit_type }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ row.created_at }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

@@ -1,0 +1,63 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Insights · Management · Dashboard' })
+
+const userRows = await safeAll(User)
+const orderRows = await safeAll(Order)
+const postRows = await safeAll(Post)
+const reqRows = await safeAll(Request)
+
+const totalRev = orderRows.reduce((s, o) => s + (Number(safeGet(o, 'total_amount', 0)) || 0), 0)
+const last7 = (rows, key = 'created_at') => {
+  const cutoff = Date.now() - 7 * 86400_000
+  return rows.filter(r => {
+    const v = safeGet(r, key, null)
+    if (!v) return false
+    return new Date(v).getTime() >= cutoff
+  })
+}
+
+const insights = [
+  { metric: 'New users (7d)', value: last7(userRows).length, trend: '+' + last7(userRows).length },
+  { metric: 'New orders (7d)', value: last7(orderRows).length, trend: '+' + last7(orderRows).length },
+  { metric: 'Revenue (7d)', value: '$' + last7(orderRows).reduce((s, o) => s + (Number(safeGet(o, 'total_amount', 0)) || 0), 0).toFixed(2), trend: '' },
+  { metric: 'New posts (7d)', value: last7(postRows).length, trend: '+' + last7(postRows).length },
+  { metric: 'Requests (24h)', value: last7(reqRows).length, trend: '' },
+]
+
+const stats = [
+  { value: String(userRows.length), label: 'Total Users' },
+  { value: String(orderRows.length), label: 'Total Orders' },
+  { value: '$' + totalRev.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), label: 'Total Revenue' },
+  { value: String(postRows.length), label: 'Posts' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Insights" description="Growth, traffic, and revenue at a glance" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-star" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
+      <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">7-day Snapshot</span>
+    </div>
+    <div class="divide-neutral-100 divide-y dark:divide-neutral-700/50">
+      @foreach (insights as i)
+        <div class="flex items-center justify-between p-4">
+          <span class="text-[13px] text-neutral-700 dark:text-neutral-300">{{ i.metric }}</span>
+          <div class="flex gap-3 items-center">
+            <span class="font-semibold text-[14px] text-neutral-900 dark:text-white">{{ i.value }}</span>
+            @if (i.trend)
+              <span class="text-[12px] text-green-500">{{ i.trend }}</span>
+            @endif
+          </div>
+        </div>
+      @endforeach
+    </div>
+  </div>
+</div>
+@endsection

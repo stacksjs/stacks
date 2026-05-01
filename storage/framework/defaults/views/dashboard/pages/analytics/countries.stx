@@ -1,0 +1,43 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Countries · Analytics · Dashboard' })
+
+const breakdown = await getCountryBreakdown(20)
+const total = breakdown.reduce((s, b) => s + b.count, 0)
+const rows = breakdown.map(b => ({
+  country: b.value || 'Unknown',
+  visitors: b.count.toLocaleString(),
+  share: total > 0 ? ((b.count / total) * 100).toFixed(1) + '%' : '0%',
+}))
+const stats = [
+  { value: String(breakdown.length), label: 'Countries' },
+  { value: total.toLocaleString(), label: 'Visits' },
+  { value: rows[0]?.country || '—', label: 'Top Country' },
+  { value: rows[0]?.share || '—', label: 'Top Share' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Countries" description="Visitor geography" />
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-global" iconBg="primary" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'country', label: 'Country' },{ key: 'visitors', label: 'Visitors' },{ key: 'share', label: 'Share' }]"
+      :data="rows" emptyTitle="No country data" emptyDescription="Country data will appear once requests are tracked" emptyIcon="i-hugeicons-global"
+    >
+      @foreach (rows as row)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3 font-medium text-[13px] text-neutral-900 dark:text-white">{{ row.country }}</td>
+          <td class="px-4 py-3 text-[13px] text-neutral-700 dark:text-neutral-300">{{ row.visitors }}</td>
+          <td class="px-4 py-3 text-[13px] text-blue-600 dark:text-blue-400">{{ row.share }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection

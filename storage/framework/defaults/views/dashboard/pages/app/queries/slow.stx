@@ -1,0 +1,41 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Slow Queries · App · Dashboard' })
+const logRows = await safeAll(Log)
+const queries = logRows
+  .filter(l => Number(safeGet(l, 'duration', 0)) > 100)
+  .map(l => ({
+    sql: String(safeGet(l, 'message', '')).slice(0, 200),
+    duration: Number(safeGet(l, 'duration', 0)) + 'ms',
+    when: formatRelative(safeGet(l, 'created_at', null)),
+  }))
+const stats = [
+  { value: String(queries.length), label: 'Slow Queries' },
+  { value: queries.length > 0 ? Math.max(...queries.map(q => parseInt(q.duration))) + 'ms' : '0ms', label: 'Slowest' },
+]
+</script>
+<div class="p-6 space-y-6">
+  <PageHeader title="Slow Queries" description="Queries over 100ms" />
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-3">
+    @foreach (stats as stat)
+      <StatsCard title="{{ stat.label }}" value="{{ stat.value }}" icon="i-hugeicons-clock-02" iconBg="warning" />
+    @endforeach
+  </div>
+  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
+    <DataTable
+      :columns="[{ key: 'sql', label: 'Query' },{ key: 'duration', label: 'Duration' },{ key: 'when', label: 'When' }]"
+      :data="queries" emptyTitle="No slow queries" emptyDescription="All queries are running fast" emptyIcon="i-hugeicons-checkmark-circle-02"
+    >
+      @foreach (queries as q)
+        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+          <td class="px-4 py-3"><code class="px-1.5 py-0.5 font-mono text-xs bg-neutral-100 dark:bg-neutral-700 rounded">{{ q.sql }}</code></td>
+          <td class="px-4 py-3 font-mono text-[12px] text-orange-600 dark:text-orange-400">{{ q.duration }}</td>
+          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ q.when }}</td>
+        </tr>
+      @endforeach
+    </DataTable>
+  </div>
+</div>
+@endsection
