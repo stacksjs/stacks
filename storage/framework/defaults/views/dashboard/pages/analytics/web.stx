@@ -4,11 +4,22 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Web · Analytics · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let stats = []
-let topPages = []
-let sources = []
-let devices = []
+
+const metrics = await getWebMetrics(30)
+const [topPagesRows, sourcesRows, devicesRows] = await Promise.all([
+  getTopPages(8),
+  getTopReferrers(8),
+  getDeviceBreakdown(),
+])
+const stats = [
+  { value: metrics.totalRequests.toLocaleString(), label: 'Total Requests' },
+  { value: metrics.uniqueVisitors.toLocaleString(), label: 'Unique Visitors' },
+  { value: metrics.avgResponseTime + 'ms', label: 'Avg Response Time' },
+  { value: metrics.errorRate + '%', label: 'Error Rate' },
+]
+const topPages = topPagesRows.map(r => ({ path: r.value, views: r.count }))
+const sources = sourcesRows.map(r => ({ name: r.value || 'direct', visits: r.count }))
+const devices = devicesRows.map(r => ({ type: r.value, count: r.count }))
 </script>
 <div class="p-6 space-y-6">
 

@@ -4,13 +4,23 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Comments · Content · Dashboard' })
-/**
- * Comments Moderation Page
- */
-
-// Data available when full dev server runs (buddy dev)
-let comments = []
-let stats = { total: 0, pending: 0, approved: 0, spam: 0 }
+const rows = await safeAll(Comment)
+const comments = rows.map(c => ({
+  id: String(safeGet(c, 'id', '')),
+  author: String(safeGet(c, 'author_name', safeGet(c, 'name', 'Anonymous'))),
+  email: String(safeGet(c, 'author_email', safeGet(c, 'email', ''))),
+  content: String(safeGet(c, 'body', safeGet(c, 'content', ''))),
+  postTitle: String(safeGet(c, 'post_title', safeGet(c, 'commentables_type', ''))),
+  status: String(safeGet(c, 'status', 'pending')).toLowerCase(),
+  date: formatRelative(safeGet(c, 'created_at', null)),
+  ip: String(safeGet(c, 'ip_address', '')),
+}))
+const stats = {
+  total: comments.length,
+  pending: comments.filter(c => c.status === 'pending').length,
+  approved: comments.filter(c => c.status === 'approved').length,
+  spam: comments.filter(c => c.status === 'spam').length,
+}
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

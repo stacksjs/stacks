@@ -4,8 +4,6 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Orders · Commerce · Dashboard' })
-const { Order } = await import('@stacksjs/orm')
-
 let orders = []
 let totalCount = 0
 let totalRevenue = '$0.00'
@@ -18,13 +16,13 @@ try {
     id: String(o.get('id') || ''),
     customer: String(o.get('customer_name') || o.get('name') || ''),
     items: String(o.get('items_count') || o.get('quantity') || '0'),
-    total: '$' + String(o.get('total') || o.get('amount') || '0.00'),
+    total: '$' + String(o.get('total_amount') || o.get('total') || o.get('amount') || '0.00'),
     payment: String(o.get('payment_status') || 'Pending'),
     status: String(o.get('status') || 'Pending'),
     date: String(o.get('created_at') || ''),
   }))
   totalCount = allOrders.length
-  const revenue = allOrders.reduce((sum, o) => sum + Number(o.get('total') || o.get('amount') || 0), 0)
+  const revenue = allOrders.reduce((sum, o) => sum + Number(o.get('total_amount') || o.get('total') || o.get('amount') || 0), 0)
   totalRevenue = '$' + revenue.toFixed(2)
   pendingCount = allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'pending').length
   processingCount = allOrders.filter(o => String(o.get('status') || '').toLowerCase() === 'processing').length

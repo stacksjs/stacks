@@ -4,45 +4,27 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Dependencies · Home · Dashboard' })
-const fs = await import('fs')
-const path = await import('path')
+const all = listPackages()
+const rootPkg = readPackageJson()
 
-let declared = []
-let transitive = []
-let thirdParty = []
-let workspace = []
-let stats = []
-let totalCount = 0
-let transitiveCount = 0
-let workspaceCount = 0
-let thirdPartyCount = 0
-
-try {
-  const pkgPath = path.resolve(process.cwd(), 'package.json')
-  const pkgJson = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-  const deps = pkgJson.dependencies || {}
-  const devDeps = pkgJson.devDependencies || {}
-  const allDeps = { ...deps, ...devDeps }
-  thirdParty = Object.entries(allDeps)
-    .filter(([name]) => !name.startsWith('workspace:') && !name.startsWith('@stacksjs/'))
-    .map(([name, version]) => ({ name, version: String(version) }))
-  workspace = Object.entries(allDeps)
-    .filter(([name, version]) => String(version).includes('workspace:') || name.startsWith('@stacksjs/'))
-    .map(([name, version]) => ({ name, version: String(version) }))
-  declared = [...thirdParty, ...workspace]
-  thirdPartyCount = thirdParty.length
-  workspaceCount = workspace.length
-  totalCount = declared.length
-  transitiveCount = 0
-  stats = [
-    { value: String(totalCount), label: 'Total Declared' },
-    { value: String(thirdPartyCount), label: 'Third-Party' },
-    { value: String(workspaceCount), label: 'Workspace' },
-    { value: String(Object.keys(deps).length), label: 'Production' },
-  ]
-} catch (e) {
-  // package.json not available
-}
+const thirdParty = all
+  .filter(p => p.type !== 'workspace' && !p.name.startsWith('@stacksjs/'))
+  .map(p => ({ name: p.name, version: p.version }))
+const workspace = all
+  .filter(p => p.type === 'workspace' || p.name.startsWith('@stacksjs/'))
+  .map(p => ({ name: p.name, version: p.version }))
+const declared = [...thirdParty, ...workspace]
+const transitive = []
+const thirdPartyCount = thirdParty.length
+const workspaceCount = workspace.length
+const totalCount = declared.length
+const transitiveCount = 0
+const stats = [
+  { value: String(totalCount), label: 'Total Declared' },
+  { value: String(thirdPartyCount), label: 'Third-Party' },
+  { value: String(workspaceCount), label: 'Workspace' },
+  { value: String(Object.keys(rootPkg.dependencies || {}).length), label: 'Production' },
+]
 </script>
 <div class="p-6 min-h-screen bg-gray-50 dark:bg-neutral-900">
   <div class="flex items-start justify-between mb-8">

@@ -9,9 +9,6 @@ if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Dashboard · Content 
  *
  * Overview of blog and content performance.
  */
-
-const { Post } = await import('@stacksjs/orm')
-
 let stats = []
 let topPosts = []
 let recentComments = []

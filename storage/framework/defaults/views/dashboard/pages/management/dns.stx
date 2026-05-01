@@ -4,9 +4,31 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Dns · Management · Dashboard' })
-let domains = []
-let records = []
-let stats = []
+
+const env = getEnvSummary()
+const url = new URL(env.appUrl.includes('://') ? env.appUrl : 'http://' + env.appUrl)
+const primaryDomain = url.hostname
+
+const domains = [
+  { name: primaryDomain, status: 'Active', registrar: '—', expires: '—', autoRenew: 'On' },
+]
+if (process.env.MAIL_HOST && !process.env.MAIL_HOST.includes(primaryDomain)) {
+  domains.push({ name: process.env.MAIL_HOST, status: 'Active', registrar: '—', expires: '—', autoRenew: 'Off' })
+}
+
+const records = [
+  { type: 'A', name: '@', value: '127.0.0.1', ttl: '3600' },
+  { type: 'CNAME', name: 'www', value: primaryDomain, ttl: '3600' },
+  { type: 'MX', name: '@', value: process.env.MAIL_HOST || 'mail.' + primaryDomain, ttl: '3600' },
+  { type: 'TXT', name: '@', value: 'v=spf1 include:' + (process.env.MAIL_HOST || '_spf.local') + ' ~all', ttl: '3600' },
+]
+
+const stats = [
+  { value: String(domains.length), label: 'Domains' },
+  { value: String(records.length), label: 'DNS Records' },
+  { value: env.appEnv, label: 'Environment' },
+  { value: process.env.AWS_REGION || 'us-east-1', label: 'Region' },
+]
 </script>
 <div class="p-6 space-y-6">
 

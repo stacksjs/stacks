@@ -4,9 +4,27 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Realtime · App · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let channels = []
-let stats = { activeConnections: 0, messagesPerMinute: '0', avgLatency: '-' }
+
+const wsRows = await safeAll(Websocket)
+const groups = {}
+for (const w of wsRows) {
+  const c = String(safeGet(w, 'channel', safeGet(w, 'topic', 'default')))
+  groups[c] = groups[c] || { name: c, connections: 0, messages: 0 }
+  groups[c].connections++
+  groups[c].messages += Number(safeGet(w, 'message_count', 0)) || 0
+}
+const channels = Object.values(groups).map(c => ({
+  name: c.name,
+  connections: c.connections,
+  messages: c.messages.toLocaleString() + ' messages',
+}))
+const totalMessages = wsRows.reduce((sum, w) => sum + (Number(safeGet(w, 'message_count', 0)) || 0), 0)
+const totalLatency = wsRows.reduce((sum, w) => sum + (Number(safeGet(w, 'latency_ms', 0)) || 0), 0)
+const stats = {
+  activeConnections: wsRows.length,
+  messagesPerMinute: String(Math.round(totalMessages / 60)),
+  avgLatency: wsRows.length > 0 ? Math.round(totalLatency / wsRows.length) + 'ms' : '0ms',
+}
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

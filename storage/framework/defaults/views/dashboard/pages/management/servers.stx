@@ -4,8 +4,56 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Servers · Management · Dashboard' })
-let servers = []
-let stats = []
+
+const health = await getServiceHealth()
+const env = getEnvSummary()
+const reqRows = await safeAll(Request)
+
+const requestsByPath = {}
+for (const r of reqRows) {
+  const host = String(safeGet(r, 'host', env.appUrl)).replace(/^https?:\/\//, '').replace(/\/.*/, '')
+  requestsByPath[host] = (requestsByPath[host] || 0) + 1
+}
+
+const servers = [
+  {
+    name: 'app-server',
+    status: health.find(h => h.name === 'Database')?.status === 'healthy' ? 'running' : 'down',
+    type: 'application',
+    region: process.env.AWS_REGION || 'us-east-1',
+    uptime: '—',
+    cpu: '—',
+    memory: '—',
+    requests: reqRows.length,
+  },
+  {
+    name: 'database-server',
+    status: health.find(h => h.name === 'Database')?.status || 'unknown',
+    type: 'database',
+    region: process.env.AWS_REGION || 'us-east-1',
+    uptime: '—',
+    cpu: '—',
+    memory: '—',
+    requests: 0,
+  },
+  {
+    name: 'queue-worker',
+    status: health.find(h => h.name === 'Queue')?.status || 'unknown',
+    type: 'worker',
+    region: process.env.AWS_REGION || 'us-east-1',
+    uptime: '—',
+    cpu: '—',
+    memory: '—',
+    requests: 0,
+  },
+]
+
+const stats = [
+  { value: String(servers.length), label: 'Servers' },
+  { value: String(servers.filter(s => s.status === 'running' || s.status === 'healthy').length), label: 'Running' },
+  { value: env.bunVersion, label: 'Bun Version' },
+  { value: env.nodeVersion, label: 'Node Version' },
+]
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

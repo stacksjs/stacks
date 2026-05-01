@@ -4,8 +4,24 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Campaigns · Marketing · Dashboard' })
-let campaigns = []
-let stats = []
+
+const rows = await safeAll(Campaign)
+const campaigns = rows.map(c => ({
+  id: String(safeGet(c, 'id', '')),
+  name: String(safeGet(c, 'name', 'Untitled Campaign')),
+  type: String(safeGet(c, 'type', 'email')),
+  status: String(safeGet(c, 'status', 'draft')).toLowerCase(),
+  recipients: Number(safeGet(c, 'recipients_count', safeGet(c, 'recipients', 0))) || 0,
+  openRate: Number(safeGet(c, 'open_rate', 0)).toFixed(1) + '%',
+  clickRate: Number(safeGet(c, 'click_rate', 0)).toFixed(1) + '%',
+  sentAt: formatRelative(safeGet(c, 'sent_at', safeGet(c, 'created_at', null))),
+}))
+const stats = [
+  { value: String(campaigns.length), label: 'Total Campaigns' },
+  { value: String(campaigns.filter(c => c.status === 'active' || c.status === 'running').length), label: 'Active' },
+  { value: String(campaigns.filter(c => c.status === 'scheduled').length), label: 'Scheduled' },
+  { value: String(campaigns.reduce((s, c) => s + c.recipients, 0)), label: 'Total Recipients' },
+]
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

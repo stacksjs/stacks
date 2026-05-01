@@ -4,8 +4,16 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Deployments · App · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let deployments = []
+const rows = await safeAll(Deployment)
+const deployments = rows.map(d => ({
+  id: '#' + String(safeGet(d, 'id', '')),
+  status: String(safeGet(d, 'status', 'pending')),
+  branch: String(safeGet(d, 'branch', 'main')),
+  commit: String(safeGet(d, 'commit_sha', safeGet(d, 'commit', 'unknown'))).slice(0, 7),
+  author: String(safeGet(d, 'author_name', safeGet(d, 'user', 'system'))),
+  duration: String(safeGet(d, 'duration', '—')),
+  time: formatRelative(safeGet(d, 'deployed_at', safeGet(d, 'created_at', null))),
+}))
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

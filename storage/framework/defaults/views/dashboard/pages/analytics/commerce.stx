@@ -4,11 +4,30 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Commerce · Analytics · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let stats = []
-let topProducts = []
-let salesByRegion = []
-let revenueByChannel = []
+
+const sales = await getSalesTimeSeries(30)
+const [topProductRows, customerRows] = await Promise.all([getTopProducts(8), getTopCustomers(8)])
+const orderRows = await safeAll(Order)
+
+const topProducts = topProductRows.map(r => ({ name: r.value, sold: r.count }))
+const salesByRegion = (() => {
+  const counts = {}
+  for (const o of orderRows) {
+    const region = String(safeGet(o, 'shipping_country', safeGet(o, 'region', 'US')))
+    counts[region] = (counts[region] || 0) + Number(safeGet(o, 'total_amount', 0))
+  }
+  return Object.entries(counts)
+    .map(([region, total]) => ({ region, total: '$' + Number(total).toLocaleString() }))
+    .slice(0, 6)
+})()
+const revenueByChannel = customerRows.map(r => ({ name: r.value, orders: r.count }))
+
+const stats = [
+  { value: '$' + sales.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), label: 'Total Revenue' },
+  { value: String(sales.orderCount), label: 'Orders' },
+  { value: '$' + sales.avgOrderValue.toFixed(2), label: 'Avg Order Value' },
+  { value: String(topProducts.length), label: 'Top Products' },
+]
 </script>
 <div class="p-6 space-y-6">
 

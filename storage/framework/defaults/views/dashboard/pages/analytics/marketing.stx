@@ -4,11 +4,44 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Marketing · Analytics · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let stats = []
-let campaigns = []
-let channels = []
-let attribution = []
+
+const m = await getMarketingMetrics(30)
+const campaignRows = await safeAll(Campaign)
+const socialRows = await safeAll(SocialPost)
+
+const campaigns = campaignRows.slice(0, 8).map(c => ({
+  name: String(safeGet(c, 'name', '—')),
+  status: String(safeGet(c, 'status', 'draft')),
+  recipients: Number(safeGet(c, 'recipients_count', 0)) || 0,
+  openRate: Number(safeGet(c, 'open_rate', 0)).toFixed(1) + '%',
+  clickRate: Number(safeGet(c, 'click_rate', 0)).toFixed(1) + '%',
+}))
+
+const channelCounts = {}
+for (const s of socialRows) {
+  const p = String(safeGet(s, 'platform', 'twitter'))
+  channelCounts[p] = (channelCounts[p] || 0) + (Number(safeGet(s, 'engagement_count', 0)) || 0)
+}
+const channels = Object.entries(channelCounts).map(([name, engagement]) => ({
+  name,
+  engagement: Number(engagement).toLocaleString(),
+  posts: socialRows.filter(s => String(safeGet(s, 'platform', '')) === name).length,
+}))
+
+const attribution = [
+  { source: 'Email Campaigns', count: m.campaignCount },
+  { source: 'Email Lists', count: m.listCount },
+  { source: 'Subscribers', count: m.subscriberCount },
+  { source: 'Social Posts', count: m.socialPostCount },
+  { source: 'Reviews', count: m.reviewCount },
+]
+
+const stats = [
+  { value: String(m.campaignCount), label: 'Campaigns' },
+  { value: String(m.subscriberCount), label: 'Subscribers' },
+  { value: String(m.listCount), label: 'Email Lists' },
+  { value: String(m.socialPostCount), label: 'Social Posts' },
+]
 </script>
 <div class="p-6 space-y-6">
 

@@ -50,6 +50,32 @@ function restoreConsole(): void {
 }
 
 async function startStxServer(): Promise<void> {
+  // Preload @stacksjs/orm before the STX server starts. The orm package's
+  // top-level evaluation walks every framework default model file, exports
+  // each class, and assigns it onto globalThis so dashboard `<script server>`
+  // blocks can reference models as bare names (`await Order.all()`) without
+  // an explicit import. Loading it here means the first page render no
+  // longer pays the cold-start cost of resolving 50+ model files.
+  try {
+    await import('@stacksjs/orm')
+  }
+  catch (err) {
+    if (verbose) console.warn('[dashboard] orm preload failed:', (err as Error)?.message || err)
+  }
+
+  // Preload every helper module under `storage/framework/defaults/resources/functions/`
+  // and the user's `resources/functions/` and `app/` trees, then hoist each
+  // named export onto globalThis. This lets `<script server>` blocks call
+  // `safeAll(Order)`, `formatRelative(date)`, `listPackages()`, etc. without
+  // importing — same model-as-globals ergonomics as the orm preload.
+  try {
+    const { hoistDashboardGlobals } = await import('./dashboard-globals')
+    await hoistDashboardGlobals({ verbose })
+  }
+  catch (err) {
+    if (verbose) console.warn('[dashboard] globals preload failed:', (err as Error)?.message || err)
+  }
+
   let serve: typeof import('bun-plugin-stx/serve').serve
   try {
     const mod = await import('bun-plugin-stx/serve')

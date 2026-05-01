@@ -4,34 +4,23 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Components · Library · Dashboard' })
-const fs = await import('fs')
-const path = await import('path')
+const all = listComponents()
+const components = all.map(c => ({
+  name: c.name,
+  path: c.path,
+  category: c.category === 'dashboard' ? 'Dashboard' : 'App',
+  description: c.path,
+  instances: Math.max(1, Math.round(c.size / 200)),
+}))
 
-let components = []
-let categoryOptions = [
-  { value: 'all', label: 'All' },
-  { value: 'forms', label: 'Forms' },
-  { value: 'layout', label: 'Layout' },
-  { value: 'overlay', label: 'Overlay' },
-  { value: 'data', label: 'Data' },
-  { value: 'display', label: 'Display' },
-  { value: 'navigation', label: 'Navigation' },
+const categoryCounts = components.reduce((m, c) => {
+  m[c.category] = (m[c.category] || 0) + 1
+  return m
+}, {})
+const categoryOptions = [
+  { value: 'all', label: 'All (' + components.length + ')' },
+  ...Object.entries(categoryCounts).map(([value, count]) => ({ value: value.toLowerCase(), label: value + ' (' + count + ')' })),
 ]
-
-try {
-  const componentsDir = path.resolve(process.cwd(), 'resources/components')
-  if (fs.existsSync(componentsDir)) {
-    const files = fs.readdirSync(componentsDir, { recursive: true })
-    components = files
-      .filter(f => String(f).endsWith('.stx') || String(f).endsWith('.vue'))
-      .map(f => {
-        const name = path.basename(String(f), path.extname(String(f)))
-        return { name, path: String(f), category: 'General' }
-      })
-  }
-} catch (e) {
-  // resources/components not available
-}
 </script>
 <div class="p-6 space-y-6">
 

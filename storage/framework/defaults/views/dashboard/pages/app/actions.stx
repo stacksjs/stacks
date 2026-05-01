@@ -4,42 +4,15 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Actions · App · Dashboard' })
-let actions = []
-
-try {
-  const { Glob } = await import('bun')
-  const path = await import('path')
-  const cwd = process.cwd()
-  const dirs = [
-    path.resolve(cwd, 'app/Actions'),
-    path.resolve(cwd, 'storage/framework/defaults/app/Actions'),
-  ]
-  const seen = new Set()
-  for (const dir of dirs) {
-    try {
-      const glob = new Glob('**/*.ts')
-      for await (const filePath of glob.scan({ cwd: dir, onlyFiles: true })) {
-        const name = path.basename(filePath, '.ts')
-        if (!seen.has(name)) {
-          seen.add(name)
-          const parts = filePath.split('/')
-          const type = parts.length > 1 ? parts[0] : 'General'
-          actions.push({
-            name: name,
-            type: type,
-            runs: 0,
-            avgTime: '-',
-            status: 'Active',
-          })
-        }
-      }
-    } catch (e) {
-      // directory not found
-    }
-  }
-} catch (e) {
-  // filesystem scan failed
-}
+const found = listActions()
+const actions = found.map(a => ({
+  name: a.name,
+  type: a.category === 'app' ? 'App' : 'Framework',
+  runs: 0,
+  avgTime: '-',
+  status: 'Active',
+  path: a.path,
+}))
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

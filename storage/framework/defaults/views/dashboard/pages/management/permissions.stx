@@ -4,35 +4,45 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Permissions · Management · Dashboard' })
-let roles = []
-let permissions = []
-let recentChanges = []
 
-try {
-  roles = [
-    { name: 'Admin', description: 'Full system access', users: '1', permissions: 'All permissions' },
-    { name: 'Editor', description: 'Content management', users: '3', permissions: 'Create, edit, publish content' },
-    { name: 'Author', description: 'Write and manage own content', users: '5', permissions: 'Create, edit own content' },
-    { name: 'Subscriber', description: 'View content and manage profile', users: '10', permissions: 'Read, comment' },
-    { name: 'User', description: 'Basic access', users: '50', permissions: 'Read only' },
-  ]
+const userRows = await safeAll(User)
+const teamRows = await safeAll(Team)
+const activityRows = await safeAll(Activity)
 
-  permissions = [
-    { group: 'Content', items: ['create', 'read', 'update', 'delete', 'publish'] },
-    { group: 'Users', items: ['create', 'read', 'update', 'delete', 'assign-role'] },
-    { group: 'Settings', items: ['read', 'update'] },
-    { group: 'Commerce', items: ['manage-orders', 'manage-products', 'view-reports'] },
-    { group: 'System', items: ['manage-backups', 'view-logs', 'manage-cache'] },
-  ]
-
-  recentChanges = [
-    { action: 'Role Updated', target: 'Editor', user: 'Admin', time: 'Recently' },
-    { action: 'Permission Added', target: 'manage-orders', user: 'Admin', time: 'Recently' },
-    { action: 'Role Created', target: 'Subscriber', user: 'Admin', time: 'Recently' },
-  ]
-} catch (e) {
-  // Error loading permissions data
+const usersByRole = {}
+for (const u of userRows) {
+  const role = String(safeGet(u, 'role', safeGet(u, 'role_name', 'user'))).toLowerCase()
+  usersByRole[role] = (usersByRole[role] || 0) + 1
 }
+const roleSpecs = [
+  { name: 'Admin', description: 'Full system access', permissions: 'All permissions', key: 'admin' },
+  { name: 'Editor', description: 'Content management', permissions: 'Create, edit, publish content', key: 'editor' },
+  { name: 'Author', description: 'Write and manage own content', permissions: 'Create, edit own content', key: 'author' },
+  { name: 'Subscriber', description: 'View content and manage profile', permissions: 'Read, comment', key: 'subscriber' },
+  { name: 'User', description: 'Basic access', permissions: 'Read only', key: 'user' },
+]
+const roles = roleSpecs.map(r => ({
+  ...r,
+  users: String(usersByRole[r.key] || (r.key === 'user' ? userRows.length - Object.values(usersByRole).reduce((s, c) => s + c, 0) : 0)),
+}))
+
+const permissions = [
+  { group: 'Content', items: ['create', 'read', 'update', 'delete', 'publish'] },
+  { group: 'Users', items: ['create', 'read', 'update', 'delete', 'assign-role'] },
+  { group: 'Settings', items: ['read', 'update'] },
+  { group: 'Commerce', items: ['manage-orders', 'manage-products', 'view-reports'] },
+  { group: 'System', items: ['manage-backups', 'view-logs', 'manage-cache'] },
+]
+
+const recentChanges = activityRows
+  .filter(a => /role|permission/i.test(String(safeGet(a, 'event', ''))))
+  .slice(0, 6)
+  .map(a => ({
+    action: String(safeGet(a, 'event', 'event')),
+    target: String(safeGet(a, 'subject_type', '')),
+    user: String(safeGet(a, 'causer_name', 'system')),
+    time: formatRelative(safeGet(a, 'created_at', null)),
+  }))
 </script>
 <div class="p-6 space-y-6">
 

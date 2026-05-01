@@ -10,7 +10,6 @@ let sentCount = 0
 let pendingCount = 0
 
 try {
-  const { Notification } = await import('@stacksjs/orm')
   const allNotifs = await Notification.orderBy('created_at', 'desc').get()
   totalCount = allNotifs.length
   sentCount = allNotifs.filter(n => String(n.get('status') || '').toLowerCase() === 'sent').length

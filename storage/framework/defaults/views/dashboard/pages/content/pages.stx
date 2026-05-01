@@ -9,9 +9,6 @@ if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Pages · Content · D
  *
  * Manage static pages.
  */
-
-const { Post } = await import('@stacksjs/orm')
-
 let pages = []
 
 try {

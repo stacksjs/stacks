@@ -4,34 +4,12 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Home · Dashboard' })
-// Defensive ORM lookups so a missing model class doesn't blow up the
-// whole page. `await orm.User.all().catch(...)` only catches if `.all()`
-// returns a Promise; if `orm.User` itself is undefined the property
-// access throws synchronously and skips the catch.
-async function safeAll(orm, name) {
-  try {
-    const M = orm[name]
-    if (!M || typeof M.all !== 'function') return []
-    const r = await M.all()
-    return Array.isArray(r) ? r : []
-  } catch {
-    return []
-  }
-}
-function safeGet(row, key, fallback = '') {
-  if (!row) return fallback
-  if (typeof row.get === 'function') {
-    try { return row.get(key) ?? fallback } catch { /* fallthrough */ }
-  }
-  return row[key] ?? fallback
-}
-
-const orm = await import('@stacksjs/orm').catch(() => ({}))
-
-const allUsers = await safeAll(orm, 'User')
-const allProducts = await safeAll(orm, 'Product')
-const allOrders = await safeAll(orm, 'Order')
-const allPosts = await safeAll(orm, 'Post')
+// `safeAll`, `safeGet`, and every model class (User, Order, Product, Post,
+// …) are exposed as globals by @stacksjs/orm — see core/orm/src/index.ts.
+const allUsers = await safeAll(User)
+const allProducts = await safeAll(Product)
+const allOrders = await safeAll(Order)
+const allPosts = await safeAll(Post)
 
 const userCount = allUsers.length
 const productCount = allProducts.length

@@ -4,27 +4,15 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Commands · App · Dashboard' })
-let commands = []
-
-try {
-  const { Glob } = await import('bun')
-  const path = await import('path')
-  const cwd = process.cwd()
-  const cmdDir = path.resolve(cwd, 'storage/framework/core/buddy/src/commands')
-  const glob = new Glob('**/*.ts')
-  for await (const filePath of glob.scan({ cwd: cmdDir, onlyFiles: true })) {
-    const name = path.basename(filePath, '.ts')
-    if (name === 'index') continue
-    commands.push({
-      name: 'buddy ' + name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, ''),
-      description: name.replace(/([A-Z])/g, ' $1').trim(),
-      lastRun: '-',
-      status: 'Active',
-    })
-  }
-} catch (e) {
-  // filesystem scan failed
-}
+const found = listCommands()
+const commands = found
+  .filter(c => c.name !== 'index')
+  .map(c => ({
+    name: (c.category === 'buddy' ? 'buddy ' : '') + c.name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, '').trim(),
+    description: c.path,
+    lastRun: '-',
+    status: 'Active',
+  }))
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

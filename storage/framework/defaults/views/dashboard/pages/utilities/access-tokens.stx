@@ -4,9 +4,42 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Access Tokens · Utilities · Dashboard' })
-let tokens = []
-let stats = []
-let scopes = []
+
+// PersonalAccessToken isn't auto-loaded as a top-level global (the manifest
+// only includes models with seeders); fall back to a direct file import
+// if it exists, otherwise show empty.
+let tokenRows = []
+try {
+  const tokenMod = await import(process.cwd() + '/storage/framework/defaults/app/Models/PersonalAccessToken.ts').catch(() => null)
+  if (tokenMod?.default) tokenRows = await safeAll(tokenMod.default)
+}
+catch { /* model file missing */ }
+
+const tokens = tokenRows.map(t => ({
+  name: String(safeGet(t, 'name', 'Token')),
+  prefix: String(safeGet(t, 'token', '')).slice(0, 8) + '…',
+  scopes: String(safeGet(t, 'abilities', safeGet(t, 'scopes', '*'))),
+  lastUsed: formatRelative(safeGet(t, 'last_used_at', null)),
+  expires: formatRelative(safeGet(t, 'expires_at', null)),
+  status: safeGet(t, 'expires_at', null) && new Date(safeGet(t, 'expires_at', '')) < new Date() ? 'expired' : 'active',
+}))
+
+const scopes = [
+  { name: 'read:users', description: 'Read user information' },
+  { name: 'write:users', description: 'Create and update users' },
+  { name: 'read:orders', description: 'Read order data' },
+  { name: 'write:orders', description: 'Create and update orders' },
+  { name: 'read:posts', description: 'Read posts and content' },
+  { name: 'write:posts', description: 'Create and publish content' },
+  { name: 'admin', description: 'Full administrative access' },
+]
+
+const stats = [
+  { value: String(tokens.length), label: 'Total Tokens' },
+  { value: String(tokens.filter(t => t.status === 'active').length), label: 'Active' },
+  { value: String(tokens.filter(t => t.status === 'expired').length), label: 'Expired' },
+  { value: String(scopes.length), label: 'Scopes' },
+]
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

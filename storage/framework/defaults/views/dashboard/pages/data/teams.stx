@@ -4,20 +4,19 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Teams · Data · Dashboard' })
-let teams = []
-let totalTeams = 0
-let totalMembers = 0
-let activeProjects = 0
 
-try {
-  // Team table does not exist yet -- leave empty
-  teams = []
-  totalTeams = 0
-  totalMembers = 0
-  activeProjects = 0
-} catch (e) {
-  // DB not seeded
-}
+const teamRows = await safeAll(Team)
+const teams = teamRows.map(t => ({
+  id: String(safeGet(t, 'id', '')),
+  name: String(safeGet(t, 'name', 'Unnamed Team')),
+  status: String(safeGet(t, 'status', 'active')),
+  lead: String(safeGet(t, 'lead_name', safeGet(t, 'owner', '—'))),
+  members: Number(safeGet(t, 'member_count', 0)) || Number(safeGet(t, 'members_count', 0)) || 0,
+  projects: Number(safeGet(t, 'project_count', 0)) || Number(safeGet(t, 'projects_count', 0)) || 0,
+}))
+const totalTeams = teams.length
+const totalMembers = teams.reduce((s, t) => s + t.members, 0)
+const activeProjects = teams.reduce((s, t) => s + t.projects, 0)
 </script>
 <div class="p-6 space-y-6">
 

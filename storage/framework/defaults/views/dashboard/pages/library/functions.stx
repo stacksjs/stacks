@@ -4,25 +4,14 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Functions · Library · Dashboard' })
-const fs = await import('fs')
-const path = await import('path')
-
-let functions = []
-
-try {
-  const functionsDir = path.resolve(process.cwd(), 'resources/functions')
-  if (fs.existsSync(functionsDir)) {
-    const files = fs.readdirSync(functionsDir, { recursive: true })
-    functions = files
-      .filter(f => String(f).endsWith('.ts') || String(f).endsWith('.js'))
-      .map(f => {
-        const name = path.basename(String(f), path.extname(String(f)))
-        return { name, path: String(f), type: path.extname(String(f)).slice(1) }
-      })
-  }
-} catch (e) {
-  // resources/functions not available
-}
+const all = listFunctions()
+const functions = all.map(f => ({
+  name: f.name,
+  path: f.path,
+  category: f.category,
+  description: f.path,
+  calls: 0,
+}))
 </script>
 <div class="p-6 space-y-6">
 

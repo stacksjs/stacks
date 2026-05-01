@@ -4,7 +4,16 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Releases · Library · Dashboard' })
-let releases = []
+
+const rows = await safeAll(Release)
+const releases = rows.map(r => ({
+  version: String(safeGet(r, 'version', safeGet(r, 'name', 'unreleased'))),
+  type: String(safeGet(r, 'type', 'patch')),
+  status: String(safeGet(r, 'status', 'published')),
+  changes: Number(safeGet(r, 'changes_count', 0)) || Number(safeGet(r, 'changes', 0)) || 0,
+  date: String(safeGet(r, 'released_at', safeGet(r, 'created_at', ''))),
+  breaking: Boolean(safeGet(r, 'is_breaking', false) || safeGet(r, 'breaking', false)),
+}))
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

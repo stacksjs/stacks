@@ -4,10 +4,40 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Taxes · Commerce · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let taxRates = []
-let taxSummary = []
-let recentTaxes = []
+
+const [taxRows, orderRows] = await Promise.all([
+  safeAll(TaxRate),
+  safeAll(Order),
+])
+const taxRates = taxRows.map(r => ({
+  region: String(safeGet(r, 'name', safeGet(r, 'region', '—'))),
+  rate: Number(safeGet(r, 'rate', 0)).toFixed(2) + '%',
+  type: String(safeGet(r, 'type', 'sales')),
+  status: String(safeGet(r, 'is_active', true) || safeGet(r, 'status', 'active')) === 'true' ? 'active' : String(safeGet(r, 'status', 'active')),
+}))
+
+let totalTaxCollected = 0
+let totalTaxableSales = 0
+const recentTaxes = orderRows.slice(0, 8).map(o => {
+  const subtotal = Number(safeGet(o, 'subtotal', safeGet(o, 'total_amount', 0))) || 0
+  const taxAmount = Number(safeGet(o, 'tax_amount', subtotal * 0.0875)) || 0
+  totalTaxCollected += taxAmount
+  totalTaxableSales += subtotal
+  return {
+    order: '#' + String(safeGet(o, 'id', '—')),
+    subtotal: '$' + subtotal.toFixed(2),
+    taxRate: subtotal > 0 ? ((taxAmount / subtotal) * 100).toFixed(2) + '%' : '—',
+    taxAmount: '$' + taxAmount.toFixed(2),
+    region: String(safeGet(o, 'region', safeGet(o, 'shipping_country', 'US'))),
+  }
+})
+
+const taxSummary = [
+  { value: '$' + totalTaxCollected.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), label: 'Tax Collected' },
+  { value: '$' + totalTaxableSales.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), label: 'Taxable Sales' },
+  { value: String(taxRates.length), label: 'Tax Rates' },
+  { value: String(orderRows.length), label: 'Orders Processed' },
+]
 </script>
 <div class="p-6 space-y-6">
 

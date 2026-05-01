@@ -4,9 +4,26 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Buddy · Utilities · Dashboard' })
-let commands = []
-let recentOutput = ''
-let stats = []
+
+const found = listCommands()
+const commands = found
+  .filter(c => c.category === 'buddy' && c.name !== 'index')
+  .slice(0, 60)
+  .map(c => ({
+    name: 'buddy ' + c.name.replace(/([A-Z])/g, '-$1').toLowerCase().replace(/^-/, ''),
+    description: c.path.split('/').slice(-2).join('/'),
+    status: 'available',
+    lastRun: '—',
+  }))
+
+const recentOutput = '$ buddy --help\n\nAvailable commands: ' + commands.length
+
+const stats = [
+  { value: String(commands.length), label: 'Commands' },
+  { value: 'buddy', label: 'CLI Tool' },
+  { value: 'available', label: 'Status' },
+  { value: String(found.length), label: 'All Commands' },
+]
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

@@ -4,11 +4,40 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Services · Home · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let infra = []
-let systemDeps = []
-let orderedApiGroups = []
-let stats = []
+const health = await getServiceHealth()
+const env = getEnvSummary()
+const packages = listPackages()
+
+const infra = health.map(h => ({
+  name: h.name,
+  status: h.status === 'healthy' ? 'running' : (h.status === 'degraded' ? 'configured' : h.status),
+  driver: h.detail.split(' · ')[0] || h.detail,
+  detail: h.detail.split(' · ').slice(1).join(' · ') || '',
+  configFile: 'database.ts',
+  fields: [],
+}))
+
+const systemDeps = packages
+  .filter(p => p.type === 'workspace' && p.name.startsWith('@stacksjs/'))
+  .slice(0, 12)
+  .map(p => ({ name: p.name.replace('@stacksjs/', ''), version: p.version }))
+
+const apiServices = [
+  { name: 'mail', configured: env.mailDriver !== 'log', driver: env.mailDriver, fields: [{ label: 'Driver', key: 'mailer', value: env.mailDriver }] },
+  { name: 'storage', configured: env.storageDriver !== 'local', driver: env.storageDriver, fields: [{ label: 'Disk', key: 'default', value: env.storageDriver }] },
+  { name: 'queue', configured: env.queueDriver !== 'sync', driver: env.queueDriver, fields: [{ label: 'Driver', key: 'default', value: env.queueDriver }] },
+  { name: 'cache', configured: env.cacheDriver !== 'memory', driver: env.cacheDriver, fields: [{ label: 'Driver', key: 'default', value: env.cacheDriver }] },
+]
+const orderedApiGroups = [
+  { label: 'Application Services', items: apiServices },
+]
+
+const stats = [
+  { value: String(infra.length), label: 'Infrastructure Services' },
+  { value: String(systemDeps.length), label: 'Framework Packages' },
+  { value: String(apiServices.filter(s => s.configured).length), label: 'Configured APIs' },
+  { value: String(packages.length), label: 'Total Dependencies' },
+]
 
 function formatName(n) {
   return n.replace(/([A-Z])/g, ' $1').replace(/^./, function(s) { return s.toUpperCase() }).trim()

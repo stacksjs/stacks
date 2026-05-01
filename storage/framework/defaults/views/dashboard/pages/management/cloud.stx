@@ -4,9 +4,29 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Cloud · Management · Dashboard' })
-let providers = []
-let stats = []
-let resources = []
+
+const env = getEnvSummary()
+const deployRows = await safeAll(Deployment)
+const providers = [
+  { name: 'AWS', region: process.env.AWS_REGION || 'us-east-1', status: process.env.AWS_ACCESS_KEY_ID ? 'Connected' : 'Not configured', services: 'EC2, S3, Lambda, CloudFront, Route53' },
+  { name: 'Stripe', region: 'global', status: process.env.STRIPE_SECRET_KEY ? 'Connected' : 'Not configured', services: 'Payments, Subscriptions' },
+  { name: 'Mailer', region: env.appUrl, status: env.mailDriver, services: env.mailDriver === 'log' ? 'Local capture' : env.mailDriver },
+]
+
+const resources = deployRows.slice(0, 10).map(d => ({
+  name: String(safeGet(d, 'name', safeGet(d, 'service', 'deployment'))),
+  type: String(safeGet(d, 'type', 'service')),
+  region: String(safeGet(d, 'region', process.env.AWS_REGION || 'us-east-1')),
+  status: String(safeGet(d, 'status', 'unknown')),
+  cost: '$0.00',
+}))
+
+const stats = [
+  { value: String(providers.filter(p => p.status === 'Connected').length), label: 'Connected Providers' },
+  { value: String(deployRows.length), label: 'Deployments' },
+  { value: env.appEnv, label: 'Environment' },
+  { value: env.appUrl, label: 'App URL' },
+]
 </script>
 <div class="p-6 space-y-6">
 

@@ -4,10 +4,42 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Pos · Commerce · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let terminals = []
-let todayStats = []
-let recentTransactions = []
+
+const [deviceRows, orderRows, txnRows] = await Promise.all([
+  safeAll(PrintDevice),
+  safeAll(Order),
+  safeAll(Transaction),
+])
+const terminals = deviceRows.map(d => ({
+  id: '#' + String(safeGet(d, 'id', '')),
+  name: String(safeGet(d, 'name', 'Terminal')),
+  location: String(safeGet(d, 'location', safeGet(d, 'station', '—'))),
+  status: String(safeGet(d, 'status', 'idle')).toLowerCase(),
+  lastTransaction: formatRelative(safeGet(d, 'last_used_at', safeGet(d, 'updated_at', null))),
+}))
+
+const today = new Date()
+today.setHours(0, 0, 0, 0)
+const todayOrders = orderRows.filter(o => {
+  const v = safeGet(o, 'created_at', null)
+  if (!v) return false
+  return new Date(v).getTime() >= today.getTime()
+})
+const todayRevenue = todayOrders.reduce((s, o) => s + (Number(safeGet(o, 'total_amount', 0)) || 0), 0)
+const todayStats = [
+  { value: String(todayOrders.length), label: 'Sales Today' },
+  { value: '$' + todayRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), label: 'Revenue Today' },
+  { value: String(terminals.length), label: 'Terminals' },
+  { value: String(terminals.filter(t => t.status === 'active' || t.status === 'connected').length), label: 'Online Terminals' },
+]
+
+const recentTransactions = txnRows.slice(0, 8).map(t => ({
+  id: '#' + String(safeGet(t, 'id', '')),
+  terminal: String(safeGet(t, 'terminal_id', safeGet(t, 'device', 'POS'))),
+  method: String(safeGet(t, 'payment_method', safeGet(t, 'method', 'card'))),
+  amount: '$' + Number(safeGet(t, 'amount', 0)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }),
+  time: formatRelative(safeGet(t, 'created_at', null)),
+}))
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

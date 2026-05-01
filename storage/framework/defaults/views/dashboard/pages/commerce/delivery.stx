@@ -4,11 +4,47 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Delivery · Commerce · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let shipments = []
-let stats = []
-let carriers = []
-let zones = []
+
+const [methodRows, rateRows, zoneRows, driverRows, routeRows] = await Promise.all([
+  safeAll(ShippingMethod),
+  safeAll(ShippingRate),
+  safeAll(ShippingZone),
+  safeAll(Driver),
+  safeAll(DeliveryRoute),
+])
+
+const carriers = methodRows.map(m => ({
+  name: String(safeGet(m, 'name', 'Carrier')),
+  shipments: Number(safeGet(m, 'shipment_count', 0)) || 0,
+  onTime: String(safeGet(m, 'on_time_rate', '95%')),
+  status: String(safeGet(m, 'status', 'active')),
+}))
+
+const zones = zoneRows.map(z => {
+  const rate = rateRows.find(r => String(safeGet(r, 'shipping_zone_id', '')) === String(safeGet(z, 'id', '')))
+  const rateAmount = rate ? Number(safeGet(rate, 'rate', 0)) : 0
+  return {
+    name: String(safeGet(z, 'name', 'Zone')),
+    delivery: String(safeGet(z, 'estimated_days', safeGet(z, 'delivery_estimate', '3-5 days'))),
+    rate: rateAmount > 0 ? '$' + rateAmount.toFixed(2) : 'Free',
+  }
+})
+
+const shipments = routeRows.map(r => ({
+  id: '#' + String(safeGet(r, 'id', '')),
+  order: '#' + String(safeGet(r, 'order_id', '—')),
+  carrier: String(safeGet(r, 'carrier', safeGet(r, 'shipping_method', '—'))),
+  tracking: String(safeGet(r, 'tracking_number', safeGet(r, 'tracking', '—'))),
+  status: String(safeGet(r, 'status', 'pending')).toLowerCase(),
+  eta: formatRelative(safeGet(r, 'estimated_delivery_at', safeGet(r, 'eta', null))),
+}))
+
+const stats = [
+  { value: String(shipments.length), label: 'Active Shipments' },
+  { value: String(carriers.length), label: 'Carriers' },
+  { value: String(zones.length), label: 'Shipping Zones' },
+  { value: String(driverRows.length), label: 'Drivers' },
+]
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase()

@@ -4,11 +4,39 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Blog · Analytics · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let stats = []
-let topPosts = []
-let categories = []
-let authors = []
+
+const blog = await getBlogMetrics()
+const postRows = await safeAll(Post)
+const authorRows = await safeAll(Author)
+const tagRows = await safeAll(Tag)
+
+const topPosts = postRows
+  .map(p => ({
+    title: String(safeGet(p, 'title', '')),
+    views: Number(safeGet(p, 'views', 0)) || 0,
+    comments: Number(safeGet(p, 'comment_count', 0)) || 0,
+    author: String(safeGet(p, 'author', safeGet(p, 'author_name', ''))),
+  }))
+  .sort((a, b) => b.views - a.views)
+  .slice(0, 8)
+
+const categories = tagRows.slice(0, 8).map(t => ({
+  name: String(safeGet(t, 'name', '')),
+  count: Number(safeGet(t, 'usage_count', safeGet(t, 'count', 0))) || 0,
+}))
+
+const authors = authorRows.slice(0, 8).map(a => ({
+  name: String(safeGet(a, 'name', safeGet(a, 'username', ''))),
+  posts: Number(safeGet(a, 'post_count', 0)) || 0,
+  views: Number(safeGet(a, 'total_views', 0)) || 0,
+}))
+
+const stats = [
+  { value: String(blog.postCount), label: 'Total Posts' },
+  { value: String(blog.publishedCount), label: 'Published' },
+  { value: blog.totalViews.toLocaleString(), label: 'Total Views' },
+  { value: String(blog.totalComments), label: 'Comments' },
+]
 </script>
 <div class="p-6 space-y-6">
 

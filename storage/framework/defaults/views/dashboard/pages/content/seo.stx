@@ -4,28 +4,33 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Seo · Content · Dashboard' })
-/**
- * SEO Settings Page
- *
- * Configure search engine optimization.
- */
-
-let seoData = { title: '', description: '', keywords: [], ogImage: '' }
-
-try {
-  const fs = await import('fs')
-  const path = await import('path')
-  const pkgPath = path.resolve(process.cwd(), 'package.json')
-  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf-8'))
-  seoData = {
-    title: String(pkg.name || ''),
-    description: String(pkg.description || ''),
-    keywords: pkg.keywords && Array.isArray(pkg.keywords) ? pkg.keywords : [],
-    ogImage: '',
-  }
-} catch (e) {
-  // package.json not found
+const pkg = readPackageJson()
+const seoData = {
+  title: pkg.name || '',
+  description: '',
+  keywords: [],
+  ogImage: '',
 }
+
+const [posts, pages] = await Promise.all([safeAll(Post), safeAll(Page)])
+
+function withSeo(rows, titleKey = 'meta_title', descKey = 'meta_description') {
+  let withTitle = 0
+  let withDesc = 0
+  for (const r of rows) {
+    if (safeGet(r, titleKey, '') || safeGet(r, 'title', '')) withTitle++
+    if (safeGet(r, descKey, '') || safeGet(r, 'excerpt', '')) withDesc++
+  }
+  return { withTitle, withDesc }
+}
+const postSeo = withSeo(posts)
+const pageSeo = withSeo(pages)
+const totalContent = posts.length + pages.length
+const seoCoverage = totalContent === 0 ? 0 : Math.round(((postSeo.withTitle + pageSeo.withTitle) / totalContent) * 100)
+const seoStats = [
+  { label: 'Posts', total: posts.length, withTitle: postSeo.withTitle, withDesc: postSeo.withDesc },
+  { label: 'Pages', total: pages.length, withTitle: pageSeo.withTitle, withDesc: pageSeo.withDesc },
+]
 </script>
 <div class="p-6 space-y-6">
 

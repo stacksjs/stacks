@@ -7,9 +7,6 @@ if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Posts · Content · D
 /**
  * Posts Page
  */
-
-const { Post } = await import('@stacksjs/orm')
-
 let posts = []
 let publishedCount = 0
 let draftCount = 0

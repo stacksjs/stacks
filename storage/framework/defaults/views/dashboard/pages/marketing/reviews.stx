@@ -4,21 +4,37 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Reviews · Marketing · Dashboard' })
-let reviews = []
-let stats = []
-let statusOptions = [
-  { value: 'all', label: 'All Statuses' },
-  { value: 'published', label: 'Published' },
-  { value: 'pending', label: 'Pending' },
-  { value: 'flagged', label: 'Flagged' },
+
+const rows = await safeAll(Review)
+const reviews = rows.map(r => ({
+  id: String(safeGet(r, 'id', '')),
+  author: String(safeGet(r, 'reviewer_name', safeGet(r, 'author', 'Anonymous'))),
+  rating: Number(safeGet(r, 'rating', 0)),
+  title: String(safeGet(r, 'title', '')),
+  content: String(safeGet(r, 'content', safeGet(r, 'body', ''))),
+  product: String(safeGet(r, 'product_name', safeGet(r, 'subject', '—'))),
+  status: String(safeGet(r, 'status', 'pending')).toLowerCase(),
+  date: formatRelative(safeGet(r, 'created_at', null)),
+}))
+const ratingCounts = [5, 4, 3, 2, 1].map(r => ({ rating: r, count: reviews.filter(rv => rv.rating === r).length }))
+const avgRating = reviews.length > 0
+  ? (reviews.reduce((s, r) => s + r.rating, 0) / reviews.length).toFixed(1)
+  : '0.0'
+const stats = [
+  { value: String(reviews.length), label: 'Total Reviews' },
+  { value: avgRating + ' ★', label: 'Avg Rating' },
+  { value: String(reviews.filter(r => r.status === 'published').length), label: 'Published' },
+  { value: String(reviews.filter(r => r.status === 'pending').length), label: 'Pending' },
 ]
-let ratingOptions = [
-  { value: 'all', label: 'All Ratings' },
-  { value: '5', label: '5 Stars' },
-  { value: '4', label: '4 Stars' },
-  { value: '3', label: '3 Stars' },
-  { value: '2', label: '2 Stars' },
-  { value: '1', label: '1 Star' },
+const statusOptions = [
+  { value: 'all', label: 'All Statuses (' + reviews.length + ')' },
+  { value: 'published', label: 'Published (' + reviews.filter(r => r.status === 'published').length + ')' },
+  { value: 'pending', label: 'Pending (' + reviews.filter(r => r.status === 'pending').length + ')' },
+  { value: 'flagged', label: 'Flagged (' + reviews.filter(r => r.status === 'flagged' || r.status === 'rejected').length + ')' },
+]
+const ratingOptions = [
+  { value: 'all', label: 'All Ratings (' + reviews.length + ')' },
+  ...ratingCounts.map(r => ({ value: String(r.rating), label: r.rating + ' Stars (' + r.count + ')' })),
 ]
 
 function statusVariant(s) {

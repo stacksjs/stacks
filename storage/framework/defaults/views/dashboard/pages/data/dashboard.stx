@@ -4,10 +4,52 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Dashboard · Data · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let stats = []
-let tables = []
-let recentQueries = []
+const tableModels = [
+  { name: 'users', model: User },
+  { name: 'orders', model: Order },
+  { name: 'products', model: Product },
+  { name: 'posts', model: Post },
+  { name: 'subscribers', model: Subscriber },
+  { name: 'activities', model: Activity },
+  { name: 'requests', model: Request },
+  { name: 'logs', model: Log },
+  { name: 'jobs', model: Job },
+  { name: 'deployments', model: Deployment },
+]
+const tableData = await Promise.all(tableModels.map(async (t) => {
+  const rows = await safeAll(t.model)
+  let mostRecent = null
+  for (const r of rows) {
+    const v = safeGet(r, 'updated_at', safeGet(r, 'created_at', null))
+    if (v) {
+      const d = new Date(v)
+      if (!mostRecent || d > mostRecent) mostRecent = d
+    }
+  }
+  return {
+    name: t.name,
+    rows: rows.length.toLocaleString(),
+    size: rows.length === 0 ? '—' : (rows.length * 256 < 1024 ? rows.length * 256 + ' B' : Math.round((rows.length * 256) / 1024) + ' KB'),
+    lastModified: mostRecent ? formatRelative(mostRecent) : '—',
+    rowCount: rows.length,
+  }
+}))
+const tables = tableData
+
+const totalRows = tableData.reduce((s, t) => s + t.rowCount, 0)
+const stats = [
+  { value: String(tableData.length), label: 'Tables Tracked' },
+  { value: totalRows.toLocaleString(), label: 'Total Rows' },
+  { value: tableData.filter(t => t.rowCount > 0).length + '/' + tableData.length, label: 'Populated Tables' },
+  { value: 'sqlite', label: 'Driver' },
+]
+
+const logRows = await safeAll(Log)
+const recentQueries = logRows.slice(0, 8).map(l => ({
+  query: String(safeGet(l, 'message', safeGet(l, 'query', '')) || '').slice(0, 80),
+  source: String(safeGet(l, 'level', safeGet(l, 'source', 'log'))),
+  time: formatRelative(safeGet(l, 'created_at', null)),
+}))
 </script>
 <div class="p-6 min-h-screen bg-gray-50 dark:bg-neutral-900">
     <div class="flex items-start justify-between mb-8">

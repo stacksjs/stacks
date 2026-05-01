@@ -4,11 +4,42 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Sales · Analytics · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let stats = []
-let dailySales = []
-let paymentMethods = []
-let salesTeam = []
+
+const sales = await getSalesTimeSeries(30)
+const orderRows = await safeAll(Order)
+const paymentRows = await safeAll(Payment)
+
+const dailySales = sales.perDay.map(d => ({
+  date: d.date,
+  amount: '$' + Number(d.total).toFixed(2),
+  count: orderRows.filter(o => String(safeGet(o, 'created_at', '')).slice(0, 10) === d.date).length,
+}))
+
+const methodCounts = {}
+for (const p of paymentRows) {
+  const m = String(safeGet(p, 'method', safeGet(p, 'payment_method', 'card')))
+  methodCounts[m] = (methodCounts[m] || 0) + 1
+}
+const paymentMethods = Object.entries(methodCounts)
+  .map(([method, count]) => ({ method, count }))
+  .sort((a, b) => b.count - a.count)
+
+const repCounts = {}
+for (const o of orderRows) {
+  const r = String(safeGet(o, 'sales_rep', safeGet(o, 'created_by', 'system')))
+  repCounts[r] = (repCounts[r] || 0) + Number(safeGet(o, 'total_amount', 0))
+}
+const salesTeam = Object.entries(repCounts)
+  .map(([name, total]) => ({ name, total: '$' + Number(total).toFixed(2) }))
+  .sort((a, b) => Number(b.total.replace(/[$,]/g, '')) - Number(a.total.replace(/[$,]/g, '')))
+  .slice(0, 8)
+
+const stats = [
+  { value: '$' + sales.totalRevenue.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }), label: 'Total Sales' },
+  { value: String(sales.orderCount), label: 'Total Orders' },
+  { value: '$' + sales.avgOrderValue.toFixed(2), label: 'Avg Order Value' },
+  { value: String(paymentRows.length), label: 'Payments' },
+]
 </script>
 <div class="p-6 space-y-6">
 

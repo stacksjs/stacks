@@ -4,38 +4,48 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Mailboxes · Management · Dashboard' })
-let mailboxes = []
-let aliases = []
-let stats = []
-let domains = []
 
+const env = getEnvSummary()
+const mailFrom = String(process.env.MAIL_FROM_ADDRESS || process.env.MAIL_FROM || 'noreply@localhost')
+const mailHost = String(process.env.MAIL_HOST || process.env.SMTP_HOST || 'localhost')
+const domain = mailFrom.includes('@') ? mailFrom.split('@')[1] : mailHost
+
+// Count captured emails on disk so the storage figure tracks real usage.
+const fs = await import('node:fs/promises')
+const path = await import('node:path')
+let capturedEmails = 0
+let totalBytes = 0
 try {
-  const mailFrom = String(process.env.MAIL_FROM_ADDRESS || process.env.MAIL_FROM || 'noreply@localhost')
-  const mailHost = String(process.env.MAIL_HOST || process.env.SMTP_HOST || 'localhost')
-  const domain = mailFrom.includes('@') ? mailFrom.split('@')[1] : mailHost
-
-  mailboxes = [
-    { email: mailFrom, type: 'Primary', storage: '0 MB', quota: '1 GB', status: 'Active' },
-  ]
-
-  aliases = [
-    { alias: 'info@' + domain, forwards: mailFrom },
-    { alias: 'support@' + domain, forwards: mailFrom },
-  ]
-
-  stats = [
-    { value: '1', label: 'Mailboxes' },
-    { value: '2', label: 'Aliases' },
-    { value: domain, label: 'Domain' },
-    { value: 'Active', label: 'Status' },
-  ]
-
-  domains = [
-    { domain: domain, mailboxes: '1', status: 'Active', dkim: 'Configured', spf: 'Configured' },
-  ]
-} catch (e) {
-  // Mail configuration not available
+  const dir = path.resolve(process.cwd(), 'storage/logs/mail')
+  const files = await fs.readdir(dir)
+  for (const f of files) {
+    if (!f.endsWith('.html')) continue
+    const stat = await fs.stat(path.join(dir, f))
+    capturedEmails++
+    totalBytes += stat.size
+  }
 }
+catch { /* mail log directory missing — driver may be remote */ }
+
+const subRows = await safeAll(SubscriberEmail)
+
+const mailboxes = [
+  { email: mailFrom, type: 'Primary', storage: (totalBytes / 1024).toFixed(1) + ' KB', quota: '1 GB', status: 'Active' },
+]
+const aliases = [
+  { alias: 'info@' + domain, forwards: mailFrom },
+  { alias: 'support@' + domain, forwards: mailFrom },
+  { alias: 'noreply@' + domain, forwards: mailFrom },
+]
+const stats = [
+  { value: String(mailboxes.length), label: 'Mailboxes' },
+  { value: String(aliases.length), label: 'Aliases' },
+  { value: String(capturedEmails + subRows.length), label: 'Messages' },
+  { value: env.mailDriver, label: 'Driver' },
+]
+const domains = [
+  { domain, mailboxes: String(mailboxes.length), status: 'Active', dkim: 'Configured', spf: 'Configured' },
+]
 </script>
 <div class="p-6 space-y-6">
 

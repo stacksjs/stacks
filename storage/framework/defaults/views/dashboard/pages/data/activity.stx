@@ -4,15 +4,26 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Activity · Data · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let activities = []
+
+const rows = await safeAll(Activity)
+const activities = rows.map(a => {
+  const event = String(safeGet(a, 'event', safeGet(a, 'description', '')))
+  return {
+    action: event || 'event',
+    table: String(safeGet(a, 'subject_type', safeGet(a, 'log_name', ''))),
+    user: String(safeGet(a, 'causer_name', safeGet(a, 'user_id', 'system'))),
+    time: formatRelative(safeGet(a, 'created_at', null)),
+    type: event.toLowerCase().includes('create') ? 'create'
+      : event.toLowerCase().includes('update') ? 'update'
+      : event.toLowerCase().includes('delete') ? 'delete'
+      : 'info',
+  }
+})
 const filterOptions = [
-  { value: 'All', label: 'All' },
-  { value: 'Creates', label: 'Creates' },
-  { value: 'Updates', label: 'Updates' },
-  { value: 'Deletes', label: 'Deletes' },
-  { value: 'Schema', label: 'Schema' },
-  { value: 'Exports', label: 'Exports' },
+  { value: 'All', label: 'All (' + activities.length + ')' },
+  { value: 'Creates', label: 'Creates (' + activities.filter(a => a.type === 'create').length + ')' },
+  { value: 'Updates', label: 'Updates (' + activities.filter(a => a.type === 'update').length + ')' },
+  { value: 'Deletes', label: 'Deletes (' + activities.filter(a => a.type === 'delete').length + ')' },
 ]
 
 function typeVariant(s) {

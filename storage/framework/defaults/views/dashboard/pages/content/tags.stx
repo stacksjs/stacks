@@ -4,20 +4,15 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Tags · Content · Dashboard' })
-/**
- * Tags Page
- *
- * Manage content tags.
- */
 
-let tags = []
-
-try {
-  // Tags table does not exist yet -- leave empty
-  tags = []
-} catch (e) {
-  // DB not seeded
-}
+const rows = await safeAll(Tag)
+const tags = rows.map(t => ({
+  id: String(safeGet(t, 'id', '')),
+  name: String(safeGet(t, 'name', '')),
+  slug: String(safeGet(t, 'slug', '')),
+  count: Number(safeGet(t, 'usage_count', 0)) || Number(safeGet(t, 'count', 0)) || 0,
+  description: String(safeGet(t, 'description', '')),
+}))
 </script>
 <div class="p-6 space-y-6">
 

@@ -4,8 +4,32 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Lists · Marketing · Dashboard' })
-let lists = []
-let stats = []
+
+const [listRows, subRows] = await Promise.all([safeAll(EmailList), safeAll(Subscriber)])
+const subsByList = {}
+for (const s of subRows) {
+  const lid = String(safeGet(s, 'email_list_id', safeGet(s, 'list_id', '')))
+  if (!lid) continue
+  subsByList[lid] = (subsByList[lid] || 0) + 1
+}
+const lists = listRows.map(l => {
+  const id = String(safeGet(l, 'id', ''))
+  const subs = subsByList[id] || Number(safeGet(l, 'subscriber_count', 0)) || 0
+  return {
+    id,
+    name: String(safeGet(l, 'name', 'Untitled List')),
+    description: String(safeGet(l, 'description', '')),
+    subscribers: subs,
+    growth: String(safeGet(l, 'growth_rate', '+0%')),
+    lastUpdated: formatRelative(safeGet(l, 'updated_at', safeGet(l, 'created_at', null))),
+  }
+})
+const stats = [
+  { value: String(lists.length), label: 'Total Lists' },
+  { value: String(subRows.length), label: 'Total Subscribers' },
+  { value: String(lists.filter(l => l.subscribers > 0).length), label: 'Active Lists' },
+  { value: String(Math.round(subRows.length / Math.max(1, lists.length))), label: 'Avg per List' },
+]
 </script>
 <div class="p-6 space-y-6">
 

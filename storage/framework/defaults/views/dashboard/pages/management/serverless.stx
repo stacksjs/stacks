@@ -4,9 +4,32 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Serverless · Management · Dashboard' })
-let functions = []
-let stats = []
-let edges = []
+
+const userFns = listFunctions().filter(fn => fn.path.startsWith('resources/functions') || fn.path.startsWith('app/'))
+const region = process.env.AWS_REGION || 'us-east-1'
+
+const functions = userFns.slice(0, 20).map(fn => ({
+  name: fn.name,
+  runtime: 'bun',
+  region,
+  status: 'deployed',
+  invocations: 0,
+  duration: '—',
+  errors: 0,
+}))
+
+const edges = [
+  { region: 'us-east-1', name: 'CloudFront US-East', status: 'active' },
+  { region: 'eu-west-1', name: 'CloudFront EU-West', status: 'standby' },
+  { region: 'ap-southeast-1', name: 'CloudFront Asia', status: 'standby' },
+]
+
+const stats = [
+  { value: String(functions.length), label: 'Functions' },
+  { value: '0', label: 'Cold Starts' },
+  { value: String(edges.filter(e => e.status === 'active').length), label: 'Active Edges' },
+  { value: region, label: 'Primary Region' },
+]
 </script>
 <div class="p-6 space-y-6">
 

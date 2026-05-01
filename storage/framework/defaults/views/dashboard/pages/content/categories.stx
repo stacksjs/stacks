@@ -7,9 +7,6 @@ if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Categories · Content
 /**
  * Categories Page
  */
-
-const { Category } = await import('@stacksjs/orm')
-
 let categories = []
 
 try {

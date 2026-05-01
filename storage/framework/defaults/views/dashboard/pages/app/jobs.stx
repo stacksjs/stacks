@@ -4,8 +4,6 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Jobs · App · Dashboard' })
-const { Job } = await import('@stacksjs/orm')
-
 let jobs = []
 let totalJobs = 0
 let failedCount = 0

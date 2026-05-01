@@ -4,14 +4,26 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Social Posts · Marketing · Dashboard' })
-let posts = []
-let stats = []
-let platformOptions = [
-  { value: 'all', label: 'All Platforms' },
-  { value: 'twitter', label: 'Twitter' },
-  { value: 'linkedin', label: 'LinkedIn' },
-  { value: 'instagram', label: 'Instagram' },
-  { value: 'facebook', label: 'Facebook' },
+
+const rows = await safeAll(SocialPost)
+const posts = rows.map(p => ({
+  id: String(safeGet(p, 'id', '')),
+  content: String(safeGet(p, 'content', safeGet(p, 'body', ''))),
+  platform: String(safeGet(p, 'platform', 'twitter')).toLowerCase(),
+  status: String(safeGet(p, 'status', 'draft')).toLowerCase(),
+  scheduled: formatRelative(safeGet(p, 'scheduled_at', safeGet(p, 'published_at', null))),
+  engagement: Number(safeGet(p, 'engagement_count', 0)) || 0,
+}))
+const platformCounts = posts.reduce((m, p) => { m[p.platform] = (m[p.platform] || 0) + 1; return m }, {})
+const platformOptions = [
+  { value: 'all', label: 'All Platforms (' + posts.length + ')' },
+  ...Object.entries(platformCounts).map(([value, count]) => ({ value, label: value + ' (' + count + ')' })),
+]
+const stats = [
+  { value: String(posts.length), label: 'Total Posts' },
+  { value: String(posts.filter(p => p.status === 'published').length), label: 'Published' },
+  { value: String(posts.filter(p => p.status === 'scheduled').length), label: 'Scheduled' },
+  { value: posts.reduce((s, p) => s + p.engagement, 0).toLocaleString(), label: 'Total Engagement' },
 ]
 
 function statusVariant(s) {

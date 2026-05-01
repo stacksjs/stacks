@@ -7,9 +7,6 @@ if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Authors · Content ·
 /**
  * Authors Page
  */
-
-const { Author } = await import('@stacksjs/orm')
-
 let authors = []
 
 try {

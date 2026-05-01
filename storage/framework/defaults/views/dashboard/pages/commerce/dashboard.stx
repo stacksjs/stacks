@@ -4,8 +4,6 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Dashboard · Commerce · Dashboard' })
-const { Order, Product } = await import('@stacksjs/orm')
-
 let stats = []
 let recentOrders = []
 let topProducts = []
@@ -16,7 +14,7 @@ try {
   recentOrders = allOrders.slice(0, 10).map(o => ({
     id: String(o.get('id') || ''),
     customer: String(o.get('customer_name') || o.get('name') || ''),
-    total: '$' + String(o.get('total') || o.get('amount') || '0.00'),
+    total: '$' + String(o.get('total_amount') || o.get('total') || o.get('amount') || '0.00'),
     status: String(o.get('status') || 'Pending'),
     time: String(o.get('created_at') || ''),
   }))
@@ -25,7 +23,7 @@ try {
     sales: String(p.get('sales_count') || '0'),
     revenue: '$' + String(p.get('revenue') || p.get('price') || '0.00'),
   }))
-  const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.get('total') || o.get('amount') || 0), 0)
+  const totalRevenue = allOrders.reduce((sum, o) => sum + Number(o.get('total_amount') || o.get('total') || o.get('amount') || 0), 0)
   stats = [
     { value: '$' + totalRevenue.toFixed(2), label: 'Total Revenue', change: '' },
     { value: String(allOrders.length), label: 'Total Orders', change: '' },

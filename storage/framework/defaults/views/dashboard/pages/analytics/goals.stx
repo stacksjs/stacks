@@ -4,10 +4,30 @@
 <script server>
 // Dashboard stx serve doesn't auto-import SEO helpers — guard so a missing global doesn't crash the page render.
 if (typeof useSeoMeta === 'function') useSeoMeta({ title: 'Goals · Analytics · Dashboard' })
-// Data available when full dev server runs (buddy dev)
-let goals = []
-let stats = []
-let conversions = []
+
+const events = await getEventStats()
+const goals = Object.entries(events.byEvent)
+  .sort((a, b) => b[1] - a[1])
+  .slice(0, 10)
+  .map(([name, count]) => ({
+    name,
+    target: Math.max(100, count * 2),
+    progress: count,
+    status: count >= 100 ? 'on-track' : count >= 50 ? 'in-progress' : 'at-risk',
+    rate: ((count / Math.max(100, count * 2)) * 100).toFixed(1) + '%',
+  }))
+
+const conversions = events.perDay.slice(-7).map(d => ({
+  date: d.date,
+  count: d.count,
+}))
+
+const stats = [
+  { value: String(events.total), label: 'Total Events' },
+  { value: String(Object.keys(events.byEvent).length), label: 'Unique Goals' },
+  { value: String(goals.filter(g => g.status === 'on-track').length), label: 'On Track' },
+  { value: String(events.perDay.reduce((s, d) => s + d.count, 0)), label: '30d Conversions' },
+]
 
 function statusVariant(s) {
   s = String(s || '').toLowerCase().replace('_', '-')
