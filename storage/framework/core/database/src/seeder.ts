@@ -244,7 +244,9 @@ async function generateRecord(
     // Use factory function if defined
     if (attr.factory && typeof attr.factory === 'function') {
       try {
-        value = attr.factory(faker)
+        // Cast: the faker singleton is a wrapped object that exposes additional helpers
+        // beyond the BaseFaker type used in the factory signature.
+        value = attr.factory(faker as any)
       }
       catch (err) {
         const errorMsg = err instanceof Error ? err.message : String(err)

@@ -1,3 +1,4 @@
+/// <reference path="./shims.d.ts" />
 import type { LocalTunnel, TunnelOptions } from './tunnel'
 import { localTunnel } from './tunnel'
 

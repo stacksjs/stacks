@@ -110,7 +110,10 @@ export async function startProcessor(
 async function getAllQueues(): Promise<string[]> {
   try {
     const { db } = await import('@stacksjs/database')
-    const results = await db.rawQuery('SELECT DISTINCT queue FROM jobs')
+    // `rawQuery` is provided by bun-query-builder at runtime but the simplified
+    // `Db` surface in @stacksjs/database doesn't include it.
+    const dbWithRaw = db as unknown as { rawQuery: (q: string) => Promise<any> }
+    const results = await dbWithRaw.rawQuery('SELECT DISTINCT queue FROM jobs')
     const queues = (results as any[]).map((r: any) => r.queue).filter(Boolean)
     return queues.length > 0 ? queues : ['default']
   }

@@ -53,8 +53,8 @@ function parseField(field: string, min: number, max: number, names?: Record<stri
     let step = 1
 
     if (stepMatch) {
-      range = stepMatch[1]
-      step = Number.parseInt(stepMatch[2], 10)
+      range = stepMatch[1] ?? ''
+      step = Number.parseInt(stepMatch[2] ?? '', 10)
       if (step <= 0) throw new Error(`Invalid step: ${step}`)
     }
     else {
@@ -66,8 +66,8 @@ function parseField(field: string, min: number, max: number, names?: Record<stri
     }
     else if (range.includes('-')) {
       const [startStr, endStr] = range.split('-')
-      const start = Number.parseInt(startStr, 10)
-      const end = Number.parseInt(endStr, 10)
+      const start = Number.parseInt(startStr ?? '', 10)
+      const end = Number.parseInt(endStr ?? '', 10)
       if (Number.isNaN(start) || Number.isNaN(end)) throw new Error(`Invalid range: ${range}`)
       if (start < min || end > max) throw new Error(`Range out of bounds: ${range} (${min}-${max})`)
       for (let i = start; i <= end; i += step) values.add(i)
@@ -99,11 +99,12 @@ export function parseCron(expression: string, relativeDate?: Date | number): Dat
     throw new Error(`Invalid cron expression: expected 5 fields, got ${fields.length}`)
   }
 
-  const minutes = parseField(fields[0], 0, 59)
-  const hours = parseField(fields[1], 0, 23)
-  const daysOfMonth = parseField(fields[2], 1, 31)
-  const months = parseField(fields[3], 1, 12, MONTH_NAMES)
-  const daysOfWeek = parseField(fields[4], 0, 7, DAY_NAMES)
+  const [minuteField, hourField, domField, monthField, dowField] = fields as [string, string, string, string, string]
+  const minutes = parseField(minuteField, 0, 59)
+  const hours = parseField(hourField, 0, 23)
+  const daysOfMonth = parseField(domField, 1, 31)
+  const months = parseField(monthField, 1, 12, MONTH_NAMES)
+  const daysOfWeek = parseField(dowField, 0, 7, DAY_NAMES)
 
   // Normalize Sunday: 7 → 0
   if (daysOfWeek.has(7)) {
@@ -112,8 +113,8 @@ export function parseCron(expression: string, relativeDate?: Date | number): Dat
   }
 
   // POSIX: if both dayOfMonth and dayOfWeek are specified (neither is *), use OR logic
-  const domWild = fields[2] === '*'
-  const dowWild = fields[4] === '*'
+  const domWild = domField === '*'
+  const dowWild = dowField === '*'
 
   // Start point
   const base = relativeDate instanceof Date

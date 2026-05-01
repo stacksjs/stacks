@@ -203,7 +203,7 @@ export async function template(
       return result
     }
     catch (error: unknown) {
-      log.warn(`[email] STX template rendering failed for ${templateName}:`, error)
+      log.warn(`[email] STX template rendering failed for ${templateName}: ${error instanceof Error ? error.message : String(error)}`)
       return { html: '', text: '' }
     }
   }

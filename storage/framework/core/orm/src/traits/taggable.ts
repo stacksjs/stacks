@@ -1,4 +1,7 @@
-import { db, sql } from '@stacksjs/database'
+import { db as _db, sql } from '@stacksjs/database'
+
+// See note in categorizable.ts — relax db method types for trait helpers.
+const db = _db as any
 
 /**
  * Validate the parent record id passed to a trait method. Negative or

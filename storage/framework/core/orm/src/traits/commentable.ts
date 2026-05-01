@@ -1,4 +1,7 @@
-import { db, sql } from '@stacksjs/database'
+import { db as _db, sql } from '@stacksjs/database'
+
+// See note in categorizable.ts — relax db method types for trait helpers.
+const db = _db as any
 
 function assertId(id: unknown, method: string): asserts id is number {
   if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {

@@ -35,7 +35,8 @@ function restoreCase(word: string, token: string): string {
     return token.toLowerCase()
   if (word === word.toUpperCase())
     return token.toUpperCase()
-  if (word[0] === word[0].toUpperCase()) {
+  const firstChar = word[0]
+  if (firstChar !== undefined && firstChar === firstChar.toUpperCase()) {
     return token.charAt(0).toUpperCase() + token.slice(1).toLowerCase()
   }
   return token.toLowerCase()
@@ -49,7 +50,7 @@ function replace(word: string, rule: Rule): string {
   return word.replace(rule[0], (...matchArgs) => {
     const result = interpolate(rule[1], ...matchArgs)
     if (matchArgs[0] === '') {
-      return restoreCase(word[matchArgs[matchArgs.length - 2] - 1], result)
+      return restoreCase(word[matchArgs[matchArgs.length - 2] - 1] ?? '', result)
     }
     return restoreCase(matchArgs[0], result)
   })
@@ -62,7 +63,7 @@ function sanitizeWord(token: string, word: string, rules: Rule[]): string {
 
   for (let i = rules.length - 1; i >= 0; i--) {
     const rule = rules[i]
-    if (rule[0].test(word))
+    if (rule && rule[0].test(word))
       return replace(word, rule)
   }
 
@@ -193,7 +194,7 @@ pluralize.addIrregularRule = (single: string, plural: string): void => {
   ['pickaxe', 'pickaxes'],
   ['passerby', 'passersby'],
   ['canvas', 'canvases'],
-].forEach(([single, plural]) => pluralize.addIrregularRule(single, plural));
+].forEach(([single, plural]) => pluralize.addIrregularRule(single ?? '', plural ?? ''));
 
 // Add plural rules
 [
@@ -222,7 +223,10 @@ pluralize.addIrregularRule = (single: string, plural: string): void => {
   [/eaux$/i, '$0'],
   [/m[ae]n$/i, 'men'],
   ['thou', 'you'],
-].forEach(([rule, replacement]) => pluralize.addPluralRule(rule, replacement as string));
+].forEach(([rule, replacement]) => {
+  if (rule === undefined) return
+  pluralize.addPluralRule(rule, replacement as string)
+});
 
 // Add singular rules
 [
@@ -250,7 +254,10 @@ pluralize.addIrregularRule = (single: string, plural: string): void => {
   [/(child)ren$/i, '$1'],
   [/(eau)x?$/i, '$1'],
   [/men$/i, 'man'],
-].forEach(([rule, replacement]) => pluralize.addSingularRule(rule, replacement as string));
+].forEach(([rule, replacement]) => {
+  if (rule === undefined) return
+  pluralize.addSingularRule(rule, replacement as string)
+});
 
 // Add uncountable rules
 [

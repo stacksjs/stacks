@@ -79,3 +79,4 @@ storage/framework/cache/
 # upgrade action on success but listed here to keep stray copies (e.g. from a
 # kill -9'd run) out of commits.
 .tmp-upgrade/
+.claude/scheduled_tasks.lock

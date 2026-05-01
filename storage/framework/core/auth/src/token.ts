@@ -27,7 +27,7 @@ export class TokenManager {
     try {
       const exists = await db.selectFrom('oauth_clients')
         .where('id', '=', candidate)
-        .select('id')
+        .select(['id'])
         .executeTakeFirst()
       if (exists) return candidate
     }

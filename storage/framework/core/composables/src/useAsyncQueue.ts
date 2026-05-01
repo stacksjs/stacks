@@ -31,8 +31,11 @@ export function useAsyncQueue<T>(tasks: UseAsyncQueueTask<T>[]): UseAsyncQueueRe
   async function runTasks(): Promise<void> {
     for (let i = 0; i < tasks.length; i++) {
       activeIndex.value = i
+      const task = tasks[i]
+      if (!task)
+        continue
       try {
-        const data = await tasks[i]()
+        const data = await task()
         result.value = result.value.map((r, idx) =>
           idx === i ? { state: 'fulfilled' as const, data } : r,
         )

@@ -39,7 +39,7 @@ export function parseFields(input: string | undefined): CrudField[] {
   const out: CrudField[] = []
   for (const part of parts) {
     const [rawName, rawType = 'string'] = part.split(':')
-    const name = rawName.trim()
+    const name = rawName?.trim()
     if (!name) continue
     const type = TYPE_ALIASES[rawType.trim().toLowerCase()] ?? 'string'
     out.push({ name, type })

@@ -219,6 +219,7 @@ export function isIPRange(ip: string): boolean {
   if (parts.length !== 2) return false
 
   const [address, cidr] = parts
+  if (address === undefined || cidr === undefined) return false
   const cidrNum = parseInt(cidr, 10)
 
   if (!isIP(address)) return false
@@ -246,8 +247,8 @@ export function isLatLong(latlong: string): boolean {
   const parts = latlong.split(',')
   if (parts.length !== 2) return false
 
-  const lat = parseFloat(parts[0].trim())
-  const long = parseFloat(parts[1].trim())
+  const lat = parseFloat((parts[0] ?? '').trim())
+  const long = parseFloat((parts[1] ?? '').trim())
 
   return !isNaN(lat) && !isNaN(long) && lat >= -90 && lat <= 90 && long >= -180 && long <= 180
 }

@@ -23,8 +23,8 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
   const errors: string[] = []
   const lines = src.split('\n')
 
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i].trim()
+  for (const rawLine of lines) {
+    const line = rawLine.trim()
 
     // Skip empty lines and comments
     if (!line || line.startsWith('#')) {
@@ -34,7 +34,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
     // Handle DOTENV_PUBLIC_KEY specially
     if (line.startsWith('DOTENV_PUBLIC_KEY=')) {
       const match = line.match(/^DOTENV_PUBLIC_KEY=["']?([^"'\n]+)["']?/)
-      if (match) {
+      if (match && match[1] !== undefined) {
         parsed.DOTENV_PUBLIC_KEY = match[1]
       }
       continue
@@ -42,7 +42,7 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
 
     // Parse key=value
     const match = line.match(/^([^=]+)=(.*)$/)
-    if (!match) {
+    if (!match || match[1] === undefined || match[2] === undefined) {
       continue
     }
 

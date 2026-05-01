@@ -131,7 +131,7 @@ export class S3StorageAdapter implements StorageAdapter {
     const normalizedPrefix = prefix.endsWith('/') ? prefix : `${prefix}/`
 
     const objects = await this.client.listAllObjects({ bucket: this.bucket, prefix: normalizedPrefix })
-    const keys = objects.map(obj => obj.Key)
+    const keys = (objects as Array<{ Key?: string }>).map(obj => obj.Key).filter((k): k is string => typeof k === 'string')
 
     if (keys.length === 0) {
       return

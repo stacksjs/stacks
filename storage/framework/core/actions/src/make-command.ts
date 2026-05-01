@@ -114,7 +114,7 @@ async function registerCommand(name: string, signature: string): Promise<void> {
     const exportMatch = content.match(/export default \{([\s\S]*)\} satisfies/)
 
     if (exportMatch) {
-      const existingCommands = exportMatch[1]
+      const existingCommands = exportMatch[1] ?? ''
 
       // Check if command already exists
       if (existingCommands.includes(`'${signature}'`)) {

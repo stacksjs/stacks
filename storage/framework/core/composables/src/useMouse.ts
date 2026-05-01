@@ -65,6 +65,7 @@ export function useMouse(options?: UseMouseOptions): UseMouseReturn {
       const touchHandler = (event: TouchEvent): void => {
         if (event.touches.length > 0) {
           const touchEvent = event.touches[0]
+          if (!touchEvent) return
           switch (type) {
             case 'page':
               x.value = touchEvent.pageX

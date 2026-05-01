@@ -1,4 +1,7 @@
-import { db } from '@stacksjs/database'
+import { db as _db } from '@stacksjs/database'
+
+// See note in categorizable.ts — relax db method types for trait helpers.
+const db = _db as any
 
 export function createBillableMethods(_tableName: string) {
   return {

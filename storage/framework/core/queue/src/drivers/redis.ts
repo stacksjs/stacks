@@ -1,3 +1,4 @@
+/// <reference path="../shims.d.ts" />
 /**
  * Redis Queue Driver
  *

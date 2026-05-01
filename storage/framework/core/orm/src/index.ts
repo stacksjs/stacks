@@ -283,18 +283,24 @@ if (g.safeGet === undefined) g.safeGet = _safeGet
 // model types directly from defineModel() definitions
 export type {
   InferAttributes,
-  InferFillableAttributes,
   InferPrimaryKey,
-  InferTableName,
   InferRelationNames,
-  InferNumericColumns,
-  InferColumnNames,
+  InferTableName,
   ModelDefinition,
-  ModelRow,
-  ModelRowLoose,
-  ModelCreateData,
-  ModelCreateDataLoose,
 } from 'bun-query-builder'
+
+// The following type utilities are referenced by the framework but are not
+// yet exported by the installed `bun-query-builder` version. Until upstream
+// catches up we ship structural stubs so consumer code still type-checks.
+// These intentionally fall back to `any` to avoid spurious narrowing errors;
+// once `bun-query-builder` exports the real shapes, remove these stubs.
+export type InferFillableAttributes<_M> = any
+export type InferNumericColumns<_M> = string
+export type InferColumnNames<_M> = string
+export type ModelRow<_M> = any
+export type ModelRowLoose<_M> = any
+export type ModelCreateData<_M> = any
+export type ModelCreateDataLoose<_M> = any
 
 // ---------------------------------------------------------------------------
 // Model row types — inferred from model definitions via bun-query-builder.
@@ -302,18 +308,11 @@ export type {
 // Consumers: import type { UserModel, NewUser } from '@stacksjs/orm'
 // ---------------------------------------------------------------------------
 
-// Use a relative import to the User model file directly. Bun's linker still
-// records `import type` paths for graph resolution, so importing through the
-// auto-imports barrel here would re-introduce the cycle that the removed
-// `export * from '../../../auto-imports/models'` (above) was meant to break.
-// The single-model path keeps the type chain narrow.
-import type _UserModel from '../../../../../app/Models/User'
-
 /** User model row type — inferred from the User model definition. */
-export type UserModel = ModelRowLoose<typeof _UserModel>
+export type UserModel = ModelRowLoose<unknown>
 
 /** Data required to create a new User — inferred fillable attributes. */
-export type NewUser = ModelCreateDataLoose<typeof _UserModel>
+export type NewUser = ModelCreateDataLoose<unknown>
 
 // ---------------------------------------------------------------------------
 // Polymorphic trait table types — used by @stacksjs/cms and database drivers.

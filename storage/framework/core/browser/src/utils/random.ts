@@ -39,7 +39,9 @@ function customRandom(alphabet: string, defaultSize: number, getRandom: (bytes: 
       let i = step
 
       while (i--) {
-        id += alphabet[bytes[i] & mask] || ''
+        const byte = bytes[i]
+        if (byte === undefined) continue
+        id += alphabet[byte & mask] || ''
         if (id.length >= size)
           return id
       }
@@ -72,7 +74,9 @@ function random(size: number = 21): string {
 
   // We are reading directly from the random pool to avoid creating new array
   for (let i = poolOffset - size; i < poolOffset; i++) {
-    id += urlAlphabet[pool[i] & 63]
+    const byte = pool[i]
+    if (byte === undefined) continue
+    id += urlAlphabet[byte & 63]
   }
   return id
 }

@@ -99,7 +99,7 @@ function shouldRunNow(cronExpression: string, lastRun: Date | null): boolean {
     return false
   }
 
-  const [minute, hour, day, month, dayOfWeek] = parts
+  const [minute, hour, day, month, dayOfWeek] = parts as [string, string, string, string, string]
 
   return (
     matchesCronPart(minute, currentMinute, 0, 59)
@@ -127,13 +127,13 @@ function matchesCronPart(part: string, current: number, _min: number, _max: numb
 
   // Range (e.g., "1-5")
   if (part.includes('-')) {
-    const [start, end] = part.split('-').map(v => Number.parseInt(v.trim(), 10))
+    const [start, end] = part.split('-').map(v => Number.parseInt(v.trim(), 10)) as [number, number]
     return current >= start && current <= end
   }
 
   // Step (e.g., "*/5")
   if (part.includes('/')) {
-    const [range, step] = part.split('/')
+    const [range, step] = part.split('/') as [string, string]
     const stepNum = Number.parseInt(step, 10)
 
     if (range === '*') {
@@ -141,7 +141,7 @@ function matchesCronPart(part: string, current: number, _min: number, _max: numb
     }
 
     if (range.includes('-')) {
-      const [start, end] = range.split('-').map(v => Number.parseInt(v.trim(), 10))
+      const [start, end] = range.split('-').map(v => Number.parseInt(v.trim(), 10)) as [number, number]
       return current >= start && current <= end && (current - start) % stepNum === 0
     }
   }
@@ -166,13 +166,14 @@ function parseScheduleString(schedule: string): string | null {
   }
 
   // Check for predefined schedules
-  if (scheduleMap[schedule.toLowerCase()]) {
-    return scheduleMap[schedule.toLowerCase()]
+  const mapped = scheduleMap[schedule.toLowerCase()]
+  if (mapped) {
+    return mapped
   }
 
   // Check for "Every" expressions
   const everyMatch = schedule.match(/^Every\.(\w+)$/i)
-  if (everyMatch) {
+  if (everyMatch && everyMatch[1] !== undefined) {
     const interval = everyMatch[1].toLowerCase()
     const everyMap: Record<string, string> = {
       second: '* * * * *', // sub-minute not supported, run every minute

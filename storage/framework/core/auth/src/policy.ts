@@ -26,10 +26,12 @@
  *   }
  * }
  */
-
-
-type UserModel = typeof User
+import type { UserModel as OrmUserModel } from '@stacksjs/orm'
 import { AuthorizationResponse } from './gate'
+
+// Use the row/instance shape from orm so policies operate on the
+// authenticated user object, not the User class constructor.
+type UserModel = OrmUserModel
 
 export abstract class BasePolicy<T = any> {
   /**

@@ -296,8 +296,14 @@ function emit(level: 'debug' | 'info' | 'warn' | 'error', event: string, fields:
   }
   // The underlying logger handles the dev vs prod formatting; we just
   // pass a single object so it prints as JSON in prod and as a
-  // pretty key=value pairs view in dev.
-  void log[level](payload)
+  // pretty key=value pairs view in dev. `warn` is typed as
+  // `(string, options?)` so we serialise the payload before handing off.
+  if (level === 'warn') {
+    void log.warn(`[${event}]`, payload)
+  }
+  else {
+    void log[level](payload)
+  }
 }
 
 export const struct = {

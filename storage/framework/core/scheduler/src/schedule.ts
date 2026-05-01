@@ -149,8 +149,8 @@ export class Schedule implements UntimedSchedule {
     if (parts.length !== 2) {
       throw new Error(`Invalid time format "${time}". Expected "HH:MM" (e.g., "14:30")`)
     }
-    const [hour, minute] = parts.map(Number)
-    if (Number.isNaN(hour) || Number.isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
+    const [hour, minute] = parts.map(Number) as [number | undefined, number | undefined]
+    if (hour === undefined || minute === undefined || Number.isNaN(hour) || Number.isNaN(minute) || hour < 0 || hour > 23 || minute < 0 || minute > 59) {
       throw new Error(`Invalid time "${time}". Hour must be 0-23, minute must be 0-59`)
     }
     this.cronPattern = `${minute} ${hour} * * *`
@@ -380,7 +380,7 @@ export class Schedule implements UntimedSchedule {
       }
       runCount++
       try {
-        const result = task()
+        const result = task() as unknown
         // Handle promise-returning tasks: a rejection from an async task
         // would otherwise become an unhandled rejection (the synchronous
         // try/catch above can't see it). Now those route through the

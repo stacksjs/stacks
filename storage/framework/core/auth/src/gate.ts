@@ -4,9 +4,12 @@
  * Laravel-like authorization gates for fine-grained access control.
  * Supports both inline gates and policy classes.
  */
+import type { UserModel as OrmUserModel } from '@stacksjs/orm'
 
-
-type UserModel = typeof User
+// Alias the ORM-derived UserModel under the name this module uses internally.
+// The gate API receives authenticated user objects (rows / instances),
+// not the User class constructor.
+type UserModel = OrmUserModel
 
 /**
  * Gate callback function type
@@ -14,9 +17,12 @@ type UserModel = typeof User
 export type GateCallback<T = any> = (_user: UserModel | null, ..._args: T[]) => boolean | Promise<boolean> | AuthorizationResponse
 
 /**
- * Policy method type
+ * Policy method type. The return type intentionally allows `null` so that
+ * a policy's `before()` hook (which returns `null` to delegate to the
+ * underlying ability check) is index-compatible with the catch-all
+ * `[key: string]: PolicyMethod | undefined` signature on `Policy`.
  */
-export type PolicyMethod<T = any> = (_user: UserModel | null, _model?: T, ..._args: any[]) => boolean | Promise<boolean> | AuthorizationResponse
+export type PolicyMethod<T = any> = (_user: UserModel | null, _model?: T, ..._args: any[]) => boolean | null | Promise<boolean | null> | AuthorizationResponse
 
 /**
  * Authorization response for detailed allow/deny
@@ -293,7 +299,9 @@ export async function inspect(ability: string, user: UserModel | null, ...args: 
       const method = policyInstance[ability] as PolicyMethod | undefined
       if (method) {
         const result = await method.call(policyInstance, user, ...args)
-        return normalizeResponse(result)
+        // null is treated as "no opinion" — fall through to deny here since
+        // we already exhausted the policy resolution path for this ability.
+        return normalizeResponse(result ?? false)
       }
     }
   }

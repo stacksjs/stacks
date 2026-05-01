@@ -85,8 +85,12 @@ function compileNamedRoute(path: string): NamedRoute {
  */
 function extractRouteParamNames(routePath: string): string[] {
   const names = new Set<string>()
-  for (const m of routePath.matchAll(/\{(\w+)\}/g)) names.add(m[1])
-  for (const m of routePath.matchAll(/(?:^|\/):(\w+)(?=$|\/)/g)) names.add(m[1])
+  for (const m of routePath.matchAll(/\{(\w+)\}/g)) {
+    if (m[1]) names.add(m[1])
+  }
+  for (const m of routePath.matchAll(/(?:^|\/):(\w+)(?=$|\/)/g)) {
+    if (m[1]) names.add(m[1])
+  }
   return [...names]
 }
 
@@ -815,7 +819,8 @@ async function validateActionInput(req: EnhancedRequest, validations: ActionVali
         // Use custom message if provided, otherwise decorate the
         // validator's bare message with the field label.
         if (validation.message) {
-          fieldErrors.push(typeof validation.message === 'string' ? validation.message : validation.message[field] || decorate(result.errors[0].message))
+          const firstMessage = result.errors[0]?.message ?? ''
+          fieldErrors.push(typeof validation.message === 'string' ? validation.message : validation.message[field] || decorate(firstMessage))
         }
         else {
           result.errors.forEach(err => fieldErrors.push(decorate(err.message)))

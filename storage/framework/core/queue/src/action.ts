@@ -143,7 +143,7 @@ export class Job {
       await runAction(this.action)
     }
     else if (typeof this.action === 'function') {
-      await this.action()
+      await (this.action as () => unknown | Promise<unknown>)()
     }
     else {
       throw new Error(`Job ${this.name} does not have a valid handler`)
@@ -198,7 +198,7 @@ export class Job {
       } as any,
       {
         delay: opts?.delay,
-        maxTries: this.tries,
+        maxTries: typeof this.tries === 'number' ? this.tries : undefined,
         timeout: this.timeout,
         backoff: Array.isArray(this.backoff) ? this.backoff : undefined,
       },

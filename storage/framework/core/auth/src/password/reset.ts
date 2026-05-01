@@ -130,7 +130,11 @@ export function passwordResets(email: string): PasswordResetActions {
   }
 
   async function resetPassword(token: string, newPassword: string): Promise<PasswordResetResult> {
-    const result = await db.transaction(async (trx) => {
+    const result = await db.transaction(async (rawTrx) => {
+      // The transaction callback receives bun-query-builder's raw `QueryBuilder<DB>`,
+      // which marks chained fluent methods like `selectAll` as optional. We mirror
+      // the typing of the top-level `db` proxy so chained calls type-check the same way.
+      const trx = rawTrx as unknown as typeof db
       // First verify the token exists
       const resetRecord = await trx
         .selectFrom('password_resets')

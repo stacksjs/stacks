@@ -90,8 +90,8 @@ export function markdownTable(table: Table, options: MarkdownTableOptions = {}):
 
   for (const row of normalized) {
     for (let i = 0; i < row.length; i++) {
-      const cellLength = row[i].length
-      if (cellLength > columnWidths[i]) {
+      const cellLength = row[i]?.length ?? 0
+      if (cellLength > (columnWidths[i] ?? 0)) {
         columnWidths[i] = cellLength
       }
     }
@@ -102,7 +102,8 @@ export function markdownTable(table: Table, options: MarkdownTableOptions = {}):
 
   // Header row
   if (normalized.length > 0) {
-    rows.push(buildRow(normalized[0], columnWidths, padding, delimiter, delimiterStart, delimiterEnd))
+    const header = normalized[0] ?? []
+    rows.push(buildRow(header, columnWidths, padding, delimiter, delimiterStart, delimiterEnd))
 
     // Separator row
     const separatorCells = columnWidths.map((width, index) => {
@@ -113,7 +114,8 @@ export function markdownTable(table: Table, options: MarkdownTableOptions = {}):
 
     // Data rows
     for (let i = 1; i < normalized.length; i++) {
-      rows.push(buildRow(normalized[i], columnWidths, padding, delimiter, delimiterStart, delimiterEnd))
+      const dataRow = normalized[i] ?? []
+      rows.push(buildRow(dataRow, columnWidths, padding, delimiter, delimiterStart, delimiterEnd))
     }
   }
 
@@ -129,7 +131,7 @@ function buildRow(
   delimiterEnd: boolean,
 ): string {
   const paddedCells = cells.map((cell, index) => {
-    const width = columnWidths[index]
+    const width = columnWidths[index] ?? 0
     return cell.padEnd(width, ' ')
   })
 

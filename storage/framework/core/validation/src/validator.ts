@@ -74,6 +74,8 @@ export async function validateField(modelFile: string, params: RequestData): Pro
   for (const key in attributes) {
     if (Object.prototype.hasOwnProperty.call(attributes, key)) {
       const attributeKey = attributes[key]
+      if (!attributeKey)
+        continue
 
       const isRequired = 'isRequired' in (attributeKey.validation?.rule ?? {})
         ? (attributeKey.validation?.rule as Validator<any>).isRequired
@@ -85,7 +87,7 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
       ruleObject[snakeCase(key)] = attributeKey.validation?.rule as Validator<any>
 
-      const validatorMessages = attributes[key]?.validation?.message
+      const validatorMessages = attributeKey.validation?.message
 
       if (validatorMessages) {
         for (const validatorMessageKey in validatorMessages) {
@@ -148,9 +150,11 @@ export function unique(table: string, column: string, exceptId?: number): AsyncV
   return async (value: unknown): Promise<boolean | string> => {
     try {
       const { db } = await import('@stacksjs/database')
-      let query = db.selectFrom(table as any).where(column as any, '=', value as any)
+      // The query builder uses template-literal types that narrow on every
+      // `.where()`, so chaining loses type compatibility — cast through `any`.
+      let query: any = db.selectFrom(table as any).where(column as any, '=', value as any)
       if (exceptId) query = query.where('id' as any, '!=', exceptId as any)
-      const existing = await (query as any).selectAll().executeTakeFirst()
+      const existing = await query.selectAll().executeTakeFirst()
       return existing ? `The ${column} has already been taken` : true
     }
     catch {

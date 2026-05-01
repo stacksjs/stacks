@@ -1,12 +1,14 @@
 {
   "compilerOptions": {
-    "ignoreDeprecations": "6.0",
+    // `baseUrl` was deprecated in TS 6.0 and will be removed in TS 7.0.
+    // Path mappings below resolve relative to this file's directory
+    // automatically (TS 4.1+ behavior) so removing baseUrl is a no-op
+    // for resolution but unblocks the next major TypeScript upgrade.
     "incremental": true,
     "target": "esnext",
     "jsx": "preserve",
     "lib": ["esnext"],
     "moduleDetection": "force",
-    "baseUrl": ".",
     "module": "esnext",
     "moduleResolution": "bundler",
     "paths": {
@@ -30,13 +32,8 @@
     ],
     "allowImportingTsExtensions": true,
     "strict": true,
-    // strictNullChecks and noUncheckedIndexedAccess are off at the
-    // monorepo level because enabling them touches thousands of legacy
-    // files. New packages should extend `./tsconfig.strict.json` instead
-    // of this file to opt in. The framework's typed surface is gradually
-    // migrating package-by-package.
-    "strictNullChecks": false,
-    "noUncheckedIndexedAccess": false,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "noUncheckedSideEffectImports": true,
     "noUnusedLocals": false,
     "declaration": true,

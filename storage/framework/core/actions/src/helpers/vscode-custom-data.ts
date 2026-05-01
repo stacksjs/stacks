@@ -5,6 +5,15 @@ import { customElementsDataPath } from '@stacksjs/path'
 import { writeTextFile } from '@stacksjs/storage'
 import library from '~/config/library'
 
+function generateComponentInfoData(): string {
+  const componentsData = JSON.stringify(library.webComponents?.tags)
+  return `{
+  "version": 1.1,
+  "tags": ${componentsData}
+}
+`
+}
+
 export async function generateVsCodeCustomData(): Promise<Result<void, string>> {
   try {
     log.info('Generating custom-elements.json...')
@@ -17,7 +26,7 @@ export async function generateVsCodeCustomData(): Promise<Result<void, string>> 
 
     log.success('Generated custom-elements.json for IDEs.')
 
-    return ok(undefined)
+    return ok<void, string>(undefined)
   }
   catch (e) {
     log.error('There was an error generating the custom-elements.json file.', e)

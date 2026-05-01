@@ -10,9 +10,11 @@
  * if (await hasRole(user, 'admin')) { ... }
  * await assignRole(userId, 'editor')
  */
+import type { UserModel as OrmUserModel } from '@stacksjs/orm'
 
-
-type UserModel = typeof User
+// Use the row/instance shape from orm so role helpers operate on the
+// authenticated user object, not the User class constructor.
+type UserModel = OrmUserModel
 
 export interface RoleRecord {
   id: number
@@ -518,7 +520,7 @@ export interface RbacMethods {
 export function withRbac<T extends UserModel | { id: number }>(user: T): T & RbacMethods {
   const userId = getUserId(user)
 
-  return Object.assign(user, {
+  const methods: RbacMethods = {
     hasRole: (roleName: string, guardName?: string) => hasRole(userId, roleName, guardName),
     hasAnyRole: (roleNames: string[], guardName?: string) => hasAnyRole(userId, roleNames, guardName),
     hasAllRoles: (roleNames: string[], guardName?: string) => hasAllRoles(userId, roleNames, guardName),
@@ -533,7 +535,10 @@ export function withRbac<T extends UserModel | { id: number }>(user: T): T & Rba
     givePermission: (permissionName: string, guardName?: string) => givePermission(userId, permissionName, guardName),
     revokePermission: (permissionName: string, guardName?: string) => revokePermission(userId, permissionName, guardName),
     syncPermissions: (permissionNames: string[], guardName?: string) => syncPermissions(userId, permissionNames, guardName),
-  })
+  }
+  // Cast: Object.assign cannot infer the precise intersection when T is a
+  // generic union, but at runtime the merge is well-defined.
+  return Object.assign(user as object, methods) as T & RbacMethods
 }
 
 /**

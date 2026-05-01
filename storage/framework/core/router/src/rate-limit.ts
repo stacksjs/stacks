@@ -1,154 +1,167 @@
 /**
- * Action-level rate limiting helper.
+ * Action-level rate limiting helpers.
  *
- * Middleware-level rate limiting handles "this IP cannot make more than
- * N requests/sec" — but it can't see *which* action is being hit, so
- * it bucket-counts everything together. This helper lets an individual
- * action enforce its own quota: `await rateLimit('create-post', 10).per('hour')`
- * blocks the action specifically, throws a typed `HttpError(429)` with
- * the right Retry-After header, and is keyed off the authenticated user
- * (or IP fallback) so two users don't share a bucket.
+ * Thin wrapper around `ts-rate-limiter` that gives Stacks actions a
+ * one-line `await rateLimit(key, max).per('hour')` ergonomics. The
+ * underlying limiter is shared across calls (cached per `windowMs`)
+ * so the bucket math stays correct across requests in the same
+ * process — and `RateLimitError` thrown from the lib is translated
+ * into the framework's `HttpError(429)` with `Retry-After` set.
  *
- * Backed by `@stacksjs/cache`, so it works with whichever driver the
- * project has configured (Redis in prod, memory in dev/tests).
+ * Why not just use `bun-router`'s built-in rate-limit middleware?
+ * That middleware buckets per-request — fine for blanket "60 reqs
+ * per IP per minute" enforcement, but action-specific quotas (e.g.
+ * "5 password resets per email per hour") need a per-call hook the
+ * action handler can invoke conditionally. This module provides that.
  */
 
 import { HttpError } from '@stacksjs/error-handling'
+import { RateLimitError, RateLimiter, defaultIdentity } from 'ts-rate-limiter'
 import { getCurrentRequest } from './request-context'
 
-interface RateLimitWindow {
-  count: number
-  resetAt: number // unix seconds
-}
-
-const PERIOD_SECONDS: Record<string, number> = {
+const PERIOD_SECONDS = {
   second: 1,
   minute: 60,
   hour: 3600,
   day: 86_400,
-}
+} as const
+type Period = keyof typeof PERIOD_SECONDS
 
 /**
- * Build a rate-limit identity for the current scope. Defaults to:
- *   1. The authenticated user id (if available)
- *   2. The bearer token (if set)
- *   3. The client IP from `x-forwarded-for` / `x-real-ip` / fallback
+ * Per-(key,window) limiter cache. Reusing the same `RateLimiter`
+ * instance across calls is what keeps the bucket counts coherent —
+ * a fresh instance per call would lose every previous count.
  *
- * Callers can pass a custom `identity` to `rateLimit(...)` to bucket
- * by something else (e.g. a customer id from the request body).
+ * The cache key is `${windowMs}:${max}` so two action sites that share
+ * the same shape but different keys still share the same limiter
+ * (the bucket scope is the *value* passed to `enforce(key)`, not the
+ * RateLimiter instance).
  */
-function defaultIdentity(): string {
-  const req = getCurrentRequest() as (Request & {
-    _authenticatedUser?: { id?: number | string }
-    _currentAccessToken?: { id?: number | string }
-  }) | undefined
-  if (req) {
-    const userId = req._authenticatedUser?.id
-    if (userId !== undefined) return `user:${userId}`
-    const tokenId = req._currentAccessToken?.id
-    if (tokenId !== undefined) return `token:${tokenId}`
-    const fwd = req.headers.get('x-forwarded-for')
-    if (fwd) return `ip:${fwd.split(',')[0].trim()}`
-    const realIp = req.headers.get('x-real-ip')
-    if (realIp) return `ip:${realIp}`
+const limiterCache = new Map<string, RateLimiter>()
+
+function getLimiter(max: number, windowMs: number): RateLimiter {
+  const cacheKey = `${windowMs}:${max}`
+  let limiter = limiterCache.get(cacheKey)
+  if (!limiter) {
+    limiter = new RateLimiter({
+      windowMs,
+      maxRequests: max,
+      algorithm: 'fixed-window',
+      // Header generation is handled by the framework error path;
+      // disable here so we don't pay for unused work.
+      standardHeaders: false,
+      legacyHeaders: false,
+    })
+    limiterCache.set(cacheKey, limiter)
   }
-  return 'anon'
+  return limiter
 }
 
 /**
- * Check if `key` has exceeded `max` operations in the given period.
- * Throws `HttpError(429)` when over budget; otherwise increments the
- * counter and returns silently.
- *
- * The fluent `.per(period)` form lets call sites read naturally:
+ * Resolve the bucket identity for the current scope. Defaults to
+ * `defaultIdentity(req)` from `ts-rate-limiter` (auth user → token →
+ * IP → 'anon'); callers can override via `options.identity`.
+ */
+function resolveIdentity(explicit?: string): string {
+  if (explicit !== undefined) return explicit
+  const req = getCurrentRequest() as Request | undefined
+  return req ? defaultIdentity(req) : 'anon'
+}
+
+/**
+ * Check + consume a rate-limit slot for the current scope.
  *
  * @example
  * ```ts
  * await rateLimit('create-post', 10).per('hour')
  * await rateLimit('login-attempts', 5, { identity: email }).per('minute')
+ * await rateLimit('expensive-job', 3).over(900) // custom 15-minute ttl
  * ```
  */
 export function rateLimit(
   key: string,
   max: number,
-  options: { identity?: string, ttl?: number } = {},
+  options: { identity?: string } = {},
 ): {
     /** Run with a string period name (`'minute'`, `'hour'`, …). */
-    per(period: 'second' | 'minute' | 'hour' | 'day'): Promise<void>
-    /** Run with a numeric ttl in seconds (overrides `per`). */
-    over(ttlSeconds: number): Promise<void>
+    per: (period: Period) => Promise<void>
+    /** Run with a numeric ttl in seconds. */
+    over: (ttlSeconds: number) => Promise<void>
   } {
-  const id = options.identity ?? defaultIdentity()
-  const cacheKey = `__ratelimit__:${key}:${id}`
+  const id = resolveIdentity(options.identity)
+  const bucketKey = `${key}:${id}`
 
-  const run = async (ttl: number): Promise<void> => {
-    const { cache } = await import('@stacksjs/cache')
-    const now = Math.floor(Date.now() / 1000)
-    const existing = await cache.get<RateLimitWindow>(cacheKey)
-
-    let window: RateLimitWindow
-    if (!existing || existing.resetAt <= now) {
-      window = { count: 1, resetAt: now + ttl }
+  const run = async (windowMs: number): Promise<void> => {
+    const limiter = getLimiter(max, windowMs)
+    try {
+      await limiter.enforce(bucketKey)
     }
-    else {
-      window = { count: existing.count + 1, resetAt: existing.resetAt }
+    catch (err) {
+      if (err instanceof RateLimitError) {
+        throw Object.assign(
+          new HttpError(429, 'Too many requests', {
+            key,
+            max,
+            retryAfter: err.retryAfter,
+          }),
+          { headers: err.toHeaders() },
+        )
+      }
+      throw err
     }
-
-    if (window.count > max) {
-      const retryAfter = Math.max(1, window.resetAt - now)
-      throw Object.assign(new HttpError(429, 'Too many requests', {
-        key,
-        max,
-        retryAfter,
-      }), {
-        // Bun-router middleware error handling reads `headers` off the
-        // thrown error to merge into the 429 response. Without
-        // Retry-After the client has no signal for backoff timing.
-        headers: { 'Retry-After': String(retryAfter) },
-      })
-    }
-
-    const ttlRemaining = Math.max(1, window.resetAt - now)
-    await cache.set(cacheKey, window, ttlRemaining)
   }
 
   return {
     async per(period) {
-      const ttl = options.ttl ?? PERIOD_SECONDS[period]
-      if (!ttl) throw new Error(`rateLimit().per: unknown period '${period}'`)
-      await run(ttl)
+      const seconds = PERIOD_SECONDS[period]
+      if (!seconds) throw new Error(`rateLimit().per: unknown period '${period}'`)
+      await run(seconds * 1000)
     },
     async over(ttlSeconds) {
       if (!Number.isFinite(ttlSeconds) || ttlSeconds <= 0) {
         throw new Error(`rateLimit().over: ttl must be a positive number, got ${ttlSeconds}`)
       }
-      await run(ttlSeconds)
+      await run(ttlSeconds * 1000)
     },
   }
 }
 
 /**
- * Read the current bucket state without incrementing. Useful for
- * dashboards that want to display "you have N attempts remaining"
- * without consuming an attempt.
+ * Read the current bucket state without consuming a slot. Useful for
+ * "you have N attempts remaining" hints in dashboards and pre-flight
+ * checks. Returns `null` if the limiter's storage doesn't expose
+ * `getCount` (the default memory storage does; redis storage may not).
  */
 export async function rateLimitStatus(
   key: string,
+  max: number,
+  windowSeconds: number,
   options: { identity?: string } = {},
-): Promise<{ count: number, resetAt: number } | null> {
-  const id = options.identity ?? defaultIdentity()
-  const cacheKey = `__ratelimit__:${key}:${id}`
-  const { cache } = await import('@stacksjs/cache')
-  return (await cache.get<RateLimitWindow>(cacheKey)) ?? null
+): Promise<{ count: number, limit: number, remaining: number } | null> {
+  const id = resolveIdentity(options.identity)
+  const bucketKey = `${key}:${id}`
+  const limiter = getLimiter(max, windowSeconds * 1000)
+  const result = await limiter.peek(bucketKey)
+  if (!result) return null
+  return {
+    count: result.current,
+    limit: result.limit,
+    remaining: Math.max(0, result.limit - result.current),
+  }
 }
 
 /**
  * Drop the bucket for the given key (e.g. after a successful login,
  * the failed-attempt counter should reset).
  */
-export async function clearRateLimit(key: string, options: { identity?: string } = {}): Promise<void> {
-  const id = options.identity ?? defaultIdentity()
-  const cacheKey = `__ratelimit__:${key}:${id}`
-  const { cache } = await import('@stacksjs/cache')
-  await cache.del(cacheKey)
+export async function clearRateLimit(
+  key: string,
+  max: number,
+  windowSeconds: number,
+  options: { identity?: string } = {},
+): Promise<void> {
+  const id = resolveIdentity(options.identity)
+  const bucketKey = `${key}:${id}`
+  const limiter = getLimiter(max, windowSeconds * 1000)
+  await limiter.reset(bucketKey)
 }

@@ -27,7 +27,7 @@ interface FeaturesConfigShape {
 const overrides = new Map<string, boolean>()
 
 function rawConfig(): FeaturesConfigShape {
-  return ((config as Record<string, unknown>).features ?? {}) as FeaturesConfigShape
+  return ((config as unknown as Record<string, unknown>).features ?? {}) as FeaturesConfigShape
 }
 
 /**
@@ -56,10 +56,11 @@ export function feature(name: string): boolean {
   if (typeof raw === 'object') {
     if (raw.enabled === false) return false
     if (Array.isArray(raw.env) && raw.env.length > 0) {
-      const currentEnv = ((config as { app?: { env?: string } }).app?.env ?? '').toString()
+      const currentEnv = ((config as unknown as { app?: { env?: string } }).app?.env ?? '').toString()
       if (!raw.env.includes(currentEnv)) return false
     }
-    return raw.enabled !== false
+    // raw.enabled is `true | undefined` here; treat undefined as enabled
+    return raw.enabled !== undefined ? raw.enabled : true
   }
   return false
 }

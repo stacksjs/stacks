@@ -82,7 +82,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       const pantryPath = p.projectPath('pantry')
       if (!process.env.NODE_PATH?.includes(pantryPath)) {
         process.env.NODE_PATH = process.env.NODE_PATH ? `${pantryPath}:${process.env.NODE_PATH}` : pantryPath
-        // @ts-expect-error - force Bun/Node to re-read module paths
+        // force Bun/Node to re-read module paths
         require('module').Module._initPaths?.()
       }
 

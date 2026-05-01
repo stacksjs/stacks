@@ -24,7 +24,7 @@ export function detectIndent(text: string): IndentInfo {
 
     // Match leading whitespace
     const match = line.match(/^(\s+)/)
-    if (match) {
+    if (match && match[1] !== undefined) {
       indents.push(match[1])
     }
   }

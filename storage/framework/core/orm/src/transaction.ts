@@ -46,7 +46,10 @@ export async function transaction<T>(
   callback: (tx: TransactionHandle) => Promise<T>,
   options?: TransactionOptions,
 ): Promise<T> {
-  return await db.transaction(callback, options)
+  // The underlying bun-query-builder transaction() typings refer to its
+  // internal QueryBuilder<DB> shape, while we expose the augmented `Db`
+  // alias here. They're structurally compatible at runtime.
+  return await (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<T>, opts?: TransactionOptions) => Promise<T>)(callback, options)
 }
 
 /**
@@ -54,8 +57,8 @@ export async function transaction<T>(
  * @deprecated Use transaction() instead
  */
 export function transactionBuilder(callback: () => Promise<void>): Promise<void> {
-  return db.transaction(async () => {
-    return await callback()
+  return (db.transaction as unknown as (cb: (tx: TransactionHandle) => Promise<void>) => Promise<void>)(async () => {
+    await callback()
   })
 }
 
@@ -75,7 +78,7 @@ export function transactionBuilder(callback: () => Promise<void>): Promise<void>
  * ```
  */
 export async function savepoint<T>(callback: (sp: TransactionHandle) => Promise<T>): Promise<T> {
-  return await db.savepoint(callback)
+  return await (db.savepoint as unknown as (cb: (sp: TransactionHandle) => Promise<T>) => Promise<T>)(callback)
 }
 
 /**
@@ -97,5 +100,8 @@ export function transactional<TArgs extends any[], R>(
   fn: (tx: TransactionHandle, ...args: TArgs) => Promise<R>,
   options?: TransactionOptions,
 ): (...args: TArgs) => Promise<R> {
-  return db.transactional(fn, options)
+  return (db.transactional as unknown as (
+    f: (tx: TransactionHandle, ...args: TArgs) => Promise<R>,
+    opts?: TransactionOptions,
+  ) => (...args: TArgs) => Promise<R>)(fn, options)
 }

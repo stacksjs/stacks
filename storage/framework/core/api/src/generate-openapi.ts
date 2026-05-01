@@ -49,8 +49,12 @@ export async function generateOpenApi(): Promise<OpenApiSpec> {
     if (!spec.paths[oasPath]) spec.paths[oasPath] = {}
 
     const paramNames: string[] = []
-    for (const m of r.path.matchAll(/\{(\w+)\}/g)) paramNames.push(m[1])
-    for (const m of r.path.matchAll(/(?:^|\/):(\w+)(?=$|\/)/g)) paramNames.push(m[1])
+    for (const m of r.path.matchAll(/\{(\w+)\}/g)) {
+      if (m[1]) paramNames.push(m[1])
+    }
+    for (const m of r.path.matchAll(/(?:^|\/):(\w+)(?=$|\/)/g)) {
+      if (m[1]) paramNames.push(m[1])
+    }
 
     spec.paths[oasPath][r.method.toLowerCase()] = {
       summary: r.name ?? r.path,

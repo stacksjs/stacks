@@ -166,7 +166,7 @@ async function registerPolicy(modelName: string, policyName: string): Promise<vo
     const policiesMatch = content.match(/export const policies[^{]*\{([^}]*)\}/)
 
     if (policiesMatch) {
-      const existingPolicies = policiesMatch[1]
+      const existingPolicies = policiesMatch[1] ?? ''
 
       // Check if policy already exists
       if (existingPolicies.includes(`'${modelName}'`)) {

@@ -1,4 +1,12 @@
-import type { I18n } from 'vue-email'
+/**
+ * i18n bag passed to STX email templates at render time. Stacks emails
+ * are STX, not vue-email — keys/values are user-defined per template.
+ * The shape is intentionally open: each template declares its own
+ * placeholders and the renderer interpolates them as-is.
+ */
+export interface I18n {
+  [key: string]: unknown
+}
 
 export interface AutoResponderConfig {
   enabled: boolean

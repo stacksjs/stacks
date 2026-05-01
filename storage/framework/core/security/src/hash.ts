@@ -110,7 +110,7 @@ export function info(hash: string): HashInfo {
   if (algorithm === 'bcrypt') {
     // Bcrypt format: $2a$XX$... where XX is the cost
     const match = hash.match(/^\$2[aby]\$(\d{2})\$/)
-    if (match) {
+    if (match && match[1] !== undefined) {
       options.rounds = Number.parseInt(match[1], 10)
     }
   }
@@ -121,10 +121,10 @@ export function info(hash: string): HashInfo {
     const timeMatch = hash.match(/t=(\d+)/)
     const parallelismMatch = hash.match(/p=(\d+)/)
 
-    if (versionMatch) options.version = Number.parseInt(versionMatch[1], 10)
-    if (memoryMatch) options.memory = Number.parseInt(memoryMatch[1], 10)
-    if (timeMatch) options.rounds = Number.parseInt(timeMatch[1], 10)
-    if (parallelismMatch) options.parallelism = Number.parseInt(parallelismMatch[1], 10)
+    if (versionMatch && versionMatch[1] !== undefined) options.version = Number.parseInt(versionMatch[1], 10)
+    if (memoryMatch && memoryMatch[1] !== undefined) options.memory = Number.parseInt(memoryMatch[1], 10)
+    if (timeMatch && timeMatch[1] !== undefined) options.rounds = Number.parseInt(timeMatch[1], 10)
+    if (parallelismMatch && parallelismMatch[1] !== undefined) options.parallelism = Number.parseInt(parallelismMatch[1], 10)
   }
 
   return { algorithm, options }

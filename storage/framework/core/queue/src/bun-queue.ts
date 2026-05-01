@@ -1,3 +1,4 @@
+/// <reference path="./shims.d.ts" />
 /**
  * Re-exports from bun-queue
  *

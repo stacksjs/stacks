@@ -115,7 +115,7 @@ export function loadEnv(options: EnvPluginOptions = {}): { loaded: number, error
       const content = readFileSync(fullPath, 'utf-8')
       const { parsed, errors: parseErrors } = parse(content, {
         privateKey,
-        processEnv: process.env,
+        processEnv: process.env as Record<string, string>,
       })
 
       errors.push(...parseErrors)

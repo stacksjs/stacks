@@ -90,9 +90,10 @@ export function splitSeparateNumbers(value: string): string[] {
   const words = split(value)
   for (let i = 0; i < words.length; i++) {
     const word = words[i]
+    if (word === undefined) continue
     const match = SPLIT_SEPARATE_NUMBER_RE.exec(word)
     if (match) {
-      const offset = match.index + (match[1] ?? match[2]).length
+      const offset = match.index + (match[1] ?? match[2] ?? '').length
       words.splice(i, 1, word.slice(0, offset), word.slice(offset))
     }
   }
@@ -260,7 +261,7 @@ function capitalCaseTransformFactory(
 ) {
   return (word: string) => {
     if (!word) return word
-    return `${upper(word[0])}${lower(word.slice(1))}`
+    return `${upper(word[0] ?? '')}${lower(word.slice(1))}`
   }
 }
 
@@ -270,7 +271,7 @@ function pascalCaseTransformFactory(
 ) {
   return (word: string, index: number) => {
     if (!word) return word
-    const char0 = word[0]
+    const char0 = word[0] ?? ''
     const initial
       = index > 0 && char0 >= '0' && char0 <= '9' ? `_${char0}` : upper(char0)
     return initial + lower(word.slice(1))

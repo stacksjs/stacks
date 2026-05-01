@@ -250,12 +250,14 @@ describe('defineModel', () => {
       } as const)
 
       expect(Post._taggable).toBeDefined()
-      expect(typeof Post._taggable.tags).toBe('function')
-      expect(typeof Post._taggable.tagCount).toBe('function')
-      expect(typeof Post._taggable.addTag).toBe('function')
-      expect(typeof Post._taggable.activeTags).toBe('function')
-      expect(typeof Post._taggable.inactiveTags).toBe('function')
-      expect(typeof Post._taggable.removeTag).toBe('function')
+      const taggable = Post._taggable
+      if (!taggable) throw new Error('expected _taggable to be defined')
+      expect(typeof taggable.tags).toBe('function')
+      expect(typeof taggable.tagCount).toBe('function')
+      expect(typeof taggable.addTag).toBe('function')
+      expect(typeof taggable.activeTags).toBe('function')
+      expect(typeof taggable.inactiveTags).toBe('function')
+      expect(typeof taggable.removeTag).toBe('function')
     })
 
     it('should attach categorizable methods when categorizable trait is set', () => {
@@ -273,12 +275,14 @@ describe('defineModel', () => {
       } as const)
 
       expect(Post._categorizable).toBeDefined()
-      expect(typeof Post._categorizable.categories).toBe('function')
-      expect(typeof Post._categorizable.categoryCount).toBe('function')
-      expect(typeof Post._categorizable.addCategory).toBe('function')
-      expect(typeof Post._categorizable.activeCategories).toBe('function')
-      expect(typeof Post._categorizable.inactiveCategories).toBe('function')
-      expect(typeof Post._categorizable.removeCategory).toBe('function')
+      const categorizable = Post._categorizable
+      if (!categorizable) throw new Error('expected _categorizable to be defined')
+      expect(typeof categorizable.categories).toBe('function')
+      expect(typeof categorizable.categoryCount).toBe('function')
+      expect(typeof categorizable.addCategory).toBe('function')
+      expect(typeof categorizable.activeCategories).toBe('function')
+      expect(typeof categorizable.inactiveCategories).toBe('function')
+      expect(typeof categorizable.removeCategory).toBe('function')
     })
 
     it('should attach commentable methods when commentable trait is set', () => {
@@ -296,12 +300,14 @@ describe('defineModel', () => {
       } as const)
 
       expect(Post._commentable).toBeDefined()
-      expect(typeof Post._commentable.comments).toBe('function')
-      expect(typeof Post._commentable.commentCount).toBe('function')
-      expect(typeof Post._commentable.addComment).toBe('function')
-      expect(typeof Post._commentable.approvedComments).toBe('function')
-      expect(typeof Post._commentable.pendingComments).toBe('function')
-      expect(typeof Post._commentable.rejectedComments).toBe('function')
+      const commentable = Post._commentable
+      if (!commentable) throw new Error('expected _commentable to be defined')
+      expect(typeof commentable.comments).toBe('function')
+      expect(typeof commentable.commentCount).toBe('function')
+      expect(typeof commentable.addComment).toBe('function')
+      expect(typeof commentable.approvedComments).toBe('function')
+      expect(typeof commentable.pendingComments).toBe('function')
+      expect(typeof commentable.rejectedComments).toBe('function')
     })
 
     it('should attach billable methods when billable trait is set', () => {
@@ -319,13 +325,15 @@ describe('defineModel', () => {
       } as const)
 
       expect(User._billable).toBeDefined()
-      expect(typeof User._billable.createStripeUser).toBe('function')
-      expect(typeof User._billable.updateStripeUser).toBe('function')
-      expect(typeof User._billable.deleteStripeUser).toBe('function')
-      expect(typeof User._billable.paymentMethods).toBe('function')
-      expect(typeof User._billable.newSubscription).toBe('function')
-      expect(typeof User._billable.cancelSubscription).toBe('function')
-      expect(typeof User._billable.checkout).toBe('function')
+      const billable = User._billable
+      if (!billable) throw new Error('expected _billable to be defined')
+      expect(typeof billable.createStripeUser).toBe('function')
+      expect(typeof billable.updateStripeUser).toBe('function')
+      expect(typeof billable.deleteStripeUser).toBe('function')
+      expect(typeof billable.paymentMethods).toBe('function')
+      expect(typeof billable.newSubscription).toBe('function')
+      expect(typeof billable.cancelSubscription).toBe('function')
+      expect(typeof billable.checkout).toBe('function')
     })
 
     it('should attach likeable methods when likeable trait is set', () => {
@@ -343,11 +351,13 @@ describe('defineModel', () => {
       } as const)
 
       expect(Post._likeable).toBeDefined()
-      expect(typeof Post._likeable.likes).toBe('function')
-      expect(typeof Post._likeable.likeCount).toBe('function')
-      expect(typeof Post._likeable.like).toBe('function')
-      expect(typeof Post._likeable.unlike).toBe('function')
-      expect(typeof Post._likeable.isLiked).toBe('function')
+      const likeable = Post._likeable
+      if (!likeable) throw new Error('expected _likeable to be defined')
+      expect(typeof likeable.likes).toBe('function')
+      expect(typeof likeable.likeCount).toBe('function')
+      expect(typeof likeable.like).toBe('function')
+      expect(typeof likeable.unlike).toBe('function')
+      expect(typeof likeable.isLiked).toBe('function')
     })
 
     it('should not attach trait methods when no traits are set', () => {
@@ -404,7 +414,7 @@ describe('defineModel', () => {
         },
       } as const)
 
-      const query = Post.where('title', 'test')
+      const query = (Post.where as (...args: any[]) => any)('title', 'test')
       expect(query).toBeDefined()
       expect(typeof query.first).toBe('function')
       expect(typeof query.get).toBe('function')
@@ -425,7 +435,7 @@ describe('defineModel', () => {
         },
       } as const)
 
-      const query = Post.select('title')
+      const query = (Post.select as (...args: any[]) => any)('title')
       expect(query).toBeDefined()
       expect(typeof query.first).toBe('function')
       expect(typeof query.get).toBe('function')
@@ -442,7 +452,7 @@ describe('defineModel', () => {
         },
       } as const)
 
-      const query = Post.orderBy('title', 'asc')
+      const query = (Post.orderBy as (...args: any[]) => any)('title', 'asc')
       expect(query).toBeDefined()
       expect(typeof query.first).toBe('function')
     })
@@ -459,7 +469,7 @@ describe('defineModel', () => {
         },
       } as const)
 
-      const query = Post.where('title', 'test').orderBy('views', 'desc').limit(10)
+      const query = (Post.where as (...args: any[]) => any)('title', 'test').orderBy('views', 'desc').limit(10)
       expect(query).toBeDefined()
       expect(typeof query.get).toBe('function')
       expect(typeof query.first).toBe('function')

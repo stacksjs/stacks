@@ -49,6 +49,7 @@ export function useSwipe(
 
   const onTouchStart = (e: Event): void => {
     const touch = (e as TouchEvent).touches[0]
+    if (!touch) return
     startX = touch.clientX
     startY = touch.clientY
     isSwiping.value = true
@@ -61,6 +62,7 @@ export function useSwipe(
   const onTouchMove = (e: Event): void => {
     if (!isSwiping.value) return
     const touch = (e as TouchEvent).touches[0]
+    if (!touch) return
     lengthX.value = touch.clientX - startX
     lengthY.value = touch.clientY - startY
 

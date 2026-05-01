@@ -11,11 +11,14 @@
  *   // User can update the post
  * }
  */
-
-
-type UserModel = typeof User
-import { can, cannot, any, all, authorize as gateAuthorize, inspect } from './gate'
+import type { UserModel as OrmUserModel } from '@stacksjs/orm'
 import type { AuthorizationResponse } from './gate'
+import { all, any, authorize as gateAuthorize, can, cannot, inspect } from './gate'
+
+// Alias the ORM-derived UserModel under the name the rest of this module
+// expects. Using the row/instance shape (rather than `typeof User`) lets
+// callers pass plain authenticated user objects to the gate helpers.
+type UserModel = OrmUserModel
 
 /**
  * Check if a user can perform an ability
@@ -91,13 +94,16 @@ export async function inspectUser(user: UserModel | null, ability: string, ...ar
  * if (await authorizedUser.can('update', post)) { ... }
  */
 export function withAuthorization<T extends UserModel>(user: T): T & AuthorizableMethods {
-  return Object.assign(user, {
+  const methods: AuthorizableMethods = {
     can: (ability: string, ...args: any[]) => userCan(user, ability, ...args),
     cannot: (ability: string, ...args: any[]) => userCannot(user, ability, ...args),
     canAny: (abilities: string[], ...args: any[]) => userCanAny(user, abilities, ...args),
     canAll: (abilities: string[], ...args: any[]) => userCanAll(user, abilities, ...args),
     authorize: (ability: string, ...args: any[]) => authorizeUser(user, ability, ...args),
-  })
+  }
+  // Cast: Object.assign cannot infer the precise intersection when T is a
+  // generic with index signatures, but at runtime the merge is well-defined.
+  return Object.assign(user as object, methods) as T & AuthorizableMethods
 }
 
 /**

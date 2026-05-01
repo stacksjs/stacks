@@ -29,7 +29,8 @@ export function useStepper<T>(steps: T[], initialStep?: T): UseStepperReturn<T> 
   const initialIndex = initialStep !== undefined ? steps.indexOf(initialStep) : 0
   const index = ref<number>(initialIndex >= 0 ? initialIndex : 0)
 
-  const current = computed<T>(() => stepsRef.value[index.value])
+  // index is always kept within [0, length); when steps is empty, current is read-only by callers
+  const current = computed<T>(() => stepsRef.value[index.value] as T)
   const isFirst = computed<boolean>(() => index.value === 0)
   const isLast = computed<boolean>(() => index.value === stepsRef.value.length - 1)
 

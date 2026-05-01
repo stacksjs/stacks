@@ -117,6 +117,9 @@ export function parseBytes(input: string): number {
   }
 
   const [, numberStr, unit = 'B'] = match
+  if (numberStr === undefined) {
+    throw new Error(`Invalid byte string: ${input}`)
+  }
   const number = Number.parseFloat(numberStr)
 
   if (!Number.isFinite(number)) {
@@ -131,7 +134,7 @@ export function parseBytes(input: string): number {
   const units = isBinary ? BINARY_UNITS : DECIMAL_UNITS
 
   for (let i = 0; i < units.length; i++) {
-    if (units[i].toUpperCase() === normalizedUnit) {
+    if (units[i]?.toUpperCase() === normalizedUnit) {
       exponent = i
       break
     }

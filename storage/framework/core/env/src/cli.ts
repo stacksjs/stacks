@@ -131,7 +131,7 @@ export function encryptEnv(options: EncryptOptions = {}): { success: boolean, ou
 
       // Parse key=value
       const match = trimmed.match(/^([^=]+)=(.*)$/)
-      if (!match) {
+      if (!match || match[1] === undefined || match[2] === undefined) {
         encryptedLines.push(line)
         continue
       }
@@ -243,7 +243,7 @@ export function decryptEnv(options: DecryptOptions = {}): { success: boolean, ou
 
       // Parse key=value
       const match = trimmed.match(/^([^=]+)=(.*)$/)
-      if (!match) {
+      if (!match || match[1] === undefined || match[2] === undefined) {
         decryptedLines.push(line)
         continue
       }
@@ -359,7 +359,9 @@ export function setEnv(
 
     // Second pass: update or add key
     for (let i = 0; i < lines.length; i++) {
-      const line = lines[i].trim()
+      const lineEntry = lines[i]
+      if (lineEntry === undefined) continue
+      const line = lineEntry.trim()
       if (line.startsWith(`${key}=`)) {
         lines[i] = `${key}="${finalValue}"`
         found = true
@@ -561,10 +563,12 @@ export function rotateKeypair(
   const privateKeyName = env ? `DOTENV_PRIVATE_KEY_${env}` : 'DOTENV_PRIVATE_KEY'
 
   for (let i = 0; i < lines.length; i++) {
-    if (lines[i].startsWith(`${publicKeyName}=`)) {
+    const entry = lines[i]
+    if (entry === undefined) continue
+    if (entry.startsWith(`${publicKeyName}=`)) {
       lines[i] = `${publicKeyName}="${keypair.publicKey}"`
     }
-    else if (lines[i].startsWith(`${privateKeyName}=`)) {
+    else if (entry.startsWith(`${privateKeyName}=`)) {
       lines[i] = `${privateKeyName}="${keypair.privateKey}"`
     }
   }

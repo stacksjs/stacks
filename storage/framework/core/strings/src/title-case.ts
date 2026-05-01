@@ -94,6 +94,8 @@ export function titleCase(input: string, options: TitleCaseOptions | string[] | 
       continue
     }
 
+    if (token === undefined) continue
+
     // Ignore URLs, email addresses, acronyms, etc.
     if (IS_SPECIAL_CASE.test(token)) {
       const acronym = token.match(IS_ACRONYM)
@@ -119,7 +121,9 @@ export function titleCase(input: string, options: TitleCaseOptions | string[] | 
       let isSentenceEnd = false
 
       for (let i = 0; i < matches.length; i++) {
-        const { 0: word, index: wordIndex = 0 } = matches[i]
+        const match = matches[i]
+        if (!match) continue
+        const { 0: word, index: wordIndex = 0 } = match
         const nextChar = token.charAt(wordIndex + word.length)
 
         isSentenceEnd = terminators.has(nextChar)

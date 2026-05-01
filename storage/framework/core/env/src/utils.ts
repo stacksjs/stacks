@@ -113,5 +113,8 @@ const providers: Record<string, { name: string, detected: boolean }> = {
   },
 }
 
-export const provider: string = Object.keys(providers).find(key => providers[key].detected) || 'unknown'
+export const provider: string = Object.keys(providers).find((key) => {
+  const entry = providers[key]
+  return entry !== undefined && entry.detected
+}) || 'unknown'
 export const providerInfo: { name: string, detected: boolean } = providers[provider] || { name: 'Unknown', detected: false }

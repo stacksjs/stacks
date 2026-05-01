@@ -770,10 +770,11 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   // Dispatches a before-event and returns false if the handler cancels the operation
   const dispatchBeforeEvent = async (event: string, data: any): Promise<boolean> => {
     try {
-      const { dispatch } = await import('@stacksjs/events')
-      const result = await dispatch(event, data)
-      // If any listener explicitly returns false, cancel the operation
-      if (result === false) return false
+      const { dispatchAsync } = await import('@stacksjs/events')
+      // dispatchAsync awaits every matching handler and returns their results;
+      // any explicit `false` return from a listener cancels the operation.
+      const results = (await dispatchAsync(event as any, data)) as unknown[]
+      if (Array.isArray(results) && results.some(r => r === false)) return false
     }
     catch (err) {
       if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND') {

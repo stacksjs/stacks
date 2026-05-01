@@ -1,4 +1,14 @@
-import type { CrosswindOptions } from 'crosswind'
+// Local mirror of crosswind's `Options` shape so we don't bring crosswind
+// into @stacksjs/types as a hard dependency. Apps that import these types
+// only need the structural surface (shortcuts/theme/variants); when full
+// crosswind type fidelity is needed, projects can import directly from
+// `crosswind`.
+interface CrosswindOptions {
+  shortcuts?: unknown
+  theme?: unknown
+  variants?: unknown
+  [key: string]: unknown
+}
 
 export type Font = 'inter' | 'mona' | 'hubot'
 export type Icon = 'heroicons' | 'hugeicons'

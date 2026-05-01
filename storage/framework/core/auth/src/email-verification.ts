@@ -119,7 +119,8 @@ export async function sendVerificationEmail(user: { id: number, email: string, n
     })
   }
   catch (templateError) {
-    log.warn('[email] Email verification template failed, using plain text fallback:', templateError)
+    const errorMessage = templateError instanceof Error ? templateError.message : String(templateError)
+    log.warn(`[email] Email verification template failed, using plain text fallback: ${errorMessage}`)
     // Fallback: send a simple text email if template is not found
     await mail.send({
       to: user.email,

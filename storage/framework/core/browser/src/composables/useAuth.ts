@@ -29,7 +29,7 @@ export function useAuth(): AuthComposable {
       })
 
       if (!response.ok) {
-        token.value = null
+        token.value = ''
         isAuthenticated.value = false
         user.value = null
         return null
@@ -43,7 +43,7 @@ export function useAuth(): AuthComposable {
     }
     catch (error) {
       console.error('Error fetching user:', error)
-      token.value = null
+      token.value = ''
       isAuthenticated.value = false
       user.value = null
       return null
@@ -143,7 +143,7 @@ export function useAuth(): AuthComposable {
       // useStorage's setter syncs the underlying localStorage so other tabs
       // see the change via `storage` events. Setting localStorage manually
       // would skip that broadcast.
-      token.value = null
+      token.value = ''
       user.value = null
       isAuthenticated.value = false
     }

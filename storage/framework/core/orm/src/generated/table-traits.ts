@@ -295,6 +295,7 @@ export async function generateTraitRequestTypes(): Promise<string> {
 
   for (let i = 0; i < traitInterfaces.length; i++) {
     const trait = traitInterfaces[i]
+    if (!trait) continue
     let fieldString = ''
     let fieldStringType = ''
 

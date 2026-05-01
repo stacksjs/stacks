@@ -15,11 +15,11 @@ import { log as _log } from '@stacksjs/logging'
 // "log.error is not a function", which masked the underlying migration error
 // in the dev-server output.
 const log = {
-  info: (...args: any[]) => typeof _log?.info === 'function' ? _log.info(...args) : console.log(...args),
+  info: (...args: any[]) => typeof _log?.info === 'function' ? (_log.info as (...a: any[]) => void)(...args) : console.log(...args),
   success: (msg: string) => typeof _log?.success === 'function' ? _log.success(msg) : console.log(msg),
   warn: (msg: string) => typeof _log?.warn === 'function' ? _log.warn(msg) : console.warn(msg),
-  error: (...args: any[]) => typeof _log?.error === 'function' ? _log.error(...args) : console.error(...args),
-  debug: (...args: any[]) => typeof _log?.debug === 'function' ? _log.debug(...args) : console.debug(...args),
+  error: (...args: any[]) => typeof _log?.error === 'function' ? (_log.error as (...a: any[]) => void)(...args) : console.error(...args),
+  debug: (...args: any[]) => typeof _log?.debug === 'function' ? (_log.debug as (...a: any[]) => void)(...args) : console.debug(...args),
 }
 import { err, handleError, ok } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
@@ -136,7 +136,7 @@ function preprocessSqliteMigrations(): void {
   const createTableEarliest = new Map<string, string>()
   for (const file of files) {
     const m = file.match(/^\d+-create-(\w+)-table\.sql$/)
-    if (!m) continue
+    if (!m || !m[1]) continue
     const tableName = m[1]
     const existing = createTableEarliest.get(tableName)
     if (!existing || file < existing) createTableEarliest.set(tableName, file)
@@ -169,8 +169,9 @@ function preprocessSqliteMigrations(): void {
     // Drop duplicate CREATE TABLE migrations — keep only the earliest one
     // for each table. This handles the case where buddy regenerates a
     // create-table migration for a table that's already modeled.
-    const createTableMatch = statements[0].match(createTablePattern)
-    if (createTableMatch) {
+    const firstStatement = statements[0]
+    const createTableMatch = firstStatement ? firstStatement.match(createTablePattern) : null
+    if (createTableMatch && createTableMatch[1]) {
       const tableName = createTableMatch[1]
       const earliest = createTableEarliest.get(tableName)
       if (earliest && earliest !== file) {
@@ -207,7 +208,7 @@ function preprocessSqliteMigrations(): void {
 
       for (const stmt of statements) {
         const dropColMatch = stmt.match(dropColumnPattern)
-        if (dropColMatch) {
+        if (dropColMatch && dropColMatch[1] && dropColMatch[2]) {
           const tableName = dropColMatch[1]
           const columnName = dropColMatch[2]
 

@@ -236,7 +236,7 @@ function extractTraceInfo() {
       const methodMatch = callerLine.match(/at (.+?) \(/)
       const fileMatch = callerLine.match(/\((.+?):(\d+):(\d+)\)/)
 
-      if (methodMatch) {
+      if (methodMatch && methodMatch[1]) {
         const methodParts = methodMatch[1].split('.')
         caller = {
           model: methodParts.length > 1 ? methodParts[0] : undefined,
@@ -244,7 +244,7 @@ function extractTraceInfo() {
         }
       }
 
-      if (fileMatch) {
+      if (fileMatch && fileMatch[1] && fileMatch[2]) {
         caller = {
           ...caller,
           file: fileMatch[1],
@@ -360,12 +360,12 @@ async function getExplainPlan(query: string): Promise<ExplainResult | null> {
       for (const row of rows as Array<{ detail?: string }>) {
         const detail = row?.detail || ''
         const idxMatch = detail.match(/USING (?:COVERING )?INDEX (\w+)/i)
-        if (idxMatch) {
+        if (idxMatch && idxMatch[1]) {
           indexesUsed.push(idxMatch[1])
         }
         else {
           const scanMatch = detail.match(/^SCAN\s+(\w+)/i)
-          if (scanMatch) missingIndexes.push(scanMatch[1])
+          if (scanMatch && scanMatch[1]) missingIndexes.push(scanMatch[1])
         }
       }
     }
@@ -374,15 +374,23 @@ async function getExplainPlan(query: string): Promise<ExplainResult | null> {
       // the "no index" signal. We do a flat scan of the JSON for `key` (used)
       // and `access_type: ALL` (full scan).
       const text = planText
-      for (const m of text.matchAll(/"key"\s*:\s*"([^"]+)"/g)) indexesUsed.push(m[1])
-      for (const m of text.matchAll(/"table_name"\s*:\s*"([^"]+)"[^}]*"access_type"\s*:\s*"ALL"/g)) missingIndexes.push(m[1])
+      for (const m of text.matchAll(/"key"\s*:\s*"([^"]+)"/g)) {
+        if (m[1]) indexesUsed.push(m[1])
+      }
+      for (const m of text.matchAll(/"table_name"\s*:\s*"([^"]+)"[^}]*"access_type"\s*:\s*"ALL"/g)) {
+        if (m[1]) missingIndexes.push(m[1])
+      }
     }
     else if (driver === 'postgres') {
       // PG `EXPLAIN (FORMAT JSON)` returns one row with a Plan tree. The
       // signal we want is `Node Type: Seq Scan` on a relation.
       const text = planText
-      for (const m of text.matchAll(/"Index Name"\s*:\s*"([^"]+)"/g)) indexesUsed.push(m[1])
-      for (const m of text.matchAll(/"Node Type"\s*:\s*"Seq Scan"[^}]*"Relation Name"\s*:\s*"([^"]+)"/g)) missingIndexes.push(m[1])
+      for (const m of text.matchAll(/"Index Name"\s*:\s*"([^"]+)"/g)) {
+        if (m[1]) indexesUsed.push(m[1])
+      }
+      for (const m of text.matchAll(/"Node Type"\s*:\s*"Seq Scan"[^}]*"Relation Name"\s*:\s*"([^"]+)"/g)) {
+        if (m[1]) missingIndexes.push(m[1])
+      }
     }
 
     return {

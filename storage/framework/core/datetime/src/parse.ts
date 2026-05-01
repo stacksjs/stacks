@@ -16,6 +16,9 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
     // which causes unexpected day shifts in local time. Normalize to local.
     if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) {
       const [y, m, d] = dateStr.split('-').map(Number)
+      if (y === undefined || m === undefined || d === undefined) {
+        throw new Error(`Unable to parse date: ${dateStr}`)
+      }
       return new Date(y, m - 1, d)
     }
     const d = new Date(dateStr)
@@ -70,7 +73,9 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
 
   const parts: Record<string, string> = {}
   for (let i = 0; i < fields.length; i++) {
-    parts[fields[i]] = result[i + 1]
+    const field = fields[i]
+    const value = result[i + 1]
+    if (field !== undefined && value !== undefined) parts[field] = value
   }
 
   // Resolve month from name if needed
@@ -79,7 +84,7 @@ export function parse(dateStr: string, formatStr?: string, _locale?: string): Da
     month = Number.parseInt(parts.month, 10) - 1
   }
   else if (parts.monthName || parts.monthNameShort) {
-    const name = (parts.monthName || parts.monthNameShort).toLowerCase()
+    const name = (parts.monthName || parts.monthNameShort || '').toLowerCase()
     const months = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december']
     const shortMonths = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec']
     let idx = months.indexOf(name)

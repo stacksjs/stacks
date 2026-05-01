@@ -1,12 +1,12 @@
 import type { Selectable } from '@stacksjs/database'
-
-type PaymentMethodInstance = NonNullable<Awaited<ReturnType<typeof PaymentMethod.find>>>
-type PaymentMethodsTable = ModelRow<typeof PaymentMethod>
-import type { UserModel } from '@stacksjs/orm'
+import type { ModelRow, UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { db } from '@stacksjs/database'
 import { PaymentMethod } from '@stacksjs/orm'
 import { stripe } from '..'
+
+type PaymentMethodInstance = NonNullable<Awaited<ReturnType<typeof PaymentMethod.find>>>
+type PaymentMethodsTable = ModelRow<typeof PaymentMethod>
 
 export interface ManagePaymentMethod {
   addPaymentMethod: (user: UserModel, paymentMethod: string | Stripe.PaymentMethod) => Promise<Stripe.Response<Stripe.PaymentMethod>>

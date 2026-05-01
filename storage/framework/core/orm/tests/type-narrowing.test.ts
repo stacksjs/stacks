@@ -266,7 +266,7 @@ describe('action files with model property use object references', () => {
           test(`${subdir}/${file}: model property is a reference (not a string literal)`, () => {
             // model: Post (not model: 'Post')
             const modelMatch = content.match(/model:\s*(\S+)/)
-            if (modelMatch) {
+            if (modelMatch && modelMatch[1]) {
               const value = modelMatch[1].replace(/,?\s*$/, '')
               // Should not be a quoted string
               expect(value).not.toMatch(/^'/)

@@ -129,8 +129,9 @@ export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
     : Promise.all(userConfigs.map(async ([key, modulePath]) => {
       try {
         const mod = await import(modulePath)
-        if (mod?.default !== undefined)
-          ;(overrides as any)[key] = mod.default
+        if (mod?.default !== undefined) {
+          (overrides as any)[key] = mod.default
+        }
       }
       catch (err: unknown) {
         // Distinguish "file simply doesn't exist" from "file exists but is

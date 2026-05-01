@@ -30,6 +30,7 @@
  * ```
  */
 
+/// <reference path="./shims.d.ts" />
 import { log } from '@stacksjs/logging'
 import { env as envVars } from '@stacksjs/env'
 import type { Job } from './action'
@@ -199,7 +200,9 @@ export class PendingBatch {
 
     // Dispatch all jobs with batch metadata
     for (let i = 0; i < this.jobs.length; i++) {
-      const { job, payload } = this.jobs[i]
+      const entry = this.jobs[i]
+      if (!entry) continue
+      const { job, payload } = entry
       const jobPayload = {
         ...payload,
         _batchId: batchId,
@@ -402,7 +405,9 @@ export class DispatchedBatch {
     // Dispatch the new jobs
     const options = JSON.parse(record.options || '{}')
     for (let i = 0; i < batchableJobs.length; i++) {
-      const { job, payload } = batchableJobs[i]
+      const entry = batchableJobs[i]
+      if (!entry) continue
+      const { job, payload } = entry
       const jobPayload = {
         ...payload,
         _batchId: this.id,
@@ -581,7 +586,7 @@ async function storeBatchInDatabase(record: BatchRecord): Promise<void> {
 async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
   const { db } = await import('@stacksjs/database')
 
-  const result = await db
+  const result = await (db as any)
     .selectFrom('job_batches')
     .where('id', '=', id)
     .selectAll()
@@ -593,7 +598,7 @@ async function getBatchFromDatabase(id: string): Promise<BatchRecord | null> {
 async function getAllBatchesFromDatabase(): Promise<BatchRecord[]> {
   const { db } = await import('@stacksjs/database')
 
-  const results = await db
+  const results = await (db as any)
     .selectFrom('job_batches')
     .selectAll()
     .orderBy('created_at', 'desc')

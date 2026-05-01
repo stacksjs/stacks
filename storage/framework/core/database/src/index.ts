@@ -102,7 +102,7 @@ export {
 export type {
   QueryBuilder,
   QueryBuilderConfig,
-  Seeder,
+  Seeder as QueryBuilderSeeder,
   SupportedDialect,
 } from 'bun-query-builder'
 

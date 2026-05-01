@@ -223,7 +223,7 @@ describe('ORM defineModel Integration - Query Methods', () => {
       },
     } as const)
 
-    const query = Post.where('title', 'test')
+    const query = (Post.where as (...args: any[]) => any)('title', 'test')
     expect(query).toBeDefined()
     expect(typeof query.first).toBe('function')
     expect(typeof query.get).toBe('function')
@@ -244,7 +244,7 @@ describe('ORM defineModel Integration - Query Methods', () => {
       },
     } as const)
 
-    const query = Post.where('title', 'test').orderBy('views', 'desc').limit(10)
+    const query = (Post.where as (...args: any[]) => any)('title', 'test').orderBy('views', 'desc').limit(10)
     expect(query).toBeDefined()
     expect(typeof query.get).toBe('function')
     expect(typeof query.first).toBe('function')
@@ -262,7 +262,7 @@ describe('ORM defineModel Integration - Query Methods', () => {
       },
     } as const)
 
-    const query = Post.select('title')
+    const query = (Post.select as (...args: any[]) => any)('title')
     expect(query).toBeDefined()
     expect(typeof query.first).toBe('function')
     expect(typeof query.get).toBe('function')

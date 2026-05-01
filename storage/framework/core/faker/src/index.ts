@@ -15,13 +15,13 @@ const datatype = {
     return baseFaker.number.int({ min: options?.min ?? 0, max: options?.max ?? 100 })
   },
   float(options?: { min?: number; max?: number; precision?: number }): number {
-    return baseFaker.number.float({ min: options?.min ?? 0, max: options?.max ?? 1, fractionDigits: options?.precision ?? 2 })
+    return baseFaker.number.float({ min: options?.min ?? 0, max: options?.max ?? 1, precision: options?.precision ?? 2 })
   },
   uuid(): string {
     return baseFaker.string.uuid()
   },
   string(length?: number): string {
-    return baseFaker.string.alphanumeric(length ?? 10)
+    return baseFaker.string.alphanumeric({ length: length ?? 10 })
   },
   array<T>(generator: () => T, length?: number): T[] {
     const arr: T[] = []
@@ -81,10 +81,12 @@ const company = {
   },
   catchPhrase(): string {
     // @stacksjs/ts-faker might not have catchPhrase, generate similar content
-    return baseFaker.company.buzzPhrase?.() ?? `${baseFaker.word.adjective()} ${baseFaker.word.noun()}`
+    const co = baseFaker.company as { buzzPhrase?: () => string; catchphrase?: () => string }
+    return co.buzzPhrase?.() ?? co.catchphrase?.() ?? `${baseFaker.word.adjective()} ${baseFaker.word.noun()}`
   },
   buzzPhrase(): string {
-    return baseFaker.company.buzzPhrase?.() ?? baseFaker.lorem.sentence(3)
+    const co = baseFaker.company as { buzzPhrase?: () => string }
+    return co.buzzPhrase?.() ?? baseFaker.lorem.sentence(3)
   },
 }
 
@@ -105,19 +107,19 @@ const vehicle = {
   },
   type(): string {
     const types = ['Sedan', 'SUV', 'Truck', 'Van', 'Coupe', 'Convertible', 'Wagon', 'Hatchback']
-    return types[Math.floor(Math.random() * types.length)]
+    return types[Math.floor(Math.random() * types.length)] ?? 'Sedan'
   },
   manufacturer(): string {
     const manufacturers = ['Toyota', 'Honda', 'Ford', 'Chevrolet', 'BMW', 'Mercedes-Benz', 'Audi', 'Tesla', 'Nissan', 'Hyundai', 'Kia', 'Volkswagen']
-    return manufacturers[Math.floor(Math.random() * manufacturers.length)]
+    return manufacturers[Math.floor(Math.random() * manufacturers.length)] ?? 'Toyota'
   },
   model(): string {
     const models = ['Camry', 'Accord', 'F-150', 'Silverado', '3 Series', 'C-Class', 'A4', 'Model 3', 'Altima', 'Elantra']
-    return models[Math.floor(Math.random() * models.length)]
+    return models[Math.floor(Math.random() * models.length)] ?? 'Camry'
   },
   fuel(): string {
     const fuels = ['Gasoline', 'Diesel', 'Electric', 'Hybrid', 'Plug-in Hybrid']
-    return fuels[Math.floor(Math.random() * fuels.length)]
+    return fuels[Math.floor(Math.random() * fuels.length)] ?? 'Gasoline'
   },
   vin(): string {
     // Generate a 17-character VIN
@@ -130,7 +132,7 @@ const vehicle = {
   },
   color(): string {
     const colors = ['Black', 'White', 'Silver', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Orange', 'Yellow']
-    return colors[Math.floor(Math.random() * colors.length)]
+    return colors[Math.floor(Math.random() * colors.length)] ?? 'Black'
   },
 }
 
@@ -138,7 +140,8 @@ const vehicle = {
 const helpers = {
   ...baseFaker.helpers,
   arrayElement<T>(array: T[]): T {
-    return array[Math.floor(Math.random() * array.length)]
+    if (array.length === 0) throw new Error('arrayElement: cannot pick from an empty array')
+    return array[Math.floor(Math.random() * array.length)] as T
   },
   arrayElements<T>(array: T[], count?: number): T[] {
     const n = count ?? Math.floor(Math.random() * array.length) + 1
@@ -157,7 +160,10 @@ const helpers = {
     const a = [...array]
     for (let i = a.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1))
-      ;[a[i], a[j]] = [a[j], a[i]]
+      const ai = a[i] as T
+      const aj = a[j] as T
+      a[i] = aj
+      a[j] = ai
     }
     return a
   },
@@ -167,11 +173,13 @@ const helpers = {
   },
   objectKey<T extends object>(obj: T): keyof T {
     const keys = Object.keys(obj) as (keyof T)[]
-    return keys[Math.floor(Math.random() * keys.length)]
+    if (keys.length === 0) throw new Error('objectKey: object has no keys')
+    return keys[Math.floor(Math.random() * keys.length)] as keyof T
   },
   objectValue<T extends object>(obj: T): T[keyof T] {
     const values = Object.values(obj)
-    return values[Math.floor(Math.random() * values.length)]
+    if (values.length === 0) throw new Error('objectValue: object has no values')
+    return values[Math.floor(Math.random() * values.length)] as T[keyof T]
   },
 }
 

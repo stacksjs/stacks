@@ -84,8 +84,8 @@ export const manageProduct: ProductManager = (() => {
     params: Stripe.ProductSearchParams = { query: '' },
   ): Promise<Stripe.Response<Stripe.ApiSearchResult<Stripe.Product>>> {
     return await stripe.products.search({
-      query,
       ...params,
+      query,
     })
   }
 
@@ -163,8 +163,8 @@ export const managePriceExtended: ExtendedPriceManager = (() => {
     params: Stripe.PriceSearchParams = { query: '' },
   ): Promise<Stripe.Response<Stripe.ApiSearchResult<Stripe.Price>>> {
     return await stripe.prices.search({
-      query,
       ...params,
+      query,
     })
   }
 
@@ -249,7 +249,7 @@ export const manageCoupon: CouponManager = (() => {
       })
 
       if (promotionCodes.data.length > 0) {
-        return promotionCodes.data[0]
+        return promotionCodes.data[0] ?? null
       }
 
       return null

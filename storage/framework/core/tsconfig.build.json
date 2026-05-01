@@ -1,8 +1,17 @@
 {
   "compilerOptions": {
-    "baseUrl": ".",
+    // `baseUrl` was deprecated in TS 6.0 and will be removed in TS 7.0.
+    // We rely on TypeScript's automatic `paths`-relative resolution
+    // (introduced in 4.1) so the path mappings keep working — they're
+    // resolved relative to this file's directory.
     "target": "esnext",
-    "lib": ["esnext"],
+    // Include DOM types because several core packages re-export from
+    // `@stacksjs/browser` (utils, composables, ui, dashboard) and
+    // those modules legitimately reference `window`, `document`,
+    // `HTMLElement`, etc. Pure server packages can still opt to a
+    // narrower lib via their own tsconfig if they want stricter
+    // browser-API isolation.
+    "lib": ["esnext", "dom", "dom.iterable"],
     "moduleDetection": "force",
     "module": "esnext",
     "moduleResolution": "bundler",
@@ -16,6 +25,7 @@
     "allowImportingTsExtensions": true,
     "strict": true,
     "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
     "noFallthroughCasesInSwitch": true,
     "declaration": true,
     "noEmit": true,

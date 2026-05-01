@@ -1,4 +1,4 @@
-import type { JobOptions } from '@stacksjs/types'
+import type { JobOptions, RequestInstance } from '@stacksjs/types'
 
 interface ActionValidations {
   [key: string]: {

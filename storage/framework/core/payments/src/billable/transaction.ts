@@ -1,7 +1,8 @@
+import type { ModelRow, UserModel } from '@stacksjs/orm'
+import { db } from '@stacksjs/database'
+import { PaymentTransaction } from '@stacksjs/orm'
 
 type PaymentTransactionsTable = ModelRow<typeof PaymentTransaction>
-import type { UserModel } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
 
 export interface StoreTransactionOptions {
   brand: string
@@ -34,6 +35,8 @@ export const manageTransaction: ManageTransaction = (() => {
     }
 
     const createdTransaction = await db.insertInto('payment_transactions').values(data).executeTakeFirst()
+    if (!createdTransaction)
+      throw new Error('Failed to insert payment transaction')
 
     const transaction = await db.selectFrom('payment_transactions').where('id', '=', Number(createdTransaction.insertId)).selectAll().executeTakeFirst()
 

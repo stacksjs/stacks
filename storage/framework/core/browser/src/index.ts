@@ -24,9 +24,12 @@ export {
   isBrowser,
 } from 'bun-query-builder/browser'
 export type {
-  BrowserConfig,
   BrowserModelDefinition,
   BrowserTypedAttribute,
   BrowserModelInstance,
   BrowserModelQueryBuilder,
 } from 'bun-query-builder/browser'
+// `BrowserConfig` lives in the main `bun-query-builder` types entry, not the
+// `/browser` subpath — re-export it from there. The runtime code in this file
+// uses only the `/browser` entry, so server-only code paths are still avoided.
+export type { BrowserConfig } from 'bun-query-builder'

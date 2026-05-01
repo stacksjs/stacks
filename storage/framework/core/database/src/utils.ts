@@ -202,7 +202,140 @@ ensureConfigLoaded()
 // runtime it returns a Bun SQL Statement that has `.execute()`. This interface
 // corrects the return type so callers can chain `.execute()` without type errors.
 type UnsafeReturn = Promise<any> & { execute: () => Promise<any> }
-interface Db extends Omit<ReturnType<typeof createQueryBuilder>, 'unsafe'> {
+
+/**
+ * Fluent chain returned by entry-point methods like `selectFrom`/`updateTable`.
+ *
+ * bun-query-builder marks legacy chain methods (e.g. `selectAll`, `whereILike`,
+ * `selectAllRelations`) as optional in its declarations even though they're
+ * always present at runtime. Re-typing them here avoids forcing every call
+ * site to use `?.()` or `!` on the chain.
+ *
+ * Returns are typed as `any` deliberately — typing each variant precisely
+ * would re-introduce the optional methods, and we already lose strict column
+ * typing one step into a chain (the underlying query builder is constructed
+ * with no schema). Tests cover the runtime semantics.
+ */
+export interface FluentChain {
+  where: (...args: any[]) => FluentChain
+  whereNull: (...args: any[]) => FluentChain
+  whereNotNull: (...args: any[]) => FluentChain
+  whereIn: (...args: any[]) => FluentChain
+  whereNotIn: (...args: any[]) => FluentChain
+  whereLike: (...args: any[]) => FluentChain
+  whereNotLike: (...args: any[]) => FluentChain
+  whereILike: (...args: any[]) => FluentChain
+  whereNotILike: (...args: any[]) => FluentChain
+  whereBetween: (...args: any[]) => FluentChain
+  whereNotBetween: (...args: any[]) => FluentChain
+  whereRaw: (...args: any[]) => FluentChain
+  whereColumn: (...args: any[]) => FluentChain
+  orWhere: (...args: any[]) => FluentChain
+  orWhereNull: (...args: any[]) => FluentChain
+  orWhereNotNull: (...args: any[]) => FluentChain
+  orWhereIn: (...args: any[]) => FluentChain
+  orWhereNotIn: (...args: any[]) => FluentChain
+  orWhereLike: (...args: any[]) => FluentChain
+  orWhereNotLike: (...args: any[]) => FluentChain
+  orWhereILike: (...args: any[]) => FluentChain
+  orWhereColumn: (...args: any[]) => FluentChain
+  andWhere: (...args: any[]) => FluentChain
+  having: (...args: any[]) => FluentChain
+  groupBy: (...args: any[]) => FluentChain
+  orderBy: (...args: any[]) => FluentChain
+  limit: (...args: any[]) => FluentChain
+  offset: (...args: any[]) => FluentChain
+  select: (...args: any[]) => FluentChain
+  selectAll: () => FluentChain
+  selectAllRelations: () => FluentChain
+  selectRaw: (...args: any[]) => FluentChain
+  distinct: () => FluentChain
+  distinctOn: (...args: any[]) => FluentChain
+  innerJoin: (...args: any[]) => FluentChain
+  leftJoin: (...args: any[]) => FluentChain
+  rightJoin: (...args: any[]) => FluentChain
+  fullJoin: (...args: any[]) => FluentChain
+  crossJoin: (...args: any[]) => FluentChain
+  with: (...args: any[]) => FluentChain
+  union: (...args: any[]) => FluentChain
+  unionAll: (...args: any[]) => FluentChain
+  values: (...args: any[]) => FluentChain
+  set: (...args: any[]) => FluentChain
+  returning: (...args: any[]) => FluentChain
+  returningAll: () => FluentChain
+  onConflict: (...args: any[]) => FluentChain
+  onDuplicateKeyUpdate: (...args: any[]) => FluentChain
+  onConflictDoNothing: (...args: any[]) => FluentChain
+  onDuplicateKeyIgnore: () => FluentChain
+  forUpdate: () => FluentChain
+  forShare: () => FluentChain
+  toSQL: () => string
+  execute: () => Promise<any>
+  executeTakeFirst: () => Promise<any>
+  executeTakeFirstOrThrow: () => Promise<any>
+  pluck: (...args: any[]) => Promise<any>
+  count: (...args: any[]) => Promise<number>
+  sum: (...args: any[]) => Promise<number>
+  avg: (...args: any[]) => Promise<number>
+  min: (...args: any[]) => Promise<any>
+  max: (...args: any[]) => Promise<any>
+  exists: () => Promise<boolean>
+  doesntExist: () => Promise<boolean>
+  // Allow indexing for dynamic where${Column} helpers that bun-query-builder
+  // generates at the type level via mapped templates.
+  [key: string]: any
+}
+
+/**
+ * Top-level surface of the lazy `db` proxy. Methods that return a chainable
+ * builder are typed as `FluentChain` to flatten the optional-method noise
+ * inherent in bun-query-builder's declarations. Methods that introduce their
+ * own generics (`transaction<T>`, etc.) are kept as their original signatures
+ * via the underlying QueryBuilder type so call-site inference still works.
+ */
+type RawQueryBuilder = ReturnType<typeof createQueryBuilder>
+type GenericPassthroughKeys =
+  | 'transaction'
+  | 'savepoint'
+  | 'beginDistributed'
+  | 'transactional'
+  | 'configure'
+  | 'reserve'
+  | 'commitDistributed'
+  | 'rollbackDistributed'
+  | 'setTransactionDefaults'
+  | 'close'
+  | 'listen'
+  | 'unlisten'
+  | 'notify'
+  | 'copyTo'
+  | 'copyFrom'
+  | 'ping'
+  | 'waitForReady'
+  | 'count'
+  | 'sum'
+  | 'avg'
+  | 'min'
+  | 'max'
+  | 'insertOrIgnore'
+  | 'insertGetId'
+  | 'updateOrInsert'
+  | 'upsert'
+  | 'create'
+  | 'createMany'
+  | 'sql'
+  | 'raw'
+  | 'simple'
+  | 'file'
+
+interface Db extends Pick<Required<RawQueryBuilder>, GenericPassthroughKeys> {
+  selectFrom: (table: string) => FluentChain
+  insertInto: (table: string) => FluentChain
+  updateTable: (table: string) => FluentChain
+  deleteFrom: (table: string) => FluentChain
+  table: (table: string) => FluentChain
+  selectFromSub: (sub: any, alias: string) => FluentChain
+  select: (table: string, ...columns: string[]) => FluentChain
   unsafe: (query: string, params?: any[]) => UnsafeReturn
 }
 

@@ -109,8 +109,8 @@ export async function checkQueueHealth(config: HealthCheckConfig = {}): Promise<
 
   try {
     const { db } = await import('@stacksjs/database')
-    const jobs = await db.selectFrom('jobs').selectAll().execute() as any[]
-    const failedJobs = await db.selectFrom('failed_jobs').selectAll().execute() as any[]
+    const jobs = await (db as any).selectFrom('jobs').selectAll().execute() as any[]
+    const failedJobs = await (db as any).selectFrom('failed_jobs').selectAll().execute() as any[]
 
     // Group jobs by queue
     const queueMap = new Map<string, { pending: number; processing: number; delayed: number; oldestAge?: number }>()

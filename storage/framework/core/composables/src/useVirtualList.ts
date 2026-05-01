@@ -56,7 +56,9 @@ export function useVirtualList<T>(
 
     const visibleItems: UseVirtualListItem<T>[] = []
     for (let i = startIndex; i < endIndex; i++) {
-      visibleItems.push({ data: items[i], index: i })
+      const data = items[i]
+      if (data === undefined && !(i in items)) continue
+      visibleItems.push({ data: data as T, index: i })
     }
 
     list.value = visibleItems

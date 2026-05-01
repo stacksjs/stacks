@@ -105,7 +105,7 @@ export function random(size = 16, dict: string = urlAlphabet): string {
   g.crypto.getRandomValues(bytes)
 
   let id = ''
-  for (let i = 0; i < size; i++) id += dict[bytes[i] % len]
+  for (let i = 0; i < size; i++) id += dict[(bytes[i] ?? 0) % len]
   return id
 }
 

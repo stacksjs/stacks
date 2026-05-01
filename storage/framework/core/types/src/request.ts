@@ -1,7 +1,9 @@
-
-type UserJsonResponse = ModelRow<typeof User>
+import type { ModelRow } from '@stacksjs/orm'
+import { User } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken, RouteParam } from '@stacksjs/types'
+
+type UserJsonResponse = ModelRow<typeof User>
 
 interface RequestData {
   [key: string]: any

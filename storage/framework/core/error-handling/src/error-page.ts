@@ -429,6 +429,7 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[], option
     const match = line.match(/^\s*at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?$/)
     if (match) {
       let file = match[2]
+      if (file === undefined) continue
       const original = file
       // Shorten file path if base paths provided
       if (basePaths) {
@@ -443,8 +444,8 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[], option
       frames.push({
         function: match[1] || '<anonymous>',
         file,
-        line: parseInt(match[3], 10),
-        column: parseInt(match[4], 10),
+        line: parseInt(match[3] ?? '0', 10),
+        column: parseInt(match[4] ?? '0', 10),
       })
     }
   }

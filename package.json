@@ -65,6 +65,7 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
+    "@stacksjs/bun-router": "^0.0.11",
     "stacks": "workspace:*"
   },
   "devDependencies": {

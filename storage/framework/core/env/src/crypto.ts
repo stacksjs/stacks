@@ -125,7 +125,7 @@ export function parseEnvFromKey(keyName: string): string {
   // DOTENV_PRIVATE_KEY_CI -> ci
   // DOTENV_PRIVATE_KEY -> (default)
   const match = keyName.match(/^DOTENV_PRIVATE_KEY_(.+)$/)
-  return match ? match[1].toLowerCase() : ''
+  return match && match[1] ? match[1].toLowerCase() : ''
 }
 
 // Get appropriate private key for environment

@@ -17,7 +17,7 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
         throw new Error('Stripe secret key is not configured. Set STRIPE_SECRET_KEY in your .env file.')
       }
       _stripe = new Stripe(apiKey, {
-        apiVersion: '2026-01-28.clover',
+        apiVersion: '2026-01-28.preview',
       })
     }
     return (_stripe as any)[prop]

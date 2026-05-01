@@ -1,8 +1,11 @@
-
-type UserModel = InstanceType<typeof User>
-type UserJsonResponse = ModelRow<typeof User>
+import type { UserModel as OrmUserModel } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { Auth } from './authentication'
+
+// Local aliases — keep the existing `UserModel` / `UserJsonResponse` symbols
+// in this module while sourcing the underlying type from the ORM.
+type UserModel = OrmUserModel
+type UserJsonResponse = OrmUserModel
 
 export type AuthUser = UserJsonResponse
 

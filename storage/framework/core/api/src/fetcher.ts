@@ -215,7 +215,7 @@ class Fetcher {
     // Parse the digest challenge
     const challenge = authHeader.substring(7).split(',').reduce((acc, part) => {
       const [key, value] = part.trim().split('=')
-      acc[key] = value?.replace(/["']/g, '') // Remove quotes
+      if (key) acc[key] = value?.replace(/["']/g, '') ?? '' // Remove quotes
       return acc
     }, {} as Record<string, string>)
 

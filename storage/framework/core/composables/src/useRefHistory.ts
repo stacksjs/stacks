@@ -56,7 +56,8 @@ export function useRefHistory<T>(
   const canRedo = computed<boolean>(() => redoStack.value.length > 0)
 
   const last = computed<UseRefHistoryRecord<T>>(() => {
-    return undoStack.value[undoStack.value.length - 1]
+    // undoStack always contains at least the initial state
+    return undoStack.value[undoStack.value.length - 1] as UseRefHistoryRecord<T>
   })
 
   function commit(): void {
@@ -82,10 +83,12 @@ export function useRefHistory<T>(
     const newUndoStack = undoStack.value.slice(0, -1)
     undoStack.value = newUndoStack
 
-    redoStack.value = [...redoStack.value, current]
+    if (current)
+      redoStack.value = [...redoStack.value, current]
 
     const previous = newUndoStack[newUndoStack.length - 1]
-    source.value = cloneValue(previous.snapshot, clone)
+    if (previous)
+      source.value = cloneValue(previous.snapshot, clone)
 
     isUndoRedoing = false
   }
@@ -98,9 +101,10 @@ export function useRefHistory<T>(
     const next = redoStack.value[redoStack.value.length - 1]
     redoStack.value = redoStack.value.slice(0, -1)
 
-    undoStack.value = [...undoStack.value, next]
-
-    source.value = cloneValue(next.snapshot, clone)
+    if (next) {
+      undoStack.value = [...undoStack.value, next]
+      source.value = cloneValue(next.snapshot, clone)
+    }
 
     isUndoRedoing = false
   }
