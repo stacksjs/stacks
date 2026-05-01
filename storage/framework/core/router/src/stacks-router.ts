@@ -11,7 +11,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
-import { Router } from '@stacksjs/bun-router'
+import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
 import { runWithRequest } from './request-context'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 
@@ -638,69 +638,11 @@ function formatResult(result: unknown): Response {
   })
 }
 
-/**
- * Wrap a handler that might be a string path
- */
-/**
- * Attach the small set of request helpers our middleware and actions
- * always assume are present — `bearerToken`, `getParam`, `cookie`,
- * `params`. The names follow Laravel's convention because that's what
- * Stacks userland already expects, but the implementation here doesn't
- * depend on any Laravel runtime.
- */
-function ensureBearerTokenAndParams(req: EnhancedRequest): void {
-  if (typeof (req as any).bearerToken !== 'function') {
-    ;(req as any).bearerToken = (): string | null => {
-      const auth = req.headers.get('authorization') || req.headers.get('Authorization') || ''
-      return auth.startsWith('Bearer ') ? auth.slice(7) : null
-    }
-  }
-  if (typeof (req as any).getParam !== 'function') {
-    ;(req as any).getParam = <T = string>(name: string, defaultValue?: T): T | undefined => {
-      const params = (req as any).params
-      const value = params?.[name] as T | undefined
-      return value !== undefined ? value : defaultValue
-    }
-  }
-  if (typeof (req as any).cookie !== 'function') {
-    ;(req as any).cookie = (name: string, defaultValue?: string): string | null => {
-      const header = req.headers.get('cookie') || ''
-      for (const part of header.split(';')) {
-        const [k, ...rest] = part.trim().split('=')
-        if (k === name) return decodeURIComponent(rest.join('='))
-      }
-      return defaultValue ?? null
-    }
-  }
-  if (!(req as any).params) {
-    ;(req as any).params = {}
-  }
-}
-
-/**
- * Decorate the incoming request with the helpers the framework's
- * middleware and actions assume are always available.
- *
- * Method set: `bearerToken`, `getParam`, `cookie`, `params`, plus the
- * Laravel-style input helpers (`get`, `string`, `integer`, `float`,
- * `boolean`, `array`, `input`, `query`, etc.). Names follow Laravel's
- * convention because that's the API surface stacks userland already
- * expects, but none of this depends on Laravel at runtime.
- */
+// Decorate the incoming request with the helpers the framework's middleware
+// and actions assume are always available. Names follow Laravel's convention
+// because that's the API surface Stacks userland expects.
 function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
-  // Always (re-)attach `bearerToken`, `getParam`, `cookie`, `params`.
-  // Different bun-router versions wire these up differently — some only
-  // attach them when `applyMacros` is explicitly invoked. Doing it here
-  // unconditionally is a defense-in-depth hedge that guarantees Auth.ts
-  // and the 100+ `request.getParam('id')` callers see them on every
-  // request, regardless of which bun-router happens to be installed.
-  ensureBearerTokenAndParams(req)
-
-  // The big input-helper bundle below is only added when bun-router
-  // didn't already attach it — `req.get` is our cheap presence sniff.
-  if (typeof (req as any).get === 'function') {
-    return req
-  }
+  applyRequestEnhancements(req as unknown as Request, (req as any).params || {})
 
   // Parse query string if not present
   let query = (req as any).query

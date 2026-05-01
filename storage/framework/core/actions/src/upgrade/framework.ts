@@ -154,7 +154,10 @@ if (ownHashBefore !== 0n && ownHashAfter !== 0n && ownHashBefore !== ownHashAfte
   // Forward the user's original args plus the sentinel.
   const args = process.argv.slice(2).filter(a => a !== '--__restarted')
   const proc = Bun.spawn({
-    cmd: ['bun', ownPath, ...args, '--__restarted'],
+    // Use `Bun.argv0` so the restart runs under the same bun binary the
+    // parent is using — important when pantry's vendored bun is the
+    // active runtime but the system PATH points at a different version.
+    cmd: [Bun.argv0 || 'bun', ownPath, ...args, '--__restarted'],
     cwd: projectRoot,
     stdout: 'inherit',
     stderr: 'inherit',
@@ -178,9 +181,17 @@ for (const { managed, summary } of perPath) {
     console.log(`  ${managed.label.padEnd(10)} ${moved ? 'updated' : 'unchanged'}`)
   }
   else {
-    console.log(
-      `  ${managed.label.padEnd(10)} +${summary.added} ~${summary.changed} -${summary.removed} (${summary.unchanged} unchanged)`,
-    )
+    // Collapse no-op paths to a single "unchanged" line so identical-content
+    // updates don't read as noisy "+0 ~0 -0" output.
+    const noop = summary.added + summary.changed + summary.removed === 0
+    if (noop) {
+      console.log(`  ${managed.label.padEnd(10)} unchanged (${summary.unchanged} files)`)
+    }
+    else {
+      console.log(
+        `  ${managed.label.padEnd(10)} +${summary.added} ~${summary.changed} -${summary.removed} (${summary.unchanged} unchanged)`,
+      )
+    }
   }
 }
 
@@ -371,7 +382,7 @@ async function runPostSyncHooks(args: {
     console.log('Running `bun install` to refresh dependencies...')
     try {
       const proc = Bun.spawn({
-        cmd: ['bun', 'install'],
+        cmd: [Bun.argv0 || 'bun', 'install'],
         cwd: projectRoot,
         stdout: 'inherit',
         stderr: 'inherit',
@@ -394,7 +405,7 @@ async function runPostSyncHooks(args: {
     try {
       const migrateScript = p.frameworkPath('core/buddy/src/cli.ts')
       const proc = Bun.spawn({
-        cmd: ['bun', migrateScript, 'migrate'],
+        cmd: [Bun.argv0 || 'bun', migrateScript, 'migrate'],
         cwd: projectRoot,
         stdout: 'inherit',
         stderr: 'inherit',

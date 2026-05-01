@@ -67,14 +67,27 @@ route.get('/test-error', 'Actions/TestErrorAction')
 // AI
 // ============================================================================
 
-route.post('/ai/ask', 'Actions/AI/AskAction')
-route.post('/ai/summary', 'Actions/AI/SummaryAction')
+// `/ai/*` hits the user's configured LLM provider on the server side. Left
+// unauthenticated, an attacker can rack up token bills and exfiltrate
+// completions. Auth-gate by default; if a userland app intentionally wants
+// a public AI endpoint (e.g. a homepage chat widget), it can register the
+// route in `routes/api.ts` without the middleware — user routes load before
+// framework routes, so the unauthenticated copy wins.
+route.group({ middleware: 'auth' }, () => {
+  route.post('/ai/ask', 'Actions/AI/AskAction')
+  route.post('/ai/summary', 'Actions/AI/SummaryAction')
+})
 
 // ============================================================================
 // Voide — Voice AI Code Assistant
+//
+// These endpoints drive the buddy/voice agent: open repos, run AI commits,
+// push branches, manage GitHub credentials. Unauthenticated, an attacker
+// could open arbitrary local repos and push to the user's GitHub account.
+// Always auth-gated.
 // ============================================================================
 
-route.group({ prefix: '/voide' }, () => {
+route.group({ prefix: '/voide', middleware: 'auth' }, () => {
   route.get('/state', 'Actions/Buddy/BuddyStateAction')
   route.post('/repo', 'Actions/Buddy/BuddyRepoOpenAction')
   route.post('/repo/validate', 'Actions/Buddy/BuddyRepoValidateAction')

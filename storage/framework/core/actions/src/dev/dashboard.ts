@@ -277,6 +277,17 @@ console.log()
 // config loading which prints warnings before our console.log override is active.
 const { createApp } = await import('@craft-native/ts')
 
+// Resolve the dock icon. Userland gets first crack at customizing via
+// `resources/assets/images/app-icon.png` in the project; if absent, fall
+// back to the framework's bundled placeholder so the dock never shows the
+// generic "no icon" silhouette. PNG is fine — NSImage decodes it directly.
+const userIconPath = projectPath('resources/assets/images/app-icon.png')
+const defaultIconPath = storagePath('framework/defaults/resources/assets/images/app-icon.png')
+// eslint-disable-next-line ts/no-top-level-await
+const appIconPath = (await Bun.file(userIconPath).exists())
+  ? userIconPath
+  : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
+
 const app = createApp({
   url: initialUrl,
   quiet: !verbose,
@@ -288,6 +299,7 @@ const app = createApp({
     nativeSidebar: true,
     sidebarWidth: 240,
     sidebarConfig,
+    ...(appIconPath && { icon: appIconPath }),
   },
 })
 

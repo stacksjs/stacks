@@ -97,47 +97,86 @@ export function getConfig(): StacksOptions {
 // which is *before* `overridesReady` resolves and the user's
 // `config/*.ts` files land.
 //
-// In practice that means the named exports return the framework
-// defaults, not the user's overrides. They're kept here for
-// backwards compatibility — code that needs live, override-aware
-// values should read off the `config` proxy directly:
+// These start as snapshots of the framework defaults (because the user's
+// `config/*.ts` haven't loaded yet — see `overridesReady`). Once the
+// async loader resolves we reassign each `let` binding so consumers of
+// `import { ports } from '@stacksjs/config'` see the merged value.
 //
-//     import { config } from '@stacksjs/config'
-//     await overridesReady   // optional: wait for user configs
-//     config.ports.api       // reactive, reflects config/ports.ts
+// ESM live bindings make this work: when an exporting module reassigns
+// a `let`-bound export, every importer immediately sees the new value
+// (no re-import needed). The earlier `export const x = config.x` form
+// captured the empty-default snapshot forever.
 //
-// The tradeoff was deliberate: making these exports lazy would break
-// destructuring (`const { ports } = config` would have the same issue)
-// and force every consumer to await config readiness, which is the
-// wrong default for cold-path settings that never change.
-export const ai: StacksOptions['ai'] = config.ai
-export const analytics: StacksOptions['analytics'] = config.analytics
-export const app: StacksOptions['app'] = config.app
-export const auth: StacksOptions['auth'] = config.auth
-export const realtime: StacksOptions['realtime'] = config.realtime
-export const cache: StacksOptions['cache'] = config.cache
-export const cloud: StacksOptions['cloud'] = config.cloud
-export const cli: StacksOptions['cli'] = config.cli
-export const database: StacksOptions['database'] = config.database
-export const dns: StacksOptions['dns'] = config.dns
-export const docs: StacksOptions['docs'] = config.docs
-export const email: StacksOptions['email'] = config.email
-export const errors: StacksOptions['errors'] = config.errors
-export const git: StacksOptions['git'] = config.git
-export const hashing: StacksOptions['hashing'] = config.hashing
-export const library: StacksOptions['library'] = config.library
-export const logging: StacksOptions['logging'] = config.logging
-export const notification: StacksOptions['notification'] = config.notification
-export const payment: StacksOptions['payment'] = config.payment
-export const ports: StacksOptions['ports'] = config.ports
-export const queue: StacksOptions['queue'] = config.queue
-export const security: StacksOptions['security'] = config.security
-export const saas: StacksOptions['saas'] = config.saas
-export const searchEngine: StacksOptions['searchEngine'] = config.searchEngine
-export const services: StacksOptions['services'] = config.services
-export const filesystems: StacksOptions['filesystems'] = config.filesystems
-export const team: StacksOptions['team'] = config.team
-export const ui: StacksOptions['ui'] = config.ui
+// Caveat: code that destructures (`const { ports } = config` or reads
+// at the top of a function) before `overridesReady` resolves still
+// gets the early snapshot. For correctness in that path, read off
+// the `config` proxy: `config.ports.api` always pulls live.
+export let ai: StacksOptions['ai'] = config.ai
+export let analytics: StacksOptions['analytics'] = config.analytics
+export let app: StacksOptions['app'] = config.app
+export let auth: StacksOptions['auth'] = config.auth
+export let realtime: StacksOptions['realtime'] = config.realtime
+export let cache: StacksOptions['cache'] = config.cache
+export let cloud: StacksOptions['cloud'] = config.cloud
+export let cli: StacksOptions['cli'] = config.cli
+export let database: StacksOptions['database'] = config.database
+export let dns: StacksOptions['dns'] = config.dns
+export let docs: StacksOptions['docs'] = config.docs
+export let email: StacksOptions['email'] = config.email
+export let errors: StacksOptions['errors'] = config.errors
+export let git: StacksOptions['git'] = config.git
+export let hashing: StacksOptions['hashing'] = config.hashing
+export let library: StacksOptions['library'] = config.library
+export let logging: StacksOptions['logging'] = config.logging
+export let notification: StacksOptions['notification'] = config.notification
+export let payment: StacksOptions['payment'] = config.payment
+export let ports: StacksOptions['ports'] = config.ports
+export let queue: StacksOptions['queue'] = config.queue
+export let security: StacksOptions['security'] = config.security
+export let saas: StacksOptions['saas'] = config.saas
+export let searchEngine: StacksOptions['searchEngine'] = config.searchEngine
+export let services: StacksOptions['services'] = config.services
+export let filesystems: StacksOptions['filesystems'] = config.filesystems
+export let team: StacksOptions['team'] = config.team
+export let ui: StacksOptions['ui'] = config.ui
+
+// When the user's `config/*.ts` files finish loading, refresh every
+// section export. Importers that did `import { ports }` will see the
+// post-merge value via ESM live bindings.
+overridesReady.then(() => {
+  ai = config.ai
+  analytics = config.analytics
+  app = config.app
+  auth = config.auth
+  realtime = config.realtime
+  cache = config.cache
+  cloud = config.cloud
+  cli = config.cli
+  database = config.database
+  dns = config.dns
+  docs = config.docs
+  email = config.email
+  errors = config.errors
+  git = config.git
+  hashing = config.hashing
+  library = config.library
+  logging = config.logging
+  notification = config.notification
+  payment = config.payment
+  ports = config.ports
+  queue = config.queue
+  security = config.security
+  saas = config.saas
+  searchEngine = config.searchEngine
+  services = config.services
+  filesystems = config.filesystems
+  team = config.team
+  ui = config.ui
+}).catch(() => {
+  // Loader errors surface from `overrides.ts` already; swallow here so a
+  // failed user config doesn't bring down every importer of the section
+  // exports — they'll just keep the framework defaults.
+})
 
 export * from './helpers'
 export { defaults, overrides, overridesReady }
