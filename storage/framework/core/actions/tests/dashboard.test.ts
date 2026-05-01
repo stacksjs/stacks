@@ -326,20 +326,55 @@ describe('dashboard-utils', () => {
       }
     })
 
-    it('should include discovered models in data section', () => {
+    it('should include userland models in data section', () => {
       const models = [
-        { name: 'Widget', icon: 'tablecells.fill', id: 'widget' },
-        { name: 'Gadget', icon: 'tablecells.fill', id: 'gadget' },
+        { name: 'Widget', icon: 'tablecells.fill', id: 'widget', category: 'userland' as const },
+        { name: 'Gadget', icon: 'tablecells.fill', id: 'gadget', category: 'userland' as const },
       ]
       const config = buildSidebarConfig('http://localhost:3456/pages', models)
       const dataSection = config.sections.find(s => s.id === 'data')!
 
       const modelItems = dataSection.items.filter(i => i.id.startsWith('model-'))
       expect(modelItems.length).toBe(2)
-      expect(modelItems[0].id).toBe('model-widget')
-      expect(modelItems[0].label).toBe('Widget')
-      expect(modelItems[0].url).toBe('http://localhost:3456/pages/data/widget')
-      expect(modelItems[1].id).toBe('model-gadget')
+      expect(modelItems.find(i => i.id === 'model-widget')!.label).toBe('Widget')
+      expect(modelItems.find(i => i.id === 'model-widget')!.url).toBe('http://localhost:3456/pages/data/widget')
+      expect(modelItems.find(i => i.id === 'model-gadget')).toBeDefined()
+    })
+
+    it('should keep commerce-categorized models out of data section', () => {
+      const models = [
+        { name: 'Cart', icon: 'cart.fill', id: 'cart', category: 'commerce' as const },
+        { name: 'WidgetUser', icon: 'tablecells.fill', id: 'widget-user', category: 'userland' as const },
+      ]
+      const config = buildSidebarConfig('http://localhost:3456/pages', models)
+      const dataSection = config.sections.find(s => s.id === 'data')!
+      const commerceSection = config.sections.find(s => s.id === 'commerce')!
+
+      const dataModelIds = dataSection.items.filter(i => i.id.startsWith('model-')).map(i => i.id)
+      const commerceModelIds = commerceSection.items.filter(i => i.id.startsWith('model-')).map(i => i.id)
+
+      expect(dataModelIds).toContain('model-widget-user')
+      expect(dataModelIds).not.toContain('model-cart')
+      expect(commerceModelIds).toContain('model-cart')
+
+      // Even though Cart visually lives under Commerce, its URL must point
+      // at /data/<id> — there is no /commerce/[model] catch-all, so any
+      // other route would 404.
+      const cartItem = commerceSection.items.find(i => i.id === 'model-cart')!
+      expect(cartItem.url).toBe('http://localhost:3456/pages/data/cart')
+    })
+
+    it('should drop the commerce section when disabled', () => {
+      const models = [
+        { name: 'Cart', icon: 'cart.fill', id: 'cart', category: 'commerce' as const },
+      ]
+      const config = buildSidebarConfig('http://localhost:3456/pages', models, { commerce: false })
+
+      expect(config.sections.find(s => s.id === 'commerce')).toBeUndefined()
+      // The cart model should not leak back into data when commerce is off.
+      const dataSection = config.sections.find(s => s.id === 'data')!
+      const dataModelIds = dataSection.items.filter(i => i.id.startsWith('model-')).map(i => i.id)
+      expect(dataModelIds).not.toContain('model-cart')
     })
 
     it('should include static data items before models', () => {

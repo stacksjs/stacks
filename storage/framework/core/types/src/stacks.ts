@@ -6,6 +6,7 @@ import type {
   BinaryConfig,
   CacheConfig,
   CloudConfig,
+  DashboardConfig,
   DatabaseConfig,
   DnsConfig,
   DocsConfig,
@@ -101,6 +102,15 @@ export interface StacksOptions {
    * have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   cloud: CloudConfig
+
+  /**
+   * **Dashboard Options**
+   *
+   * Controls which sections render in the `buddy dev --dashboard` sidebar.
+   * Set per-section `enabled` flags to `false` to hide a section that this
+   * project doesn't use (e.g. `commerce.enabled: false`).
+   */
+  dashboard: DashboardConfig
 
   /**
    * **Database Options**

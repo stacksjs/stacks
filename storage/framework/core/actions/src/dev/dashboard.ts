@@ -341,9 +341,59 @@ const [, discoveredModels] = await Promise.all([
   discoverModels(projectPath('app/Models'), storagePath('framework/defaults/app/Models')),
 ])
 
-// Write manifest
+// Load dashboard section toggles from `config/dashboard.ts` if present.
+// Falls back to "everything enabled" when the file is missing or fails to
+// parse, so a fresh project (no dashboard config) still gets the full
+// sidebar.
+async function loadDashboardToggles(): Promise<{
+  library: boolean
+  content: boolean
+  commerce: boolean
+  marketing: boolean
+  analytics: boolean
+  management: boolean
+  utilities: boolean
+}> {
+  const fallback = {
+    library: true,
+    content: true,
+    commerce: true,
+    marketing: true,
+    analytics: true,
+    management: true,
+    utilities: true,
+  }
+  try {
+    const mod = await import(projectPath('config/dashboard.ts')) as { default?: { sections?: Record<string, { enabled?: boolean }> } }
+    const sections = mod.default?.sections ?? {}
+    return {
+      library: sections.library?.enabled ?? true,
+      content: sections.content?.enabled ?? true,
+      commerce: sections.commerce?.enabled ?? true,
+      marketing: sections.marketing?.enabled ?? true,
+      analytics: sections.analytics?.enabled ?? true,
+      management: sections.management?.enabled ?? true,
+      utilities: sections.utilities?.enabled ?? true,
+    }
+  }
+  catch {
+    return fallback
+  }
+}
+
+// eslint-disable-next-line ts/no-top-level-await
+const dashboardToggles = await loadDashboardToggles()
+
+// Write manifest. The envelope format includes the section toggles so the
+// web sidebar (which runs in STX server-script context and can't easily do
+// async config loading) can read them synchronously alongside the model
+// list. Older readers that expect a bare array are handled in the loader.
 const manifestPath = storagePath('framework/defaults/views/dashboard/.discovered-models.json')
-writeFileSync(manifestPath, JSON.stringify(buildManifest(discoveredModels), null, 2))
+const manifestPayload = {
+  models: buildManifest(discoveredModels),
+  sections: dashboardToggles,
+}
+writeFileSync(manifestPath, JSON.stringify(manifestPayload, null, 2))
 
 // Wait briefly for STX server (it's usually ready by now)
 // eslint-disable-next-line ts/no-top-level-await
@@ -363,7 +413,7 @@ const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 
 // Use local HTTP URL — Craft webview loads directly, no proxy needed
 const baseRoute = dashboardLocalUrl
-const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels)
+const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels, dashboardToggles)
 const initialUrl = `http://localhost:${dashboardPort}/home?native-sidebar=1`
 
 // Print vite-style output

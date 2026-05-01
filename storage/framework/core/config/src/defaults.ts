@@ -170,6 +170,18 @@ export const defaults: StacksOptions = {
     },
   },
 
+  dashboard: {
+    sections: {
+      library: { enabled: true },
+      content: { enabled: true },
+      commerce: { enabled: true },
+      marketing: { enabled: true },
+      analytics: { enabled: true },
+      management: { enabled: true },
+      utilities: { enabled: true },
+    },
+  },
+
   database: {
     default: 'sqlite',
     logging: false,
