@@ -265,3 +265,85 @@ export async function echo(...args: any[]): Promise<void> {
 
 // Export logger getter for debugging
 export { getLogger as logger }
+
+/**
+ * Structured logging shorthands for common framework events.
+ *
+ * The bare `log.info("…")` form is good for ad-hoc messages, but the
+ * framework emits a predictable set of events (HTTP requests, DB
+ * queries, queued jobs, cache operations) that benefit from a stable
+ * shape so downstream log shippers can index on consistent field
+ * names.
+ *
+ * Each helper:
+ *   1. Attaches the current trace id (if any) automatically
+ *   2. Picks the appropriate severity based on outcome
+ *   3. Emits a consistent JSON shape in production (`event`, `level`,
+ *      `traceId`, …) while keeping the human-readable form in dev
+ *
+ * Helpers are batched onto `log.struct` so they don't pollute the
+ * top-level `log` namespace, and so users can opt out by routing
+ * `log.struct` to a custom transport in tests.
+ */
+interface StructuredFields { [key: string]: unknown }
+
+function emit(level: 'debug' | 'info' | 'warn' | 'error', event: string, fields: StructuredFields): void {
+  const ctx = getLogContext()
+  const payload = {
+    event,
+    traceId: ctx?.requestId,
+    ...fields,
+  }
+  // The underlying logger handles the dev vs prod formatting; we just
+  // pass a single object so it prints as JSON in prod and as a
+  // pretty key=value pairs view in dev.
+  void log[level](payload)
+}
+
+export const struct = {
+  /**
+   * HTTP request completed. `status` is the response status code,
+   * `durationMs` the wall time from request start to response sent.
+   */
+  request(method: string, path: string, status: number, durationMs: number, fields: StructuredFields = {}): void {
+    const level = status >= 500 ? 'error' : status >= 400 ? 'warn' : 'info'
+    emit(level, 'http.request', { method, path, status, durationMs, ...fields })
+  },
+
+  /**
+   * Database query completed. `durationMs` is the wall time at the
+   * driver boundary.
+   */
+  query(sql: string, durationMs: number, fields: StructuredFields = {}): void {
+    emit('debug', 'db.query', { sql, durationMs, ...fields })
+  },
+
+  /**
+   * A slow query (over the slow-threshold) — emits at warn so it
+   * surfaces in the default log filter.
+   */
+  slowQuery(sql: string, durationMs: number, fields: StructuredFields = {}): void {
+    emit('warn', 'db.slow_query', { sql, durationMs, ...fields })
+  },
+
+  /**
+   * Queue job lifecycle event. `phase` is `'started' | 'succeeded' |
+   * 'failed' | 'released'`.
+   */
+  job(name: string, phase: 'started' | 'succeeded' | 'failed' | 'released', fields: StructuredFields = {}): void {
+    const level = phase === 'failed' ? 'error' : 'info'
+    emit(level, `job.${phase}`, { jobName: name, ...fields })
+  },
+
+  /**
+   * Cache hit/miss event for warm-path debugging.
+   */
+  cache(op: 'hit' | 'miss' | 'set' | 'del', key: string, fields: StructuredFields = {}): void {
+    emit('debug', `cache.${op}`, { key, ...fields })
+  },
+}
+
+// Hang the structured surface off the canonical `log` export so consumers
+// can do `log.struct.request(...)`. The mutation is safe because `log`
+// is a singleton object literal we own.
+;(log as Log & { struct: typeof struct }).struct = struct

@@ -1,6 +1,7 @@
 import type { GiftCardStats } from '../types'
 import { db, sql } from '@stacksjs/database'
 import { formatDate, toTimestamp } from '@stacksjs/orm'
+import { aggregateStats } from '../utils/typed-stats'
 type GiftCardJsonResponse = ModelRow<typeof GiftCard>
 
 /**
@@ -55,14 +56,14 @@ export async function fetchActive(): Promise<GiftCardJsonResponse[]> {
  */
 export async function fetchStats(): Promise<GiftCardStats> {
   // Total gift cards
-  const totalGiftCards = await db
-    .selectFrom('gift_cards')
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
-    .executeTakeFirst() as { count: number } | undefined
+  const { count: totalCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } })
 
   // Active gift cards
   const currentDate = toTimestamp(new Date())
 
+  // bun-query-builder doesn't expose a typed `eb.or([...])` helper, so the
+  // OR-with-NULL filter still uses the untyped expression-builder form.
+  // The boundary `as any` is localized; the result row uses the typed helper.
   const activeGiftCards = await db
     .selectFrom('gift_cards')
     .where('is_active', '=', true)
@@ -81,32 +82,17 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .groupBy('status')
     .execute() as { status: string, count: number }[]
 
-  // Calculate balance distribution counts - separate queries for better reliability
-  const lowBalanceCount = await db
-    .selectFrom('gift_cards')
-    .where(((eb: any) => {
-      return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`
-    }) as any)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
-    .executeTakeFirst() as { count: number } | undefined
+  // Balance distribution: each bucket needs a custom raw fraction filter, so
+  // these stay as direct queries — but we use the typed helper for the
+  // `count(id)` expression to avoid the `as any` chain on the result.
+  const { count: lowBalanceCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } }, qb =>
+    qb.where(((eb: any) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} < 0.25`) as any))
 
-  const mediumBalanceCount = await db
-    .selectFrom('gift_cards')
-    .where(((eb: any) => {
-      // Using a raw expression inside the expression builder
-      return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`
-    }) as any)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
-    .executeTakeFirst() as { count: number } | undefined
+  const { count: mediumBalanceCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } }, qb =>
+    qb.where(((eb: any) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} >= 0.25 AND ${eb.ref('current_balance')} / ${eb.ref('initial_balance')} <= 0.75`) as any))
 
-  const highBalanceCount = await db
-    .selectFrom('gift_cards')
-    .where(((eb: any) => {
-      // Using a raw expression inside the expression builder
-      return sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`
-    }) as any)
-    .select(((eb: any) => eb.fn.count('id').as('count')) as any)
-    .executeTakeFirst() as { count: number } | undefined
+  const { count: highBalanceCount } = await aggregateStats('gift_cards', { count: { kind: 'count' } }, qb =>
+    qb.where(((eb: any) => sql`${eb.ref('current_balance')} / ${eb.ref('initial_balance')} > 0.75`) as any))
 
   // Expiring soon gift cards (next 30 days)
   const thirtyDaysFromNow = new Date()
@@ -131,16 +117,16 @@ export async function fetchStats(): Promise<GiftCardStats> {
     .execute()
 
   return {
-    total: Number(totalGiftCards?.count || 0),
+    total: totalCount,
     active: Number(activeGiftCards?.count || 0),
-    by_status: giftCardsByStatus.map((item: any) => ({
+    by_status: giftCardsByStatus.map((item: { status: string, count: number }) => ({
       status: item.status,
       count: Number(item.count),
     })),
     by_balance: {
-      low: Number(lowBalanceCount?.count || 0),
-      medium: Number(mediumBalanceCount?.count || 0),
-      high: Number(highBalanceCount?.count || 0),
+      low: lowBalanceCount,
+      medium: mediumBalanceCount,
+      high: highBalanceCount,
     },
     expiring_soon: expiringGiftCards as GiftCardJsonResponse[],
     recently_used: recentlyUsedGiftCards as GiftCardJsonResponse[],
@@ -429,14 +415,8 @@ export async function calculateGiftCardValues(_daysRange: number = 30): Promise<
 export async function fetchTotalValue(): Promise<{
   total_value: number
 }> {
-  const totalValue = await db
-    .selectFrom('gift_cards')
-    .select(((eb: any) => eb.fn.sum('initial_balance').as('total_value')) as any)
-    .executeTakeFirst() as { total_value: number } | undefined
-
-  return {
-    total_value: Number(totalValue?.total_value || 0),
-  }
+  const { total_value } = await aggregateStats('gift_cards', { total_value: { kind: 'sum', column: 'initial_balance' } })
+  return { total_value }
 }
 
 /**
@@ -445,12 +425,6 @@ export async function fetchTotalValue(): Promise<{
 export async function fetchTotalCurrentBalance(): Promise<{
   total_balance: number
 }> {
-  const totalBalance = await db
-    .selectFrom('gift_cards')
-    .select(((eb: any) => eb.fn.sum('current_balance').as('total_balance')) as any)
-    .executeTakeFirst() as { total_balance: number } | undefined
-
-  return {
-    total_balance: Number(totalBalance?.total_balance || 0),
-  }
+  const { total_balance } = await aggregateStats('gift_cards', { total_balance: { kind: 'sum', column: 'current_balance' } })
+  return { total_balance }
 }

@@ -86,13 +86,17 @@ run_buddy() {
   exec env PATH="${PANTRY_LOCAL_BIN}:${USER_LOCAL_BIN}:${PATH}" NODE_PATH="${PANTRY_DIR}:${NODE_PATH:-}" "${BUN_CMD}" "${BUDDY_ENTRY}" "$@"
 }
 
-# Fast path: if pantry is already set up, run immediately
-# Check for pantry/.bin/bun first (managed runtime), then system bun
-if [ -x "${PANTRY_LOCAL_BIN}/bun" ]; then
+# Fast path: if pantry is already set up, run immediately. We deliberately
+# DO NOT run `pantry install` here — re-installing on every invocation
+# burned ~1s of `buddy --help` startup time (and made shell completion
+# unusable). Once the pantry directory exists and a bun is on PATH, we
+# trust that state until the user explicitly runs `bun install` or
+# `buddy install`. To force a refresh, set STACKS_FORCE_PANTRY=1.
+if [ -x "${PANTRY_LOCAL_BIN}/bun" ] && [ "${STACKS_FORCE_PANTRY:-}" != "1" ]; then
   run_buddy "${PANTRY_LOCAL_BIN}/bun" "$@"
 fi
 
-if [ -d "${PANTRY_DIR}" ] && command -v bun >/dev/null 2>&1; then
+if [ -d "${PANTRY_DIR}" ] && command -v bun >/dev/null 2>&1 && [ "${STACKS_FORCE_PANTRY:-}" != "1" ]; then
   run_buddy bun "$@"
 fi
 

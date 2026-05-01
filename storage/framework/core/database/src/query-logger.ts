@@ -1,9 +1,23 @@
 import { memoryUsage } from 'node:process'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
-import { trackQuery } from '@stacksjs/router'
 import { parseQuery } from './query-parser'
 import { db } from './utils'
+
+/**
+ * Soft dependency on the router's query tracker. Importing it directly
+ * creates the cycle `database → router → database` (router uses db
+ * helpers transitively via middleware). The DI shape below lets the
+ * router register its tracker at module-init time and lets the database
+ * package stay leaf-node — runs that don't load the router (CLI tools,
+ * cron tasks) silently no-op the tracker call.
+ */
+// eslint-disable-next-line pickier/no-unused-vars
+type QueryTracker = (query: string, durationMs?: number, connection?: string) => void
+let trackQuery: QueryTracker = () => { /* no-op until set */ }
+export function setQueryTracker(fn: QueryTracker): void {
+  trackQuery = fn
+}
 
 /**
  * Query log event type - compatible with bun-query-builder hooks
@@ -178,6 +192,32 @@ async function createQueryLogRecord(
 }
 
 /**
+ * Patterns that look secret-shaped in arbitrary text. We strip these
+ * from stack traces before persisting because the trace ends up in
+ * `query_logs.trace` and is visible to anyone with read access to that
+ * table — including users with the operator dashboard role. Function
+ * names and local variable contents can leak API keys, tokens, and
+ * credentials when devs (or library code) bake secrets into identifiers.
+ *
+ * The patterns are intentionally aggressive: false positives just mean
+ * an extra `<redacted>` in a trace, which is harmless. The opposite
+ * (an unredacted secret in a long-lived audit log) is the bug we're
+ * trying to prevent.
+ */
+const SECRET_PATTERNS: ReadonlyArray<RegExp> = [
+  /\b(?:sk|pk|rk|api|secret|token|bearer|password|pwd|key)[_-]?[A-Za-z0-9]{12,}/gi,
+  /\bsk_(?:live|test)_[A-Za-z0-9]{20,}/g, // Stripe-shaped
+  /\bAKIA[0-9A-Z]{16}/g, // AWS access key id
+  /\b[A-Za-z0-9_-]{40,}\b(?=\s|$|['"])/g, // long opaque blobs (JWTs, AKSKs)
+]
+
+function sanitizeStackTrace(stack: string): string {
+  let out = stack
+  for (const pattern of SECRET_PATTERNS) out = out.replace(pattern, '<redacted>')
+  return out
+}
+
+/**
  * Extract stack trace and caller information
  */
 function extractTraceInfo() {
@@ -214,7 +254,7 @@ function extractTraceInfo() {
     }
 
     return {
-      trace: stack,
+      trace: sanitizeStackTrace(stack),
       caller,
     }
   }
@@ -268,15 +308,93 @@ async function enhanceWithQueryAnalysis(logRecord: QueryLogRecord): Promise<void
   }
 }
 
+interface ExplainResult {
+  plan: string
+  indexesUsed: string[]
+  missingIndexes: string[]
+}
+
 /**
- * Get EXPLAIN plan for a query
- * Note: This is a simplified implementation
+ * Run EXPLAIN against a SELECT query and parse the output for the
+ * driver's "uses index" / "no index" signals.
+ *
+ * Best-effort: returns null on any error so a flaky EXPLAIN never breaks
+ * the request that triggered the query log. The driver-specific parsing
+ * is intentionally lenient — we surface plan text verbatim so users can
+ * read it even if the heuristic misses.
  */
-async function getExplainPlan(_query: string): Promise<any> {
-  // EXPLAIN plan analysis is not yet implemented.
-  // A real implementation would run EXPLAIN on the query, parse the output
-  // to identify indexes used, and identify potential missing indexes.
-  return null
+// Whitelist of dialects we know how to EXPLAIN. Anything outside this
+// set short-circuits to null — without the whitelist, a future config
+// path that lets `database.default` come from user-controllable input
+// (e.g. a multi-tenant DB picker) could let an attacker steer EXPLAIN's
+// keyword fragment, which is interpolated directly into the SQL we send.
+const EXPLAIN_DIALECTS = new Set(['sqlite', 'mysql', 'postgres'])
+
+async function getExplainPlan(query: string): Promise<ExplainResult | null> {
+  // SQLite & MySQL/PostgreSQL all accept `EXPLAIN <select>` as a prefix.
+  // We re-enter `db.unsafe(...)` instead of through the bun-query-builder
+  // hooks so EXPLAIN itself doesn't end up logged (which would recurse
+  // through the slow-query path forever).
+  try {
+    const rawDriver = (await import('@stacksjs/config')).config?.database?.default
+    const driver = typeof rawDriver === 'string' ? rawDriver : 'sqlite'
+    if (!EXPLAIN_DIALECTS.has(driver)) return null
+    let sqlText: string
+    if (driver === 'mysql') sqlText = `EXPLAIN FORMAT=JSON ${query}`
+    else if (driver === 'postgres') sqlText = `EXPLAIN (FORMAT JSON) ${query}`
+    else sqlText = `EXPLAIN QUERY PLAN ${query}`
+
+    const result = await (db as any).unsafe?.(sqlText)
+    if (!result) return null
+
+    const rows = Array.isArray(result) ? result : (result.rows ?? [])
+    const planText = JSON.stringify(rows)
+
+    // Heuristics for missing indexes
+    const indexesUsed: string[] = []
+    const missingIndexes: string[] = []
+
+    if (driver === 'sqlite') {
+      // SQLite EXPLAIN QUERY PLAN rows look like { detail: 'SCAN tablename' }
+      // (no index) vs { detail: 'SEARCH tablename USING INDEX idx_x' }.
+      for (const row of rows as Array<{ detail?: string }>) {
+        const detail = row?.detail || ''
+        const idxMatch = detail.match(/USING (?:COVERING )?INDEX (\w+)/i)
+        if (idxMatch) {
+          indexesUsed.push(idxMatch[1])
+        }
+        else {
+          const scanMatch = detail.match(/^SCAN\s+(\w+)/i)
+          if (scanMatch) missingIndexes.push(scanMatch[1])
+        }
+      }
+    }
+    else if (driver === 'mysql') {
+      // EXPLAIN FORMAT=JSON nests `query_block.table.access_type === 'ALL'` as
+      // the "no index" signal. We do a flat scan of the JSON for `key` (used)
+      // and `access_type: ALL` (full scan).
+      const text = planText
+      for (const m of text.matchAll(/"key"\s*:\s*"([^"]+)"/g)) indexesUsed.push(m[1])
+      for (const m of text.matchAll(/"table_name"\s*:\s*"([^"]+)"[^}]*"access_type"\s*:\s*"ALL"/g)) missingIndexes.push(m[1])
+    }
+    else if (driver === 'postgres') {
+      // PG `EXPLAIN (FORMAT JSON)` returns one row with a Plan tree. The
+      // signal we want is `Node Type: Seq Scan` on a relation.
+      const text = planText
+      for (const m of text.matchAll(/"Index Name"\s*:\s*"([^"]+)"/g)) indexesUsed.push(m[1])
+      for (const m of text.matchAll(/"Node Type"\s*:\s*"Seq Scan"[^}]*"Relation Name"\s*:\s*"([^"]+)"/g)) missingIndexes.push(m[1])
+    }
+
+    return {
+      plan: planText.length > 4000 ? `${planText.slice(0, 4000)}…` : planText,
+      indexesUsed: Array.from(new Set(indexesUsed)),
+      missingIndexes: Array.from(new Set(missingIndexes)),
+    }
+  }
+  catch (err) {
+    log.debug('[query-logger] EXPLAIN failed (non-fatal):', err)
+    return null
+  }
 }
 
 /**

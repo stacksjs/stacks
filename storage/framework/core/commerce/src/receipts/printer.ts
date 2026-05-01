@@ -1,4 +1,6 @@
 // wip
+import { log } from '@stacksjs/logging'
+
 interface Printer {
   id: string | number
   name: string
@@ -32,46 +34,34 @@ interface Receipt {
 
 class TSPIVPrinter implements PrinterDriver {
   async print(printJob: PrintJob): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Printing receipt', printJob.receipt)
-    // Implement actual printing logic here
+    log.debug('TSP IV Printer: Printing receipt', printJob.receipt)
   }
 
   async cleanUp(_printer: Printer): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Cleaning up print job...')
-    // Implement actual cleanup logic here
+    log.debug('TSP IV Printer: Cleaning up print job...')
   }
 
   async checkStatus(_printer: Printer): Promise<boolean> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Checking online status...')
-    // Implement actual status check logic here
-    return true // Return actual status
+    log.debug('TSP IV Printer: Checking online status...')
+    return true
   }
 
   async findPrinters(): Promise<Printer[]> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Finding printers...')
-    return [] // Return actual printers
+    log.debug('TSP IV Printer: Finding printers...')
+    return []
   }
 
   async setup(_printer: Printer): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Setting up printer...')
-    // Implement actual setup logic here
+    log.debug('TSP IV Printer: Setting up printer...')
   }
 
   async restart(): Promise<void> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Restarting...')
-    // Implement actual restart logic here
+    log.debug('TSP IV Printer: Restarting...')
   }
 
   async canInteractWithPrinter(_printer: Printer): Promise<boolean> {
-    // eslint-disable-next-line no-console
-    console.log('TSP IV Printer: Checking if can interact with printer...')
-    return true // Return actual capability
+    log.debug('TSP IV Printer: Checking if can interact with printer...')
+    return true
   }
 }
 

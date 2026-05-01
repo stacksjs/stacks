@@ -15,6 +15,12 @@ export interface ErrorPageConfig {
   enableCopyMarkdown?: boolean
   snippetLines?: number
   basePaths?: string[]
+  /**
+   * Show frames from `@stacksjs/*` packages. Default: `false` — the
+   * dev page hides framework internals so user code is visible at the
+   * top of the trace. Toggle on when debugging the framework itself.
+   */
+  showFrameworkFrames?: boolean
 }
 
 export interface RequestContext {
@@ -90,24 +96,164 @@ export interface HttpError {
   status: HttpStatusCode
   title: string
   message: string
+  /** Link to documentation explaining this error and how to resolve it */
+  docLink?: string
+  /** Likely root causes a developer can scan to recognize their bug */
+  commonCauses?: string[]
+  /** Concrete next step the developer can try */
+  suggestion?: string
 }
 
-// HTTP error definitions
+const DOCS_BASE = 'https://stacksjs.org/docs/errors'
+
+// HTTP error definitions. Each entry includes a doc link, likely causes,
+// and a concrete suggestion so the dev-mode error page reads like a hint
+// instead of just "something went wrong".
 export const HTTP_ERRORS: Record<HttpStatusCode, HttpError> = {
-  400: { status: 400, title: 'Bad Request', message: 'The request was malformed or invalid.' },
-  401: { status: 401, title: 'Unauthorized', message: 'Authentication is required to access this resource.' },
-  403: { status: 403, title: 'Forbidden', message: 'You do not have permission to access this resource.' },
-  404: { status: 404, title: 'Not Found', message: 'The requested resource could not be found.' },
-  405: { status: 405, title: 'Method Not Allowed', message: 'The request method is not supported for this resource.' },
-  408: { status: 408, title: 'Request Timeout', message: 'The request took too long to complete.' },
-  409: { status: 409, title: 'Conflict', message: 'The request conflicts with the current state of the resource.' },
-  410: { status: 410, title: 'Gone', message: 'The requested resource is no longer available.' },
-  422: { status: 422, title: 'Unprocessable Entity', message: 'The request was well-formed but could not be processed.' },
-  429: { status: 429, title: 'Too Many Requests', message: 'You have exceeded the rate limit.' },
-  500: { status: 500, title: 'Internal Server Error', message: 'An unexpected error occurred on the server.' },
-  502: { status: 502, title: 'Bad Gateway', message: 'The server received an invalid response from an upstream server.' },
-  503: { status: 503, title: 'Service Unavailable', message: 'The service is temporarily unavailable.' },
-  504: { status: 504, title: 'Gateway Timeout', message: 'The upstream server did not respond in time.' },
+  400: {
+    status: 400,
+    title: 'Bad Request',
+    message: 'The request was malformed or invalid.',
+    docLink: `${DOCS_BASE}/400`,
+    commonCauses: [
+      'JSON body is missing or has a syntax error',
+      'A required field is absent from the payload',
+      'Content-Type header does not match the body format',
+    ],
+    suggestion: 'Inspect the request body and Content-Type — most 400s come from malformed JSON or a missing required field.',
+  },
+  401: {
+    status: 401,
+    title: 'Unauthorized',
+    message: 'Authentication is required to access this resource.',
+    docLink: `${DOCS_BASE}/401`,
+    commonCauses: [
+      'No Authorization header was sent',
+      'The bearer token expired',
+      'The session cookie was cleared',
+    ],
+    suggestion: 'Confirm a valid `Authorization: Bearer <token>` header is sent and the token has not expired.',
+  },
+  403: {
+    status: 403,
+    title: 'Forbidden',
+    message: 'You do not have permission to access this resource.',
+    docLink: `${DOCS_BASE}/403`,
+    commonCauses: [
+      'The authenticated user lacks the required ability or role',
+      'A Gate or policy denied access (see app/Gates.ts)',
+      'The token was issued without the needed ability',
+    ],
+    suggestion: 'Check Gates / policies and the abilities encoded in the access token.',
+  },
+  404: {
+    status: 404,
+    title: 'Not Found',
+    message: 'The requested resource could not be found.',
+    docLink: `${DOCS_BASE}/404`,
+    commonCauses: [
+      'The route is not registered in app/Routes.ts',
+      'A typo in the URL path',
+      'A model lookup returned no row (ModelNotFoundError)',
+    ],
+    suggestion: 'Run `buddy route:list` to see registered routes, or verify the model exists with the given id.',
+  },
+  405: {
+    status: 405,
+    title: 'Method Not Allowed',
+    message: 'The request method is not supported for this resource.',
+    docLink: `${DOCS_BASE}/405`,
+    commonCauses: [
+      'The route is registered for a different HTTP method',
+      'A form posted GET when the route expects POST',
+    ],
+    suggestion: 'Confirm the HTTP method in `app/Routes.ts` matches what the client sent.',
+  },
+  408: {
+    status: 408,
+    title: 'Request Timeout',
+    message: 'The request took too long to complete.',
+    docLink: `${DOCS_BASE}/408`,
+    commonCauses: [
+      'A long-running query or external API call exceeded the timeout',
+      'The client uploaded a slow body that stalled',
+    ],
+    suggestion: 'Move slow work into a queued job, or raise the route timeout if the work is genuinely long.',
+  },
+  409: {
+    status: 409,
+    title: 'Conflict',
+    message: 'The request conflicts with the current state of the resource.',
+    docLink: `${DOCS_BASE}/409`,
+    commonCauses: [
+      'A unique-constraint violation (duplicate email, slug, etc.)',
+      'Optimistic locking detected a stale write',
+    ],
+    suggestion: 'Re-fetch the resource and retry, or surface the conflict to the user.',
+  },
+  410: {
+    status: 410,
+    title: 'Gone',
+    message: 'The requested resource is no longer available.',
+    docLink: `${DOCS_BASE}/410`,
+    commonCauses: ['The resource was permanently deleted', 'A signed URL expired'],
+    suggestion: 'Issue a fresh signed URL or fall back to the canonical resource.',
+  },
+  422: {
+    status: 422,
+    title: 'Unprocessable Entity',
+    message: 'The request was well-formed but could not be processed.',
+    docLink: `${DOCS_BASE}/422`,
+    commonCauses: [
+      'Validation rules from the action / model rejected the payload',
+      'A field value is outside the allowed range or shape',
+    ],
+    suggestion: 'Inspect `errors` in the response body — each key maps to a failing field.',
+  },
+  429: {
+    status: 429,
+    title: 'Too Many Requests',
+    message: 'You have exceeded the rate limit.',
+    docLink: `${DOCS_BASE}/429`,
+    commonCauses: ['Rate-limit middleware tripped on this IP / token', 'A retry loop is hammering the endpoint'],
+    suggestion: 'Honor the `Retry-After` response header and back off before retrying.',
+  },
+  500: {
+    status: 500,
+    title: 'Internal Server Error',
+    message: 'An unexpected error occurred on the server.',
+    docLink: `${DOCS_BASE}/500`,
+    commonCauses: [
+      'An unhandled exception in an action or middleware',
+      'A failing database connection or migration',
+      'A misconfigured environment variable',
+    ],
+    suggestion: 'Check server logs for the original stack trace — the error page above shows the throw site in dev.',
+  },
+  502: {
+    status: 502,
+    title: 'Bad Gateway',
+    message: 'The server received an invalid response from an upstream server.',
+    docLink: `${DOCS_BASE}/502`,
+    commonCauses: ['An upstream HTTP API returned a malformed response', 'A reverse proxy could not reach the origin'],
+    suggestion: 'Verify the upstream service is healthy and returning the expected content type.',
+  },
+  503: {
+    status: 503,
+    title: 'Service Unavailable',
+    message: 'The service is temporarily unavailable.',
+    docLink: `${DOCS_BASE}/503`,
+    commonCauses: ['Maintenance mode is enabled', 'A health check is failing', 'A dependency (db, redis, queue) is down'],
+    suggestion: 'Run `buddy doctor` and check dependent services.',
+  },
+  504: {
+    status: 504,
+    title: 'Gateway Timeout',
+    message: 'The upstream server did not respond in time.',
+    docLink: `${DOCS_BASE}/504`,
+    commonCauses: ['An upstream HTTP call exceeded its deadline', 'A long-running database query timed out'],
+    suggestion: 'Move the work to a queued job or raise the upstream timeout if the latency is expected.',
+  },
 }
 
 // CSS for error pages
@@ -225,6 +371,18 @@ export const ERROR_PAGE_CSS = `
   .production-message { color: #6c757d; margin-bottom: 2rem; }
   .production-link { color: #0d6efd; text-decoration: none; }
   .production-link:hover { text-decoration: underline; }
+  .error-hint {
+    border-left: 4px solid #f59f00;
+    background: #fff9db;
+  }
+  .dark .error-hint, .auto .error-hint { background: #2b2410; border-left-color: #f59f00; }
+  .error-hint .card-header { color: #845200; }
+  .dark .error-hint .card-header, .auto .error-hint .card-header { color: #ffd43b; }
+  .error-hint-causes { margin: 0 0 0.75rem 1.25rem; padding: 0; }
+  .error-hint-causes li { margin: 0.2rem 0; }
+  .error-hint-suggestion { font-weight: 500; margin-bottom: 0.75rem; }
+  .error-hint-doc { color: #0d6efd; text-decoration: none; }
+  .error-hint-doc:hover { text-decoration: underline; }
   @media (prefers-color-scheme: dark) {
     .auto body { background: #1a1a2e; color: #e8e8e8; }
     .auto .card { background: #252540; }
@@ -241,16 +399,37 @@ export const ERROR_PAGE_CSS = `
 /**
  * Parse stack trace into frames
  */
-function parseStackTrace(stack: string | undefined, basePaths?: string[]): StackFrame[] {
+/**
+ * Path fragments that mark a stack frame as framework-internal. Frames
+ * matching any of these are filtered out by default so user-facing errors
+ * point at user code instead of buried in @stacksjs/* plumbing. The set
+ * is intentionally conservative — anything in `app/`, `routes/`,
+ * `config/`, or user-authored files is left alone.
+ */
+const FRAMEWORK_FRAME_FRAGMENTS: readonly string[] = [
+  '/storage/framework/core/',
+  '/node_modules/@stacksjs/',
+  'node:internal/',
+  'bun:wrap',
+]
+
+export function isFrameworkFrame(file: string): boolean {
+  if (!file) return false
+  return FRAMEWORK_FRAME_FRAGMENTS.some(f => file.includes(f))
+}
+
+function parseStackTrace(stack: string | undefined, basePaths?: string[], options: { includeFrameworkFrames?: boolean } = {}): StackFrame[] {
   if (!stack) return []
 
   const lines = stack.split('\n').slice(1) // Skip the error message line
   const frames: StackFrame[] = []
+  const includeAll = options.includeFrameworkFrames === true
 
   for (const line of lines) {
     const match = line.match(/^\s*at\s+(?:(.+?)\s+\()?(.+?):(\d+):(\d+)\)?$/)
     if (match) {
       let file = match[2]
+      const original = file
       // Shorten file path if base paths provided
       if (basePaths) {
         for (const basePath of basePaths) {
@@ -260,6 +439,7 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[]): Stack
           }
         }
       }
+      if (!includeAll && isFrameworkFrame(original)) continue
       frames.push({
         function: match[1] || '<anonymous>',
         file,
@@ -267,6 +447,14 @@ function parseStackTrace(stack: string | undefined, basePaths?: string[]): Stack
         column: parseInt(match[4], 10),
       })
     }
+  }
+
+  // If filtering removed *every* frame (rare — error from framework code
+  // with no userland callers in the stack), fall back to the unfiltered
+  // list so the user still sees something. Otherwise the developer gets
+  // a stack-trace card with zero entries.
+  if (!includeAll && frames.length === 0) {
+    return parseStackTrace(stack, basePaths, { includeFrameworkFrames: true })
   }
 
   return frames
@@ -311,6 +499,35 @@ export function renderProductionErrorPage(status: number): string {
   </div>
 </body>
 </html>`
+}
+
+/**
+ * Render the contextual hint block (common causes, suggestion, doc link)
+ * for a given HTTP status. Returns an empty string for statuses without
+ * enriched data so the dev page degrades gracefully.
+ */
+export function renderHttpErrorHints(status: number): string {
+  const info = HTTP_ERRORS[status as HttpStatusCode]
+  if (!info) return ''
+  const hasCauses = Array.isArray(info.commonCauses) && info.commonCauses.length > 0
+  const hasSuggestion = typeof info.suggestion === 'string' && info.suggestion.length > 0
+  const hasDoc = typeof info.docLink === 'string' && info.docLink.length > 0
+  if (!hasCauses && !hasSuggestion && !hasDoc) return ''
+
+  const causes = hasCauses
+    ? `<ul class="error-hint-causes">${info.commonCauses!
+      .map(c => `<li>${escapeHtml(c)}</li>`)
+      .join('')}</ul>`
+    : ''
+  const suggestion = hasSuggestion ? `<p class="error-hint-suggestion">${escapeHtml(info.suggestion!)}</p>` : ''
+  const doc = hasDoc
+    ? `<a class="error-hint-doc" href="${escapeHtml(info.docLink!)}" target="_blank" rel="noreferrer noopener">Read the docs →</a>`
+    : ''
+
+  return `<section class="error-hint card">
+  <div class="card-header">Likely causes &amp; next steps</div>
+  <div class="card-body">${causes}${suggestion}${doc}</div>
+</section>`
 }
 
 /**
@@ -376,7 +593,9 @@ export class ErrorPageHandler {
    * Render error to HTML string
    */
   render(error: Error, status: number = 500): string {
-    const frames = parseStackTrace(error.stack, this.config.basePaths)
+    const frames = parseStackTrace(error.stack, this.config.basePaths, {
+      includeFrameworkFrames: this.config.showFrameworkFrames === true,
+    })
     const themeClass = this.config.theme || 'auto'
 
     return `<!DOCTYPE html>
@@ -394,6 +613,8 @@ export class ErrorPageHandler {
       <div class="error-message">${escapeHtml(error.message)}</div>
       <div class="error-status">${status} • ${this.framework ? `${this.framework.name}${this.framework.version ? ` v${this.framework.version}` : ''}` : 'Application'}</div>
     </div>
+
+    ${renderHttpErrorHints(status)}
 
     ${frames.length > 0 ? `
     <div class="card">

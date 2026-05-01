@@ -60,10 +60,17 @@ export function parse(src: string, options: ParseOptions = {}): ParseResult {
       }
     }
 
-    // Handle encrypted values
-    if (value.startsWith('encrypted:') && options.privateKey) {
+    // Handle encrypted values. Both prefixes are accepted:
+    //   - `encrypted:<b64>` (verbose, mirrors dotenvx)
+    //   - `enc:<b64>` (short alias for ergonomics in long .env files)
+    // Without a privateKey configured, the value is returned untouched
+    // so dev workflows that rely on plaintext .env files continue to work.
+    if (options.privateKey && (value.startsWith('encrypted:') || value.startsWith('enc:'))) {
       try {
-        value = decryptValue(value, options.privateKey)
+        const normalized = value.startsWith('enc:')
+          ? `encrypted:${value.slice(4)}`
+          : value
+        value = decryptValue(normalized, options.privateKey)
       }
       catch (error) {
         errors.push(`Failed to decrypt ${key}: ${error instanceof Error ? error.message : 'Unknown error'}`)

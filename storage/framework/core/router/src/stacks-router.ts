@@ -47,13 +47,56 @@ interface ChainableRoute {
 }
 
 /**
- * Named route registry - maps route names to their paths
- * e.g., 'email.unsubscribe' → '/api/email/unsubscribe'
+ * Named route registry — keeps the original path plus the precomputed
+ * placeholder names and a per-param replacement regex so `url()` can
+ * substitute without recompiling regex on every call.
+ *
+ * For a site with 200 routes that each call `url()` 50× per request,
+ * the previous shape was 10k regex compilations per request. Caching
+ * at registration time makes each call O(params).
  */
-const namedRouteRegistry = new Map<string, string>()
+interface NamedRoute {
+  path: string
+  paramNames: string[]
+  /** Pre-compiled `:name(?=$|/)` regex per param, anchored to a slash boundary. */
+  colonRegex: Map<string, RegExp>
+}
+const namedRouteRegistry = new Map<string, NamedRoute>()
+
+function compileNamedRoute(path: string): NamedRoute {
+  const paramNames = extractRouteParamNames(path)
+  const colonRegex = new Map<string, RegExp>()
+  for (const name of paramNames) {
+    // Anchor on `/:name` and require the closing edge to be a slash or
+    // end of string so `:user` doesn't accidentally match the prefix
+    // of `:userId`. Replaces all occurrences globally.
+    colonRegex.set(name, new RegExp(`(^|/):${name}(?=$|/)`, 'g'))
+  }
+  return { path, paramNames, colonRegex }
+}
+
+/**
+ * Extract `{param}` and `:param` placeholder names from a route path so
+ * `url()` can detect missing/typo'd args at generation time.
+ *
+ * The right-hand `:param` regex anchors with `(?=$|/)` to avoid the
+ * prefix-match bug where `:user` would also match the leading chars
+ * of `:userId` and the substitution would land inside the longer name.
+ */
+function extractRouteParamNames(routePath: string): string[] {
+  const names = new Set<string>()
+  for (const m of routePath.matchAll(/\{(\w+)\}/g)) names.add(m[1])
+  for (const m of routePath.matchAll(/(?:^|\/):(\w+)(?=$|\/)/g)) names.add(m[1])
+  return [...names]
+}
 
 /**
  * Generate a full URL for a named route, like Laravel's route() helper.
+ *
+ * Validates path parameters at call time so a typo'd argument
+ * (`url('user.post', { userId: 1 })` against `/users/{id}`) throws
+ * immediately with a list of expected names instead of silently
+ * producing a URL with `{id}` left literal in the path.
  *
  * @example
  * ```typescript
@@ -71,38 +114,57 @@ const namedRouteRegistry = new Map<string, string>()
  * ```
  */
 export function url(routeName: string, params: Record<string, string | number> = {}): string {
-  const routePath = namedRouteRegistry.get(routeName)
-  if (!routePath) {
+  const named = namedRouteRegistry.get(routeName)
+  if (!named) {
     throw new Error(`Route '${routeName}' is not defined. Available routes: ${[...namedRouteRegistry.keys()].join(', ')}`)
+  }
+
+  // Catch missing required path params before they end up as literal
+  // `{id}` in the rendered URL — that bug was previously only caught
+  // when the SPA tried to navigate to the bad URL.
+  const missing = named.paramNames.filter(name => !(name in params) || params[name] === undefined)
+  if (missing.length > 0) {
+    throw new Error(
+      `url('${routeName}'): missing required path param${missing.length > 1 ? 's' : ''} `
+      + `[${missing.join(', ')}] for path '${named.path}'. `
+      + `Pass them as the second argument: url('${routeName}', { ${named.paramNames.join(', ')} })`,
+    )
   }
 
   let appUrl: string
   try {
-    // Dynamically import config to get app URL
     appUrl = process.env.APP_URL || 'https://localhost'
   }
   catch {
     appUrl = 'https://localhost'
   }
 
-  // Normalize the base URL
   appUrl = appUrl.replace(/\/$/, '')
   if (!appUrl.startsWith('http')) {
     appUrl = `https://${appUrl}`
   }
 
-  // Substitute path parameters like {id}, {postId}
-  let resolvedPath = routePath
+  // Substitute path parameters like {id}, {postId}, :id, :postId.
+  // Curly substitution is plain string replace (faster than regex);
+  // colon substitution uses the per-route precompiled regex captured
+  // at registration time.
+  let resolvedPath = named.path
   const queryParams: Record<string, string> = {}
 
   for (const [key, value] of Object.entries(params)) {
-    const placeholder = `{${key}}`
-    if (resolvedPath.includes(placeholder)) {
-      resolvedPath = resolvedPath.replace(placeholder, String(value))
+    const curly = `{${key}}`
+    if (resolvedPath.includes(curly)) {
+      resolvedPath = resolvedPath.replaceAll(curly, encodeURIComponent(String(value)))
     }
     else {
-      // Not a path param — add as query string
-      queryParams[key] = String(value)
+      const re = named.colonRegex.get(key)
+      if (re && re.test(resolvedPath)) {
+        re.lastIndex = 0
+        resolvedPath = resolvedPath.replace(re, `$1${encodeURIComponent(String(value))}`)
+      }
+      else {
+        queryParams[key] = String(value)
+      }
     }
   }
 
@@ -111,6 +173,40 @@ export function url(routeName: string, params: Record<string, string | number> =
     : ''
 
   return `${appUrl}${resolvedPath}${queryString}`
+}
+
+/**
+ * List the placeholder names a named route expects — handy for
+ * codegen/test cases and for detecting typos before runtime.
+ */
+export function routeParams(routeName: string): string[] {
+  const named = namedRouteRegistry.get(routeName)
+  return named ? [...named.paramNames] : []
+}
+
+/**
+ * Snapshot of the registered routes — `{ method, path, name? }` per
+ * route. Used by `buddy route:list` and the dev-server startup banner.
+ */
+export function listRegisteredRoutes(): Array<{ method: string, path: string, name?: string }> {
+  const out: Array<{ method: string, path: string, name?: string }> = []
+  // routeMiddlewareRegistry keys look like 'METHOD:/path'. We intentionally
+  // walk it (not bunRouter.routes) so this works before serve() is called.
+  const seen = new Set<string>()
+  for (const key of routeMiddlewareRegistry.keys()) {
+    if (seen.has(key)) continue
+    seen.add(key)
+    const idx = key.indexOf(':')
+    if (idx === -1) continue
+    const method = key.slice(0, idx)
+    const path = key.slice(idx + 1)
+    let routeName: string | undefined
+    for (const [n, named] of namedRouteRegistry.entries()) {
+      if (named.path === path) { routeName = n; break }
+    }
+    out.push({ method, path, name: routeName })
+  }
+  return out.sort((a, b) => a.path.localeCompare(b.path))
 }
 
 /** Represents a middleware module with a handle method */
@@ -124,33 +220,38 @@ interface MiddlewareHandler {
 const middlewareCache = new Map<string, MiddlewareHandler | null>()
 
 /**
- * Cache for the middleware alias map (loaded once from app/Middleware.ts)
+ * Cache for the middleware alias map (loaded once from app/Middleware.ts).
+ *
+ * Stored as a Promise so concurrent first-callers all await the same
+ * import instead of each kicking off their own — without the promise
+ * guard, 50 in-flight requests on a cold dev server can each trigger
+ * the dynamic import in parallel, which Bun deduplicates eventually
+ * but the redundant `if/await` overhead shows up as visible jitter.
  */
-let middlewareAliases: Record<string, string> | null = null
+let middlewareAliasesPromise: Promise<Record<string, string>> | null = null
 
 /**
  * Load the middleware alias map from app/Middleware.ts
  * Maps short names (e.g., 'auth') to class names (e.g., 'Auth')
  */
 async function getMiddlewareAliases(): Promise<Record<string, string>> {
-  if (middlewareAliases) return middlewareAliases
-
-  try {
-    const aliasModule = await import(p.appPath('Middleware.ts'))
-    middlewareAliases = aliasModule.default || {}
-  }
-  catch {
-    // Fall back to defaults
+  if (middlewareAliasesPromise) return middlewareAliasesPromise
+  middlewareAliasesPromise = (async (): Promise<Record<string, string>> => {
     try {
-      const defaultModule = await import(p.storagePath('framework/defaults/app/Middleware.ts'))
-      middlewareAliases = defaultModule.default || {}
+      const aliasModule = await import(p.appPath('Middleware.ts'))
+      return aliasModule.default || {}
     }
     catch {
-      middlewareAliases = {}
+      try {
+        const defaultModule = await import(p.storagePath('framework/defaults/app/Middleware.ts'))
+        return defaultModule.default || {}
+      }
+      catch {
+        return {}
+      }
     }
-  }
-
-  return middlewareAliases!
+  })()
+  return middlewareAliasesPromise
 }
 
 /**
@@ -158,14 +259,24 @@ async function getMiddlewareAliases(): Promise<Record<string, string>> {
  * for middleware class file lookup. Plain capitalize-first failed for
  * common shapes like `ensure-verified` (became `Ensure-verified` and
  * the file `app/Middleware/EnsureVerified.ts` was missed).
+ *
+ * Memoized + module-scoped regex: the input set is small and bounded
+ * (one entry per registered middleware), so caching is essentially free
+ * memory-wise but skips the split-filter-map pipeline on every request.
  */
+const PASCAL_SPLIT_REGEX = /[-_\s]+/
+const pascalCaseCache = new Map<string, string>()
 function toPascalCase(input: string): string {
   if (!input) return input
-  return input
-    .split(/[-_\s]+/)
+  const cached = pascalCaseCache.get(input)
+  if (cached !== undefined) return cached
+  const out = input
+    .split(PASCAL_SPLIT_REGEX)
     .filter(Boolean)
     .map(part => part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
+  pascalCaseCache.set(input, out)
+  return out
 }
 
 /**
@@ -215,11 +326,60 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
 }
 
 /**
- * Clear the middleware cache (useful for hot-reload in development)
+ * Clear the middleware cache (useful for hot-reload in development).
+ *
+ * `installMiddlewareHotReload()` will wire this up automatically when
+ * called from the dev server — production should never invoke it.
  */
 export function clearMiddlewareCache(): void {
   middlewareCache.clear()
-  middlewareAliases = null
+  middlewareAliasesPromise = null
+}
+
+/**
+ * Watch `app/Middleware/` and `app/Middleware.ts` and invalidate the
+ * cached middleware modules whenever a file changes. Intended for the
+ * dev server only — calling this in production is a no-op (the
+ * watcher handle is created but never fires anything user code cares
+ * about). Returns a `disposer()` to stop watching.
+ *
+ * Without this hook, editing a middleware file in dev requires a
+ * full server restart to see the change — the import map caches the
+ * old version forever.
+ */
+export function installMiddlewareHotReload(): () => void {
+  if (process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production') {
+    return () => { /* no-op outside dev */ }
+  }
+  let fsWatchers: Array<{ close: () => void }> = []
+  void (async () => {
+    try {
+      const fs = await import('node:fs')
+      const targets = [
+        p.appPath('Middleware'),
+        p.appPath('Middleware.ts'),
+      ]
+      for (const target of targets) {
+        try {
+          if (!fs.existsSync(target)) continue
+          const w = fs.watch(target, { recursive: true }, () => {
+            log.debug('[middleware] hot-reload: clearing cache')
+            clearMiddlewareCache()
+          })
+          fsWatchers.push(w)
+        }
+        catch { /* file not watchable — skip */ }
+      }
+    }
+    catch { /* node:fs not available — skip */ }
+  })()
+  return () => {
+    for (const w of fsWatchers) {
+      try { w.close() }
+      catch { /* ignore */ }
+    }
+    fsWatchers = []
+  }
 }
 
 /**
@@ -266,6 +426,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       }
 
       // Run middleware in order
+      const middlewareTimings: Array<{ name: string, ms: number }> = []
       for (const middlewareEntry of middlewareEntries) {
         const { name: middlewareName, params } = parseMiddlewareName(middlewareEntry)
 
@@ -277,6 +438,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
         const middleware = await loadMiddleware(middlewareName)
         if (middleware && typeof middleware.handle === 'function') {
+          // Per-middleware timing is appended to the request's
+          // Server-Timing trail so devtools (and Chrome's network panel)
+          // can show exactly which middleware spent how long. Cheap —
+          // hrtime delta per layer.
+          const mwStart = process.hrtime.bigint()
           try {
             // 30s middleware budget. A misbehaving middleware that hangs
             // (e.g. waits forever on a deadlocked external service) used
@@ -288,24 +454,48 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
               setTimeout(() => reject(new Error(`Middleware '${middlewareName}' exceeded ${MIDDLEWARE_TIMEOUT_MS}ms`)), MIDDLEWARE_TIMEOUT_MS),
             )
             await Promise.race([middleware.handle(enhancedReq), timeoutPromise])
+            const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
+            middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
           }
           catch (error) {
-            // Middleware threw an error — always convert to a proper HTTP response
+            // Even on a thrown middleware, record the timing so the
+            // Server-Timing header on the error response is complete.
+            // Without this, an auth-rejected 401 had no per-middleware
+            // timings at all — making it impossible to tell from the
+            // response whether the rejection was instant or hung first.
+            const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
+            middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
             log.debug(`[middleware] Blocked by: ${middlewareName}`)
             const err = error instanceof Error ? error : new Error(String(error))
             // Accept both `statusCode` (Express convention) and `status`
             // (HttpError convention) so framework auth/validation throws
             // surface as 4xx instead of falling through to a 500 page.
-            if ('statusCode' in err || 'status' in err) {
-              return await createMiddlewareErrorResponse(
-                err as Error & { statusCode?: number, status?: number },
-                enhancedReq,
-              )
+            const errorResponse = ('statusCode' in err || 'status' in err)
+              ? await createMiddlewareErrorResponse(
+                  err as Error & { statusCode?: number, status?: number },
+                  enhancedReq,
+                )
+              : await (() => {
+                  log.error(`[Router] Middleware '${middlewareName}' threw an unexpected error:`, err)
+                  return createErrorResponse(err, enhancedReq, { status: 500 })
+                })()
+            // Attach Server-Timing to the error response too — same
+            // shape as the success path, so dashboards don't have to
+            // special-case errored requests.
+            try {
+              const reqId = (enhancedReq as any)._requestId as string | undefined
+              const startNs = (enhancedReq as any)._startNs as bigint | undefined
+              const total = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
+              const parts = total != null ? [`total;dur=${total.toFixed(1)}`] : []
+              for (const t of middlewareTimings) {
+                const safeName = t.name.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
+                parts.push(`mw_${safeName};dur=${t.ms.toFixed(1)}`)
+              }
+              if (parts.length > 0) errorResponse.headers.set('Server-Timing', parts.join(', '))
+              if (reqId) errorResponse.headers.set('X-Request-ID', reqId)
             }
-            // No status — treat as 500 and return an error response
-            // instead of re-throwing which would crash the handler
-            log.error(`[Router] Middleware '${middlewareName}' threw an unexpected error:`, err)
-            return await createErrorResponse(err, enhancedReq, { status: 500 })
+            catch { /* immutable headers — leave the response alone */ }
+            return errorResponse
           }
         }
       }
@@ -327,7 +517,16 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
 
       const setHeaders = (h: Headers) => {
         if (reqId) h.set('X-Request-ID', reqId)
-        if (durMs != null) h.set('Server-Timing', `total;dur=${durMs.toFixed(1)}`)
+        if (durMs != null) {
+          const parts = [`total;dur=${durMs.toFixed(1)}`]
+          // Append per-middleware timing entries. Chrome's network
+          // panel shows these as a stacked timeline under the response.
+          for (const t of middlewareTimings) {
+            const safeName = t.name.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
+            parts.push(`mw_${safeName};dur=${t.ms.toFixed(1)}`)
+          }
+          h.set('Server-Timing', parts.join(', '))
+        }
       }
 
       if (response && typeof (response as any).headers?.set === 'function') {
@@ -335,11 +534,15 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
           && (response.headers.get('content-type') || '').includes('json')
 
         // Inject request_id into JSON error bodies for SPA-side correlation.
+        // Always overwrite — if upstream code (or a wrapped service) added
+        // its own request_id field, the inner-most router is the
+        // authoritative source for THIS request's id, so a stale upstream
+        // value would just confuse correlation in logs.
         if (isErrorJson && reqId) {
           try {
             const text = await response.clone().text()
             const parsed = JSON.parse(text)
-            if (parsed && typeof parsed === 'object' && !('request_id' in parsed)) {
+            if (parsed && typeof parsed === 'object') {
               const newHeaders = new Headers(response.headers)
               setHeaders(newHeaders)
               return new Response(JSON.stringify({ ...parsed, request_id: reqId }), {
@@ -397,7 +600,9 @@ function createChainableRoute(routeKey: string): ChainableRoute {
     },
 
     name(routeName: string) {
-      namedRouteRegistry.set(routeName, routePath)
+      // Pre-compile the placeholder regex once at registration time;
+      // every later `url()` call reads from this cached shape.
+      namedRouteRegistry.set(routeName, compileNamedRoute(routePath))
       return chain
     },
   }
@@ -418,10 +623,37 @@ async function fileExists(path: string): Promise<boolean> {
 }
 
 /**
+ * Reject handler paths that try to escape their expected root via
+ * `..`/absolute paths/null bytes. Route definitions are author-trusted
+ * today, but treating them as untrusted at the resolver boundary
+ * costs nothing and prevents a future "let users register routes"
+ * feature from turning into a path-traversal vector.
+ */
+function assertSafeHandlerPath(handlerPath: string): void {
+  if (typeof handlerPath !== 'string' || handlerPath.length === 0) {
+    throw new Error(`[Router] Refusing to resolve handler '${String(handlerPath)}': empty or non-string`)
+  }
+  if (handlerPath.includes('\0')) {
+    throw new Error(`[Router] Refusing to resolve handler with null byte`)
+  }
+  if (handlerPath.startsWith('/') || /^[A-Za-z]:[\\/]/.test(handlerPath)) {
+    throw new Error(`[Router] Refusing to resolve absolute handler path '${handlerPath}'`)
+  }
+  // Disallow `../` segments. We do allow `./` because route definitions
+  // sometimes use `./Actions/Foo` style, but climbing out of `app/` is
+  // never legitimate.
+  const segments = handlerPath.split(/[/\\]/)
+  if (segments.some(s => s === '..')) {
+    throw new Error(`[Router] Refusing to resolve handler path '${handlerPath}' (contains '..' segment)`)
+  }
+}
+
+/**
  * Resolve a string handler to an actual handler function
  * Supports user overrides: checks user's app/ first, then falls back to defaults
  */
 async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn> {
+  assertSafeHandlerPath(handlerPath)
   let modulePath = handlerPath
 
   // Remove trailing .ts if present
@@ -568,18 +800,29 @@ async function validateActionInput(req: EnhancedRequest, validations: ActionVali
 
     if (!result.valid) {
       const fieldErrors: string[] = []
+      // Friendlier label: snake_case → "snake case", camelCase → "camel case",
+      // capitalized so messages read naturally (`"Email is invalid"` rather
+      // than the bare `"is invalid"` clients used to receive).
+      const label = field
+        .replace(/[-_]+/g, ' ')
+        .replace(/([a-z])([A-Z])/g, '$1 $2')
+        .replace(/^./, c => c.toUpperCase())
+      const decorate = (msg: string): string => (msg.toLowerCase().startsWith(field.toLowerCase()) || msg.includes(label))
+        ? msg
+        : `${label} ${msg}`
 
       if (result.errors && result.errors.length > 0) {
-        // Use custom message if provided, otherwise use validation error messages
+        // Use custom message if provided, otherwise decorate the
+        // validator's bare message with the field label.
         if (validation.message) {
-          fieldErrors.push(typeof validation.message === 'string' ? validation.message : validation.message[field] || result.errors[0].message)
+          fieldErrors.push(typeof validation.message === 'string' ? validation.message : validation.message[field] || decorate(result.errors[0].message))
         }
         else {
-          result.errors.forEach(err => fieldErrors.push(err.message))
+          result.errors.forEach(err => fieldErrors.push(decorate(err.message)))
         }
       }
       else {
-        fieldErrors.push(validation.message ? (typeof validation.message === 'string' ? validation.message : `${field} is invalid`) : `${field} is invalid`)
+        fieldErrors.push(validation.message ? (typeof validation.message === 'string' ? validation.message : `${label} is invalid`) : `${label} is invalid`)
       }
 
       errors[field] = fieldErrors
@@ -767,18 +1010,31 @@ function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
     return value !== undefined && value !== null ? String(value) : defaultValue
   }
 
+  // Strict numeric parsing: `Number.parseInt('123abc')` returns 123 silently,
+  // which lets callers accept partial numeric input they didn't intend
+  // (e.g. pagination size gets set to the leading digits of a typo'd query
+  // param). We require the entire string to be a valid number — any trailing
+  // garbage falls through to `defaultValue`.
   ;(req as any).integer = (key: string, defaultValue: number = 0): number => {
     const input = getAllInput()
     const value = input[key]
-    const parsed = Number.parseInt(String(value), 10)
-    return Number.isNaN(parsed) ? defaultValue : parsed
+    if (value === undefined || value === null || value === '') return defaultValue
+    if (typeof value === 'number') return Number.isFinite(value) ? Math.trunc(value) : defaultValue
+    const str = String(value).trim()
+    if (!/^-?\d+$/.test(str)) return defaultValue
+    const parsed = Number.parseInt(str, 10)
+    return Number.isFinite(parsed) ? parsed : defaultValue
   }
 
   ;(req as any).float = (key: string, defaultValue: number = 0): number => {
     const input = getAllInput()
     const value = input[key]
-    const parsed = Number.parseFloat(String(value))
-    return Number.isNaN(parsed) ? defaultValue : parsed
+    if (value === undefined || value === null || value === '') return defaultValue
+    if (typeof value === 'number') return Number.isFinite(value) ? value : defaultValue
+    const str = String(value).trim()
+    if (!/^-?\d+(?:\.\d+)?(?:[eE][+-]?\d+)?$/.test(str)) return defaultValue
+    const parsed = Number.parseFloat(str)
+    return Number.isFinite(parsed) ? parsed : defaultValue
   }
 
   ;(req as any).boolean = (key: string, defaultValue: boolean = false): boolean => {
@@ -844,14 +1100,20 @@ function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
     return (req as any)._currentAccessToken
   }
 
-  // Check if the current token has an ability
+  // Check if the current token has an ability.
+  // Strict: a missing token, a token without an `abilities` array, or
+  // a non-string ability all fail-closed. Earlier shape did
+  // `token.abilities?.includes('*')` which silently accepted any object
+  // with a truthy `abilities[Symbol.iterator]` — a malformed token
+  // produced by a partially-completed auth race could grant wildcard
+  // permissions because of how `?.includes` resolves on non-arrays.
   ;(req as any).tokenCan = async (ability: string): Promise<boolean> => {
+    if (typeof ability !== 'string' || ability.length === 0) return false
     const token = (req as any)._currentAccessToken
-    if (!token)
-      return false
-    if (token.abilities?.includes('*'))
-      return true
-    return token.abilities?.includes(ability) ?? false
+    if (!token || typeof token !== 'object') return false
+    if (!Array.isArray(token.abilities)) return false
+    if (token.abilities.includes('*')) return true
+    return token.abilities.includes(ability)
   }
 
   // Check if the current token does NOT have an ability
@@ -1147,9 +1409,97 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return createChainableRoute(`${methods[0]}:${currentPrefix}${path}`)
     },
 
-    // Health check route
+    // Health check route — probes critical dependencies and returns
+    // 503 if any of them fail. Returning 200 unconditionally (the old
+    // behavior) defeats the purpose: load balancers and uptime checks
+    // happily kept routing traffic to a server with a dead database.
+    //
+    // Each probe is wrapped in a 1.5s timeout because a hung dependency
+    // would otherwise stall the health check itself, and the LB health
+    // check would time out at the LB layer instead of seeing a clean
+    // 503 from the app.
     health() {
-      bunRouter.get('/health', () => Response.json({ status: 'healthy', timestamp: Date.now() }))
+      bunRouter.get('/health', async () => {
+        const checks: Record<string, { ok: boolean, message?: string, ms?: number }> = {}
+        const probe = async (name: string, fn: () => Promise<unknown>): Promise<void> => {
+          const start = Date.now()
+          try {
+            const ac = new AbortController()
+            const t = setTimeout(() => ac.abort(), 1500)
+            await Promise.race([
+              fn(),
+              new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error('timeout')))),
+            ])
+            clearTimeout(t)
+            checks[name] = { ok: true, ms: Date.now() - start }
+          }
+          catch (err) {
+            checks[name] = {
+              ok: false,
+              ms: Date.now() - start,
+              message: err instanceof Error ? err.message : String(err),
+            }
+          }
+        }
+
+        await Promise.all([
+          probe('database', async () => {
+            const { db } = await import('@stacksjs/database')
+            // `SELECT 1` is the universal "I can talk to the DB" probe.
+            await (db as any).unsafe?.('SELECT 1')
+          }),
+          probe('cache', async () => {
+            const { cache } = await import('@stacksjs/cache')
+            const k = `__health__:${Date.now()}`
+            await cache.set(k, 1, 5)
+            await cache.del(k)
+          }),
+        ])
+
+        const healthy = Object.values(checks).every(c => c.ok)
+        const body = {
+          status: healthy ? 'healthy' : 'degraded',
+          checks,
+          timestamp: Date.now(),
+        }
+        return Response.json(body, { status: healthy ? 200 : 503 })
+      })
+      // Internal route-introspection endpoint. Powers `buddy dev` route
+      // listing on startup and future `buddy route:list` consumers.
+      // Locked to dev/staging via the `STACKS_EXPOSE_ROUTES` env so
+      // production deployments don't unintentionally publish their
+      // route surface to the outside world.
+      bunRouter.get('/__routes', () => {
+        const env = (process.env.APP_ENV ?? '').toLowerCase()
+        const isProd = env === 'production' || process.env.NODE_ENV === 'production'
+        if (isProd && process.env.STACKS_EXPOSE_ROUTES !== '1') {
+          return Response.json({ error: 'disabled in production' }, { status: 404 })
+        }
+        return Response.json(listRegisteredRoutes())
+      })
+
+      // OpenAPI spec — live, regenerated on each hit. Same env gate as
+      // /__routes because exposing the full schema is implicitly
+      // exposing the route table. SwaggerUI/Insomnia/Postman can point
+      // straight at this URL in dev for instant docs.
+      bunRouter.get('/__openapi.json', async () => {
+        const env = (process.env.APP_ENV ?? '').toLowerCase()
+        const isProd = env === 'production' || process.env.NODE_ENV === 'production'
+        if (isProd && process.env.STACKS_EXPOSE_ROUTES !== '1') {
+          return Response.json({ error: 'disabled in production' }, { status: 404 })
+        }
+        try {
+          const { generateOpenApi } = await import('@stacksjs/api')
+          const spec = await (generateOpenApi as () => Promise<unknown>)()
+          return Response.json(spec)
+        }
+        catch (err) {
+          return Response.json(
+            { error: 'OpenAPI generation failed', message: err instanceof Error ? err.message : String(err) },
+            { status: 500 },
+          )
+        }
+      })
       return stacksRouter
     },
 

@@ -11,10 +11,10 @@
 export * from '@stacksjs/bun-router'
 
 // Export Stacks-specific action resolver and URL helper
-export { clearMiddlewareCache, createStacksRouter, route, serve, serverResponse, url } from './stacks-router'
+export { clearMiddlewareCache, createStacksRouter, installMiddlewareHotReload, route, serve, serverResponse, url } from './stacks-router'
 
 // Export request context helpers
-export { getCurrentRequest, request, runWithRequest, setCurrentRequest } from './request-context'
+export { cacheRequestQuery, getCurrentRequest, getTraceId, request, runWithRequest, setCurrentRequest, withTraceId } from './request-context'
 
 // Export Middleware class for defining route middleware
 export { Middleware } from './middleware'
@@ -33,5 +33,26 @@ export {
   createMiddlewareErrorResponse,
   createNotFoundResponse,
   createValidationErrorResponse,
+  getQueryShapeCounts,
   trackQuery,
 } from './error-handler'
+
+// Export route introspection helpers
+export { listRegisteredRoutes, routeParams } from './stacks-router'
+
+// Export action-level rate limiting helpers
+export { rateLimit, rateLimitStatus, clearRateLimit } from './rate-limit'
+
+// DI: register the router's query tracker with the database package on
+// import so the cycle `database → router → database` doesn't manifest
+// statically. Lazy-imported via Promise so the database package stays
+// optional in environments that don't load it (browser builds, etc.).
+import('@stacksjs/database')
+  .then(({ setQueryTracker }) => {
+    if (typeof setQueryTracker === 'function') {
+      // eslint-disable-next-line ts/no-require-imports
+      const { trackQuery } = require('./error-handler') as { trackQuery: (q: string, t?: number, c?: string) => void }
+      setQueryTracker(trackQuery)
+    }
+  })
+  .catch(() => { /* database package not loaded — fine */ })

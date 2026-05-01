@@ -17,6 +17,66 @@ export default new Action({
   },
 })`,
 
+  // Stub variants emitted when the user passes --with-validation
+  // or --with-auth to `buddy make:action`. Both share the basic Action
+  // shape and add the relevant scaffolding inline rather than via
+  // additional imports the user has to wire up themselves.
+  actionWithValidation: `import { Action } from '@stacksjs/actions'
+import { schema, validate } from '@stacksjs/validation'
+
+export default new Action({
+  name: '{0}',
+  description: '{0} action',
+
+  async handle(request) {
+    // Replace these rules with whatever this action expects. The
+    // returned object is typed to the rule shape; type-narrow further
+    // by passing a generic to validate&lt;Payload&gt;().
+    const data = await validate(request, {
+      // example: title: schema.string().required().min(1),
+    })
+
+    return { ok: true, data }
+  },
+})`,
+
+  actionWithAuth: `import { Action } from '@stacksjs/actions'
+
+export default new Action({
+  name: '{0}',
+  description: '{0} action (authenticated)',
+
+  async handle(request) {
+    const user = await request.user()
+    if (!user) {
+      return new Response('Unauthorized', { status: 401 })
+    }
+
+    return { ok: true, userId: user.id }
+  },
+})`,
+
+  actionWithBoth: `import { Action } from '@stacksjs/actions'
+import { schema, validate } from '@stacksjs/validation'
+
+export default new Action({
+  name: '{0}',
+  description: '{0} action (authenticated + validated)',
+
+  async handle(request) {
+    const user = await request.user()
+    if (!user) {
+      return new Response('Unauthorized', { status: 401 })
+    }
+
+    const data = await validate(request, {
+      // example: title: schema.string().required().min(1),
+    })
+
+    return { ok: true, userId: user.id, data }
+  },
+})`,
+
   component: `<script setup lang="ts">
 console.log('Hello World component created')
 </script>

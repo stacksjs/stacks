@@ -41,5 +41,6 @@ export {
   HTTP_ERRORS,
   renderError,
   renderErrorPage,
+  renderHttpErrorHints,
   renderProductionErrorPage,
 } from './error-page'

@@ -372,7 +372,7 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   const readinessTimeoutMs = 30000
   let readyAnnounced = false
   Promise.all(ports.map(p => waitForPort(p.port, readinessTimeoutMs)))
-    .then((results) => {
+    .then(async (results) => {
       if (readyAnnounced) return
       readyAnnounced = true
       const failed = results
@@ -384,6 +384,13 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
           ? `ready in ${(elapsedMs / 1000).toFixed(1)}s — ${failed.join(', ')} did not bind within ${readinessTimeoutMs / 1000}s`
           : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
         console.log(`  ${dim(summary)}\n`)
+      }
+      // Print the registered API routes once the API server reports
+      // ready. Helps new contributors orient themselves without grepping
+      // `app/Routes.ts`. Hidden behind STACKS_PRINT_ROUTES=0 for users
+      // who find it too chatty.
+      if (process.env.STACKS_PRINT_ROUTES !== '0') {
+        await printRegisteredRoutes(apiPort).catch(() => { /* best effort */ })
       }
     })
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
@@ -412,6 +419,48 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
       })
       : Promise.resolve(),
   ])
+}
+
+const METHOD_COLORS: Record<string, (s: string) => string> = {
+  GET: cyan,
+  POST: green,
+  PUT: cyan,
+  PATCH: cyan,
+  DELETE: cyan,
+  OPTIONS: dim,
+}
+
+/**
+ * Hit the API server's `/__routes` introspection endpoint and print a
+ * compact table of registered routes. Skips silently if the endpoint
+ * isn't available (e.g. a custom server that doesn't expose it) — the
+ * dev server stays usable either way.
+ */
+async function printRegisteredRoutes(apiPort: number): Promise<void> {
+  try {
+    const ac = new AbortController()
+    const t = setTimeout(() => ac.abort(), 1500)
+    const res = await fetch(`http://127.0.0.1:${apiPort}/__routes`, { signal: ac.signal }).catch(() => null)
+    clearTimeout(t)
+    if (!res || !res.ok) return
+    const routes = (await res.json()) as Array<{ method: string, path: string, name?: string }>
+    if (!Array.isArray(routes) || routes.length === 0) return
+
+    const sorted = [...routes].sort((a, b) => a.path.localeCompare(b.path) || a.method.localeCompare(b.method))
+    const longestPath = Math.max(...sorted.map(r => r.path.length))
+    console.log(`  ${dim('Registered routes')}\n`)
+    for (const r of sorted) {
+      const color = METHOD_COLORS[r.method.toUpperCase()] ?? dim
+      const method = color(r.method.toUpperCase().padEnd(6))
+      const path = r.path.padEnd(longestPath)
+      const named = r.name ? `  ${dim(`(${r.name})`)}` : ''
+      console.log(`  ${method}  ${path}${named}`)
+    }
+    console.log()
+  }
+  catch {
+    /* probe failed — never block the dev server on this */
+  }
 }
 
 /**

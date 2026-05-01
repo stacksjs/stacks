@@ -66,14 +66,70 @@ const queryBuffer: Array<{ query: string; time?: number; connection?: string } |
 let queryWriteIndex = 0
 let queryCount = 0
 
+// Per-request normalized-query histogram. The signature here is
+// "normalize the query enough that two `SELECT * FROM posts WHERE
+// id = $1` calls collapse to one bucket regardless of bound values"
+// so we can detect when the same shape fires N times in a single
+// request — the canonical N+1 signature.
+const queryShapeCounts = new Map<string, number>()
+const N1_THRESHOLD = 5
+let n1Warned = new Set<string>()
+
+/**
+ * Normalize a query string for shape-comparison. Strips bound values
+ * (`= 1`, `= 'foo'`, `IN (1, 2, 3)`), collapses whitespace, and uppercases
+ * keywords so two queries that differ only in their parameter values
+ * end up in the same bucket.
+ */
+function normalizeQueryShape(query: string): string {
+  return query
+    // Quoted strings (single + double) → ?
+    .replace(/'(?:[^']|'')*'/g, '?')
+    .replace(/"(?:[^"]|"")*"/g, '?')
+    // Numbers → ?
+    .replace(/\b\d+(?:\.\d+)?\b/g, '?')
+    // Multi-value IN lists → IN (?)
+    .replace(/IN\s*\([^)]*\)/gi, 'IN (?)')
+    // Collapse whitespace
+    .replace(/\s+/g, ' ')
+    .trim()
+    .toUpperCase()
+}
+
 /**
  * Add a query to the recent queries list for error context.
  * Uses a circular buffer for O(1) insert instead of array.shift().
+ *
+ * Also runs N+1 detection: when the same query *shape* (with bound
+ * values normalized away) repeats more than `N1_THRESHOLD` times within
+ * a single request lifecycle, we warn once via `log.warn`. The signal
+ * is highly correlated with missing eager loading.
  */
 export function trackQuery(query: string, time?: number, connection?: string): void {
   queryBuffer[queryWriteIndex] = { query, time, connection }
   queryWriteIndex = (queryWriteIndex + 1) % MAX_QUERIES
   if (queryCount < MAX_QUERIES) queryCount++
+
+  // N+1 heuristic — only active in dev. The check is deliberately cheap
+  // (one normalize + map increment per query) so we can leave it on by
+  // default without measurably increasing query latency.
+  if (process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production') return
+  const shape = normalizeQueryShape(query)
+  // Skip framework's own bookkeeping queries (query_logs INSERT, EXPLAIN).
+  if (shape.startsWith('INSERT INTO QUERY_LOGS') || shape.startsWith('EXPLAIN')) return
+  const next = (queryShapeCounts.get(shape) ?? 0) + 1
+  queryShapeCounts.set(shape, next)
+  if (next === N1_THRESHOLD + 1 && !n1Warned.has(shape)) {
+    n1Warned.add(shape)
+    // Lazy import so this file stays free of @stacksjs/logging in case
+    // logging is the failing component during error rendering.
+    import('@stacksjs/logging').then(({ log }) => {
+      log.warn(
+        `[orm] Possible N+1 — query shape ran ${next}× in this request:\n  ${shape}\n  `
+        + `Hint: load related rows with .with('relation') or eager-load via includes() before iterating.`,
+      )
+    }).catch(() => { /* logging unavailable — silently skip */ })
+  }
 }
 
 /**
@@ -91,12 +147,22 @@ function getRecentQueries(): Array<{ query: string; time?: number; connection?: 
 }
 
 /**
+ * Snapshot of query shape counts. Useful for tests asserting that an
+ * action ran a single query for `posts` instead of one-per-user.
+ */
+export function getQueryShapeCounts(): ReadonlyMap<string, number> {
+  return new Map(queryShapeCounts)
+}
+
+/**
  * Clear tracked queries (e.g., after successful response)
  */
 export function clearTrackedQueries(): void {
   queryBuffer.fill(null)
   queryWriteIndex = 0
   queryCount = 0
+  queryShapeCounts.clear()
+  n1Warned = new Set<string>()
 }
 
 /**

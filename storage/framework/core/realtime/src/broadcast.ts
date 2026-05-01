@@ -2,6 +2,38 @@ import type { BroadcastEvent, ChannelType } from 'ts-broadcasting'
 import { log } from '@stacksjs/logging'
 import { getServer } from './server-instance'
 
+/**
+ * Best-effort check for whether anyone is subscribed to `channelName`.
+ *
+ * The `BroadcastServer` interface is stable but the subscriber-count
+ * accessor isn't — different ts-broadcasting versions expose it as
+ * `hasSubscribers`, `channelCount`, or via `clients.get(name)?.size`.
+ * We try the public surface first and fall back to a permissive
+ * `true` so we never *block* a legitimate broadcast just because we
+ * couldn't introspect the subscriber set. This stays a perf hint, not
+ * a correctness gate.
+ */
+function hasSubscribers(server: any, channelName: string): boolean {
+  try {
+    if (typeof server.hasSubscribers === 'function') {
+      return Boolean(server.hasSubscribers(channelName))
+    }
+    if (typeof server.subscriberCount === 'function') {
+      return server.subscriberCount(channelName) > 0
+    }
+    const channels = server.channels ?? server.clients
+    if (channels && typeof channels.get === 'function') {
+      const set = channels.get(channelName)
+      const size = (set && (set.size ?? set.length)) ?? null
+      if (typeof size === 'number') return size > 0
+    }
+  }
+  catch {
+    // Fall through — if introspection threw, treat as "subscribers might exist".
+  }
+  return true
+}
+
 export interface BroadcastInstance {
   channel?: () => string | string[]
   broadcastOn?: () => string | string[]
@@ -50,6 +82,12 @@ export class Broadcast {
 
   /**
    * Broadcast an event to a channel
+   *
+   * Skips the wire-level broadcast when no subscribers are listening on
+   * the resolved channel. Without this, every emit walked the channel
+   * multiplexer, serialized the payload, and looped through an empty
+   * subscriber set — which is wasted work that compounds when chatty
+   * model-event broadcasts run on cold sockets.
    */
   broadcast(channel: string, event: string, data?: any, type: ChannelType = 'public'): void {
     const server = getServer()
@@ -65,6 +103,11 @@ export class Broadcast {
     }
     else if (type === 'presence' && !channel.startsWith('presence-')) {
       channelName = `presence-${channel}`
+    }
+
+    if (!hasSubscribers(server, channelName)) {
+      log.debug(`[Broadcast] Skipping '${event}' on '${channelName}' — no subscribers`)
+      return
     }
 
     try {

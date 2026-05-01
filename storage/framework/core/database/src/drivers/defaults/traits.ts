@@ -144,7 +144,13 @@ export async function createTaggableTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
-  // Add small delay to ensure different timestamp for taggables migration
+  // Migration filenames are timestamp-prefixed. We chain trait migrations
+  // (tags → taggables, etc.) inside a single tick, which means
+  // `Date.now()` returns the same ms for both files, the second `Bun.write`
+  // overwrites the first, and the migrator only sees one of them. A 2ms
+  // sleep is the cheapest way to guarantee a strictly later timestamp on
+  // the next file. This runs once during scaffolding — never on the
+  // request path — so the cost is irrelevant.
   await new Promise(resolve => setTimeout(resolve, 2))
   await createTaggablesTable()
 }
@@ -199,7 +205,13 @@ export async function createPostgresTagsTable(): Promise<void> {
 
   log.success(`Created migration: ${italic(migrationFileName)}`)
 
-  // Add small delay to ensure different timestamp for taggables migration
+  // Migration filenames are timestamp-prefixed. We chain trait migrations
+  // (tags → taggables, etc.) inside a single tick, which means
+  // `Date.now()` returns the same ms for both files, the second `Bun.write`
+  // overwrites the first, and the migrator only sees one of them. A 2ms
+  // sleep is the cheapest way to guarantee a strictly later timestamp on
+  // the next file. This runs once during scaffolding — never on the
+  // request path — so the cost is irrelevant.
   await new Promise(resolve => setTimeout(resolve, 2))
   await createPostgresTaggablesTable()
 }

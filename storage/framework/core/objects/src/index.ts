@@ -88,18 +88,24 @@ export function deepMerge<T extends object = object, S extends object = T>(
 
   if (isMergeableObject(target) && isMergeableObject(source)) {
     objectKeys(source).forEach((key) => {
-      // @ts-expect-error some description
+      // `key` is `keyof S`. After the `objectKeys(source)` cast it has a
+      // narrower type than `keyof T & keyof S`, so indexing `source[key]`
+      // and assigning to `target[key]` both fail strict checks. The
+      // runtime invariant — both target & source have the same shape at
+      // each merged key — is enforced by `isMergeableObject`, but TS
+      // can't see that, so each indexed read/write needs the suppression.
+      // @ts-expect-error indexing T with keyof S — see comment above
       if (isMergeableObject(source[key])) {
-        // @ts-expect-error some description
+        // @ts-expect-error see deep-merge keyof note above
         if (!target[key])
-          // @ts-expect-error some description
+          // @ts-expect-error see deep-merge keyof note above
           target[key] = {}
 
-        // @ts-expect-error some description
+        // @ts-expect-error see deep-merge keyof note above
         deepMerge(target[key], source[key])
       }
       else {
-        // @ts-expect-error some description
+        // @ts-expect-error see deep-merge keyof note above
         target[key] = source[key]
       }
     })

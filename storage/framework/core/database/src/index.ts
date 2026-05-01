@@ -71,6 +71,12 @@ export * from './types'
 // Migrations
 export * from './migrations'
 
+// Query logger DI hook (router calls setQueryTracker on init)
+export { setQueryTracker, logQuery } from './query-logger'
+
+// Class-based seeders (supplements the model-attribute auto-seeder)
+export { Seeder, runClassSeeders } from './class-seeder'
+
 // Seeding
 export * from './seeder'
 

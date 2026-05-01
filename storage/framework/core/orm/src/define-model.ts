@@ -233,13 +233,23 @@ function wrapModelInstance<T extends object>(
  * one.
  */
 const QB_TERMINATORS = new Set(['get', 'first', 'last', 'firstOrFail', 'find', 'findOrFail', 'all', 'paginate'])
+const STACKS_QB_PROXY_TAG = Symbol.for('stacks.queryBuilderProxy')
 
 function wrapQueryBuilder(qb: any, casts?: Record<string, CastType | CasterInterface>): any {
   if (!qb || typeof qb !== 'object') return qb
+  // Skip re-wrapping. Without this guard, chains like
+  // `Model.query().where().with().orderBy().first()` build O(N) nested
+  // Proxies — each `.where()` returns a wrapped builder, the next
+  // `.with()` wraps the wrapper, and so on. The stack of traps fires
+  // once per layer on every property access, which shows up as visible
+  // overhead in tight loops.
+  if (qb[STACKS_QB_PROXY_TAG]) return qb
   return new Proxy(qb, {
     get(target, prop, recv) {
+      if (prop === STACKS_QB_PROXY_TAG) return true
       const v = Reflect.get(target, prop, recv)
       if (typeof v !== 'function') return v
+      // eslint-disable-next-line pickier/no-unused-vars
       return function (this: any, ...args: any[]) {
         const result = v.apply(target, args)
         const finalize = (r: any) => {
@@ -634,6 +644,7 @@ import { createCommentableMethods } from './traits/commentable'
 import { createBillableMethods } from './traits/billable'
 import { createLikeableMethods } from './traits/likeable'
 import { createTwoFactorMethods } from './traits/two-factor'
+import { createSoftDeleteMethods } from './traits/soft-deletes'
 
 /**
  * Stacks-enhanced model definition.
@@ -642,6 +653,22 @@ import { createTwoFactorMethods } from './traits/two-factor'
  * - Event dispatching via `traits.observe`
  * - Trait methods (billable, taggable, categorizable, commentable, likeable, 2FA)
  * - Full backward compatibility with generators (migration, routes, dashboard)
+ *
+ * ### Relationships
+ * Each entry in `belongsTo`, `hasMany`, `hasOne`, `belongsToMany`,
+ * `hasOneThrough`, and `hasManyThrough` declares a typed relation
+ * usable via `.with('relationName')`:
+ *
+ * ```ts
+ * defineModel({
+ *   belongsTo: ['Author'],     // ↪ post.author
+ *   hasMany:   ['Comment'],    // ↪ post.comments (lowercase + pluralized)
+ *   hasOne:    ['Cover'],      // ↪ post.cover
+ * })
+ * ```
+ *
+ * After eager loading the related row(s) are reachable as a property
+ * on the instance — `(await Post.with('author').first()).author`.
  *
  * @example
  * ```ts
@@ -696,6 +723,14 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // legacy wrapper; reads are handled inside the proxy above.
   if (definition.casts && Object.keys(definition.casts).length > 0) {
     wrapQueryMethodsWithCasts(baseModel, definition.casts)
+  }
+
+  // Soft-deletes runs *before* trait methods so that the static
+  // `delete` it installs survives any later wrapping. We also gate
+  // entirely on the trait flag — without it, models keep their
+  // existing hard-delete semantics.
+  if ((definition as { traits?: { useSoftDeletes?: boolean } }).traits?.useSoftDeletes) {
+    applySoftDeletes(baseModel, defWithHooks as BQBModelDefinition)
   }
 
   // Build trait methods based on model config
@@ -790,6 +825,7 @@ export interface TraitMethods {
   _billable?: ReturnType<typeof createBillableMethods>
   _likeable?: ReturnType<typeof createLikeableMethods>
   _twoFactor?: ReturnType<typeof createTwoFactorMethods>
+  _softDeletes?: ReturnType<typeof createSoftDeleteMethods>
 }
 
 function buildTraitMethods(definition: BQBModelDefinition): TraitMethods {
@@ -826,6 +862,24 @@ function buildTraitMethods(definition: BQBModelDefinition): TraitMethods {
   }
 
   return methods
+}
+
+/**
+ * Apply the soft-deletes shim to a model's static surface. Called by
+ * `defineModel()` when `traits.useSoftDeletes` is set on the definition.
+ */
+function applySoftDeletes(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
+  const helpers = createSoftDeleteMethods(baseModel as any, definition.primaryKey || 'id')
+  // Replace `delete` with the soft-delete variant; expose the original
+  // as `forceDelete` for the rare case callers want a real DELETE.
+  baseModel.softDelete = helpers.softDelete
+  baseModel.restore = helpers.restore
+  baseModel.forceDelete = helpers.forceDelete
+  baseModel.withTrashed = helpers.withTrashed
+  baseModel.onlyTrashed = helpers.onlyTrashed
+  // Override the static `delete` so the natural call path soft-deletes.
+  // Callers that explicitly want a hard delete use `Model.forceDelete(id)`.
+  baseModel.delete = helpers.softDelete
 }
 
 /**

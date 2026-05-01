@@ -1,5 +1,6 @@
 import { db } from '@stacksjs/database'
 import { sql } from '@stacksjs/database'
+import { log } from '@stacksjs/logging'
 
 export interface UpdateErrorData {
   status?: number
@@ -22,7 +23,7 @@ export async function update(id: number, data: UpdateErrorData): Promise<boolean
     return true
   }
   catch (error) {
-    console.error('Error updating error record:', error)
+    log.error('[commerce/errors] update failed', { id, error })
     return false
   }
 }
@@ -43,7 +44,7 @@ export async function bulkUpdateStatus(ids: number[], status: number): Promise<b
     return true
   }
   catch (error) {
-    console.error('Error bulk updating error records:', error)
+    log.error('[commerce/errors] bulkUpdateStatus failed', { count: ids.length, status, error })
     return false
   }
 }
@@ -65,7 +66,7 @@ export async function resolveGroup(type: string, message: string): Promise<boole
     return true
   }
   catch (error) {
-    console.error('Error resolving error group:', error)
+    log.error('[commerce/errors] resolveGroup failed', { type, message, error })
     return false
   }
 }
@@ -87,7 +88,7 @@ export async function ignoreGroup(type: string, message: string): Promise<boolea
     return true
   }
   catch (error) {
-    console.error('Error ignoring error group:', error)
+    log.error('[commerce/errors] ignoreGroup failed', { type, message, error })
     return false
   }
 }
@@ -109,7 +110,7 @@ export async function unresolveGroup(type: string, message: string): Promise<boo
     return true
   }
   catch (error) {
-    console.error('Error unresolving error group:', error)
+    log.error('[commerce/errors] unresolveGroup failed', { type, message, error })
     return false
   }
 }

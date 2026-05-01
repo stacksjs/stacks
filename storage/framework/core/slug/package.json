@@ -53,5 +53,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/strings": "workspace:*",
     "@stacksjs/utils": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

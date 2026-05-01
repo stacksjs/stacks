@@ -1,10 +1,14 @@
 import { db } from '@stacksjs/database'
+import { aggregateStats } from '../utils/typed-stats'
 type ReceiptJsonResponse = ModelRow<typeof Receipt>
 
 /**
  * Fetch a print log by ID
  */
 export async function fetchById(id: number): Promise<ReceiptJsonResponse | undefined> {
+  // Single `as` at the kysely → typed-result boundary — schema-wide
+  // typing for `selectAll()` would force every consumer to import the
+  // generated row types, which we want to keep optional in user code.
   return await db
     .selectFrom('receipts')
     .where('id', '=', id)
@@ -41,29 +45,24 @@ export async function fetchPrintJobStats(
   const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
 
-  const stats = await db
-    .selectFrom('receipts')
-    .where('timestamp', '>=', start)
-    .where('timestamp', '<=', end)
-    .select(((eb: any) => [
-      eb.fn.count('id').as('total'),
-      eb.fn.count('id').filterWhere('status', '=', 'success').as('success'),
-      eb.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
-      eb.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
-      eb.fn.avg('size').as('averageSize'),
-      eb.fn.avg('pages').as('averagePages'),
-      eb.fn.avg('duration').as('averageDuration'),
-    ]) as any)
-    .executeTakeFirst()
+  const stats = await aggregateStats('receipts', {
+    total: { kind: 'count' },
+    success: { kind: 'count', filter: { column: 'status', op: '=', value: 'success' } },
+    failed: { kind: 'count', filter: { column: 'status', op: '=', value: 'failed' } },
+    warning: { kind: 'count', filter: { column: 'status', op: '=', value: 'warning' } },
+    averageSize: { kind: 'avg', column: 'size' },
+    averagePages: { kind: 'avg', column: 'pages' },
+    averageDuration: { kind: 'avg', column: 'duration' },
+  }, qb => qb.where('timestamp', '>=', start).where('timestamp', '<=', end))
 
   return {
-    total: (stats as any)?.total || 0,
-    success: (stats as any)?.success || 0,
-    failed: (stats as any)?.failed || 0,
-    warning: (stats as any)?.warning || 0,
-    averageSize: Math.round((stats as any)?.averageSize || 0),
-    averagePages: Math.round((stats as any)?.averagePages || 0),
-    averageDuration: Math.round((stats as any)?.averageDuration || 0),
+    total: stats.total,
+    success: stats.success,
+    failed: stats.failed,
+    warning: stats.warning,
+    averageSize: Math.round(stats.averageSize),
+    averagePages: Math.round(stats.averagePages),
+    averageDuration: Math.round(stats.averageDuration),
   }
 }
 
@@ -87,32 +86,21 @@ export async function fetchSuccessRate(
   const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
 
-  const stats = await db
-    .selectFrom('receipts')
-    .where('timestamp', '>=', start)
-    .where('timestamp', '<=', end)
-    .select(((eb: any) => [
-      eb.fn.count('id').as('total'),
-      eb.fn.count('id').filterWhere('status', '=', 'success').as('success'),
-      eb.fn.count('id').filterWhere('status', '=', 'failed').as('failed'),
-      eb.fn.count('id').filterWhere('status', '=', 'warning').as('warning'),
-    ]) as any)
-    .executeTakeFirst()
+  const stats = await aggregateStats('receipts', {
+    total: { kind: 'count' },
+    success: { kind: 'count', filter: { column: 'status', op: '=', value: 'success' } },
+    failed: { kind: 'count', filter: { column: 'status', op: '=', value: 'failed' } },
+    warning: { kind: 'count', filter: { column: 'status', op: '=', value: 'warning' } },
+  }, qb => qb.where('timestamp', '>=', start).where('timestamp', '<=', end))
 
-  const total = (stats as any)?.total || 0
-  const success = (stats as any)?.success || 0
-  const failed = (stats as any)?.failed || 0
-  const warning = (stats as any)?.warning || 0
-
-  // Calculate success rate as percentage of successful jobs vs total jobs
-  const successRate = total > 0 ? Math.round((success / total) * 100) : 0
+  const successRate = stats.total > 0 ? Math.round((stats.success / stats.total) * 100) : 0
 
   return {
     successRate,
-    total,
-    success,
-    failed,
-    warning,
+    total: stats.total,
+    success: stats.success,
+    failed: stats.failed,
+    warning: stats.warning,
   }
 }
 
@@ -134,21 +122,16 @@ export async function fetchPageStats(
   const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
 
-  const stats = await db
-    .selectFrom('receipts')
-    .where('timestamp', '>=', start)
-    .where('timestamp', '<=', end)
-    .select(((eb: any) => [
-      eb.fn.count('id').as('totalReceipts'),
-      eb.fn.sum('pages').as('totalPages'),
-      eb.fn.avg('pages').as('averagePagesPerReceipt'),
-    ]) as any)
-    .executeTakeFirst()
+  const stats = await aggregateStats('receipts', {
+    totalReceipts: { kind: 'count' },
+    totalPages: { kind: 'sum', column: 'pages' },
+    averagePagesPerReceipt: { kind: 'avg', column: 'pages' },
+  }, qb => qb.where('timestamp', '>=', start).where('timestamp', '<=', end))
 
   return {
-    totalPages: (stats as any)?.totalPages || 0,
-    averagePagesPerReceipt: Math.round((stats as any)?.averagePagesPerReceipt || 0),
-    totalReceipts: (stats as any)?.totalReceipts || 0,
+    totalPages: stats.totalPages,
+    averagePagesPerReceipt: Math.round(stats.averagePagesPerReceipt),
+    totalReceipts: stats.totalReceipts,
   }
 }
 
@@ -171,23 +154,18 @@ export async function fetchPrintTimeStats(
   const start = typeof _startDate === 'number' ? _startDate : _startDate.getTime()
   const end = typeof _endDate === 'number' ? _endDate : _endDate.getTime()
 
-  const stats = await db
-    .selectFrom('receipts')
-    .where('timestamp', '>=', start)
-    .where('timestamp', '<=', end)
-    .select(((eb: any) => [
-      eb.fn.count('id').as('totalJobs'),
-      eb.fn.avg('duration').as('averageDuration'),
-      eb.fn.min('duration').as('minDuration'),
-      eb.fn.max('duration').as('maxDuration'),
-    ]) as any)
-    .executeTakeFirst()
+  const stats = await aggregateStats('receipts', {
+    totalJobs: { kind: 'count' },
+    averageDuration: { kind: 'avg', column: 'duration' },
+    minDuration: { kind: 'min', column: 'duration' },
+    maxDuration: { kind: 'max', column: 'duration' },
+  }, qb => qb.where('timestamp', '>=', start).where('timestamp', '<=', end))
 
   return {
-    averageDuration: Math.round((stats as any)?.averageDuration || 0),
-    minDuration: (stats as any)?.minDuration || 0,
-    maxDuration: (stats as any)?.maxDuration || 0,
-    totalJobs: (stats as any)?.totalJobs || 0,
+    averageDuration: Math.round(stats.averageDuration),
+    minDuration: stats.minDuration,
+    maxDuration: stats.maxDuration,
+    totalJobs: stats.totalJobs,
   }
 }
 

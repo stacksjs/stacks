@@ -9,3 +9,5 @@
 // the *first* time (typically defaults), and later mutations from
 // `overridesReady` are silently ignored.
 export * from './config'
+export { validateConfig, reportConfigIssues, type ConfigValidationIssue } from './validators'
+export { feature, enableFeature, disableFeature, resetFeature, listFeatures } from './features'

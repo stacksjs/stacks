@@ -61,11 +61,25 @@ export function seed(buddy: CLI): void {
     .command('seed', descriptions.seed)
     .alias('db:seed')
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-c, --class [class]', 'Run a specific seeder class from database/seeders/', { default: '' })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SeedOptions) => {
+    .action(async (options: SeedOptions & { class?: string }) => {
       log.debug('Running `buddy seed` ...', options)
 
       const perf = await intro('buddy seed')
+
+      // --class branch: skip the model auto-seeder and run class-based
+      // seeders out of database/seeders/ instead. Mirrors Laravel's
+      // `php artisan db:seed --class=PostSeeder` ergonomics.
+      if (options.class) {
+        const { runClassSeeders } = await import('@stacksjs/database')
+        const result = await runClassSeeders({ class: options.class })
+        await outro(
+          `Class seeders: ran=${result.ran.length}, skipped=${result.skipped.length}`,
+          { startTime: perf, useSeconds: true },
+        )
+        process.exit(result.ran.length > 0 ? ExitCode.Success : ExitCode.FatalError)
+      }
 
       // Validate models exist before running seeders
       const validation = validateModelsExist()
@@ -83,6 +97,19 @@ export function seed(buddy: CLI): void {
           result.error,
         )
         process.exit(ExitCode.FatalError)
+      }
+
+      // After model auto-seeding, also run class seeders if any exist —
+      // they're usually composition layers on top of the auto-seeded data.
+      try {
+        const { runClassSeeders } = await import('@stacksjs/database')
+        const classResult = await runClassSeeders()
+        if (classResult.ran.length > 0) {
+          log.info(`Also ran ${classResult.ran.length} class seeder(s): ${classResult.ran.join(', ')}`)
+        }
+      }
+      catch (err) {
+        log.warn('Class seeders failed (non-fatal):', err)
       }
 
       const APP_ENV = process.env.APP_ENV || 'local'

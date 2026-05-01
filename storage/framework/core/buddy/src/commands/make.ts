@@ -20,6 +20,7 @@ import {
   makeQueueTable,
   makeResource,
   makeStack,
+  setDryRun,
 } from '@stacksjs/actions'
 import { intro, italic, outro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
@@ -67,6 +68,9 @@ export function make(buddy: CLI): void {
     .option('-n, --notification [notification]', descriptions.notification, { default: false })
     .option('-qt, --queue-table', descriptions.queue, { default: false })
     .option('-s, --stack [stack]', descriptions.stack, { default: false })
+    .option('--dry-run', 'Preview the files that would be generated without writing', { default: false })
+    .option('--with-validation', 'Include a validation rules block in the generated stub', { default: false })
+    .option('--with-auth', 'Include auth-aware boilerplate in the generated stub', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (make: string | undefined, options: MakeOptions) => {
       log.debug('Running `buddy make` ...', options)
@@ -77,6 +81,11 @@ export function make(buddy: CLI): void {
         log.error('You need to specify a name. Read more about the documentation here.')
         process.exit(ExitCode.FatalError)
       }
+
+      // Flip the global dry-run gate before any scaffolder runs. Reset
+      // afterwards so back-to-back invocations in the same process
+      // (rare, but possible inside tests) don't leak state.
+      setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
 
       if (make) {
         options.name = buddy.args[1]
@@ -173,6 +182,9 @@ export function make(buddy: CLI): void {
     .command('make:action [name]', descriptions.action)
     .option('-n, --name [name]', descriptions.name, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--dry-run', 'Preview the file without writing', { default: false })
+    .option('--with-validation', 'Generate a stub that calls validate()', { default: false })
+    .option('--with-auth', 'Generate a stub that requires an authenticated user', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .action(async (name: string, options: MakeOptions) => {
       log.info('Running `buddy make:action` ...')
@@ -186,6 +198,7 @@ export function make(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
+      setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
       await makeAction(options)
     })
 
@@ -197,6 +210,37 @@ export function make(buddy: CLI): void {
       log.debug('Running `buddy make:certificate` ...', options)
 
       await makeCertificate()
+    })
+
+  // CRUD scaffolding — generates model + migration + 5 actions in one shot.
+  // Mirrors `rails generate scaffold` ergonomics. Honors --dry-run via
+  // the shared dry-run flag so the user can preview the entire stack
+  // before committing to disk.
+  buddy
+    .command('scaffold:crud [name]', 'Generate model, migration, and CRUD actions')
+    .alias('make:crud')
+    .alias('make:scaffold')
+    .option('-n, --name [name]', 'Resource name (PascalCase)', { default: false })
+    .option('-f, --fields [fields]', 'Comma-separated field list, e.g. title:string,body:text,published:boolean', { default: '' })
+    .option('--dry-run', 'Preview the generated files without writing', { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .example('buddy scaffold:crud Post --fields=title:string,body:text,published:boolean')
+    .action(async (name: string, options: MakeOptions & { fields?: string }) => {
+      name = name ?? options.name
+      if (!name) {
+        log.error('scaffold:crud requires a resource name. Example: buddy scaffold:crud Post --fields=title:string,body:text')
+        process.exit(ExitCode.FatalError)
+      }
+
+      const { scaffoldCrud } = await import('@stacksjs/actions')
+      setDryRun(Boolean((options as any).dryRun || (options as any)['dry-run']))
+      try {
+        await scaffoldCrud(name, options)
+      }
+      catch (err) {
+        log.error('scaffold:crud failed:', err)
+        process.exit(ExitCode.FatalError)
+      }
     })
 
   buddy

@@ -134,6 +134,32 @@ try {
   const env = await import('@stacksjs/env')
   globalThis.env = env
 } catch {}
+
+// validate() shortcut — paired with schema for fluent validation in REPL.
+try {
+  const { validate } = await import('@stacksjs/validation')
+  globalThis.validate = validate
+} catch {}
+
+// Jobs facade — lets you fire jobs without remembering the dispatch builder.
+try {
+  const { Jobs } = await import('@stacksjs/queue')
+  globalThis.Jobs = Jobs
+} catch {}
+
+// Request introspection — only useful inside an active request, but
+// the proxy is safe to expose: outside a request scope every property
+// returns a typed default (see request-context.ts).
+try {
+  const { request, listRegisteredRoutes } = await import('@stacksjs/router')
+  globalThis.request = request
+  globalThis.routes = listRegisteredRoutes
+} catch {}
+
+// dump/dd helpers for quick inspection — a Laravel-ism that's always
+// nice to have at the REPL when investigating a value.
+globalThis.dump = (...args) => { console.dir(args.length === 1 ? args[0] : args, { depth: 6, colors: true }) }
+globalThis.dd = (...args) => { console.dir(args.length === 1 ? args[0] : args, { depth: 6, colors: true }); process.exit(0) }
 `)
   }
 
@@ -217,7 +243,8 @@ function buildBanner(): string {
     '  Interactive REPL with Stacks framework preloaded.',
     '',
     '  \x1b[2mAvailable globals: db, config, path, storage, log, Str,',
-    '  cache, queue, events, router, auth, collect, env',
+    '  cache, queue, events, router, auth, collect, env, request,',
+    '  validate, Jobs, routes, dump, dd',
     '  + all ORM models (User, Post, etc.)\x1b[0m',
     '',
     '  \x1b[2mType .help for REPL commands. Press Ctrl+D to exit.\x1b[0m',

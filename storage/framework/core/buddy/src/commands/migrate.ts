@@ -1,11 +1,19 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, rmSync } from 'node:fs'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { appPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+
+// Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
+// pulls in the database driver setup transitively, which we don't want
+// happening just to render the help screen.
+let _runAction: typeof import('@stacksjs/actions').runAction | undefined
+async function runAction(...args: Parameters<typeof import('@stacksjs/actions').runAction>): ReturnType<typeof import('@stacksjs/actions').runAction> {
+  if (!_runAction) _runAction = (await import('@stacksjs/actions')).runAction
+  return _runAction(...args)
+}
 
 /**
  * File-based migration lock so two `buddy migrate` runs can't race each

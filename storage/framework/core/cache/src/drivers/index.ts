@@ -161,13 +161,15 @@ export class StacksCache implements CacheDriver {
 
   /**
    * Get a cached value or compute and store it forever (no expiration).
+   *
+   * Routes through `getOrSet` with `ttl: 0` so it inherits the same
+   * cache-stampede guard — without that, N concurrent callers all see
+   * the empty slot, run `callback()` in parallel, and clobber each
+   * other on the way back. The TTL of `0` is what every driver
+   * interprets as "no expiration".
    */
   async rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> {
-    const existing = await this.get<T>(key)
-    if (existing !== undefined) return existing
-    const value = await callback()
-    await this.setForever(key, value)
-    return value
+    return this.getOrSet(key, callback, 0)
   }
 
   async del(keys: string | string[]): Promise<number> {
@@ -239,6 +241,152 @@ export class StacksCache implements CacheDriver {
    */
   get cacheManager(): CacheManager {
     return this.manager
+  }
+
+  /**
+   * Tag-aware writes. Returns a thin wrapper that mirrors the cache API
+   * but indexes every write under each tag, so a single
+   * `cache.tags(['user:42']).flush()` invalidates every key associated
+   * with that tag — no matter what driver they live on.
+   *
+   * The tag → keys map is kept in cache itself under a reserved prefix
+   * so it survives across processes when Redis is the driver. Memory
+   * driver gets the same correctness with no persistence guarantee.
+   *
+   * @example
+   * ```ts
+   * await cache.tags(['user:42', 'feed']).put('user:42:feed', payload, 300)
+   * await cache.tags(['user:42']).flush() // invalidates the feed cache too
+   * ```
+   */
+  tags(tags: readonly string[]): TaggedCache {
+    return new TaggedCache(this, tags)
+  }
+}
+
+/**
+ * Tag-scoped wrapper around `StacksCache`. Records every write under
+ * the named tag(s) so `flush()` can invalidate cascade-style without the
+ * caller having to track keys themselves.
+ *
+ * The tag index is stored as `string[]` on disk (so it survives the
+ * Redis driver's serializer), but operated on in memory as a `Set` so
+ * each write is `O(1)` instead of `O(N)` over the existing index.
+ *
+ * `flush()` uses a per-tag in-process mutex so concurrent flushes don't
+ * race-and-lose keys: without it, two parallel flushes could both read
+ * the index, both delete, and the second flush would succeed against
+ * the now-empty index — leaving any keys added between the two reads
+ * orphaned.
+ */
+export class TaggedCache {
+  private static readonly TAG_PREFIX = '__stacks_tag__:'
+
+  /**
+   * Per-tag flush mutex. Keyed by the tag-index key (not the user tag)
+   * so multiple `tags(['a'])` instances share the same lock for `'a'`.
+   * Static — flush ordering is process-global, not instance-local.
+   */
+  private static readonly flushLocks = new Map<string, Promise<unknown>>()
+
+  constructor(private readonly cache: StacksCache, private readonly tags: readonly string[]) {
+    if (!tags || tags.length === 0) {
+      throw new Error('cache.tags(...) requires at least one tag')
+    }
+  }
+
+  private tagKey(tag: string): string {
+    return `${TaggedCache.TAG_PREFIX}${tag}`
+  }
+
+  private async indexKey(key: string): Promise<void> {
+    // Read–modify–write is fine for tag-index updates: the worst case
+    // is a stale extra entry on flush, which is harmless (flush attempts
+    // to delete keys that no longer exist). Using a Set means the
+    // membership check + append is O(1) regardless of index size.
+    for (const tag of this.tags) {
+      const tagK = this.tagKey(tag)
+      const existing = (await this.cache.get<string[]>(tagK)) ?? []
+      const set = new Set(existing)
+      if (!set.has(key)) {
+        set.add(key)
+        await this.cache.setForever(tagK, [...set])
+      }
+    }
+  }
+
+  async put<T>(key: string, value: T, ttl?: number): Promise<boolean> {
+    const ok = await this.cache.set(key, value, ttl)
+    if (ok) await this.indexKey(key)
+    return ok
+  }
+
+  async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
+    return this.put(key, value, ttl)
+  }
+
+  async setForever<T>(key: string, value: T): Promise<boolean> {
+    const ok = await this.cache.setForever(key, value)
+    if (ok) await this.indexKey(key)
+    return ok
+  }
+
+  async remember<T>(key: string, ttl: number, callback: () => T | Promise<T>): Promise<T> {
+    const value = await this.cache.remember(key, ttl, callback)
+    await this.indexKey(key)
+    return value
+  }
+
+  async rememberForever<T>(key: string, callback: () => T | Promise<T>): Promise<T> {
+    const value = await this.cache.rememberForever(key, callback)
+    await this.indexKey(key)
+    return value
+  }
+
+  /** Pass-throughs that don't need indexing — included so the tagged
+   *  surface looks like the regular cache for ergonomic chains. */
+  async get<T>(key: string): Promise<T | undefined> { return this.cache.get<T>(key) }
+  async has(key: string): Promise<boolean> { return this.cache.has(key) }
+
+  /**
+   * Invalidate every key associated with any of this scope's tags, then
+   * drop the tag indexes themselves.
+   *
+   * Per-tag flush is serialized via a static lock map: concurrent
+   * flushes against the same tag await each other so writes that
+   * landed between two parallel flushes aren't dropped on the floor
+   * (a flush deletes only the keys it observed at read-time; if a
+   * second flush had already wiped the index, the late-arriving keys
+   * leak forever).
+   */
+  async flush(): Promise<number> {
+    let deleted = 0
+    for (const tag of this.tags) {
+      const tagK = this.tagKey(tag)
+      // Wait for any in-flight flush of the same tag before starting ours.
+      const inflight = TaggedCache.flushLocks.get(tagK)
+      if (inflight) await inflight.catch(() => { /* prior flush errors don't block ours */ })
+
+      const flushOne = (async () => {
+        const keys = (await this.cache.get<string[]>(tagK)) ?? []
+        let n = 0
+        if (keys.length > 0) n = await this.cache.del(keys)
+        await this.cache.del(tagK)
+        return n
+      })()
+      TaggedCache.flushLocks.set(tagK, flushOne)
+      try {
+        deleted += await flushOne
+      }
+      finally {
+        // Only clear if we're still the latest flush — a later caller
+        // may have replaced the slot before we resolved.
+        if (TaggedCache.flushLocks.get(tagK) === flushOne) {
+          TaggedCache.flushLocks.delete(tagK)
+        }
+      }
+    }
+    return deleted
   }
 }
 

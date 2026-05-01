@@ -1,0 +1,23 @@
+// Opt-in strict tsconfig for new code. Extending this turns on the two
+// flags the framework root currently leaves off because flipping them
+// at the monorepo level would flood every legacy file:
+//
+//   - strictNullChecks: catches `value.foo` when `value` may be null
+//   - noUncheckedIndexedAccess: makes `arr[i]` type T | undefined
+//
+// New package layout (recommended for any package authored from scratch):
+//   { "extends": "../core/tsconfig.strict.json" }
+//
+// Converting an existing package: extend this file and suppress
+// remaining issues per-line with `// @ts-expect-error <reason>` rather
+// than carrying both modes long-term.
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "strict": true,
+    "strictNullChecks": true,
+    "noUncheckedIndexedAccess": true,
+    "exactOptionalPropertyTypes": false,
+    "useUnknownInCatchVariables": true
+  }
+}

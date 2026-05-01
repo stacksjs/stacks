@@ -8,8 +8,13 @@ import type { Operator, SubqueryBuilder } from '@stacksjs/orm'
  * @template T - The table type (e.g., PersonalAccessTokensTable)
  * @template M - The model return type (e.g., AccessTokenModel)
  * @template R - The JSON response type
+ * @template Rel - The string-literal union of relation names this model can eager-load.
+ *   Defaults to `string` for backwards compat when generators don't supply
+ *   the union; downstream generated wrappers should narrow this to the
+ *   actual relation names so `.with(['posts'])` autocompletes and typos
+ *   become compile errors.
  */
-export interface QueryBuilder<T, M, R = any> {
+export interface QueryBuilder<T, M, R = any, Rel extends string = string> {
   /**
    * Adds a basic where clause to the query.
    *
@@ -195,10 +200,16 @@ export interface QueryBuilder<T, M, R = any> {
   /**
    * Add a "with" clause to eager load relationships.
    *
+   * Accepts only relation names declared on the model (`belongsTo`,
+   * `hasMany`, `hasOne`, `belongsToMany`, `hasOneThrough`,
+   * `hasManyThrough`). When the user passes `as const` to their model
+   * definition, typos here become compile errors — `User.with(['ostes'])`
+   * is rejected with the list of valid names.
+   *
    * @param relations - Array of relationship names to eager load
    * @returns The model instance for chaining
    */
-  with: (relations: string[]) => M
+  with: (relations: Rel[]) => M
 
   /**
    * Get the maximum value for a specified column.

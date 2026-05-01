@@ -6,6 +6,18 @@
 
 import { log } from '@stacksjs/logging'
 
+const HTML_ESCAPE_MAP: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+  '\'': '&#39;',
+}
+
+function escapeHtml(value: string): string {
+  return String(value).replace(/[&<>"']/g, c => HTML_ESCAPE_MAP[c] ?? c)
+}
+
 /**
  * Notification channel types
  */
@@ -101,6 +113,9 @@ export class FailedJobNotifier {
   private lastResetTime = Date.now()
   private pendingBatch: FailedJobInfo[] = []
   private batchTimeout: ReturnType<typeof setTimeout> | null = null
+  /** In-flight batch flush, awaited by `shutdown()` so we don't drop
+   *  notifications mid-send when SIGTERM lands during a `sendEmail` etc. */
+  private activeFlush: Promise<void> | null = null
 
   constructor(config: FailedJobNotificationConfig) {
     this.config = config
@@ -137,7 +152,13 @@ export class FailedJobNotifier {
       if (!this.batchTimeout) {
         this.batchTimeout = setTimeout(() => {
           this.batchTimeout = null
-          this.flushBatch().catch(error => log.error('Failed to flush notification batch:', error))
+          // Track the in-flight flush so `shutdown()` can await it.
+          // Without this handle, a SIGTERM that lands while the
+          // setTimeout-spawned `flushBatch` is mid-`sendEmail()` would
+          // exit the process before the email actually transmits.
+          this.activeFlush = this.flushBatch()
+            .catch(error => log.error('Failed to flush notification batch:', error))
+            .finally(() => { this.activeFlush = null })
         }, this.config.batchInterval || 60000)
         // .unref() so a pending batch doesn't keep the event loop alive
         // past process shutdown — without this, queue workers couldn't
@@ -170,14 +191,21 @@ export class FailedJobNotifier {
   }
 
   /**
-   * Cancel any pending batch timer and flush in-flight notifications.
-   * Call this from your shutdown hook so queue workers can exit cleanly
-   * without leaking the batch interval timer.
+   * Cancel any pending batch timer, await any in-flight flush, and
+   * drain the remaining batch before resolving. Call this from your
+   * shutdown hook so queue workers exit cleanly without dropping
+   * notifications mid-transmit.
    */
   async shutdown(): Promise<void> {
     if (this.batchTimeout) {
       clearTimeout(this.batchTimeout)
       this.batchTimeout = null
+    }
+    // Wait for any flush triggered by the timer first; only then drain
+    // the still-pending batch. Skipping the active-flush wait would
+    // race two `sendNotifications` calls against the same channels.
+    if (this.activeFlush) {
+      await this.activeFlush.catch(() => { /* logged inside */ })
     }
     await this.flushBatch().catch(error => log.error('Failed to flush notification batch on shutdown:', error))
   }
@@ -252,17 +280,25 @@ export class FailedJobNotifier {
   }
 
   /**
-   * Format email body
+   * Format email body.
+   *
+   * Every interpolated value goes through `escapeHtml` because the job
+   * name, queue name, and especially the exception string are all
+   * potentially attacker-influenced (e.g. an exception thrown with a
+   * message constructed from user input). Without escaping, a job that
+   * fails with `<script>alert(1)</script>` as part of its message
+   * delivers stored XSS to anyone who opens the failed-jobs email in
+   * a browser-based client.
    */
   private formatEmailBody(jobs: FailedJobInfo[]): string {
     const rows = jobs.map(job => `
       <tr>
-        <td style="padding: 8px; border: 1px solid #ddd;">${job.id}</td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${job.name}</td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${job.queue}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(String(job.id))}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(job.name)}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(job.queue)}</td>
         <td style="padding: 8px; border: 1px solid #ddd;">${job.attempts}/${job.maxAttempts}</td>
-        <td style="padding: 8px; border: 1px solid #ddd;">${job.failedAt.toISOString()}</td>
-        <td style="padding: 8px; border: 1px solid #ddd;"><pre style="max-width: 300px; overflow: auto;">${job.exception}</pre></td>
+        <td style="padding: 8px; border: 1px solid #ddd;">${escapeHtml(job.failedAt.toISOString())}</td>
+        <td style="padding: 8px; border: 1px solid #ddd;"><pre style="max-width: 300px; overflow: auto;">${escapeHtml(job.exception)}</pre></td>
       </tr>
     `).join('')
 

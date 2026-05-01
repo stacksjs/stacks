@@ -1,4 +1,5 @@
 import { db } from '@stacksjs/database'
+import { log } from '@stacksjs/logging'
 
 /**
  * Delete a single error by ID
@@ -12,7 +13,7 @@ export async function destroy(id: number): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error deleting error record:', error)
+    log.error('[commerce/errors] destroy failed', { id, error })
     return false
   }
 }
@@ -29,7 +30,7 @@ export async function bulkDestroy(ids: number[]): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error bulk deleting error records:', error)
+    log.error('[commerce/errors] bulkDestroy failed', { count: ids.length, error })
     return false
   }
 }
@@ -47,7 +48,7 @@ export async function destroyGroup(type: string, message: string): Promise<boole
     return true
   }
   catch (error) {
-    console.error('Error deleting error group:', error)
+    log.error('[commerce/errors] destroyGroup failed', { type, message, error })
     return false
   }
 }

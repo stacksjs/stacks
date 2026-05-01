@@ -23,6 +23,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'cloud': { path: './commands/cloud.ts', exportName: 'cloud' },
   'commit': { path: './commands/commit.ts', exportName: 'commit' },
   'completion': { path: './commands/completion.ts', exportName: 'completion' },
+  'config:migrate': { path: './commands/config-migrate.ts', exportName: 'configMigrate' },
   'configure': { path: './commands/configure.ts', exportName: 'configure' },
   'create': { path: './commands/create.ts', exportName: 'create' },
   'deploy': { path: './commands/deploy.ts', exportName: 'deploy' },

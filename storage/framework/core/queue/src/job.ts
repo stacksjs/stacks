@@ -225,6 +225,64 @@ export function job(name: string, payload?: any): JobBuilder {
 }
 
 /**
+ * Laravel-style static facade for the file-based job dispatcher. The
+ * existing `Job` class (in ./action.ts) is the *declaration* form used
+ * inside `app/Jobs/*.ts`; this `Jobs` facade is the *call-site* form for
+ * dispatching by name from anywhere in the app. It lets one-liner
+ * dispatches skip the builder while still allowing the chainable form
+ * via `Jobs.make(...)` for option-heavy cases.
+ *
+ * @example
+ * ```typescript
+ * // One-shot dispatch (no options)
+ * await Jobs.dispatch('SendWelcomeEmail', { userId: 1 })
+ *
+ * // Conditional dispatch
+ * await Jobs.dispatchIf(user.isNew, 'SendWelcomeEmail', { userId: user.id })
+ *
+ * // With options — fall back to the builder
+ * await Jobs.make('ProcessOrder', { orderId: 123 })
+ *   .onQueue('orders')
+ *   .tries(3)
+ *   .dispatch()
+ *
+ * // Immediate (synchronous) execution, ignoring the queue
+ * await Jobs.dispatchNow('SendNotification', { message: 'Hello' })
+ * ```
+ */
+export const Jobs = {
+  /** Construct a builder without dispatching — for chained option calls. */
+  make(name: string, payload?: any): JobBuilder {
+    return new JobBuilder(name, payload)
+  },
+
+  /** Dispatch a job in one call. Equivalent to `job(name, payload).dispatch()`. */
+  async dispatch(name: string, payload?: any): Promise<void> {
+    await new JobBuilder(name, payload).dispatch()
+  },
+
+  /** Dispatch only if `condition` is truthy. */
+  async dispatchIf(condition: boolean, name: string, payload?: any): Promise<void> {
+    if (condition) await new JobBuilder(name, payload).dispatch()
+  },
+
+  /** Dispatch unless `condition` is truthy. */
+  async dispatchUnless(condition: boolean, name: string, payload?: any): Promise<void> {
+    if (!condition) await new JobBuilder(name, payload).dispatch()
+  },
+
+  /** Run the job synchronously, bypassing the queue. */
+  async dispatchNow(name: string, payload?: any): Promise<void> {
+    await new JobBuilder(name, payload).dispatchNow()
+  },
+
+  /** Schedule the job to run after `seconds` of delay. */
+  dispatchAfter(seconds: number, name: string, payload?: any): JobBuilder {
+    return new JobBuilder(name, payload).delay(seconds)
+  },
+}
+
+/**
  * Create a job batch for dispatching multiple jobs together
  *
  * @example
@@ -253,36 +311,42 @@ export function jobBatch(jobs: Array<import('./action').Job | import('./batch').
  * Run a job immediately by name
  *
  * This loads the job from app/Jobs/{name}.ts and executes it
+ *
+ * Wraps execution in `withTraceId(...)` so log lines, db queries, and
+ * downstream HTTP calls emitted from inside the job carry the same
+ * trace id as the request (or a fresh one for cron-triggered runs).
+ * `options.traceId` lets dispatchers attach a parent id explicitly;
+ * absent that, we mint one of the form `job:<name>:<random>` so
+ * background work is at least correlatable to itself.
  */
-export async function runJob(name: string, options: { payload?: any; context?: any } = {}): Promise<void> {
-  // Load the job module from app/Jobs
-  const jobPath = appPath(`Jobs/${name}.ts`)
-  const jobModule = await import(jobPath)
-  const jobConfig = jobModule.default
+export async function runJob(name: string, options: { payload?: any; context?: any; traceId?: string } = {}): Promise<void> {
+  const { withTraceId } = await import('@stacksjs/router')
+  const traceId = options.traceId ?? `job:${name}:${Math.random().toString(36).slice(2, 10)}`
 
-  if (!jobConfig) {
-    throw new Error(`Job ${name} does not export a default`)
-  }
+  await withTraceId(traceId, async () => {
+    const jobPath = appPath(`Jobs/${name}.ts`)
+    const jobModule = await import(jobPath)
+    const jobConfig = jobModule.default
 
-  // Execute based on job type
-  if (typeof jobConfig.handle === 'function') {
-    // Function-based job with handle method
-    await jobConfig.handle(options.payload)
-  }
-  else if (typeof jobConfig.action === 'string') {
-    // Action-based job
-    const { runAction } = await import('@stacksjs/actions')
-    await runAction(jobConfig.action)
-  }
-  else if (typeof jobConfig.action === 'function') {
-    // Function action
-    await jobConfig.action()
-  }
-  else if (typeof jobConfig === 'function') {
-    // Direct function export
-    await jobConfig(options.payload, options.context)
-  }
-  else {
-    throw new Error(`Job ${name} does not have a valid handler`)
-  }
+    if (!jobConfig) {
+      throw new Error(`Job ${name} does not export a default`)
+    }
+
+    if (typeof jobConfig.handle === 'function') {
+      await jobConfig.handle(options.payload)
+    }
+    else if (typeof jobConfig.action === 'string') {
+      const { runAction } = await import('@stacksjs/actions')
+      await runAction(jobConfig.action)
+    }
+    else if (typeof jobConfig.action === 'function') {
+      await jobConfig.action()
+    }
+    else if (typeof jobConfig === 'function') {
+      await jobConfig(options.payload, options.context)
+    }
+    else {
+      throw new Error(`Job ${name} does not have a valid handler`)
+    }
+  })
 }

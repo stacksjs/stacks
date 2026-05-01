@@ -56,5 +56,6 @@
     "@stacksjs/path": "workspace:*",
     "@stacksjs/types": "workspace:*",
     "@stacksjs/validation": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

@@ -80,8 +80,77 @@ export const config: StacksOptions = new Proxy(proxyTarget, {
   },
 }) as StacksOptions
 
-// Database config is now initialized lazily in database/utils.ts when first accessed
-// This avoids circular dependency issues between config and database packages
+// Database config is now initialized lazily in database/utils.ts when first accessed.
+// This avoids the static import cycle config → database → orm → config that
+// otherwise leaves database in TDZ.
+
+/**
+ * Promise that resolves once every `~/config/*.ts` file has loaded and the
+ * `overrides` instance has been mutated in place. Use this in code paths
+ * that *must* see the merged values — typically anything outside the
+ * normal request flow (e.g. CLI commands, top-level boot scripts) where
+ * the request hasn't yet hit a route handler that already awaited.
+ *
+ * Inside request handlers / routes you generally do *not* need to await
+ * this: the router's `serverResponse()` only fires after `importRoutes()`
+ * resolves, and `importRoutes()` indirectly awaits config (it reads
+ * `app/Routes.ts`, which imports config). So the proxy returns merged
+ * values for all "normal" request-time reads.
+ *
+ * @example
+ * ```ts
+ * import { config, awaitConfig } from '@stacksjs/config'
+ *
+ * // CLI / top-level script — config files may not be loaded yet
+ * await awaitConfig()
+ * console.log(config.ports.api) // guaranteed to be the user value
+ * ```
+ */
+export async function awaitConfig(): Promise<StacksOptions> {
+  await overridesReady
+  return config
+}
+
+// Track whether the database config has been hydrated yet — set by
+// database/utils.ts the first time it touches the live config proxy.
+const DB_READY = Symbol.for('@stacksjs/config:databaseReady')
+const globalScope = globalThis as Record<symbol, unknown>
+
+/**
+ * Resolves once `database` config has been read by `@stacksjs/database`'s
+ * lazy initializer. Use it from boot scripts that need a live `db` handle
+ * before the request loop starts.
+ *
+ * Why a separate signal: `overridesReady` only signals that `~/config/database.ts`
+ * was *imported*, not that `@stacksjs/database` has actually wired up the
+ * connection. Calling `db.selectFrom(...)` immediately after `overridesReady`
+ * resolves can still race the connection setup. The database driver flips
+ * this signal to `true` once it has a working connection.
+ */
+export async function awaitDatabaseConfig(): Promise<StacksOptions> {
+  await overridesReady
+  // Database init is push-driven — we wait up to ~5s for the driver to
+  // flip the readiness flag. Past that, we assume the user is running in
+  // a no-db context (CLI tools, doc generators) and let the caller make
+  // the call regardless.
+  const deadline = Date.now() + 5000
+  while (!globalScope[DB_READY] && Date.now() < deadline) {
+    await new Promise(r => setTimeout(r, 25))
+  }
+  if (!globalScope[DB_READY]) {
+    // eslint-disable-next-line no-console
+    console.warn('[config] awaitDatabaseConfig() timed out — database driver did not signal readiness within 5s')
+  }
+  return config
+}
+
+/**
+ * Called by `@stacksjs/database` once the connection is live. Internal —
+ * users shouldn't need to invoke this directly.
+ */
+export function markDatabaseReady(): void {
+  globalScope[DB_READY] = true
+}
 
 export function getConfig(): StacksOptions {
   return config

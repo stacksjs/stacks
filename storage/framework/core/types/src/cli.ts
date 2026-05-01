@@ -291,6 +291,9 @@ export type MakeBooleanOption =
   | 'notification'
   | 'stack'
   | 'middleware'
+  | 'dryRun'
+  | 'withValidation'
+  | 'withAuth'
 export type MakeOptions = {
   [key in MakeBooleanOption]: boolean
 } & {

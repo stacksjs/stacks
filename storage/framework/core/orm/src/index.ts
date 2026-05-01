@@ -9,6 +9,7 @@ import '@stacksjs/validation'
 
 export * from './utils/prunable'
 export type { PrunableOptions } from './utils/prunable'
+export * from './batch-loader'
 export * from './db'
 export * from './subquery'
 export * from './transaction'

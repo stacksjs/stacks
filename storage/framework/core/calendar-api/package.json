@@ -51,5 +51,6 @@
     "@stacksjs/browser": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/security": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

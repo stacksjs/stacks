@@ -236,6 +236,34 @@ export interface CacheDriver {
    * Disconnect from the cache (alias for close)
    */
   disconnect: () => Promise<void>
+
+  /**
+   * Tag-aware writes. The returned scope mirrors the cache API but
+   * indexes every write under the supplied tag(s) so a single
+   * `flush()` can invalidate cascading entries together.
+   *
+   * @example
+   * ```ts
+   * await cache.tags(['user:42']).put('user:42:feed', payload, 300)
+   * await cache.tags(['user:42']).flush()
+   * ```
+   */
+  tags?: (tags: readonly string[]) => TaggedCacheScope
+}
+
+/**
+ * Returned by `cache.tags(tags)`. Tag-scoped writes/reads with a
+ * cascading `flush()`.
+ */
+export interface TaggedCacheScope {
+  put: <T>(key: string, value: T, ttl?: number) => Promise<boolean>
+  set: <T>(key: string, value: T, ttl?: number) => Promise<boolean>
+  setForever: <T>(key: string, value: T) => Promise<boolean>
+  remember: <T>(key: string, ttl: number, callback: () => T | Promise<T>) => Promise<T>
+  rememberForever: <T>(key: string, callback: () => T | Promise<T>) => Promise<T>
+  get: <T>(key: string) => Promise<T | undefined>
+  has: (key: string) => Promise<boolean>
+  flush: () => Promise<number>
 }
 
 /**

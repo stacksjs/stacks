@@ -19,6 +19,7 @@ export {
   createModel,
   createNotification,
   createPage,
+  isDryRunActive,
   makeAction,
   makeCertificate,
   makeComponent,
@@ -30,9 +31,12 @@ export {
   makeQueueTable,
   makeStack,
   make as runMake,
+  setDryRun,
 } from './make'
 
 export { discoverPackages } from './discover-packages'
+export { parseFields, scaffoldCrud } from './scaffold-crud'
+export type { CrudField } from './scaffold-crud'
 export { installStack, uninstallStack, listStacks } from './stacks'
 export type { DiscoveredPackagesManifest, PackageStacksMeta } from './discover-packages'
 export { makeJob } from './make-job'

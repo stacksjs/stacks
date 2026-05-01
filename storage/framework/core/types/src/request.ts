@@ -80,6 +80,29 @@ export interface SafeData<T extends Record<string, any> = Record<string, any>> {
  *   const data = await request.validate() // returns typed Post fields
  * }
  */
+/**
+ * Public alias for `RequestInstance<TFields>`. Use this in actions when
+ * you want to type the `request` argument explicitly (e.g. without
+ * pulling in a model object).
+ *
+ * @example
+ * ```ts
+ * import { Action } from '@stacksjs/actions'
+ * import type { ActionRequest } from '@stacksjs/types'
+ *
+ * type CreatePostInput = { title: string; body: string }
+ *
+ * export default new Action({
+ *   name: 'CreatePost',
+ *   handle(request: ActionRequest<CreatePostInput>) {
+ *     const { title, body } = request.only(['title', 'body'])
+ *     // ^ inferred as { title: string; body: string }
+ *   },
+ * })
+ * ```
+ */
+export type ActionRequest<TFields extends Record<string, any> = Record<string, any>> = RequestInstance<TFields>
+
 export interface RequestInstance<TFields extends Record<string, any> = Record<string, any>> {
   // ==========================================================================
   // Native Request properties

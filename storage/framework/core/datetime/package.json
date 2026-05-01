@@ -51,5 +51,6 @@
   "devDependencies": {
     "better-dx": "^0.2.5",
     "@stacksjs/utils": "workspace:*"
-  }
+  },
+  "sideEffects": false
 }

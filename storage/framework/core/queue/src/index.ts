@@ -14,7 +14,7 @@ export { Job } from './action'
 // =============================================================================
 // Stacks job helper for dispatching file-based jobs
 // =============================================================================
-export { job, jobBatch, runJob } from './job'
+export { Jobs, job, jobBatch, runJob } from './job'
 
 // =============================================================================
 // Job discovery (for app/Jobs directory)

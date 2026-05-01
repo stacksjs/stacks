@@ -209,6 +209,128 @@ export async function validateFieldAsync(
   return syncResult
 }
 
+/**
+ * Shape of a validation rule set understood by `validate()`. Each key
+ * maps to either a raw `Validator<T>` (from `@stacksjs/ts-validation`)
+ * or a `{ rule, message }` object that mirrors the model-attribute form.
+ */
+export type ValidationRules = Record<string, Validator<any> | { rule: Validator<any>, message?: string | Record<string, string> }>
+
+interface RequestLike {
+  all?: () => Record<string, unknown> | Promise<Record<string, unknown>>
+  jsonBody?: Record<string, unknown>
+  formBody?: Record<string, unknown>
+  query?: Record<string, unknown>
+  params?: Record<string, unknown>
+  url?: string
+}
+
+async function gatherRequestInput(source: RequestLike | Record<string, unknown>): Promise<Record<string, unknown>> {
+  // Plain object passed directly — no extraction needed.
+  if (!source || typeof source !== 'object') return {}
+  if (typeof (source as RequestLike).all === 'function') {
+    const all = (source as RequestLike).all!()
+    return all instanceof Promise ? await all : all
+  }
+
+  // Otherwise compose from the standard attached fields the router
+  // populates on the request (matches `enhanceRequest` in stacks-router).
+  const r = source as RequestLike
+  const out: Record<string, unknown> = {}
+  if (r.url) {
+    try {
+      const parsed = new URL(r.url)
+      parsed.searchParams.forEach((v, k) => { out[k] = v })
+    }
+    catch { /* malformed URL — ignore */ }
+  }
+  if (r.query && typeof r.query === 'object') Object.assign(out, r.query)
+  if (r.jsonBody && typeof r.jsonBody === 'object') Object.assign(out, r.jsonBody)
+  if (r.formBody && typeof r.formBody === 'object') Object.assign(out, r.formBody)
+  if (r.params && typeof r.params === 'object') Object.assign(out, r.params)
+  // Fallback: source is itself a plain object payload (e.g. test fixture).
+  if (Object.keys(out).length === 0 && !('all' in source) && !('jsonBody' in source)) {
+    return source as Record<string, unknown>
+  }
+  return out
+}
+
+/**
+ * Action-side validation shortcut. Returns the validated input typed as
+ * `T` so callers can drop the post-validate type-cast they used to need.
+ *
+ * Throws `HttpError(422, 'Validation failed', { errors })` on the first
+ * failing field — the router's error handler turns that into a JSON
+ * 422 response automatically.
+ *
+ * @example
+ * ```ts
+ * import { validate, schema } from '@stacksjs/validation'
+ *
+ * type Payload = { email: string; age: number }
+ *
+ * const data = await validate<Payload>(req, {
+ *   email: schema.string().email(),
+ *   age: schema.number().min(0),
+ * })
+ *
+ * // `data.email` is `string`, `data.age` is `number` — no cast needed.
+ * ```
+ */
+export async function validate<T = Record<string, unknown>>(
+  request: RequestLike | Record<string, unknown>,
+  rules: ValidationRules,
+): Promise<T> {
+  const input = await gatherRequestInput(request)
+
+  const ruleObject: Record<string, Validator<any>> = {}
+  const messageObject: Record<string, string> = {}
+
+  for (const [field, def] of Object.entries(rules)) {
+    if (!def) continue
+    if (typeof (def as any).rule === 'object' || typeof (def as any).rule === 'function') {
+      ruleObject[field] = (def as { rule: Validator<any> }).rule
+      const msg = (def as { message?: string | Record<string, string> }).message
+      if (typeof msg === 'string') {
+        messageObject[`${field}.default`] = msg
+      }
+      else if (msg && typeof msg === 'object') {
+        for (const [k, v] of Object.entries(msg)) messageObject[`${field}.${k}`] = v
+      }
+    }
+    else {
+      ruleObject[field] = def as Validator<any>
+    }
+  }
+
+  try {
+    if (Object.keys(messageObject).length > 0) {
+      setCustomMessages(new MessageProvider(messageObject))
+    }
+    const validator = schema.object(ruleObject)
+    const result = await validator.validate(input)
+
+    if (!result.valid) {
+      const errors: Record<string, string[]> = {}
+      for (const e of (result.errors || []) as Array<{ field?: string, message: string }>) {
+        const f = e.field ?? '_'
+        if (!errors[f]) errors[f] = []
+        errors[f].push(e.message)
+      }
+      throw new HttpError(422, 'Validation failed', { errors })
+    }
+
+    // bun-validator's success result exposes `.value` (the cleaned data).
+    // Fall back to the raw input for older versions.
+    const validated = (result as { value?: unknown }).value ?? input
+    return validated as T
+  }
+  catch (error: any) {
+    if (error instanceof HttpError) throw error
+    throw new HttpError(500, error?.message || 'An unexpected validation error occurred')
+  }
+}
+
 export async function customValidate(attributes: CustomAttributes, params: RequestData): Promise<any> {
   const ruleObject: Record<string, Validator<any>> = {}
   const messageObject: Record<string, string> = {}

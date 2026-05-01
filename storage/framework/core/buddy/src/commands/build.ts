@@ -1,9 +1,18 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+
+// Lazy-load @stacksjs/actions — importing it at module level forces every
+// `buddy <anything>` invocation to resolve the actions barrel before
+// `--help` can render. Pulling it in only when a build subcommand
+// actually fires keeps `buddy --help` snappy.
+let _runAction: typeof import('@stacksjs/actions').runAction | undefined
+async function runAction(...args: Parameters<typeof import('@stacksjs/actions').runAction>): ReturnType<typeof import('@stacksjs/actions').runAction> {
+  if (!_runAction) _runAction = (await import('@stacksjs/actions')).runAction
+  return _runAction(...args)
+}
 
 export function build(buddy: CLI): void {
   const descriptions = {

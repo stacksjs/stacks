@@ -78,11 +78,15 @@ export function generate(buddy: CLI): void {
   buddy
     .command('generate:types', descriptions.types)
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-w, --watch', 'Re-run on changes to models/ and config/', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     .alias('types:generate')
-    .action(async (options: GeneratorOptions) => {
+    .action(async (options: GeneratorOptions & { watch?: boolean }) => {
       log.debug('Running `buddy generate:types` ...', options)
       await generateTypes(options)
+      if (options.watch) {
+        await watchAndRegenerateTypes(options)
+      }
     })
 
   buddy
@@ -176,6 +180,69 @@ export function generate(buddy: CLI): void {
   buddy.on('generate:*', () => {
     console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
     process.exit(1)
+  })
+}
+
+/**
+ * Watch `app/Models/`, `config/`, and `database/migrations/` for changes
+ * and re-run `generateTypes()` automatically. Debounced at 200ms so a
+ * batch save (10 files in 5ms) only triggers one regen. Honors Ctrl+C.
+ */
+async function watchAndRegenerateTypes(options: GeneratorOptions): Promise<void> {
+  const { projectPath } = await import('@stacksjs/path')
+  const fs = await import('node:fs')
+  const watched = ['app/Models', 'config', 'database/migrations'].map(rel => projectPath(rel))
+
+  log.info(`[generate:types --watch] watching ${watched.length} directories`)
+
+  let pending: ReturnType<typeof setTimeout> | null = null
+  let inflight = false
+  const trigger = () => {
+    if (pending) clearTimeout(pending)
+    pending = setTimeout(async () => {
+      if (inflight) return
+      inflight = true
+      try {
+        log.info('[generate:types --watch] change detected, regenerating…')
+        await generateTypes(options)
+        log.success('[generate:types --watch] types up to date')
+      }
+      catch (err) {
+        log.error('[generate:types --watch] regeneration failed:', err)
+      }
+      finally {
+        inflight = false
+      }
+    }, 200)
+  }
+
+  const watchers: fs.FSWatcher[] = []
+  for (const dir of watched) {
+    try {
+      if (!fs.existsSync(dir)) continue
+      const w = fs.watch(dir, { recursive: true }, () => trigger())
+      watchers.push(w)
+    }
+    catch (err) {
+      log.warn(`[generate:types --watch] cannot watch ${dir}: ${err}`)
+    }
+  }
+
+  if (watchers.length === 0) {
+    log.warn('[generate:types --watch] no directories to watch — exiting')
+    return
+  }
+
+  // Keep the process alive until SIGINT.
+  await new Promise<void>((resolve) => {
+    process.once('SIGINT', () => {
+      log.info('[generate:types --watch] stopping')
+      for (const w of watchers) {
+        try { w.close() }
+        catch { /* ignore */ }
+      }
+      resolve()
+    })
   })
 }
 

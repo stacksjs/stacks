@@ -14,10 +14,49 @@ import { runAction } from './helpers'
 import { CODE_TEMPLATES } from './templates'
 
 /**
+ * Tracks whether the active `make:*` invocation is a dry-run. Set by
+ * the buddy-cli dispatcher before calling into any scaffolder, read by
+ * `writeOrPreview()` so every file write goes through the same gate.
+ */
+let isDryRun = false
+
+/**
+ * Toggle dry-run mode. The buddy CLI flips this on before invoking a
+ * scaffolder when the user passed `--dry-run`. Stays a module-level
+ * flag (rather than threading through every signature) so existing
+ * scaffolders can opt in just by switching their write call.
+ */
+export function setDryRun(enabled: boolean): void {
+  isDryRun = Boolean(enabled)
+}
+
+export function isDryRunActive(): boolean {
+  return isDryRun
+}
+
+/**
  * Helper function to generate code from templates
  */
 function generateCode(templateKey: TemplateKey, ...args: any[]): string {
   return template(CODE_TEMPLATES[templateKey], ...args)
+}
+
+/**
+ * Write `data` to `path`, OR — when dry-run is active — print a diff-
+ * style preview to stdout without touching disk. Scaffolders should
+ * funnel all file writes through this helper so a single `--dry-run`
+ * flag flips them all consistently.
+ */
+async function writeOrPreview(path: string, data: string): Promise<void> {
+  if (isDryRun) {
+    const lines = data.split('\n')
+    const preview = lines.slice(0, 60).map(l => `  ${l}`).join('\n')
+    const truncated = lines.length > 60 ? `\n  ${italic(`… ${lines.length - 60} more lines elided`)}` : ''
+    log.info(`[dry-run] would write ${path} (${lines.length} lines)`)
+    process.stdout.write(`${preview}${truncated}\n\n`)
+    return
+  }
+  await writeTextFile({ path, data })
 }
 
 /**
@@ -28,10 +67,7 @@ async function createFileWithTemplate(
   templateKey: TemplateKey,
   ...args: any[]
 ): Promise<void> {
-  await writeTextFile({
-    path,
-    data: generateCode(templateKey, ...args),
-  })
+  await writeOrPreview(path, generateCode(templateKey, ...args))
 }
 
 export async function invoke(options: MakeOptions): Promise<void> {
@@ -90,7 +126,21 @@ export async function makeComponent(options: MakeOptions): Promise<void> {
 
 export async function createAction(options: MakeOptions): Promise<void> {
   const name = options.name
-  await createFileWithTemplate(p.userActionsPath(name), 'action', name)
+  // Pick the variant based on opt-in flags. Falls back to the bare
+  // action stub when neither is set so the existing `buddy make:action
+  // Foo` behavior is unchanged.
+  const opts = options as MakeOptions & { withValidation?: boolean, withAuth?: boolean }
+  const wantsValidation = Boolean(opts.withValidation || (options as any)['with-validation'])
+  const wantsAuth = Boolean(opts.withAuth || (options as any)['with-auth'])
+  const templateKey: TemplateKey = wantsValidation && wantsAuth
+    ? 'actionWithBoth'
+    : wantsValidation
+      ? 'actionWithValidation'
+      : wantsAuth
+        ? 'actionWithAuth'
+        : 'action'
+
+  await createFileWithTemplate(p.userActionsPath(name), templateKey, name)
 }
 
 export async function createComponent(options: MakeOptions): Promise<void> {
@@ -156,7 +206,7 @@ export function ${factoryName}(): Partial<${modelName}Model> {
 export default ${factoryName}
 `
 
-    await Bun.write(factoryPath, content)
+    await writeOrPreview(factoryPath, content)
     log.success(`Created factory: ${factoryPath}`)
   }
   catch (error) {

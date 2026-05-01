@@ -30,6 +30,11 @@
     ],
     "allowImportingTsExtensions": true,
     "strict": true,
+    // strictNullChecks and noUncheckedIndexedAccess are off at the
+    // monorepo level because enabling them touches thousands of legacy
+    // files. New packages should extend `./tsconfig.strict.json` instead
+    // of this file to opt in. The framework's typed surface is gradually
+    // migrating package-by-package.
     "strictNullChecks": false,
     "noUncheckedIndexedAccess": false,
     "noUncheckedSideEffectImports": true,

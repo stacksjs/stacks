@@ -130,4 +130,113 @@ export const response = {
       },
     })
   },
+
+  /**
+   * Stream a response body chunk-by-chunk. Use this when the body is
+   * large enough that buffering the whole thing in memory before
+   * sending would hurt latency (large JSON exports, generated CSV/PDF,
+   * SSE feeds). The `producer` callback receives a `controller` it can
+   * `enqueue()` chunks against — both `string` and `Uint8Array` are
+   * accepted; strings are utf-8 encoded automatically.
+   *
+   * @example
+   * ```ts
+   * return response.stream(async (controller) => {
+   *   for await (const row of rows) {
+   *     controller.enqueue(JSON.stringify(row) + '\n')
+   *   }
+   *   controller.close()
+   * }, { contentType: 'application/x-ndjson' })
+   * ```
+   */
+  stream: (
+    producer: (controller: ReadableStreamDefaultController<Uint8Array>) => void | Promise<void>,
+    options: { status?: number, headers?: Record<string, string>, contentType?: string } = {},
+  ): Response => {
+    const { status = 200, headers = {}, contentType = 'application/octet-stream' } = options
+    const encoder = new TextEncoder()
+    const stream = new ReadableStream<Uint8Array>({
+      async start(rawCtrl) {
+        // Wrap the underlying controller so producer callers can
+        // enqueue plain strings without doing the TextEncoder dance
+        // every time — a tiny ergonomics win that keeps stream
+        // handlers readable.
+        const ctrl = new Proxy(rawCtrl, {
+          get(target, prop, receiver) {
+            if (prop === 'enqueue') {
+              return (chunk: Uint8Array | string) => {
+                target.enqueue(typeof chunk === 'string' ? encoder.encode(chunk) : chunk)
+              }
+            }
+            return Reflect.get(target, prop, receiver)
+          },
+        }) as ReadableStreamDefaultController<Uint8Array>
+        try {
+          await producer(ctrl)
+          // Producer is allowed to call .close() itself; if they didn't,
+          // we close on their behalf so the response actually ends.
+          try { rawCtrl.close() }
+          catch { /* already closed by producer */ }
+        }
+        catch (err) {
+          rawCtrl.error(err)
+        }
+      },
+    })
+
+    return new Response(stream, {
+      status,
+      headers: {
+        'Content-Type': contentType,
+        // Disable proxy buffering for clients that respect this hint
+        // (Nginx, Cloudflare). Keeps SSE / NDJSON feeds chunked end-to-end.
+        'X-Accel-Buffering': 'no',
+        ...headers,
+      },
+    })
+  },
+
+  /**
+   * Server-sent events stream. Sets the right content-type, disables
+   * keep-alive buffering, and emits each event as `data: <json>\n\n`.
+   *
+   * @example
+   * ```ts
+   * return response.sse(async (send) => {
+   *   for await (const tick of clock) send({ ts: Date.now() })
+   * })
+   * ```
+   */
+  sse: (
+    producer: (
+      send: (data: unknown, event?: string, id?: string) => void,
+      controller: { close: () => void },
+    ) => void | Promise<void>,
+    options: { status?: number, headers?: Record<string, string> } = {},
+  ): Response => {
+    return response.stream(
+      async (controller) => {
+        let closed = false
+        const send = (data: unknown, event?: string, id?: string) => {
+          if (closed) return
+          let chunk = ''
+          if (event) chunk += `event: ${event}\n`
+          if (id) chunk += `id: ${id}\n`
+          chunk += `data: ${typeof data === 'string' ? data : JSON.stringify(data)}\n\n`
+          controller.enqueue(chunk)
+        }
+        const close = () => { closed = true; try { controller.close() } catch { /* already */ } }
+        await producer(send, { close })
+      },
+      {
+        ...options,
+        contentType: 'text/event-stream',
+        headers: {
+          'Cache-Control': 'no-cache',
+          'Connection': 'keep-alive',
+          ...(options.headers ?? {}),
+        },
+      },
+    )
+  },
 }
