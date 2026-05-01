@@ -70,6 +70,10 @@
   "devDependencies": {
     "better-dx": "^0.2.7"
   },
+  "overrides": {
+    "bunfig": "link:bunfig",
+    "@stacksjs/stx": "link:@stacksjs/stx"
+  },
   "workspaces": [
     "storage/framework/**",
     "!**/node_modules/**",

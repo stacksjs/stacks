@@ -50,6 +50,6 @@
     "@stacksjs/alias": "workspace:*",
     "better-dx": "^0.2.5",
     "@stacksjs/types": "workspace:*",
-    "bunfig": "^0.15.6"
+    "bunfig": "^0.15.10"
   }
 }
