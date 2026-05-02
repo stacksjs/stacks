@@ -26,9 +26,33 @@ async function withRetry<T>(
     }
     catch (error: any) {
       lastError = error
-      // Don't retry on non-transient errors
+      // Don't retry on non-transient errors. We expanded this list because
+      // the previous shape silently retried 3× on errors that physically
+      // cannot succeed without the user changing config (insufficient
+      // permissions, malformed parameters, missing prerequisites). That
+      // turned a 1s "fix your IAM policy" hint into a 30s wait + the
+      // same hint, on every deploy.
       const message = error.message || ''
-      if (message.includes('ValidationError') || message.includes('AccessDenied') || message.includes('InvalidParameter')) {
+      const code = error.code || error.name || ''
+      const NON_TRANSIENT = [
+        'ValidationError',
+        'AccessDenied',
+        'InvalidParameter',
+        'InvalidParameterValue',
+        'InvalidParameterCombination',
+        'UnauthorizedOperation',
+        'AuthFailure',
+        'OptInRequired',
+        'NotAuthorized',
+        'AlreadyExistsException',
+        'EntityAlreadyExists',
+        'ResourceNotFoundException',
+        'NoSuchBucket',
+        'NoSuchKey',
+        'MalformedPolicyDocument',
+        'LimitExceeded',
+      ]
+      if (NON_TRANSIENT.some(needle => message.includes(needle) || code.includes(needle))) {
         throw error
       }
       if (attempt < maxRetries) {
