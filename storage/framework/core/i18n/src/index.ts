@@ -39,6 +39,23 @@ export * from './pluralization'
 export * from './loader'
 export * from './types'
 
+// Re-export the file-loading and type-generation surface from
+// `@stacksjs/ts-i18n`. The library handles disk loading (YAML / TS /
+// JSON), namespace resolution, and `.d.ts` codegen for translation
+// keys; the Stacks-side translator/formatter sits on top of that
+// data with locale management, ICU pluralization, and Intl-backed
+// formatters. Importing both names from `@stacksjs/i18n` keeps the
+// app side from caring which symbol comes from which package.
+export {
+  loadTranslations as loadTranslationsFromDisk,
+  generateTypes as generateI18nTypes,
+  generateTypesFromModule as generateI18nTypesFromModule,
+  generateSampleConfig as generateI18nSampleConfig,
+  writeOutputs as writeI18nOutputs,
+  createTranslator as createSimpleTranslator,
+} from '@stacksjs/ts-i18n'
+export type { I18nConfig as TsI18nConfig, TranslationTree, TranslationValue } from '@stacksjs/ts-i18n'
+
 // Re-export main functions for convenience
 export {
   t,

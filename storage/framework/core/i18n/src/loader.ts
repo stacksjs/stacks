@@ -298,3 +298,36 @@ export function createLoader(directory: string, options: Partial<Omit<LoaderOpti
     loadLocale: (locale: string, filename: string) => loadLocale(locale, join(directory, filename)),
   }
 }
+
+/**
+ * Load translations via `@stacksjs/ts-i18n` and register them with the
+ * global translator. This is the recommended path for new projects —
+ * it gets you:
+ *
+ *   - Per-locale subdirectory namespacing (en/auth.yaml → en.auth.*)
+ *   - First-class .ts/.json/.yaml support with consistent error
+ *     messages
+ *   - Optional `.d.ts` codegen via `generateI18nTypes()` so message
+ *     keys autocomplete in `t('…')` calls
+ *
+ * The legacy `loadFromDirectory()` remains for projects that depend
+ * on its specific behavior; new code should prefer this entry.
+ *
+ * @example
+ * ```ts
+ * await loadFromTsI18n({
+ *   translationsDir: path.userI18nPath(),
+ *   defaultLocale: 'en',
+ *   fallbackLocale: 'en',
+ *   sources: ['yaml', 'ts', 'json'],
+ *   optional: true,
+ * })
+ * ```
+ */
+export async function loadFromTsI18n(config: import('@stacksjs/ts-i18n').I18nConfig): Promise<Translations> {
+  const { loadTranslations: tsLoad } = await import('@stacksjs/ts-i18n')
+  const localeMap = await tsLoad(config) as Record<string, TranslationMessages>
+  // Register each locale with the Stacks translator so `t()` picks it up.
+  loadTranslations(localeMap as unknown as Translations)
+  return localeMap as unknown as Translations
+}
