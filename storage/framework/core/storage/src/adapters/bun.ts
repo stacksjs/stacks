@@ -9,6 +9,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  SignedUrlOptions,
   StatEntry,
   StorageAdapter,
   StorageAdapterConfig,
@@ -16,6 +17,7 @@ import type {
   Visibility,
 } from '../types'
 import { createDirectoryListing, normalizeExpiryToDate } from '../types'
+import { createSignedStorageToken } from '../signed-url'
 
 export class BunStorageAdapter implements StorageAdapter {
   private root: string
@@ -210,6 +212,22 @@ export class BunStorageAdapter implements StorageAdapter {
     const expiry = normalizeExpiryToDate(options.expiresIn)
     const token = Buffer.from(`${path}:${expiry.getTime()}`).toString('base64url')
     return `http://localhost/temp/${token}`
+  }
+
+  /**
+   * Generate a JWT-style signed URL for time-limited public access to
+   * a Bun-disk file. Same wire format as the local adapter — see
+   * `src/signed-url.ts` for the token shape.
+   *
+   * @example
+   * ```ts
+   * const url = await Storage.disk('bun').signedUrl('docs/spec.pdf', { expiresIn: 600 })
+   * ```
+   */
+  async signedUrl(path: string, options: SignedUrlOptions): Promise<string> {
+    const token = createSignedStorageToken(path, options)
+    const baseUrl = (options.baseUrl || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
+    return `${baseUrl}/__storage/${encodeURIComponent(path)}?token=${token}`
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {

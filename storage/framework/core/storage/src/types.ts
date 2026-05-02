@@ -74,6 +74,29 @@ export interface TemporaryUrlOptions {
 }
 
 /**
+ * Options for generating signed (JWT-style) URLs.
+ *
+ * Distinct from `TemporaryUrlOptions` so adapters that don't natively
+ * support the richer claims set (in-memory mocks) can throw a clear
+ * "unsupported" error rather than silently returning a useless URL.
+ */
+export interface SignedUrlOptions {
+  /** Expiry time in seconds (relative to now) or an absolute Date. */
+  expiresIn: number | Date
+  /**
+   * Optional issuer claim. Defaults to `'stacks'`. Mostly useful when
+   * multiple Stacks deployments share the same `APP_KEY` (e.g. blue/green
+   * cutovers) and need to disambiguate which one issued a token.
+   */
+  issuer?: string
+  /**
+   * Optional override for the URL host/origin. Falls back to
+   * `process.env.APP_URL` when omitted.
+   */
+  baseUrl?: string
+}
+
+/**
  * Checksum algorithm options
  */
 export interface ChecksumOptions {
@@ -165,6 +188,14 @@ export interface StorageAdapter {
 
   /** Generate temporary URL */
   temporaryUrl(path: string, options: TemporaryUrlOptions): Promise<string>
+
+  /**
+   * Generate a signed URL granting time-limited GET access to a
+   * private file. Adapters that can't produce a usable URL (in-memory
+   * mocks, etc.) MUST throw — silent fall-through to an unsigned or
+   * unusable URL would be a security footgun.
+   */
+  signedUrl?(path: string, options: SignedUrlOptions): Promise<string>
 
   /** Calculate file checksum */
   checksum(path: string, options?: ChecksumOptions): Promise<string>

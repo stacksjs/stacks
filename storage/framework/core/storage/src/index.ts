@@ -21,3 +21,8 @@ export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
 
 // Filesystem type helpers
 export { configFromEnv, localDisk, s3Disk } from './types/filesystem'
+
+// Signed-URL helpers (used by Storage.disk('local').signedUrl())
+export { createSignedStorageToken, verifySignedStorageToken } from './signed-url'
+export type { SignedTokenVerification } from './signed-url'
+export type { SignedUrlOptions } from './types'

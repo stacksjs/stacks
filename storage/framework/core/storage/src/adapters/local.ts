@@ -12,6 +12,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  SignedUrlOptions,
   StatEntry,
   StorageAdapter,
   StorageAdapterConfig,
@@ -19,6 +20,7 @@ import type {
   Visibility,
 } from '../types'
 import { createDirectoryListing, normalizeExpiryToDate } from '../types'
+import { createSignedStorageToken } from '../signed-url'
 
 /**
  * Local filesystem storage adapter using Node.js fs APIs
@@ -240,6 +242,34 @@ export class LocalStorageAdapter implements StorageAdapter {
     const signature = createHmac('sha256', appKey).update(payload).digest('hex')
     const token = Buffer.from(`${payload}:${signature}`).toString('base64url')
     return `http://localhost/temp/${token}`
+  }
+
+  /**
+   * Generate a JWT-style signed URL for time-limited public access to
+   * a local-disk file. The token is a JWT-shaped HMAC-SHA256 envelope
+   * (header.payload.signature, base64url-encoded JSON parts) signed
+   * with the app key. The accompanying route handler (registered
+   * automatically at `/__storage/<path>?token=<jwt>`) verifies the
+   * signature, checks expiry, and streams the file.
+   *
+   * Why JWT-shaped instead of an opaque blob:
+   *  - Inspectable on both ends without a shared decoder.
+   *  - Standard `iss` / `exp` claim semantics make access logs easier
+   *    to audit ("who issued this token, when does it expire").
+   *  - Lets us add `aud`/`sub` claims later without breaking clients.
+   *
+   * @example
+   * ```ts
+   * const url = await Storage.disk('local').signedUrl('private/report.pdf', {
+   *   expiresIn: 3600,
+   * })
+   * // → 'https://app.example.com/__storage/private%2Freport.pdf?token=…'
+   * ```
+   */
+  async signedUrl(path: string, options: SignedUrlOptions): Promise<string> {
+    const token = createSignedStorageToken(path, options)
+    const baseUrl = (options.baseUrl || process.env.APP_URL || 'http://localhost').replace(/\/$/, '')
+    return `${baseUrl}/__storage/${encodeURIComponent(path)}?token=${token}`
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {

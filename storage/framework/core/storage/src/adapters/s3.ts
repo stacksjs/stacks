@@ -8,6 +8,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  SignedUrlOptions,
   StatEntry,
   StorageAdapter,
   StorageAdapterConfig,
@@ -279,6 +280,24 @@ export class S3StorageAdapter implements StorageAdapter {
       expiresIn,
       operation: 'getObject',
     })
+  }
+
+  /**
+   * Generate an AWS-presigned GET URL for time-limited public access
+   * to a private S3 object. Wraps `temporaryUrl` so callers can use
+   * the unified `signedUrl` API across drivers — for S3 the
+   * implementation is identical (presigned GET), the wrapper just
+   * normalizes the options shape.
+   *
+   * @example
+   * ```ts
+   * const url = await Storage.disk('s3').signedUrl('reports/2024-01.pdf', {
+   *   expiresIn: 3600, // 1 hour
+   * })
+   * ```
+   */
+  async signedUrl(path: string, options: SignedUrlOptions): Promise<string> {
+    return this.temporaryUrl(path, { expiresIn: options.expiresIn })
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {

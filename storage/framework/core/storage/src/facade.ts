@@ -21,7 +21,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import { S3Client } from '@stacksjs/ts-cloud'
-import type { StorageAdapter } from './types'
+import type { SignedUrlOptions, StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
 import type {
@@ -214,6 +214,36 @@ class StorageManager {
 
   async url(path: string): Promise<string> {
     return this.disk().publicUrl(path)
+  }
+
+  /**
+   * Generate a time-limited signed URL for the given path on the
+   * default disk. Useful for granting external/anonymous access to
+   * private files (download links, embeddable images, report exports)
+   * without making them publicly listable.
+   *
+   * Throws if the underlying adapter doesn't support signed URLs
+   * (e.g. the in-memory mock).
+   *
+   * @example
+   * ```ts
+   * // Grant 1-hour access to a private upload
+   * const url = await Storage.signedUrl('uploads/2024/report.pdf', {
+   *   expiresIn: 3600,
+   * })
+   *
+   * // Or pick a specific disk
+   * const url = await Storage.disk('s3').signedUrl('private/keys.json', {
+   *   expiresIn: 60,
+   * })
+   * ```
+   */
+  async signedUrl(path: string, options: SignedUrlOptions): Promise<string> {
+    const adapter = this.disk()
+    if (typeof adapter.signedUrl !== 'function') {
+      throw new Error(`[storage] disk '${this.config.default}' does not support signedUrl`)
+    }
+    return adapter.signedUrl(path, options)
   }
 
   async size(path: string): Promise<number> {

@@ -8,6 +8,7 @@ import type {
   ListOptions,
   MimeTypeOptions,
   PublicUrlOptions,
+  SignedUrlOptions,
   StatEntry,
   StorageAdapter,
   TemporaryUrlOptions,
@@ -353,6 +354,23 @@ export class InMemoryStorageAdapter implements StorageAdapter {
     const expiry = normalizeExpiryToDate(options.expiresIn)
     const token = Buffer.from(`${path}:${expiry.getTime()}`).toString('base64url')
     return `http://localhost/temp/${token}`
+  }
+
+  /**
+   * In-memory storage has no addressable URL surface — there's no
+   * filesystem or network endpoint that can serve the file back to a
+   * remote client. Throw a clear error so callers don't silently
+   * receive a useless URL when they accidentally use the memory
+   * adapter in a non-test path.
+   *
+   * @example
+   * ```ts
+   * Storage.disk('memory').signedUrl('foo.txt', { expiresIn: 60 })
+   * // → Error: signedUrl is not supported on the in-memory adapter…
+   * ```
+   */
+  async signedUrl(_path: string, _options: SignedUrlOptions): Promise<string> {
+    throw new Error('[storage/memory] signedUrl is not supported on the in-memory adapter — switch to local or s3 disk for signed URL generation.')
   }
 
   async checksum(path: string, options: ChecksumOptions = {}): Promise<string> {
