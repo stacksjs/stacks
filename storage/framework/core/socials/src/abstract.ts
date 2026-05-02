@@ -140,6 +140,46 @@ export abstract class AbstractProvider implements ProviderInterface {
   }
 
   /**
+   * Constant-time check that the OAuth `state` returned from the
+   * provider matches the value the application stashed in the session
+   * before redirecting. Used to defend against CSRF on the callback —
+   * without this, a malicious site can trigger a callback that
+   * authenticates the victim into the attacker's account.
+   *
+   * Returns `true` when the strings match exactly. The comparison is
+   * timing-safe so observed response time can't leak prefix matches.
+   *
+   * @example
+   * ```ts
+   * const provider = new GithubProvider(…)
+   * if (!provider.validateState(req.session.oauthState, req.query.state)) {
+   *   throw new HttpError(400, 'Invalid OAuth state')
+   * }
+   * ```
+   */
+  public validateState(expected: string | null | undefined, actual: string | null | undefined): boolean {
+    if (typeof expected !== 'string' || typeof actual !== 'string') return false
+    if (expected.length === 0 || actual.length === 0) return false
+    if (expected.length !== actual.length) return false
+    // Constant-time compare via crypto.timingSafeEqual on byte buffers.
+    // Falling back to a manual XOR compare keeps the behavior under
+    // environments without node:crypto (e.g. browser bundles that
+    // accidentally include this file).
+    try {
+      // eslint-disable-next-line ts/no-require-imports
+      const { timingSafeEqual } = require('node:crypto') as typeof import('node:crypto')
+      return timingSafeEqual(Buffer.from(expected, 'utf8'), Buffer.from(actual, 'utf8'))
+    }
+    catch {
+      let diff = 0
+      for (let i = 0; i < expected.length; i++) {
+        diff |= expected.charCodeAt(i) ^ actual.charCodeAt(i)
+      }
+      return diff === 0
+    }
+  }
+
+  /**
    * Determine if the provider is operating as stateless.
    */
   protected isStateless(): boolean {
