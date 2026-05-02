@@ -17,6 +17,11 @@ export { Job } from './action'
 export { Jobs, job, jobBatch, runJob } from './job'
 
 // =============================================================================
+// Per-job progress + cancellation (cache-backed; safe across processes)
+// =============================================================================
+export { setJobProgress, getJobProgress, cancelJob, isJobCancelled, clearJobState } from './job-progress'
+
+// =============================================================================
 // Job discovery (for app/Jobs directory)
 // =============================================================================
 export {
