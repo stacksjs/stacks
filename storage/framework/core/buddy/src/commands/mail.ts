@@ -175,8 +175,15 @@ export function mailCommands(buddy: CLI): void {
         process.env.MAIL_API_URL = apiUrl
         process.env.IMAP_PORT = options.port
 
-        // Dynamic import of the proxy
-        // @ts-ignore
+        // Dynamic import of the proxy. The mail-server lives in a
+        // sibling package that isn't always built when buddy commands
+        // run from source — without a `.d.ts` at the resolved path,
+        // tsc can't type-check the import. The runtime resolution
+        // happens at command execution time, by which point the user
+        // has explicitly opted in to running this command, so missing
+        // mail-server support surfaces as a clean runtime error.
+        // eslint-disable-next-line ts/ban-ts-comment
+        // @ts-ignore — sibling package resolved at runtime
         const { ImapProxy } = await import('../../mail-server/src/proxy/imap-proxy')
         const proxy = new ImapProxy(Number.parseInt(options.port, 10), apiUrl)
         await proxy.start()
