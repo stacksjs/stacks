@@ -142,3 +142,73 @@ export async function truncateSqliteFast(): Promise<void> {
   // schema (single-digit ms in practice).
   fs.copyFileSync(snapPath, sqlitePath)
 }
+
+/**
+ * Wrap each test in a database transaction that rolls back on completion.
+ *
+ * The fastest possible test isolation: instead of dropping/recopying
+ * the schema between tests, every test runs inside `BEGIN; … ROLLBACK;`
+ * so the row state at the end of one test is invisible to the next
+ * (and to the `--fresh` snapshot path entirely).
+ *
+ * Caveats — read these before reaching for this helper:
+ *   1. Code under test that issues its own `BEGIN`/`COMMIT` will commit
+ *      against the outer transaction and the rollback won't undo it
+ *      (Postgres doesn't support nested transactions natively).
+ *   2. Multi-statement tests that test "commit visibility across
+ *      connections" need the slower `refreshDatabase()` path because
+ *      the rolled-back transaction never reached the disk.
+ *   3. SQLite WAL mode is required for concurrent connections to see
+ *      each other within the same DB file; the framework configures
+ *      this by default.
+ *
+ * Use as a `beforeEach`/`afterEach` pair from your test setup:
+ *
+ * @example
+ * ```ts
+ * import { beforeEach, afterEach } from 'bun:test'
+ * import { useTransactionalTests } from '@stacksjs/testing/database'
+ *
+ * const tx = useTransactionalTests()
+ * beforeEach(tx.begin)
+ * afterEach(tx.rollback)
+ * ```
+ */
+export function useTransactionalTests(): {
+  begin: () => Promise<void>
+  rollback: () => Promise<void>
+} {
+  let active: { rollback: () => Promise<void> } | null = null
+  return {
+    begin: async () => {
+      // We deliberately don't reuse `db.transaction(fn)` because that
+      // closes the transaction synchronously when `fn` returns, but
+      // `beforeEach` returns immediately before the test body runs.
+      // Instead, run the transaction via raw SQL and stash a rollback
+      // callback that the matching `afterEach` calls.
+      //
+      // Behind the scenes bun-query-builder wraps each statement in
+      // its own connection by default; we use a savepoint here to
+      // make the rollback safe even when the underlying driver is
+      // already inside a transaction (some drivers wrap CLI commands
+      // in implicit transactions on connect).
+      const savepoint = `stacks_test_${Date.now()}_${Math.floor(Math.random() * 1e6)}`
+      await (sql`SAVEPOINT ${sql.raw(savepoint)}` as any).execute(db)
+      active = {
+        rollback: async () => {
+          await (sql`ROLLBACK TO SAVEPOINT ${sql.raw(savepoint)}` as any).execute(db)
+          await (sql`RELEASE SAVEPOINT ${sql.raw(savepoint)}` as any).execute(db)
+        },
+      }
+    },
+    rollback: async () => {
+      if (!active) return
+      try {
+        await active.rollback()
+      }
+      finally {
+        active = null
+      }
+    },
+  }
+}
