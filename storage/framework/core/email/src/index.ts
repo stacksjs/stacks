@@ -1,4 +1,5 @@
 export * from './drivers'
 export * from './email'
+export * from './mailable'
 export * from './template'
 export * from './types'
