@@ -2,6 +2,25 @@ import type { ChannelType } from 'ts-broadcasting'
 import { getServer } from './server-instance'
 
 /**
+ * Strip any well-known channel-type prefix from `name` so the
+ * type-specific methods can apply their own prefix without the user
+ * accidentally producing `private-presence-foo` etc. when the name
+ * was passed in already prefixed (or with the wrong prefix).
+ *
+ * The previous implementation only guarded against the *matching*
+ * prefix being doubled — `channel('presence-x').private(...)` would
+ * incorrectly emit on `private-presence-x` instead of `private-x`.
+ */
+const KNOWN_CHANNEL_PREFIXES = ['private-', 'presence-'] as const
+
+function stripPrefix(name: string): string {
+  for (const p of KNOWN_CHANNEL_PREFIXES) {
+    if (name.startsWith(p)) return name.slice(p.length)
+  }
+  return name
+}
+
+/**
  * Stacks Channel class for backward compatibility
  * Provides a fluent API for broadcasting to channels
  */
@@ -21,11 +40,7 @@ export class Channel {
       throw new Error('Broadcast server not initialized')
     }
 
-    const fullChannelName = this.channelName.startsWith('private-')
-      ? this.channelName
-      : `private-${this.channelName}`
-
-    await server.broadcast(fullChannelName, event, data)
+    await server.broadcast(`private-${stripPrefix(this.channelName)}`, event, data)
   }
 
   /**
@@ -37,7 +52,10 @@ export class Channel {
       throw new Error('Broadcast server not initialized')
     }
 
-    await server.broadcast(this.channelName, event, data)
+    // Public channels never use a prefix. If the caller passed in a
+    // type-prefixed name by mistake, strip it so the broadcast actually
+    // lands on the public bus rather than colliding with a private one.
+    await server.broadcast(stripPrefix(this.channelName), event, data)
   }
 
   /**
@@ -49,11 +67,7 @@ export class Channel {
       throw new Error('Broadcast server not initialized')
     }
 
-    const fullChannelName = this.channelName.startsWith('presence-')
-      ? this.channelName
-      : `presence-${this.channelName}`
-
-    await server.broadcast(fullChannelName, event, data)
+    await server.broadcast(`presence-${stripPrefix(this.channelName)}`, event, data)
   }
 
   /**
