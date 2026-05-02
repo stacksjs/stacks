@@ -130,11 +130,34 @@ export class I18n implements I18nInstance {
   }
 
   /**
-   * Core translation logic
+   * Core translation logic.
+   *
+   * Locale fallback chain (BCP-47 aware):
+   *   1. Exact requested locale (`en-GB`)
+   *   2. Language part only (`en`) — so a missing British English key
+   *      falls back to American English before going to the
+   *      framework's default locale, which matches user intuition
+   *   3. Configured fallback locale
+   *
+   * Without step 2, an `en-GB` request that lacks a key would skip
+   * straight to (e.g.) `en-US` defaults — which on a Spanish app
+   * would mean the user gets Spanish for one missing string but English
+   * for the rest. The intermediate language fallback closes that gap.
    */
   private translate(key: string, values?: InterpolationValues, locale?: string): string {
     const targetLocale = locale || this._locale
     let message = this.getMessage(key, targetLocale)
+
+    // Try language-part fallback (e.g. en-GB → en)
+    if (message === undefined) {
+      const dash = targetLocale.indexOf('-')
+      if (dash > 0) {
+        const langOnly = targetLocale.slice(0, dash)
+        if (langOnly !== this._fallbackLocale) {
+          message = this.getMessage(key, langOnly)
+        }
+      }
+    }
 
     // Try fallback locale
     if (message === undefined && targetLocale !== this._fallbackLocale) {
