@@ -14,6 +14,10 @@ export * from './adapters'
 export * from './types'
 export * from './drivers'
 
+// Static asset serving with ETag/Last-Modified/Cache-Control
+export { serveFile } from './static-serve'
+export type { ServeFileOptions } from './static-serve'
+
 // Laravel-style Storage facade and UploadedFile
 export { Storage, StorageManager } from './facade'
 export type { DiskConfig, FilesystemConfig, LocalDiskConfig, S3DiskConfig } from './facade'
