@@ -17,16 +17,31 @@ async function withTimeout<T>(promise: Promise<T>, ms: number = TIMEOUT_MS): Pro
   }
 }
 
-// Load AWS credentials from .env.production
-function loadAwsCredentials(): void {
+// Cache the parsed credentials so subcommands sharing a process don't
+// re-read and re-parse `.env.production` on every invocation.
+let _awsCredsLoaded = false
+
+/**
+ * Load AWS credentials from `.env.production`.
+ *
+ * The previous shape used a hand-rolled `split('=')` parser that
+ * silently corrupted any value containing `=` (common in base64
+ * tokens, JWTs, Stripe keys, etc.) — and didn't honor quoted values
+ * or escape sequences. Routing through `@stacksjs/env`'s parser
+ * gets us proper handling of `KEY="value with = sign"`, multiline
+ * strings, and `enc:` decryption when the project has set a key.
+ */
+async function loadAwsCredentials(): Promise<void> {
+  if (_awsCredsLoaded) return
+  _awsCredsLoaded = true
   const envPath = '.env.production'
-  if (existsSync(envPath)) {
-    const content = readFileSync(envPath, 'utf-8')
-    for (const line of content.split('\n')) {
-      const eq = line.indexOf('=')
-      if (eq > 0 && !line.startsWith('#')) {
-        process.env[line.slice(0, eq).trim()] = line.slice(eq + 1).trim()
-      }
+  if (!existsSync(envPath)) return
+  const { parse } = await import('@stacksjs/env')
+  const content = readFileSync(envPath, 'utf-8')
+  const { parsed } = parse(content)
+  for (const [key, value] of Object.entries(parsed)) {
+    if (process.env[key] === undefined) {
+      process.env[key] = value
     }
   }
 }
@@ -62,7 +77,7 @@ export function email(buddy: CLI): void {
     .command('email:verify', descriptions.verify)
     .action(async () => {
       console.log('\n📧 Checking Email Domain Verification...\n')
-      loadAwsCredentials()
+      await loadAwsCredentials()
 
       try {
         const { SESClient } = await import('@stacksjs/ts-cloud')
@@ -102,7 +117,7 @@ export function email(buddy: CLI): void {
     .action(async (recipient?: string) => {
       const to = recipient || emailConfig?.from?.address || 'test@example.com'
       console.log(`\n📧 Sending Test Email to ${to}...\n`)
-      loadAwsCredentials()
+      await loadAwsCredentials()
 
       try {
         const { SESClient } = await import('@stacksjs/ts-cloud')
@@ -193,7 +208,7 @@ export function email(buddy: CLI): void {
     .option('-n, --lines <count>', 'Number of log lines to show', { default: '20' })
     .action(async (options: { lines?: string }) => {
       console.log('\n📧 Email Processing Logs\n')
-      loadAwsCredentials()
+      await loadAwsCredentials()
 
       try {
         const { CloudWatchLogsClient } = await import('@stacksjs/ts-cloud')
@@ -257,7 +272,7 @@ export function email(buddy: CLI): void {
     .command('email:status', descriptions.status)
     .action(async () => {
       console.log('\n📧 Email Server Status\n')
-      loadAwsCredentials()
+      await loadAwsCredentials()
 
       try {
         const { AWSCloudFormationClient } = await import('@stacksjs/ts-cloud')
@@ -308,7 +323,7 @@ export function email(buddy: CLI): void {
     .option('--raw <id>', 'Show raw email content for a specific message ID')
     .option('--bucket <name>', 'S3 bucket name override')
     .action(async (mailbox?: string, options?: { limit?: string; raw?: string; bucket?: string }) => {
-      loadAwsCredentials()
+      await loadAwsCredentials()
 
       const region = process.env.AWS_REGION || 'us-east-1'
       const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
@@ -482,7 +497,7 @@ export function email(buddy: CLI): void {
     .option('--prefix <prefix>', 'S3 prefix to scan', { default: 'inbox/' })
     .option('--domain <domain>', 'Email domain', { default: 'stacksjs.com' })
     .action(async (options?: { bucket?: string; prefix?: string; domain?: string }) => {
-      loadAwsCredentials()
+      await loadAwsCredentials()
 
       const region = process.env.AWS_REGION || 'us-east-1'
       const appName = (process.env.APP_NAME || 'stacks').toLowerCase().replace(/[^a-z0-9-]/g, '-')
