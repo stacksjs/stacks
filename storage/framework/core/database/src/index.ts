@@ -77,6 +77,9 @@ export { setQueryTracker, logQuery } from './query-logger'
 // Class-based seeders (supplements the model-attribute auto-seeder)
 export { Seeder, runClassSeeders } from './class-seeder'
 
+// Zero-downtime migration helpers
+export { addColumnSafely, backfillInBatches, renameColumnSafely } from './safe-migrations'
+
 // Seeding
 export * from './seeder'
 
