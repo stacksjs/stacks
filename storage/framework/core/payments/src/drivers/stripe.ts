@@ -16,9 +16,14 @@ export const stripe: Stripe = new Proxy({} as Stripe, {
       if (!apiKey) {
         throw new Error('Stripe secret key is not configured. Set STRIPE_SECRET_KEY in your .env file.')
       }
-      _stripe = new Stripe(apiKey, {
-        apiVersion: '2026-01-28.preview',
-      })
+      // Pin the API version through config so deployments can roll
+      // forward without a code change. The fallback matches what the
+      // pantry-vendored Stripe SDK types are compiled against — bumping
+      // it here without bumping the SDK would mean responses include
+      // fields the SDK doesn't know about. Update both at once.
+      const apiVersion = (services?.stripe?.apiVersion as Stripe.LatestApiVersion | undefined)
+        ?? '2026-01-28.preview'
+      _stripe = new Stripe(apiKey, { apiVersion })
     }
     return (_stripe as any)[prop]
   },

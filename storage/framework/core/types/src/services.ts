@@ -168,6 +168,12 @@ export interface ServicesOptions {
   stripe?: {
     secretKey?: string
     publicKey?: string
+    /**
+     * Pinned Stripe API version. Defaults to whatever the bundled SDK
+     * was compiled against; override here when rolling forward without
+     * a code change. Format: 'YYYY-MM-DD' or 'YYYY-MM-DD.preview'.
+     */
+    apiVersion?: string
   }
 
   // supabase?: {
