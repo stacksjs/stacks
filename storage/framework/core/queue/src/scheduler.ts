@@ -286,6 +286,11 @@ export async function startScheduler(config: Partial<SchedulerConfig> = {}): Pro
         .finally(() => { isChecking = false })
     }
   }, schedulerState.config.checkInterval)
+  // Without .unref(), this timer keeps the event loop alive — every
+  // CLI command that imports scheduler keeps Bun running indefinitely
+  // even after the command logic has returned. .unref() lets the
+  // process exit when nothing else is pending.
+  schedulerState.checkInterval?.unref?.()
 
   // Run initial check
   await checkScheduledJobs()
