@@ -50,15 +50,25 @@ export class Schedule implements UntimedSchedule {
 
   constructor(task: () => void) {
     this.task = task
-    // Start job automatically after all chain methods are called
-    setTimeout(() => {
+    // Defer `start()` until the synchronous chain settles. Users write
+    // `schedule(task).daily().withName('x')` — `start()` can't run
+    // inside the constructor because `cronPattern` hasn't been set
+    // yet, but it should run *as soon as* the chain finishes (no
+    // observable delay).
+    //
+    // queueMicrotask is the right primitive here: it runs after the
+    // current synchronous run-to-completion (so all chain methods
+    // have set their fields) but before any I/O turn — measurably
+    // tighter than setTimeout(0), which gets queued behind every
+    // pending timer in the loop.
+    queueMicrotask(() => {
       try {
         this.start()
       }
       catch (error) {
         log.error(`Failed to start scheduled task: ${error}`)
       }
-    }, 0)
+    })
   }
 
   /** Expose the resolved cron pattern (useful for testing/debugging) */
@@ -140,6 +150,17 @@ export class Schedule implements UntimedSchedule {
   }
 
   onDays(days: number[]): TimedSchedule {
+    // Each day-of-week field in cron is 0-6 (Sun-Sat). A typo'd
+    // `[32]` used to silently produce a pattern that never fires;
+    // surface it at definition time instead.
+    if (!Array.isArray(days) || days.length === 0) {
+      throw new Error(`onDays() requires a non-empty array; got ${JSON.stringify(days)}`)
+    }
+    for (const d of days) {
+      if (!Number.isInteger(d) || d < 0 || d > 6) {
+        throw new Error(`onDays(): each day must be an integer 0-6 (Sun-Sat). Got ${d}`)
+      }
+    }
     this.cronPattern = `0 0 * * ${days.join(',')}`
     return this as TimedSchedule
   }
@@ -401,11 +422,16 @@ export class Schedule implements UntimedSchedule {
     }
 
     if (this.intervalMs !== null) {
-      // Sub-minute scheduling (everySecond): use setInterval
+      // Sub-minute scheduling (everySecond): use setInterval.
+      // .unref() so the timer doesn't pin the event loop open after
+      // every other work item finishes — without this, a CLI script
+      // that registers a `.everySecond()` schedule blocks the process
+      // from exiting cleanly.
       timer = setInterval(() => {
         if (stopped) return
         executeTask()
       }, this.intervalMs)
+      ;(timer as ReturnType<typeof setInterval> & { unref?: () => void }).unref?.()
     }
     else if (this.cronPattern) {
       // Minute+ scheduling: parse() + setTimeout loop
