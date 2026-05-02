@@ -1,4 +1,5 @@
 import type { TableNames } from '@stacksjs/types'
+import { randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { slugify } from 'ts-slug'
 
@@ -45,7 +46,14 @@ export async function uniqueSlug(value: string, options?: SlugifyOptions): Promi
   // Fall back to a randomized suffix so the caller still gets *a* unique
   // slug instead of looping forever — collisions past 1000 attempts are
   // almost always pathological (test data fixtures, mass imports).
-  return `${baseSlug}-${Math.random().toString(36).slice(2, 10)}`
+  //
+  // Uses crypto.randomBytes rather than Math.random because slugs end up
+  // in URLs and an attacker who can enumerate "next likely" slugs could
+  // probe for unsaved drafts or scraping-blocked pages by guessing the
+  // suffix. The 6 raw bytes encode to 8 base36 chars of unguessable
+  // entropy — same length as the previous Math.random suffix.
+  const suffix = randomBytes(6).toString('base64url').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 8)
+  return `${baseSlug}-${suffix}`
 }
 
 // Re-export the original slugify for convenience
