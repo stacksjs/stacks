@@ -44,7 +44,49 @@ interface ResourceRouteOptions {
 interface ChainableRoute {
   middleware: (name: string) => ChainableRoute
   name: (routeName: string) => ChainableRoute
+  /**
+   * Opt this route out of the default-on CSRF check.
+   *
+   * Use for endpoints that legitimately can't participate in
+   * cookie-based CSRF (third-party webhooks, server-to-server callbacks
+   * authenticated by signature). Bearer-token APIs are already exempt
+   * automatically — only call `.skipCsrf()` for cookie-less endpoints
+   * that aren't bearer-authenticated either.
+   *
+   * @example
+   * ```ts
+   * route.post('/webhooks/stripe', 'Actions/StripeWebhookAction').skipCsrf()
+   * ```
+   */
+  skipCsrf: () => ChainableRoute
 }
+
+/**
+ * Set of route keys (`METHOD:/path`) that have explicitly opted out of
+ * CSRF enforcement via `.skipCsrf()`. Lookup happens once per request
+ * during the middleware-handler entry point.
+ */
+const csrfSkipRegistry = new Set<string>()
+
+/**
+ * Action-level CSRF opt-out cache, keyed by the resolved handler
+ * import path. Populated lazily when an action with a string handler
+ * is loaded — we read `action.skipCsrf` / `action.csrf` once at
+ * load time and keep the answer here so the CSRF gate doesn't have to
+ * re-import the module on every request.
+ */
+const actionSkipsCsrfCache = new Map<string, boolean>()
+
+/**
+ * Map of routeKey → handler-identifier so the CSRF gate can look up
+ * action-level skip flags without re-importing the action module on
+ * every request. Identifier is the original string handler path
+ * (`'Actions/Foo'`); for function handlers the entry stays unset.
+ */
+const routeHandlerKeyRegistry = new Map<string, string>()
+
+/** HTTP methods that mutate state and therefore need CSRF protection. */
+const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
 
 /**
  * Named route registry — keeps the original path plus the precomputed
@@ -413,18 +455,55 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   // Create the base handler with skipParsing=true since we'll do it ourselves
   const wrappedBase = wrapHandler(handler, true)
 
+  // Pre-resolve string handlers so action-level flags (skipCsrf, etc.)
+  // are populated in their respective caches before the middleware
+  // chain runs. Without this prefetch, the first request to a webhook
+  // would inject CSRF, fail, and only the SECOND request would see the
+  // populated cache and skip injection. Idempotent: subsequent
+  // resolutions are served from the import cache.
+  let actionPrefetch: Promise<void> | null = null
+  if (typeof handler === 'string') {
+    actionPrefetch = resolveStringHandler(handler).then(() => undefined).catch(() => undefined)
+  }
+
   return async (req: EnhancedRequest) => {
     // Parse body and enhance request first
     await parseRequestBody(req)
     const enhancedReq = enhanceRequest(req)
+    if (actionPrefetch) await actionPrefetch
 
     // Run the entire request handling within the request context
     // This allows Auth and other services to access the current request
     return runWithRequest<Promise<Response>>(enhancedReq, async () => {
-      const middlewareEntries = routeMiddlewareRegistry.get(routeKey) || []
+      const userMiddleware = routeMiddlewareRegistry.get(routeKey) || []
+
+      // Default-on CSRF: every state-mutating method gets `csrf` injected
+      // at the front of the chain unless:
+      //   - the route author explicitly added `.skipCsrf()` (csrfSkipRegistry)
+      //   - they already listed `csrf` themselves (don't double-run)
+      //   - the resolved action exports `skipCsrf: true` / `csrf: false`
+      //     (handled by stamping `_skipCsrf` on the request — the CSRF
+      //     middleware itself bails when it sees that flag)
+      // The bearer-token bypass and safe-method bypass live inside the
+      // CSRF middleware itself, so they don't need to be re-checked here.
+      const method = req.method.toUpperCase()
+      const middlewareEntries: string[] = [...userMiddleware]
+      const alreadyHasCsrf = userMiddleware.some(m => m === 'csrf' || m.startsWith('csrf:'))
+      const routeSkipped = csrfSkipRegistry.has(routeKey)
+      // Check action-level cache: an action exporting `skipCsrf: true`
+      // means we should NOT inject the middleware at all (rather than
+      // injecting it and having it self-bail). Skipping at injection
+      // time avoids the import + parse cost of csrf.ts entirely on
+      // hot webhook paths.
+      const handlerKey = routeHandlerKeyRegistry.get(routeKey)
+      const actionSkipped = handlerKey ? actionSkipsCsrfCache.get(handlerKey) === true : false
+      if (CSRF_PROTECTED_METHODS.has(method) && !alreadyHasCsrf && !routeSkipped && !actionSkipped) {
+        // Prepend so CSRF runs before auth/etc. — a request that fails
+        // CSRF should never reach the rest of the chain.
+        middlewareEntries.unshift('csrf')
+      }
 
       if (middlewareEntries.length > 0) {
-        const method = req.method
         const urlPath = new URL(req.url).pathname
         log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${method} ${urlPath}`)
       }
@@ -470,6 +549,27 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             const elapsedMs = Number(process.hrtime.bigint() - mwStart) / 1_000_000
             middlewareTimings.push({ name: middlewareName, ms: elapsedMs })
             log.debug(`[middleware] Blocked by: ${middlewareName}`)
+            // Middleware can throw a Response directly (CORS preflight,
+            // Maintenance, Throttle 429, etc.) to short-circuit the chain
+            // with an exact status/body. Honor that pre-built response
+            // verbatim — wrapping it as Error would lose the body and
+            // status entirely.
+            if (error instanceof Response) {
+              try {
+                const reqId = (enhancedReq as any)._requestId as string | undefined
+                const startNs = (enhancedReq as any)._startNs as bigint | undefined
+                const total = startNs != null ? Number(process.hrtime.bigint() - startNs) / 1_000_000 : null
+                const parts = total != null ? [`total;dur=${total.toFixed(1)}`] : []
+                for (const t of middlewareTimings) {
+                  const safeName = t.name.replace(/[^A-Za-z0-9_-]/g, '_').slice(0, 32)
+                  parts.push(`mw_${safeName};dur=${t.ms.toFixed(1)}`)
+                }
+                if (parts.length > 0) error.headers.set('Server-Timing', parts.join(', '))
+                if (reqId) error.headers.set('X-Request-ID', reqId)
+              }
+              catch { /* immutable headers — leave the response alone */ }
+              return error
+            }
             const err = error instanceof Error ? error : new Error(String(error))
             // Accept both `statusCode` (Express convention) and `status`
             // (HttpError convention) so framework auth/validation throws
@@ -504,11 +604,36 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         }
       }
 
-      // Call the actual handler with the enhanced request
-      const response = await wrappedBase(enhancedReq)
+      // Call the actual handler with the enhanced request.
+      // `let` (not `const`) because the post-action CORS wrapper below may
+      // replace it with a header-mutated copy when the original Response's
+      // Headers are immutable.
+      let response = await wrappedBase(enhancedReq)
 
       // Clear tracked queries after each request to prevent accumulation
       clearTrackedQueries()
+
+      // CORS — applied BEFORE the request_id/Server-Timing rebuild path
+      // so a JSON-error rewrite carries the freshly-set CORS headers
+      // forward, and BEFORE compression so the resulting `Vary` value
+      // can include both `Origin` and `Accept-Encoding`. The `_corsConfig`
+      // marker is set by the `cors` middleware's `handle()`.
+      if ((enhancedReq as any)._corsConfig && response) {
+        try {
+          const { applyCorsHeaders } = await import(p.storagePath('framework/defaults/app/Middleware/Cors.ts'))
+          response = (applyCorsHeaders as (req: Request, res: Response, cfg?: unknown) => Response)(
+            enhancedReq as unknown as Request,
+            response,
+            (enhancedReq as any)._corsConfig,
+          )
+        }
+        catch (err) {
+          // CORS header injection failure must not drop the response.
+          // The browser will surface a CORS error, which is recoverable
+          // for the developer; a 500 here would not be.
+          log.warn('[router] CORS header injection failed', { error: err })
+        }
+      }
 
       // Echo X-Request-ID + Server-Timing on every response, AND stitch
       // the request_id into JSON error bodies so SPA error toasts can show
@@ -577,6 +702,24 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         }
       }
 
+      // Compression — runs as a post-action wrapper because the middleware
+      // pipeline is pre-action only. The marker stamp (`_compress`) is
+      // set by the `compress` middleware's `handle()` when it's in this
+      // route's chain. We import lazily so routes that don't use
+      // compression don't pay the load cost.
+      if ((enhancedReq as any)._compress === true && response) {
+        try {
+          const { applyCompression } = await import(p.storagePath('framework/defaults/app/Middleware/Compress.ts'))
+          return await (applyCompression as (req: Request, res: Response) => Promise<Response>)(enhancedReq as unknown as Request, response)
+        }
+        catch (err) {
+          // Compression failure must NEVER drop the response — log and
+          // ship the uncompressed body. A broken compress step taking
+          // down the request would be far worse than a missed gzip.
+          log.warn(`[router] Compression failed; sending uncompressed response: ${err instanceof Error ? err.message : String(err)}`)
+        }
+      }
+
       return response
     })
   }
@@ -607,6 +750,14 @@ function createChainableRoute(routeKey: string): ChainableRoute {
       // Pre-compile the placeholder regex once at registration time;
       // every later `url()` call reads from this cached shape.
       namedRouteRegistry.set(routeName, compileNamedRoute(routePath))
+      return chain
+    },
+
+    skipCsrf() {
+      // Mark this route key as exempt — the auto-CSRF gate in
+      // createMiddlewareHandler reads this set before adding `csrf`
+      // to the effective middleware chain.
+      csrfSkipRegistry.add(routeKey)
       return chain
     },
   }
@@ -733,7 +884,18 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
       throw new Error(`Action '${handlerPath}' has no handle() method. Got: ${typeof action.handle}`)
     }
 
+    // Action-level CSRF opt-out flag. Read once at resolve time and
+    // memoize against the original handler path so the CSRF gate can
+    // skip lookups without re-importing the action on every request.
+    // Accept both spellings: `skipCsrf: true` (intent-explicit) and
+    // `csrf: false` (group-config-shaped).
+    const actionSkipsCsrf = action.skipCsrf === true || action.csrf === false
+    actionSkipsCsrfCache.set(handlerPath, actionSkipsCsrf)
+
     return async (req: EnhancedRequest) => {
+      if (actionSkipsCsrf) {
+        ;(req as any)._skipCsrf = true
+      }
       try {
         // Validate action input if validations are defined
         if (action.validations) {
@@ -1242,6 +1404,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
     }
 
+    // Track string handlers so the CSRF gate can look up action-level
+    // skipCsrf flags without re-importing on every request.
+    if (typeof _handler === 'string') {
+      routeHandlerKeyRegistry.set(routeKey, _handler)
+    }
+
     return { fullPath, routeKey }
   }
 
@@ -1481,6 +1649,67 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           return Response.json({ error: 'disabled in production' }, { status: 404 })
         }
         return Response.json(listRegisteredRoutes())
+      })
+
+      // Signed-URL file server for the local disk. Pairs with
+      // `Storage.disk('local').signedUrl(...)`. Always-on (no env gate)
+      // because the URL itself is unguessable — without a valid HMAC
+      // token, every response is 403. The token is verified against
+      // both the path AND the expiry, so a leaked URL stops working
+      // at `exp` regardless of who holds it.
+      bunRouter.get('/__storage/:path', async (req: Request) => {
+        const url = new URL(req.url)
+        const token = url.searchParams.get('token')
+        // Pull the storage-relative path from the route param. We
+        // decodeURIComponent because the signer URL-encodes the path
+        // (slashes, spaces, etc.) when minting the URL — the JWT
+        // claim is the raw path, so we must decode here to compare.
+        const params = (req as any).params as Record<string, string> | undefined
+        const rawPath = params?.path
+          ? decodeURIComponent(params.path)
+          : decodeURIComponent(url.pathname.replace(/^\/__storage\//, ''))
+
+        if (!token || typeof rawPath !== 'string' || rawPath.length === 0) {
+          return new Response('Forbidden', { status: 403 })
+        }
+
+        const { verifySignedStorageToken, Storage } = await import('@stacksjs/storage')
+        const v = verifySignedStorageToken(token, rawPath)
+        if (!v.valid) {
+          // Differentiated body for dev visibility, generic for prod —
+          // we DON'T reveal the reason to the client (a malicious
+          // probe could differentiate "expired" vs "tampered" and
+          // refine attacks). 403 is intentionally opaque.
+          return new Response('Forbidden', { status: 403 })
+        }
+
+        try {
+          const adapter = Storage.disk()
+          const exists = await adapter.fileExists(rawPath)
+          if (!exists) return new Response('Not Found', { status: 404 })
+          // Read as a Buffer (Node-style) which Response accepts as
+          // body input cleanly — Bun's `Uint8Array<ArrayBufferLike>` union
+          // sometimes doesn't widen to `BodyInit`.
+          const buf = await adapter.readToBuffer(rawPath)
+          const mime = await adapter.mimeType(rawPath).catch(() => 'application/octet-stream')
+          return new Response(buf as unknown as Blob, {
+            status: 200,
+            headers: {
+              'Content-Type': mime,
+              // Files behind a signed URL are intentionally short-lived;
+              // tell intermediate caches not to keep a copy past the
+              // token's lifetime. `private, max-age=60` is a compromise
+              // between request rate to the storage backend and the risk
+              // of stale responses if a file is updated mid-window.
+              'Cache-Control': 'private, max-age=60',
+              'X-Content-Type-Options': 'nosniff',
+            },
+          })
+        }
+        catch (err) {
+          log.error('[storage] signed-url fetch failed:', err)
+          return new Response('Internal Error', { status: 500 })
+        }
       })
 
       // OpenAPI spec — live, regenerated on each hit. Same env gate as
