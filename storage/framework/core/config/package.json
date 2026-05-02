@@ -48,8 +48,8 @@
   },
   "devDependencies": {
     "@stacksjs/alias": "workspace:*",
-    "better-dx": "^0.2.5",
+    "better-dx": "^0.2.12",
     "@stacksjs/types": "workspace:*",
-    "bunfig": "^0.15.10"
+    "bunfig": "^0.15.11"
   }
 }

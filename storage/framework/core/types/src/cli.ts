@@ -211,6 +211,7 @@ DomainsOptions
 export type BuildOption =
   | 'components'
   | 'webComponents'
+  | 'elements'
   | 'functions'
   | 'docs'
   | 'views'

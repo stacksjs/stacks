@@ -57,7 +57,7 @@ catch (err) {
 }
 
 // Enable CORS middleware
-route.use(cors().handle.bind(cors()))
+route.use(cors().handle.bind(cors()) as any)
 
 // Stamp X-Request-ID + start time on the request, then enrich the
 // outbound response with the id, Server-Timing, and (for generic 404s) the
@@ -69,7 +69,7 @@ route.use(cors().handle.bind(cors()))
 // bun-router middleware uses the (request, next) → next() shape — we MUST
 // call next() and return its response so the pipeline continues.
 const SAFE_REQUEST_ID = /^[a-zA-Z0-9._-]{8,128}$/
-route.use(async (request: any, next: any) => {
+route.use((async (request: any, next: any) => {
   const inbound = request?.headers?.get?.('x-request-id') || request?.headers?.get?.('X-Request-ID') || ''
   const id = (typeof inbound === 'string' && SAFE_REQUEST_ID.test(inbound))
     ? inbound
@@ -106,7 +106,7 @@ route.use(async (request: any, next: any) => {
   }
 
   return response
-})
+}) as any)
 
 // Import routes
 await route.importRoutes()

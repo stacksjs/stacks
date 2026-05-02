@@ -47,7 +47,10 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
+  "dependencies": {
+    "@stacksjs/httx": "^0.1.10"
+  },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.12"
   }
 }

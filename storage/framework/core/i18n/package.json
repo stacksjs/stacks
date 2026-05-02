@@ -34,7 +34,7 @@
     "typecheck": "bunx --bun tsc --noEmit"
   },
   "dependencies": {
-    "@stacksjs/ts-i18n": "^0.1.5"
+    "@stacksjs/ts-i18n": "^0.1.7"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

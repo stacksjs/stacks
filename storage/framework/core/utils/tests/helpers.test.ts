@@ -4,12 +4,12 @@ import { determineResetPreset } from '../src/helpers'
 describe('determineResetPreset', () => {
   it('returns tailwind reset import', () => {
     const imports = determineResetPreset('tailwind')
-    expect(imports).toEqual(['import "@unocss/reset/tailwind.css"'])
+    expect(imports).toEqual(['import { tailwindPreflight as reset } from "@cwcss/crosswind"'])
   })
 
-  it('returns normalize reset import', () => {
-    const imports = determineResetPreset('normalize')
-    expect(imports).toEqual(['import "@unocss/reset/normalize.css"'])
+  it('returns forms reset import', () => {
+    const imports = determineResetPreset('forms')
+    expect(imports).toEqual(['import { tailwindFormsPreflight as reset } from "@cwcss/crosswind"'])
   })
 
   it('returns empty array for null preset', () => {

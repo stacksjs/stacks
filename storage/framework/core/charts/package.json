@@ -53,6 +53,6 @@
     "@ts-charts/format": "^0.2.0"
   },
   "devDependencies": {
-    "better-dx": "^0.2.5"
+    "better-dx": "^0.2.12"
   }
 }

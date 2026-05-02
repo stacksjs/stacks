@@ -1,7 +1,7 @@
 // import { searchEngine } from '@stacksjs/config'
 // import type { ApiResponse } from '@opensearch-project/opensearch'
 // import { Client } from '@opensearch-project/opensearch'
-// import type { SearchEngineDriver } from '@stacksjs/types'
+import type { SearchEngineDriver } from '@stacksjs/types'
 //
 // const host = searchEngine.openSearch?.host
 // const protocol = searchEngine.openSearch?.protocol
@@ -48,12 +48,6 @@
 //   })
 // }
 //
-// export default {
-//   client,
-//   search,
-//   createIndex,
-//   deleteIndex,
-//   addDocument,
-//   deleteDocument,
-//   // ...other methods
-// } satisfies SearchEngineDriver
+const opensearch = {} as SearchEngineDriver
+
+export default opensearch

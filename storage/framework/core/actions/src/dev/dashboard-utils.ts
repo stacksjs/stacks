@@ -124,7 +124,7 @@ export function modelNameToId(name: string): string {
 
 /** Get the icon for a model name, falling back to the default */
 export function getModelIcon(name: string): string {
-  return iconMap[name.toLowerCase()] || iconMap.default
+  return iconMap[name.toLowerCase()] || iconMap.default || 'database'
 }
 
 /**
@@ -138,7 +138,7 @@ export function getModelIcon(name: string): string {
 function categorizeModel(relativePath: string, modelId: string, defaultCategory?: ModelCategory): ModelCategory {
   if (defaultCategory) return defaultCategory
 
-  const firstSeg = relativePath.includes('/') ? relativePath.split('/')[0].toLowerCase() : ''
+  const firstSeg = relativePath.includes('/') ? (relativePath.split('/')[0] ?? '').toLowerCase() : ''
   if (firstSeg === 'commerce') return 'commerce'
   if (firstSeg === 'content') return 'content'
   if (firstSeg === 'realtime') return 'system'

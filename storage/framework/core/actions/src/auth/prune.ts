@@ -10,13 +10,16 @@ const hasFlag = (name: string): boolean => {
 const getArg = (name: string): string | undefined => {
   const idx = args.findIndex(a => a.startsWith(`--${name}=`) || a.startsWith(`-${name.charAt(0)}=`))
   if (idx !== -1) {
-    const eqIdx = args[idx].indexOf('=')
-    return eqIdx >= 0 ? args[idx].slice(eqIdx + 1) : undefined
+    const arg = args[idx]
+    if (!arg) return undefined
+    const eqIdx = arg.indexOf('=')
+    return eqIdx >= 0 ? arg.slice(eqIdx + 1) : undefined
   }
 
   const flagIdx = args.findIndex(a => a === `--${name}` || a === `-${name.charAt(0)}`)
-  if (flagIdx !== -1 && args[flagIdx + 1] && !args[flagIdx + 1].startsWith('-')) {
-    return args[flagIdx + 1]
+  const value = flagIdx !== -1 ? args[flagIdx + 1] : undefined
+  if (value && !value.startsWith('-')) {
+    return value
   }
   return undefined
 }

@@ -173,6 +173,7 @@ export async function generateAutoImportFiles(): Promise<void> {
   // models are imported directly from their canonical source (user or defaults).
   const userModelsPath = path.userModelsPath()
   const defaultModelDirs = resolveDefaultModelDirs()
+  const [defaultsRoot = path.storagePath('framework/defaults/app/Models'), ...enabledSubdirs] = defaultModelDirs
 
   // Job definition directory
   const userJobsPath = path.userJobsPath()
@@ -194,7 +195,7 @@ export async function generateAutoImportFiles(): Promise<void> {
   const modelsIndexPath = `${outputDir}/models.ts`
   const modelScan: ScanEntry[] = [
     userModelsPath,
-    { dir: defaultModelDirs[0], recursive: false },
+    { dir: defaultsRoot, recursive: false },
     ...defaultModelDirs.slice(1).map(d => ({ dir: d, recursive: true })),
   ]
   await generateDefineModelIndex(modelScan, modelsIndexPath)
@@ -240,7 +241,7 @@ export function initiateImports(): void {
   // Defaults root is non-recursive so opt-in subdirs must be explicitly added.
   const userModelsPath = path.userModelsPath()
   const defaultModelDirs = resolveDefaultModelDirs()
-  const [defaultsRoot, ...enabledSubdirs] = defaultModelDirs
+  const [defaultsRoot = path.storagePath('framework/defaults/app/Models'), ...enabledSubdirs] = defaultModelDirs
 
   // Job definition directory
   const userJobsPath = path.userJobsPath()

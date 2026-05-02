@@ -309,9 +309,10 @@ export abstract class Mailable {
     // that support it read it off `headers` or extra metadata. Stash it on
     // the message via a typed cast so callers that *do* care can still pull
     // it back out without us widening the public type yet.
-    if (this._replyTo)
+    if (this._replyTo) {
       // eslint-disable-next-line ts/no-explicit-any -- intentional: optional driver-extension field, not yet in EmailMessage
       ;(message as any).replyTo = this._replyTo
+    }
 
     const transport = options.driver ? mail.use(options.driver) : mail
     return transport.send(message)

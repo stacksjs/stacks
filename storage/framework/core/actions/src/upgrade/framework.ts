@@ -157,7 +157,7 @@ if (ownHashBefore !== 0n && ownHashAfter !== 0n && ownHashBefore !== ownHashAfte
     // Use `Bun.argv0` so the restart runs under the same bun binary the
     // parent is using — important when pantry's vendored bun is the
     // active runtime but the system PATH points at a different version.
-    cmd: [Bun.argv0 || 'bun', ownPath, ...args, '--__restarted'],
+    cmd: [process.argv[0] || 'bun', ownPath, ...args, '--__restarted'],
     cwd: projectRoot,
     stdout: 'inherit',
     stderr: 'inherit',
@@ -382,7 +382,7 @@ async function runPostSyncHooks(args: {
     console.log('Running `bun install` to refresh dependencies...')
     try {
       const proc = Bun.spawn({
-        cmd: [Bun.argv0 || 'bun', 'install'],
+        cmd: [process.argv[0] || 'bun', 'install'],
         cwd: projectRoot,
         stdout: 'inherit',
         stderr: 'inherit',
@@ -405,7 +405,7 @@ async function runPostSyncHooks(args: {
     try {
       const migrateScript = p.frameworkPath('core/buddy/src/cli.ts')
       const proc = Bun.spawn({
-        cmd: [Bun.argv0 || 'bun', migrateScript, 'migrate'],
+        cmd: [process.argv[0] || 'bun', migrateScript, 'migrate'],
         cwd: projectRoot,
         stdout: 'inherit',
         stderr: 'inherit',

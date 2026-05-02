@@ -28,15 +28,15 @@ import { readFileSync } from 'node:fs'
 
 /**
  * Resolve `parseMarkdown` lazily so this module can run in environments that
- * don't have `ts-md` installed (the meta JSON it produces is still useful
+ * don't have `@stacksjs/ts-md` installed (the meta JSON it produces is still useful
  * for type/slot/event docs even without rich markdown rendering). When
- * ts-md is missing we just return the raw description.
+ * @stacksjs/ts-md is missing we just return the raw description.
  */
 let parseMarkdownFn: ((s: string) => string) | null = null
 async function getMarkdownParser(): Promise<(s: string) => string> {
   if (parseMarkdownFn) return parseMarkdownFn
   try {
-    const mod = await import('ts-md')
+    const mod = await import('@stacksjs/ts-md')
     parseMarkdownFn = mod.parseMarkdown
   }
   catch {
@@ -138,9 +138,9 @@ export function parseStxComponentMeta(componentPath: string): ComponentApi {
  */
 function extractFirstScriptBlock(source: string): string | null {
   const serverMatch = /<script\b[^>]*\bserver\b[^>]*>([\s\S]*?)<\/script>/i.exec(source)
-  if (serverMatch) return serverMatch[1]
+  if (serverMatch?.[1]) return serverMatch[1]
   const anyMatch = /<script\b[^>]*>([\s\S]*?)<\/script>/i.exec(source)
-  return anyMatch ? anyMatch[1] : null
+  return anyMatch?.[1] ?? null
 }
 
 /**
@@ -150,7 +150,7 @@ function extractFirstScriptBlock(source: string): string | null {
  */
 function extractTemplate(source: string): string {
   const templateMatch = /<template\b[^>]*>([\s\S]*?)<\/template>/i.exec(source)
-  if (templateMatch) return templateMatch[1]
+  if (templateMatch?.[1]) return templateMatch[1]
   return source
     .replace(/<script\b[^>]*>[\s\S]*?<\/script>/gi, '')
     .replace(/<style\b[^>]*>[\s\S]*?<\/style>/gi, '')
@@ -207,6 +207,7 @@ function collectInterfaces(script: string): Map<string, string> {
   // eslint-disable-next-line no-cond-assign
   while ((m = ifaceRe.exec(script)) !== null) {
     const name = m[1]
+    if (!name) continue
     const start = m.index + m[0].length
     const body = sliceBalanced(script, start - 1, '{', '}')
     if (body !== null) interfaces.set(name, body)
@@ -216,6 +217,7 @@ function collectInterfaces(script: string): Map<string, string> {
   // eslint-disable-next-line no-cond-assign
   while ((m = typeAliasRe.exec(script)) !== null) {
     const name = m[1]
+    if (!name) continue
     const start = m.index + m[0].length
     const body = sliceBalanced(script, start - 1, '{', '}')
     if (body !== null) interfaces.set(name, body)
@@ -231,8 +233,8 @@ function locatePropsType(script: string, interfaces: Map<string, string>): strin
   // defineProps<{ … }>()  or  defineProps<Name>()  — possibly wrapped in withDefaults.
   const defineRe = /defineProps\s*<\s*([\s\S]+?)\s*>\s*\(/
   const match = defineRe.exec(script)
-  if (!match) return null
-  const generic = match[1].trim()
+  const generic = match?.[1]?.trim()
+  if (!match || !generic) return null
 
   if (generic.startsWith('{')) {
     // Inline literal: re-read the brace-balanced body relative to the original script
@@ -242,7 +244,8 @@ function locatePropsType(script: string, interfaces: Map<string, string>): strin
 
   // Named reference — strip generic params (`Foo<X>`) and intersection (`A & B`)
   // and look up the leading identifier.
-  const ref = generic.replace(/[<>(].*$/, '').split('&')[0].trim()
+  const ref = generic.replace(/[<>(].*$/, '').split('&')[0]?.trim()
+  if (!ref) return null
   return interfaces.get(ref) ?? null
 }
 
@@ -264,8 +267,8 @@ function parseTypeBody(body: string, interfaces: Map<string, string>): RawPropFi
     // Capture JSDoc/line comment that precedes the next field.
     const docMatch = /^\/\*\*([\s\S]*?)\*\/\s*([\s\S]*)$/.exec(stmt)
     if (docMatch) {
-      pendingDoc = docMatch[1].split('\n').map(l => l.replace(/^\s*\*\s?/, '')).join('\n').trim()
-      const remainder = docMatch[2].trim()
+      pendingDoc = (docMatch[1] ?? '').split('\n').map(l => l.replace(/^\s*\*\s?/, '')).join('\n').trim()
+      const remainder = (docMatch[2] ?? '').trim()
       if (!remainder) continue
       const field = parseFieldLine(remainder, pendingDoc, interfaces)
       if (field) fields.push(field)
@@ -296,7 +299,10 @@ function parseFieldLine(line: string, description: string, _interfaces: Map<stri
 
   const m = /^([a-zA-Z_$][\w$]*)\s*(\??)\s*:\s*([\s\S]+?)\s*[;,]?\s*$/.exec(line)
   if (!m) return null
-  const [, name, optional, type] = m
+  const name = m[1]
+  const optional = m[2] ?? ''
+  const type = m[3]
+  if (!name || !type) return null
   return {
     name,
     type: collapseWhitespace(type),
@@ -318,7 +324,7 @@ function extractDefaults(script: string): Record<string, string> {
   let m: RegExpExecArray | null
   // eslint-disable-next-line no-cond-assign
   while ((m = destructRe.exec(script)) !== null) {
-    parseDestructDefaults(m[1], defaults)
+    if (m[1]) parseDestructDefaults(m[1], defaults)
   }
 
   // withDefaults(_, { … })  — walk past the inner defineProps<…>() then
@@ -346,14 +352,18 @@ function extractDefaults(script: string): Record<string, string> {
 function parseDestructDefaults(destructBody: string, out: Record<string, string>): void {
   for (const part of splitTopLevel(destructBody, [','])) {
     const m = /^\s*([a-zA-Z_$][\w$]*)\s*=\s*([\s\S]+?)\s*$/.exec(part)
-    if (m) out[m[1]] = collapseWhitespace(m[2])
+    const key = m?.[1]
+    const value = m?.[2]
+    if (key && value) out[key] = collapseWhitespace(value)
   }
 }
 
 function parseObjectDefaults(objectBody: string, out: Record<string, string>): void {
   for (const part of splitTopLevel(objectBody, [','])) {
     const m = /^\s*([a-zA-Z_$][\w$]*)\s*:\s*([\s\S]+?)\s*$/.exec(part.trim())
-    if (m) out[m[1]] = collapseWhitespace(m[2])
+    const key = m?.[1]
+    const value = m?.[2]
+    if (key && value) out[key] = collapseWhitespace(value)
   }
 }
 
@@ -363,7 +373,7 @@ function parseObjectDefaults(objectBody: string, out: Record<string, string>): v
 
 function extractEvents(script: string): ComponentApiEvent[] {
   const m = /defineEmits\s*<\s*\{([\s\S]*?)\}\s*>\s*\(/.exec(script)
-  if (!m) return []
+  if (!m?.[1]) return []
   const events: ComponentApiEvent[] = []
   for (const part of splitTopLevel(m[1], [';', '\n'])) {
     const trimmed = part.trim()
@@ -371,12 +381,16 @@ function extractEvents(script: string): ComponentApiEvent[] {
     // Format options: `'click': [arg: T]` or `click(arg: T): void`
     const tuple = /^['"]?([\w-]+)['"]?\s*:\s*\[(.*?)\]\s*$/.exec(trimmed)
     if (tuple) {
-      events.push({ name: tuple[1], type: tuple[2].trim() || 'void', description: '' })
+      const name = tuple[1]
+      if (!name) continue
+      events.push({ name, type: tuple[2]?.trim() || 'void', description: '' })
       continue
     }
     const fn = /^([a-zA-Z_$][\w$]*)\s*\(([\s\S]*?)\)\s*:\s*([\s\S]+)$/.exec(trimmed)
     if (fn) {
-      events.push({ name: fn[1], type: fn[2].trim(), description: '' })
+      const name = fn[1]
+      if (!name) continue
+      events.push({ name, type: fn[2]?.trim() || 'void', description: '' })
     }
   }
   return events
@@ -395,9 +409,9 @@ function extractSlots(template: string): ComponentApiSlot[] {
   let m: RegExpExecArray | null
   // eslint-disable-next-line no-cond-assign
   while ((m = slotRe.exec(template)) !== null) {
-    const attrs = m[1] || ''
+    const attrs = m[1] ?? ''
     const nameMatch = /\bname\s*=\s*["']([^"']+)["']/.exec(attrs)
-    const name = nameMatch ? nameMatch[1] : 'default'
+    const name = nameMatch?.[1] ?? 'default'
     if (seen.has(name)) continue
     seen.add(name)
     slots.push({ name, description: '' })
@@ -421,6 +435,7 @@ function sliceBalanced(source: string, openIdx: number, open: string, close: str
   let inString: string | null = null
   while (i < source.length) {
     const ch = source[i]
+    if (ch === undefined) break
     if (inString) {
       if (ch === '\\') { i += 2; continue }
       if (ch === inString) inString = null
@@ -455,6 +470,7 @@ function splitTopLevel(source: string, separators: string[]): string[] {
   let start = 0
   for (let i = 0; i < source.length; i++) {
     const ch = source[i]
+    if (ch === undefined) break
     if (inString) {
       if (ch === '\\') { i++; continue }
       if (ch === inString) inString = null

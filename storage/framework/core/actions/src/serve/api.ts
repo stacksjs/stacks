@@ -29,7 +29,7 @@ log.info(`[Stacks API] Starting server...`)
 log.info(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)
 
 // Enable CORS middleware
-route.use(cors().handle.bind(cors()))
+route.use(cors().handle.bind(cors()) as any)
 
 // Import routes
 await route.importRoutes()

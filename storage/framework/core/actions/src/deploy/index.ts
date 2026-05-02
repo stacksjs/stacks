@@ -1211,12 +1211,14 @@ SERVICEFILE`,
         let serverVars: Record<string, any> = {}
 
         if (serverBlockMatch) {
-          const serverCode = serverBlockMatch[1]
+          const serverCode = serverBlockMatch[1] ?? ''
 
           try {
             // Evaluate the server block using new Function() to properly handle
             // backtick template literals, complex arrays, and nested objects
-            const varNames = [...serverCode.matchAll(/(?:const|let|var)\s+(\w+)\s*=/g)].map(m => m[1])
+            const varNames = [...serverCode.matchAll(/(?:const|let|var)\s+(\w+)\s*=/g)]
+              .map(m => m[1])
+              .filter((name): name is string => Boolean(name))
             const evalFn = new Function(`${serverCode}\nreturn { ${varNames.join(', ')} }`)
             serverVars = evalFn()
           } catch (evalErr) {
@@ -1224,7 +1226,8 @@ SERVICEFILE`,
             // Fallback: extract simple const string/number assignments via regex
             const constMatches = serverCode.matchAll(/const\s+(\w+)\s*=\s*(?:'([^']*)'|"([^"]*)"|([\d.]+))/g)
             for (const m of constMatches) {
-              serverVars[m[1]] = m[2] ?? m[3] ?? m[4]
+              const name = m[1]
+              if (name) serverVars[name] = m[2] ?? m[3] ?? m[4]
             }
           }
 

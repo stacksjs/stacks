@@ -82,11 +82,9 @@ export function determineResetPreset(preset?: string | null): string[] {
 
   const selectedPreset = preset ?? 'tailwind'
   const resetImports: Record<string, string> = {
-    tailwind: 'import \"@unocss/reset/tailwind.css\"',
-    normalize: 'import \"@unocss/reset/normalize.css\"',
-    sanitize: 'import \"@unocss/reset/sanitize/sanitize.css\"',
-    'eric-meyer': 'import \"@unocss/reset/eric-meyer.css\"',
-    antfu: 'import \"@unocss/reset/antfu.css\"',
+    tailwind: 'import { tailwindPreflight as reset } from \"@cwcss/crosswind\"',
+    preflight: 'import { tailwindPreflight as reset } from \"@cwcss/crosswind\"',
+    forms: 'import { tailwindFormsPreflight as reset } from \"@cwcss/crosswind\"',
   }
 
   const resetImport = resetImports[selectedPreset]

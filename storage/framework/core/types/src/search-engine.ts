@@ -79,6 +79,7 @@ export type SearchEngineConfig = Partial<SearchEngineOptions>
 
 export interface SearchEngineDriver {
   client: () => MeiliSearch
+  resetClient?: () => void
 
   search: (index: string, params: any) => Promise<SearchResponse<Record<string, any>>>
 
