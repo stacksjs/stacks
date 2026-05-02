@@ -9,6 +9,37 @@ interface HealthCheck {
   message: string
 }
 
+/**
+ * Run a check that may throw, recording the result in `checks`. Each
+ * probe gets a 2-second budget — long enough to catch transient
+ * latency, short enough that `buddy doctor` returns in a few seconds
+ * even when every dependency is dead.
+ */
+async function probe(
+  checks: HealthCheck[],
+  name: string,
+  fn: () => Promise<string>,
+): Promise<void> {
+  const start = Date.now()
+  try {
+    const ac = new AbortController()
+    const timer = setTimeout(() => ac.abort(), 2000)
+    const message = await Promise.race([
+      fn(),
+      new Promise<never>((_, rej) => ac.signal.addEventListener('abort', () => rej(new Error('timed out (>2s)')))),
+    ])
+    clearTimeout(timer)
+    checks.push({ name, status: 'pass', message: `${message} (${Date.now() - start}ms)` })
+  }
+  catch (err) {
+    checks.push({
+      name,
+      status: 'fail',
+      message: err instanceof Error ? err.message : String(err),
+    })
+  }
+}
+
 export function doctor(buddy: CLI): void {
   buddy
     .command('doctor', 'Run health checks on your Stacks installation')
@@ -106,17 +137,83 @@ export function doctor(buddy: CLI): void {
       if (appKey && appKey.length > 0) {
         checks.push({
           name: 'APP_KEY',
-          status: 'pass',
-          message: 'Set',
+          status: appKey.length >= 32 ? 'pass' : 'warn',
+          message: appKey.length >= 32 ? 'Set (≥32 chars)' : `Set but short (${appKey.length} chars; ≥32 recommended)`,
         })
       }
       else {
         checks.push({
           name: 'APP_KEY',
-          status: 'warn',
-          message: 'Not set (run: buddy key:generate)',
+          status: 'fail',
+          message: 'Not set — features that depend on it (encrypted columns, signed URLs, env decryption) will refuse to run. Run `buddy key:generate`.',
         })
       }
+
+      // Database connectivity
+      await probe(checks, 'Database', async () => {
+        const { db } = await import('@stacksjs/database')
+        await (db as any).unsafe?.('SELECT 1')
+        return 'Reachable'
+      })
+
+      // Cache connectivity
+      await probe(checks, 'Cache', async () => {
+        const { cache } = await import('@stacksjs/cache')
+        const k = `__doctor_${Date.now()}`
+        await cache.set(k, 1, 5)
+        const v = await cache.get(k)
+        await cache.del(k)
+        if (v !== 1) throw new Error('round-trip failed')
+        return 'Round-trip ok'
+      })
+
+      // Queue driver
+      await probe(checks, 'Queue driver', async () => {
+        const { config } = await import('@stacksjs/config')
+        const driver = (config as { queue?: { default?: string } }).queue?.default ?? 'sync'
+        return `Driver: ${driver}`
+      })
+
+      // Mail driver — just verify it's resolvable; don't actually send
+      await probe(checks, 'Mail driver', async () => {
+        const { config } = await import('@stacksjs/config')
+        const driver = (config as { email?: { default?: string } }).email?.default ?? 'log'
+        return `Driver: ${driver}`
+      })
+
+      // AWS credentials — check the env vars even without making a real call
+      const hasAwsCreds = Boolean(process.env.AWS_ACCESS_KEY_ID && process.env.AWS_SECRET_ACCESS_KEY)
+      const hasAwsRole = Boolean(process.env.AWS_PROFILE) || Boolean(process.env.AWS_ROLE_ARN)
+      if (hasAwsCreds || hasAwsRole) {
+        checks.push({
+          name: 'AWS credentials',
+          status: 'pass',
+          message: hasAwsCreds ? 'Static keys in env' : 'IAM role configured',
+        })
+      }
+      else {
+        checks.push({
+          name: 'AWS credentials',
+          status: 'warn',
+          message: 'Not configured (cloud / SES / S3 commands will fail)',
+        })
+      }
+
+      // .env decryption — verify enc: values can be decrypted with the
+      // configured private key, if any are present. No-op when there
+      // are no encrypted values or no key.
+      await probe(checks, '.env decryption', async () => {
+        const fs = await import('node:fs')
+        if (!fs.existsSync('.env')) return 'No .env (skipped)'
+        const content = fs.readFileSync('.env', 'utf8')
+        if (!/(^|=)(?:enc|encrypted):/m.test(content)) return 'No encrypted values'
+        const privateKey = process.env.DOTENV_PRIVATE_KEY
+        if (!privateKey) throw new Error('Encrypted values present but DOTENV_PRIVATE_KEY is unset')
+        const { parse } = await import('@stacksjs/env')
+        const { errors } = parse(content, { privateKey })
+        if (errors.length > 0) throw new Error(errors.join('; '))
+        return 'All encrypted values decrypt cleanly'
+      })
 
       // Display results
       log.info('')
