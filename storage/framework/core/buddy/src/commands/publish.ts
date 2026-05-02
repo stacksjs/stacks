@@ -3,11 +3,10 @@ import { existsSync, mkdirSync } from 'node:fs'
 import { cp, readdir, stat } from 'node:fs/promises'
 import { dirname, resolve } from 'node:path'
 import process from 'node:process'
-import { italic, log } from '@stacksjs/cli'
+import { italic, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 interface PublishOptions {
   force?: boolean

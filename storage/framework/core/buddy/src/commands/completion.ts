@@ -1,7 +1,6 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
-import { onUnknownSubcommand } from './_helpers'
+import { log, onUnknownSubcommand } from "@stacksjs/cli"
 
 export function completion(buddy: CLI): void {
   const descriptions = {

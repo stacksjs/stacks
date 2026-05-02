@@ -1,10 +1,9 @@
 import type { CLI, ConflictStrategy } from '@stacksjs/types'
 import process from 'node:process'
 import { installStack, listStacks, uninstallStack } from '@stacksjs/actions'
-import { intro, italic, outro } from '@stacksjs/cli'
+import { intro, italic, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function stacks(buddy: CLI): void {
   const descriptions = {

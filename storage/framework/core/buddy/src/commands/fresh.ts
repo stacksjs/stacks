@@ -1,10 +1,9 @@
 import type { CLI, FreshOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function fresh(buddy: CLI): void {
   const descriptions = {

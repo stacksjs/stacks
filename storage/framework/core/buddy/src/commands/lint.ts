@@ -1,9 +1,8 @@
 import type { CLI, LintOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { intro, log, outro, runCommand } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro, runCommand } from "@stacksjs/cli"
 import { path } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 /**
  * Treat a runCommand Result as a CI/CD-friendly status: any failure (exec

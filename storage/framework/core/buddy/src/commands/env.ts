@@ -1,9 +1,8 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
+import { log, onUnknownSubcommand } from "@stacksjs/cli"
 import { decryptEnv, encryptEnv, getEnv, getKeypair, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 interface EnvOptions {
   get: string

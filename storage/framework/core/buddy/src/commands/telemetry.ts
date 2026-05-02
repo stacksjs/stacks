@@ -1,7 +1,6 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { bold, dim, green, intro, log } from '@stacksjs/cli'
-import { onUnknownSubcommand } from './_helpers'
+import { bold, dim, green, intro, log, onUnknownSubcommand } from "@stacksjs/cli"
 
 // Telemetry stub - telemetry feature is not yet implemented in @stacksjs/clapp
 const telemetry = {

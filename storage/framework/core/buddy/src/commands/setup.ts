@@ -3,13 +3,12 @@ import { join } from 'node:path'
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction, setupSSL } from '@stacksjs/actions'
-import { log, runCommand } from '@stacksjs/cli'
+import { log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { handleError } from '@stacksjs/error-handling'
 import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 interface SetupOptions extends CliOptions {
   skipAws?: boolean

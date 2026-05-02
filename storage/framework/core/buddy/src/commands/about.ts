@@ -1,8 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { bold, dim, green, intro, log } from '@stacksjs/cli'
+import { bold, dim, green, intro, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { storage } from '@stacksjs/storage'
-import { onUnknownSubcommand } from './_helpers'
 
 export function about(buddy: CLI): void {
   buddy

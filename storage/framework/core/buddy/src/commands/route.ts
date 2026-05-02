@@ -1,10 +1,9 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, outro } from '@stacksjs/cli'
+import { intro, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function route(buddy: CLI): void {
   const descriptions = {

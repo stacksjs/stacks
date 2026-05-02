@@ -1,5 +1,5 @@
 // import type { CliOptions } from '@stacksjs/types'
-import { CLI, cli as createCli } from '@stacksjs/clapp'
+import { CLI, cli as createCli, onUnknownSubcommand } from '@stacksjs/clapp'
 // Note: applyTheme and getAvailableThemes will be available after @stacksjs/clapp npm package is updated
 // import { applyTheme, getAvailableThemes } from '@stacksjs/clapp'
 
@@ -25,7 +25,7 @@ export function cli(name?: string | CliOptions, options?: CliOptions): CLI {
   return createCli(name || 'buddy')
 }
 
-export { CLI }
+export { CLI, onUnknownSubcommand }
 // Note: applyTheme and getAvailableThemes exports will be available after @stacksjs/clapp npm package is updated
 // export { applyTheme, getAvailableThemes }
 

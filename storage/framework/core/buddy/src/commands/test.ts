@@ -1,11 +1,10 @@
 import type { CLI, TestingOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function test(buddy: CLI): void {
   const descriptions = {

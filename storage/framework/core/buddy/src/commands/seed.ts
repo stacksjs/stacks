@@ -2,11 +2,10 @@ import type { CLI, SeedOptions } from '@stacksjs/types'
 import { existsSync, readdirSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 /**
  * Count model files in a directory (recursively)

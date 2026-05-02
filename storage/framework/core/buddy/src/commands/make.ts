@@ -22,11 +22,10 @@ import {
   makeStack,
   setDryRun,
 } from '@stacksjs/actions'
-import { intro, italic, outro } from '@stacksjs/cli'
+import { intro, italic, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { log } from '@stacksjs/logging'
 
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function make(buddy: CLI): void {
   const descriptions = {

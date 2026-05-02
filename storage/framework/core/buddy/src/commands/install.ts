@@ -1,9 +1,8 @@
 import type { CLI, InstallOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { log, runCommand } from '@stacksjs/cli'
+import { log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function install(buddy: CLI): void {
   const descriptions = {

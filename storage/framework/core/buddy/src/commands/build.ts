@@ -1,9 +1,8 @@
 import type { BuildOptions, CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 // Lazy-load @stacksjs/actions — importing it at module level forces every
 // `buddy <anything>` invocation to resolve the actions barrel before

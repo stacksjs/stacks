@@ -3,7 +3,7 @@ import { $ } from 'bun'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
-import { onUnknownSubcommand } from './_helpers'
+import { onUnknownSubcommand } from "@stacksjs/cli"
 
 export function outdated(buddy: CLI): void {
   const descriptions = {

@@ -1,8 +1,7 @@
 import type { CLI, TinkerOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function tinker(buddy: CLI): void {
   const descriptions = {

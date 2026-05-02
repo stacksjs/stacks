@@ -12,9 +12,8 @@ import {
   generateWebTypes,
   invoke as startGenerationProcess,
 } from '@stacksjs/actions'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function generate(buddy: CLI): void {
   const descriptions = {

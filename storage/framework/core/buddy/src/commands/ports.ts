@@ -1,13 +1,12 @@
 import type { CLI, Ports, PortsOptions } from '@stacksjs/types'
 import { $ } from 'bun'
 import process from 'node:process'
-import { intro, italic, outro } from '@stacksjs/cli'
+import { intro, italic, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { ports as projectPorts } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { findProjectPath, path as p, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
-import { onUnknownSubcommand } from './_helpers'
 
 export function ports(buddy: CLI): void {
   const descriptions = {

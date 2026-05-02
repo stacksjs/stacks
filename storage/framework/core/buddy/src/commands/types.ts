@@ -2,7 +2,7 @@ import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { generateTypes } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
-import { onUnknownSubcommand } from './_helpers'
+import { onUnknownSubcommand } from "@stacksjs/cli"
 
 export function types(buddy: CLI): void {
   const descriptions = {

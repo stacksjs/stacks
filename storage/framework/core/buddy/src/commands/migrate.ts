@@ -1,11 +1,10 @@
 import type { CLI, MigrateOptions } from '@stacksjs/types'
 import { closeSync, existsSync, mkdirSync, openSync, readdirSync, rmSync } from 'node:fs'
 import process from 'node:process'
-import { intro, log, outro } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand, outro } from "@stacksjs/cli"
 import { Action } from '@stacksjs/enums'
 import { appPath, frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 // Lazy-load @stacksjs/actions to keep `buddy --help` cheap. The barrel
 // pulls in the database driver setup transitively, which we don't want

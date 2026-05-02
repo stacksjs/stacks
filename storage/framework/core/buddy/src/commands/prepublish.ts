@@ -3,7 +3,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
-import { onUnknownSubcommand } from './_helpers'
+import { onUnknownSubcommand } from "@stacksjs/cli"
 
 export function prepublish(buddy: CLI): void {
   const descriptions = {

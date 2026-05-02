@@ -1,9 +1,8 @@
 import type { CLI, ProjectsOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { intro, log } from '@stacksjs/cli'
+import { intro, log, onUnknownSubcommand } from "@stacksjs/cli"
 import { ExitCode } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
-import { onUnknownSubcommand } from './_helpers'
 
 export function projects(buddy: CLI): void {
   const descriptions = {

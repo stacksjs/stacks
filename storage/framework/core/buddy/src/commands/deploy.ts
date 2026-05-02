@@ -4,7 +4,7 @@ import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { italic, outro, prompts, runCommand } from '@stacksjs/cli'
+import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
 import { app, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
 import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
 import { encryptEnv, env } from '@stacksjs/env'
@@ -12,7 +12,6 @@ import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { ensureAppKey, ensureEnvIsSet, ensurePantryDependencies, ensurePantryInstalled } from './setup'
-import { onUnknownSubcommand } from './_helpers'
 
 // Use console.log for clean output without timestamps
 const log = {

@@ -1,12 +1,11 @@
 import type { CLI, DomainsOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
-import { bgCyan, bold, intro, italic, log, outro, prompts } from '@stacksjs/cli'
+import { bgCyan, bold, intro, italic, log, onUnknownSubcommand, outro, prompts } from "@stacksjs/cli"
 import { config } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function domains(buddy: CLI): void {
   const descriptions = {

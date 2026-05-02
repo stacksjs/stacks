@@ -1,10 +1,9 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
+import { log, onUnknownSubcommand } from "@stacksjs/cli"
 import { config } from '@stacksjs/config'
 import { DnsClient, formatOutput } from '@stacksjs/dnsx'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 interface DnsOptions {
   query?: string

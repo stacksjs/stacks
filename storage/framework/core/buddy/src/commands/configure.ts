@@ -1,9 +1,8 @@
 import type { CLI, ConfigureOptions } from '@stacksjs/types'
 import process from 'node:process'
-import { log, outro, runCommand } from '@stacksjs/cli'
+import { log, onUnknownSubcommand, outro, runCommand } from "@stacksjs/cli"
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
 
 export function configure(buddy: CLI): void {
   const descriptions = {

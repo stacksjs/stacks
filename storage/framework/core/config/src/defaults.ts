@@ -2,6 +2,24 @@ import type { StacksOptions } from '@stacksjs/types'
 import { commandsPath, projectPath, userDatabasePath } from '@stacksjs/path'
 
 /**
+ * Framework-wide default scalars. Defining these as named constants
+ * (rather than re-spelling the literal in each config section) keeps
+ * "where do I change the default region?" answerable from a single
+ * line — the previous shape had `'us-east-1'` typed in 4+ places that
+ * could drift when a multi-region future lands.
+ */
+export const FRAMEWORK_DEFAULTS = {
+  /** Default AWS region for SES, S3, DynamoDB, CloudFront origin shield. */
+  awsRegion: 'us-east-1',
+  /** Default scheduler / job timezone. UTC keeps cron predictable across hosts. */
+  timezone: 'UTC',
+  /** No-reply address for transactional email (override via config.email.from). */
+  noReplyEmail: 'no-reply@stacksjs.com',
+  /** Default project domain shape for new scaffolds. */
+  fallbackDomain: 'stacks.localhost',
+} as const
+
+/**
  * Derive sane app defaults (name, url) from the project's package.json so
  * a fresh project gets `Drivly` / `drivly.localhost` instead of the
  * generic `Stacks` / `stacks.localhost` placeholders.
@@ -79,7 +97,7 @@ export const defaults: StacksOptions = {
     url: appDefaults.url,
     debug: true,
     key: '',
-    timezone: 'UTC',
+    timezone: FRAMEWORK_DEFAULTS.timezone,
     locale: 'en',
     fallbackLocale: 'en',
     cipher: 'AES-256-CBC',
@@ -146,7 +164,7 @@ export const defaults: StacksOptions = {
         maxTtl: 31536000,
         compress: true,
         priceClass: 'PriceClass_All',
-        originShieldRegion: 'us-east-1',
+        originShieldRegion: FRAMEWORK_DEFAULTS.awsRegion,
         cookieBehavior: 'none',
         allowList: {
           cookies: [],
@@ -235,7 +253,7 @@ export const defaults: StacksOptions = {
   email: {
     from: {
       name: 'Stacks',
-      address: 'no-reply@stacksjs.com',
+      address: FRAMEWORK_DEFAULTS.noReplyEmail,
     },
 
     mailboxes: [],
@@ -558,7 +576,7 @@ export const defaults: StacksOptions = {
         prefix: '',
         suffix: '',
         queue: 'default',
-        region: 'us-east-1',
+        region: FRAMEWORK_DEFAULTS.awsRegion,
       },
     },
   } as any,
@@ -658,7 +676,7 @@ export const defaults: StacksOptions = {
       accountId: '',
       appId: '',
       apiKey: '',
-      region: 'us-east-1',
+      region: FRAMEWORK_DEFAULTS.awsRegion,
     },
 
     algolia: {

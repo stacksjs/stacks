@@ -3,7 +3,7 @@ import process from 'node:process'
 import { runAdd } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
-import { onUnknownSubcommand } from './_helpers'
+import { onUnknownSubcommand } from "@stacksjs/cli"
 
 export function add(buddy: CLI): void {
   const descriptions = {
