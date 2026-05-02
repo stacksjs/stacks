@@ -3,6 +3,7 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { decryptEnv, encryptEnv, getEnv, getKeypair, rotateKeypair, setEnv } from '@stacksjs/env'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 interface EnvOptions {
   get: string
@@ -418,8 +419,5 @@ export function env(buddy: CLI): void {
       }
     })
 
-  buddy.on('env:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "env")
 }

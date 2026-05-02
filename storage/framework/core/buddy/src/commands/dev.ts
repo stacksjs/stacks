@@ -5,6 +5,7 @@ import { Action } from '@stacksjs/enums'
 import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
+import { onUnknownSubcommand } from './_helpers'
 
 // Lazy-load @stacksjs/actions to avoid triggering bun-router config warnings at CLI startup
 let _actions: typeof import('@stacksjs/actions') | undefined
@@ -264,10 +265,7 @@ export function dev(buddy: CLI): void {
       await (await actions()).runSystemTrayDevServer(options)
     })
 
-  buddy.on('dev:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "dev")
 }
 
 export async function startDevelopmentServer(options: DevOptions, startTime?: number): Promise<void> {

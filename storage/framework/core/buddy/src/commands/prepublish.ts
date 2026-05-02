@@ -3,6 +3,7 @@ import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { Action } from '@stacksjs/enums'
 import { log } from '@stacksjs/logging'
+import { onUnknownSubcommand } from './_helpers'
 
 export function prepublish(buddy: CLI): void {
   const descriptions = {
@@ -21,8 +22,5 @@ export function prepublish(buddy: CLI): void {
       await runAction(Action.Prepublish, options)
     })
 
-  buddy.on('prepublish:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "prepublish")
 }

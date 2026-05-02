@@ -17,6 +17,7 @@ import {
 } from '@stacksjs/cloud'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 /**
  * Create a temporary IAM role to allow CloudFormation to delete a stuck stack
@@ -742,8 +743,5 @@ export function cloud(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('cloud:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "cloud")
 }

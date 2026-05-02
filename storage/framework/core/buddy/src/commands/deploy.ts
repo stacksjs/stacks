@@ -12,6 +12,7 @@ import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { ensureAppKey, ensureEnvIsSet, ensurePantryDependencies, ensurePantryInstalled } from './setup'
+import { onUnknownSubcommand } from './_helpers'
 
 // Use console.log for clean output without timestamps
 const log = {
@@ -584,10 +585,7 @@ export function deploy(buddy: CLI): void {
       await outro('Project deployed.', { startTime, useSeconds: true })
     })
 
-  buddy.on('deploy:*', () => {
-    log.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "deploy")
 }
 
 async function confirmProductionDeployment() {

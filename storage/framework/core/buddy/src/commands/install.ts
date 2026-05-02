@@ -3,6 +3,7 @@ import process from 'node:process'
 import { log, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function install(buddy: CLI): void {
   const descriptions = {
@@ -34,8 +35,5 @@ export function install(buddy: CLI): void {
       }
     })
 
-  buddy.on('install:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "install")
 }

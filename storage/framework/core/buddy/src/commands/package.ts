@@ -2,6 +2,7 @@ import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, log, outro } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function packageCommands(buddy: CLI): void {
   buddy
@@ -27,8 +28,5 @@ export function packageCommands(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('package:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "package")
 }

@@ -2,6 +2,7 @@ import type { CLI, FreshOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { runCommit } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
+import { onUnknownSubcommand } from './_helpers'
 
 export function commit(buddy: CLI): void {
   const descriptions = {
@@ -19,8 +20,5 @@ export function commit(buddy: CLI): void {
       await runCommit(options)
     })
 
-  buddy.on('commit:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "commit")
 }

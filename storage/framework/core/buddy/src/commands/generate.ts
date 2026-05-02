@@ -14,6 +14,7 @@ import {
 } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function generate(buddy: CLI): void {
   const descriptions = {
@@ -177,10 +178,7 @@ export function generate(buddy: CLI): void {
       await generateCoreSymlink()
     })
 
-  buddy.on('generate:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "generate")
 }
 
 /**

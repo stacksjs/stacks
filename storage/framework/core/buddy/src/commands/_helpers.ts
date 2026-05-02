@@ -29,7 +29,11 @@ import process from 'node:process'
  */
 export function onUnknownSubcommand(buddy: CLI, prefix: string): void {
   buddy.on(`${prefix}:*`, () => {
-    const args = (buddy as { args?: string[] }).args ?? []
+    // @stacksjs/clapp exposes `args` at runtime but the public CLI type doesn't
+    // surface it. Widening through `unknown` is the canonical "I know
+    // better than the type system here" escape hatch and only runs in
+    // the error-path so the cost is irrelevant.
+    const args = (buddy as unknown as { args?: string[] }).args ?? []
     process.stderr.write(
       `Unknown ${prefix} subcommand: ${args.join(' ')}\n`
       + `Run \`buddy ${prefix} --help\` to see available subcommands.\n`,

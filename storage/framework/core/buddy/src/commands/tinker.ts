@@ -2,6 +2,7 @@ import type { CLI, TinkerOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { intro, log, outro } from '@stacksjs/cli'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function tinker(buddy: CLI): void {
   const descriptions = {
@@ -63,8 +64,5 @@ export function tinker(buddy: CLI): void {
       }
     })
 
-  buddy.on('tinker:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(ExitCode.FatalError)
-  })
+  onUnknownSubcommand(buddy, "tinker")
 }

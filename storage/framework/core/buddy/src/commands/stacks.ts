@@ -4,6 +4,7 @@ import { installStack, listStacks, uninstallStack } from '@stacksjs/actions'
 import { intro, italic, outro } from '@stacksjs/cli'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function stacks(buddy: CLI): void {
   const descriptions = {
@@ -108,8 +109,5 @@ export function stacks(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('stack:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "stack")
 }

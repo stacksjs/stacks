@@ -6,6 +6,7 @@ import { config } from '@stacksjs/config'
 import { addDomain } from '@stacksjs/dns'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function domains(buddy: CLI): void {
   const descriptions = {
@@ -248,8 +249,5 @@ export function domains(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('domains:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "domains")
 }

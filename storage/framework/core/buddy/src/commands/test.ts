@@ -5,6 +5,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function test(buddy: CLI): void {
   const descriptions = {
@@ -211,8 +212,5 @@ export function test(buddy: CLI): void {
       })
     })
 
-  buddy.on('test:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "test")
 }

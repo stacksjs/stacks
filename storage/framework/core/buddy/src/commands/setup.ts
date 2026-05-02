@@ -9,6 +9,7 @@ import { handleError } from '@stacksjs/error-handling'
 import { path as p } from '@stacksjs/path'
 import { copyFile, storage } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 interface SetupOptions extends CliOptions {
   skipAws?: boolean
@@ -103,10 +104,7 @@ export function setup(buddy: CLI): void {
       }
     })
 
-  buddy.on('setup:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(ExitCode.FatalError)
-  })
+  onUnknownSubcommand(buddy, "setup")
 }
 
 async function isPantryInstalled(): Promise<boolean> {

@@ -4,6 +4,7 @@ import { log } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
 import { DnsClient, formatOutput } from '@stacksjs/dnsx'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 interface DnsOptions {
   query?: string
@@ -94,8 +95,5 @@ export function dns(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('dns:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "dns")
 }

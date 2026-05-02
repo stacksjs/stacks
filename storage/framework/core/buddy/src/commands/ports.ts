@@ -7,6 +7,7 @@ import { log } from '@stacksjs/logging'
 import { findProjectPath, path as p, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { findStacksProjects } from '@stacksjs/utils'
+import { onUnknownSubcommand } from './_helpers'
 
 export function ports(buddy: CLI): void {
   const descriptions = {
@@ -125,10 +126,7 @@ export function ports(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('ports:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "ports")
 }
 
 async function getPortsForProjectPath(path: string, options: PortsOptions) {

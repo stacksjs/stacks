@@ -3,6 +3,7 @@ import process from 'node:process'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 // Lazy-load @stacksjs/actions — importing it at module level forces every
 // `buddy <anything>` invocation to resolve the actions barrel before
@@ -242,10 +243,7 @@ export function build(buddy: CLI): void {
       await outro('Stacks built successfully', { startTime, useSeconds: true })
     })
 
-  buddy.on('build:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "build")
 }
 
 function hasNoOptions(options: BuildOptions) {

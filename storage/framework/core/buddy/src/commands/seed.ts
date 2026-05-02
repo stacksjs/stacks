@@ -6,6 +6,7 @@ import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { appPath, frameworkPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 /**
  * Count model files in a directory (recursively)
@@ -121,8 +122,5 @@ export function seed(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
-  buddy.on('seed:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "seed")
 }

@@ -7,6 +7,7 @@ import { italic, log } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { fs, globSync } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 interface PublishOptions {
   force?: boolean
@@ -122,10 +123,7 @@ export function publish(buddy: CLI): void {
       await handler()
     })
 
-  buddy.on('publish:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "publish")
 }
 
 interface PublishContext {

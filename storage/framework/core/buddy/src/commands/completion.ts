@@ -1,6 +1,7 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
+import { onUnknownSubcommand } from './_helpers'
 
 export function completion(buddy: CLI): void {
   const descriptions = {
@@ -41,10 +42,7 @@ export function completion(buddy: CLI): void {
       }
     })
 
-  buddy.on('completion:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "completion")
 }
 
 function generateBashCompletion(commands: string[]): string {

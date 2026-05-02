@@ -1,6 +1,7 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
+import { onUnknownSubcommand } from './_helpers'
 
 export function list(buddy: CLI): void {
   const descriptions = {
@@ -165,8 +166,5 @@ export function list(buddy: CLI): void {
       console.log('')
     })
 
-  buddy.on('list:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "list")
 }

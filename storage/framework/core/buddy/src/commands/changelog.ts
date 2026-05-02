@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function changelog(buddy: CLI): void {
   const descriptions = {
@@ -45,9 +46,5 @@ export function changelog(buddy: CLI): void {
       })
     })
 
-  buddy.on('changelog:*', () => {
-    console.log('Invalid command: %s', buddy.args.join(' '))
-    console.log('See --help for a list of available commands.')
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, 'changelog')
 }

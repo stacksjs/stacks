@@ -3,6 +3,7 @@ import process from 'node:process'
 import { runAdd } from '@stacksjs/actions'
 import { log } from '@stacksjs/logging'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 export function add(buddy: CLI): void {
   const descriptions = {
@@ -60,10 +61,7 @@ export function add(buddy: CLI): void {
       await runAdd(options)
     })
 
-  buddy.on('add:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "add")
 }
 
 function hasNoOptions(options: AddOptions) {

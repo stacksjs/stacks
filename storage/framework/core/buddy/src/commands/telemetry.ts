@@ -1,6 +1,7 @@
 import type { CLI, CliOptions } from '@stacksjs/types'
 import process from 'node:process'
 import { bold, dim, green, intro, log } from '@stacksjs/cli'
+import { onUnknownSubcommand } from './_helpers'
 
 // Telemetry stub - telemetry feature is not yet implemented in @stacksjs/clapp
 const telemetry = {
@@ -101,8 +102,5 @@ export function telemetryCommand(buddy: CLI): void {
       }
     })
 
-  buddy.on('telemetry:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "telemetry")
 }

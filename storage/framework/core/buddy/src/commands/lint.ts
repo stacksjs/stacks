@@ -3,6 +3,7 @@ import process from 'node:process'
 import { intro, log, outro, runCommand } from '@stacksjs/cli'
 import { path } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 /**
  * Treat a runCommand Result as a CI/CD-friendly status: any failure (exec
@@ -94,8 +95,5 @@ export function lint(buddy: CLI): void {
       await outro('Format check complete', { startTime, useSeconds: true })
     })
 
-  buddy.on('lint:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "lint")
 }

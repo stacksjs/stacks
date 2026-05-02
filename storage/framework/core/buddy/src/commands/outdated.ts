@@ -3,6 +3,7 @@ import { $ } from 'bun'
 import process from 'node:process'
 import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
+import { onUnknownSubcommand } from './_helpers'
 
 export function outdated(buddy: CLI): void {
   const descriptions = {
@@ -24,8 +25,5 @@ export function outdated(buddy: CLI): void {
       console.log(response)
     })
 
-  buddy.on('outdated:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "outdated")
 }

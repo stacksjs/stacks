@@ -4,6 +4,7 @@ import { runAction } from '@stacksjs/actions'
 import { intro, italic, log, outro } from '@stacksjs/cli'
 import { Action } from '@stacksjs/enums'
 import { ExitCode } from '@stacksjs/types'
+import { onUnknownSubcommand } from './_helpers'
 
 const descriptions = {
   release: 'Release a new version of your libraries/packages',
@@ -40,8 +41,5 @@ export function release(buddy: CLI): void {
       log.info(`Follow along: ${italic('https://github.com/stacksjs/stacks/actions')}`)
     })
 
-  buddy.on('release:*', () => {
-    console.error('Invalid command: %s\nSee --help for a list of available commands.', buddy.args.join(' '))
-    process.exit(1)
-  })
+  onUnknownSubcommand(buddy, "release")
 }
