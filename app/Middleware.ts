@@ -9,6 +9,7 @@ export interface Middleware {
  */
 export default {
   'maintenance': 'Maintenance',
+  'cors': 'Cors',
   'auth': 'Auth',
   'guest': 'Guest',
   'api': 'Api',
@@ -27,6 +28,8 @@ export default {
   'role': 'Role',
   'permission': 'Permission',
   'verified': 'EnsureEmailIsVerified',
+  'csrf': 'Csrf',
+  'compress': 'Compress',
   // Add more middleware aliases here
   // Note: Use ! prefix for negation (e.g., '!auth', '!env:development')
 } satisfies Middleware
