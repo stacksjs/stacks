@@ -9,6 +9,18 @@ import '@stacksjs/validation'
 
 export * from './utils/prunable'
 export type { PrunableOptions } from './utils/prunable'
+export {
+  collectEncryptedAttributes,
+  decryptValue,
+  encryptValue,
+  isEncrypted,
+} from './utils/encrypted'
+// Audit trait public API: setAuditUser is the queue/cron escape hatch for
+// attributing audit rows to a user when there's no current HTTP request.
+export { setAuditUser, createAuditMethods } from './traits/audit'
+export type { AuditHelpers } from './traits/audit'
+// Re-export soft-delete option types so user code can `satisfies SoftDeleteOptions`.
+export type { SoftDeleteOptions, SoftDeleteHelpers } from './traits/soft-deletes'
 export * from './batch-loader'
 export * from './db'
 export * from './subquery'

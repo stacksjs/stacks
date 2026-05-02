@@ -585,6 +585,123 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   }
 }
 
+/**
+ * Decrypt every `enc:`-prefixed value on a row's attribute bag in place.
+ * Ignores values that are missing, null, or already plaintext (so the
+ * mutator works against rows written before the trait was on, mid-migration).
+ * Used by `wrapReadsWithEncryption()` and the cast-aware read wrappers.
+ */
+async function decryptAttrsInPlace(row: any, encryptedKeys: ReadonlyArray<string>): Promise<void> {
+  if (!row || typeof row !== 'object') return
+  // Stacks model instances carry their values on `_attributes`; plain rows
+  // carry them at the top level. Try the proxy bag first.
+  const bag: Record<string, unknown> = (row as { _attributes?: Record<string, unknown> })._attributes
+    ?? (row as Record<string, unknown>)
+  for (const key of encryptedKeys) {
+    if (!(key in bag)) continue
+    const value = bag[key]
+    if (!isEncrypted(value)) continue // plaintext or null — leave alone
+    // eslint-disable-next-line no-await-in-loop
+    bag[key] = await decryptValue(value)
+  }
+}
+
+/**
+ * Install read wrappers that decrypt encrypted columns after each query
+ * resolves. Runs in addition to the cast/proxy wrappers — those layers
+ * see the already-decrypted plaintext, which means a `string` cast over
+ * an encrypted column doesn't need any special handling.
+ */
+function wrapReadsWithEncryption(baseModel: Record<string, unknown>, encryptedKeys: ReadonlyArray<string>) {
+  if (encryptedKeys.length === 0) return
+
+  const decryptResult = async (r: unknown): Promise<unknown> => {
+    if (Array.isArray(r)) {
+      for (const item of r) await decryptAttrsInPlace(item, encryptedKeys)
+      return r
+    }
+    // paginate-shaped results: { data: [...], meta }
+    if (r && typeof r === 'object' && Array.isArray((r as { data?: unknown }).data)) {
+      for (const item of (r as { data: unknown[] }).data) await decryptAttrsInPlace(item, encryptedKeys)
+      return r
+    }
+    if (r) await decryptAttrsInPlace(r, encryptedKeys)
+    return r
+  }
+
+  const directReads = ['find', 'first', 'last', 'all', 'firstOrFail', 'findOrFail', 'findMany']
+  for (const method of directReads) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = async function (...args: any[]) {
+      const result = await (original as Function).apply(this, args)
+      return await decryptResult(result)
+    }
+  }
+
+  // Writes return rows too; the freshly-inserted row's encrypted columns
+  // come back from the DB as ciphertext, so we have to decrypt those for
+  // the caller's `const u = await User.create(...); u.ssn` access.
+  const writeReturningInstance = ['create', 'firstOrCreate', 'updateOrCreate', 'make']
+  for (const method of writeReturningInstance) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = async function (...args: any[]) {
+      const result = await (original as Function).apply(this, args)
+      return await decryptResult(result)
+    }
+  }
+
+  // Static `Model.update(id, data)` re-reads after writing — decrypt that.
+  const origUpdate = baseModel.update
+  if (typeof origUpdate === 'function') {
+    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
+      const result = await (origUpdate as Function).call(this, id, data)
+      return await decryptResult(result)
+    }
+  }
+}
+
+/**
+ * Install write wrappers that encrypt configured columns before each
+ * insert/update lands in the database. Idempotent against already-encrypted
+ * values (see `encryptValue` in utils/encrypted.ts) so backfill scripts
+ * that run twice won't double-wrap the ciphertext.
+ */
+function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedKeys: ReadonlyArray<string>) {
+  if (encryptedKeys.length === 0) return
+
+  const encryptArg = async (data: unknown): Promise<unknown> => {
+    if (!data || typeof data !== 'object' || Array.isArray(data)) return data
+    const out = { ...(data as Record<string, unknown>) }
+    for (const key of encryptedKeys) {
+      if (key in out) out[key] = await encryptValue(out[key])
+    }
+    return out
+  }
+
+  const writeMethods = ['create', 'firstOrCreate', 'updateOrCreate']
+  for (const method of writeMethods) {
+    const original = baseModel[method]
+    if (typeof original !== 'function') continue
+    baseModel[method] = async function (...args: any[]) {
+      args[0] = await encryptArg(args[0])
+      // updateOrCreate / firstOrCreate take a second arg with values; encrypt
+      // those too so backfilled defaults are safe.
+      if (args[1]) args[1] = await encryptArg(args[1])
+      return await (original as Function).apply(this, args)
+    }
+  }
+
+  const origUpdate = baseModel.update
+  if (typeof origUpdate === 'function') {
+    baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
+      const enc = (await encryptArg(data)) as Record<string, unknown>
+      return await (origUpdate as Function).call(this, id, enc)
+    }
+  }
+}
+
 function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Record<string, CastType | CasterInterface>) {
   // Read-side casts are handled inside `wrapModelInstance` so the proxy
   // (and its `toJSON`/`update`/etc. methods) survives. Wrapping reads here
@@ -644,7 +761,9 @@ import { createCommentableMethods } from './traits/commentable'
 import { createBillableMethods } from './traits/billable'
 import { createLikeableMethods } from './traits/likeable'
 import { createTwoFactorMethods } from './traits/two-factor'
-import { createSoftDeleteMethods } from './traits/soft-deletes'
+import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'
+import { applyAudit } from './traits/audit'
+import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } from './utils/encrypted'
 
 /**
  * Stacks-enhanced model definition.
@@ -725,12 +844,30 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
     wrapQueryMethodsWithCasts(baseModel, definition.casts)
   }
 
+  // Encrypted-attribute wrappers run AFTER cast wrappers so the encrypt
+  // step sees the already-cast (post-`set`) value before persisting, and
+  // the decrypt step yields plaintext into the cast layer's `get` for
+  // type coercion. Models with no `encrypted: true` attributes pay nothing.
+  const encryptedKeys = collectEncryptedAttributes(definition)
+  if (encryptedKeys.length > 0) {
+    wrapWritesWithEncryption(baseModel, encryptedKeys)
+    wrapReadsWithEncryption(baseModel, encryptedKeys)
+  }
+
   // Soft-deletes runs *before* trait methods so that the static
   // `delete` it installs survives any later wrapping. We also gate
   // entirely on the trait flag — without it, models keep their
   // existing hard-delete semantics.
-  if ((definition as { traits?: { useSoftDeletes?: boolean } }).traits?.useSoftDeletes) {
-    applySoftDeletes(baseModel, defWithHooks as BQBModelDefinition)
+  const softDeleteFlag = (definition as { traits?: { useSoftDeletes?: unknown } }).traits?.useSoftDeletes
+  if (softDeleteFlag) {
+    applySoftDeletes(baseModel, defWithHooks as BQBModelDefinition, softDeleteFlag)
+  }
+
+  // Audit trait must run AFTER soft-delete wiring so it wraps the final
+  // `delete` (which the soft-delete trait may have aliased to softDelete).
+  // Wrapping earlier would leave the softDelete shim's writes unaudited.
+  if ((definition as { traits?: { useAudit?: unknown } }).traits?.useAudit) {
+    applyAudit(baseModel, definition.name, definition.primaryKey || 'id')
   }
 
   // Build trait methods based on model config
@@ -868,19 +1005,53 @@ function buildTraitMethods(definition: BQBModelDefinition): TraitMethods {
 /**
  * Apply the soft-deletes shim to a model's static surface. Called by
  * `defineModel()` when `traits.useSoftDeletes` is set on the definition.
+ *
+ * Accepts either the legacy `true` or the object form
+ * `{ cascade: ['posts', 'comments'] }`. When `cascade` is set, soft-deleting
+ * the parent also soft-deletes the named relations, and restoring the parent
+ * restores them. See `cascadeSoftDelete` in `traits/soft-deletes.ts` for the
+ * fan-out semantics.
  */
-function applySoftDeletes(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
+function applySoftDeletes(
+  baseModel: Record<string, unknown>,
+  definition: BQBModelDefinition,
+  traitFlag: unknown,
+): void {
   const helpers = createSoftDeleteMethods(baseModel as any, definition.primaryKey || 'id')
+  const options = resolveSoftDeleteOptions(traitFlag)
+  const parentDef = definition as unknown as { name: string, hasMany?: ReadonlyArray<string>, hasOne?: ReadonlyArray<string> }
+
+  // If cascade is configured, wrap the soft-delete and restore methods so
+  // the children fan out alongside. Wrap once here rather than burying the
+  // logic inside `createSoftDeleteMethods` so that simple-case soft-deletes
+  // (no cascade) keep their original, lighter code path.
+  const cascading = (options.cascade?.length ?? 0) > 0
+  const softDeleteFn = cascading
+    ? async (id: number | string): Promise<boolean> => {
+        const ok = await helpers.softDelete(id)
+        if (ok) await cascadeSoftDelete(parentDef, options, id, 'softDelete')
+        return ok
+      }
+    : helpers.softDelete
+
+  const restoreFn = cascading
+    ? async (id: number | string): Promise<boolean> => {
+        const ok = await helpers.restore(id)
+        if (ok) await cascadeSoftDelete(parentDef, options, id, 'restore')
+        return ok
+      }
+    : helpers.restore
+
   // Replace `delete` with the soft-delete variant; expose the original
   // as `forceDelete` for the rare case callers want a real DELETE.
-  baseModel.softDelete = helpers.softDelete
-  baseModel.restore = helpers.restore
+  baseModel.softDelete = softDeleteFn
+  baseModel.restore = restoreFn
   baseModel.forceDelete = helpers.forceDelete
   baseModel.withTrashed = helpers.withTrashed
   baseModel.onlyTrashed = helpers.onlyTrashed
   // Override the static `delete` so the natural call path soft-deletes.
   // Callers that explicitly want a hard delete use `Model.forceDelete(id)`.
-  baseModel.delete = helpers.softDelete
+  baseModel.delete = softDeleteFn
 }
 
 /**
