@@ -136,8 +136,18 @@ class Mail {
   public async send(message: EmailMessage): Promise<EmailResult> {
     const driver = this.drivers.get(this.defaultDriver)
 
-    if (!driver)
-      throw new Error(`Email driver '${this.defaultDriver}' is not available`)
+    if (!driver) {
+      // Surface the typo helpfully — listing what's actually available
+      // is far more useful than a bare "not available". Most of the
+      // time this hits because `MAIL_MAILER` got typo'd in .env or the
+      // user picked a driver name from outdated docs.
+      const available = [...this.drivers.keys()].sort().join(', ')
+      throw new Error(
+        `Email driver '${this.defaultDriver}' is not registered. `
+        + `Available drivers: [${available}]. `
+        + `Check config.email.default or the MAIL_MAILER environment variable.`,
+      )
+    }
 
     const defaultFrom: EmailFromAddress = {
       name: config.email.from?.name || 'Stacks',
