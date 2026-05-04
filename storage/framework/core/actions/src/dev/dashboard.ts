@@ -23,10 +23,11 @@ console.warn = (...args: unknown[]) => {
   bufferedLogs.push(args.map(String).join(' '))
 }
 
+// Dashboard pages live directly under views/dashboard/. The earlier `pages/`
+// subdir layout was removed in #1838 — see the per-feature dirs (analytics/,
+// commerce/, content/, …) plus index.stx for the canonical structure.
 const dashboardPath = storagePath('framework/defaults/views/dashboard')
-const dashboardPagesPath = `${dashboardPath}/pages`
 const userDashboardPath = projectPath('resources/views/dashboard')
-const userDashboardPagesPath = `${userDashboardPath}/pages`
 const preferredPort = Number(process.env.PORT_ADMIN) || 3002
 // eslint-disable-next-line ts/no-top-level-await
 const dashboardPort = await findAvailablePort(preferredPort)
@@ -213,7 +214,7 @@ async function startStxServer(): Promise<void> {
   // serve() starts a long-lived server — do NOT await it.
   // It resolves only when the server stops, which is never during dev.
   const serverPromise = serve({
-    patterns: [userDashboardPagesPath, dashboardPagesPath],
+    patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
     componentsDir: storagePath('framework/defaults/resources/components/Dashboard'),
     layoutsDir: dashboardPath,
@@ -344,7 +345,15 @@ const [, discoveredModels] = await Promise.all([
 // Load dashboard section toggles from `config/dashboard.ts` if present.
 // Falls back to "everything enabled" when the file is missing or fails to
 // parse, so a fresh project (no dashboard config) still gets the full
-// sidebar.
+// sidebar. Shape mirrors `DashboardSectionToggles` in dashboard-utils.ts.
+type DataRowToggles = {
+  dashboard: boolean
+  activity: boolean
+  users: boolean
+  teams: boolean
+  subscribers: boolean
+  allModels: boolean
+}
 async function loadDashboardToggles(): Promise<{
   library: boolean
   content: boolean
@@ -353,6 +362,7 @@ async function loadDashboardToggles(): Promise<{
   analytics: boolean
   management: boolean
   utilities: boolean
+  data: DataRowToggles
 }> {
   const fallback = {
     library: true,
@@ -362,10 +372,13 @@ async function loadDashboardToggles(): Promise<{
     analytics: true,
     management: true,
     utilities: true,
+    data: { dashboard: true, activity: true, users: true, teams: true, subscribers: true, allModels: true } satisfies DataRowToggles,
   }
   try {
-    const mod = await import(projectPath('config/dashboard.ts')) as { default?: { sections?: Record<string, { enabled?: boolean }> } }
+    type SectionMap = Record<string, { enabled?: boolean }> & { data?: Record<string, { enabled?: boolean }> }
+    const mod = await import(projectPath('config/dashboard.ts')) as { default?: { sections?: SectionMap } }
     const sections = mod.default?.sections ?? {}
+    const data = sections.data ?? {}
     return {
       library: sections.library?.enabled ?? true,
       content: sections.content?.enabled ?? true,
@@ -374,6 +387,14 @@ async function loadDashboardToggles(): Promise<{
       analytics: sections.analytics?.enabled ?? true,
       management: sections.management?.enabled ?? true,
       utilities: sections.utilities?.enabled ?? true,
+      data: {
+        dashboard: data.dashboard?.enabled ?? true,
+        activity: data.activity?.enabled ?? true,
+        users: data.users?.enabled ?? true,
+        teams: data.teams?.enabled ?? true,
+        subscribers: data.subscribers?.enabled ?? true,
+        allModels: data.allModels?.enabled ?? true,
+      },
     }
   }
   catch {
@@ -414,7 +435,7 @@ const dashboardLocalUrl = `http://localhost:${dashboardPort}`
 // Use local HTTP URL — Craft webview loads directly, no proxy needed
 const baseRoute = dashboardLocalUrl
 const sidebarConfig = buildSidebarConfig(baseRoute, discoveredModels, dashboardToggles)
-const initialUrl = `http://localhost:${dashboardPort}/home?native-sidebar=1`
+const initialUrl = `http://localhost:${dashboardPort}/?native-sidebar=1`
 
 // Print vite-style output
 const elapsedMs = (Bun.nanoseconds() - startTime) / 1_000_000

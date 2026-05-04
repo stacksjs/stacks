@@ -30,6 +30,15 @@ interface DiscoveredModel {
   category?: ModelCategory
 }
 
+interface DataRowToggles {
+  dashboard: boolean
+  activity: boolean
+  users: boolean
+  teams: boolean
+  subscribers: boolean
+  allModels: boolean
+}
+
 interface DashboardSectionToggles {
   library: boolean
   content: boolean
@@ -38,11 +47,21 @@ interface DashboardSectionToggles {
   analytics: boolean
   management: boolean
   utilities: boolean
+  data: DataRowToggles
 }
 
 interface DiscoveredManifest {
   models: DiscoveredModel[]
   sections: DashboardSectionToggles
+}
+
+const DEFAULT_DATA_TOGGLES: DataRowToggles = {
+  dashboard: true,
+  activity: true,
+  users: true,
+  teams: true,
+  subscribers: true,
+  allModels: true,
 }
 
 const DEFAULT_TOGGLES: DashboardSectionToggles = {
@@ -53,6 +72,7 @@ const DEFAULT_TOGGLES: DashboardSectionToggles = {
   analytics: true,
   management: true,
   utilities: true,
+  data: DEFAULT_DATA_TOGGLES,
 }
 
 const SVG_OPEN = '<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">'
@@ -179,11 +199,12 @@ export function loadDiscoveredModels(): DiscoveredModel[] {
 /**
  * Pick discovered-model rows that belong to a category and turn them into
  * web-sidebar nav items. The row visually lives under the categorized
- * section but always links to `/data/<id>` because that's the only dynamic
- * model viewer route the dashboard ships — there is no `/commerce/[model]`,
- * `/content/[model]`, etc. catch-all. `dedicated` skips models the section
- * already surfaces as a hand-built static row (e.g. `/commerce/customers`
- * already exists, so the Customer model row would just duplicate it).
+ * section but always links to `/models/<id>` — that's the dashboard's
+ * dynamic ORM viewer (`views/dashboard/models/[model].stx`), and the
+ * only catch-all that resolves arbitrary slugs. `dedicated` skips models
+ * the section already surfaces as a hand-built static row (e.g.
+ * `/commerce/customers` already exists, so the Customer model row would
+ * just duplicate it).
  */
 function categoryNavItems(
   models: DiscoveredModel[],
@@ -193,7 +214,7 @@ function categoryNavItems(
   return models
     .filter(m => (m.category ?? 'data') === category)
     .filter(m => !m.hasDedicatedPage && !dedicated.has(m.id))
-    .map((m): NavItem => ({ to: `/data/${m.id}`, icon: 'table', text: m.name, mpa: true }))
+    .map((m): NavItem => ({ to: `/models/${m.id}`, icon: 'table', text: m.name, mpa: true }))
 }
 
 /**
@@ -213,12 +234,16 @@ export function buildSidebarNavHtml(
 ): string {
   const sections: Array<[string, string, NavItem[]]> = []
 
+  // Library section: views live at the project root (e.g. `/functions`,
+  // `/packages`, `/releases`). The historical `/library/*` URLs in the
+  // sidebar 404'd because no matching files exist under that prefix.
+  // `/components` is dropped — that path is taken by the STX components
+  // directory; there's no dashboard page for it.
   if (toggles.library) {
     sections.push(['library', 'library', [
-      { to: '/library/components', icon: 'puzzle', text: 'Components' },
-      { to: '/library/functions', icon: 'function', text: 'Functions' },
-      { to: '/library/releases', icon: 'list-number', text: 'Releases' },
-      { to: '/library/packages', icon: 'package', text: 'Packages' },
+      { to: '/functions', icon: 'function', text: 'Functions' },
+      { to: '/releases', icon: 'list-number', text: 'Releases' },
+      { to: '/packages', icon: 'package', text: 'Packages' },
     ]])
   }
 
@@ -239,41 +264,50 @@ export function buildSidebarNavHtml(
     ]])
   }
 
+  // App section: every page lives at a flat root path (`/jobs`, `/queue`,
+  // `/inbox`, etc.). The historical `/app/*` prefix never matched a real
+  // file. Notifications resolves to the dashboard variant
+  // (`/notifications/dashboard`); the bare `/notifications` redirects.
   sections.push(['app', 'app', [
-    { to: '/app/deployments', icon: 'rocket', text: 'Deployments' },
-    { to: '/app/requests', icon: 'api', text: 'Requests' },
-    { to: '/app/realtime', icon: 'link', text: 'Realtime' },
-    { to: '/app/actions', icon: 'bolt', text: 'Actions' },
-    { to: '/app/commands', icon: 'terminal', text: 'Commands' },
-    { to: '/app/queue', icon: 'queue', text: 'Queue' },
-    { to: '/app/jobs', icon: 'briefcase', text: 'Jobs' },
-    { to: '/app/jobs/history', icon: 'clock', text: 'Job History' },
-    { to: '/app/queries', icon: 'search', text: 'Queries' },
-    { to: '/app/queries/slow', icon: 'clock', text: 'Slow Queries' },
-    { to: '/app/queries/history', icon: 'log', text: 'Query History' },
-    { to: '/app/errors', icon: 'log', text: 'Errors' },
-    { to: '/app/notifications', icon: 'bell', text: 'Notifications' },
-    { to: '/app/inbox', icon: 'mail', text: 'Inbox' },
-    { to: '/app/inbox/activity', icon: 'activity', text: 'Mail Activity' },
-    { to: '/app/inbox/settings', icon: 'settings', text: 'Mail Settings' },
+    { to: '/deployments', icon: 'rocket', text: 'Deployments' },
+    { to: '/requests', icon: 'api', text: 'Requests' },
+    { to: '/realtime', icon: 'link', text: 'Realtime' },
+    { to: '/actions', icon: 'bolt', text: 'Actions' },
+    { to: '/commands', icon: 'terminal', text: 'Commands' },
+    { to: '/queue', icon: 'queue', text: 'Queue' },
+    { to: '/jobs', icon: 'briefcase', text: 'Jobs' },
+    { to: '/jobs/history', icon: 'clock', text: 'Job History' },
+    { to: '/queries', icon: 'search', text: 'Queries' },
+    { to: '/queries/slow', icon: 'clock', text: 'Slow Queries' },
+    { to: '/queries/history', icon: 'log', text: 'Query History' },
+    { to: '/errors', icon: 'log', text: 'Errors' },
+    { to: '/notifications/dashboard', icon: 'bell', text: 'Notifications' },
+    { to: '/inbox', icon: 'mail', text: 'Inbox' },
+    { to: '/inbox/activity', icon: 'activity', text: 'Mail Activity' },
+    { to: '/inbox/settings', icon: 'settings', text: 'Mail Settings' },
     ...categoryNavItems(discoveredModels, 'system', new Set()),
   ]])
 
-  // Data is now restricted to the base Stacks rows + ALL Models, plus
-  // anything the project actually defined under `app/Models/`. Commerce /
-  // content / marketing models live under their respective sections.
-  sections.push(['data', 'data', [
-    { to: '/data/dashboard', icon: 'dashboard', text: 'Dashboard' },
-    { to: '/data/activity', icon: 'activity', text: 'Activity' },
-    { to: '/data/users', icon: 'users', text: 'Users' },
-    { to: '/data/teams', icon: 'group', text: 'Teams' },
-    { to: '/data/subscribers', icon: 'mail', text: 'Subscribers' },
-    { to: '/data/models', icon: 'table', text: 'All Models' },
-    ...discoveredModels
-      .filter(m => m.category === 'userland' || m.category === 'data' || m.category === undefined)
-      .filter(m => !m.hasDedicatedPage)
-      .map((m): NavItem => ({ to: `/data/${m.id}`, icon: 'table', text: m.name, mpa: true })),
-  ]])
+  // Data section: configurable basic rows + ALL userland models + any
+  // root-level framework `data` models. Per-row toggles let projects hide
+  // the basic rows they don't need; userland models always appear.
+  // Per-model rows link to `/models/<id>` (dynamic ORM viewer); the
+  // built-in dashboard / activity / users / teams / subscribers rows keep
+  // their bespoke pages under `/data/<row>`.
+  const dataRows = toggles.data ?? DEFAULT_DATA_TOGGLES
+  const dataNav: NavItem[] = []
+  if (dataRows.dashboard) dataNav.push({ to: '/data/dashboard', icon: 'dashboard', text: 'Dashboard' })
+  if (dataRows.activity) dataNav.push({ to: '/data/activity', icon: 'activity', text: 'Activity' })
+  if (dataRows.users) dataNav.push({ to: '/data/users', icon: 'users', text: 'Users' })
+  if (dataRows.teams) dataNav.push({ to: '/data/teams', icon: 'group', text: 'Teams' })
+  if (dataRows.subscribers) dataNav.push({ to: '/data/subscribers', icon: 'mail', text: 'Subscribers' })
+  if (dataRows.allModels) dataNav.push({ to: '/models', icon: 'table', text: 'All Models' })
+  for (const m of discoveredModels) {
+    if (m.category !== 'userland' && m.category !== 'data' && m.category !== undefined) continue
+    if (m.hasDedicatedPage) continue
+    dataNav.push({ to: `/models/${m.id}`, icon: 'table', text: m.name, mpa: true })
+  }
+  sections.push(['data', 'data', dataNav])
 
   if (toggles.commerce) {
     sections.push(['commerce', 'commerce', [
@@ -306,15 +340,18 @@ export function buildSidebarNavHtml(
       ])),
     ]])
 
+    // Delivery section: routes/digital views ship under their full names
+    // (`delivery-routes.stx`, `digital-delivery.stx`), the abbreviated
+    // sidebar URLs from before never resolved.
     sections.push(['delivery', 'delivery', [
       { to: '/commerce/delivery', icon: 'truck', text: 'Overview' },
       { to: '/commerce/delivery/shipping-methods', icon: 'truck', text: 'Shipping Methods' },
       { to: '/commerce/delivery/shipping-rates', icon: 'percent', text: 'Shipping Rates' },
       { to: '/commerce/delivery/shipping-zones', icon: 'globe', text: 'Shipping Zones' },
       { to: '/commerce/delivery/drivers', icon: 'user', text: 'Drivers' },
-      { to: '/commerce/delivery/routes', icon: 'globe', text: 'Routes' },
+      { to: '/commerce/delivery/delivery-routes', icon: 'globe', text: 'Routes' },
       { to: '/commerce/delivery/license-keys', icon: 'lock', text: 'License Keys' },
-      { to: '/commerce/delivery/digital', icon: 'package', text: 'Digital Delivery' },
+      { to: '/commerce/delivery/digital-delivery', icon: 'package', text: 'Digital Delivery' },
     ]])
   }
 
@@ -328,6 +365,10 @@ export function buildSidebarNavHtml(
     ]])
   }
 
+  // Analytics section: commerce/sales sub-pages live under
+  // `analytics/commerce/{web,sales}.stx`. The bare `/analytics/commerce`
+  // and `/analytics/sales` URLs from before never resolved. `/goals`
+  // had no view file at all and is dropped.
   if (toggles.analytics) {
     sections.push(['analytics', 'analytics', [
       { to: '/analytics/web', icon: 'globe', text: 'Web' },
@@ -338,35 +379,39 @@ export function buildSidebarNavHtml(
       { to: '/analytics/browsers', icon: 'globe', text: 'Browsers' },
       { to: '/analytics/events', icon: 'bolt', text: 'Events' },
       { to: '/analytics/blog', icon: 'document', text: 'Blog' },
-      { to: '/analytics/goals', icon: 'target', text: 'Goals' },
-      { to: '/analytics/commerce', icon: 'cart', text: 'Commerce' },
-      { to: '/analytics/sales', icon: 'sale-tag', text: 'Sales' },
+      { to: '/analytics/commerce/web', icon: 'cart', text: 'Commerce' },
+      { to: '/analytics/commerce/sales', icon: 'sale-tag', text: 'Sales' },
       { to: '/analytics/marketing', icon: 'megaphone', text: 'Marketing' },
     ]])
   }
 
+  // Management section: every page is at the root path; only
+  // `permissions` lives under a `/management/` subdir. The bare
+  // `/management/<x>` URLs from before never resolved.
   if (toggles.management) {
     sections.push(['management', 'management', [
-      { to: '/management/cloud', icon: 'cloud', text: 'Cloud' },
-      { to: '/management/servers', icon: 'server', text: 'Servers' },
-      { to: '/management/serverless', icon: 'zap', text: 'Serverless' },
-      { to: '/management/dns', icon: 'globe-search', text: 'DNS' },
+      { to: '/cloud', icon: 'cloud', text: 'Cloud' },
+      { to: '/servers', icon: 'server', text: 'Servers' },
+      { to: '/serverless', icon: 'zap', text: 'Serverless' },
+      { to: '/dns', icon: 'globe-search', text: 'DNS' },
       { to: '/management/permissions', icon: 'lock', text: 'Permissions' },
-      { to: '/management/mailboxes', icon: 'mailbox', text: 'Mailboxes' },
-      { to: '/management/logs', icon: 'log', text: 'Logs' },
-      { to: '/management/health', icon: 'activity', text: 'Health' },
-      { to: '/management/insights', icon: 'star', text: 'Insights' },
+      { to: '/mailboxes', icon: 'mailbox', text: 'Mailboxes' },
+      { to: '/logs', icon: 'log', text: 'Logs' },
+      { to: '/health', icon: 'activity', text: 'Health' },
+      { to: '/insights', icon: 'star', text: 'Insights' },
     ]])
   }
 
+  // Utilities section: real paths are flat (`/buddy`, `/environment`,
+  // `/access-tokens`) or under `/settings/*` for billing/mail. The
+  // historical `/utilities/*` URLs were uniformly 404s.
   if (toggles.utilities) {
     sections.push(['utilities', 'utilities', [
-      { to: '/utilities/buddy', icon: 'terminal', text: 'Buddy CLI' },
-      { to: '/utilities/environment', icon: 'settings', text: 'Environment' },
-      { to: '/utilities/access-tokens', icon: 'lock', text: 'Access Tokens' },
-      { to: '/utilities/billing', icon: 'invoice', text: 'Billing' },
-      { to: '/utilities/mail', icon: 'mail', text: 'Mail Settings' },
-      { to: '/utilities/settings', icon: 'settings', text: 'Settings' },
+      { to: '/buddy', icon: 'terminal', text: 'Buddy CLI' },
+      { to: '/environment', icon: 'settings', text: 'Environment' },
+      { to: '/access-tokens', icon: 'lock', text: 'Access Tokens' },
+      { to: '/settings/billing', icon: 'invoice', text: 'Billing' },
+      { to: '/settings/mail', icon: 'mail', text: 'Mail Settings' },
     ]])
   }
 
@@ -387,6 +432,6 @@ export function buildSidebarChunks(): { top: string, nav: string, bottom: string
   return {
     top: `<a href="/" class="sidebar-link sidebar-link-home"><span class="sidebar-icon">${svg('home')}</span><span>Home</span></a>`,
     nav: buildSidebarNavHtml(manifest.models, manifest.sections),
-    bottom: `<a href="/utilities/settings" class="sidebar-link"><span class="sidebar-icon">${svg('settings')}</span><span>Settings</span></a>`,
+    bottom: `<a href="/settings/billing" class="sidebar-link"><span class="sidebar-icon">${svg('settings')}</span><span>Settings</span></a>`,
   }
 }

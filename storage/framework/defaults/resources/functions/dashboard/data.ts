@@ -222,6 +222,27 @@ export async function safeAll(Model: any): Promise<any[]> {
 }
 
 /**
+ * Run `Model.count()` and always resolve to a number — never throws. Falls
+ * back to `safeAll(Model).length` when the model has no `.count` method
+ * (rare, but the makeStub stub provides one so this is mostly defensive).
+ */
+export async function safeCount(Model: any): Promise<number> {
+  if (!Model) return 0
+  try {
+    if (typeof Model.count === 'function') {
+      const n = await Model.count()
+      return typeof n === 'number' ? n : 0
+    }
+  }
+  catch {
+    // count() may fail if the table doesn't exist; let safeAll absorb that
+    // by returning [] and we'll report 0 records.
+  }
+  const rows = await safeAll(Model)
+  return rows.length
+}
+
+/**
  * Read a column off a model row, tolerating both proxy-style rows
  * (`row.get('name')`) and plain object rows (`row.name`). Returns the
  * fallback when the column is missing or null/undefined.

@@ -365,6 +365,14 @@
     "marketing": true,
     "analytics": true,
     "management": true,
-    "utilities": true
+    "utilities": true,
+    "data": {
+      "dashboard": true,
+      "activity": true,
+      "users": true,
+      "teams": true,
+      "subscribers": true,
+      "allModels": true
+    }
   }
 }

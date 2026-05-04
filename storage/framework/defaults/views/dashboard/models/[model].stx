@@ -3,110 +3,140 @@
 @section('content')
 <script server>
 /**
- * Dynamic Model Page
- * Displays data from any model based on the URL parameter.
+ * Dynamic Model Page — renders any model's table at `/models/<slug>`.
+ *
+ * Pulls rows through the Stacks ORM via `loadModel(name)` (the same helper
+ * the rest of the dashboard uses), so userland models, framework defaults,
+ * and projects that swap a model's connection all render identically.
+ *
+ * If a slug doesn't have a matching ORM model file (rare — usually a
+ * lookup table or a userland-only schema), we fall back to a raw
+ * SQLite table read so the page still works. The fallback is the last
+ * resort; ORM-loaded data is always preferred because models can apply
+ * scopes, attribute casts, accessors, and observers that the bare table
+ * read misses.
+ *
+ * Static `import` (not dynamic `await import(...)`) so STX's CommonJS
+ * converter resolves the relative path against this template's directory.
+ * Dynamic imports are passed through verbatim and resolve against the
+ * bundled stx serve.js, which always 404s.
  */
-const { Database } = await import('bun:sqlite')
+import { loadModel, safeAll, safeGet } from '../../../resources/functions/dashboard/data'
 
-// Get the model name from the route parameter
 const modelSlug = route.params.model || ''
 
-// Convert kebab-case to PascalCase for model name
-function kebabToPascal(str) {
+// kebab-case slug → PascalCase model class name (`payment-method` → `PaymentMethod`)
+function slugToPascal(str) {
   return str
     .split('-')
     .map(word => word.charAt(0).toUpperCase() + word.slice(1))
     .join('')
 }
 
-// Convert PascalCase to snake_case for table name
+// PascalCase → snake_case for SQLite fallback (`PaymentMethod` → `payment_method`)
 function pascalToSnake(str) {
-  return str
-    .replace(/([a-z])([A-Z])/g, '$1_$2')
-    .toLowerCase()
+  return str.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 }
 
-// Pluralize a word (simple version)
+// Naive English pluralizer — handles `-y → -ies`, `-s/x/ch/sh → -es`, default `-s`.
+// Good enough for the conventional `Model` → `models` table mapping that Stacks uses.
 function pluralize(word) {
-  if (word.endsWith('y')) {
-    return word.slice(0, -1) + 'ies'
-  }
-  if (word.endsWith('s') || word.endsWith('x') || word.endsWith('ch') || word.endsWith('sh')) {
-    return word + 'es'
-  }
+  if (word.endsWith('y') && !/[aeiou]y$/.test(word)) return word.slice(0, -1) + 'ies'
+  if (/(?:s|x|ch|sh)$/.test(word)) return word + 'es'
   return word + 's'
 }
 
-const modelName = kebabToPascal(modelSlug)
+const modelName = slugToPascal(modelSlug)
 const tableName = pluralize(pascalToSnake(modelName))
 
-// Load data from database
 let rows = []
 let columns = []
 let totalCount = 0
+let source = 'orm'
 let error = null
 
+// Try ORM first — covers every model the dashboard knows about (and gracefully
+// stubs out unknown ones to empty arrays without throwing).
 try {
-  const db = new Database('database/stacks.sqlite')
+  const Model = await loadModel(modelName)
+  if (Model && !Model._isStub) {
+    const all = await safeAll(Model)
+    rows = all.slice(0, 50)
+    totalCount = all.length
 
-  // Get table info to determine columns
-  const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all()
-  columns = tableInfo.map(col => col.name)
-
-  // Get total count
-  const countResult = db.query(`SELECT COUNT(*) as count FROM ${tableName}`).get()
-  totalCount = countResult ? countResult.count : 0
-
-  // Get data with pagination (limit 50 for now)
-  rows = db.query(`SELECT * FROM ${tableName} ORDER BY id DESC LIMIT 50`).all()
-
-  db.close()
-} catch (e) {
-  error = e.message
+    if (rows.length > 0) {
+      // Some ORM rows are proxy objects with no enumerable own keys — read
+      // through `safeGet` after collecting the column set. Prefer the
+      // model's `attributes` getter when present (covers Stacks model
+      // proxies), falling back to Object.keys for plain rows.
+      const sample = rows[0]
+      const attrs = sample && typeof sample === 'object' && !Array.isArray(sample) ? sample.attributes ?? sample : sample
+      columns = Object.keys(attrs ?? {}).filter(k => typeof k === 'string' && !k.startsWith('_'))
+    }
+  }
+  else {
+    source = 'sqlite-fallback'
+  }
+}
+catch (e) {
+  source = 'sqlite-fallback'
+  error = e?.message
 }
 
-// Format date for display
-function formatDate(dateStr) {
-  if (!dateStr) return '-'
+// Fallback: raw SQLite read. Only runs when the ORM has no model file
+// for this slug (the `_isStub` branch above) or threw on import.
+if (source === 'sqlite-fallback' && rows.length === 0) {
   try {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
-  } catch {
-    return dateStr
+    const { Database } = await import('bun:sqlite')
+    const db = new Database('database/stacks.sqlite')
+    const tableInfo = db.query(`PRAGMA table_info(${tableName})`).all()
+    columns = tableInfo.map(col => col.name)
+    if (columns.length > 0) {
+      const countResult = db.query(`SELECT COUNT(*) as count FROM ${tableName}`).get()
+      totalCount = countResult ? countResult.count : 0
+      rows = db.query(`SELECT * FROM ${tableName} ORDER BY id DESC LIMIT 50`).all()
+      error = null
+    }
+    db.close()
+  }
+  catch (e) {
+    error = e?.message ?? String(e)
   }
 }
 
-// Format cell value for display
+function formatDate(value) {
+  if (!value) return '-'
+  try {
+    const date = new Date(value)
+    return Number.isNaN(date.getTime())
+      ? String(value)
+      : date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+  }
+  catch {
+    return String(value)
+  }
+}
+
 function formatCell(value, column) {
   if (value === null || value === undefined) return '-'
-  if (column === 'created_at' || column === 'updated_at' || column.endsWith('_at')) {
-    return formatDate(value)
-  }
+  if (column === 'created_at' || column === 'updated_at' || column.endsWith('_at')) return formatDate(value)
   if (typeof value === 'object') {
-    return JSON.stringify(value).substring(0, 50) + '...'
+    try { return JSON.stringify(value).slice(0, 80) }
+    catch { return '[object]' }
   }
-  if (typeof value === 'string' && value.length > 100) {
-    return value.substring(0, 100) + '...'
-  }
+  if (typeof value === 'string' && value.length > 100) return value.slice(0, 100) + '…'
   return String(value)
 }
 
-// Filter out internal columns for display
-const displayColumns = columns.filter(col =>
-  col !== 'password' &&
-  col !== 'remember_token' &&
-  !col.startsWith('_')
-)
+// Hide credential / token columns + private fields by default. Projects can
+// add their own redactions by extending this list in the future (see how
+// the dashboard observability endpoints redact env vars for the pattern).
+const HIDDEN_COLUMNS = new Set(['password', 'remember_token', 'api_token', 'access_token', 'refresh_token', 'secret'])
+const displayColumns = columns.filter(col => !HIDDEN_COLUMNS.has(col) && !col.startsWith('_'))
 </script>
 <div class="p-6 space-y-6">
 
-  <PageHeader :title="modelName" :description="`${totalCount} records in ${tableName}`">
+  <PageHeader :title="modelName" :description="`${totalCount} record${totalCount === 1 ? '' : 's'} · ${source === 'orm' ? 'via Stacks ORM' : 'raw SQLite (no model file)'}`">
     <template #actions>
       <Button variant="primary">
         <div class="h-4 w-4 i-hugeicons-add-01"></div>
@@ -116,25 +146,25 @@ const displayColumns = columns.filter(col =>
   </PageHeader>
 
   @if(error)
-    <!-- Error State -->
     <div class="p-6 bg-red-50 dark:bg-red-900/20 border border-red-200 rounded-xl dark:border-red-800">
       <div class="flex gap-3 items-start">
         <span class="flex-shrink-0 mt-0.5 h-5 w-5 text-red-500 i-hugeicons-alert-02"></span>
         <div>
-          <h3 class="font-medium text-red-800 dark:text-red-200">Error loading data</h3>
+          <h3 class="font-medium text-red-800 dark:text-red-200">Couldn't load {{ modelName }}</h3>
           <p class="mt-1 text-red-600 text-sm dark:text-red-300">{{ error }}</p>
+          <p class="mt-2 text-red-500 text-xs dark:text-red-400">
+            Looked for an ORM model named <code>{{ modelName }}</code> and a SQLite table named <code>{{ tableName }}</code>.
+          </p>
         </div>
       </div>
     </div>
   @elseif(rows.length === 0)
-    <!-- Empty State -->
     <div class="p-12 text-center bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
       <span class="mx-auto h-12 w-12 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-01"></span>
       <h3 class="mt-4 font-medium text-lg text-neutral-900 dark:text-white">No {{ modelName }} records</h3>
       <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Get started by creating a new {{ modelName }}.</p>
     </div>
   @else
-    <!-- Data Table -->
     <div class="overflow-hidden bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
       <div class="overflow-x-auto">
         <table class="min-w-full divide-neutral-200 divide-y dark:divide-neutral-800">
@@ -145,9 +175,7 @@ const displayColumns = columns.filter(col =>
                   {{ column.replace(/_/g, ' ') }}
                 </th>
               @endfor
-              <th class="px-4 py-3 font-medium text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">
-                Actions
-              </th>
+              <th class="px-4 py-3 font-medium text-neutral-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Actions</th>
             </tr>
           </thead>
           <tbody class="divide-neutral-200 divide-y dark:divide-neutral-800">
@@ -155,7 +183,7 @@ const displayColumns = columns.filter(col =>
               <tr class="hover:bg-neutral-50 dark:hover:bg-neutral-800/50 transition-colors">
                 @for(column of displayColumns)
                   <td class="px-4 py-3 max-w-xs text-neutral-900 text-sm truncate whitespace-nowrap dark:text-neutral-100">
-                    {{ formatCell(row[column], column) }}
+                    {{ formatCell(safeGet(row, column, null), column) }}
                   </td>
                 @endfor
                 <td class="px-4 py-3 text-right">
@@ -177,11 +205,10 @@ const displayColumns = columns.filter(col =>
         </table>
       </div>
 
-      <!-- Pagination Footer -->
       <div class="px-4 py-3 bg-neutral-50 dark:bg-neutral-800/30 border-neutral-200 border-t dark:border-neutral-800">
         <div class="flex items-center justify-between">
           <p class="text-neutral-500 text-sm dark:text-neutral-400">
-            Showing <span class="font-medium">{{ rows.length }}</span> of <span class="font-medium">{{ totalCount }}</span> results
+            Showing <span class="font-medium">{{ rows.length }}</span> of <span class="font-medium">{{ totalCount }}</span>
           </p>
           <div class="flex gap-2 items-center">
             <button class="px-3 py-1.5 font-medium text-neutral-600 text-sm dark:text-neutral-300 bg-white dark:bg-neutral-800 hover:bg-neutral-50 dark:hover:bg-neutral-700 border border-neutral-300 rounded-lg dark:border-neutral-600 disabled:opacity-50 transition-colors" disabled>
@@ -197,10 +224,6 @@ const displayColumns = columns.filter(col =>
   @endif
 </div>
 <style>
-/* Ensure tables don't overflow */
-.overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-}
+.overflow-x-auto { -webkit-overflow-scrolling: touch; }
 </style>
-
 @endsection

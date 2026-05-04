@@ -226,7 +226,7 @@ export async function waitForServer(port: number, maxWait = 500): Promise<boolea
   const start = Date.now()
   while (Date.now() - start < maxWait) {
     try {
-      const res = await fetch(`http://localhost:${port}/home`, { method: 'HEAD' })
+      const res = await fetch(`http://localhost:${port}/`, { method: 'HEAD' })
       if (res.ok || res.status === 404) return true
     }
     catch {
@@ -242,6 +242,11 @@ export async function waitForServer(port: number, maxWait = 500): Promise<boolea
  * present) and passed through buildSidebarConfig / buildSidebarNavHtml so the
  * commerce / content / marketing sections collapse out of the sidebar entirely
  * for projects that don't ship those features. Anything not specified is on.
+ *
+ * `data` is a per-row toggle map (instead of a single boolean) because the
+ * Data section is always relevant — projects just want to hide individual
+ * basic rows like Subscribers when they're not running a newsletter, while
+ * still seeing their userland models.
  */
 export interface DashboardSectionToggles {
   commerce?: boolean
@@ -251,15 +256,24 @@ export interface DashboardSectionToggles {
   management?: boolean
   utilities?: boolean
   library?: boolean
+  data?: {
+    dashboard?: boolean
+    activity?: boolean
+    users?: boolean
+    teams?: boolean
+    subscribers?: boolean
+    allModels?: boolean
+  }
 }
 
 /**
  * Pull `discoveredModels` rows for a given category and turn them into
  * native-sidebar items. The row visually lives under e.g. Commerce, but
- * the URL always points at `/data/<id>` because that's the only dynamic
- * model viewer route the dashboard ships — there is no `/commerce/[model]`
- * catch-all. The `dedicated` skip-set prevents double-listing models that
- * the section already surfaces as a hand-built static row.
+ * the URL always points at `/models/<id>` — that's the dashboard's
+ * dynamic ORM viewer (see `views/dashboard/models/[model].stx`), and
+ * the only catch-all that handles arbitrary model slugs. The `dedicated`
+ * skip-set prevents double-listing models that the section already
+ * surfaces as a hand-built static row.
  */
 function categoryRows(
   baseRoute: string,
@@ -274,7 +288,7 @@ function categoryRows(
       id: `model-${m.id}`,
       label: m.name,
       icon: m.icon,
-      url: `${baseRoute}/data/${m.id}`,
+      url: `${baseRoute}/models/${m.id}`,
     }))
 }
 
@@ -295,6 +309,14 @@ export function buildSidebarConfig(
     management: toggles.management ?? true,
     utilities: toggles.utilities ?? true,
   }
+  const dataRow = {
+    dashboard: toggles.data?.dashboard ?? true,
+    activity: toggles.data?.activity ?? true,
+    users: toggles.data?.users ?? true,
+    teams: toggles.data?.teams ?? true,
+    subscribers: toggles.data?.subscribers ?? true,
+    allModels: toggles.data?.allModels ?? true,
+  }
 
   const sections: Array<{ id: string, title: string, items: Array<{ id: string, label: string, icon: string, url: string }> }> = []
 
@@ -302,9 +324,9 @@ export function buildSidebarConfig(
     id: 'home',
     title: 'Home',
     items: [
-      { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/home` },
-      { id: 'dependencies', label: 'Dependencies', icon: 'shippingbox.fill', url: `${baseRoute}/home/dependencies` },
-      { id: 'services', label: 'Services', icon: 'square.stack.3d.up.fill', url: `${baseRoute}/home/services` },
+      { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/` },
+      { id: 'dependencies', label: 'Dependencies', icon: 'shippingbox.fill', url: `${baseRoute}/dependencies` },
+      { id: 'health', label: 'Health', icon: 'heart.text.square.fill', url: `${baseRoute}/health` },
     ],
   })
 
@@ -312,10 +334,12 @@ export function buildSidebarConfig(
     sections.push({
       id: 'library',
       title: 'Library',
+      // Library views live at the project root (`/functions`, `/packages`).
+      // The historical `/library/*` URLs in the sidebar 404'd; `/components`
+      // path collides with the STX components dir and has no dashboard page.
       items: [
-        { id: 'components', label: 'Components', icon: 'puzzlepiece.fill', url: `${baseRoute}/library/components` },
-        { id: 'functions', label: 'Functions', icon: 'function', url: `${baseRoute}/library/functions` },
-        { id: 'packages', label: 'Packages', icon: 'shippingbox.fill', url: `${baseRoute}/library/packages` },
+        { id: 'functions', label: 'Functions', icon: 'function', url: `${baseRoute}/functions` },
+        { id: 'packages', label: 'Packages', icon: 'shippingbox.fill', url: `${baseRoute}/packages` },
       ],
     })
   }
@@ -346,45 +370,65 @@ export function buildSidebarConfig(
   sections.push({
     id: 'app',
     title: 'App',
+    // Every page is at a flat root path (`/jobs`, `/queue`, `/inbox`, etc.).
+    // The historical `/app/*` prefix never matched a real file. Notifications
+    // resolves to the dashboard variant under `/notifications/dashboard`.
     items: [
-      { id: 'deployments', label: 'Deployments', icon: 'rocket.fill', url: `${baseRoute}/app/deployments` },
-      { id: 'requests', label: 'Requests', icon: 'arrow.left.arrow.right', url: `${baseRoute}/app/requests` },
-      { id: 'realtime', label: 'Realtime', icon: 'link', url: `${baseRoute}/app/realtime` },
-      { id: 'actions', label: 'Actions', icon: 'bolt.fill', url: `${baseRoute}/app/actions` },
-      { id: 'commands', label: 'Commands', icon: 'terminal.fill', url: `${baseRoute}/app/commands` },
-      { id: 'queue', label: 'Queue', icon: 'list.bullet.rectangle.fill', url: `${baseRoute}/app/queue` },
-      { id: 'jobs', label: 'Jobs', icon: 'briefcase.fill', url: `${baseRoute}/app/jobs` },
-      { id: 'inbox', label: 'Inbox', icon: 'tray.full.fill', url: `${baseRoute}/app/inbox` },
-      { id: 'queries', label: 'Queries', icon: 'magnifyingglass.circle.fill', url: `${baseRoute}/app/queries` },
-      { id: 'notifications', label: 'Notifications', icon: 'bell.fill', url: `${baseRoute}/app/notifications` },
+      { id: 'deployments', label: 'Deployments', icon: 'rocket.fill', url: `${baseRoute}/deployments` },
+      { id: 'requests', label: 'Requests', icon: 'arrow.left.arrow.right', url: `${baseRoute}/requests` },
+      { id: 'realtime', label: 'Realtime', icon: 'link', url: `${baseRoute}/realtime` },
+      { id: 'actions', label: 'Actions', icon: 'bolt.fill', url: `${baseRoute}/actions` },
+      { id: 'commands', label: 'Commands', icon: 'terminal.fill', url: `${baseRoute}/commands` },
+      { id: 'queue', label: 'Queue', icon: 'list.bullet.rectangle.fill', url: `${baseRoute}/queue` },
+      { id: 'jobs', label: 'Jobs', icon: 'briefcase.fill', url: `${baseRoute}/jobs` },
+      { id: 'inbox', label: 'Inbox', icon: 'tray.full.fill', url: `${baseRoute}/inbox` },
+      { id: 'queries', label: 'Queries', icon: 'magnifyingglass.circle.fill', url: `${baseRoute}/queries` },
+      { id: 'notifications', label: 'Notifications', icon: 'bell.fill', url: `${baseRoute}/notifications/dashboard` },
       ...categoryRows(baseRoute, discoveredModels, 'system', new Set()),
     ],
   })
 
-  // Data section is now strictly: base Stacks rows + ALL Models, plus any
-  // model the project actually defined under `app/Models/` (category =
-  // 'userland') and root-level framework models that fall back to 'data'.
-  // Commerce / content / marketing models no longer leak in here.
+  // Data section: configurable basic rows + ALL userland models + any
+  // root-level framework `data` models (category = 'data' or undefined).
+  // Each basic row honours `config/dashboard.ts` → `sections.data.<row>`
+  // so projects can hide what they don't use (e.g. set `subscribers:
+  // false` if there's no newsletter). Commerce/content/marketing models
+  // never leak in here; they live under their own sections.
+  //
+  // The "All Models" row points at /models (the overview page that lists
+  // every model with live counts). Per-model rows point at /models/<id>
+  // (the dynamic ORM viewer).
+  const dataItems: Array<{ id: string, label: string, icon: string, url: string }> = []
+  if (dataRow.dashboard)
+    dataItems.push({ id: 'data-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/data/dashboard` })
+  if (dataRow.activity)
+    dataItems.push({ id: 'activity', label: 'Activity', icon: 'waveform.path.ecg', url: `${baseRoute}/data/activity` })
+  if (dataRow.users)
+    dataItems.push({ id: 'users', label: 'Users', icon: 'person.crop.circle.fill', url: `${baseRoute}/data/users` })
+  if (dataRow.teams)
+    dataItems.push({ id: 'teams', label: 'Teams', icon: 'person.3.fill', url: `${baseRoute}/data/teams` })
+  if (dataRow.subscribers)
+    dataItems.push({ id: 'subscribers', label: 'Subscribers', icon: 'envelope.fill', url: `${baseRoute}/data/subscribers` })
+  if (dataRow.allModels)
+    dataItems.push({ id: 'data-models', label: 'All Models', icon: 'square.grid.2x2.fill', url: `${baseRoute}/models` })
+
+  // Always show every userland + root-level data model. The dedicatedPages
+  // skip-set keeps `users`, `teams`, `subscribers`, `activity` from
+  // appearing twice when the project also uses the basic rows above.
+  const dynamicRows = discoveredModels
+    .filter(m => m.category === 'userland' || m.category === 'data' || m.category === undefined)
+    .filter(m => !dedicatedPages.has(m.id))
+    .map(model => ({
+      id: `model-${model.id}`,
+      label: model.name,
+      icon: model.icon,
+      url: `${baseRoute}/models/${model.id}`,
+    }))
+
   sections.push({
     id: 'data',
     title: 'Data',
-    items: [
-      { id: 'data-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/data/dashboard` },
-      { id: 'activity', label: 'Activity', icon: 'waveform.path.ecg', url: `${baseRoute}/data/activity` },
-      { id: 'users', label: 'Users', icon: 'person.crop.circle.fill', url: `${baseRoute}/data/users` },
-      { id: 'teams', label: 'Teams', icon: 'person.3.fill', url: `${baseRoute}/data/teams` },
-      { id: 'subscribers', label: 'Subscribers', icon: 'envelope.fill', url: `${baseRoute}/data/subscribers` },
-      { id: 'data-models', label: 'All Models', icon: 'square.grid.2x2.fill', url: `${baseRoute}/data/models` },
-      ...discoveredModels
-        .filter(m => m.category === 'userland' || m.category === 'data' || m.category === undefined)
-        .filter(m => !dedicatedPages.has(m.id))
-        .map(model => ({
-          id: `model-${model.id}`,
-          label: model.name,
-          icon: model.icon,
-          url: `${baseRoute}/data/${model.id}`,
-        })),
-    ],
+    items: [...dataItems, ...dynamicRows],
   })
 
   if (enabled.commerce) {
@@ -426,39 +470,47 @@ export function buildSidebarConfig(
     sections.push({
       id: 'analytics',
       title: 'Analytics',
+      // Commerce sub-pages live under `analytics/commerce/{web,sales}.stx`;
+      // bare `/analytics/commerce` had no view file.
       items: [
         { id: 'analytics-web', label: 'Web', icon: 'globe', url: `${baseRoute}/analytics/web` },
         { id: 'analytics-blog', label: 'Blog', icon: 'doc.text.fill', url: `${baseRoute}/analytics/blog` },
-        { id: 'analytics-commerce', label: 'Commerce', icon: 'cart.fill', url: `${baseRoute}/analytics/commerce` },
+        { id: 'analytics-commerce', label: 'Commerce', icon: 'cart.fill', url: `${baseRoute}/analytics/commerce/web` },
         { id: 'analytics-marketing', label: 'Marketing', icon: 'megaphone.fill', url: `${baseRoute}/analytics/marketing` },
       ],
     })
   }
 
+  // Management views: every page is at a flat root path; only `permissions`
+  // lives under `/management/`. The historical `/management/<x>` URLs were
+  // uniformly 404s.
   if (enabled.management) {
     sections.push({
       id: 'management',
       title: 'Management',
       items: [
-        { id: 'cloud', label: 'Cloud', icon: 'cloud.fill', url: `${baseRoute}/management/cloud` },
-        { id: 'servers', label: 'Servers', icon: 'server.rack', url: `${baseRoute}/management/servers` },
-        { id: 'serverless', label: 'Serverless', icon: 'bolt.horizontal.circle.fill', url: `${baseRoute}/management/serverless` },
-        { id: 'dns', label: 'DNS', icon: 'network', url: `${baseRoute}/management/dns` },
-        { id: 'mailboxes', label: 'Mailboxes', icon: 'tray.full.fill', url: `${baseRoute}/management/mailboxes` },
-        { id: 'logs', label: 'Logs', icon: 'list.bullet.rectangle.portrait.fill', url: `${baseRoute}/management/logs` },
+        { id: 'cloud', label: 'Cloud', icon: 'cloud.fill', url: `${baseRoute}/cloud` },
+        { id: 'servers', label: 'Servers', icon: 'server.rack', url: `${baseRoute}/servers` },
+        { id: 'serverless', label: 'Serverless', icon: 'bolt.horizontal.circle.fill', url: `${baseRoute}/serverless` },
+        { id: 'dns', label: 'DNS', icon: 'network', url: `${baseRoute}/dns` },
+        { id: 'mailboxes', label: 'Mailboxes', icon: 'tray.full.fill', url: `${baseRoute}/mailboxes` },
+        { id: 'logs', label: 'Logs', icon: 'list.bullet.rectangle.portrait.fill', url: `${baseRoute}/logs` },
       ],
     })
   }
 
+  // Utilities views: real paths are flat (`/buddy`, `/environment`,
+  // `/access-tokens`) or under `/settings/*` for billing/mail. The
+  // historical `/utilities/*` URLs uniformly 404'd.
   if (enabled.utilities) {
     sections.push({
       id: 'utilities',
       title: 'Utilities',
       items: [
-        { id: 'buddy', label: 'AI Buddy', icon: 'bubble.left.and.bubble.right.fill', url: `${baseRoute}/utilities/buddy` },
-        { id: 'environment', label: 'Environment', icon: 'key.fill', url: `${baseRoute}/utilities/environment` },
-        { id: 'access-tokens', label: 'Access Tokens', icon: 'key.horizontal.fill', url: `${baseRoute}/utilities/access-tokens` },
-        { id: 'settings', label: 'Settings', icon: 'gear', url: `${baseRoute}/utilities/settings` },
+        { id: 'buddy', label: 'AI Buddy', icon: 'bubble.left.and.bubble.right.fill', url: `${baseRoute}/buddy` },
+        { id: 'environment', label: 'Environment', icon: 'key.fill', url: `${baseRoute}/environment` },
+        { id: 'access-tokens', label: 'Access Tokens', icon: 'key.horizontal.fill', url: `${baseRoute}/access-tokens` },
+        { id: 'settings', label: 'Settings', icon: 'gear', url: `${baseRoute}/settings/billing` },
       ],
     })
   }
@@ -477,5 +529,5 @@ export function buildSidebarConfig(
  * NSOutlineView own that 240px column.
  */
 export function buildDashboardUrl(port: number): string {
-  return `http://localhost:${port}/home?native-sidebar=1`
+  return `http://localhost:${port}/?native-sidebar=1`
 }

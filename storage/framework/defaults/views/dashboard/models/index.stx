@@ -3,80 +3,146 @@
 @section('content')
 <script server>
 /**
- * Models Overview Page
- * Shows all available models with their record counts.
+ * Models Overview — every model the project knows about, with live record
+ * counts pulled through the Stacks ORM (raw SQLite COUNT(*) when there's
+ * no model file for a table).
+ *
+ * Walks two sources:
+ *   1. `app/Models/`                                — userland definitions
+ *   2. `storage/framework/defaults/app/Models/**`   — framework defaults
+ *
+ * Userland always wins on name collision (same precedence as `loadModel`),
+ * so projects that override a default model see their own row, not both.
+ *
+ * STX 0.2.42+ resolves relative paths in both `import { } from './x'` and
+ * `await import('./x')` forms, so either spelling works. Static imports
+ * are used for hot helpers we always need; `node:fs` / `node:path` use
+ * dynamic imports because they live in Bun's lazy-loaded module graph.
  */
-const { Database } = await import('bun:sqlite')
+import { loadModel, safeCount } from '../../../resources/functions/dashboard/data'
+
 const fs = await import('node:fs')
 const path = await import('node:path')
 
-// Get list of models from app/Models directory
-function getModels() {
-  const modelsDir = path.join(process.cwd(), 'app', 'Models')
-  const models = []
+const cwd = process.cwd()
+const userlandDir = path.join(cwd, 'app', 'Models')
+const defaultsDir = path.join(cwd, 'storage/framework/defaults/app/Models')
 
-  try {
-    const files = fs.readdirSync(modelsDir)
-    const db = new Database('database/stacks.sqlite')
-
-    for (const file of files) {
-      if (file.endsWith('.ts') && !file.startsWith('index') && !file.startsWith('_') && !file.startsWith('README')) {
-        const modelName = file.replace('.ts', '')
-        // Convert PascalCase to snake_case for table name
-        const tableName = modelName
-          .replace(/([a-z])([A-Z])/g, '$1_$2')
-          .toLowerCase()
-
-        // Pluralize
-        let tableNamePlural = tableName
-        if (tableName.endsWith('y')) {
-          tableNamePlural = tableName.slice(0, -1) + 'ies'
-        } else if (tableName.endsWith('s') || tableName.endsWith('x') || tableName.endsWith('ch') || tableName.endsWith('sh')) {
-          tableNamePlural = tableName + 'es'
-        } else {
-          tableNamePlural = tableName + 's'
-        }
-
-        // Get record count
-        let count = 0
-        try {
-          const result = db.query(`SELECT COUNT(*) as count FROM ${tableNamePlural}`).get()
-          count = result ? result.count : 0
-        } catch {
-          // Table might not exist
-        }
-
-        // Convert PascalCase to kebab-case for URL
-        const urlSlug = modelName
-          .replace(/([a-z])([A-Z])/g, '$1-$2')
-          .toLowerCase()
-
-        models.push({
-          name: modelName,
-          table: tableNamePlural,
-          count: count,
-          href: `/models/${urlSlug}`,
-        }
-      }
-    }
-
-    db.close()
-  } catch (e) {
-    // If directory doesn't exist, return empty array
-  }
-
-  // Sort alphabetically by name
-  models.sort((a, b) => a.name.localeCompare(b.name))
-  return models
+function pascalToSnake(s) {
+  return s.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()
 }
 
-const models = getModels()
-const totalModels = models.length
-const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
+function pascalToKebab(s) {
+  return s.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
+}
+
+function pluralize(word) {
+  if (word.endsWith('y') && !/[aeiou]y$/.test(word)) return word.slice(0, -1) + 'ies'
+  if (/(?:s|x|ch|sh)$/.test(word)) return word + 'es'
+  return word + 's'
+}
+
+// Recursive walk of the framework defaults tree (commerce/, Content/,
+// realtime/, etc. all live in subdirs). User dir is shallow because the
+// scaffolder always writes flat there.
+function walkModels(dir, recursive) {
+  const out = []
+  if (!fs.existsSync(dir)) return out
+  const entries = fs.readdirSync(dir, { withFileTypes: true })
+  for (const ent of entries) {
+    const full = path.join(dir, ent.name)
+    if (ent.isDirectory()) {
+      if (recursive) out.push(...walkModels(full, true))
+      continue
+    }
+    if (!ent.name.endsWith('.ts')) continue
+    if (ent.name.startsWith('_') || ent.name === 'index.ts' || ent.name === 'README.ts') continue
+    out.push({ name: ent.name.replace('.ts', ''), file: full })
+  }
+  return out
+}
+
+const userland = walkModels(userlandDir, false)
+const defaults = walkModels(defaultsDir, true)
+
+// Userland-first dedupe — a project that re-defines `User` in app/Models
+// shouldn't also see the framework `User` row.
+const seen = new Set()
+const merged = []
+for (const list of [userland, defaults]) {
+  for (const m of list) {
+    if (seen.has(m.name)) continue
+    seen.add(m.name)
+    merged.push({ ...m, source: list === userland ? 'userland' : 'framework' })
+  }
+}
+
+// Categorize so the UI can group userland separately from framework defaults.
+// Anything under `commerce/`, `Content/`, etc. in the defaults tree gets
+// the dir name as its category; userland is always 'userland'.
+function categorize(model) {
+  if (model.source === 'userland') return 'userland'
+  const segs = model.file.split('/Models/')[1]?.split('/') ?? []
+  if (segs.length > 1) return segs[0].toLowerCase()
+  return 'framework'
+}
+
+// Build the enriched list sequentially. Promise.all + map can leave the
+// IIFE that wraps `<script server>` blocks in STX with a half-completed
+// scope when a single map iteration throws — sequential awaits give us
+// per-row error containment via safeCount/loadModel's own try/catch and
+// keep top-level `const`s reachable downstream.
+const enriched = []
+for (const m of merged) {
+  const Model = await loadModel(m.name)
+  const count = await safeCount(Model)
+  enriched.push({
+    name: m.name,
+    table: pluralize(pascalToSnake(m.name)),
+    href: `/models/${pascalToKebab(m.name)}`,
+    count,
+    category: categorize(m),
+    source: m.source,
+  })
+}
+
+enriched.sort((a, b) => a.name.localeCompare(b.name))
+
+const totalModels = enriched.length
+const totalRecords = enriched.reduce((sum, m) => sum + m.count, 0)
+const userlandCount = enriched.filter(m => m.source === 'userland').length
+
+// Group by category for rendered sections. `userland` always renders
+// first. The list-of-objects shape (rather than Object.entries tuples)
+// avoids `entry[0]` / `entry[1]` indexing in the template — STX's
+// template parser is happier with named properties.
+const orderedCategories = ['userland', 'framework', 'commerce', 'content', 'marketing', 'realtime']
+const categoryOrder = (k) => {
+  const idx = orderedCategories.indexOf(k)
+  return idx === -1 ? orderedCategories.length : idx
+}
+const categoryLabel = (k) => k === 'userland' ? 'Your Models' : k.charAt(0).toUpperCase() + k.slice(1)
+
+const groupMap = {}
+for (const m of enriched) {
+  if (!groupMap[m.category]) groupMap[m.category] = []
+  groupMap[m.category].push(m)
+}
+const categoryGroups = Object.keys(groupMap)
+  .sort((a, b) => categoryOrder(a) - categoryOrder(b))
+  .map(key => ({ key, label: categoryLabel(key), models: groupMap[key] }))
+
+// Pre-compute the per-group card-count label so the template doesn't need
+// any conditional logic — STX's @if-inside-@for only got fixed in 0.2.42,
+// but offloading "1 model" / "N models" pluralization to the script keeps
+// the template simple either way.
+for (const group of categoryGroups) {
+  group.countLabel = `${group.models.length} model${group.models.length === 1 ? '' : 's'}`
+}
 </script>
 <div class="p-6 space-y-6">
 
-  <PageHeader title="Models" :description="`${totalModels} models with ${totalRecords} total records`">
+  <PageHeader title="Models" :description="`${totalModels} models · ${userlandCount} userland · ${totalRecords.toLocaleString()} total records`">
     <template #actions>
       <Button variant="primary">
         <div class="h-4 w-4 i-hugeicons-add-01"></div>
@@ -85,7 +151,6 @@ const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
     </template>
   </PageHeader>
 
-  <!-- Stats Cards -->
   <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
     <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
       <div class="flex gap-4 items-center">
@@ -112,53 +177,55 @@ const totalRecords = models.reduce((sum, m) => sum + m.count, 0)
     <div class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
       <div class="flex gap-4 items-center">
         <div class="p-3 bg-purple-100 dark:bg-purple-900/30 rounded-lg">
-          <span class="h-6 w-6 text-purple-600 dark:text-purple-400 i-hugeicons-chart-average"></span>
+          <span class="h-6 w-6 text-purple-600 dark:text-purple-400 i-hugeicons-folder-02"></span>
         </div>
         <div>
-          <p class="text-neutral-500 text-sm dark:text-neutral-400">Avg Records/Model</p>
-          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ totalModels > 0 ? Math.round(totalRecords / totalModels) : 0 }}</p>
+          <p class="text-neutral-500 text-sm dark:text-neutral-400">Your Models</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ userlandCount }}</p>
         </div>
       </div>
     </div>
   </div>
 
-  <!-- Models Grid -->
-  <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
-    @for(model of models)
-      <a
-        href="{{ model.href }}"
-        class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all group"
-      >
-        <div class="flex items-start justify-between">
-          <div class="flex gap-3 items-center">
-            <div class="p-2 bg-neutral-100 dark:bg-neutral-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-lg transition-colors">
-              <span class="h-5 w-5 text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 i-hugeicons-database-01"></span>
+  @for(const group of categoryGroups)
+    <div class="space-y-3">
+      <div class="flex items-baseline justify-between">
+        <h3 class="font-semibold text-base text-neutral-900 dark:text-white">{{ group.label }}</h3>
+        <span class="text-neutral-500 text-xs dark:text-neutral-400">{{ group.countLabel }}</span>
+      </div>
+      <div class="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
+        @for(const m of group.models)
+          <a
+            href="{{ m.href }}"
+            class="p-5 bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800 hover:border-blue-300 dark:hover:border-blue-700 hover:shadow-sm transition-all group"
+          >
+            <div class="flex items-start justify-between">
+              <div class="flex gap-3 items-center">
+                <div class="p-2 bg-neutral-100 dark:bg-neutral-800 group-hover:bg-blue-100 dark:group-hover:bg-blue-900/30 rounded-lg transition-colors">
+                  <span class="h-5 w-5 text-neutral-500 dark:text-neutral-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 i-hugeicons-database-01"></span>
+                </div>
+                <div>
+                  <h3 class="font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">{{ m.name }}</h3>
+                  <p class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ m.table }}</p>
+                </div>
+              </div>
+              <span class="h-5 w-5 text-neutral-300 dark:text-neutral-600 group-hover:text-blue-500 transition-colors i-hugeicons-arrow-right-01"></span>
             </div>
-            <div>
-              <h3 class="font-medium text-neutral-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
-                {{ model.name }}
-              </h3>
-              <p class="font-mono text-neutral-500 text-xs dark:text-neutral-400">{{ model.table }}</p>
+            <div class="flex items-center justify-between mt-4 pt-4 text-sm border-neutral-100 border-t dark:border-neutral-800">
+              <span class="text-neutral-500 dark:text-neutral-400">Records</span>
+              <span class="font-medium text-neutral-900 dark:text-white">{{ m.count.toLocaleString() }}</span>
             </div>
-          </div>
-          <span class="h-5 w-5 text-neutral-300 dark:text-neutral-600 group-hover:text-blue-500 transition-colors i-hugeicons-arrow-right-01"></span>
-        </div>
-        <div class="mt-4 pt-4 border-neutral-100 border-t dark:border-neutral-800">
-          <div class="flex items-center justify-between text-sm">
-            <span class="text-neutral-500 dark:text-neutral-400">Records</span>
-            <span class="font-medium text-neutral-900 dark:text-white">{{ model.count.toLocaleString() }}</span>
-          </div>
-        </div>
-      </a>
-    @endfor
-  </div>
+          </a>
+        @endfor
+      </div>
+    </div>
+  @endfor
 
-  @if(models.length === 0)
-    <!-- Empty State -->
+  @if(totalModels === 0)
     <div class="p-12 text-center bg-white dark:bg-neutral-900 border border-neutral-200 rounded-xl dark:border-neutral-800">
       <span class="mx-auto h-12 w-12 text-neutral-300 dark:text-neutral-600 i-hugeicons-database-01"></span>
       <h3 class="mt-4 font-medium text-lg text-neutral-900 dark:text-white">No models found</h3>
-      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Create your first model to get started.</p>
+      <p class="mt-2 text-neutral-500 text-sm dark:text-neutral-400">Create your first model with <code>./buddy make:model</code> to get started.</p>
     </div>
   @endif
 </div>
