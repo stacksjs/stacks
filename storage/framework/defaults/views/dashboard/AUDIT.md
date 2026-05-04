@@ -6,17 +6,17 @@ _Generated 2026-05-04 from `storage/framework/defaults/views/dashboard/`._
 
 | Metric | Count |
 |---|---:|
-| Total `.stx` files | 173 |
-| `<script server>` blocks | 160 |
-| `<script client>` blocks | 80 |
-| Bare `<script>` blocks (no qualifier) | 12 |
-| `window.` / `document.` lines | 162 |
+| Total `.stx` files | 110 |
+| `<script server>` blocks | 98 |
+| `<script client>` blocks | 78 |
+| Bare `<script>` blocks (no qualifier) | 11 |
+| `window.` / `document.` lines | 168 |
 | Files importing from `stores/` | 0 |
 | Files importing `@stacksjs/components` | 0 |
 
-### Two structures live side-by-side
+### Routing setup
 
-`dashboard/pages/` is a 63-file parallel layout (`pages/analytics/blog.stx`, `pages/commerce/orders.stx`, …) running alongside the per-feature top-level dirs (`analytics/`, `commerce/`, …). Both use `<script server>`. Worth deciding which layout is canonical before sweeping — the migration plan below treats `pages/*` as one batched area, but if `pages/` is being deprecated the cleanest play is to delete it first.
+Per `dashboard/stx.config.ts`, `pagesDir: 'views'` (with `root: 'resources'`) — meaning every top-level dir under `dashboard/` is a route group. The support dirs (`components/`, `composables/`, `layouts/`, `stores/`) are the only non-routed ones.
 
 ## Per-area roll-up
 
@@ -43,7 +43,7 @@ _Generated 2026-05-04 from `storage/framework/defaults/views/dashboard/`._
 | `inbox` | 3 | 3 | 3 | 0 | 7 | 0 | 0 |
 | `insights` | 1 | 1 | 1 | 0 | 4 | 0 | 0 |
 | `jobs` | 3 | 3 | 3 | 0 | 2 | 0 | 0 |
-| `layouts` | 2 | 0 | 1 | 0 | 2 | 0 | 0 |
+| `layouts` | 2 | 1 | 2 | 0 | 15 | 0 | 0 |
 | `logs` | 1 | 1 | 1 | 0 | 2 | 0 | 0 |
 | `mailboxes` | 1 | 1 | 1 | 0 | 1 | 0 | 0 |
 | `management` | 1 | 1 | 1 | 0 | 2 | 0 | 0 |
@@ -52,7 +52,6 @@ _Generated 2026-05-04 from `storage/framework/defaults/views/dashboard/`._
 | `monitoring` | 1 | 1 | 1 | 0 | 0 | 0 | 0 |
 | `notifications` | 4 | 4 | 3 | 0 | 2 | 0 | 0 |
 | `packages` | 1 | 1 | 1 | 0 | 2 | 0 | 0 |
-| `pages` | 63 | 63 | 3 | 1 | 7 | 0 | 0 |
 | `queries` | 4 | 4 | 2 | 0 | 2 | 0 | 0 |
 | `queue` | 1 | 1 | 1 | 0 | 2 | 0 | 0 |
 | `realtime` | 1 | 1 | 1 | 0 | 1 | 0 | 0 |
@@ -255,7 +254,7 @@ Columns: file → `<script server>` count, `<script client>` count, bare `<scrip
 
 | File | server | client | bare | DOM | store | components |
 |---|---:|---:|---:|---:|:---:|:---:|
-| `layouts/default.stx` | 0 | 1 | 0 | 2 |  |  |
+| `layouts/default.stx` | 1 | 2 | 0 | 15 |  |  |
 | `layouts/guest.stx` | 0 | 0 | 0 | 0 |  |  |
 
 ### `logs/`
@@ -312,74 +311,6 @@ Columns: file → `<script server>` count, `<script client>` count, bare `<scrip
 | File | server | client | bare | DOM | store | components |
 |---|---:|---:|---:|---:|:---:|:---:|
 | `packages/index.stx` | 1 | 1 | 0 | 2 |  |  |
-
-### `pages/`
-
-| File | server | client | bare | DOM | store | components |
-|---|---:|---:|---:|---:|:---:|:---:|
-| `pages/analytics/blog.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/analytics/commerce.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/analytics/goals.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/analytics/marketing.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/analytics/sales.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/analytics/web.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/actions.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/commands.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/deployments.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/jobs.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/notifications.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/queries.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/queue.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/realtime.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/app/requests.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/coupons.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/customers.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/dashboard.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/delivery.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/gift-cards.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/orders.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/payments.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/pos.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/products.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/commerce/taxes.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/authors.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/categories.stx` | 1 | 1 | 0 | 1 |  |  |
-| `pages/content/comments.stx` | 1 | 1 | 0 | 1 |  |  |
-| `pages/content/dashboard.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/files.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/pages.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/posts.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/seo.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/content/tags.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/data/[model].stx` | 1 | 1 | 0 | 0 |  |  |
-| `pages/data/activity.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/data/dashboard.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/data/subscribers.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/data/teams.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/data/users.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/home.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/home/dependencies.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/home/services.stx` | 1 | 0 | 1 | 5 |  |  |
-| `pages/index.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/library/components.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/library/functions.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/library/packages.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/library/releases.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/cloud.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/dns.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/logs.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/mailboxes.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/permissions.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/serverless.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/management/servers.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/marketing/campaigns.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/marketing/lists.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/marketing/reviews.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/marketing/social-posts.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/utilities/access-tokens.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/utilities/buddy.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/utilities/environment.stx` | 1 | 0 | 0 | 0 |  |  |
-| `pages/utilities/settings.stx` | 1 | 0 | 0 | 0 |  |  |
 
 ### `queries/`
 
@@ -760,6 +691,19 @@ Each line below is a future composable target. Lines truncated to 100 chars.
 ```
 69: window.craft = window.craft || {}
 70: window.craft._sidebarSelectHandler = (event) => {
+81: // Craft sidebar takes over inside the macOS window. We pick which one
+85: //   2. `window.__craftNativeSidebar` — set by Craft's WKUserScript
+86: //   3. `window.craft.window` — Craft's JS bridge is bound (window mode)
+91: document.documentElement.setAttribute('data-has-stacks-sidebar', 'true')
+92: var hasFlag = Boolean(window.__craftNativeSidebar)
+93: var hasApi = Boolean(window.craft && window.craft.window)
+94: var hasParam = window.location.search.indexOf('native-sidebar=1') !== -1
+96: window.__craftNativeSidebar = true
+97: document.documentElement.setAttribute('data-craft-native-sidebar', 'true')
+102: if (!document.getElementById('stacks-sidebar-globals')) {
+103: var s = document.createElement('style')
+111: document.head.appendChild(s)
+119: var secs = document.querySelectorAll('.sidebar-section[data-section]')
 ```
 
 ### `logs/index.stx`
@@ -816,28 +760,6 @@ Each line below is a future composable target. Lines truncated to 100 chars.
 ```
 837: const chart_1_ctx = document.getElementById('chart_1')
 846: const chart_2_ctx = document.getElementById('chart_2')
-```
-
-### `pages/content/categories.stx`
-
-```
-266: document.addEventListener('keydown', function(e) {
-```
-
-### `pages/content/comments.stx`
-
-```
-264: document.addEventListener('keydown', function(e) {
-```
-
-### `pages/home/services.stx`
-
-```
-20: const panel = document.getElementById('edit-' + id);
-24: const allPanels = document.querySelectorAll('[data-edit-panel]');
-31: const panel = document.getElementById('edit-' + panelId);
-67: window._toggleEdit = toggleEdit;
-68: window._saveConfig = saveConfig;
 ```
 
 ### `queries/index.stx`
@@ -922,13 +844,6 @@ Each batch is one feature area. Anything > ~12 files is split into sub-batches.
 - **monitoring** (1 files): `monitoring/errors/index.stx`
 - **notifications** (4 files): `notifications/dashboard.stx`, `notifications/email.stx`, `notifications/history.stx`, `notifications/sms.stx`
 - **packages** (1 files): `packages/index.stx`
-- **pages** [1/7] (9 files): `pages/analytics/blog.stx`, `pages/analytics/commerce.stx`, `pages/analytics/goals.stx`, `pages/analytics/marketing.stx`, `pages/analytics/sales.stx`, `pages/analytics/web.stx`, `pages/app/actions.stx`, `pages/app/commands.stx`, `pages/app/deployments.stx`
-- **pages** [2/7] (9 files): `pages/app/jobs.stx`, `pages/app/notifications.stx`, `pages/app/queries.stx`, `pages/app/queue.stx`, `pages/app/realtime.stx`, `pages/app/requests.stx`, `pages/commerce/coupons.stx`, `pages/commerce/customers.stx`, `pages/commerce/dashboard.stx`
-- **pages** [3/7] (9 files): `pages/commerce/delivery.stx`, `pages/commerce/gift-cards.stx`, `pages/commerce/orders.stx`, `pages/commerce/payments.stx`, `pages/commerce/pos.stx`, `pages/commerce/products.stx`, `pages/commerce/taxes.stx`, `pages/content/authors.stx`, `pages/content/categories.stx`
-- **pages** [4/7] (9 files): `pages/content/comments.stx`, `pages/content/dashboard.stx`, `pages/content/files.stx`, `pages/content/pages.stx`, `pages/content/posts.stx`, `pages/content/seo.stx`, `pages/content/tags.stx`, `pages/data/[model].stx`, `pages/data/activity.stx`
-- **pages** [5/7] (9 files): `pages/data/dashboard.stx`, `pages/data/subscribers.stx`, `pages/data/teams.stx`, `pages/data/users.stx`, `pages/home.stx`, `pages/home/dependencies.stx`, `pages/home/services.stx`, `pages/index.stx`, `pages/library/components.stx`
-- **pages** [6/7] (9 files): `pages/library/functions.stx`, `pages/library/packages.stx`, `pages/library/releases.stx`, `pages/management/cloud.stx`, `pages/management/dns.stx`, `pages/management/logs.stx`, `pages/management/mailboxes.stx`, `pages/management/permissions.stx`, `pages/management/serverless.stx`
-- **pages** [7/7] (9 files): `pages/management/servers.stx`, `pages/marketing/campaigns.stx`, `pages/marketing/lists.stx`, `pages/marketing/reviews.stx`, `pages/marketing/social-posts.stx`, `pages/utilities/access-tokens.stx`, `pages/utilities/buddy.stx`, `pages/utilities/environment.stx`, `pages/utilities/settings.stx`
 - **queries** (4 files): `queries/[id].stx`, `queries/history.stx`, `queries/index.stx`, `queries/slow.stx`
 - **queue** (1 files): `queue/index.stx`
 - **realtime** (1 files): `realtime/index.stx`
