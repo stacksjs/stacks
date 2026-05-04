@@ -621,25 +621,31 @@ async function addGiftCard() {
   @endif
 </main>
 <script client>
-import { onDestroy, onMount } from 'stx'
-import { useCharts } from '../../composables'
-
 const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
-const { destroyAll } = useCharts([
-  { Chart, id: 'chart_1', type: 'line', data: monthlyChartData.giftCardSalesData, options: chartOptions },
-  { Chart, id: 'chart_2', type: 'bar', data: monthlyChartData.giftCardRevenueData, options: chartOptions },
-])
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: monthlyChartData.giftCardSalesData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: monthlyChartData.giftCardRevenueData,
+    options: chartOptions,
+  })
+}
+
+import { onMount } from 'stx'
 
 onMount(async () => {
   await fetchGiftCards()
-})
-
-// Tear charts down on SPA navigation so chart.js doesn't leak canvases
-// across page transitions.
-onDestroy(() => {
-  destroyAll()
 })
 </script>
 
