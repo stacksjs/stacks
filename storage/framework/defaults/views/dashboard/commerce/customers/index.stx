@@ -7,9 +7,12 @@ definePageMeta({
 })
 
 import { useCustomers } from '../../../../functions/commerce/customers'
+import { useNavigation } from '../../composables'
 import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+
+const nav = useNavigation()
 
 // Get customers data and functions from the composable
 const { customers, createCustomer, fetchCustomers, deleteCustomer } = useCustomers()
@@ -98,11 +101,11 @@ function toggleSort(column: string): void {
 
 // Customer actions
 function viewCustomer(customer: any): void {
-  window.location.href = `/dashboard/commerce/customers/${customer.id}`
+  nav.goToCustomer(customer.id)
 }
 
 function editCustomer(customer: any): void {
-  window.location.href = `/dashboard/commerce/customers/${customer.id}?edit=true`
+  nav.goToCustomer(customer.id, { edit: true })
 }
 
 function removeCustomer(customer: any): void {
