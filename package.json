@@ -68,8 +68,6 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "^0.0.13",
-    "@stacksjs/stx": "^0.2.43",
     "stacks": "workspace:*"
   },
   "devDependencies": {
