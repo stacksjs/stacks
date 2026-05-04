@@ -1,36 +1,63 @@
 #!/bin/sh
 
-# Get the script's directory
+# Publishes every framework/core/* package to npm, skipping anything marked
+# `"private": true` (deploy/, development/, etc.) so we don't waste a CI cycle
+# on a publish that would fail. Each `bun publish` runs the package's own
+# `prepublishOnly` script — so dist gets rebuilt right before it ships.
+#
+# Tracks per-package outcomes and exits non-zero if any non-private package
+# fails to publish, so the GH Actions release workflow surfaces the breakage
+# instead of silently shipping a partial release.
+
+set -u
+
 script_dir=$(realpath $(dirname "$0"))
+core_dir="$script_dir/../core"
 
-# Get all directories in the core path except for src/bun-create
-dirs=$(find "$script_dir/../core" -type d -maxdepth 1 -not -path "$script_dir/../bun-create")
+# `find -maxdepth 1 -type d` would also list core/ itself; trim with -mindepth.
+dirs=$(find "$core_dir" -mindepth 1 -maxdepth 1 -type d)
 
-# Check if no directories found
 if [ -z "$dirs" ]; then
-  echo "No core packages found"
+  echo "No core packages found at $core_dir"
   exit 1
 fi
 
-# Loop through each directory
+published=""
+skipped=""
+failed=""
+
 for dir in $dirs; do
-  echo ""
-  echo "🏗️  Releasing..."
-  echo "📦 $dir"
+  pkg="$dir/package.json"
+  [ -f "$pkg" ] || continue
 
-  # Change to the directory
-  cd $dir
+  name=$(basename "$dir")
 
-  bun publish --access public || echo "Failed to publish $dir"
-
-  # Check if the build command was successful
-  if [ $? -ne 0 ]; then
-    echo "Failed to publish $dir"
+  # `bun publish` rejects private packages with a helpful error, but skipping
+  # them here keeps the release log clean and avoids the GH Actions step
+  # showing a forest of red `Failed to publish development` lines.
+  if grep -q '"private"[[:space:]]*:[[:space:]]*true' "$pkg"; then
+    skipped="$skipped $name"
+    continue
   fi
 
-  echo "✅ Latest is published"
-  echo ""
+  printf '\n🏗️  Releasing %s\n' "$name"
+  printf '📦 %s\n' "$dir"
 
-  # Change back to the original directory
-  cd - >/dev/null
+  if (cd "$dir" && bun publish --access public); then
+    published="$published $name"
+    printf '✅ %s published\n\n' "$name"
+  else
+    failed="$failed $name"
+    printf '❌ %s failed to publish\n\n' "$name"
+  fi
 done
+
+printf '\n────── Publish summary ──────\n'
+[ -n "$published" ] && printf 'Published:%s\n' "$published"
+[ -n "$skipped" ]   && printf 'Skipped (private):%s\n' "$skipped"
+[ -n "$failed" ]    && printf 'Failed:%s\n' "$failed"
+
+# Exit non-zero so CI marks the job as failed when any non-private publish
+# breaks. The previous behaviour (always exit 0) silently shipped partial
+# releases — see the i18n version drift fixed in this same change.
+[ -z "$failed" ]

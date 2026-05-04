@@ -83,7 +83,7 @@ jobs:
       - name: Debug Tag
         run: |
           echo "Tag: ${GITHUB_REF#refs/tags/}"
-          echo "Version from previous job: ${{ needs.release.outputs.version }}"
+          echo "Version from previous job: ${{ needs.npm.outputs.version }}"
 
       - name: Generate GitHub App Token
         id: generate-token

@@ -48,6 +48,9 @@
     "key:generate": "./buddy key:generate",
     "commit": "./buddy commit",
     "release": "./buddy release",
+    "release:patch": "./buddy release --bump patch",
+    "release:minor": "./buddy release --bump minor",
+    "release:major": "./buddy release --bump major",
     "changelog": "./buddy changelog",
     "generate": "./buddy generate",
     "typecheck": "bunx tsc --noEmit",
@@ -66,6 +69,7 @@
   },
   "dependencies": {
     "@stacksjs/bun-router": "^0.0.13",
+    "@stacksjs/stx": "^0.2.43",
     "stacks": "workspace:*"
   },
   "devDependencies": {

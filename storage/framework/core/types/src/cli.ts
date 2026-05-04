@@ -401,6 +401,7 @@ export interface CliQueueOptions extends CliOptions {
 
 export interface ReleaseOptions extends CliOptions {
   dryRun?: boolean
+  bump?: 'patch' | 'minor' | 'major' | 'prepatch' | 'preminor' | 'premajor' | 'prerelease' | string
 }
 export interface ProjectsOptions extends CliOptions {
   list?: boolean

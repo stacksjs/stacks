@@ -1,12 +1,12 @@
 import type { Action as ActionType } from '@stacksjs/actions'
 import type { Result } from '@stacksjs/error-handling'
 import type { ActionOptions, CliOptions, CommandError, Subprocess } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
 import process from 'node:process'
 import { buddyOptions, runCommand, runCommands } from '@stacksjs/cli'
 import { err } from '@stacksjs/error-handling'
 import { log } from '@stacksjs/logging'
 import * as p from '@stacksjs/path'
-import { globSync } from '@stacksjs/storage'
 
 type ActionPath = string // TODO: narrow this by automating its generation
 type ActionName = string // TODO: narrow this by automating its generation
@@ -287,7 +287,10 @@ export async function runActions(
 
 // looks in most common locations
 export function hasAction(action: Action): boolean {
-  // Define patterns specifically for user actions
+  // Use direct fs existence checks instead of globSync — node:fs.globSync
+  // does NOT match literal absolute paths even when the file exists
+  // (only patterns containing wildcards return matches), which silently
+  // made every `runActions` chain in `release.ts` no-op for years.
   const userActionPatterns = [
     `${action}.ts`,
     `${action}`,
@@ -296,19 +299,12 @@ export function hasAction(action: Action): boolean {
     `Buddy/${action}.ts`,
     `Buddy/${action}`,
   ]
-
-  // Define patterns specifically for core actions
   const actionPatterns = [`src/${action}.ts`, `src/${action}`, `${action}.ts`, `${action}`]
 
-  // Check user actions path with its specific patterns
-  const userActionFiles = globSync(userActionPatterns.map(pattern => p.userActionsPath(pattern)))
+  const candidates = [
+    ...userActionPatterns.map(pattern => p.userActionsPath(pattern)),
+    ...actionPatterns.map(pattern => p.actionsPath(pattern)),
+  ]
 
-  // Check actions path with its specific patterns
-  const actionFiles = globSync(actionPatterns.map(pattern => p.actionsPath(pattern)))
-
-  return userActionFiles.length > 0 || actionFiles.length > 0
-
-  // TODO: need to loop through all user actions and check whether the name is a valid action name match
-
-  // return false
+  return candidates.some(candidate => existsSync(candidate))
 }

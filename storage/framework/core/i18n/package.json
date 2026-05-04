@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/i18n",
-  "version": "0.69.1",
+  "version": "0.70.23",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
   "license": "MIT",
@@ -31,7 +31,8 @@
     "build": "bun build.ts",
     "lint": "bunx --bun pickier lint .",
     "lint:fix": "bunx --bun pickier lint . --fix",
-    "typecheck": "bunx --bun tsc --noEmit"
+    "typecheck": "bunx --bun tsc --noEmit",
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@stacksjs/ts-i18n": "^0.1.7"
