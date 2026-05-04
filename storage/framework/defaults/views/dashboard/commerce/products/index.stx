@@ -1,0 +1,536 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+import { useProducts } from '../../../../functions/commerce/products'
+import { useCategories } from '../../../../functions/commerce/products/categories'
+import { useManufacturers } from '../../../../functions/commerce/products/manufacturers'
+import ProductsTable from '../../../../components/Dashboard/Commerce/ProductsTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import type { Products } from '../../../../types/defaults'
+
+// Get products data and functions from the composable
+const { products, createProduct, fetchProducts } = useProducts()
+
+// Get categories and manufacturers for dropdowns
+const { categories, fetchCategories } = useCategories()
+const { manufacturers, fetchManufacturers } = useManufacturers()
+
+// View mode for grid/list toggle
+let viewMode = 'list'
+
+// Filter and sort options
+let categoryFilter = 'all'
+let sortBy = 'name'
+let sortOrder = 'asc'
+
+// Search and filtering
+let searchQuery = ''
+let currentPage = 1
+let itemsPerPage = 5
+
+// Computed filtered products
+function filteredProducts() {
+  return products
+    .filter(product => {
+      // Apply search filter
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        product.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (product.category?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Apply category filter
+      const matchesCategory = categoryFilter === 'all' || (product.category?.name || '') === categoryFilter
+
+      return matchesSearch && matchesCategory
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy === 'price') {
+        comparison = (a.price || 0) - (b.price || 0)
+      } else if (sortBy === 'inventory') {
+        comparison = (a.inventory_count || 0) - (b.inventory_count || 0)
+      } else if (sortBy === 'dateAdded') {
+        const dateA = a.created_at ? new Date(a.created_at).getTime() : 0
+        const dateB = b.created_at ? new Date(b.created_at).getTime() : 0
+        comparison = dateA - dateB
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+}
+
+function paginatedProducts() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredProducts().slice(start, end)
+}
+
+// Get unique categories for filter
+function categoriesForFilter() {
+  const categoryCounts = products.reduce((acc, product) => {
+    const categoryName = product.category?.name || 'Unknown'
+    acc[categoryName] = (acc[categoryName] || 0) + 1
+    return acc
+  }, {} as Record<string, number>)
+
+  return Object.entries(categoryCounts).map(([name, count]) => ({ name, count }))
+}
+
+// Event handlers
+const handleSearch = (query: string) => {
+  searchQuery = query
+  currentPage = 1
+}
+
+const handlePrevPage = () => {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredProducts().length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+const handlePageChange = (page: number) => {
+  currentPage = page
+}
+
+// Toggle sort order
+function toggleSort(column: string): void {
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy = column
+    sortOrder = 'asc'
+  }
+}
+
+// Product actions
+function viewProduct(product: Products): void {
+  window.location.href = `/dashboard/commerce/products/${product.id}`
+}
+
+function editProduct(product: Products): void {
+  window.location.href = `/dashboard/commerce/products/${product.id}?edit=true`
+}
+
+// Define new product type
+interface NewProduct {
+  name: string
+  description: string
+  price: number
+  salePrice: number | null
+  category_id: number
+  manufacturer_id: number
+  tags: string[]
+  imageUrl: string
+  inventory: number
+  status: string
+  featured: boolean
+  rating: number
+  reviewCount: number
+  dateAdded: string
+}
+
+// Status options for the dropdown
+function statuses() { return ['Active', 'Inactive', 'Draft', 'Archived'] }
+
+// Modal state
+let showProductModal = false
+let newProduct = {
+  name: '',
+  description: '',
+  price: 0,
+  salePrice: null,
+  category_id: 0,
+  manufacturer_id: 0,
+  tags: [],
+  imageUrl: '',
+  inventory: 0,
+  status: 'Active',
+  featured: false,
+  rating: 0,
+  reviewCount: 0,
+  dateAdded: new Date().toISOString().split('T')[0] || ''
+}
+
+function openAddProductModal(): void {
+  newProduct = {
+    name: '',
+    description: '',
+    price: 0,
+    salePrice: null,
+    category_id: 0,
+    manufacturer_id: 0,
+    tags: [],
+    imageUrl: '',
+    inventory: 0,
+    status: 'Active',
+    featured: false,
+    rating: 0,
+    reviewCount: 0,
+    dateAdded: new Date().toISOString().split('T')[0] || ''
+  }
+  showProductModal = true
+}
+
+function closeProductModal(): void {
+  showProductModal = false
+}
+
+async function addProduct(): Promise<void> {
+  // First add to local state for immediate UI update
+  const id = Math.max(...products.map(p => p.id || 0)) + 1
+
+  // Find the selected category and manufacturer
+  const selectedCategory = categories.find(c => c.id === newProduct.category_id)
+  const selectedManufacturer = manufacturers.find(m => m.id === newProduct.manufacturer_id)
+
+  const newProductData = {
+    id,
+    uuid: `product-${id}`,
+    name: newProduct.name,
+    description: newProduct.description,
+    price: newProduct.price,
+    image_url: newProduct.imageUrl,
+    is_available: newProduct.status === 'Active' ? 1 : 0,
+    inventory_count: newProduct.inventory,
+    preparation_time: 0,
+    allergens: '',
+    nutritional_info: '',
+    category_id: newProduct.category_id,
+    manufacturer_id: newProduct.manufacturer_id,
+    created_at: new Date().toISOString(),
+    manufacturer: selectedManufacturer,
+    category: selectedCategory
+  }
+  products.push(newProductData)
+
+  // Then send to server
+  const productData = {
+    name: newProduct.name,
+    description: newProduct.description,
+    price: newProduct.price,
+    image_url: newProduct.imageUrl,
+    is_available: newProduct.status === 'Active' ? 1 : 0,
+    inventory_count: newProduct.inventory,
+    preparation_time: 0,
+    allergens: '',
+    nutritional_info: '',
+    category_id: newProduct.category_id,
+    manufacturer_id: newProduct.manufacturer_id,
+  }
+
+  try {
+    await createProduct(productData)
+    closeProductModal()
+  } catch (error) {
+    // If server request fails, remove from local state
+    products = products.filter(p => p.id !== id)
+    console.error('Failed to create product:', error)
+  }
+}
+</script>
+
+@title('Dashboard - Commerce Products')
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Products" description="Manage commerce products">
+    <template #actions>
+      <Button variant="primary" onclick="openAddProductModal">
+        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
+        Add Product
+      </Button>
+    </template>
+  </PageHeader>
+
+  <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-4">
+          <SearchFilter
+            placeholder="Search products..."
+            @search="handleSearch"
+            class="w-full md:w-96"
+          />
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <!-- Category filter -->
+            <select
+              value="{{ categoryFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Categories</option>
+              @foreach(categoriesForFilter as category)
+                <option value="{{ category.name }}">
+                  {{ category.name }} ({{ category.count }})
+                </option>
+              @endforeach
+            </select>
+
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                type="button"
+                onclick="viewMode = 'grid'"
+                class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-900 text-sm text-white dark:text-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-blue-600' ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'grid' {{ }} === viewMode"
+              >
+                <div class="h-5 w-5 i-hugeicons-grid"></div>
+              </button>
+              <button
+                type="button"
+                onclick="viewMode = 'list'"
+                class="inline-flex relative focus:z-10 items-center -ml-px px-3 py-2 font-semibold text-gray-900 text-sm text-white dark:text-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-blue-600' ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'list' {{ }} === viewMode"
+              >
+                <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
+              </button>
+            </div>
+
+            <select
+              value="{{ itemsPerPage }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="{{ 5 }}">5 per page</option>
+              <option value="{{ 10 }}">10 per page</option>
+              <option value="{{ 25 }}">25 per page</option>
+              <option value="{{ 50 }}">50 per page</option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Product Tables Component -->
+      <ProductsTable
+        :products="paginatedProducts"
+        :search-query="searchQuery"
+        :category-filter="categoryFilter"
+        :sort-by="sortBy"
+        :sort-order="sortOrder"
+        :current-page="currentPage"
+        :items-per-page="itemsPerPage"
+        :categories="categoriesForFilter.map(c => c.name)"
+        @toggle-sort="toggleSort"
+        @change-page="handlePageChange"
+        @previous-page="handlePrevPage"
+        @next-page="handleNextPage"
+        @view-product="viewProduct"
+        @edit-product="editProduct"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredProducts().length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+
+  <!-- Add/Edit Product Modal -->
+  @if(showProductModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="absolute right-0 top-0 pr-4 pt-4">
+            <button
+              type="button"
+              onclick="closeProductModal"
+              class="text-gray-400 dark:text-neutral-500 hover:text-gray-500 dark:hover:text-gray-400 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <span class="sr-only">Close</span>
+              <div class="h-6 w-6 i-hugeicons-can"></div>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 sm:ml-4 sm:mt-0 w-full text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
+                Add New Product
+              </h3>
+              <div class="mt-4">
+                <form onsubmit="addProduct; return false" class="space-y-4">
+                  <!-- Product name -->
+                  <div>
+                    <label for="product-name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
+                    <input
+                      type="text"
+                      id="product-name"
+                      value="{{ newProduct.name }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      required
+                    />
+                  </div>
+
+                  <!-- Product description -->
+                  <div>
+                    <label for="product-description" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Description</label>
+                    <textarea
+                      id="product-description"
+                      value="{{ newProduct.description }}"
+                      rows="3"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    ></textarea>
+                  </div>
+
+                  <!-- Price and sale price -->
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="product-price" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Price ($)</label>
+                      <input
+                        type="number"
+                        id="product-price"
+                        value="{{ newProduct.price }}"
+                        min="0"
+                        step="0.01"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label for="product-sale-price" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Sale Price ($)</label>
+                      <input
+                        type="number"
+                        id="product-sale-price"
+                        value="{{ newProduct.salePrice }}"
+                        min="0"
+                        step="0.01"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <!-- Category and manufacturer -->
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="product-category" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Category</label>
+                      <select
+                        id="product-category"
+                        value="{{ newProduct.category_id }}"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                        required
+                      >
+                        <option value="">Select a category</option>
+                        @foreach(categories as category)
+                          <option value="{{ category.id }}">{{ category.name }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                    <div>
+                      <label for="product-manufacturer" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Manufacturer</label>
+                      <select
+                        id="product-manufacturer"
+                        value="{{ newProduct.manufacturer_id }}"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                        required
+                      >
+                        <option value="">Select a manufacturer</option>
+                        @foreach(manufacturers as manufacturer)
+                          <option value="{{ manufacturer.id }}">{{ manufacturer.name }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Inventory and status -->
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="product-inventory" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Inventory</label>
+                      <input
+                        type="number"
+                        id="product-inventory"
+                        value="{{ newProduct.inventory }}"
+                        min="0"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                        required
+                      />
+                    </div>
+                    <div>
+                      <label for="product-status" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
+                      <select
+                        id="product-status"
+                        value="{{ newProduct.status }}"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      >
+                        @foreach(statuses.slice(1) as status)
+                          <option value="{{ status }}">{{ status }}</option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <!-- Featured checkbox -->
+                  <div class="mt-4">
+                    <div class="flex items-center">
+                      <input
+                        id="product-featured"
+                        type="checkbox"
+                        value="{{ newProduct.featured }}"
+                        class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-500"
+                      />
+                      <label for="product-featured" class="block ml-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Featured product</label>
+                    </div>
+                  </div>
+
+                  <!-- Image URL -->
+                  <div>
+                    <label for="product-image" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Image URL</label>
+                    <input
+                      type="text"
+                      id="product-image"
+                      value="{{ newProduct.imageUrl }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    />
+                  </div>
+
+                  <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+                    <button
+                      type="submit"
+                      class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
+                    >
+                      Add Product
+                    </button>
+                    <button
+                      type="button"
+                      onclick="closeProductModal"
+                      class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</div>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await Promise.all([
+    fetchProducts(),
+    fetchCategories(),
+    fetchManufacturers()
+  ])
+})
+</script>
+
+@endsection

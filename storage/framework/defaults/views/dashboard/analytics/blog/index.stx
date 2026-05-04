@@ -1,0 +1,658 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+// Types
+interface DateRange {
+  id: string
+  name: string
+}
+
+interface Referrer {
+  name: string
+  visits: number
+  percentage: number
+}
+
+interface Country {
+  name: string
+  visits: number
+  percentage: number
+  flag: string
+}
+
+interface PageData {
+  path: string
+  entries: number
+  visitors: number
+  views: number
+  percentage: number
+}
+
+interface ReferrerData {
+  name: string
+  visitors: number
+  views: number
+  percentage: number
+}
+
+interface DeviceData {
+  name: string
+  visitors: number
+  percentage: number
+}
+
+interface BrowserData {
+  name: string
+  visitors: number
+  percentage: number
+}
+
+interface CountryData {
+  name: string
+  visitors: number
+  percentage: number
+  flag: string
+}
+
+// Date range options
+const dateRanges: DateRange[] = [
+  { id: 'last7days', name: 'Last 7 Days' },
+  { id: 'last30days', name: 'Last 30 Days' },
+  { id: 'thisMonth', name: 'This Month' },
+  { id: 'lastMonth', name: 'Last Month' },
+  { id: 'thisYear', name: 'This Year' },
+  { id: 'custom', name: 'Custom Range' }
+]
+
+// Selected date range
+let selectedDateRange = 'all-time'
+let dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+let comparisonType = 'no-comparison'
+let customStartDate = ''
+let customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
+
+// Analytics overview data
+let analyticsOverview = {
+  realtime: 0,
+  people: 2200,
+  views: 3000,
+  avgTimeOnSite: '03:36',
+  bounceRate: '89%',
+  eventCompletions: 0
+}
+
+// Traffic data for chart
+let trafficData = [
+  { date: '2023-11-01', pageViews: 100, visitors: 80 },
+  { date: '2023-11-15', pageViews: 250, visitors: 180 },
+  { date: '2023-12-01', pageViews: 150, visitors: 120 },
+  { date: '2023-12-15', pageViews: 220, visitors: 170 },
+  { date: '2024-01-01', pageViews: 180, visitors: 140 },
+  { date: '2024-01-15', pageViews: 320, visitors: 240 },
+  { date: '2024-02-01', pageViews: 280, visitors: 210 },
+  { date: '2024-02-15', pageViews: 400, visitors: 300 },
+  { date: '2024-03-01', pageViews: 350, visitors: 270 },
+  { date: '2024-03-15', pageViews: 300, visitors: 230 },
+  { date: '2024-04-01', pageViews: 250, visitors: 190 },
+  { date: '2024-04-15', pageViews: 200, visitors: 150 },
+  { date: '2024-05-01', pageViews: 150, visitors: 120 },
+  { date: '2024-05-15', pageViews: 120, visitors: 90 },
+  { date: '2024-06-01', pageViews: 100, visitors: 80 },
+  { date: '2024-06-15', pageViews: 130, visitors: 100 },
+  { date: '2024-07-01', pageViews: 150, visitors: 120 },
+  { date: '2024-07-15', pageViews: 120, visitors: 90 },
+  { date: '2024-08-01', pageViews: 100, visitors: 80 },
+  { date: '2024-08-15', pageViews: 80, visitors: 60 },
+  { date: '2024-09-01', pageViews: 100, visitors: 80 },
+  { date: '2024-09-15', pageViews: 120, visitors: 90 },
+  { date: '2024-10-01', pageViews: 150, visitors: 120 },
+  { date: '2024-10-15', pageViews: 100, visitors: 80 },
+  { date: '2024-11-01', pageViews: 80, visitors: 60 },
+  { date: '2024-11-15', pageViews: 120, visitors: 90 },
+  { date: '2024-12-01', pageViews: 300, visitors: 230 },
+  { date: '2024-12-15', pageViews: 150, visitors: 120 },
+  { date: '2025-01-01', pageViews: 100, visitors: 80 },
+  { date: '2025-01-15', pageViews: 80, visitors: 60 },
+  { date: '2025-02-01', pageViews: 60, visitors: 40 }
+]
+
+// Pages data - removed duplicates and added unique paths
+let pagesData = [
+  { path: '/', entries: 1800, visitors: 1800, views: 2100, percentage: 0 },
+  { path: '/blog', entries: 113, visitors: 113, views: 139, percentage: 0 },
+  { path: '/about', entries: 51, visitors: 51, views: 77, percentage: 0 },
+  { path: '/contact', entries: 42, visitors: 42, views: 51, percentage: 0 },
+  { path: '/products', entries: 37, visitors: 37, views: 60, percentage: 0 },
+  { path: '/guide/get-started.html', entries: 21, visitors: 29, views: 45, percentage: 0 },
+  { path: '/docs', entries: 16, visitors: 17, views: 202, percentage: 0 },
+  { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22, percentage: 0 },
+  { path: '/guide/get-started', entries: 9, visitors: 12, views: 13, percentage: 0 },
+  { path: '/team', entries: 9, visitors: 10, views: 15, percentage: 0 }
+]
+
+// Calculate percentages for pages based on views
+function totalPageViews() { return pagesData.reduce((sum, page } => sum + page.views, 0))
+// Update percentages
+pagesData.forEach(page => {
+  page.percentage = Math.round((page.views / totalPageViews) * 100)
+}
+
+// Referrers data
+let referrersData = [
+  { name: 'Direct / Unknown', visitors: 1400, views: 2100, percentage: 0 },
+  { name: 'X/Twitter', visitors: 545, views: 580, percentage: 0 },
+  { name: 'Google', visitors: 46, views: 50, percentage: 0 },
+  { name: 'stacksjs.com', visitors: 45, views: 63, percentage: 0 },
+  { name: 'stacksjs.netlify.app', visitors: 38, views: 60, percentage: 0 },
+  { name: 'github.com', visitors: 34, views: 47, percentage: 0 },
+  { name: 'DuckDuckGo', visitors: 32, views: 35, percentage: 0 },
+  { name: 'Bing', visitors: 22, views: 24, percentage: 0 },
+  { name: 'Baidu', visitors: 8, views: 8, percentage: 0 },
+  { name: 'npmjs.com', visitors: 7, views: 7, percentage: 0 }
+]
+
+// Calculate percentages for referrers based on views
+function totalReferrerViews() { return referrersData.reduce((sum, referrer } => sum + referrer.views, 0))
+// Update percentages
+referrersData.forEach(referrer => {
+  referrer.percentage = Math.round((referrer.views / totalReferrerViews) * 100)
+}
+
+// Device data
+let deviceData = [
+  { name: 'Desktop', visitors: 1300, percentage: 60 },
+  { name: 'Phone', visitors: 874, percentage: 38 },
+  { name: 'Tablet', visitors: 5, percentage: 2 }
+]
+
+// Browser data
+let browserData = [
+  { name: 'Chrome', visitors: 1300, percentage: 58 },
+  { name: 'Safari', visitors: 579, percentage: 26 },
+  { name: 'Edge', visitors: 129, percentage: 6 },
+  { name: 'Firefox', visitors: 92, percentage: 4 },
+  { name: 'Mozilla', visitors: 24, percentage: 1 }
+]
+
+// Countries data with flag emojis
+let countriesData = [
+  { name: 'United States of America', visitors: 768, flag: '🇺🇸', percentage: 0 },
+  { name: 'Germany', visitors: 140, flag: '🇩🇪', percentage: 0 },
+  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧', percentage: 0 },
+  { name: 'India', visitors: 83, flag: '🇮🇳', percentage: 0 },
+  { name: 'Indonesia', visitors: 80, flag: '🇮🇩', percentage: 0 }
+]
+
+// Calculate percentages for countries based on visitors
+function totalCountryVisitors() { return countriesData.reduce((sum, country } => sum + country.visitors, 0))
+// Update percentages
+countriesData.forEach(country => {
+  country.percentage = Math.round((country.visitors / totalCountryVisitors) * 100)
+}
+
+// Format numbers with commas
+function formatNumber(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+// Get percentage color class
+const getPercentageColorClass = (percentage) => {
+  if (percentage >= 70) return 'text-green-600 dark:text-green-400'
+  if (percentage >= 40) return 'text-yellow-600 dark:text-yellow-400'
+  return 'text-red-600 dark:text-red-400'
+}
+
+// Mock function to update data when date range changes
+function updateDataForDateRange() {
+  // In a real app, this would fetch data from the server based on the selected date range
+  console.log('Updating data for date range:', selectedDateRange)
+
+  if (selectedDateRange === 'custom') {
+    console.log('Custom date range:', customStartDate, 'to', customEndDate)
+  }
+}
+
+// Watch for date range changes
+function handleDateRangeChange() {
+  updateDataForDateRange()
+}
+
+
+</script>
+
+@title('Dashboard - Blog Analytics')
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Header with date range selector -->
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div class="flex items-center space-x-2">
+          <div class="h-5 w-5 text-gray-500 dark:text-neutral-400 i-hugeicons-calendar-03"></div>
+          <span class="font-medium text-gray-700 text-sm dark:text-neutral-300">{{ dateRangeDisplay }}</span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+          <span class="text-gray-500 text-sm dark:text-neutral-400">compared to</span>
+
+          <div class="relative">
+            <select
+              value="{{ comparisonType }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="no-comparison">No comparison</option>
+              <option value="previous-period">Previous period</option>
+              <option value="previous-year">Previous year</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+          >
+            <div class="mr-1 h-4 w-4 i-hugeicons-settings-01"></div>
+            Auto
+          </button>
+        </div>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 mb-8 p-4 bg-black dark:bg-neutral-900 rounded-lg">
+        <!-- Realtime -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.realtime }}</div>
+          <div class="text-gray-400 text-sm">Realtime</div>
+        </div>
+
+        <!-- People -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">2.2k</div>
+          <div class="text-gray-400 text-sm">People</div>
+        </div>
+
+        <!-- Views -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">3k</div>
+          <div class="text-gray-400 text-sm">Views</div>
+        </div>
+
+        <!-- Avg time on site -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.avgTimeOnSite }}</div>
+          <div class="text-gray-400 text-sm">Avg time on site</div>
+        </div>
+
+        <!-- Bounce rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.bounceRate }}</div>
+          <div class="text-gray-400 text-sm">Bounce rate</div>
+        </div>
+
+        <!-- Event completions -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ analyticsOverview.eventCompletions }}</div>
+          <div class="text-gray-400 text-sm">Event completions</div>
+        </div>
+      </div>
+
+      <!-- Traffic Chart -->
+      <div class="mb-8 p-4 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <!-- Chart header -->
+        <div class="mb-4">
+          <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Traffic Overview</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+            Daily page views and unique visitors
+          </p>
+        </div>
+
+        <!-- Chart.js canvas -->
+        <div class="h-80 w-full">
+          <canvas id="trafficChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Data Tables -->
+      <div class="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <!-- Pages and Entries Table -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Pages</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Pages
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Entries
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Visitors
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Views
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(pagesData as page)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="{{ { width: page.percentage + '%' } }}"></div>
+                    <span class="relative z-10">{{ page.path }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ page.entries }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ page.visitors }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ page.views }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ page.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/analytics/pages" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all pages
+            </a>
+          </div>
+        </div>
+
+        <!-- Referrers Table -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Referrers</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Sources
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Visitors
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Views
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(referrersData as referrer)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="{{ { width: referrer.percentage + '%' } }}"></div>
+                    <span class="relative z-10">{{ referrer.name }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ referrer.visitors }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ referrer.views }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ referrer.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all referrers
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Device Types, Browsers, and Countries -->
+      <div class="grid gap-8 grid-cols-1 lg:grid-cols-3 mt-8">
+        <!-- Device Types -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Device Types</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Device Types
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Visitors
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(deviceData as device)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="{{ { width: device.percentage + '%' } }}"></div>
+                    <span class="relative z-10">{{ device.name }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ device.visitors }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ device.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/analytics/devices" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all devices
+            </a>
+          </div>
+        </div>
+
+        <!-- Browsers -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Browsers</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Browsers
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Visitors
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(browserData as browser)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" style="{{ { width: browser.percentage + '%' } }}"></div>
+                    <span class="relative z-10">{{ browser.name }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ browser.visitors }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ browser.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/analytics/browsers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all browsers
+            </a>
+          </div>
+        </div>
+
+        <!-- Countries -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Countries</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Countries
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Visitors
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(countriesData as country)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" style="{{ { width: country.percentage + '%' } }}"></div>
+                    <span class="relative z-10"><span class="mr-2">{{ country.flag }}</span>{{ country.name }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ country.visitors }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ country.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all countries
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const chartConfig = {
+  type: 'line',
+  data: {
+    labels: trafficData.map(item => item.date),
+    datasets: [
+      {
+        label: 'Page Views',
+        data: trafficData.map(item => item.pageViews),
+        backgroundColor: 'rgba(147, 197, 253, 0.3)',
+        borderColor: 'rgba(59, 130, 246, 0.8)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true
+      },
+      {
+        label: 'Visitors',
+        data: trafficData.map(item => item.visitors),
+        backgroundColor: 'rgba(147, 197, 253, 0.1)',
+        borderColor: 'rgba(96, 165, 250, 0.8)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: false
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    maintainAspectRatio: false,
+    scales: {
+      x: {
+        grid: {
+          display: false
+        },
+        ticks: {
+          maxTicksLimit: 4,
+          callback: function(value, index) {
+            const labels = ['Jan 2024', 'May 2024', 'Sep 2024', 'Jan 2025']
+            return index % Math.floor(trafficData.length / 4) === 0 ? labels[Math.floor(index / (trafficData.length / 4))] || '' : ''
+          }
+        }
+      },
+      y: {
+        beginAtZero: true,
+        grid: {
+          borderDash: [2, 4],
+          color: 'rgba(160, 174, 192, 0.2)'
+        },
+        ticks: {
+          maxTicksLimit: 6
+        }
+      }
+    },
+    plugins: {
+      legend: {
+        display: true,
+        position: 'top'
+      },
+      tooltip: {
+        mode: 'index',
+        intersect: false
+      }
+    }
+  }
+}
+
+const ctx = document.getElementById('trafficChart')
+if (ctx) {
+  new Chart(ctx, chartConfig)
+}
+updateDataForDateRange()
+</script>
+
+
+@endsection

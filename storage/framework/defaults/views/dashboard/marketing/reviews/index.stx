@@ -1,0 +1,1651 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+import * as d3 from 'd3'
+
+// Define review type
+interface Review {
+  id: number
+  uuid: string
+  source: 'Google' | 'Yelp' | 'Facebook' | 'TripAdvisor' | 'Other'
+  rating: number
+  title: string
+  content: string
+  author: string
+  authorAvatar?: string
+  date: string
+  location: string
+  response?: {
+    content: string
+    date: string
+    author: string
+  }
+  status: 'unread' | 'read' | 'responded' | 'flagged'
+  sentiment: 'positive' | 'neutral' | 'negative'
+  tags: string[]
+  helpful: number
+  notHelpful: number
+  isVerified: boolean
+  isHighlighted: boolean
+  isHidden: boolean
+  metadata?: {
+    platform?: string
+    deviceType?: string
+    browser?: string
+    ipAddress?: string
+    location?: {
+      country?: string
+      city?: string
+      state?: string
+    }
+  }
+}
+
+// Sample reviews data
+let reviews = [
+  {
+    id: 1,
+    uuid: '11ce123b-57c4-429b-9840-c79f8047d8aa',
+    source: 'Google',
+    rating: 5,
+    title: 'Excellent service and product quality',
+    content: 'I was extremely impressed with both the quality of the product and the customer service. The staff went above and beyond to ensure I had a great experience. Will definitely be returning!',
+    author: 'Alex Johnson',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/32.jpg',
+    date: '2023-07-15',
+    location: 'Main Street Branch',
+    response: {
+      content: "Thank you for your kind words, Alex! We're thrilled to hear you had such a positive experience with us. We look forward to serving you again soon!",
+      date: '2023-07-16',
+      author: 'Customer Support Team'
+    },
+    status: 'responded',
+    sentiment: 'positive',
+    tags: ['service', 'product quality', 'staff'],
+    helpful: 12,
+    notHelpful: 0,
+    isVerified: true,
+    isHighlighted: true,
+    isHidden: false
+  },
+  {
+    id: 2,
+    uuid: '22ce123b-57c4-429b-9840-c79f8047d8bb',
+    source: 'Yelp',
+    rating: 2,
+    title: 'Disappointed with wait times',
+    content: 'While the product itself was decent, I had to wait over 45 minutes to be served. The staff seemed disorganized and understaffed. Might give it another try during a less busy time.',
+    author: 'Sarah Miller',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+    date: '2023-07-10',
+    location: 'Downtown Location',
+    status: 'read',
+    sentiment: 'negative',
+    tags: ['wait time', 'staff', 'busy'],
+    helpful: 8,
+    notHelpful: 2,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  },
+  {
+    id: 3,
+    uuid: '33ce123b-57c4-429b-9840-c79f8047d8cc',
+    source: 'Google',
+    rating: 4,
+    title: 'Great product, room for improvement',
+    content: 'The product exceeded my expectations in terms of quality. However, I think the pricing could be more competitive. Overall a good experience and I would recommend to others with that caveat.',
+    author: 'David Chen',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/67.jpg',
+    date: '2023-07-05',
+    location: 'Online Store',
+    response: {
+      content: "Thank you for your feedback, David! We appreciate your comments about our product quality. Regarding pricing, we're constantly evaluating our offerings to provide the best value. Your feedback helps us improve!",
+      date: '2023-07-06',
+      author: 'Product Team'
+    },
+    status: 'responded',
+    sentiment: 'positive',
+    tags: ['product quality', 'pricing', 'value'],
+    helpful: 15,
+    notHelpful: 3,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  },
+  {
+    id: 4,
+    uuid: '44ce123b-57c4-429b-9840-c79f8047d8dd',
+    source: 'Yelp',
+    rating: 1,
+    title: 'Terrible experience, avoid at all costs',
+    content: 'I had the worst experience ever. The product was defective, and when I tried to get help, the customer service was rude and unhelpful. I will never shop here again and would advise others to stay away.',
+    author: 'Emily Wilson',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/23.jpg',
+    date: '2023-07-01',
+    location: 'Westside Branch',
+    status: 'flagged',
+    sentiment: 'negative',
+    tags: ['defective product', 'customer service', 'rude staff'],
+    helpful: 20,
+    notHelpful: 1,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  },
+  {
+    id: 5,
+    uuid: '55ce123b-57c4-429b-9840-c79f8047d8ee',
+    source: 'Google',
+    rating: 5,
+    title: 'Outstanding experience from start to finish',
+    content: 'I cannot say enough good things about my experience. From the moment I walked in, I was treated like a valued customer. The product is amazing and exactly what I needed. The follow-up service was also exceptional.',
+    author: 'Michael Thompson',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/42.jpg',
+    date: '2023-06-28',
+    location: 'Main Street Branch',
+    response: {
+      content: "Thank you for your wonderful review, Michael! We're delighted to hear about your positive experience with us. Our team works hard to provide exceptional service, and we're glad it showed during your visit.",
+      date: '2023-06-29',
+      author: 'Customer Support Team'
+    },
+    status: 'responded',
+    sentiment: 'positive',
+    tags: ['service', 'product quality', 'follow-up'],
+    helpful: 18,
+    notHelpful: 0,
+    isVerified: true,
+    isHighlighted: true,
+    isHidden: false
+  },
+  {
+    id: 6,
+    uuid: '66ce123b-57c4-429b-9840-c79f8047d8ff',
+    source: 'Yelp',
+    rating: 3,
+    title: 'Average experience, nothing special',
+    content: 'The product was okay, and the service was adequate. Nothing particularly stood out as exceptional or terrible. It met my basic needs, but I probably won\'t go out of my way to return.',
+    author: 'Jessica Lee',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/56.jpg',
+    date: '2023-06-25',
+    location: 'Eastside Location',
+    status: 'read',
+    sentiment: 'neutral',
+    tags: ['average', 'basic service'],
+    helpful: 5,
+    notHelpful: 2,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  },
+  {
+    id: 7,
+    uuid: '77ce123b-57c4-429b-9840-c79f8047d8gg',
+    source: 'Google',
+    rating: 4,
+    title: 'Very good but with minor issues',
+    content: 'I had a very positive experience overall. The staff was friendly and knowledgeable. The only issue was a slight delay in processing my order. Despite that, I would still recommend this business.',
+    author: 'Robert Garcia',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/78.jpg',
+    date: '2023-06-20',
+    location: 'Online Store',
+    status: 'unread',
+    sentiment: 'positive',
+    tags: ['friendly staff', 'knowledgeable', 'delay'],
+    helpful: 9,
+    notHelpful: 1,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  },
+  {
+    id: 8,
+    uuid: '88ce123b-57c4-429b-9840-c79f8047d8hh',
+    source: 'Yelp',
+    rating: 1,
+    title: 'Waste of money and time',
+    content: 'I regret making this purchase. The product quality was far below what was advertised, and when I tried to return it, I was given the runaround. Extremely disappointed with the entire experience.',
+    author: 'Sophia Martinez',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/90.jpg',
+    date: '2023-06-15',
+    location: 'Downtown Location',
+    status: 'flagged',
+    sentiment: 'negative',
+    tags: ['poor quality', 'return issues', 'misleading'],
+    helpful: 14,
+    notHelpful: 2,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  },
+  {
+    id: 9,
+    uuid: '99ce123b-57c4-429b-9840-c79f8047d8ii',
+    source: 'Google',
+    rating: 5,
+    title: 'Best service I\'ve ever received',
+    content: 'I am absolutely blown away by the level of service I received. The staff was incredibly attentive and went out of their way to help me find exactly what I needed. The product has exceeded all my expectations.',
+    author: 'James Wilson',
+    authorAvatar: 'https://randomuser.me/api/portraits/men/91.jpg',
+    date: '2023-06-10',
+    location: 'Westside Branch',
+    response: {
+      content: "Thank you for your amazing review, James! We're thrilled to hear that our team provided such outstanding service. We value your business and look forward to serving you again soon!",
+      date: '2023-06-11',
+      author: 'Management Team'
+    },
+    status: 'responded',
+    sentiment: 'positive',
+    tags: ['exceptional service', 'attentive staff', 'exceeded expectations'],
+    helpful: 22,
+    notHelpful: 0,
+    isVerified: true,
+    isHighlighted: true,
+    isHidden: false
+  },
+  {
+    id: 10,
+    uuid: 'aace123b-57c4-429b-9840-c79f8047d8jj',
+    source: 'Yelp',
+    rating: 2,
+    title: 'Disappointing product quality',
+    content: 'While the staff was friendly, the product quality was disappointing. It didn\'t last nearly as long as expected and didn\'t perform as advertised. I expected better for the price point.',
+    author: 'Amanda Brown',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/28.jpg',
+    date: '2023-06-05',
+    location: 'Eastside Location',
+    status: 'unread',
+    sentiment: 'negative',
+    tags: ['poor quality', 'overpriced', 'underperforming'],
+    helpful: 11,
+    notHelpful: 3,
+    isVerified: true,
+    isHighlighted: false,
+    isHidden: false
+  }
+]
+
+// Filter and sort options
+let searchQuery = ''
+let sortBy = 'date'
+let sortOrder = 'desc'
+let sourceFilter = 'all'
+let ratingFilter = 'all'
+let sentimentFilter = 'all'
+let statusFilter = 'all'
+let viewMode = 'compact' // 'detailed' or 'compact'
+
+// Available sources
+const sources = ['all', 'Google', 'Yelp', 'Facebook', 'TripAdvisor', 'Other']
+
+// Available ratings
+const ratings = ['all', '5', '4', '3', '2', '1']
+
+// Available sentiments
+const sentiments = ['all', 'positive', 'neutral', 'negative']
+
+// Available statuses
+const statuses = ['all', 'unread', 'read', 'responded', 'flagged']
+
+// Computed filtered and sorted reviews
+function filteredReviews() {
+  return reviews
+    .filter(review => {
+      // Apply search filter
+      const matchesSearch =
+        review.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        review.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        review.author.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        review.location.toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Apply source filter
+      const matchesSource = sourceFilter === 'all' || review.source === sourceFilter
+
+      // Apply rating filter
+      const matchesRating = ratingFilter === 'all' || review.rating.toString() === ratingFilter
+
+      // Apply sentiment filter
+      const matchesSentiment = sentimentFilter === 'all' || review.sentiment === sentimentFilter
+
+      // Apply status filter
+      const matchesStatus = statusFilter === 'all' || review.status === statusFilter
+
+      return matchesSearch && matchesSource && matchesRating && matchesSentiment && matchesStatus
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy === 'date') {
+        comparison = new Date(b.date).getTime() - new Date(a.date).getTime()
+      } else if (sortBy === 'rating') {
+        comparison = b.rating - a.rating
+      } else if (sortBy === 'helpful') {
+        comparison = b.helpful - a.helpful
+      }
+
+      return sortOrder === 'asc' ? -comparison : comparison
+    })
+}
+
+// Pagination
+let itemsPerPage = 5;
+let currentPage = 1;
+
+function totalPages() {
+  return Math.ceil(filteredReviews.length / itemsPerPage);
+}
+
+function paginatedReviews() {
+  const startIndex = (currentPage - 1) * itemsPerPage;
+  const endIndex = startIndex + itemsPerPage;
+  return filteredReviews.slice(startIndex, endIndex);
+}
+
+// Pagination functions
+const prevPage = () => {
+  if (currentPage > 1) {
+    currentPage--;
+  }
+};
+
+const nextPage = () => {
+  if (currentPage < totalPages) {
+    currentPage++;
+  }
+};
+
+const goToPage = (page: number) => {
+  currentPage = page;
+};
+
+// Calculate displayed page numbers for pagination
+function displayedPages() {
+  const totalPagesToShow = 5;
+  const pages: number[] = [];
+
+  if (totalPages <= totalPagesToShow) {
+    // If we have fewer pages than we want to show, display all pages
+    for (let i = 1; i <= totalPages; i++) {
+      pages.push(i);
+    }
+  } else {
+    // Always include first page
+    pages.push(1);
+
+    // Calculate start and end of page range around current page
+    let startPage = Math.max(2, currentPage - 1);
+    let endPage = Math.min(totalPages - 1, currentPage + 1);
+
+    // Adjust if we're at the start or end
+    if (currentPage <= 2) {
+      endPage = 4;
+    } else if (currentPage >= totalPages - 1) {
+      startPage = totalPages - 3;
+    }
+
+    // Add ellipsis if needed before middle pages
+    if (startPage > 2) {
+      pages.push(-1); // -1 represents ellipsis
+    }
+
+    // Add middle pages
+    for (let i = startPage; i <= endPage; i++) {
+      pages.push(i);
+    }
+
+    // Add ellipsis if needed after middle pages
+    if (endPage < totalPages - 1) {
+      pages.push(-2); // -2 represents ellipsis
+    }
+
+    // Always include last page
+    pages.push(totalPages);
+  }
+
+  return pages;
+}
+
+// Toggle sort order
+function toggleSort(column: string): void {
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy = column
+    sortOrder = 'desc'
+  }
+}
+
+// Get rating stars
+function getRatingStars(rating: number): string[] {
+  const stars = [];
+  for (let i = 1; i <= 5; i++) {
+    if (i <= rating) {
+      stars.push('full');
+    } else {
+      stars.push('empty');
+    }
+  }
+  return stars;
+}
+
+// Get sentiment class
+const getSentimentClass = (sentiment: string): string => {
+  switch (sentiment) {
+    case 'positive':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'neutral':
+      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'negative':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+// Get status badge class
+const getStatusClass = (status: string): string => {
+  switch (status) {
+    case 'responded':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'read':
+      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'unread':
+      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+    case 'flagged':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+// Format date
+function formatDate(date: string): string {
+  return new Date(date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+// Get source icon
+const getSourceIcon = (source: string): string => {
+  switch (source) {
+    case 'Google':
+      return 'i-hugeicons-google'
+    case 'Yelp':
+      return 'i-hugeicons-yelp'
+    case 'Facebook':
+      return 'i-hugeicons-facebook'
+    case 'TripAdvisor':
+      return 'i-hugeicons-tripadvisor'
+    default:
+      return 'i-hugeicons-globe'
+  }
+}
+
+// Get source color
+const getSourceColor = (source: string): string => {
+  switch (source) {
+    case 'Google':
+      return 'text-blue-600 dark:text-blue-400'
+    case 'Yelp':
+      return 'text-red-600 dark:text-red-400'
+    case 'Facebook':
+      return 'text-indigo-600 dark:text-indigo-400'
+    case 'TripAdvisor':
+      return 'text-green-600 dark:text-green-400'
+    default:
+      return 'text-gray-600 dark:text-neutral-400'
+  }
+}
+
+// Calculate summary statistics
+function totalReviews() { return reviews.length }
+function averageRating() {
+  const sum = reviews.reduce((acc, review) => acc + review.rating, 0)
+  return (sum / reviews.length).toFixed(1)
+}
+function positiveReviews() { return reviews.filter(r => r.sentiment === 'positive').length }
+function negativeReviews() { return reviews.filter(r => r.sentiment === 'negative').length }
+function unreadReviews() { return reviews.filter(r => r.status === 'unread').length }
+function flaggedReviews() { return reviews.filter(r => r.status === 'flagged').length }
+
+// Calculate review distribution by source
+function reviewsBySource() {
+  const distribution: Record<string, number> = {}
+  reviews.forEach(review => {
+    const source = review.source
+    distribution[source] = (distribution[source] || 0) + 1
+  })
+  return distribution
+}
+
+// Calculate review distribution by rating
+function reviewsByRating() {
+  const distribution: Record<number, number> = {1: 0, 2: 0, 3: 0, 4: 0, 5: 0}
+  reviews.forEach(review => {
+    const rating = review.rating
+    distribution[rating] = (distribution[rating] || 0) + 1
+  })
+  return distribution
+}
+
+// Calculate review distribution by sentiment
+function reviewsBySentiment() {
+  const distribution: Record<string, number> = {positive: 0, neutral: 0, negative: 0}
+  reviews.forEach(review => {
+    const sentiment = review.sentiment
+    distribution[sentiment] = (distribution[sentiment] || 0) + 1
+  })
+  return distribution
+}
+
+// Modal state for review response
+let showResponseModal = false
+let currentReview = null
+let responseText = ''
+
+function openResponseModal(review: Review | null): void {
+  currentReview = review
+  responseText = review?.response?.content || ''
+  showResponseModal = true
+}
+
+function closeResponseModal(): void {
+  showResponseModal = false
+  currentReview = null
+  responseText = ''
+}
+
+function submitResponse(): void {
+  if (!currentReview) return
+
+  const today = new Date().toISOString().split('T')[0] || ''
+
+  // Find the review in the array and update it
+  const index = reviews.findIndex(r => r.id === currentReview.value?.id)
+  if (index !== -1) {
+    reviews[index]!.response = {
+      content: responseText,
+      date: today,
+      author: 'Customer Support Team'
+    }
+    reviews[index]!.status = 'responded'
+  }
+
+  closeResponseModal()
+}
+
+// Function to mark a review as read
+function markAsRead(review: Review): void {
+  if (review.status === 'unread') {
+    const index = reviews.findIndex(r => r.id === review.id)
+    if (index !== -1) {
+      reviews[index]!.status = 'read'
+    }
+  }
+}
+
+// Function to flag a review
+function flagReview(review: Review): void {
+  const index = reviews.findIndex(r => r.id === review.id)
+  if (index !== -1) {
+    const reviewItem = reviews[index]!
+    reviewItem.status = reviewItem.status === 'flagged' ? 'read' : 'flagged'
+  }
+}
+
+// Function to highlight a review
+function highlightReview(review: Review): void {
+  const index = reviews.findIndex(r => r.id === review.id)
+  if (index !== -1) {
+    const reviewItem = reviews[index]!
+    reviewItem.isHighlighted = !reviewItem.isHighlighted
+  }
+}
+
+// Function to hide a review
+function hideReview(review: Review): void {
+  const index = reviews.findIndex(r => r.id === review.id)
+  if (index !== -1) {
+    const reviewItem = reviews[index]!
+    reviewItem.isHidden = !reviewItem.isHidden
+  }
+}
+
+// D3 visualization functions
+const renderRatingChart = () => {
+  // Clear previous chart
+  d3.select('#rating-chart').selectAll('*').remove();
+
+  // Get data
+  const data = Object.entries(reviewsByRating).map(([rating, count]) => ({
+    rating: Number(rating),
+    count
+  })).sort((a, b) => a.rating - b.rating);
+
+  // Set dimensions
+  const width = document.getElementById('rating-chart')?.clientWidth || 300;
+  const height = document.getElementById('rating-chart')?.clientHeight || 200;
+  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  // Create SVG
+  const svg = d3.select('#rating-chart')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Create scales
+  const xScale = d3.scaleBand()
+    .domain(data.map(d => d.rating.toString()))
+    .range([0, innerWidth])
+    .padding(0.2);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.count) || 0])
+    .nice()
+    .range([innerHeight, 0]);
+
+  // Create and add x-axis
+  svg.append('g')
+    .attr('transform', `translate(0,${innerHeight})`)
+    .call(d3.axisBottom(xScale))
+    .selectAll('text')
+    .style('text-anchor', 'middle')
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280')
+    .text((d: string) => d.charAt(0).toUpperCase() + d.slice(1));
+
+  // Create and add y-axis
+  svg.append('g')
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format('d')))
+    .selectAll('text')
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280');
+
+  // Create color scale
+  const colorScale = d3.scaleLinear<string>()
+    .domain([1, 5])
+    .range(['#ef4444', '#22c55e']);
+
+  // Add bars
+  svg.selectAll('.bar')
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => xScale(d.rating.toString()) || 0)
+    .attr('y', d => yScale(d.count))
+    .attr('width', xScale.bandwidth())
+    .attr('height', d => innerHeight - yScale(d.count))
+    .attr('fill', d => colorScale(d.rating))
+    .attr('rx', 2);
+
+  // Add labels
+  svg.selectAll('.label')
+    .data(data)
+    .enter()
+    .append('text')
+    .attr('class', 'label')
+    .attr('x', d => (xScale(d.rating.toString()) || 0) + xScale.bandwidth() / 2)
+    .attr('y', d => yScale(d.count) - 5)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151')
+    .text(d => d.count > 0 ? d.count.toString() : '');
+};
+
+const renderSentimentChart = () => {
+  // Clear previous chart
+  d3.select('#sentiment-chart').selectAll('*').remove();
+
+  // Get data
+  const data = Object.entries(reviewsBySentiment).map(([sentiment, count]) => ({
+    sentiment,
+    count
+  }));
+
+  // Set dimensions
+  const width = document.getElementById('sentiment-chart')?.clientWidth || 300;
+  const height = document.getElementById('sentiment-chart')?.clientHeight || 200;
+  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const innerWidth = width - margin.left - margin.right;
+  const innerHeight = height - margin.top - margin.bottom;
+
+  // Create SVG
+  const svg = d3.select('#sentiment-chart')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', `translate(${margin.left},${margin.top})`);
+
+  // Create scales
+  const xScale = d3.scaleBand()
+    .domain(data.map(d => d.sentiment))
+    .range([0, innerWidth])
+    .padding(0.2);
+
+  const yScale = d3.scaleLinear()
+    .domain([0, d3.max(data, d => d.count) || 0])
+    .nice()
+    .range([innerHeight, 0]);
+
+  // Create and add x-axis
+  svg.append('g')
+    .attr('transform', `translate(0,${innerHeight})`)
+    .call(d3.axisBottom(xScale))
+    .selectAll('text')
+    .style('text-anchor', 'middle')
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280')
+    .text(d => d.charAt(0).toUpperCase() + d.slice(1));
+
+  // Create and add y-axis
+  svg.append('g')
+    .call(d3.axisLeft(yScale).ticks(5).tickFormat(d3.format('d')))
+    .selectAll('text')
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#9ca3af' : '#6b7280');
+
+  // Create color scale
+  const colorScale = d3.scaleOrdinal<string>()
+    .domain(['negative', 'neutral', 'positive'])
+    .range(['#ef4444', '#3b82f6', '#22c55e']);
+
+  // Add bars
+  svg.selectAll('.bar')
+    .data(data)
+    .enter()
+    .append('rect')
+    .attr('class', 'bar')
+    .attr('x', d => xScale(d.sentiment) || 0)
+    .attr('y', d => yScale(d.count))
+    .attr('width', xScale.bandwidth())
+    .attr('height', d => innerHeight - yScale(d.count))
+    .attr('fill', d => colorScale(d.sentiment))
+    .attr('rx', 2);
+
+  // Add labels
+  svg.selectAll('.label')
+    .data(data)
+    .enter()
+    .append('text')
+    .attr('class', 'label')
+    .attr('x', d => (xScale(d.sentiment) || 0) + xScale.bandwidth() / 2)
+    .attr('y', d => yScale(d.count) - 5)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151')
+    .text(d => d.count > 0 ? d.count.toString() : '');
+};
+
+const renderSourceChart = () => {
+  // Clear previous chart
+  d3.select('#source-chart').selectAll('*').remove();
+
+  // Get data
+  const data = Object.entries(reviewsBySource).map(([source, count]) => ({
+    source,
+    count
+  }));
+
+  // Set dimensions
+  const width = document.getElementById('source-chart')?.clientWidth || 300;
+  const height = document.getElementById('source-chart')?.clientHeight || 200;
+  const radius = Math.min(width, height) / 2 - 40;
+
+  // Create SVG
+  const svg = d3.select('#source-chart')
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .append('g')
+    .attr('transform', `translate(${width / 2},${height / 2})`);
+
+  // Create color scale
+  const colorScale = d3.scaleOrdinal<string>()
+    .domain(data.map(d => d.source))
+    .range(['#3b82f6', '#ef4444', '#8b5cf6', '#22c55e', '#f59e0b']);
+
+  // Create pie chart
+  const pie = d3.pie<{source: string, count: number}>()
+    .value(d => d.count)
+    .sort(null);
+
+  const arc = d3.arc<d3.PieArcDatum<{source: string, count: number}>>()
+    .innerRadius(radius * 0.5) // Donut chart
+    .outerRadius(radius);
+
+  // Add arcs
+  const pieData = pie(data);
+  const arcGroups = svg.selectAll('.arc')
+    .data(pieData)
+    .enter()
+    .append('g')
+    .attr('class', 'arc');
+
+  arcGroups.append('path')
+    .attr('d', arc)
+    .attr('fill', d => colorScale(d.data.source))
+    .attr('stroke', document.documentElement.classList.contains('dark') ? '#1f2937' : '#ffffff')
+    .attr('stroke-width', 1);
+
+  // Add labels
+  const arcLabel = d3.arc<d3.PieArcDatum<{source: string, count: number}>>()
+    .innerRadius(radius * 0.7)
+    .outerRadius(radius * 0.7);
+
+  arcGroups.append('text')
+    .attr('transform', d => `translate(${arcLabel.centroid(d)})`)
+    .attr('text-anchor', 'middle')
+    .style('font-size', '10px')
+    .style('font-weight', 'bold')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151')
+    .text(d => d.data.count > 0 ? d.data.count.toString() : '');
+
+  // Add legend
+  const legend = svg.selectAll('.legend')
+    .data(data)
+    .enter()
+    .append('g')
+    .attr('class', 'legend')
+    .attr('transform', (d, i) => `translate(${radius + 10},${-radius + 20 + i * 20})`);
+
+  legend.append('rect')
+    .attr('width', 12)
+    .attr('height', 12)
+    .attr('fill', d => colorScale(d.source));
+
+  legend.append('text')
+    .attr('x', 20)
+    .attr('y', 10)
+    .style('font-size', '10px')
+    .style('fill', document.documentElement.classList.contains('dark') ? '#e5e7eb' : '#374151')
+    .text(d => d.source);
+};
+
+</script>
+
+<main>
+    <div class="px-6 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <!-- Header section -->
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Customer Reviews</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Monitor and respond to customer reviews from Google, Yelp, and other platforms
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <button
+              type="button"
+              onclick="openResponseModal(null)"
+              class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              <div class="mr-1 h-5 w-5 i-hugeicons-mail-reply-01"></div>
+              Respond to Review
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+          <!-- Total reviews card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                    <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-star"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Reviews</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalReviews }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Average rating card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-yellow-100 dark:bg-yellow-900 rounded-md">
+                    <div class="h-6 w-6 text-yellow-600 dark:text-yellow-300 i-hugeicons-chart-average"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Average Rating</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ averageRating }} / 5</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Positive reviews card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 rounded-md">
+                    <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-thumbs-up"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Positive Reviews</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ positiveReviews }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Negative reviews card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-red-100 dark:bg-red-900 rounded-md">
+                    <div class="h-6 w-6 text-red-600 dark:text-red-300 i-hugeicons-thumbs-down"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Negative Reviews</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ negativeReviews }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Visualization section -->
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-3 mt-6">
+          <!-- Rating distribution chart -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <h3 class="font-semibold text-base text-gray-900 dark:text-white">Rating Distribution</h3>
+              <div id="rating-chart" class="mt-4 h-48"></div>
+            </div>
+          </div>
+
+          <!-- Sentiment distribution chart -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <h3 class="font-semibold text-base text-gray-900 dark:text-white">Sentiment Analysis</h3>
+              <div id="sentiment-chart" class="mt-4 h-48"></div>
+            </div>
+          </div>
+
+          <!-- Source distribution chart -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <h3 class="font-semibold text-base text-gray-900 dark:text-white">Review Sources</h3>
+              <div id="source-chart" class="mt-4 h-48"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters and view options -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
+          <div class="relative max-w-sm">
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+            </div>
+            <input
+              value="{{ searchQuery }}"
+              type="text"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+              placeholder="Search reviews..."
+            />
+          </div>
+
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <!-- Source filter -->
+            <select
+              value="{{ sourceFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Sources</option>
+              @foreach(sources.filter(s => s !== 'all') as source)
+<option value="{{ source }}">{{ source }}</option>
+            </select>
+
+            <!-- Rating filter -->
+            <select
+              value="{{ ratingFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Ratings</option>
+              @foreach(ratings.filter(r => r !== 'all') as rating)
+<option value="{{ rating }}">{{ rating }} Stars</option>
+            </select>
+
+            <!-- Sentiment filter -->
+            <select
+              value="{{ sentimentFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Sentiments</option>
+              <option value="positive">Positive</option>
+              <option value="neutral">Neutral</option>
+              <option value="negative">Negative</option>
+            </select>
+
+            <!-- Status filter -->
+            <select
+              value="{{ statusFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Statuses</option>
+              <option value="unread">Unread</option>
+              <option value="read">Read</option>
+              <option value="responded">Responded</option>
+              <option value="flagged">Flagged</option>
+            </select>
+
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                type="button"
+                onclick="viewMode = 'detailed'"
+                class="[
+                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'detailed'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-grid"></div>
+              </button>
+              <button
+                type="button"
+                onclick="viewMode = 'compact'"
+                class="[
+                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'compact'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-list-view"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort options -->
+        <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
+          <span class="mr-2">Sort by:</span>
+          <button
+            onclick="toggleSort('date')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'date' 'font-semibold { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Date
+            @if(sortBy === 'date')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+            </span>
+          </button>
+          <button
+            onclick="toggleSort('rating')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'rating' { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Rating
+            @if(sortBy === 'rating')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+            </span>
+          </button>
+          <button
+            onclick="toggleSort('helpful')"
+            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'helpful' { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Helpful
+            @if(sortBy === 'helpful')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+            </span>
+          </button>
+        </div>
+
+        <!-- Compact view (table) -->
+        @if(viewMode === 'compact')
+<div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-700">
+              <tr>
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">Review</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Source</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Rating</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Sentiment</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Date</th>
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+              @if(paginatedReviews.length === 0)
+<tr>
+                <td colspan="7" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                  No reviews found. Try adjusting your search or filter.
+                </td>
+              </tr>
+              @foreach(paginatedReviews as review)
+<tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-10 w-10">
+                      @if(review.authorAvatar)
+<img class="h-10 w-10 rounded-full" :src="review.authorAvatar" alt="" />
+                      @else
+<div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
+                        <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
+                      </div>
+                    </div>
+                    <div class="ml-4">
+                      <div class="font-medium text-gray-900 dark:text-white">{{ review.title }}</div>
+                      <div class="text-gray-500 text-xs dark:text-neutral-400">{{ review.author }} - {{ review.location }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
+                  <div class="flex items-center">
+                    <div :class="mr-2 h-4 w-4 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
+                    {{ review.source }}
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
+                  <div class="flex items-center">
+                    @foreach(getRatingStars(review.rating) as index => star)
+<div class="mr-0.5">
+                      @if(star === 'full')
+<div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
+                      @else
+<div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
+                    </div>
+                    <span class="ml-1">{{ review.rating }}.0</span>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <span :class="[getSentimentClass(review.sentiment), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                    {{ review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1) }}
+                  </span>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <span :class="[getStatusClass(review.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                    {{ review.status.charAt(0).toUpperCase() + review.status.slice(1) }}
+                  </span>
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
+                  {{ formatDate(review.date) }}
+                </td>
+                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                  <div class="flex justify-end space-x-2">
+                    @if(review.status !== 'responded')
+<button
+                      onclick="openResponseModal(review)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-all"
+                      title="Respond"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-edit-01"></div>
+                      <span class="sr-only">Respond</span>
+                    </button>
+                    @if(review.status === 'unread')
+<button
+                      onclick="markAsRead(review)"
+                      class="text-gray-400 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 duration-150 transition-all"
+                      title="Mark as Read"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
+                      <span class="sr-only">Mark as Read</span>
+                    </button>
+                    <button
+                      onclick="flagReview(review)"
+                      class="text-gray-400 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 duration-150 transition-all"
+                      :title="review.status === 'flagged' ? 'Unflag' : 'Flag'"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-flag-01"></div>
+                      <span class="sr-only">Flag</span>
+                    </button>
+                    <button
+                      onclick="highlightReview(review)"
+                      class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 duration-150 transition-all"
+                      :title="review.isHighlighted ? 'Remove Highlight' : 'Highlight'"
+                    >
+                      <div :class=": ? 'i-hugeicons-star' 'i-hugeicons-star' review.isHighlighted" class="h-5 w-5"></div>
+                      <span class="sr-only">Highlight</span>
+                    </button>
+                    <button
+                      onclick="hideReview(review)"
+                      class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-all"
+                      :title="review.isHidden ? 'Unhide' : 'Hide'"
+                    >
+                      <div :class=": ? 'i-hugeicons-eye-off' 'i-hugeicons-eye' review.isHidden" class="h-5 w-5"></div>
+                      <span class="sr-only">Hide</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Detailed view (cards) -->
+        @else
+<div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
+          @if(paginatedReviews.length === 0)
+<div class="col-span-full py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+            No reviews found. Try adjusting your search or filter.
+          </div>
+          @foreach(paginatedReviews as review)
+<div
+            class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow"
+            class="'opacity-60': 'ring-2 { {{ } }} review.isHidden review.isHighlighted, ring-yellow-400':"
+          >
+            <div class="p-5">
+              <!-- Review header -->
+              <div class="flex items-center justify-between">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-10 w-10">
+                    @if(review.authorAvatar)
+<img class="h-10 w-10 rounded-full" :src="review.authorAvatar" alt="" />
+                    @else
+<div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
+                      <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
+                    </div>
+                  </div>
+                  <div class="ml-3">
+                    <div class="font-medium text-gray-900 text-sm dark:text-white">{{ review.author }}</div>
+                    <div class="text-gray-500 text-xs dark:text-neutral-400">{{ review.location }}</div>
+                  </div>
+                </div>
+                <div class="flex items-center">
+                  <div :class="mr-2 h-5 w-5 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
+                  <span class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(review.date) }}</span>
+                </div>
+              </div>
+
+              <!-- Rating -->
+              <div class="flex items-center mt-3">
+                <div class="flex">
+                  @foreach(getRatingStars(review.rating) as index => star)
+<div class="mr-0.5">
+                    @if(star === 'full')
+<div class="h-5 w-5 text-yellow-400 i-hugeicons-star"></div>
+                    @else
+<div class="h-5 w-5 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
+                  </div>
+                </div>
+                <span class="ml-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.rating }}.0</span>
+                <span
+                  :class="[getSentimentClass(review.sentiment), 'ml-auto inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']"
+                >
+                  {{ review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1) }}
+                </span>
+                <span
+                  :class="[getStatusClass(review.status), 'ml-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']"
+                >
+                  {{ review.status.charAt(0).toUpperCase() + review.status.slice(1) }}
+                </span>
+              </div>
+
+              <!-- Review title and content -->
+              <div class="mt-3">
+                <h3 class="font-semibold text-base text-gray-900 dark:text-white">{{ review.title }}</h3>
+                <p class="mt-1 line-clamp-3 text-gray-500 text-sm dark:text-neutral-400">{{ review.content }}</p>
+                @if(review.content.length > 150)
+<button
+                  class="mt-1 text-blue-600 text-xs dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300"
+                >
+                  Read more
+                </button>
+              </div>
+
+              <!-- Tags -->
+              @if(review.tags && review.tags.length > 0)
+<div class="flex flex-wrap gap-1 mt-3">
+                @foreach(review.tags as tag)
+<span
+                  class="inline-flex items-center px-2 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 rounded-full"
+                >
+                  {{ tag }}
+                </span>
+              </div>
+
+              <!-- Response section -->
+              @if(review.response)
+<div class="mt-4 p-3 bg-gray-50 dark:bg-neutral-700 rounded-md">
+                <div class="flex items-center">
+                  <div class="flex-shrink-0 h-8 w-8">
+                    <img class="h-8 w-8 rounded-full" src="/images/logos/logo.svg" alt="Your Business" />
+                  </div>
+                  <div class="ml-3">
+                    <div class="font-medium text-gray-900 text-sm dark:text-white">Your Business</div>
+                    <div class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(review.response.date) }}</div>
+                  </div>
+                </div>
+                <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.response.content }}</p>
+              </div>
+
+              <!-- Helpful metrics -->
+              <div class="flex items-center mt-4 text-gray-500 text-xs dark:text-neutral-400">
+                <div class="flex items-center">
+                  <div class="mr-1 h-4 w-4 i-hugeicons-thumb-up"></div>
+                  <span>{{ review.helpful || 0 }} helpful</span>
+                </div>
+                <div class="flex items-center ml-4">
+                  <div class="mr-1 h-4 w-4 i-hugeicons-thumb-down"></div>
+                  <span>{{ review.notHelpful || 0 }} not helpful</span>
+                </div>
+                @if(review.isVerified)
+<div class="flex items-center ml-auto text-green-600 dark:text-green-400">
+                  <div class="mr-1 h-4 w-4 i-hugeicons-check-verified"></div>
+                  <span>Verified</span>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex justify-between mt-4">
+                @if(review.status !== 'responded')
+<button
+                  onclick="openResponseModal(review)"
+                  class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900 hover:bg-blue-100 dark:hover:bg-blue-800 rounded-md"
+                >
+                  <div class="mr-1 h-4 w-4 i-hugeicons-message-text-edit"></div>
+                  Respond
+                </button>
+                @if(review.status === 'unread')
+<button
+                  onclick="markAsRead(review)"
+                  class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900 hover:bg-green-100 dark:hover:bg-green-800 rounded-md"
+                >
+                  <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
+                  Mark as Read
+                </button>
+                <div class="flex space-x-2">
+                  <button
+                    onclick="flagReview(review)"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+                    class="text-yellow-700 dark:bg-yellow-900 'bg-yellow-50 'flagged' { {{ } }} === review.status dark:text-yellow-300':"
+                  >
+                    <div class="mr-1 h-4 w-4 i-hugeicons-flag-01"></div>
+                    {{ review.status === 'flagged' ? 'Unflag' : 'Flag' }}
+                  </button>
+                  <button
+                    onclick="highlightReview(review)"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+                    class="text-purple-700 dark:bg-purple-900 'bg-purple-50 { {{ } }} review.isHighlighted dark:text-purple-300':"
+                  >
+                    <div :class=": ? 'i-hugeicons-star' 'i-hugeicons-star' review.isHighlighted" class="mr-1 h-4 w-4"></div>
+                    {{ review.isHighlighted ? 'Unhighlight' : 'Highlight' }}
+                  </button>
+                  <button
+                    onclick="hideReview(review)"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+                    class="text-red-700 dark:bg-red-900 'bg-red-50 { {{ } }} review.isHidden dark:text-red-300':"
+                  >
+                    <div :class=": ? 'i-hugeicons-eye-off' 'i-hugeicons-eye' review.isHidden" class="mr-1 h-4 w-4"></div>
+                    {{ review.isHidden ? 'Unhide' : 'Hide' }}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="flex items-center justify-between mt-6 px-4 py-3 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
+          <div class="flex sm:hidden flex-1 justify-between">
+            <button
+              onclick="currentPage > 1 ? currentPage-- : null"
+              disabled="{{ currentPage === 1 }}"
+              class="inline-flex relative items-center px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Previous
+            </button>
+            <button
+              onclick="currentPage < totalPages ? currentPage++ : null"
+              disabled="{{ currentPage === totalPages }}"
+              class="inline-flex relative items-center ml-3 px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              Next
+            </button>
+          </div>
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-gray-700 text-sm dark:text-neutral-300">
+                Showing
+                <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span>
+                to
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredReviews.length) }}</span>
+                of
+                <span class="font-medium">{{ filteredReviews.length }}</span>
+                results
+              </p>
+            </div>
+            <div>
+              <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+                <button
+                  onclick="currentPage > 1 ? currentPage-- : null"
+                  disabled="{{ currentPage === 1 }}"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-l-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2"
+                >
+                  <span class="sr-only">Previous</span>
+                  <div class="h-5 w-5 i-hugeicons-chevron-left"></div>
+                </button>
+                @foreach(displayedPages as page)
+<button
+                  onclick="currentPage = page"
+                  class="[
+                    page === currentPage
+                      ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
+                    'focus:z-20 focus:outline-offset-0'
+                  ] {{ }}"
+                >
+                  {{ page }}
+                </button>
+                <button
+                  onclick="currentPage < totalPages ? currentPage++ : null"
+                  disabled="{{ currentPage === totalPages }}"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <span class="sr-only">Next</span>
+                  <div class="h-5 w-5 i-hugeicons-chevron-right"></div>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Response modal -->
+  @if(showResponseModal)
+<div class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeResponseModal"></div>
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div class="hidden sm:block absolute right-0 top-0 pr-4 pt-4">
+          <button
+            type="button"
+            onclick="closeResponseModal"
+            class="text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-200 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+          >
+            <span class="sr-only">Close</span>
+            <div class="h-6 w-6 i-hugeicons-x-mark"></div>
+          </button>
+        </div>
+        <div class="sm:flex sm:items-start">
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900 rounded-full">
+            <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-mail-reply-01"></div>
+          </div>
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
+              {{ currentReview ? 'Respond to Review' : 'Create Response Template' }}
+            </h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
+                {{ currentReview ? 'Write a thoughtful response to this customer review.' : 'Create a response template that can be used for future reviews.' }}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Review details (if responding to a specific review) -->
+        @if(currentReview)
+<div class="mt-4 p-3 bg-gray-50 dark:bg-neutral-700 rounded-md">
+          <div class="flex items-center">
+            <div class="flex-shrink-0 h-8 w-8">
+              @if(currentReview.authorAvatar)
+<img class="h-8 w-8 rounded-full" :src="currentReview.authorAvatar" alt="" />
+              @else
+<div class="flex items-center justify-center h-8 w-8 bg-gray-200 rounded-full">
+                <div class="h-5 w-5 text-gray-500 i-hugeicons-user"></div>
+              </div>
+            </div>
+            <div class="ml-3">
+              <div class="font-medium text-gray-900 text-sm dark:text-white">{{ currentReview.author }}</div>
+              <div class="flex items-center">
+                @foreach(getRatingStars(currentReview.rating) as index => star)
+<div class="mr-0.5">
+                  @if(star === 'full')
+<div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
+                  @else
+<div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
+                </div>
+                <span class="ml-2 text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(currentReview.date) }}</span>
+              </div>
+            </div>
+          </div>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">{{ currentReview.content }}</p>
+        </div>
+
+        <!-- Response form -->
+        <div class="mt-4">
+          <label for="response" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Your response</label>
+          <div class="mt-1">
+            <textarea
+              id="response"
+              value="{{ responseText }}"
+              rows="4"
+              class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+              placeholder="Write your response here..."
+            ></textarea>
+          </div>
+        </div>
+
+        <!-- Response templates -->
+        <div class="mt-4">
+          <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Response templates</label>
+          <div class="grid gap-2 grid-cols-1 mt-1">
+            <button
+              onclick="responseText = 'Thank you for your positive feedback! We appreciate your kind words and are delighted that you had a great experience with us. We look forward to serving you again soon!'"
+              class="p-2 text-gray-700 text-left text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+            >
+              <span class="font-medium">Positive Review Response</span>
+              <p class="mt-1 truncate">Thank you for your positive feedback! We appreciate your kind words...</p>
+            </button>
+            <button
+              onclick="responseText = 'Thank you for bringing this to our attention. We apologize for your negative experience and would like to make things right. Please contact our customer service team directly so we can address your concerns personally.'"
+              class="p-2 text-gray-700 text-left text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+            >
+              <span class="font-medium">Negative Review Response</span>
+              <p class="mt-1 truncate">Thank you for bringing this to our attention. We apologize for your negative experience...</p>
+            </button>
+            <button
+              onclick="responseText = 'Thank you for your feedback. We appreciate you taking the time to share your thoughts with us. Your input helps us improve our services, and we hope to exceed your expectations on your next visit.'"
+              class="p-2 text-gray-700 text-left text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
+            >
+              <span class="font-medium">Neutral Review Response</span>
+              <p class="mt-1 truncate">Thank you for your feedback. We appreciate you taking the time to share your thoughts...</p>
+            </button>
+          </div>
+        </div>
+
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+          <button
+            type="button"
+            onclick="submitResponse"
+            class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
+          >
+            Submit Response
+          </button>
+          <button
+            type="button"
+            onclick="closeResponseModal"
+            class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script client>
+import { onMount } from 'stx'
+
+onMount(() => {
+  // Initial render of all D3 charts
+  renderRatingChart()
+  renderSentimentChart()
+  renderSourceChart()
+
+  // Re-render charts on window resize
+  window.addEventListener('resize', () => {
+    renderRatingChart()
+    renderSentimentChart()
+    renderSourceChart()
+  })
+
+  // Watch for theme changes (dark mode toggle)
+  const observer = new MutationObserver(() => {
+    renderRatingChart()
+    renderSentimentChart()
+    renderSourceChart()
+  })
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  })
+})
+</script>
+
+@endsection

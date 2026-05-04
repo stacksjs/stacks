@@ -1,0 +1,284 @@
+@extends('layouts/default')
+
+@section('content')
+<script>
+interface User {
+  id: number
+  name: string
+  email: string
+  avatar: string
+}
+
+interface Conversation {
+  id: number
+  name: string
+  lastMessage: string
+  timestamp: string
+  unread: boolean
+  type: 'ai' | 'human'
+  status: 'online' | 'offline'
+}
+
+interface Message {
+  id: number
+  content: string
+  timestamp: string
+  type: 'ai' | 'human'
+  codeSnippet?: {
+    language: string
+    code: string
+  }
+  user: User
+}
+
+const route = useRoute()
+const router = useRouter()
+
+let activeConversation = 1
+
+let conversations = [
+  {
+    id: 1,
+    name: 'New Project Setup',
+    lastMessage: 'I can help you set up a new Stacks.js project with TypeScript',
+    timestamp: 'Moments ago',
+    unread: true,
+    type: 'ai',
+    status: 'online'
+  },
+  {
+    id: 2,
+    name: 'Database Migration',
+    lastMessage: 'Here\'s how to run your first migration in Stacks.js',
+    timestamp: '2h ago',
+    unread: false,
+    type: 'ai',
+    status: 'online'
+  },
+  {
+    id: 3,
+    name: 'API Documentation',
+    lastMessage: 'Generated API documentation for your endpoints',
+    timestamp: '1d ago',
+    unread: false,
+    type: 'ai',
+    status: 'online'
+  }
+]
+
+let messages = [
+  {
+    id: 1,
+    type: 'human',
+    user: {
+      id: 1,
+      name: 'Chris',
+      email: 'chris@stacksjs.com',
+      avatar: 'https://avatars.githubusercontent.com/u/6228425?v=4'
+    },
+    content: 'How do I create a new Stacks.js project with TypeScript?',
+    timestamp: '2:30 PM'
+  },
+  {
+    id: 2,
+    type: 'ai',
+    user: {
+      id: 0,
+      name: 'Buddy',
+      email: 'ai@stacksjs.com',
+      avatar: ''  // Will fallback to the AI circle
+    },
+    content: 'I can help you set up a new Stacks.js project. First, let\'s create a new project using the CLI:',
+    timestamp: '2:31 PM',
+    codeSnippet: {
+      language: 'bash',
+      code: 'npm create stacks@latest my-app\ncd my-app\npnpm install'
+    }
+  }
+]
+
+let newMessage = ''
+
+const sendMessage = () => {
+  if (newMessage.trim()) {
+    const message = {
+      id: messages.length + 1,
+      type: 'human',
+      user: {
+        id: 1,
+        name: 'Chris',
+        email: 'chris@stacksjs.com',
+        avatar: '/avatars/chris.jpg'
+      },
+      content: newMessage,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    }
+
+    messages.push(message)
+    newMessage = ''
+
+    // Simulate AI response
+    setTimeout(() => {
+      const aiResponse = {
+        id: messages.length + 1,
+        type: 'ai',
+        user: {
+          id: 0,
+          name: 'Buddy',
+          email: 'ai@stacksjs.com',
+          avatar: '/avatars/stacks-ai.jpg'
+        },
+        content: 'I\'m processing your request. How can I help you with Stacks.js?',
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      }
+      messages.push(aiResponse)
+    }, 1000)
+  }
+}
+
+const selectConversation = (id) => {
+  activeConversation = id
+  router.push({ query: { conversation: id } })
+}
+
+function isActive() { return (id } => activeConversation === id)
+</script>
+
+<div class="flex overflow-hidden h-screen bg-gray-100 dark:bg-neutral-900">
+  <div class="flex flex-col w-80 bg-white dark:bg-neutral-800 border-gray-200 border-r">
+    <!-- Sidebar Header -->
+    <div class="flex-none p-4 border-b border-gray-200 dark:border-neutral-700">
+      <h2 class="font-semibold text-gray-900 text-lg dark:text-white">Conversations</h2>
+      <p class="text-gray-500 text-sm dark:text-neutral-400">Ask any question you may have.</p>
+    </div>
+
+    <!-- Conversations List -->
+    <div class="overflow-y-auto flex-1">
+      @foreach(conversations as chat)
+        <div
+             onclick="selectConversation(chat.id)"
+             class="[
+               'p-4 cursor-pointer border-b border-gray-200',
+               isActive(chat.id) ? 'bg-blue-50' : 'hover:bg-gray-50'
+             ] {{ }}">
+          <div class="flex items-start justify-between">
+            <div class="flex items-center space-x-3">
+              <div class="relative">
+                <div class="flex items-center justify-center h-10 w-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full">
+                  <span class="font-medium text-sm text-white">{{ chat.name.charAt(0) }}</span>
+                </div>
+                @if(chat.status === 'online')
+                  <div class="absolute h-3 w-3 bg-green-400 border-2 border-white rounded-full -bottom-0.5 -right-0.5"></div>
+                @endif
+              </div>
+              <div>
+                <h3 class="font-medium text-gray-900 text-sm">{{ chat.name }}</h3>
+                <p class="mt-1 line-clamp-1 text-gray-500 text-sm">{{ chat.lastMessage }}</p>
+              </div>
+            </div>
+            <div class="flex items-center space-x-2">
+              <span class="text-gray-500 text-xs whitespace-nowrap">{{ chat.timestamp }}</span>
+              @if(chat.unread)
+                <span class="h-2 w-2 bg-blue-500 rounded-full"></span>
+              @endif
+            </div>
+          </div>
+        </div>
+      @endforeach
+    </div>
+  </div>
+
+  <!-- Main Content -->
+  <div class="flex flex-1 flex-col">
+    <!-- Chat Header -->
+    <div class="flex-none p-4 bg-white dark:bg-neutral-800 border-b border-gray-200">
+      <div class="flex items-center justify-between">
+        <div class="flex items-center space-x-4">
+          <div class="flex items-center justify-center h-10 w-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full">
+            <span class="font-medium text-sm text-white">AI</span>
+          </div>
+          <div>
+            <h2 class="font-semibold text-gray-900 text-lg">Buddy</h2>
+            <p class="text-gray-500 text-sm">Always here to help</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Chat Area -->
+    <div class="overflow-y-auto flex-1 p-4 bg-gray-50 dark:bg-neutral-900">
+      <div class="flex flex-col mx-auto space-y-4 max-w-3xl">
+        @foreach(messages as message)
+          <div
+               class="[
+                 'flex items-start space-x-4',
+                 message.type === 'ai' ? '' : 'justify-end'
+               ] {{ }}">
+            @if(message.type === 'ai')
+              <div class="flex items-center justify-center h-10 w-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full">
+                <span class="font-medium text-sm text-white">AI</span>
+              </div>
+            @endif
+
+            <div class="[
+                   'rounded-lg p-4 shadow max-w-lg',
+                   message.type === 'ai' ? 'bg-white dark:bg-neutral-800' : 'bg-blue-500 text-white'
+                 ] {{ }}">
+              <div class="flex items-center justify-between mb-1">
+                <span class="font-medium">{{ message.user.name }}</span>
+                <span class="text-sm opacity-75">{{ message.timestamp }}</span>
+              </div>
+              <p>{{ message.content }}</p>
+
+              @if(message.codeSnippet)
+                <div class="mt-3 p-4 text-white bg-gray-800 rounded-md">
+                  <pre><code>{{ message.codeSnippet.code }}</code></pre>
+                </div>
+              @endif
+            </div>
+
+            @if(message.type === 'human')
+              <img :src="message.user.avatar"
+                   :alt="message.user.name"
+                   class="h-10 w-10 rounded-full" />
+            @endif
+          </div>
+        @endforeach
+      </div>
+    </div>
+
+    <!-- Message Input -->
+    <div class="flex-none p-4 bg-white dark:bg-neutral-800 border-gray-200 border-t">
+      <div class="mx-auto max-w-3xl">
+        <div class="flex items-center space-x-4">
+          <input value="{{ newMessage }}"
+                 type="text"
+                 placeholder="Ask anything about your project..."
+                 @keyup.enter="sendMessage"
+                 class="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          <button onclick="sendMessage"
+                  class="px-6 py-2 text-white bg-blue-500 hover:bg-blue-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
+            Send
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<style scoped>
+.h-screen {
+  height: 100vh;
+  max-height: 100vh;
+}
+
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+</style>
+
+
+@endsection

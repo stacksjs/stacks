@@ -1,0 +1,453 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+
+
+// Types
+interface DateRange {
+  id: string
+  name: string
+}
+
+interface ProductData {
+  name: string
+  sku: string
+  sales: number
+  revenue: number
+  percentage: number
+}
+
+interface CategoryData {
+  name: string
+  sales: number
+  revenue: number
+  percentage: number
+}
+
+interface CustomerData {
+  name: string
+  orders: number
+  spent: number
+  percentage: number
+}
+
+// Date range options
+const dateRanges: DateRange[] = [
+  { id: 'last7days', name: 'Last 7 Days' },
+  { id: 'last30days', name: 'Last 30 Days' },
+  { id: 'thisMonth', name: 'This Month' },
+  { id: 'lastMonth', name: 'Last Month' },
+  { id: 'thisYear', name: 'This Year' },
+  { id: 'custom', name: 'Custom Range' }
+]
+
+// Selected date range
+let selectedDateRange = 'all-time'
+let dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2025'
+let comparisonType = 'no-comparison'
+let customStartDate = ''
+let customEndDate = ''
+function showCustomDateRange() { return selectedDateRange === 'custom' }
+
+// Sales overview data
+let salesOverview = {
+  totalRevenue: 1245678.90,
+  totalOrders: 34567,
+  averageOrderValue: 36.04,
+  conversionRate: '2.4%',
+  returnRate: '5.2%',
+  repeatCustomerRate: '28%'
+}
+
+// Sales data for chart
+let salesData = [
+  { date: '2023-11-01', revenue: 25000, orders: 980 },
+  { date: '2023-12-01', revenue: 35000, orders: 1220 },
+  { date: '2024-01-01', revenue: 42000, orders: 1440 },
+  { date: '2024-02-01', revenue: 68000, orders: 2100 },
+  { date: '2024-03-01', revenue: 85000, orders: 2700 },
+  { date: '2024-04-01', revenue: 65000, orders: 1900 },
+  { date: '2024-05-01', revenue: 45000, orders: 1200 },
+  { date: '2024-06-01', revenue: 30000, orders: 800 },
+  { date: '2024-07-01', revenue: 45000, orders: 1200 },
+  { date: '2024-08-01', revenue: 30000, orders: 800 },
+  { date: '2024-09-01', revenue: 30000, orders: 800 },
+  { date: '2024-10-01', revenue: 45000, orders: 1200 },
+  { date: '2024-11-01', revenue: 24000, orders: 600 },
+  { date: '2024-12-01', revenue: 90000, orders: 2300 },
+  { date: '2025-01-01', revenue: 30000, orders: 800 },
+  { date: '2025-02-01', revenue: 18000, orders: 400 }
+]
+
+// Products data
+let productsData = [
+  { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450, percentage: 0 },
+  { name: 'Wireless Earbuds', sku: 'WE-200', sales: 3567, revenue: 178350, percentage: 0 },
+  { name: 'Smart Watch Series 5', sku: 'SW-S5', sales: 2134, revenue: 149380, percentage: 0 },
+  { name: 'Laptop Ultra Slim', sku: 'LT-US-15', sales: 876, revenue: 131400, percentage: 0 },
+  { name: 'Bluetooth Speaker', sku: 'BS-100', sales: 1543, revenue: 61720, percentage: 0 },
+  { name: 'Fitness Tracker', sku: 'FT-300', sales: 1876, revenue: 56280, percentage: 0 },
+  { name: 'Tablet Pro 12', sku: 'TB-P12', sales: 654, revenue: 45780, percentage: 0 },
+  { name: 'Gaming Mouse', sku: 'GM-RGB', sales: 1234, revenue: 43190, percentage: 0 },
+  { name: 'Mechanical Keyboard', sku: 'KB-MECH', sales: 987, revenue: 39480, percentage: 0 },
+  { name: 'External SSD 1TB', sku: 'SSD-1TB', sales: 765, revenue: 38250, percentage: 0 }
+]
+
+// Calculate percentages for products based on revenue
+function totalProductRevenue() { return productsData.reduce((sum, product } => sum + product.revenue, 0))
+// Update percentages
+productsData.forEach(product => {
+  product.percentage = Math.round((product.revenue / totalProductRevenue) * 100)
+}
+
+// Categories data
+let categoriesData = [
+  { name: 'Electronics', sales: 5678, revenue: 850200, percentage: 0 },
+  { name: 'Clothing', sales: 4532, revenue: 226600, percentage: 0 },
+  { name: 'Home & Kitchen', sales: 3210, revenue: 160500, percentage: 0 },
+  { name: 'Beauty & Personal Care', sales: 2876, revenue: 143800, percentage: 0 },
+  { name: 'Sports & Outdoors', sales: 1987, revenue: 99350, percentage: 0 },
+  { name: 'Books', sales: 1654, revenue: 33080, percentage: 0 },
+  { name: 'Toys & Games', sales: 1432, revenue: 57280, percentage: 0 },
+  { name: 'Health & Household', sales: 1234, revenue: 61700, percentage: 0 },
+  { name: 'Automotive', sales: 876, revenue: 43800, percentage: 0 },
+  { name: 'Pet Supplies', sales: 765, revenue: 38250, percentage: 0 }
+]
+
+// Calculate percentages for categories based on revenue
+function totalCategoryRevenue() { return categoriesData.reduce((sum, category } => sum + category.revenue, 0))
+// Update percentages
+categoriesData.forEach(category => {
+  category.percentage = Math.round((category.revenue / totalCategoryRevenue) * 100)
+}
+
+// Top customers data
+let customersData = [
+  { name: 'John Smith', orders: 24, spent: 4800, percentage: 0 },
+  { name: 'Sarah Johnson', orders: 18, spent: 3600, percentage: 0 },
+  { name: 'Michael Brown', orders: 15, spent: 3000, percentage: 0 },
+  { name: 'Emily Davis', orders: 12, spent: 2400, percentage: 0 },
+  { name: 'David Wilson', orders: 10, spent: 2000, percentage: 0 }
+]
+
+// Calculate percentages for customers based on spent
+function totalCustomerSpent() { return customersData.reduce((sum, customer } => sum + customer.spent, 0))
+// Update percentages
+customersData.forEach(customer => {
+  customer.percentage = Math.round((customer.spent / totalCustomerSpent) * 100)
+}
+
+// Format numbers with commas
+function formatNumber(number) {
+  return number.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+// Format currency
+function formatCurrency(amount) {
+  return '$' + amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })
+}
+
+// Get percentage color class
+const getPercentageColorClass = (percentage) => {
+  if (percentage >= 70) return 'text-green-600 dark:text-green-400'
+  if (percentage >= 40) return 'text-yellow-600 dark:text-yellow-400'
+  return 'text-red-600 dark:text-red-400'
+}
+
+
+</script>
+
+@title('Dashboard - Commerce Sales Analytics')
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Header with date range selector -->
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
+        <div class="flex items-center space-x-2">
+          <div class="h-5 w-5 text-gray-500 dark:text-neutral-400 i-hugeicons-calendar-03"></div>
+          <span class="font-medium text-gray-700 text-sm dark:text-neutral-300">{{ dateRangeDisplay }}</span>
+        </div>
+
+        <div class="flex flex-wrap gap-2 items-center">
+          <span class="text-gray-500 text-sm dark:text-neutral-400">compared to</span>
+
+          <div class="relative">
+            <select
+              value="{{ comparisonType }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="no-comparison">No comparison</option>
+              <option value="previous-period">Previous period</option>
+              <option value="previous-year">Previous year</option>
+            </select>
+          </div>
+
+          <button
+            type="button"
+            class="inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+          >
+            <div class="mr-1 h-4 w-4 i-hugeicons-settings-01"></div>
+            Auto
+          </button>
+        </div>
+      </div>
+
+      <!-- Overview Cards -->
+      <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 mb-8 p-4 bg-black dark:bg-neutral-900 rounded-lg">
+        <!-- Total Revenue -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">$1.25M</div>
+          <div class="text-gray-400 text-sm">Total Revenue</div>
+        </div>
+
+        <!-- Total Orders -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">34.6k</div>
+          <div class="text-gray-400 text-sm">Total Orders</div>
+        </div>
+
+        <!-- Average Order Value -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">${{ salesOverview.averageOrderValue }}</div>
+          <div class="text-gray-400 text-sm">Avg Order Value</div>
+        </div>
+
+        <!-- Conversion Rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ salesOverview.conversionRate }}</div>
+          <div class="text-gray-400 text-sm">Conversion Rate</div>
+        </div>
+
+        <!-- Return Rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ salesOverview.returnRate }}</div>
+          <div class="text-gray-400 text-sm">Return Rate</div>
+        </div>
+
+        <!-- Repeat Customer Rate -->
+        <div class="flex flex-col items-center justify-center">
+          <div class="font-bold text-4xl text-white">{{ salesOverview.repeatCustomerRate }}</div>
+          <div class="text-gray-400 text-sm">Repeat Customers</div>
+        </div>
+      </div>
+
+      <!-- Sales Chart -->
+      <div class="mb-8 p-4 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <!-- Chart header -->
+        <div class="mb-4">
+          <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Sales Overview</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+            Revenue and order volume over time
+          </p>
+        </div>
+
+        <!-- Chart.js canvas -->
+        <div class="h-80 w-full">
+          <canvas id="salesChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Data Tables -->
+      <div class="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <!-- Top Products Table -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Top Products</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Product
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Sales
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Revenue
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(productsData as product)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="{{ { width: product.percentage + '%' } }}"></div>
+                    <span class="relative z-10">{{ product.name }}</span>
+                    <span class="block relative z-10 text-gray-500 text-xs dark:text-neutral-400">{{ product.sku }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ formatNumber(product.sales) }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ formatCurrency(product.revenue) }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ product.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/dashboard/commerce/analytics/sales/products" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all products
+            </a>
+          </div>
+        </div>
+
+        <!-- Categories Table -->
+        <div>
+          <div class="mb-4">
+            <h3 class="font-medium text-gray-900 text-lg dark:text-white">Categories</h3>
+          </div>
+
+          <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Category
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Sales
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    Revenue
+                  </th>
+                  <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                    %
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(categoriesData as category)
+                <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                  <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                    <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="{{ { width: category.percentage + '%' } }}"></div>
+                    <span class="relative z-10">{{ category.name }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ formatNumber(category.sales) }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ formatCurrency(category.revenue) }}</span>
+                  </td>
+                  <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="relative z-10">{{ category.percentage }}%</span>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+
+          <div class="flex justify-end mt-2">
+            <a href="/dashboard/commerce/analytics/sales/categories" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+              View all categories
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <!-- Top Customers -->
+      <div class="mt-8">
+        <div class="mb-4">
+          <h3 class="font-medium text-gray-900 text-lg dark:text-white">Top Customers</h3>
+        </div>
+
+        <div class="overflow-hidden border border-gray-200 rounded-lg dark:border-neutral-700">
+          <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
+              <tr>
+                <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">
+                  Customer
+                </th>
+                <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                  Orders
+                </th>
+                <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                  Total Spent
+                </th>
+                <th scope="col" class="px-4 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">
+                  %
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+              @foreach(customersData as customer)
+              <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                  <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="{{ { width: customer.percentage + '%' } }}"></div>
+                  <span class="relative z-10">{{ customer.name }}</span>
+                </td>
+                <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                  <span class="relative z-10">{{ customer.orders }}</span>
+                </td>
+                <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                  <span class="relative z-10">{{ formatCurrency(customer.spent) }}</span>
+                </td>
+                <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                  <span class="relative z-10">{{ customer.percentage }}%</span>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+
+        <div class="flex justify-end mt-2">
+          <a href="/dashboard/commerce/analytics/sales/customers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+            View all customers
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const ctx = document.getElementById('salesChart')
+if (ctx) {
+  new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: salesData.map(item => item.date),
+      datasets: [
+        { label: 'Revenue ($)', data: salesData.map(item => item.revenue), backgroundColor: 'rgba(16, 185, 129, 0.3)', borderColor: 'rgba(16, 185, 129, 0.8)', borderWidth: 2, tension: 0.4, fill: true, yAxisID: 'y' },
+        { label: 'Orders', data: salesData.map(item => item.orders), backgroundColor: 'rgba(245, 158, 11, 0.1)', borderColor: 'rgba(245, 158, 11, 0.8)', borderWidth: 2, tension: 0.4, fill: false, yAxisID: 'y1' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      scales: {
+        x: { grid: { display: false }, ticks: { maxTicksLimit: 4 } },
+        y: { type: 'linear', display: true, position: 'left', beginAtZero: true, grid: { borderDash: [2, 4], color: 'rgba(160, 174, 192, 0.2)' }, ticks: { maxTicksLimit: 6, callback: function(value) { return '$' + value.toLocaleString() } } },
+        y1: { type: 'linear', display: true, position: 'right', beginAtZero: true, grid: { display: false }, ticks: { maxTicksLimit: 6 } }
+      },
+      plugins: {
+        legend: { display: true, position: 'top' },
+        tooltip: { mode: 'index', intersect: false, callbacks: { label: function(context) { let label = context.dataset.label || ''; if (label) label += ': '; if (context.dataset.yAxisID === 'y') { label += '$' + context.parsed.y.toLocaleString() } else { label += context.parsed.y } return label } } }
+      }
+    }
+  })
+}
+</script>
+
+
+@endsection

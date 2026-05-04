@@ -1,0 +1,365 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+const route = useRoute()
+const serverId = route.params.id as string
+
+interface ServerConfig {
+  name: string
+  domain: string
+  region: string
+  type: string
+  size: string
+  diskSize: number
+  privateNetwork?: string
+  subnet?: string
+  serverOS: string
+  bunVersion?: string
+  database?: string
+  databaseName?: string
+  searchEngine?: string
+  userData?: string
+}
+
+interface UfwRule {
+  id: number
+  port: string
+  from: string
+  to: string
+  protocol: 'tcp' | 'udp' | 'any'
+  action: 'ALLOW' | 'DENY'
+  description: string
+}
+
+let server = {
+  name: 'app-cosmic-nebula',
+  domain: 'stacksjs.com',
+  region: 'us-east-1',
+  type: 'app',
+  size: 't3.micro',
+  diskSize: 20,
+  serverOS: 'ubuntu-24-lts-x86_64',
+  bunVersion: 'v1.2.3',
+  database: 'sqlite',
+  databaseName: 'stacks',
+  searchEngine: 'meilisearch'
+}
+
+let ufwRules = [
+  {
+    id: 1,
+    port: '22',
+    from: '0.0.0.0',
+    to: 'any',
+    protocol: 'tcp',
+    action: 'ALLOW',
+    description: 'SSH Access'
+  },
+  {
+    id: 2,
+    port: '80',
+    from: '0.0.0.0',
+    to: 'any',
+    protocol: 'tcp',
+    action: 'ALLOW',
+    description: 'HTTP Traffic'
+  },
+  {
+    id: 3,
+    port: '443',
+    from: '0.0.0.0',
+    to: 'any',
+    protocol: 'tcp',
+    action: 'ALLOW',
+    description: 'HTTPS Traffic'
+  }
+]
+
+const newRule = ref<Partial<UfwRule>>({
+  port: '',
+  from: '0.0.0.0',
+  to: 'any',
+  protocol: 'tcp',
+  action: 'ALLOW',
+  description: ''
+}
+
+let isAddingRule = false
+
+const addRule = () => {
+  if (!newRule.port || !newRule.description) return
+
+  ufwRules.push({
+    id: Math.max(0, ...ufwRules.map(r => r.id)) + 1,
+    port: newRule.port!,
+    from: newRule.from!,
+    to: newRule.to!,
+    protocol: newRule.protocol!,
+    action: newRule.action!,
+    description: newRule.description!
+  }
+
+  newRule = {
+    port: '',
+    from: '0.0.0.0',
+    to: 'any',
+    protocol: 'tcp',
+    action: 'ALLOW',
+    description: ''
+  }
+  isAddingRule = false
+}
+
+const removeRule = (id) => {
+  ufwRules = ufwRules.filter(rule => rule.id !== id)
+}
+
+const commonPorts = [
+  { port: '22', name: 'SSH' },
+  { port: '80', name: 'HTTP' },
+  { port: '443', name: 'HTTPS' },
+  { port: '3306', name: 'MySQL' },
+  { port: '5432', name: 'PostgreSQL' },
+  { port: '6379', name: 'Redis' },
+  { port: '11211', name: 'Memcached' },
+  { port: '7700', name: 'Meilisearch' },
+]
+</script>
+
+@title('Server Details')
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="mb-8">
+      <div class="flex items-center justify-between">
+        <div class="flex gap-2 items-center">
+          <div>
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+              {{ server.name }}
+            </h3>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">
+              Server details and firewall rules.
+            </p>
+          </div>
+        </div>
+
+        <div class="flex gap-4 items-center">
+          <a             to="/servers"
+            class="inline-flex gap-1 items-center text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 duration-200 transition-colors"
+          >
+            <div class="h-4 w-4 i-hugeicons-arrow-left"></div>
+            Back to Servers
+          </a>
+        </div>
+      </div>
+    </div>
+
+    <!-- Server Details -->
+    <div class="mb-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+      <div class="px-4 py-5 sm:p-6">
+        <h4 class="mb-4 font-medium text-gray-900 text-lg dark:text-neutral-100">Server Information</h4>
+        <dl class="grid gap-x-4 gap-y-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Domain</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.domain }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Region</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.region }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Type</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.type }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Size</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.size }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Operating System</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.serverOS }}</dd>
+          </div>
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Disk Size</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.diskSize }}GB</dd>
+          </div>
+          @if(server.bunVersion)
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Bun Version</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.bunVersion }}</dd>
+          </div>
+          @endif
+          @if(server.database)
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Database</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.database }}</dd>
+          </div>
+          @endif
+          @if(server.searchEngine)
+          <div>
+            <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Search Engine</dt>
+            <dd class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ server.searchEngine }}</dd>
+          </div>
+          @endif
+        </dl>
+      </div>
+    </div>
+
+    <!-- Firewall Rules -->
+    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
+      <div class="px-4 py-5 sm:p-6">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h4 class="font-medium text-gray-900 text-lg dark:text-neutral-100">Firewall Rules (UFW)</h4>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+              Manage incoming and outgoing traffic to your server.
+            </p>
+          </div>
+          <button
+            onclick="isAddingRule = true"
+            type="button"
+            class="inline-flex gap-2 items-center px-3.5 py-2.5 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm duration-200 transition-colors"
+          >
+            <span class="text-lg">+</span>
+            Add Rule
+          </button>
+        </div>
+
+        <!-- Add Rule Form -->
+        @if(isAddingRule)
+        <div class="mb-6 p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
+          <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-6">
+            <div class="lg:col-span-1">
+              <label class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Port</label>
+              <select
+                value="{{ newRule.port }}"
+                class="block px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors"
+              >
+                <option value="" disabled>Select a port</option>
+                @foreach(commonPorts as port)
+<option value="{{ port.port }}">
+                  {{ port.port }} ({{ port.name }})
+                </option>
+                <option value="custom">Custom Port</option>
+              </select>
+              @if(newRule.port === 'custom')
+              <input
+                value="{{ newRule.port }}"
+                type="text"
+                placeholder="Enter port number"
+                class="block mt-2 px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors"
+              >
+              @endif
+            </div>
+            <div class="lg:col-span-1">
+              <label class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">From IP</label>
+              <input
+                value="{{ newRule.from }}"
+                type="text"
+                placeholder="0.0.0.0"
+                class="block px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors"
+              >
+            </div>
+            <div class="lg:col-span-1">
+              <label class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Protocol</label>
+              <select
+                value="{{ newRule.protocol }}"
+                class="block px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors"
+              >
+                <option value="tcp">TCP</option>
+                <option value="udp">UDP</option>
+                <option value="any">Any</option>
+              </select>
+            </div>
+            <div class="lg:col-span-1">
+              <label class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Action</label>
+              <select
+                value="{{ newRule.action }}"
+                class="block px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors"
+              >
+                <option value="ALLOW">Allow</option>
+                <option value="DENY">Deny</option>
+              </select>
+            </div>
+            <div class="lg:col-span-2">
+              <label class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Description</label>
+              <input
+                value="{{ newRule.description }}"
+                type="text"
+                placeholder="Rule description"
+                class="block px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors"
+              >
+            </div>
+          </div>
+          <div class="flex gap-3 justify-end mt-4">
+            <button
+              onclick="isAddingRule = false"
+              type="button"
+              class="inline-flex items-center px-3 py-2 font-medium text-gray-700 text-sm dark:text-neutral-300 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm duration-200 transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onclick="addRule"
+              type="button"
+              class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm duration-200 transition-colors"
+            >
+              Add Rule
+            </button>
+          </div>
+        </div>
+        @endif
+
+        <!-- Rules Table -->
+        <div class="mt-4">
+          <div class="overflow-x-auto">
+            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-600">
+              <thead>
+                <tr>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400 bg-gray-50 dark:bg-neutral-600">Port</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400 bg-gray-50 dark:bg-neutral-600">From</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400 bg-gray-50 dark:bg-neutral-600">Protocol</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400 bg-gray-50 dark:bg-neutral-600">Action</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400 bg-gray-50 dark:bg-neutral-600">Description</th>
+                  <th class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400 bg-gray-50 dark:bg-neutral-600">Actions</th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
+                @foreach(ufwRules as rule)
+<tr>
+                  <td class="px-6 py-4 text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ rule.port }}</td>
+                  <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ rule.from }}</td>
+                  <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ rule.protocol.toUpperCase() }}</td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span
+                      class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full"
+                      class="text-green-800 text-red-800 dark:bg-green-900 dark:bg-red-900 'ALLOW', 'bg-green-100 'bg-red-100 'DENY' { {{ } }} === === rule.action rule.action dark:text-green-300': dark:text-red-300':"
+                    >
+                      {{ rule.action }}
+                    </span>
+                  </td>
+                  <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ rule.description }}</td>
+                  <td class="px-6 py-4 font-medium text-right text-sm whitespace-nowrap">
+                    <button
+                      onclick="removeRule(rule.id)"
+                      class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
+                    >
+                      Remove
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection

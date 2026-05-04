@@ -1,0 +1,16 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+</script>
+
+@title('Dashboard - Deployments')
+<DeploymentList />
+
+<!-- <ActivityFeed /> -->
+
+@endsection

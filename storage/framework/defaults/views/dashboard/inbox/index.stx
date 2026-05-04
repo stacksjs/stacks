@@ -1,0 +1,807 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+const { ref, computed, onMounted, onUnmounted, watch } = await import('@stacksjs/stx')
+const { useHead } = await import('@stacksjs/stx')
+const { useRoute } = await import('vue-router')
+const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.stx')).default
+
+// Define the Email interface
+interface Email {
+  id: number
+  from: string
+  email: string
+  subject: string
+  preview: string
+  body: string
+  date: string
+  read: boolean
+  starred: boolean
+  folder: string
+  attachment: boolean
+  labels?: string[] // Add labels for categorization
+}
+
+let sidebarOpen = true
+let activeFolder = 'inbox'
+let selectedEmail = null
+let searchQuery = ''
+let isComposing = false
+let isLoading = false
+
+// Email data
+let emails = [
+  {
+    id: 1,
+    from: 'William Smith',
+    email: 'williamsmith@example.com',
+    subject: 'Meeting Tomorrow',
+    preview: 'Hi, let\'s have a meeting tomorrow to discuss the project. I\'ve been reviewing the project details and have some ideas I\'d like to share...',
+    body: `
+      <p>Hi, let's have a meeting tomorrow to discuss the project. I've been reviewing the project details and have some ideas I'd like to share. It's crucial that we align on our next steps to ensure the project's success.</p>
+      <p>Please come prepared with any questions or insights you may have. Looking forward to our meeting!</p>
+      <p>Best regards,<br>William</p>
+    `,
+    date: '2023-10-22T09:00:00',
+    read: false,
+    starred: false,
+    folder: 'inbox',
+    attachment: false,
+    labels: ['meeting', 'work', 'important']
+  },
+  {
+    id: 2,
+    from: 'Alice Smith',
+    email: 'alice@example.com',
+    subject: 'Re: Project Update',
+    preview: 'Thank you for the project update. It looks great! I\'ve gone through the report, and the progress is impressive. The team has done a...',
+    body: `
+      <p>Thank you for the project update. It looks great!</p>
+      <p>I've gone through the report, and the progress is impressive. The team has done a fantastic job meeting all the milestones so far.</p>
+      <p>Let's discuss the next phase during our weekly meeting.</p>
+      <p>Regards,<br>Alice</p>
+    `,
+    date: '2023-10-20T14:30:00',
+    read: true,
+    starred: false,
+    folder: 'inbox',
+    attachment: false,
+    labels: ['work', 'important']
+  },
+  {
+    id: 3,
+    from: 'Bob Johnson',
+    email: 'bob@example.com',
+    subject: 'Weekend Plans',
+    preview: 'Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It\'s been a while since we had some outdoor fun...',
+    body: `
+      <p>Hey,</p>
+      <p>Any plans for the weekend? I was thinking of going hiking in the nearby mountains. It's been a while since we had some outdoor fun.</p>
+      <p>Let me know if you're interested, and we can plan accordingly.</p>
+      <p>Cheers,<br>Bob</p>
+    `,
+    date: '2022-05-15T09:45:00',
+    read: true,
+    starred: false,
+    folder: 'inbox',
+    attachment: false,
+    labels: ['personal']
+  },
+  {
+    id: 4,
+    from: 'Emily Davis',
+    email: 'emily@example.com',
+    subject: 'Re: Question about Budget',
+    preview: 'I have a question about the budget for the upcoming project. It seems like there\'s a discrepancy in the allocation of resources. I\'ve...',
+    body: `
+      <p>Hello,</p>
+      <p>I have a question about the budget for the upcoming project. It seems like there's a discrepancy in the allocation of resources.</p>
+      <p>I've noticed that the marketing budget is significantly higher than what we initially discussed. Can we review this together?</p>
+      <p>Thanks,<br>Emily</p>
+    `,
+    date: '2022-05-14T11:20:00',
+    read: false,
+    starred: false,
+    folder: 'inbox',
+    attachment: false,
+    labels: ['work', 'budget']
+  },
+  {
+    id: 5,
+    from: 'Michael Wilson',
+    email: 'michael@example.com',
+    subject: 'Important Announcement',
+    preview: 'I have an important announcement to make during our team meeting. It pertains to a strategic shift in our approach to the project...',
+    body: `
+      <p>Team,</p>
+      <p>I have an important announcement to make during our team meeting. It pertains to a strategic shift in our approach to the project.</p>
+      <p>Please ensure everyone attends the meeting tomorrow at 10 AM.</p>
+      <p>Best,<br>Michael</p>
+    `,
+    date: '2022-05-13T15:00:00',
+    read: true,
+    starred: true,
+    folder: 'inbox',
+    attachment: false,
+    labels: ['meeting', 'work', 'important']
+  },
+  {
+    id: 6,
+    from: 'Calendar',
+    email: 'calendar@stacksjs.com',
+    subject: 'Reminder: Sprint Planning',
+    preview: 'This is a reminder for your Sprint Planning meeting tomorrow at 10:00 AM...',
+    body: `
+      <p>Reminder:</p>
+      <p><strong>Sprint Planning Meeting</strong></p>
+      <p>Date: Tomorrow</p>
+      <p>Time: 10:00 AM - 11:30 AM</p>
+      <p>Location: Conference Room A / Zoom Link: <a href="#">https://zoom.us/j/123456789</a></p>
+      <p>Please come prepared with your task estimates and priorities.</p>
+    `,
+    date: '2024-02-23T09:00:00',
+    read: true,
+    starred: false,
+    folder: 'inbox',
+    attachment: false,
+  },
+  {
+    id: 7,
+    from: 'Kevin Adams',
+    email: 'kevin@stacksjs.com',
+    subject: 'Draft: Marketing Email',
+    preview: 'Here\'s the draft for our next marketing email. Let me know what you think...',
+    body: `
+      <p>Hi team,</p>
+      <p>Here's the draft for our next marketing email. I've focused on highlighting our new email integration features.</p>
+      <p>Key points covered:</p>
+      <ul>
+        <li>Simplified setup process</li>
+        <li>Enhanced security features</li>
+        <li>New template system</li>
+        <li>Performance improvements</li>
+      </ul>
+      <p>Please review and suggest any changes by Friday.</p>
+      <p>Thanks!<br>Kevin</p>
+    `,
+    date: '2024-02-22T15:20:00',
+    read: false,
+    starred: false,
+    folder: 'drafts',
+    attachment: false,
+  },
+  {
+    id: 8,
+    from: 'Support',
+    email: 'support@stacksjs.com',
+    subject: 'New Support Ticket #1234',
+    preview: 'A new support ticket has been assigned to your team. Customer is reporting issues with...',
+    body: `
+      <p>Ticket #1234</p>
+      <p>Priority: Medium</p>
+      <p>Customer: Acme Corp</p>
+      <p>Issue: Customer is reporting issues with email delivery. Certain emails are being delayed by up to 1 hour.</p>
+      <p>Steps to reproduce:</p>
+      <ol>
+        <li>Send email from external address to user@acmecorp.com</li>
+        <li>Email appears in their system after significant delay</li>
+      </ol>
+      <p>Please investigate and update the ticket when possible.</p>
+    `,
+    date: '2024-02-21T08:45:00',
+    read: true,
+    starred: true,
+    folder: 'inbox',
+    attachment: false,
+  },
+  {
+    id: 9,
+    from: 'Newsletter',
+    email: 'newsletter@tech-updates.com',
+    subject: 'This Week in Web Development',
+    preview: 'Top stories: New Vue.js 4 Features, The Future of CSS, TypeScript Best Practices...',
+    body: `
+      <h2>This Week in Web Development</h2>
+      <p>Top stories:</p>
+      <ul>
+        <li><a href="#">New Vue.js 4 Features You Should Know About</a></li>
+        <li><a href="#">The Future of CSS: What's Coming in 2024</a></li>
+        <li><a href="#">TypeScript Best Practices for Large Applications</a></li>
+        <li><a href="#">How to Optimize Your Web App for Performance</a></li>
+      </ul>
+      <p>Read these stories and more on our website.</p>
+      <p>To unsubscribe, click <a href="#">here</a>.</p>
+    `,
+    date: '2024-02-20T07:30:00',
+    read: false,
+    starred: false,
+    folder: 'spam',
+    attachment: false,
+  },
+  {
+    id: 10,
+    from: 'Alex Morgan',
+    email: 'alex@stacksjs.com',
+    subject: 'Sent: Project Status Update',
+    preview: 'Just sent the project status update to the client. They should be pleased with our progress...',
+    body: `
+      <p>Team,</p>
+      <p>I've just sent the project status update to the client. They should be pleased with our progress so far, especially with the email component we delivered ahead of schedule.</p>
+      <p>Great job everyone!</p>
+      <p>Looking forward to our next milestone.</p>
+      <p>Regards,<br>Alex</p>
+    `,
+    date: '2024-02-19T16:00:00',
+    read: true,
+    starred: false,
+    folder: 'sent',
+    attachment: false,
+  },
+]
+
+// Folder structure
+const folders = [
+  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
+  { id: 'starred', name: 'Starred', icon: 'star' },
+  { id: 'sent', name: 'Sent', icon: 'send' },
+  { id: 'drafts', name: 'Drafts', icon: 'drafts' },
+  { id: 'archive', name: 'Archive', icon: 'archive' },
+  { id: 'spam', name: 'Spam', icon: 'spam' },
+  { id: 'trash', name: 'Trash', icon: 'waste' },
+]
+
+// Filtered emails based on active folder and search
+function filteredEmails() {
+  let filtered = emails.filter(email => {
+    // Filter by folder or starred
+    if (activeFolder === 'starred') {
+      return email.starred
+    } else {
+      return email.folder === activeFolder
+    }
+  }
+
+  // Filter by search
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
+    filtered = filtered.filter(email =>
+      email.subject.toLowerCase().includes(query) ||
+      email.from.toLowerCase().includes(query) ||
+      email.preview.toLowerCase().includes(query)
+    )
+  }
+
+  // Sort by date (newest first)
+  return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime())
+}
+
+// Format the date to a readable format
+const formatDate = (dateString) => {
+  const date = new Date(dateString)
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  const yesterday = new Date(today)
+  yesterday.setDate(yesterday.getDate() - 1)
+
+  if (date >= today) {
+    return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+  } else if (date >= yesterday) {
+    return 'Yesterday'
+  } else {
+    return date.toLocaleDateString([], { month: 'short', day: 'numeric' })
+  }
+}
+
+// Toggle read status
+const toggleRead = (emailId) => {
+  const index = emails.findIndex(e => e.id === emailId)
+  if (index !== -1) {
+    const email = emails[index]
+    if (email) {
+      email.read = !email.read
+    }
+  }
+}
+
+// Toggle star status
+const toggleStar = (emailId) => {
+  const index = emails.findIndex(e => e.id === emailId)
+  if (index !== -1) {
+    const email = emails[index]
+    if (email) {
+      email.starred = !email.starred
+    }
+  }
+}
+
+// Get unread count for a folder
+const getUnreadCount = (folder) => {
+  if (folder === 'starred') {
+    return emails.filter(e => e.starred && !e.read).length
+  }
+  return emails.filter(e => e.folder === folder && !e.read).length
+}
+
+// Unread counts for the sidebar
+function unreadCounts() {
+  const counts = {}
+  folders.forEach(folder => {
+    counts[folder.id] = getUnreadCount(folder.id)
+  }
+  return counts
+}
+
+// Open email detail
+const openEmail = (email) => {
+  selectedEmail = email
+  if (!email.read) {
+    toggleRead(email.id)
+  }
+}
+
+// Close email detail
+const closeEmail = () => {
+  selectedEmail = null
+}
+
+// Compose new email
+interface NewEmail {
+  to: string
+  subject: string
+  body: string
+}
+
+let newEmail = {
+  to: '',
+  subject: '',
+  body: '',
+}
+
+const startCompose = () => {
+  isComposing = true
+  newEmail = {
+    to: '',
+    subject: '',
+    body: '',
+  }
+}
+
+const cancelCompose = () => {
+  isComposing = false
+}
+
+const sendEmail = () => {
+  // Simulate sending email
+  const sentEmail = {
+    id: emails.length + 1,
+    from: 'Me',
+    email: 'me@stacksjs.com',
+    subject: newEmail.subject,
+    preview: newEmail.body.substring(0, 100),
+    body: newEmail.body,
+    date: new Date().toISOString(),
+    read: true,
+    starred: false,
+    folder: 'sent',
+    attachment: false,
+  }
+
+  emails.push(sentEmail)
+  isComposing = false
+
+  // Show a success toast message or notification here
+}
+
+// Function to get icon for folder
+const getFolderIcon = (folderId) => {
+  const folder = folders.find(f => f.id === folderId)
+  return folder ? folder.icon : 'document'
+}
+
+// Function to handle folder change
+const handleFolderChange = (folder) => {
+  activeFolder = folder
+}
+
+// Function to handle compose
+const handleCompose = () => {
+  isComposing = true
+}
+
+// Add refresh functionality
+let isRefreshing = false
+const refreshEmails = async () => {
+  isRefreshing = true
+  // Simulate API call
+  await new Promise(resolve => setTimeout(resolve, 1000))
+  isRefreshing = false
+}
+
+// Add dropdown menu state
+let showMoreMenu = false
+let dropdownRef = null
+
+const toggleMoreMenu = (event) => {
+  event.stopPropagation()
+  showMoreMenu = !showMoreMenu
+
+  if (showMoreMenu) {
+    // Add event listener when dropdown is opened
+    setTimeout(() => {
+      document.addEventListener('click', handleClickOutside)
+    }, 0)
+  }
+}
+
+const handleClickOutside = (event) => {
+  if (dropdownRef && !dropdownRef.contains(event.target)) {
+    showMoreMenu = false
+    document.removeEventListener('click', handleClickOutside)
+  }
+}
+
+// Clean up event listener when component is unmounted
+onUnmounted(() => {
+  document.removeEventListener('click', handleClickOutside)
+}
+
+// Fix the TypeScript error by accessing the value property
+function inboxUnreadCount() {
+  return unreadCounts['inbox'] || 0
+}
+</script>
+
+@title('Mail - Your Inbox')
+<div class="bg-white dark:bg-neutral-800">
+  <div class="flex h-screen">
+    <!-- Sidebar -->
+    <EmailSidebar
+      :active-folder="activeFolder"
+      :folders="folders"
+      :unread-counts="unreadCounts"
+      @update:active-folder="handleFolderChange"
+      @compose="handleCompose"
+    />
+
+    <!-- Main Content -->
+    <div class="flex overflow-hidden flex-1 flex-col">
+      <!-- Header with title and actions -->
+      <div class="px-4 py-2 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
+        <div class="flex items-center justify-between">
+          <!-- Title -->
+          <div class="font-medium text-gray-900 text-xl dark:text-white">Inbox</div>
+
+          <!-- Action buttons -->
+          <div class="flex items-center space-x-1">
+            <div class="flex bg-gray-100 dark:bg-neutral-600 rounded-md">
+              <button
+                class="px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-gray-200 dark:bg-neutral-500 rounded-md"
+              >
+                All mail
+              </button>
+              <button
+                class="px-4 py-2 font-medium text-gray-700 text-sm dark:text-white"
+              >
+                Unread
+              </button>
+            </div>
+
+            <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+              <i class="text-lg i-hugeicons-waste"></i>
+            </button>
+            <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+              <i class="text-lg i-hugeicons-archive"></i>
+            </button>
+            <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+              <i class="text-lg i-hugeicons-spam"></i>
+            </button>
+
+            <div class="flex items-center ml-2">
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="text-lg i-hugeicons-clock-circle"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="text-lg i-hugeicons-arrow-left-01"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="text-lg i-hugeicons-arrow-right-01"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-white">
+                <i class="text-lg i-hugeicons-more-vertical-circle"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Email list and content area -->
+      <div class="flex overflow-hidden flex-1">
+        <!-- Email list -->
+        @if(!selectedEmail && !isComposing)
+        <div class="flex flex-col w-full md:w-1/3 lg:w-2/5 border-gray-200 border-r dark:border-neutral-600">
+          <!-- Search bar (moved to left section) -->
+          <div class="px-4 py-2 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">
+            <div class="relative">
+              <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                <i class="text-gray-400 text-lg i-hugeicons-search-01"></i>
+              </div>
+              <input
+                value="{{ searchQuery }}"
+                type="text"
+                placeholder="Search"
+                class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+
+          <div class="overflow-y-auto flex-1">
+            <ul class="divide-gray-200 divide-y dark:divide-neutral-600">
+              @foreach(filteredEmails as email)
+              <li
+                onclick="openEmail(email)"
+                class="dark:bg-neutral-700' dark:bg-neutral-700' hover:bg-gray-50 dark:hover:bg-neutral-600 cursor-pointer : !email.read ? 'bg-white 'bg-white {{ }}"
+              >
+                <div class="px-4 py-3">
+                  <div class="flex items-center justify-between">
+                    <p class="font-medium text-gray-900 text-sm dark:text-white">
+                      {{ email.from }}
+                    </p>
+                    <p class="text-gray-500 text-xs dark:text-neutral-400">
+                      {{ formatDate(email.date) }}
+                    </p>
+                  </div>
+                  <div class="mt-1">
+                    <p class="text-gray-900 text-sm dark:text-white">
+                      {{ email.subject }}
+                    </p>
+                    <p class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">
+                      {{ email.preview }}
+                    </p>
+                  </div>
+
+                  <!-- Email labels/tags -->
+                  @if(email.labels && email.labels.length > 0)
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    @foreach(email.labels as label)
+                    <span
+                      class="inline-flex items-center px-2 py-0.5 font-medium text-xs rounded"
+                      :class="text-gray-800 text-green-800 text-purple-800 text-red-800 text-yellow-800 dark:text-blue-200' dark:text-green-200' dark:text-purple-200' dark:text-red-200' dark:text-yellow-200' dark:bg-blue-900 dark:bg-green-900 dark:bg-purple-900 dark:bg-red-900 dark:bg-yellow-900 : : : : ? ? ? ? 'bg-gray-100 'bg-green-100 'bg-purple-100 'bg-red-100 'bg-yellow-100 'important' 'meeting' 'personal' 'work' === === === === label label label label"
+                    >
+                      {{ label }}
+                    </span>
+                    @endforeach
+                  </div>
+                  @endif
+                </div>
+              </li>
+              @endforeach
+            </ul>
+          </div>
+        </div>
+        @endif
+
+        <!-- Email detail view with reply box at the bottom -->
+        @if(selectedEmail)
+        <div class="flex flex-col w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700">
+          <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
+            <div class="flex items-center space-x-2">
+              <button onclick="closeEmail" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                <i class="text-lg i-hugeicons-arrow-left-02"></i>
+              </button>
+              <h2 class="font-medium text-gray-900 text-lg dark:text-white">
+                {{ selectedEmail?.subject }}
+              </h2>
+            </div>
+            <div class="flex space-x-2">
+              <button onclick="selectedEmail && toggleStar(selectedEmail.id)" class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                @if(selectedEmail?.starred)
+                <span class="text-lg text-yellow-400">
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+                    <path d="M13.7276 3.44418L15.4874 6.99288C15.7274 7.48687 16.3673 7.9607 16.9073 8.05143L20.0969 8.58575C22.1367 8.92853 22.6167 10.4206 21.1468 11.8925L18.6671 14.3927C18.2471 14.8161 18.0172 15.6327 18.1471 16.2175L18.8571 19.3125C19.417 21.7623 18.1271 22.71 15.9774 21.4296L12.9877 19.6452C12.4478 19.3226 11.5579 19.3226 11.0079 19.6452L8.01827 21.4296C5.8785 22.71 4.57865 21.7522 5.13859 19.3125L5.84851 16.2175C5.97849 15.6327 5.74852 14.8161 5.32856 14.3927L2.84884 11.8925C1.389 10.4206 1.85895 8.92853 3.89872 8.58575L7.08837 8.05143C7.61831 7.9607 8.25824 7.48687 8.49821 6.99288L10.258 3.44418C11.2179 1.51861 12.7777 1.51861 13.7276 3.44418Z"/>
+                  </svg>
+                </span>
+                @else
+                <i class="text-gray-500 text-lg dark:text-neutral-400 i-hugeicons-star"></i>
+                @endif
+              </button>
+              <button class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                <i class="text-lg i-hugeicons-inbox"></i>
+              </button>
+              <button class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                <i class="text-lg i-hugeicons-waste"></i>
+              </button>
+            </div>
+          </div>
+
+          <!-- Email header with sender info -->
+          <div class="px-4 py-3 border-b border-gray-200 dark:border-neutral-600">
+            <div class="flex items-start justify-between">
+              <div>
+                <div class="flex items-center">
+                  <div class="flex items-center justify-center h-10 w-10 font-medium text-gray-700 dark:text-white bg-gray-200 dark:bg-neutral-500 rounded-full">
+                    {{ selectedEmail?.from.charAt(0) }}
+                  </div>
+                  <div class="ml-3">
+                    <p class="font-medium text-gray-900 text-sm dark:text-white">{{ selectedEmail?.from }}</p>
+                    <p class="text-gray-500 text-xs dark:text-neutral-400">{{ selectedEmail?.email }}</p>
+                  </div>
+                </div>
+              </div>
+              <div class="text-gray-500 text-xs dark:text-neutral-400">
+                {{ selectedEmail?.date ? new Date(selectedEmail.date).toLocaleString() : '' }}
+              </div>
+            </div>
+            <div class="mt-2">
+              <p class="font-medium text-base text-gray-900 dark:text-white">{{ selectedEmail?.subject }}</p>
+            </div>
+          </div>
+
+          <!-- Email body -->
+          <div class="overflow-y-auto flex-1 p-4 text-gray-900 dark:text-white">
+            @if(selectedEmail?.body)
+            <div v-html="selectedEmail.body" class="max-w-none prose dark:prose-invert"></div>
+            @endif
+
+            @if(selectedEmail?.attachment)
+            <div class="mt-4 p-3 border border-gray-200 rounded dark:border-neutral-600">
+              <div class="flex items-center">
+                <i class="text-gray-500 text-xl dark:text-neutral-400 i-hugeicons-file-01"></i>
+                <div class="ml-3">
+                  <p class="font-medium text-gray-900 text-sm dark:text-white">Document.pdf</p>
+                  <p class="text-gray-500 text-xs dark:text-neutral-400">1.2 MB</p>
+                </div>
+                <button class="ml-auto p-1 text-blue-700 dark:text-blue-100 bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 rounded">
+                  <i class="text-lg i-hugeicons-download"></i>
+                </button>
+              </div>
+            </div>
+            @endif
+          </div>
+
+          <!-- Reply box at the bottom (only in the right section) -->
+          <div class="p-4 bg-white dark:bg-neutral-700 border-gray-200 border-t dark:border-neutral-600">
+            <div class="flex items-center">
+              <textarea
+                placeholder="Reply William Smith..."
+                class="flex-1 p-2 text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                rows="3"
+              ></textarea>
+            </div>
+            <div class="flex justify-between mt-2">
+              <div class="flex items-center">
+                <label class="inline-flex items-center text-gray-500 text-sm dark:text-neutral-400">
+                  <input type="checkbox" class="h-4 w-4 text-blue-600 bg-white dark:bg-neutral-600 border-gray-300 rounded dark:border-neutral-500 form-checkbox">
+                  <span class="ml-2">Mute this thread</span>
+                </label>
+              </div>
+              <button class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+        @endif
+
+        <!-- Empty state when no email is selected -->
+        @if(!selectedEmail && !isComposing)
+        <div class="hidden md:flex flex-col items-center justify-center p-8 md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700">
+          <div class="text-center">
+            <div class="flex items-center justify-center mb-6 mx-auto h-24 w-24 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <i class="text-5xl text-blue-600 dark:text-blue-400 i-hugeicons-mail-02"></i>
+            </div>
+            <h3 class="mb-2 font-medium text-gray-900 text-xl dark:text-white">No message selected</h3>
+            <p class="mb-6 max-w-md text-gray-500 dark:text-neutral-400">
+              Select an email from your inbox to view its contents here, or start a new conversation by clicking the compose button.
+            </p>
+            <button
+              onclick="handleCompose"
+              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md"
+            >
+              <i class="mr-2 text-lg i-hugeicons-plus-sign"></i>
+              Compose New Email
+            </button>
+          </div>
+        </div>
+        @endif
+
+        <!-- Compose new email view -->
+        @if(isComposing)
+        <div class="flex flex-col w-full md:w-2/3 lg:w-3/5 bg-white dark:bg-neutral-700">
+          <div class="flex items-center justify-between px-4 py-2 border-b border-gray-200 dark:border-neutral-600">
+            <h2 class="font-medium text-gray-900 text-lg dark:text-white">
+              New Message
+            </h2>
+            <button onclick="cancelCompose" class="p-1 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+              <i class="text-lg i-hugeicons-cancel-circle"></i>
+            </button>
+          </div>
+
+          <div class="overflow-y-auto flex-1 p-4">
+            <div class="space-y-4">
+              <div>
+                <label for="to" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">To</label>
+                <input
+                  id="to"
+                  value="{{ newEmail.to }}"
+                  type="text"
+                  placeholder="recipient@example.com"
+                  class="block mt-1 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                />
+              </div>
+              <div>
+                <label for="subject" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Subject</label>
+                <input
+                  id="subject"
+                  value="{{ newEmail.subject }}"
+                  type="text"
+                  placeholder="Enter email subject"
+                  class="block mt-1 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                />
+              </div>
+              <div>
+                <label for="body" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Message</label>
+                <textarea
+                  id="body"
+                  value="{{ newEmail.body }}"
+                  rows="15"
+                  placeholder="Write your message here..."
+                  class="block mt-1 w-full text-gray-900 sm:text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                ></textarea>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex justify-between p-4 border-gray-200 border-t dark:border-neutral-600">
+            <div class="flex space-x-2">
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                <i class="text-lg i-hugeicons-attachment-01"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                <i class="text-lg i-hugeicons-image-01"></i>
+              </button>
+              <button class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded">
+                <i class="text-lg i-hugeicons-smile"></i>
+              </button>
+            </div>
+            <div>
+              <button onclick="sendEmail" class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md">
+                Send
+              </button>
+            </div>
+          </div>
+        </div>
+        @endif
+      </div>
+    </div>
+  </div>
+</div>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+
+  // Check for folder in query params
+  const route = useRoute()
+  if (route.query.folder && typeof route.query.folder === 'string') {
+    activeFolder = route.query.folder
+  }
+
+  // Check for compose in query params
+  if (route.query.compose === 'true') {
+    isComposing = true
+  }
+
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading = false
+})
+</script>
+
+
+@endsection

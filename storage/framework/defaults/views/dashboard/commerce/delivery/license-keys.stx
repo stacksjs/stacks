@@ -1,0 +1,509 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import LicenseKeysTable from '../../../../components/Dashboard/Commerce/Delivery/LicenseKeysTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import { useLicenseKeys } from '../../../../functions/commerce/shippings/license-keys'
+import { useCustomers } from '../../../../functions/commerce/customers'
+import type { LicenseKeys, NewLicenseKey } from '../../../../types/defaults'
+
+// Get license keys data and functions from the composable
+const { licenseKeys, createLicenseKey, fetchLicenseKeys, updateLicenseKey, deleteLicenseKey } = useLicenseKeys()
+
+// Get customers for dropdown
+const { customers, fetchCustomers } = useCustomers()
+
+// Modal state
+let showAddModal = false
+let showEditModal = false
+let editingLicenseKey = null
+let newLicenseKey = {
+  key: '',
+  template: '',
+  customer_id: 0,
+  product: '',
+  order_id: 0,
+  expiry_date: '',
+  status: 'Active'
+}
+
+function openAddModal() {
+  newLicenseKey = {
+    key: '',
+    template: '',
+    customer_id: 0,
+    product: '',
+    order_id: 0,
+    expiry_date: '',
+    status: 'Active'
+  }
+  showAddModal = true
+}
+
+function closeAddModal() {
+  showAddModal = false
+}
+
+function openEditModal(licenseKey) {
+  editingLicenseKey = licenseKey
+  newLicenseKey = {
+    key: licenseKey.key,
+    template: licenseKey.template,
+    customer_id: licenseKey.customer_id,
+    product: licenseKey.product,
+    order_id: licenseKey.order_id,
+    expiry_date: typeof licenseKey.expiry_date === 'string' ? licenseKey.expiry_date : new Date(licenseKey.expiry_date).toISOString().split('T')[0] || '',
+    status: licenseKey.status
+  }
+  showEditModal = true
+}
+
+function closeEditModal() {
+  showEditModal = false
+  editingLicenseKey = null
+}
+
+async function addLicenseKey() {
+  try {
+    await createLicenseKey(newLicenseKey)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create license key:', error)
+  }
+}
+
+async function saveLicenseKey() {
+  if (!editingLicenseKey) return
+
+  try {
+    await updateLicenseKey({
+      ...editingLicenseKey,
+      ...newLicenseKey
+    }
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update license key:', error)
+  }
+}
+
+// Search and filtering
+let searchQuery = ''
+let currentPage = 1
+const itemsPerPage = 5
+
+function filteredLicenseKeys() {
+  const keys = Array.isArray(licenseKeys) ? licenseKeys : []
+
+  if (!searchQuery) return keys
+
+  const query = searchQuery.toLowerCase()
+  return keys.filter(key =>
+    key.key.toLowerCase().includes(query) ||
+    key.customer.name.toLowerCase().includes(query) ||
+    key.customer.email.toLowerCase().includes(query) ||
+    key.product.toLowerCase().includes(query) ||
+    key.status.toLowerCase().includes(query)
+  )
+}
+
+function paginatedLicenseKeys() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredLicenseKeys.slice(start, end)
+}
+
+// Event handlers
+const handleSearch = (query) => {
+  searchQuery = query
+  currentPage = 1
+}
+
+const handleAddLicenseKey = () => {
+  openAddModal()
+}
+
+const handleEditLicenseKey = (licenseKey) => {
+  openEditModal(licenseKey)
+}
+
+const handleDeleteLicenseKey = async (licenseKey) => {
+  if (confirm(`Are you sure you want to delete this license key?`)) {
+    try {
+      await deleteLicenseKey(licenseKey.id)
+    } catch (error) {
+      console.error('Failed to delete license key:', error)
+    }
+  }
+}
+
+const handlePrevPage = () => {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredLicenseKeys.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+const handlePageChange = (page) => {
+  currentPage = page
+}
+
+// Tab configuration
+const tabs = [
+  { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
+  { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
+  { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
+  { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
+  { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
+  { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
+  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
+]
+
+</script>
+
+@title('Dashboard - License Keys')
+<div class="py-6">
+  <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
+    <!-- Tab Navigation -->
+    <TabNavigation
+      modelValue="license"
+      :tabs="tabs"
+    />
+
+    <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <h2 class="font-medium text-gray-900 text-lg dark:text-white">License Keys</h2>
+          <button
+            onclick="handleAddLicenseKey"
+            type="button"
+            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            <div class="mr-2 h-5 w-5 i-hugeicons-plus-sign" />
+            Add License Key
+          </button>
+        </div>
+        <div class="mt-4">
+          <SearchFilter
+            placeholder="Search license keys..."
+            @search="handleSearch"
+            class="w-full md:w-96"
+          />
+        </div>
+      </div>
+
+      <LicenseKeysTable
+        :licenseKeys="paginatedLicenseKeys"
+        @edit="handleEditLicenseKey"
+        @delete="handleDeleteLicenseKey"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredLicenseKeys.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add License Key Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New License Key</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="license-key" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">License Key</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="license-key"
+                        value="{{ newLicenseKey.key }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter license key"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="license-template" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Template</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="license-template"
+                        value="{{ newLicenseKey.template }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter template name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="license-customer" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Customer</label>
+                    <div class="mt-2">
+                      <select
+                        id="license-customer"
+                        value="{{ newLicenseKey.customer_id }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="0">Select a customer</option>
+                        @foreach(customers as customer)
+                          <option value="{{ customer.id }}">
+                            {{ customer.name }} ({{ customer.email }})
+                          </option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="product" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Product</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="product"
+                        value="{{ newLicenseKey.product }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Product name"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="order-id" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Order ID</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="order-id"
+                          value="{{ newLicenseKey.order_id }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="Order ID"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="expiry-date" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Expiry Date</label>
+                      <div class="mt-2">
+                        <input
+                          type="date"
+                          id="expiry-date"
+                          value="{{ newLicenseKey.expiry_date }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="license-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="license-status"
+                        value="{{ newLicenseKey.status }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Revoked">Revoked</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="addLicenseKey"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Add License Key
+            </button>
+            <button
+              type="button"
+              onclick="closeAddModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  <!-- Edit License Key Modal -->
+  @if(showEditModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit License Key</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit-license-key" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">License Key</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-license-key"
+                        value="{{ newLicenseKey.key }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter license key"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-license-template" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Template</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-license-template"
+                        value="{{ newLicenseKey.template }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter template name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-license-customer" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Customer</label>
+                    <div class="mt-2">
+                      <select
+                        id="edit-license-customer"
+                        value="{{ newLicenseKey.customer_id }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="0">Select a customer</option>
+                        @foreach(customers as customer)
+                          <option value="{{ customer.id }}">
+                            {{ customer.name }} ({{ customer.email }})
+                          </option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-product" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Product</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-product"
+                        value="{{ newLicenseKey.product }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Product name"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="edit-order-id" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Order ID</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-order-id"
+                          value="{{ newLicenseKey.order_id }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="Order ID"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="edit-expiry-date" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Expiry Date</label>
+                      <div class="mt-2">
+                        <input
+                          type="date"
+                          id="edit-expiry-date"
+                          value="{{ newLicenseKey.expiry_date }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-license-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="edit-license-status"
+                        value="{{ newLicenseKey.status }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="Expired">Expired</option>
+                        <option value="Revoked">Revoked</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="saveLicenseKey"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onclick="closeEditModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</div>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await Promise.all([
+    fetchLicenseKeys(),
+    fetchCustomers()
+  ])
+})
+</script>
+
+@endsection

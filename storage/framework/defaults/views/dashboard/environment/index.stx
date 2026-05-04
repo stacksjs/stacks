@@ -1,0 +1,428 @@
+@extends('layouts/default')
+
+@section('content')
+<script>
+import CodeEditor from '../../../components/Dashboard/CodeEditor.stx'
+
+let envValues = ''
+let searchQuery = ''
+let showAddModal = false
+let isLoading = false
+let showBackup = false
+let backupContent = ''
+
+// New variable form
+let newVariable = {
+  key: '',
+  value: '',
+  description: ''
+}
+
+// Platform detection for keyboard shortcuts
+function isMac() { return (typeof window !== 'undefined' && window.navigator?.platform?.toLowerCase( }.includes('mac')) ?? false)
+
+// Filter env variables based on search
+function filteredEnvValues() {
+  if (!searchQuery) return envValues
+
+  return envValues.split('\n')
+    .filter(line => line.toLowerCase().includes(searchQuery.toLowerCase()))
+    .join('\n')
+}
+
+// Get line numbers including empty lines
+function lineNumbers() {
+  const count = (envValues.match(/\n/g) || []).length + 1
+  return Array.from({ length: count }, (_, i) => i + 1)
+}
+
+// Syntax highlight the content
+function highlightedContent() {
+  return envValues.split('\n').map(line => {
+    const trimmed = line.trim()
+    // Empty line
+    if (!trimmed) return '&nbsp;'
+    // Comments
+    if (trimmed.startsWith('#')) {
+      return `<span class="text-gray-500 dark:text-neutral-400">${line}</span>`
+    )}
+    // Variable assignments
+    if (line.includes('=')) {
+      const parts = line.split('=')
+      const key = parts[0]?.trim() || ''
+      const value = parts.slice(1).join('=').trim()
+
+      // Highlight true/false values
+      let highlightedValue = value
+      if (value.toLowerCase() === 'true') {
+        highlightedValue = `<span class="text-green-600 dark:text-green-400">${value}</span>`
+      } else if (value.toLowerCase() === 'false') {
+        highlightedValue = `<span class="text-red-600 dark:text-red-400">${value}</span>`
+      } else if (value.startsWith('"') || value.startsWith("'")) {
+        // String values
+        highlightedValue = `<span class="text-yellow-600 dark:text-yellow-400">${value}</span>`
+      } else if (!isNaN(Number(value))) {
+        // Numeric values
+        highlightedValue = `<span class="text-purple-600 dark:text-purple-400">${value}</span>`
+      )}
+
+      return `<span class="text-blue-600 dark:text-blue-400">${key}</span><span class="text-gray-400">=</span>${highlightedValue}`
+    )}
+    return line
+  }).join('\n')
+}
+
+// Track cursor position for active line
+const updateActiveLine = (event) => {
+  const textarea = event.target
+  const value = textarea
+  const selectionStart = textarea.selectionStart
+  activeLine = value.substr(0, selectionStart).split('\n').length
+}
+
+// Keyboard shortcuts
+const handleKeyboardShortcuts = (e) => {
+  const isCmdOrCtrl = isMac ? e.metaKey : e.ctrlKey
+
+  if (isCmdOrCtrl) {
+    if (e.key === 's') {
+      e.preventDefault()
+      handleSave()
+    } else if (e.key === 'n') {
+      e.preventDefault()
+      showAddModal = true
+    } else if (e.key === 'F' && e.shiftKey) {
+      e.preventDefault()
+      formatContent()
+    }
+  }
+}
+
+// Format content function
+const formatContent = () => {
+  const currentValue = envValues
+  if (!currentValue) return
+
+  const lines = currentValue.split('\n')
+  const formattedLines = lines.map(line => {
+    // Skip empty lines and comments
+    if (!line.trim() || line.trim().startsWith('#')) return line
+
+    const parts = line.split('=')
+    if (parts.length < 2) return line
+
+    const key = parts[0].trim()
+    const value = parts.slice(1).join('=').trim()
+    return `${key}=${value}`
+  }
+
+  envValues = formattedLines.join('\n')
+}
+
+// Enhanced validation
+const validateEnv = (content) => {
+  const lines = content.split('\n')
+  const errors = []
+  const keys = new Set()
+
+  lines.forEach((line, index) => {
+    if (line.trim() && !line.startsWith('#')) {
+      if (!line.includes('=')) {
+        errors.push(`Line ${index + 1}: Missing '=' separator`)
+      } else if (line.trim().endsWith('=')) {
+        errors.push(`Line ${index + 1}: Empty value`)
+      } else {
+        const parts = line.split('=')
+        const key = parts[0]?.trim() ?? ''
+        if (keys.has(key)) {
+          errors.push(`Line ${index + 1}: Duplicate key '${key}'`)
+        }
+        if (!/^[A-Z_][A-Z0-9_]*$/.test(key)) {
+          errors.push(`Line ${index + 1}: Invalid key format '${key}'. Use uppercase letters, numbers, and underscores only`)
+        }
+        keys.add(key)
+      }
+    }
+  }
+
+  return errors
+}
+
+// Save changes with error handling
+const handleSave = async () => {
+  isLoading = true
+  try {
+    const errors = validateEnv(envValues)
+    if (errors.length) {
+      return
+    }
+
+    formatContent() // Format before saving
+    await new Promise(resolve => setTimeout(resolve, 1000))
+
+    // Create backup
+    backupContent = envValues
+  } catch (error) {
+  } finally {
+    isLoading = false
+  }
+}
+
+// Add new variable with enhanced validation
+const addVariable = () => {
+  if (!newVariable.key || !newVariable) {
+    return
+  }
+
+  // Validate key format
+  if (!/^[A-Z_][A-Z0-9_]*$/.test(newVariable.key)) {
+    return
+  }
+
+  const newLine = `${newVariable.key}=${newVariable}`
+  const description = newVariable.description
+    ? `# ${newVariable.description}\n`
+    : ''
+
+  envValues = envValues.trim() + '\n\n' + description + newLine
+
+  newVariable = { key: '', value: '', description: '' }
+  showAddModal = false
+}
+
+// Restore backup with confirmation
+const restoreBackup = () => {
+  if (backupContent) {
+    envValues = backupContent
+    showBackup = false
+  }
+}
+
+// Handle scroll sync between editor and syntax highlighting
+const handleScroll = (event) => {
+  const textarea = event.target
+  const pre = textarea.previousElementSibling
+  if (pre instanceof HTMLPreElement) {
+    pre.scrollTop = textarea.scrollTop
+  }
+}
+
+onUnmounted(() => {
+  window.removeEventListener('keydown', handleKeyboardShortcuts)
+}
+</script>
+
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+          Environment Variables
+        </h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+          This is your project's <code class="text-red-400">.env</code> file. Be careful when editing production values.
+        </p>
+      </div>
+      <div class="sm:flex-none mt-4 space-x-3 sm:ml-16 sm:mt-0">
+        <button
+          onclick="showAddModal = true"
+          type="button"
+          class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+        >
+          Add Variable
+        </button>
+        @if(backupContent)
+          <button
+            onclick="showBackup = true"
+            type="button"
+            class="px-3 py-2 font-semibold text-sm text-white bg-gray-600 hover:bg-gray-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            Show Backup
+          </button>
+        @endif
+      </div>
+    </div>
+
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden sm:rounded-lg">
+            <form onsubmit="handleSave; return false" class="relative">
+              <CodeEditor
+                value="{{ envValues }}"
+                :loading="isLoading"
+                language="env"
+                :line-numbers="true"
+                :keyboard-shortcuts="true"
+                @save="handleSave"
+                @format="formatContent"
+              />
+
+              <!-- Keyboard shortcuts -->
+              <div class="flex items-center mb-4 mt-2 space-x-4 text-gray-500 text-sm dark:text-neutral-400">
+                <div class="flex items-center space-x-1">
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
+                  <span>+</span>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">S</kbd>
+                  <span class="text-xs">save</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
+                  <span>+</span>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">N</kbd>
+                  <span class="text-xs">new</span>
+                </div>
+                <div class="flex items-center space-x-1">
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">{{ isMac ? '⌘' : 'Ctrl' }}</kbd>
+                  <span>+</span>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">⇧</kbd>
+                  <span>+</span>
+                  <kbd class="px-1.5 py-0.5 font-semibold text-gray-800 text-xs dark:text-neutral-100 bg-gray-100 dark:bg-neutral-700 border border-gray-200 rounded dark:border-neutral-600">F</kbd>
+                  <span class="text-xs">format</span>
+                </div>
+              </div>
+
+              <!-- Action buttons -->
+              <div class="flex justify-end mt-4 space-x-3">
+                <button
+                  type="button"
+                  onclick="formatContent"
+                  class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
+                >
+                  Format
+                </button>
+                <button
+                  type="button"
+                  onclick="envValues = ''"
+                  class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600 shadow-sm"
+                >
+                  Clear
+                </button>
+                <button
+                  type="submit"
+                  disabled="{{ isLoading }}"
+                  class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  @if(isLoading)
+                    <span class="flex items-center space-x-2">
+                      <div class="h-4 w-4 animate-spin i-hugeicons-arrow-path" />
+                      <span>Saving...</span>
+                    </span>
+                  @else
+                    <span>Save Changes</span>
+                  @endif
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Variable Modal -->
+  @if(showAddModal)
+    <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+      <div class="fixed inset-0 overflow-y-auto z-10">
+        <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+          <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform">
+            <div>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Add Environment Variable</h3>
+              <div class="mt-4 space-y-4">
+                <div>
+                  <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Key</label>
+                  <input
+                    value="{{ newVariable.key }}"
+                    type="text"
+                    class="block mt-1 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                    placeholder="APP_NAME"
+                  />
+                </div>
+                <div>
+                  <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Value</label>
+                  <input
+                    value="{{ newVariable.value }}"
+                    type="text"
+                    class="block mt-1 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                    placeholder="My App"
+                  />
+                </div>
+                <div>
+                  <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Description (optional)</label>
+                  <input
+                    value="{{ newVariable.description }}"
+                    type="text"
+                    class="block mt-1 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                    placeholder="Application name used in emails and UI"
+                  />
+                </div>
+              </div>
+            </div>
+            <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+              <button
+                type="button"
+                class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+                onclick="addVariable"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                onclick="showAddModal = false"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  <!-- Backup Modal -->
+  @if(showBackup)
+    <div class="relative z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+      <div class="fixed inset-0 overflow-y-auto z-10">
+        <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+          <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform">
+            <div>
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Backup Content</h3>
+              <div class="mt-4">
+                <textarea
+                  value="{{ backupContent }}"
+                  rows="10"
+                  class="block py-1.5 w-full font-mono text-gray-900 text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                  readonly
+                />
+              </div>
+            </div>
+            <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+              <button
+                type="button"
+                class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+                onclick="restoreBackup"
+              >
+                Restore Backup
+              </button>
+              <button
+                type="button"
+                class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                onclick="showBackup = false"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</div>
+
+
+@endsection

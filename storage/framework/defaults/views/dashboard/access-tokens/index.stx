@@ -1,0 +1,175 @@
+@extends('layouts/default')
+
+@section('content')
+<script>
+const tokens = [
+  {
+    name: 'Mobile App Token',
+    token: '2|LlNSaUVFmBXoD6OYH5ZxNlxsFxHh4QqGxspKGKdt',
+    abilities: ['read', 'write'],
+    lastUsed: '2 minutes ago',
+    status: 'active',
+    createdAt: '2024-01-15 08:23:15',
+    expiresAt: '2024-02-14 08:23:15'
+  },
+  {
+    name: 'Dashboard API',
+    token: '3|KkMRbTEElBWnC5NXG4YwMkwrEwGg3PpFwroJFJcs',
+    abilities: ['read'],
+    lastUsed: '1 hour ago',
+    status: 'active',
+    createdAt: '2024-01-10 15:45:30',
+    expiresAt: '2024-01-24 15:45:30'
+  },
+  {
+    name: 'Integration Service',
+    token: '4|JjLQaSsDDkVmB4MWF3XvLjvrDvFf2OoEvqnIEIbr',
+    abilities: ['read', 'write', 'delete'],
+    lastUsed: '3 days ago',
+    status: 'revoked',
+    createdAt: '2023-12-20 11:30:00',
+    expiresAt: '2024-01-19 11:30:00'
+  }
+]
+</script>
+
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Access Tokens" description="Manage your API access tokens for authentication">
+    <template #actions>
+      <Button variant="primary">
+        Generate New Token
+      </Button>
+    </template>
+  </PageHeader>
+
+  <div class="mb-8">
+    <div>
+      <h3 class="font-semibold leading-6 text-base text-gray-900">
+        Token Statistics
+      </h3>
+
+      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt>
+            <div class="absolute p-3 bg-blue-500 rounded-md">
+              <div class="h-6 w-6 text-white i-hugeicons-key" />
+            </div>
+
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate">
+              Active Tokens
+            </p>
+          </dt>
+
+          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+            <p class="font-semibold text-2xl text-gray-900">
+              {{ tokens.filter(t => t.status === 'active').length }}
+            </p>
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <div class="pt-6">
+
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+            <table class="min-w-full divide-gray-300 divide-y">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm">
+                    Name
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    Last Used
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    Abilities
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    Status
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm sm:text-right">
+                    Created At
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm sm:text-right">
+                    Expires At
+                  </th>
+
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
+                @foreach(tokens as token)
+                  <tr>
+                    <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">
+                      {{ token.name }}
+                    </td>
+
+                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                      {{ token.lastUsed }}
+                    </td>
+
+                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                      <div class="flex gap-1">
+                        @foreach(token.abilities as ability)
+                          <span
+                            class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs bg-blue-50 ring-1 ring-blue-600/20 ring-inset rounded-md"
+                          >
+                            {{ ability }}
+                          </span>
+                        @endforeach
+                      </div>
+                    </td>
+
+                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                      <span
+                        class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-red-700 text-xs ring-1 ring-green-600/20' ring-inset ring-red-600/20' rounded-md : ? 'active' 'bg-green-50 'bg-red-50 {{ }} === token.status"
+                      >
+                        {{ token.status }}
+                      </span>
+                    </td>
+
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
+                      {{ token.createdAt }}
+                    </td>
+
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
+                      {{ token.expiresAt }}
+                    </td>
+
+                    <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                      <button
+                        class="mr-4 text-blue-600 hover:text-blue-900"
+                        disabled="{{ token.status === 'revoked' }}"
+                      >
+                        {{ token.status === 'active' ? 'Revoke' : 'Revoked' }}
+                      </button>
+                      <button class="text-gray-600 hover:text-gray-900">
+                        Copy
+                      </button>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+@endsection

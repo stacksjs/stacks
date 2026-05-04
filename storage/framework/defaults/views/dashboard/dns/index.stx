@@ -1,0 +1,239 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+const { ref, onMounted } = await import('@stacksjs/stx')
+const { useHead } = await import('@stacksjs/stx')
+
+let timeRange = 'day'
+let isLoading = false
+
+// Chart options
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      position: 'top',
+      align: 'end',
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        boxWidth: 12,
+        padding: 15,
+      },
+    },
+    tooltip: {
+      mode: 'index',
+      intersect: false,
+    },
+  },
+}
+
+// Generate mock DNS records data
+const getDNSRecordsData = () => {
+  const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
+  return {
+    labels,
+    datasets: [
+      {
+        label: 'A Records',
+        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 10) + 5),
+        borderColor: 'rgb(59, 130, 246)', // Blue
+        backgroundColor: 'rgba(59, 130, 246, 0.1)',
+        fill: true,
+      },
+      {
+        label: 'CNAME Records',
+        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 8) + 3),
+        borderColor: 'rgb(16, 185, 129)', // Green
+        backgroundColor: 'rgba(16, 185, 129, 0.1)',
+        fill: true,
+      },
+      {
+        label: 'MX Records',
+        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 5) + 1),
+        borderColor: 'rgb(245, 158, 11)', // Yellow
+        backgroundColor: 'rgba(245, 158, 11, 0.1)',
+        fill: true,
+      },
+    ],
+  }
+}
+
+let dnsRecordsData = getDNSRecordsData()
+
+</script>
+
+@title('Dashboard - DNS')
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <!-- DNS Records Chart -->
+    <div class="mb-8">
+      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between mb-6">
+            <div>
+              <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">DNS Records Over Time</h3>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Distribution of DNS record types</p>
+            </div>
+            <select
+              value="{{ timeRange }}"
+              class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+            >
+              <option value="day">Last 24 Hours</option>
+              <option value="week">Last 7 Days</option>
+              <option value="month">Last 30 Days</option>
+              <option value="year">Last Year</option>
+            </select>
+          </div>
+          <div class="relative h-[300px]">
+            @if(isLoading)
+              <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
+                <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+              </div>
+            @endif
+            <canvas id="chart_1"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="sm:flex sm:items-center sm:justify-between">
+      <div>
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+          DNS Records
+        </h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">
+          A list of all your project DNS records.
+        </p>
+      </div>
+      <button type="button" class="block mt-4 px-3 py-2 sm:mt-0 font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
+        Add Record
+      </button>
+    </div>
+
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+            <table class="min-w-full divide-gray-300 divide-y">
+              <thead class="bg-gray-50 dark:bg-neutral-700/50">
+                <tr>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm">
+                    Type
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    Name
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    Content
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    TTL
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
+                    Status
+                  </th>
+
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                    <span class="sr-only">Edit</span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
+                <tr>
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">
+                    A
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                    admin-api
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                    666.666.666
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                    Auto
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
+                    Proxied
+                  </td>
+
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                    <a href="#" class="text-blue-600 hover:text-blue-900">View<span class="sr-only">, DNS Record</span></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: dnsRecordsData,
+    options: chartOptions,
+  })
+}
+
+import { onMount } from 'stx'
+
+onMount(async () => {
+  isLoading = true
+  await new Promise(resolve => setTimeout(resolve, 500))
+  isLoading = false
+})
+</script>
+
+
+@endsection

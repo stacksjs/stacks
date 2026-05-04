@@ -1,0 +1,188 @@
+@extends('layouts/default')
+
+@section('content')
+<script>
+import { useMailSettings } from '../../../functions/settings/mail'
+
+const { settings, isLoading, isSaving, error, success, fetchSettings, saveSettings } = useMailSettings()
+
+function handleSubmit(event: Event) {
+  event.preventDefault()
+  saveSettings()
+}
+
+// Load settings on mount
+fetchSettings()
+</script>
+
+<main>
+  <SettingsHeader />
+
+  <!-- Settings forms -->
+  <div class="divide-white/5 divide-y">
+    <div class="grid gap-x-8 gap-y-10 grid-cols-1 md:grid-cols-3 px-4 py-16 sm:px-6 lg:px-8 max-w-7xl">
+      <div>
+        <h2 class="font-semibold leading-7 text-base text-gray-900 dark:text-neutral-100">
+          Main Config
+        </h2>
+        <p class="mt-1 leading-6 text-gray-600 text-sm">
+          Update mail settings.
+        </p>
+      </div>
+
+      <form class="md:col-span-2" @submit="handleSubmit">
+        <!-- Success message -->
+        @if(success)
+          <div class="mb-6 p-4 bg-green-50 dark:bg-green-900/20 rounded-md">
+            <p class="text-green-700 text-sm dark:text-green-400">{{ success }}</p>
+          </div>
+        @endif
+
+        <!-- Error message -->
+        @if(error)
+          <div class="mb-6 p-4 bg-red-50 dark:bg-red-900/20 rounded-md">
+            <p class="text-red-700 text-sm dark:text-red-400">{{ error }}</p>
+          </div>
+        @endif
+
+        <div class="grid gap-x-6 gap-y-8 grid-cols-1 sm:grid-cols-6 sm:max-w-xl">
+          <div class="sm:col-span-full">
+            <label
+              for="mail-from"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Mail From</label>
+            <div class="mt-2">
+              <input
+                id="mail-from"
+                type="email"
+                value="{{ settings.from }}"
+                oninput="settings.from = $event.target.value"
+                placeholder="no-reply@example.com"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+            </div>
+          </div>
+
+          <div class="sm:col-span-full">
+            <label
+              for="mail-to"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Mail To</label>
+            <div class="mt-2">
+              <input
+                id="mail-to"
+                type="email"
+                value="{{ settings.to }}"
+                oninput="settings.to = $event.target.value"
+                placeholder="admin@example.com"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+            </div>
+          </div>
+
+          <div class="sm:col-span-full">
+            <label
+              for="mail-driver"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Driver</label>
+            <div class="mt-2">
+              <select
+                id="mail-driver"
+                value="{{ settings.driver }}"
+                onchange="settings.driver = $event.target.value"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+                <option value="SMTP">SMTP</option>
+                <option value="ses">Amazon SES</option>
+                <option value="sendgrid">SendGrid</option>
+                <option value="mailgun">Mailgun</option>
+                <option value="mailtrap">Mailtrap</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label
+              for="mail-host"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Host</label>
+            <div class="mt-2">
+              <input
+                id="mail-host"
+                type="text"
+                value="{{ settings.host }}"
+                oninput="settings.host = $event.target.value"
+                placeholder="smtp.example.com"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label
+              for="mail-port"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Port</label>
+            <div class="mt-2">
+              <input
+                id="mail-port"
+                type="number"
+                value="{{ settings.port }}"
+                oninput="settings.port = Number($event.target.value)"
+                placeholder="587"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label
+              for="mail-username"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Username</label>
+            <div class="mt-2">
+              <input
+                id="mail-username"
+                type="text"
+                value="{{ settings.username }}"
+                oninput="settings.username = $event.target.value"
+                placeholder="your-username"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+            </div>
+          </div>
+
+          <div class="sm:col-span-3">
+            <label
+              for="mail-password"
+              class="block font-medium leading-6 text-gray-900 text-sm dark:text-neutral-100"
+            >Password</label>
+            <div class="mt-2">
+              <input
+                id="mail-password"
+                type="password"
+                value="{{ settings.password }}"
+                oninput="settings.password = $event.target.value"
+                autocomplete="off"
+                placeholder="••••••••"
+                class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 shadow-sm"
+              >
+            </div>
+          </div>
+        </div>
+
+        <div class="flex mt-8">
+          <button
+            type="submit"
+            disabled="{{ isSaving }}"
+            class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            {{ isSaving ? 'Saving...' : 'Save Settings' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</main>
+
+@endsection

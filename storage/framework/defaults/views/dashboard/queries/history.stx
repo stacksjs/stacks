@@ -1,0 +1,517 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+interface QueryRecord {
+  id: string
+  query: string
+  duration: number
+  normalized_query: string
+  connection: string
+  status: 'completed' | 'failed' | 'slow'
+  error?: string
+  executed_at: string
+  bindings?: any[]
+  trace?: string
+  model?: string
+  method?: string
+  file?: string
+  line?: number
+  memory_usage?: number
+  rows_affected?: number
+  transaction_id?: string
+  tags?: string[]
+}
+
+let queryHistory = [
+  {
+    id: '1',
+    query: 'SELECT * FROM users WHERE email = ? LIMIT 1',
+    normalized_query: 'SELECT * FROM users WHERE email = ? LIMIT ?',
+    duration: 3.2,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 10:16:32',
+    bindings: ['user@example.com', 1],
+    model: 'User',
+    method: 'findByEmail',
+    file: 'app/Models/User.php',
+    line: 45,
+    memory_usage: 2.4,
+    rows_affected: 1,
+    tags: ['auth']
+  },
+  {
+    id: '2',
+    query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT 10',
+    normalized_query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT ?',
+    duration: 45.7,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 10:15:30',
+    bindings: [10],
+    model: 'Post',
+    method: 'getRecentPublishedWithCategory',
+    file: 'app/Models/Post.php',
+    line: 78,
+    memory_usage: 5.8,
+    rows_affected: 10,
+    tags: ['content', 'frontend']
+  },
+  {
+    id: '3',
+    query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at VALUES (?, ?, ?, ?)',
+    normalized_query: 'INSERT INTO user_logs (user_id, action, ip_address, created_at) VALUES (?, ?, ?, ?)',
+    duration: 2.1,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 10:14:55',
+    bindings: [42, 'login', '192.168.1.1', '2024-03-14 10:14:55'],
+    model: 'UserLog',
+    method: 'logAction',
+    file: 'app/Services/LogService.php',
+    line: 28,
+    memory_usage: 1.8,
+    rows_affected: 1,
+    tags: ['logging']
+  },
+  {
+    id: '4',
+    query: 'UPDATE products SET stock = stock - 1 WHERE id = ? AND stock > 0',
+    normalized_query: 'UPDATE products SET stock = stock - ? WHERE id = ? AND stock > ?',
+    duration: 4.5,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 10:12:18',
+    bindings: [1, 156, 0],
+    model: 'Product',
+    method: 'decrementStock',
+    file: 'app/Models/Product.php',
+    line: 112,
+    memory_usage: 2.1,
+    rows_affected: 1,
+    tags: ['inventory', 'order']
+  },
+  {
+    id: '5',
+    query: 'DELETE FROM carts WHERE user_id = ? AND updated_at < ?',
+    normalized_query: 'DELETE FROM carts WHERE user_id = ? AND updated_at < ?',
+    duration: 2.8,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 10:10:05',
+    bindings: [78, '2024-03-13 10:10:05'],
+    model: 'Cart',
+    method: 'clearOldCarts',
+    file: 'app/Jobs/ClearOldCarts.php',
+    line: 35,
+    memory_usage: 1.9,
+    rows_affected: 3,
+    tags: ['cleanup', 'scheduled']
+  },
+  {
+    id: '6',
+    query: 'SELECT COUNT(*) FROM orders WHERE status = ?',
+    normalized_query: 'SELECT COUNT(*) FROM orders WHERE status = ?',
+    duration: 78.4,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 10:08:22',
+    bindings: ['pending'],
+    model: 'Order',
+    method: 'countPendingOrders',
+    file: 'app/Models/Order.php',
+    line: 67,
+    memory_usage: 3.1,
+    rows_affected: 1,
+    tags: ['reporting']
+  },
+  {
+    id: '7',
+    query: 'SELECT AVG(total) FROM orders WHERE created_at BETWEEN ? AND ?',
+    normalized_query: 'SELECT AVG(total) FROM orders WHERE created_at BETWEEN ? AND ?',
+    duration: 65.2,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 10:05:11',
+    bindings: ['2023-03-01 00:00:00', '2023-03-31 23:59:59'],
+    model: 'Order',
+    method: 'getAverageOrderTotal',
+    file: 'app/Reports/MonthlyReport.php',
+    line: 134,
+    memory_usage: 4.2,
+    rows_affected: 1,
+    tags: ['reporting', 'monthly']
+  },
+  {
+    id: '8',
+    query: 'UPDATE users SET last_login_at = ? WHERE id = ?',
+    normalized_query: 'UPDATE users SET last_login_at = ? WHERE id = ?',
+    duration: 3.5,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 10:02:47',
+    bindings: ['2024-03-14 10:02:47', 42],
+    model: 'User',
+    method: 'updateLastLogin',
+    file: 'app/Http/Controllers/Auth/LoginController.php',
+    line: 89,
+    memory_usage: 1.7,
+    rows_affected: 1,
+    tags: ['auth']
+  },
+  {
+    id: '9',
+    query: 'SELECT * FROM failed_jobs',
+    normalized_query: 'SELECT * FROM failed_jobs',
+    duration: 12.8,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 10:00:00',
+    bindings: [],
+    model: undefined,
+    method: 'listFailedJobs',
+    file: 'app/Console/Commands/ListFailedJobs.php',
+    line: 42,
+    memory_usage: 2.9,
+    rows_affected: 5,
+    tags: ['jobs', 'console']
+  },
+  {
+    id: '10',
+    query: 'TRUNCATE TABLE cache',
+    normalized_query: 'TRUNCATE TABLE cache',
+    duration: 125.3,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 09:55:00',
+    bindings: [],
+    model: undefined,
+    method: 'flush',
+    file: 'app/Console/Commands/CacheClear.php',
+    line: 28,
+    memory_usage: 1.5,
+    rows_affected: 0,
+    tags: ['cache', 'console']
+  },
+  {
+    id: '11',
+    query: 'SELECT * FROM users WHERE role = ? AND last_login_at < ? LIMIT 100',
+    normalized_query: 'SELECT * FROM users WHERE role = ? AND last_login_at < ? LIMIT ?',
+    duration: 8.7,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 09:50:12',
+    bindings: ['customer', '2023-03-14 09:50:12', 100],
+    model: 'User',
+    method: 'getInactiveCustomers',
+    file: 'app/Jobs/SendInactiveCustomerEmail.php',
+    line: 37,
+    memory_usage: 6.4,
+    rows_affected: 23,
+    tags: ['email', 'scheduled']
+  },
+  {
+    id: '12',
+    query: 'SELECT * FROM products WHERE stock < ? LIMIT 50',
+    normalized_query: 'SELECT * FROM products WHERE stock < ? LIMIT ?',
+    duration: 7.2,
+    connection: 'mysql',
+    status: 'completed',
+    executed_at: '2024-03-14 09:45:00',
+    bindings: [10, 50],
+    model: 'Product',
+    method: 'getLowStockProducts',
+    file: 'app/Console/Commands/SendLowStockAlert.php',
+    line: 45,
+    memory_usage: 4.8,
+    rows_affected: 12,
+    tags: ['inventory', 'console']
+  },
+])
+
+let timeRange = 'day'
+let selectedConnection = 'all'
+let selectedStatus = 'all'
+let selectedType = 'all'
+let isLoading = false
+let searchQuery = ''
+
+const getQueryType = (query) => {
+  const upperQuery = query.trim().toUpperCase()
+  if (upperQuery.startsWith('SELECT')) return 'SELECT'
+  if (upperQuery.startsWith('INSERT')) return 'INSERT'
+  if (upperQuery.startsWith('UPDATE')) return 'UPDATE'
+  if (upperQuery.startsWith('DELETE')) return 'DELETE'
+  return 'OTHER'
+}
+
+const queryTypeBadges = {
+  SELECT: 'bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 ring-blue-700/10 dark:ring-blue-400/30',
+  INSERT: 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-300 ring-green-700/10 dark:ring-green-400/30',
+  UPDATE: 'bg-amber-50 dark:bg-amber-900/20 text-amber-700 dark:text-amber-300 ring-amber-700/10 dark:ring-amber-400/30',
+  DELETE: 'bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 ring-red-700/10 dark:ring-red-400/30',
+  OTHER: 'bg-gray-50 dark:bg-neutral-900/20 text-gray-700 dark:text-neutral-300 ring-gray-700/10 dark:ring-neutral-400/30'
+}
+
+function filteredQueries() {
+  let filtered = [...queryHistory]
+
+  if (selectedConnection !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection)
+  }
+
+  if (selectedStatus !== 'all') {
+    filtered = filtered.filter(query => query.status === selectedStatus)
+  }
+
+  if (selectedType !== 'all') {
+    filtered = filtered.filter(query => getQueryType(query.query) === selectedType)
+  }
+
+  if (searchQuery) {
+    const lowerSearch = searchQuery.toLowerCase()
+    filtered = filtered.filter(query =>
+      query.query.toLowerCase().includes(lowerSearch) ||
+      (query.model && query.model.toLowerCase().includes(lowerSearch)) ||
+      (query.method && query.method.toLowerCase().includes(lowerSearch))
+    )
+  }
+
+  return filtered
+}
+
+const queryStatusColors = {
+  completed: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
+  slow: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
+  failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
+}
+
+const getQueryStatusColor = (status) => {
+  return queryStatusColors[status] || 'text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/50 ring-gray-600/20'
+}
+
+const formatQuery = (query) => {
+  if (query.length > 100) {
+    return query.substring(0, 100) + '...'
+  }
+  return query
+}
+
+const formatDuration = (duration) => {
+  return duration.toFixed(2) + ' ms'
+}
+
+const refreshData = () => {
+  isLoading = true
+  setTimeout(() => {
+    isLoading = false
+  }, 500)
+}
+
+</script>
+
+@title('Queries - History')
+<div class="min-h-screen">
+  <header class="flex sticky top-0 z-10 flex-wrap gap-6 items-center justify-between px-4 py-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900 shadow-sm">
+    <div>
+      <h1 class="font-semibold leading-7 text-gray-900 text-lg dark:text-white">
+        Query History
+      </h1>
+      <p class="mt-1 leading-6 text-gray-500 text-sm dark:text-neutral-400">
+        View and analyze past database queries
+      </p>
+    </div>
+    <div class="flex flex-wrap gap-3 items-center">
+      <div class="inline-flex rounded-md shadow-sm">
+        <button
+          type="button"
+          class="inline-flex relative items-center px-3 py-2 font-medium text-sm rounded-l-md"
+          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
+          onclick="timeRange = 'day'"
+        >
+          Day
+        </button>
+        <button
+          type="button"
+          class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm"
+          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
+          onclick="timeRange = 'week'"
+        >
+          Week
+        </button>
+        <button
+          type="button"
+          class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm rounded-r-md"
+          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
+          onclick="timeRange = 'month'"
+        >
+          Month
+        </button>
+      </div>
+      <div>
+        <select
+          id="connection"
+          name="connection"
+          class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+          value="{{ selectedConnection }}"
+        >
+          <option value="all">All connections</option>
+          <option value="mysql">MySQL</option>
+          <option value="postgres">PostgreSQL</option>
+          <option value="sqlite">SQLite</option>
+          <option value="mongodb">MongoDB</option>
+        </select>
+      </div>
+      <div>
+        <select
+          id="status"
+          name="status"
+          class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+          value="{{ selectedStatus }}"
+        >
+          <option value="all">All statuses</option>
+          <option value="completed">Completed</option>
+          <option value="slow">Slow</option>
+          <option value="failed">Failed</option>
+        </select>
+      </div>
+      <div>
+        <select
+          id="type"
+          name="type"
+          class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+          value="{{ selectedType }}"
+        >
+          <option value="all">All types</option>
+          <option value="SELECT">SELECT</option>
+          <option value="INSERT">INSERT</option>
+          <option value="UPDATE">UPDATE</option>
+          <option value="DELETE">DELETE</option>
+          <option value="OTHER">OTHER</option>
+        </select>
+      </div>
+      <div class="relative w-full sm:w-auto">
+        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+          <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+        </div>
+        <input
+          type="text"
+          value="{{ searchQuery }}"
+          class="block pl-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+          placeholder="Search queries..."
+        />
+      </div>
+    </div>
+  </header>
+
+  <main class="px-4 py-8 sm:px-6 lg:px-8">
+    <!-- Queries Table -->
+    <div class="mt-4">
+      <div class="relative">
+        @if(isLoading)
+          <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/50 dark:bg-neutral-900/50">
+            <div class="h-8 w-8 text-blue-600 dark:text-blue-400 animate-spin i-hugeicons-loading-01"></div>
+          </div>
+        @endif
+        <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-800">
+              <tr>
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">
+                  Query
+                </th>
+                <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
+                  Connection
+                </th>
+                <th scope="col" class="hidden sm:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
+                  Duration
+                </th>
+                <th scope="col" class="hidden lg:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
+                  Model / Method
+                </th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
+                  Status
+                </th>
+                <th scope="col" class="hidden sm:table-cell px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
+                  Executed At
+                </th>
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                  <span class="sr-only">View</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-900 divide-gray-200 divide-y dark:divide-neutral-700">
+              @foreach(filteredQueries as query)
+                <tr>
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
+                    <div class="flex gap-2 items-center mb-1">
+                      <span
+                        class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
+                        :class="queryTypeBadges[getQueryType(query.query)]"
+                      >
+                        {{ getQueryType(query.query) }}
+                      </span>
+                      <div
+                        class="overflow-hidden font-medium font-mono text-ellipsis text-gray-900 text-xs dark:text-white"
+                        :title="query.query"
+                      >
+                        {{ formatQuery(query.query) }}
+                      </div>
+                    </div>
+                    <div class="hidden xl:block mt-1 text-gray-500 dark:text-neutral-400">
+                      @foreach(query.tags as tag)
+                        <span class="inline-flex items-center mr-1 px-2 py-1 font-medium text-xs rounded-md">
+                          {{ tag }}
+                        </span>
+                      @endforeach
+                    </div>
+                  </td>
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
+                    {{ query.connection }}
+                  </td>
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400" :class="dark:text-yellow-400' : ? '' 'text-yellow-600 > 10 query.duration">
+                    {{ formatDuration(query.duration) }}
+                  </td>
+                  <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
+                    <div>{{ query.model || '-' }}</div>
+                    <div class="text-gray-400 text-xs dark:text-neutral-500">{{ query.method || '-' }}</div>
+                  </td>
+                  <td class="px-3 py-4 text-sm">
+                    <span
+                      class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
+                      :class="getQueryStatusColor(query.status)"
+                    >
+                      {{ query.status }}
+                    </span>
+                  </td>
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
+                    {{ query.executed_at }}
+                  </td>
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm">
+                    <a :href="`/queries/${query.id}`" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
+                      View<span class="sr-only">, {{ query.id }}</span>
+                    </a>
+                  </td>
+                </tr>
+              @endforeach
+              @if(filteredQueries.length === 0)
+                <tr>
+                  <td colspan="7" class="py-8 text-center text-gray-500 text-sm dark:text-neutral-400">
+                    No queries found matching your criteria.
+                  </td>
+                </tr>
+              @endif
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+@endsection

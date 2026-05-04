@@ -1,0 +1,484 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+// Sample manufacturers data
+let manufacturers = [
+  {
+    id: 1,
+    name: 'Pizza Palace',
+    slug: 'pizza-palace',
+    description: 'Authentic Italian pizzeria with handcrafted pizzas and fresh ingredients',
+    productCount: 24,
+    featured: true,
+    country: 'United States',
+    website: 'https://pizzapalace.foodmarket.org',
+    createdAt: '2023-05-10'
+  },
+  {
+    id: 2,
+    name: 'Burger Bistro',
+    slug: 'burger-bistro',
+    description: 'Gourmet burgers made with locally sourced ingredients',
+    productCount: 18,
+    featured: true,
+    country: 'United States',
+    website: 'https://burgerbistro.foodmarket.org',
+    createdAt: '2023-05-15'
+  },
+  {
+    id: 3,
+    name: 'Sushi Supreme',
+    slug: 'sushi-supreme',
+    description: 'Premium sushi and Japanese cuisine prepared by master chefs',
+    productCount: 32,
+    featured: true,
+    country: 'United States',
+    website: 'https://sushisupreme.foodmarket.org',
+    createdAt: '2023-06-01'
+  },
+  {
+    id: 4,
+    name: 'Taco Tiempo',
+    slug: 'taco-tiempo',
+    description: 'Authentic Mexican street food with fresh, bold flavors',
+    productCount: 22,
+    featured: false,
+    country: 'United States',
+    website: 'https://tacotime.foodmarket.org',
+    createdAt: '2023-06-10'
+  },
+  {
+    id: 5,
+    name: 'Pasta Paradise',
+    slug: 'pasta-paradise',
+    description: 'Handmade pasta and traditional Italian recipes',
+    productCount: 16,
+    featured: false,
+    country: 'United States',
+    website: 'https://pastaparadise.foodmarket.org',
+    createdAt: '2023-06-20'
+  },
+  {
+    id: 6,
+    name: 'Healthy Harvest',
+    slug: 'healthy-harvest',
+    description: 'Nutritious, plant-based meals for health-conscious customers',
+    productCount: 28,
+    featured: true,
+    country: 'United States',
+    website: 'https://healthyharvest.foodmarket.org',
+    createdAt: '2023-07-05'
+  },
+  {
+    id: 7,
+    name: 'Sweet Sensations',
+    slug: 'sweet-sensations',
+    description: 'Artisanal desserts, cakes, and pastries for every occasion',
+    productCount: 35,
+    featured: false,
+    country: 'United States',
+    website: 'https://sweetsensations.foodmarket.org',
+    createdAt: '2023-07-15'
+  },
+  {
+    id: 8,
+    name: 'Beverage Boutique',
+    slug: 'beverage-boutique',
+    description: 'Specialty coffees, teas, smoothies, and craft beverages',
+    productCount: 19,
+    featured: false,
+    country: 'United States',
+    website: 'https://beverageboutique.foodmarket.org',
+    createdAt: '2023-08-01'
+  }
+]
+
+// Filter and sort options
+let searchQuery = ''
+let sortBy = 'name'
+let sortOrder = 'asc'
+let featuredFilter = 'all'
+let countryFilter = 'all'
+
+// Get unique countries for filter
+function countries() {
+  const uniqueCountries = new Set(manufacturers.map(m => m.country))
+  return Array.from(uniqueCountries).sort()
+}
+
+// Computed filtered and sorted manufacturers
+function filteredManufacturers() {
+  return manufacturers
+    .filter(manufacturer => {
+      // Apply search filter
+      const matchesSearch = manufacturer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           manufacturer.description.toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Apply featured filter
+      const matchesFeatured = featuredFilter === 'all' ||
+                             (featuredFilter === 'featured' && manufacturer.featured) ||
+                             (featuredFilter === 'not-featured' && !manufacturer.featured)
+
+      // Apply country filter
+      const matchesCountry = countryFilter === 'all' ||
+                            manufacturer.country === countryFilter
+
+      return matchesSearch && matchesFeatured && matchesCountry
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy === 'productCount') {
+        comparison = a.productCount - b.productCount
+      } else if (sortBy === 'country') {
+        comparison = a.country.localeCompare(b.country)
+      } else if (sortBy === 'createdAt') {
+        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+}
+
+// Toggle sort order
+function toggleSort(column) {
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy = column
+    sortOrder = 'asc'
+  }
+}
+
+// Modal state
+let showAddModal = false
+let newManufacturer = {
+  name: '',
+  description: '',
+  featured: false,
+  country: '',
+  website: ''
+}
+
+function openAddModal() {
+  newManufacturer = {
+    name: '',
+    description: '',
+    featured: false,
+    country: '',
+    website: ''
+  }
+  showAddModal = true
+}
+
+function closeAddModal() {
+  showAddModal = false
+}
+
+function addManufacturer() {
+  // In a real app, this would send data to the server
+  const id = Math.max(...manufacturers.map(m => m.id)) + 1
+  const name = newManufacturer.name || '';
+  const currentDate = new Date().toISOString().split('T')[0]
+
+  manufacturers.push({
+    id,
+    name,
+    slug: name.toLowerCase().replace(/\s+/g, '-'),
+    description: newManufacturer.description || '',
+    productCount: 0,
+    featured: newManufacturer.featured,
+    country: newManufacturer.country || '',
+    website: newManufacturer.website || '',
+    createdAt: currentDate
+  }
+  closeAddModal()
+}
+</script>
+
+@title('Dashboard - Food Vendors')
+<main>
+    <div class="px-6 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Manufacturers</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Manage your product manufacturers
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <button
+              type="button"
+              onclick="openAddModal"
+              class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              <div class="mr-1 h-5 w-5 i-hugeicons-plus-sign"></div>
+              Add manufacturer
+            </button>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
+          <div class="relative max-w-sm">
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+            </div>
+            <input
+              value="{{ searchQuery }}"
+              type="text"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+              placeholder="Search manufacturers..."
+            />
+          </div>
+
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <select
+              value="{{ featuredFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Manufacturers</option>
+              <option value="featured">Featured Only</option>
+              <option value="not-featured">Not Featured</option>
+            </select>
+
+            <select
+              value="{{ countryFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Countries</option>
+              @foreach(countries as country)
+                <option value="{{ country }}">{{ country }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+
+        <!-- Manufacturers table -->
+        <div class="flow-root mt-6">
+          <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+            <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+              <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+                <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+                  <thead class="bg-gray-50 dark:bg-neutral-700">
+                    <tr>
+                      <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button onclick="toggleSort('name')" class="inline-flex items-center group">
+                          Manufacturer
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            @if(sortBy === 'name')
+                              <div class="[
+                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                                'h-4 w-4'
+                              ] {{ }}"></div>
+                            @else
+                              <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                            @endif
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Description</th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button onclick="toggleSort('country')" class="inline-flex items-center group">
+                          Country
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            @if(sortBy === 'country')
+                              <div class="[
+                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                                'h-4 w-4'
+                              ] {{ }}"></div>
+                            @else
+                              <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                            @endif
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                        <button onclick="toggleSort('productCount')" class="inline-flex items-center group">
+                          Products
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            @if(sortBy === 'productCount')
+                              <div class="[
+                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                                'h-4 w-4'
+                              ] {{ }}"></div>
+                            @else
+                              <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                            @endif
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Featured</th>
+                      <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-200">
+                        <button onclick="toggleSort('createdAt')" class="inline-flex items-center text-right group">
+                          Created
+                          <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                            @if(sortBy === 'createdAt')
+                              <div class="[
+                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                                'h-4 w-4'
+                              ] {{ }}"></div>
+                            @else
+                              <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                            @endif
+                          </span>
+                        </button>
+                      </th>
+                      <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                        <span class="sr-only">Actions</span>
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                    @foreach(filteredManufacturers as manufacturer)
+                      <tr>
+                        <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                          {{ manufacturer.name }}
+                        </td>
+                        <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-300">
+                          {{ manufacturer.description }}
+                        </td>
+                        <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                          {{ manufacturer.country }}
+                        </td>
+                        <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                          {{ manufacturer.productCount }}
+                        </td>
+                        <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                          @if(manufacturer.featured)
+                            <div class="h-5 w-5 text-green-500 i-hugeicons-checkmark-circle-02"></div>
+                          @else
+                            <div class="h-5 w-5 text-gray-400 i-hugeicons-cancel-circle"></div>
+                          @endif
+                        </td>
+                        <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                          {{ manufacturer.createdAt }}
+                        </td>
+                        <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                          <div class="flex items-center justify-end space-x-2">
+                            <button type="button" class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors">
+                              <div class="h-5 w-5 i-hugeicons-edit-01"></div>
+                            </button>
+                            <button type="button" class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-colors">
+                              <div class="h-5 w-5 i-hugeicons-waste"></div>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    @endforeach
+                    @if(filteredManufacturers.length === 0)
+                      <tr>
+                        <td colspan="7" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                          No manufacturers found matching your criteria
+                        </td>
+                      </tr>
+                    @endif
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Manufacturer Modal -->
+    @if(showAddModal)
+      <div class="fixed inset-0 overflow-y-auto z-10">
+        <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+          <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+
+          <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+            <div>
+              <div class="mt-3 sm:mt-5 text-center">
+                <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Manufacturer</h3>
+                <div class="mt-4">
+                  <div class="space-y-4">
+                    <div>
+                      <label for="manufacturer-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Name</label>
+                      <div class="mt-2">
+                        <input
+                          type="text"
+                          id="manufacturer-name"
+                          value="{{ newManufacturer.name }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label for="manufacturer-description" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Description</label>
+                      <div class="mt-2">
+                        <textarea
+                          id="manufacturer-description"
+                          value="{{ newManufacturer.description }}"
+                          rows="3"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        ></textarea>
+                      </div>
+                    </div>
+                    <div>
+                      <label for="manufacturer-country" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Country</label>
+                      <div class="mt-2">
+                        <input
+                          type="text"
+                          id="manufacturer-country"
+                          value="{{ newManufacturer.country }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <label for="manufacturer-website" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Website</label>
+                      <div class="mt-2">
+                        <input
+                          type="url"
+                          id="manufacturer-website"
+                          value="{{ newManufacturer.website }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        />
+                      </div>
+                    </div>
+                    <div class="flex items-center">
+                      <input
+                        id="manufacturer-featured"
+                        type="checkbox"
+                        value="{{ newManufacturer.featured }}"
+                        class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
+                      />
+                      <label for="manufacturer-featured" class="block ml-2 text-gray-900 text-sm dark:text-neutral-200">Featured manufacturer</label>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+              <button
+                type="button"
+                onclick="addManufacturer"
+                class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+              >
+                Add
+              </button>
+              <button
+                type="button"
+                onclick="closeAddModal"
+                class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    @endif
+  </main>
+
+@endsection

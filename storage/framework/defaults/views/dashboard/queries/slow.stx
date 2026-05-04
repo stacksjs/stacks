@@ -1,0 +1,505 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+interface SlowQueryRecord {
+  id: string
+  query: string
+  duration: number
+  normalized_query: string
+  connection: string
+  status: 'slow'
+  executed_at: string
+  bindings?: any[]
+  model?: string
+  method?: string
+  file?: string
+  line?: number
+  memory_usage?: number
+  rows_affected?: number
+  transaction_id?: string
+  tags?: string[]
+  optimization_suggestions?: string[]
+  affected_tables?: string[]
+  indexes_used?: string[]
+  missing_indexes?: string[]
+  explain_plan?: string
+}
+
+// Mock data for slow queries
+let slowQueries = [
+  {
+    id: '1',
+    query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT 10',
+    normalized_query: 'SELECT p.*, c.name as category_name FROM posts p JOIN categories c ON p.category_id = c.id WHERE p.published_at IS NOT NULL ORDER BY p.published_at DESC LIMIT ?',
+    duration: 45.7,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 10:15:30',
+    bindings: [10],
+    model: 'Post',
+    method: 'getRecentPublishedWithCategory',
+    file: 'app/Models/Post.php',
+    line: 78,
+    memory_usage: 5.8,
+    rows_affected: 10,
+    tags: ['content', 'frontend'],
+    affected_tables: ['posts', 'categories'],
+    indexes_used: ['categories.primary'],
+    missing_indexes: ['posts.published_at'],
+    optimization_suggestions: [
+      'Add index on posts.published_at column',
+      'Consider paginating results',
+      'Limit selected columns instead of using SELECT *'
+    ],
+    explain_plan: 'EXPLAIN: id-1, select_type-SIMPLE, table-p, partitions-NULL, type-ALL, possible_keys-NULL, key-NULL, key_len-NULL, ref-NULL, rows-200, filtered-50.00, Extra-Using where; Using filesort...'
+  },
+  {
+    id: '2',
+    query: 'SELECT COUNT(* FROM orders WHERE status = ?',
+    normalized_query: 'SELECT COUNT(*) FROM orders WHERE status = ?',
+    duration: 78.4,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 10:08:22',
+    bindings: ['pending'],
+    model: 'Order',
+    method: 'countPendingOrders',
+    file: 'app/Models/Order.php',
+    line: 67,
+    memory_usage: 3.1,
+    rows_affected: 1,
+    tags: ['reporting'],
+    affected_tables: ['orders'],
+    indexes_used: [],
+    missing_indexes: ['orders.status'],
+    optimization_suggestions: [
+      'Add index on orders.status column',
+      'Consider caching count results',
+      'Use Redis counters for high-frequency status counts'
+    ],
+    explain_plan: 'EXPLAIN: id-1, select_type-SIMPLE, table-orders, partitions-NULL, type-ALL, possible_keys-NULL, key-NULL, key_len-NULL, ref-NULL, rows-10000, filtered-10.00, Extra-Using where...'
+  },
+  {
+    id: '3',
+    query: 'SELECT AVG(total) FROM orders WHERE created_at BETWEEN ? AND ?',
+    normalized_query: 'SELECT AVG(total) FROM orders WHERE created_at BETWEEN ? AND ?',
+    duration: 65.2,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 10:05:11',
+    bindings: ['2023-03-01 00:00:00', '2023-03-31 23:59:59'],
+    model: 'Order',
+    method: 'getAverageOrderTotal',
+    file: 'app/Reports/MonthlyReport.php',
+    line: 134,
+    memory_usage: 4.2,
+    rows_affected: 1,
+    tags: ['reporting', 'monthly'],
+    affected_tables: ['orders'],
+    indexes_used: [],
+    missing_indexes: ['orders.created_at'],
+    optimization_suggestions: [
+      'Add index on orders.created_at column',
+      'Precalculate and store aggregate data for reports',
+      'Consider using materialized views or summary tables'
+    ],
+    explain_plan: 'EXPLAIN: id-1, select_type-SIMPLE, table-orders, partitions-NULL, type-ALL, possible_keys-NULL, key-NULL, key_len-NULL, ref-NULL, rows-10000, filtered-33.33, Extra-Using where...'
+  },
+  {
+    id: '4',
+    query: 'TRUNCATE TABLE cache',
+    normalized_query: 'TRUNCATE TABLE cache',
+    duration: 125.3,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 09:55:00',
+    bindings: [],
+    model: undefined,
+    method: 'flush',
+    file: 'app/Console/Commands/CacheClear.php',
+    line: 28,
+    memory_usage: 1.5,
+    rows_affected: 0,
+    tags: ['cache', 'console'],
+    affected_tables: ['cache'],
+    indexes_used: [],
+    missing_indexes: [],
+    optimization_suggestions: [
+      'Schedule cache clearing during low traffic periods',
+      'Consider incremental cache invalidation instead of truncating',
+      'Partition cache table for more efficient truncation'
+    ],
+    explain_plan: 'N/A - DDL Operation'
+  },
+  {
+    id: '5',
+    query: 'SELECT u.*, (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) as order_count FROM users u WHERE u.created_at > ? ORDER BY order_count DESC LIMIT 50',
+    normalized_query: 'SELECT u.*, (SELECT COUNT(*) FROM orders o WHERE o.user_id = u.id) as order_count FROM users u WHERE u.created_at > ? ORDER BY order_count DESC LIMIT ?',
+    duration: 230.5,
+    connection: 'mysql',
+    status: 'slow',
+    executed_at: '2024-03-14 09:45:00',
+    bindings: ['2023-03-14 09:45:00', 50],
+    model: 'User',
+    method: 'getTopNewCustomers',
+    file: 'app/Reports/CustomerReport.php',
+    line: 58,
+    memory_usage: 8.7,
+    rows_affected: 50,
+    tags: ['reporting', 'customers'],
+    affected_tables: ['users', 'orders'],
+    indexes_used: ['users.created_at_index', 'orders.primary'],
+    missing_indexes: ['orders.user_id'],
+    optimization_suggestions: [
+      'Add index on orders.user_id',
+      'Replace correlated subquery with JOIN and GROUP BY',
+      'Use a materialized view for frequent reporting',
+      'Pre-compute order counts in a denormalized column or table'
+    ],
+    explain_plan: 'EXPLAIN: id-1, select_type-PRIMARY, table-u, partitions-NULL, type-range, possible_keys-created_at_index, key-created_at_index, key_len-8, ref-NULL, rows-500, filtered-100.00, Extra-Using where; Using filesort...'
+  }
+])
+
+let timeRange = 'day'
+let thresholdMs = 10
+let selectedConnection = 'all'
+let searchQuery = ''
+let isLoading = false
+let currentExpandedQueryId = null
+
+// Filter functions
+function filteredQueries() {
+  let filtered = [...slowQueries]
+
+  // Filter by connection
+  if (selectedConnection !== 'all') {
+    filtered = filtered.filter(query => query.connection === selectedConnection)
+  }
+
+  // Filter by threshold
+  filtered = filtered.filter(query => query.duration >= thresholdMs)
+
+  // Filter by search query
+  if (searchQuery) {
+    const lowerSearch = searchQuery.toLowerCase()
+    filtered = filtered.filter(query =>
+      query.query.toLowerCase().includes(lowerSearch) ||
+      (query.model && query.model.toLowerCase().includes(lowerSearch)) ||
+      (query.method && query.method.toLowerCase().includes(lowerSearch)) ||
+      (query.affected_tables && query.affected_tables.some(table => table.toLowerCase().includes(lowerSearch)))
+    )
+  }
+
+  return filtered.sort((a, b) => b.duration - a.duration) // Sort by duration descending
+}
+
+// Format helpers
+const formatQuery = (query: string): string => {
+  if (query.length > 100) {
+    return query.substring(0, 100) + '...'
+  }
+  return query
+}
+
+const formatDuration = (duration: number): string => {
+  return duration.toFixed(2) + ' ms'
+}
+
+// Toggle expanded query details
+const toggleQueryDetails = (queryId: string) => {
+  if (currentExpandedQueryId === queryId) {
+    currentExpandedQueryId = null
+  } else {
+    currentExpandedQueryId = queryId
+  }
+}
+
+// Refresh data
+const refreshData = () => {
+  isLoading = true
+  setTimeout(() => {
+    isLoading = false
+  }, 500)
+}
+
+// Add functions for copying to clipboard
+const copyToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text).catch(err => {
+    console.error('Could not copy text: ', err)
+  }
+}
+
+let copiedQuery = null
+
+const copyQuery = (queryId: string, queryText: string) => {
+  copyToClipboard(queryText)
+  copiedQuery = queryId
+
+  // Reset copied state after 2 seconds
+  setTimeout(() => {
+    if (copiedQuery === queryId) {
+      copiedQuery = null
+    }
+  }, 2000)
+}
+</script>
+
+<div class="min-h-screen">
+    <header class="flex sticky top-0 z-10 flex-wrap gap-6 items-center justify-between px-4 py-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900 shadow-sm">
+      <div>
+        <h1 class="font-semibold leading-7 text-gray-900 text-lg dark:text-white">
+          Slow Queries
+        </h1>
+        <p class="mt-1 leading-6 text-gray-500 text-sm dark:text-neutral-400">
+          Identify and optimize slow database queries
+        </p>
+      </div>
+      <div class="flex flex-wrap gap-3 items-center">
+        <div class="inline-flex rounded-md shadow-sm">
+          <button
+            type="button"
+            class="inline-flex relative items-center px-3 py-2 font-medium text-sm rounded-l-md"
+            :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
+            onclick="timeRange = 'day'"
+          >
+            Day
+          </button>
+          <button
+            type="button"
+            class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm"
+            :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
+            onclick="timeRange = 'week'"
+          >
+            Week
+          </button>
+          <button
+            type="button"
+            class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm rounded-r-md"
+            :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
+            onclick="timeRange = 'month'"
+          >
+            Month
+          </button>
+        </div>
+        <div>
+          <select
+            id="connection"
+            name="connection"
+            class="block pl-3 pr-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+            value="{{ selectedConnection }}"
+          >
+            <option value="all">All connections</option>
+            <option value="mysql">MySQL</option>
+            <option value="postgres">PostgreSQL</option>
+            <option value="sqlite">SQLite</option>
+            <option value="mongodb">MongoDB</option>
+          </select>
+        </div>
+        <div>
+          <div class="flex items-center border-gray-300 rounded-md dark:border-neutral-700">
+            <span class="pl-3 pr-1 text-gray-600 text-sm dark:text-neutral-400">Threshold:</span>
+            <input
+              type="number"
+              v-model.number="thresholdMs"
+              min="1"
+              step="5"
+              class="py-2 w-20 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+            />
+            <span class="pl-1 pr-3 text-gray-600 text-sm dark:text-neutral-400">ms</span>
+          </div>
+        </div>
+        <div class="relative w-full sm:w-auto">
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+          </div>
+          <input
+            type="text"
+            value="{{ searchQuery }}"
+            class="block pl-10 py-2 w-full text-sm dark:text-neutral-200 bg-white dark:bg-neutral-800 border-gray-300 rounded-md dark:border-neutral-700 focus:border-blue-600 focus:outline-none focus:ring-blue-600"
+            placeholder="Search queries..."
+          />
+        </div>
+      </div>
+    </header>
+
+    <main class="px-4 py-8 sm:px-6 lg:px-8">
+      <!-- Summary Stats -->
+      <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 md:grid-cols-4">
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Slow Queries</dt>
+          <dd class="mt-1 font-semibold text-3xl text-yellow-600 tracking-tight dark:text-yellow-400">{{ filteredQueries.length }}</dd>
+        </div>
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Avg Duration</dt>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">
+            {{ filteredQueries.length ? formatDuration(filteredQueries.reduce((sum, q) => sum + q.duration, 0) / filteredQueries.length) : '0 ms' }}
+          </dd>
+        </div>
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Max Duration</dt>
+          <dd class="mt-1 font-semibold text-3xl text-red-600 tracking-tight dark:text-red-400">
+            {{ filteredQueries.length ? formatDuration(Math.max(...filteredQueries.map(q => q.duration))) : '0 ms' }}
+          </dd>
+        </div>
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Most Affected Table</dt>
+          <dd class="mt-1 font-semibold text-3xl text-blue-600 tracking-tight dark:text-blue-400">
+            {{
+              filteredQueries.length
+                ? Object.entries(
+                    filteredQueries.flatMap(q => q.affected_tables || [])
+                      .reduce((acc: Record<string, number>, table) => {
+                        acc[table] = (acc[table] || 0) + 1;
+                        return acc;
+                      }, {})
+                  ).sort((a, b) => b[1] - a[1])[0]?.[0] || 'N/A'
+                : 'N/A'
+            }}
+          </dd>
+        </div>
+      </div>
+
+      <!-- Queries Table -->
+      <div class="mt-8">
+        <div class="relative">
+          @if(isLoading)
+<div class="flex absolute inset-0 z-10 items-center justify-center bg-white/50 dark:bg-neutral-900/50">
+            <div class="h-8 w-8 text-blue-600 dark:text-blue-400 animate-spin i-hugeicons-loading-01"></div>
+          </div>
+
+          <div class="overflow-hidden bg-white dark:bg-neutral-900 sm:rounded-md shadow">
+            <ul role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
+              @foreach(filteredQueries as query)
+<li class="hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer group" onclick="toggleQueryDetails(query.id)">
+                <!-- Summary view -->
+                <div class="px-4 py-4 sm:px-6">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-3">
+                      <p class="font-medium text-blue-600 text-sm truncate dark:text-blue-400">
+                        {{ query.model ? `${query.model}.${query.method}` : query.method }}
+                      </p>
+                      <span
+                        class="inline-flex items-center px-2 py-1 font-medium text-xs text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-1 ring-inset ring-yellow-600/20 rounded-md"
+                      >
+                        {{ formatDuration(query.duration) }}
+                      </span>
+                    </div>
+                    <div class="flex flex-shrink-0 ml-2">
+                      <div class="h-5 w-5 text-gray-400 duration-200 transition-transform i-hugeicons-chevron-down" class="'transform { {{ } }} === currentExpandedQueryId query.id rotate-180':"></div>
+                    </div>
+                  </div>
+                  <div class="sm:flex sm:justify-between mt-2">
+                    <div class="sm:flex">
+                      <p class="flex items-center text-gray-500 text-sm dark:text-neutral-400">
+                        <span class="font-mono text-xs truncate">{{ formatQuery(query.query) }}</span>
+                      </p>
+                    </div>
+                    <div class="flex items-center mt-2 sm:mt-0 text-gray-500 text-sm dark:text-neutral-400">
+                      <div class="mr-1.5 h-4 w-4 i-hugeicons-calendar"></div>
+                      <p>{{ query.executed_at }}</p>
+                    </div>
+                  </div>
+                  <div class="flex flex-wrap gap-1 mt-2">
+                    @foreach(query.affected_tables as table)
+<span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-700/10 ring-inset rounded-md dark:ring-blue-400/30">
+                      {{ table }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Expanded details -->
+                @if(currentExpandedQueryId === query.id)
+<div class="px-4 py-4 sm:px-6 bg-gray-50 dark:bg-neutral-800 border-gray-200 border-t dark:border-neutral-700">
+                  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+                    <!-- Query details column -->
+                    <div class="md:col-span-2">
+                      <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Full Query</h4>
+                      <div class="relative">
+                        <pre class="overflow-x-auto mt-1 p-3 font-mono text-gray-100 text-xs bg-gray-800 rounded-md sql-highlight">{{ query.query }}</pre>
+                        <button
+                          onclick="copyQuery(query.id, query.query)"
+                          class="absolute right-2 top-2 p-1.5 text-gray-300 hover:text-white bg-gray-700 hover:bg-gray-600 rounded-md"
+                          class="'bg-green-700 { {{ } }} === copiedQuery query.id hover:bg-green-600':"
+                        >
+                          @if(copiedQuery === query.id)
+<div class="h-4 w-4 i-hugeicons-checkmark"></div>
+                          @else
+<div class="h-4 w-4 i-hugeicons-copy-01"></div>
+                        </button>
+                      </div>
+
+                      <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Bindings</h4>
+                      <div class="mt-1 p-3 bg-gray-100 dark:bg-neutral-700 rounded-md">
+                        @if(query.bindings && query.bindings.length)
+<pre class="overflow-x-auto font-mono text-gray-800 text-xs dark:text-neutral-200">{{ JSON.stringify(query.bindings, null, 2) }}</pre>
+                        @else
+<p class="text-gray-500 text-xs dark:text-neutral-400">No bindings</p>
+                      </div>
+
+                      <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Explain Plan</h4>
+                      <div class="mt-1 p-3 bg-gray-100 dark:bg-neutral-700 rounded-md">
+                        <pre class="overflow-x-auto font-mono text-gray-800 text-xs dark:text-neutral-200">{{ query.explain_plan }}</pre>
+                      </div>
+                    </div>
+
+                    <!-- Recommendations column -->
+                    <div>
+                      <h4 class="mb-2 font-medium text-gray-900 text-sm dark:text-white">Optimization Suggestions</h4>
+                      <ul class="mt-1 space-y-2">
+                        @foreach(query.optimization_suggestions as i => suggestion)
+<li class="flex items-start">
+                          <div class="flex-shrink-0 mr-2 mt-0.5 h-5 w-5 text-yellow-500 i-hugeicons-lightbulb-02"></div>
+                          <span class="text-gray-700 text-sm dark:text-neutral-300">{{ suggestion }}</span>
+                        </li>
+                      </ul>
+
+                      <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Source</h4>
+                      <div class="mt-1">
+                        <p class="text-gray-700 text-sm dark:text-neutral-300">{{ query.file }}:{{ query.line }}</p>
+                      </div>
+
+                      <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Index Information</h4>
+                      <div class="mt-1">
+                        <div class="mb-2">
+                          <h5 class="font-medium text-gray-600 text-xs dark:text-neutral-400">Used Indexes</h5>
+                          @if(query.indexes_used && query.indexes_used.length)
+<div class="mt-1">
+                            @foreach(query.indexes_used as index)
+<span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-700/10 ring-inset rounded-md dark:ring-green-400/30">
+                              {{ index }}
+                            </span>
+                          </div>
+                          @else
+<p class="text-gray-500 text-xs dark:text-neutral-400">No indexes used</p>
+                        </div>
+
+                        <div>
+                          <h5 class="font-medium text-gray-600 text-xs dark:text-neutral-400">Missing Indexes</h5>
+                          @if(query.missing_indexes && query.missing_indexes.length)
+<div class="mt-1">
+                            @foreach(query.missing_indexes as index)
+<span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-900/20 ring-1 ring-inset ring-red-700/10 rounded-md dark:ring-red-400/30">
+                              {{ index }}
+                            </span>
+                          </div>
+                          @else
+<p class="text-gray-500 text-xs dark:text-neutral-400">No missing indexes identified</p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </li>
+              @if(filteredQueries.length === 0)
+<li class="px-4 py-6 sm:px-6 text-center text-gray-500 text-sm dark:text-neutral-400">
+                No slow queries found matching your criteria.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+@endsection

@@ -1,0 +1,454 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import ShippingRatesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingRatesTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import { useShippingRates } from '../../../../functions/commerce/shippings/shipping-rates'
+import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
+import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
+import type { NewShippingRate } from '../../../../types/defaults'
+
+const { shippingRates, createShippingRate, fetchShippingRates, updateShippingRate, deleteShippingRate } = useShippingRates()
+
+const { shippingMethods, fetchShippingMethods } = useShippingMethods()
+const { shippingZones, fetchShippingZones } = useShippingZones()
+
+let showAddModal = false
+let showEditModal = false
+let editingRate = null
+let newShippingRate = {
+  shipping_method_id: 0,
+  shipping_zone_id: 0,
+  weight_from: 0,
+  weight_to: 0,
+  rate: 0
+}
+
+function openAddModal() {
+  newShippingRate = {
+    shipping_method_id: 0,
+    shipping_zone_id: 0,
+    weight_from: 0,
+    weight_to: 0,
+    rate: 0
+  }
+  showAddModal = true
+}
+
+function closeAddModal() {
+  showAddModal = false
+}
+
+function openEditModal(rate) {
+  editingRate = rate
+  newShippingRate = {
+    shipping_method_id: rate.shipping_method_id,
+    shipping_zone_id: rate.shipping_zone_id,
+    weight_from: rate.weight_from,
+    weight_to: rate.weight_to,
+    rate: rate.rate
+  }
+  showEditModal = true
+}
+
+function closeEditModal() {
+  showEditModal = false
+  editingRate = null
+}
+
+async function addShippingRate() {
+  try {
+    await createShippingRate(newShippingRate)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create shipping rate:', error)
+  }
+}
+
+async function saveShippingRate() {
+  if (!editingRate) return
+
+  try {
+    await updateShippingRate({
+      ...editingRate,
+      ...newShippingRate
+    }
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update shipping rate:', error)
+  }
+}
+
+let searchQuery = ''
+let currentPage = 1
+const itemsPerPage = 5
+
+function filteredShippingRates() {
+  const rates = Array.isArray(shippingRates) ? shippingRates : []
+
+  if (!searchQuery) return rates
+
+  const query = searchQuery.toLowerCase()
+  return rates.filter(rate =>
+    rate.method.toLowerCase().includes(query) ||
+    rate.zone.toLowerCase().includes(query) ||
+    rate.weight_from.toString().includes(query) ||
+    rate.weight_to.toString().includes(query) ||
+    rate.rate.toString().includes(query)
+  )
+}
+
+function paginatedShippingRates() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredShippingRates.slice(start, end)
+}
+
+const handleSearch = (query) => {
+  searchQuery = query
+  currentPage = 1
+}
+
+const handleAddRate = () => {
+  openAddModal()
+}
+
+const handleEditRate = (rate) => {
+  openEditModal(rate)
+}
+
+const handleDeleteRate = async (rate) => {
+  if (confirm(`Are you sure you want to delete this shipping rate?`)) {
+    try {
+      await deleteShippingRate(rate.id)
+    } catch (error) {
+      console.error('Failed to delete shipping rate:', error)
+    }
+  }
+}
+
+const handlePrevPage = () => {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredShippingRates.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+const handlePageChange = (page) => {
+  currentPage = page
+}
+
+const tabs = [
+  { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
+  { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
+  { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
+  { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
+  { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
+  { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
+  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
+]
+
+</script>
+
+@title('Dashboard - Shipping Rates')
+<div class="py-6">
+  <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
+    <!-- Tab Navigation -->
+    <TabNavigation
+      modelValue="rates"
+      :tabs="tabs"
+    />
+
+    <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <h2 class="font-medium text-gray-900 text-lg dark:text-white">Shipping Rates</h2>
+          <button
+            onclick="handleAddRate"
+            type="button"
+            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            <div class="mr-2 h-5 w-5 i-hugeicons-plus-sign" />
+            Add Rate
+          </button>
+        </div>
+        <div class="mt-4">
+          <SearchFilter
+            placeholder="Search shipping rates..."
+            @search="handleSearch"
+            class="w-full md:w-96"
+          />
+        </div>
+      </div>
+
+      <ShippingRatesTable
+        :rates="paginatedShippingRates"
+        @edit="handleEditRate"
+        @delete="handleDeleteRate"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredShippingRates.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Shipping Rate Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Shipping Rate</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="rate-method" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Method</label>
+                    <div class="mt-2">
+                      <select
+                        id="rate-method"
+                        value="{{ newShippingRate.shipping_method_id }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="">Select a shipping method</option>
+                        @foreach(shippingMethods as method)
+                          <option value="{{ method.id }}">
+                            {{ method.name }}
+                          </option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="rate-zone" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone</label>
+                    <div class="mt-2">
+                      <select
+                        id="rate-zone"
+                        value="{{ newShippingRate.shipping_zone_id }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="">Select a shipping zone</option>
+                        @foreach(shippingZones as zone)
+                          <option value="{{ zone.id }}">
+                            {{ zone.name }}
+                          </option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="rate-weight-from" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight From</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="rate-weight-from"
+                          value="{{ newShippingRate.weight_from }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="rate-weight-to" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight To</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="rate-weight-to"
+                          value="{{ newShippingRate.weight_to }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="rate-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Rate (in cents)</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="rate-rate"
+                        value="{{ newShippingRate.rate }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="599"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="addShippingRate"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Add Rate
+            </button>
+            <button
+              type="button"
+              onclick="closeAddModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  <!-- Edit Shipping Rate Modal -->
+  @if(showEditModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit Shipping Rate</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit-rate-method" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Method</label>
+                    <div class="mt-2">
+                      <select
+                        id="edit-rate-method"
+                        value="{{ newShippingRate.method }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="">Select a shipping method</option>
+                        @foreach(shippingMethods as method)
+                          <option value="{{ method.name }}">
+                            {{ method.name }}
+                          </option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-rate-zone" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone</label>
+                    <div class="mt-2">
+                      <select
+                        id="edit-rate-zone"
+                        value="{{ newShippingRate.zone }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="">Select a shipping zone</option>
+                        @foreach(shippingZones as zone)
+                          <option value="{{ zone.name }}">
+                            {{ zone.name }}
+                          </option>
+                        @endforeach
+                      </select>
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 grid-cols-2">
+                    <div>
+                      <label for="edit-rate-weight-from" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight From</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-rate-weight-from"
+                          value="{{ newShippingRate.weight_from }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="edit-rate-weight-to" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Weight To</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-rate-weight-to"
+                          value="{{ newShippingRate.weight_to }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="10"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-rate-rate" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Rate (in cents)</label>
+                    <div class="mt-2">
+                      <input
+                        type="number"
+                        id="edit-rate-rate"
+                        value="{{ newShippingRate.rate }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="599"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="saveShippingRate"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onclick="closeEditModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</div>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await Promise.all([
+    fetchShippingRates(),
+    fetchShippingMethods(),
+    fetchShippingZones()
+  ])
+})
+</script>
+
+@endsection

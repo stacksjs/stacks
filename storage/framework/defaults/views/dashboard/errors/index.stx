@@ -1,0 +1,426 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+import Tooltip from '../../../components/Dashboard/Tooltip.stx'
+
+interface ErrorStats {
+  total: number
+  resolved: number
+  totalChange: number
+  resolvedChange: number
+}
+
+interface Error {
+  id: string
+  message: string
+  type: string
+  environment: string
+  location: string
+  lastSeen: string
+  count: number
+  status: 'active' | 'resolved'
+  resolvedAt?: string
+  resolvedBy?: string
+}
+
+let activeTab = 'active'
+let selectedEnvironment = 'all'
+let isAiAnalyzing = false
+let isDark = false
+
+let errorStats = {
+  total: 2847,
+  resolved: 1624,
+  totalChange: -24,
+  resolvedChange: 12,
+}
+
+let allErrors = [
+  {
+    id: '1',
+    message: "Cannot read property 'length' of undefined",
+    type: 'JavaScript Error',
+    environment: 'production',
+    location: 'main.js:156',
+    lastSeen: '2 minutes ago',
+    count: 36,
+    status: 'active'
+  },
+  {
+    id: '2',
+    message: "Cannot read property 'length' of undefined",
+    type: 'JavaScript Error',
+    environment: 'staging',
+    location: 'main.js:156',
+    lastSeen: '15 minutes ago',
+    count: 22,
+    status: 'active'
+  },
+  {
+    id: '3',
+    message: 'Database connection failed',
+    type: 'Fatal Error',
+    environment: 'production',
+    location: 'UserAction.ts:42',
+    lastSeen: '1 hour ago',
+    count: 15,
+    status: 'active'
+  },
+  {
+    id: '4',
+    message: 'Invalid API response format',
+    type: 'API Error',
+    environment: 'production',
+    location: 'api/handlers.ts:89',
+    lastSeen: '2 days ago',
+    count: 56,
+    status: 'resolved',
+    resolvedAt: '1 day ago',
+    resolvedBy: 'John Doe'
+  }
+]
+
+function activeErrors() {
+  const filtered = allErrors.filter(error => error.status === 'active')
+  return selectedEnvironment === 'all'
+    ? filtered
+    : filtered.filter(error => error.environment === selectedEnvironment)
+}
+
+function resolvedErrors() {
+  const filtered = allErrors.filter(error => error.status === 'resolved')
+  return selectedEnvironment === 'all'
+    ? filtered
+    : filtered.filter(error => error.environment === selectedEnvironment)
+}
+
+const getTypeColor = (type) => {
+  const colors = {
+    'TypeScript Error': 'text-purple-600 bg-purple-50 dark:text-purple-400 dark:bg-purple-400/10',
+    'JavaScript Error': 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-400/10',
+    'Fatal Error': 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-400/10',
+    'API Error': 'text-blue-600 bg-blue-50 dark:text-blue-400 dark:bg-blue-400/10'
+  }
+  return colors[type] || 'text-gray-600 bg-gray-50 dark:text-neutral-400 dark:bg-neutral-400/10'
+}
+
+const getEnvironmentColor = (env) => {
+  const colors = {
+    production: 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-400/10',
+    staging: 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-400/10',
+    development: 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-400/10'
+  }
+  return colors[env] || 'text-gray-600 bg-gray-50 dark:text-neutral-400 dark:bg-neutral-400/10'
+}
+
+const openInEditor = (location) => {
+  fetch('/api/editor/open', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ location }),
+  })
+    .then(() => {
+      // opened in editor
+    })
+    .catch(() => {
+      // editor may not be available
+    })
+}
+
+const resolveError = (errorId) => {
+  const error = allErrors.find(e => e.id === errorId)
+  if (error) {
+    error.status = 'resolved'
+    error.resolvedAt = 'Just now'
+    error.resolvedBy = 'Current User'
+  }
+}
+
+const analyzeWithAI = async (errorId) => {
+  const error = allErrors.find(e => e.id === errorId)
+  if (!error) return
+
+  isAiAnalyzing = true
+  try {
+    const response = await fetch('/api/ai/analyze-error', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        errorId,
+        message: error.message,
+        type: error.type,
+        location: error.location,
+      }),
+    })
+
+    if (!response.ok) throw new Error('AI analysis failed')
+
+    const data = await response.json()
+    if (data.analysis) {
+      error.aiAnalysis = data.analysis
+    }
+  } catch (err) {
+    console.error('AI analysis error:', err)
+    error.aiAnalysis = 'AI analysis failed. Please try again later.'
+  } finally {
+    isAiAnalyzing = false
+  }
+}
+</script>
+
+@title('Dashboard - Errors')
+<div class="py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Error Tracking</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+          Last 30 days error tracking and monitoring.
+        </p>
+      </div>
+    </div>
+
+    <!-- Stats Overview -->
+    <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+      <!-- Total Errors Card -->
+      <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <dt>
+          <div class="absolute p-3 bg-red-500 rounded-md">
+            <div class="h-6 w-6 text-white i-hugeicons-alert-02" />
+          </div>
+          <p class="ml-16 font-medium text-gray-500 text-sm truncate">
+            Total Unresolved Errors
+          </p>
+        </dt>
+        <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+          <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
+            2,847
+          </p>
+          <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm">
+            <svg class="flex-shrink-0 self-center h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Increased by</span>
+            24%
+          </p>
+        </dd>
+      </div>
+
+      <!-- Resolved Issues Card -->
+      <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <dt>
+          <div class="absolute p-3 bg-green-500 rounded-md">
+            <div class="h-6 w-6 text-white i-hugeicons-checkmark-circle-02" />
+          </div>
+          <p class="ml-16 font-medium text-gray-500 text-sm truncate">
+            Resolved Issues
+          </p>
+        </dt>
+        <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+          <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
+            1,624
+          </p>
+          <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
+            <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+              <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+            </svg>
+            <span class="sr-only">Increased by</span>
+            12%
+          </p>
+        </dd>
+      </div>
+    </dl>
+
+    <!-- Tabs -->
+    <div class="mt-8 border-b border-gray-200 dark:border-neutral-600">
+      <div class="flex items-center justify-between">
+        <nav class="flex -mb-px space-x-8" aria-label="Tabs">
+          <button
+            onclick="activeTab = 'active'"
+            class="[
+              activeTab === 'active'
+                ? 'border-gray-300 text-gray-700 dark:border-neutral-600 dark:text-neutral-300'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300',
+              'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+            ] {{ }}"
+          >
+            Active Errors
+            <span
+              class="[
+                activeTab === 'active' ? 'bg-red-100 text-red-600 dark:bg-red-400/10 dark:text-red-400' : 'bg-gray-100 text-gray-900 dark:bg-neutral-600 dark:text-neutral-300',
+                'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
+              ] {{ }}"
+            >
+              {{ activeErrors.length }}
+            </span>
+          </button>
+
+          <button
+            onclick="activeTab = 'resolved'"
+            class="[
+              activeTab === 'resolved'
+                ? 'border-gray-300 text-gray-700 dark:border-neutral-600 dark:text-neutral-300'
+                : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300',
+              'whitespace-nowrap border-b-2 py-4 px-1 text-sm font-medium'
+            ] {{ }}"
+          >
+            Resolved
+            <span
+              class="[
+                activeTab === 'resolved' ? 'bg-blue-100 text-blue-600 dark:bg-blue-400/10 dark:text-blue-400' : 'bg-gray-100 text-gray-900 dark:bg-neutral-600 dark:text-neutral-300',
+                'ml-3 rounded-full py-0.5 px-2.5 text-xs font-medium'
+              ] {{ }}"
+            >
+              {{ resolvedErrors.length }}
+            </span>
+          </button>
+        </nav>
+
+        <!-- Environment Filter -->
+        <div class="flex items-center">
+          <label for="environment-filter" class="mr-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Environment:</label>
+          <select
+            id="environment-filter"
+            value="{{ selectedEnvironment }}"
+            class="block pl-3 pr-10 py-1.5 w-32 text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+          >
+            <option value="all">All</option>
+            <option value="production">Production</option>
+            <option value="staging">Staging</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <!-- Error List -->
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 rounded-lg dark:ring-neutral-700 shadow">
+            <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
+              <thead class="bg-gray-50 dark:bg-neutral-700">
+                <tr>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Error</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Type</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Environment</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Location</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-100">Last Seen</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-100">Count</th>
+                  @if(activeTab === 'resolved')
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Resolved</th>
+                  @endif
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-600">
+                @foreach(error in (activeTab === 'active' ? activeErrors : resolvedErrors))
+                  <tr
+                      class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
+                    <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
+                      {{ error.message }}
+                    </td>
+                    <td class="px-3 py-4 text-sm whitespace-nowrap">
+                      <span :class="['inline-flex items-center rounded-md px-2 py-1 text-xs font-medium', getTypeColor(error.type)]">
+                        {{ error.type }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-4 text-sm whitespace-nowrap">
+                      <span :class="['inline-flex items-center rounded-md px-2 py-1 text-xs font-medium', getEnvironmentColor(error.environment)]">
+                        {{ error.environment }}
+                      </span>
+                    </td>
+                    <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
+                      <button
+                        onclick="openInEditor(error.location)"
+                        class="hover:text-blue-600 hover:underline dark:hover:text-blue-400 rounded focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                      >
+                        {{ error.location }}
+                      </button>
+                    </td>
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                      {{ error.lastSeen }}
+                    </td>
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                      {{ error.count }}
+                    </td>
+                    @if(activeTab === 'resolved')
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
+                        <div class="flex flex-col">
+                          <span>{{ error.resolvedAt }}</span>
+                          <span class="text-gray-400 text-xs">by {{ error.resolvedBy }}</span>
+                        </div>
+                      </td>
+                    @endif
+                    <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                      <div class="inline-flex rounded-md shadow-sm" role="group">
+                        @if(activeTab === 'active')
+                          <Tooltip text="Mark as resolved" position="top" :dark="isDark" :usePortal="true">
+                            <button
+                              onclick="resolveError(error.id)"
+                              type="button"
+                              class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-600 text-sm dark:text-neutral-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600"
+                              aria-label="Mark error as resolved"
+                            >
+                              <div class="h-4 w-4 i-hugeicons-checkmark-circle-02" />
+                            </button>
+                          </Tooltip>
+                          <Tooltip text="Analyze with AI" position="top" :dark="isDark" :usePortal="true">
+                            <button
+                              onclick="analyzeWithAI(error.id)"
+                              type="button"
+                              class="[
+                                'relative -ml-px inline-flex items-center px-3 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 hover:bg-gray-50 hover:text-purple-600 focus:z-10 dark:ring-neutral-600 dark:hover:bg-neutral-700 dark:hover:text-purple-400',
+                                isAiAnalyzing ? 'text-gray-400 cursor-not-allowed' : 'text-gray-600 dark:text-neutral-400'
+                              ] {{ }}"
+                              disabled="{{ isAiAnalyzing }}"
+                              aria-label="Analyze error with AI"
+                            >
+                              <div class="[
+                                'h-4 w-4',
+                                isAiAnalyzing ? 'i-hugeicons-arrow-path animate-spin' : 'i-hugeicons-sparkles'
+                              ] {{ }}" />
+                            </button>
+                          </Tooltip>
+                        @endif
+                        <Tooltip text="Share error details" position="top" :dark="isDark" :usePortal="true">
+                          <button
+                            type="button"
+                            class="inline-flex relative focus:z-10 items-center -ml-px px-3 py-2 font-semibold text-gray-600 text-sm dark:text-neutral-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset dark:ring-neutral-600"
+                            class="'resolved' 'rounded-l-md': { {{ } }} === activeTab"
+                            aria-label="Share error details"
+                          >
+                            <div class="h-4 w-4 i-hugeicons-share-01" />
+                          </button>
+                        </Tooltip>
+                        <Tooltip text="View error details" position="top" :dark="isDark" :usePortal="true" alignment="right">
+                          <button
+                            type="button"
+                            class="inline-flex relative focus:z-10 items-center -ml-px px-3 py-2 font-semibold text-gray-600 text-sm dark:text-neutral-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600"
+                            aria-label="View error details"
+                          >
+                            <div class="h-4 w-4 i-hugeicons-view" />
+                          </button>
+                        </Tooltip>
+                      </div>
+                    </td>
+                  </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+@endsection

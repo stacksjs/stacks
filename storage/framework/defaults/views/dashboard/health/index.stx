@@ -1,0 +1,220 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+import Card from '../../../components/Dashboard/UI/Card.stx'
+import Badge from '../../../components/Dashboard/UI/Badge.stx'
+import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
+
+interface HealthMetric {
+  name: string
+  icon: string
+  status: 'success' | 'info' | 'warning' | 'danger'
+  description: string
+  metrics: { label: string; value: string }[]
+}
+
+let healthMetrics = [
+  {
+    name: 'Uptime',
+    icon: 'i-hugeicons-flash',
+    status: 'success',
+    description: 'Your site is up. We last checked less than a minute ago.',
+    metrics: [
+      { label: 'Past 7 Days', value: '100%' },
+      { label: 'Past 14 Days', value: '100%' },
+      { label: 'Past 30 Days', value: '100%' },
+    ],
+  },
+  {
+    name: 'Performance',
+    icon: 'i-hugeicons-rocket-01',
+    status: 'success',
+    description: "Your site is fast. Last checked 3 minutes ago.",
+    metrics: [
+      { label: 'Response Time', value: '235ms' },
+      { label: 'Success Rate', value: '99.95%' },
+    ],
+  },
+  {
+    name: 'Certificate Health',
+    icon: 'i-hugeicons-shield-01',
+    status: 'success',
+    description: 'Your certificate is healthy. We last checked 3 minutes ago.',
+    metrics: [
+      { label: 'Expires In', value: 'May 4, 2024 (14 days' },
+      { label: 'Last Renewal', value: 'Feb 4, 2024' }
+    ],
+  },
+  {
+    name: 'Broken Links',
+    icon: 'i-hugeicons-link-01',
+    status: 'success',
+    description: 'Your site has no broken links.',
+    metrics: [
+      { label: 'Broken Links', value: '0' },
+      { label: 'URLs Crawled', value: '583' },
+    ],
+  },
+  {
+    name: 'Mixed Content',
+    icon: 'i-hugeicons-lock-01',
+    status: 'success',
+    description: 'We did not find mixed content. We last checked an hour ago.',
+    metrics: [
+      { label: 'Pieces of Mixed Content', value: '0' },
+      { label: 'URLs Crawled', value: '0' },
+    ],
+  },
+  {
+    name: 'Certificate Transparency',
+    icon: 'i-hugeicons-file-security',
+    status: 'info',
+    description: 'Your site is up. We last checked less than a minute ago.',
+    metrics: [
+      { label: 'Last Check', value: '< 1 min ago' },
+      { label: 'Status', value: 'Verified' }
+    ],
+  },
+  {
+    name: 'Application Health',
+    icon: 'i-hugeicons-checkmark-circle-02',
+    status: 'success',
+    description: 'Your application seems to be healthy. We last checked 10 minutes ago.',
+    metrics: [
+      { label: 'Total Health Checks', value: '2' },
+      { label: 'Failed Health Checks', value: '0' },
+      { label: 'Last Check', value: '10 min ago' },
+    ],
+  },
+  {
+    name: 'DNS',
+    icon: 'i-hugeicons-globe-02',
+    status: 'success',
+    description: 'DNS records found. We last checked an hour ago.',
+    metrics: [
+      { label: 'DNS Records', value: '18' },
+      { label: 'URLs Crawled', value: '20' },
+    ],
+  },
+]
+
+const getStatusVariant = (status) => {
+  const map = {
+    success: 'success',
+    info: 'primary',
+    warning: 'warning',
+    danger: 'danger',
+  }
+  return map[status] || 'default'
+}
+
+const getStatusIconBg = (status) => {
+  const map = {
+    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
+    info: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
+    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
+    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
+  }
+  return map[status] || 'bg-neutral-500/15 text-neutral-600'
+}
+</script>
+
+@title('Dashboard - Health')
+<div>
+  <!-- Overview Stats -->
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
+    <StatsCard
+      title="Uptime"
+      value="100%"
+      :trend="0"
+      trend-label="Last 30 days"
+      icon="i-hugeicons-flash"
+      icon-bg="primary"
+    />
+    <StatsCard
+      title="Health Checks"
+      value="2/2"
+      subtitle="All checks passing"
+      icon="i-hugeicons-checkmark-circle-02"
+      icon-bg="success"
+    />
+    <StatsCard
+      title="URLs Monitored"
+      value="583"
+      subtitle="Across all pages"
+      icon="i-hugeicons-link-01"
+      icon-bg="primary"
+    />
+    <StatsCard
+      title="DNS Records"
+      value="18"
+      subtitle="Verified records"
+      icon="i-hugeicons-globe-02"
+      icon-bg="primary"
+    />
+  </div>
+
+  <!-- Detailed Health Cards -->
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
+    @foreach(metric in healthMetrics)
+      <Card
+        variant="default"
+        padding="md"
+        hoverable
+      >
+        <div class="flex gap-4 items-start">
+          <!-- Icon -->
+          <div :class="[getStatusIconBg(metric.status), 'p-2.5 rounded-lg flex-shrink-0']">
+            <div :class="[metric.icon, 'h-5 w-5']" />
+          </div>
+
+          <!-- Content -->
+          <div class="flex-1 min-w-0">
+            <div class="flex gap-2 items-center justify-between">
+              <h3 class="font-medium text-[14px] text-neutral-900 truncate dark:text-white">
+                {{ metric.name }}
+              </h3>
+              <Badge :variant="getStatusVariant(metric.status)" size="sm">
+                {{ metric.status }}
+              </Badge>
+            </div>
+            <p class="mt-1 line-clamp-1 text-[12px] text-neutral-500 dark:text-neutral-400">
+              {{ metric.description }}
+            </p>
+          </div>
+        </div>
+
+        <!-- Metrics Grid -->
+        @if(metric.metrics)
+          <div class="mt-4">
+            <dl
+              class="grid gap-3"
+              class="'grid-cols-1': 'grid-cols-2': 'grid-cols-3': { {{ } }} === === === 1 2, 3, metric.metrics.length metric.metrics.length metric.metrics.length"
+            >
+              @foreach(m in metric.metrics)
+                <div
+                  class="overflow-hidden px-3 py-2.5 bg-black/[0.03] dark:bg-white/[0.05] rounded-lg"
+                >
+                  <dt class="font-medium text-[11px] text-neutral-500 truncate dark:text-neutral-400">
+                    {{ m.label }}
+                  </dt>
+                  <dd class="mt-0.5 font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">
+                    {{ m.value }}
+                  </dd>
+                </div>
+              @endforeach
+            </dl>
+          </div>
+        @endif
+      </Card>
+    @endforeach
+  </div>
+</div>
+
+@endsection

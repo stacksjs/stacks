@@ -1,0 +1,264 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+// Sample data for the dashboard
+const revenueData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [
+    {
+      label: 'Revenue',
+      backgroundColor: 'rgba(59, 130, 246, 0.2)',
+      borderColor: 'rgba(59, 130, 246, 1)',
+      borderWidth: 2,
+      pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+      pointBorderColor: '#fff',
+      pointHoverBackgroundColor: '#fff',
+      pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+      fill: true,
+      tension: 0.4,
+      data: [30000, 35000, 32000, 40000, 45000, 43000, 50000, 55000, 58000, 56000, 60000, 65000],
+    },
+  ],
+}
+
+const ordersData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [
+    {
+      label: 'Orders',
+      backgroundColor: 'rgba(16, 185, 129, 0.8)',
+      borderColor: 'rgba(16, 185, 129, 1)',
+      borderWidth: 1,
+      borderRadius: 4,
+      data: [120, 150, 140, 160, 180, 170, 190, 210, 230, 220, 240, 260],
+    },
+  ],
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+const topProducts = [
+  { id: 1, name: 'Premium Headphones', price: '$199.99', sales: 1245, stock: 78 },
+  { id: 2, name: 'Wireless Keyboard', price: '$89.99', sales: 987, stock: 124 },
+  { id: 3, name: 'Smart Watch', price: '$249.99', sales: 876, stock: 45 },
+  { id: 4, name: 'Bluetooth Speaker', price: '$129.99', sales: 765, stock: 92 },
+  { id: 5, name: 'USB-C Hub', price: '$59.99', sales: 654, stock: 210 },
+]
+
+const recentOrders = [
+  { id: '#ORD-5432', customer: 'John Smith', date: '2023-12-01', total: '$349.97', status: 'Completed' },
+  { id: '#ORD-5431', customer: 'Sarah Johnson', date: '2023-12-01', total: '$129.99', status: 'Processing' },
+  { id: '#ORD-5430', customer: 'Michael Brown', date: '2023-11-30', total: '$459.98', status: 'Completed' },
+  { id: '#ORD-5429', customer: 'Emily Davis', date: '2023-11-30', total: '$89.99', status: 'Shipped' },
+  { id: '#ORD-5428', customer: 'David Wilson', date: '2023-11-29', total: '$199.99', status: 'Completed' },
+]
+
+let timeRange = 'Last 30 days'
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+</script>
+
+@title('Dashboard - Commerce')
+<main>
+  <div class="overflow-hidden relative isolate">
+    <div class="px-6 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Commerce Dashboard</h1>
+
+        <!-- Time range selector -->
+        <div class="flex items-center justify-between mt-4">
+          <p class="text-gray-500 text-sm dark:text-neutral-400">
+            Overview of your store's performance
+          </p>
+          <div class="relative">
+            <select value="{{ timeRange }}" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+              @foreach(timeRanges as range)
+                <option value="{{ range }}">{{ range }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+
+        <!-- Stats -->
+        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Revenue</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">$548,290</dd>
+            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
+              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
+              <span>12.5% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Orders</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">2,456</dd>
+            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
+              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
+              <span>8.2% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Average Order Value</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">$223.25</dd>
+            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
+              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
+              <span>3.7% increase</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Conversion Rate</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">3.6%</dd>
+            <dd class="flex items-center mt-2 text-red-600 text-sm dark:text-red-400">
+              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-down"></div>
+              <span>0.8% decrease</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Revenue</h3>
+              <div class="mt-2 h-80">
+                <canvas id="revenueChart"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Orders</h3>
+              <div class="mt-2 h-80">
+                <canvas id="ordersChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Top Products -->
+        <div class="mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="px-4 py-5 sm:px-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Selling Products</h3>
+            </div>
+            <div class="border-gray-200 border-t dark:border-neutral-700">
+              <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Product</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Price</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Sales</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Stock</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                  @foreach(topProducts as product)
+                    <tr>
+                      <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ product.name }}</td>
+                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.price }}</td>
+                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.sales }}</td>
+                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.stock }}</td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Orders -->
+        <div class="mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="px-4 py-5 sm:px-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Recent Orders</h3>
+            </div>
+            <div class="border-gray-200 border-t dark:border-neutral-700">
+              <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
+                  <tr>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Order ID</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Customer</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Date</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Total</th>
+                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Status</th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                  @foreach(recentOrders as order)
+                    <tr>
+                      <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ order.id }}</td>
+                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.customer }}</td>
+                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.date }}</td>
+                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.total }}</td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <span class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full"
+                              class="order.status order.status order.status text-blue-800 text-green-800 text-yellow-800 dark:bg-blue-900 dark:bg-green-900 dark:bg-yellow-900 'bg-blue-100 'bg-green-100 'bg-yellow-100 'Completed', 'Processing', 'Shipped' { {{ } }} === === === dark:text-blue-300': dark:text-green-300': dark:text-yellow-300':">
+                          {{ order.status }}
+                        </span>
+                      </td>
+                    </tr>
+                  @endforeach
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const revenueCtx = document.getElementById('revenueChart')
+if (revenueCtx) {
+  new Chart(revenueCtx, {
+    type: 'line',
+    data: revenueData,
+    options: chartOptions,
+  })
+}
+
+const ordersCtx = document.getElementById('ordersChart')
+if (ordersCtx) {
+  new Chart(ordersCtx, {
+    type: 'bar',
+    data: ordersData,
+    options: chartOptions,
+  })
+}
+</script>
+
+@endsection

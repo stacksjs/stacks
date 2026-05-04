@@ -1,0 +1,1186 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+// Register ChartJS components
+// File and folder interfaces
+interface FileItem {
+  id: number
+  name: string
+  type: string
+  size: number
+  path: string
+  lastModified: string
+  starred: boolean
+  shared: boolean
+}
+
+interface FolderItem {
+  id: number
+  name: string
+  type: 'folder'
+  path: string
+  lastModified: string
+  starred: boolean
+  shared: boolean
+  items: (FileItem | FolderItem)[]
+}
+
+type Item = FileItem | FolderItem
+
+// File types and their icons
+const fileTypeIcons = {
+  pdf: 'i-hugeicons-pdf-01',
+  doc: 'i-hugeicons-doc-01',
+  docx: 'i-hugeicons-doc-01',
+  xls: 'i-hugeicons-xls-01',
+  xlsx: 'i-hugeicons-xls-01',
+  ppt: 'i-hugeicons-ppt-01',
+  pptx: 'i-hugeicons-ppt-01',
+  jpg: 'i-hugeicons-jpg-01',
+  jpeg: 'i-hugeicons-jpg-01',
+  png: 'i-hugeicons-png-01',
+  gif: 'i-hugeicons-gif-01',
+  svg: 'i-hugeicons-svg-01',
+  txt: 'i-hugeicons-txt-01',
+  zip: 'i-hugeicons-zip-01',
+  mp3: 'i-hugeicons-mp3-01',
+  mp4: 'i-hugeicons-mp-4-01',
+  folder: 'i-hugeicons-folder-02',
+  default: 'i-hugeicons-file-02'
+}
+
+// Sample file structure
+const rootFolder = {
+  id: 1,
+  name: 'Root',
+  type: 'folder',
+  path: '/',
+  lastModified: '2023-12-01T10:00:00',
+  starred: false,
+  shared: false,
+  items: [
+    {
+      id: 2,
+      name: 'Documents',
+      type: 'folder',
+      path: '/Documents',
+      lastModified: '2023-12-01T10:00:00',
+      starred: true,
+      shared: true,
+      items: [
+        {
+          id: 6,
+          name: 'Project Proposal.pdf',
+          type: 'pdf',
+          size: 2500000,
+          path: '/Documents/Project Proposal.pdf',
+          lastModified: '2023-12-05T14:30:00',
+          starred: true,
+          shared: true
+        },
+        {
+          id: 7,
+          name: 'Meeting Notes.docx',
+          type: 'docx',
+          size: 350000,
+          path: '/Documents/Meeting Notes.docx',
+          lastModified: '2023-12-10T09:15:00',
+          starred: false,
+          shared: false
+        },
+        {
+          id: 8,
+          name: 'Budget.xlsx',
+          type: 'xlsx',
+          size: 1200000,
+          path: '/Documents/Budget.xlsx',
+          lastModified: '2023-12-08T16:45:00',
+          starred: false,
+          shared: true
+        }
+      ]
+    },
+    {
+      id: 3,
+      name: 'Images',
+      type: 'folder',
+      path: '/Images',
+      lastModified: '2023-12-02T11:30:00',
+      starred: false,
+      shared: false,
+      items: [
+        {
+          id: 9,
+          name: 'Profile Photo.jpg',
+          type: 'jpg',
+          size: 1800000,
+          path: '/Images/Profile Photo.jpg',
+          lastModified: '2023-12-03T13:20:00',
+          starred: true,
+          shared: false
+        },
+        {
+          id: 10,
+          name: 'Banner.png',
+          type: 'png',
+          size: 2700000,
+          path: '/Images/Banner.png',
+          lastModified: '2023-12-04T10:10:00',
+          starred: false,
+          shared: true
+        },
+        {
+          id: 11,
+          name: 'Icon.svg',
+          type: 'svg',
+          size: 150000,
+          path: '/Images/Icon.svg',
+          lastModified: '2023-12-05T09:05:00',
+          starred: false,
+          shared: false
+        }
+      ]
+    },
+    {
+      id: 4,
+      name: 'Videos',
+      type: 'folder',
+      path: '/Videos',
+      lastModified: '2023-12-03T14:00:00',
+      starred: false,
+      shared: false,
+      items: [
+        {
+          id: 12,
+          name: 'Product Demo.mp4',
+          type: 'mp4',
+          size: 15000000,
+          path: '/Videos/Product Demo.mp4',
+          lastModified: '2023-12-06T15:30:00',
+          starred: false,
+          shared: true
+        },
+        {
+          id: 13,
+          name: 'Tutorial.mp4',
+          type: 'mp4',
+          size: 25000000,
+          path: '/Videos/Tutorial.mp4',
+          lastModified: '2023-12-07T11:45:00',
+          starred: true,
+          shared: true
+        }
+      ]
+    },
+    {
+      id: 5,
+      name: 'Downloads',
+      type: 'folder',
+      path: '/Downloads',
+      lastModified: '2023-12-04T09:00:00',
+      starred: false,
+      shared: false,
+      items: [
+        {
+          id: 14,
+          name: 'Software Update.zip',
+          type: 'zip',
+          size: 45000000,
+          path: '/Downloads/Software Update.zip',
+          lastModified: '2023-12-08T10:20:00',
+          starred: false,
+          shared: false
+        },
+        {
+          id: 15,
+          name: 'E-book.pdf',
+          type: 'pdf',
+          size: 3500000,
+          path: '/Downloads/E-book.pdf',
+          lastModified: '2023-12-09T14:10:00',
+          starred: true,
+          shared: false
+        }
+      ]
+    }
+  ]
+}
+
+// Current state
+let currentFolder = rootFolder
+let currentPath = ['Root']
+let selectedItems = []
+let viewMode = 'grid'
+let sortBy = 'name'
+let sortOrder = 'asc'
+let searchQuery = ''
+let showUploadModal = false
+let showCreateFolderModal = false
+let newFolderName = ''
+let showDeleteConfirmation = false
+let showSidePanel = true
+
+// Storage statistics for charts
+const storageStats = {
+  total: 100 * 1024 * 1024 * 1024, // 100 GB
+  used: 45 * 1024 * 1024 * 1024, // 45 GB
+  available: 55 * 1024 * 1024 * 1024 // 55 GB
+}
+
+// Storage usage by type
+const storageByType = {
+  documents: 15 * 1024 * 1024 * 1024, // 15 GB
+  images: 10 * 1024 * 1024 * 1024, // 10 GB
+  videos: 18 * 1024 * 1024 * 1024, // 18 GB
+  other: 2 * 1024 * 1024 * 1024 // 2 GB
+}
+
+// Chart data
+function storageChartData() {
+  return {
+    labels: ['Used', 'Available'],
+    datasets: [
+      {
+        backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(200, 200, 200, 0.6)'],
+        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(200, 200, 200, 1)'],
+        borderWidth: 1,
+        data: [storageStats.used, storageStats.available]
+      }
+    ]
+  }
+}
+
+function storageByTypeChartData() {
+  return {
+    labels: ['Documents', 'Images', 'Videos', 'Other'],
+    datasets: [
+      {
+        backgroundColor: [
+          'rgba(255, 99, 132, 0.6)',
+          'rgba(54, 162, 235, 0.6)',
+          'rgba(255, 206, 86, 0.6)',
+          'rgba(75, 192, 192, 0.6)'
+        ],
+        borderColor: [
+          'rgba(255, 99, 132, 1)',
+          'rgba(54, 162, 235, 1)',
+          'rgba(255, 206, 86, 1)',
+          'rgba(75, 192, 192, 1)'
+        ],
+        borderWidth: 1,
+        data: [
+          storageByType.documents,
+          storageByType.images,
+          storageByType.videos,
+          storageByType.other
+        ]
+      }
+    ]
+  }
+}
+
+// Chart options
+const doughnutChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+    }
+  }
+}
+
+// Computed properties
+function filteredItems() {
+  let items = [...currentFolder.items]
+
+  // Apply search filter
+  if (searchQuery) {
+    const query = searchQuery.toLowerCase()
+    items = items.filter(item => item.name.toLowerCase().includes(query))
+  }
+
+  // Apply sorting
+  items.sort((a, b) => {
+    if (sortBy === 'name') {
+      return sortOrder === 'asc'
+        ? a.name.localeCompare(b.name)
+        : b.name.localeCompare(a.name)
+    } else if (sortBy === 'lastModified') {
+      const dateA = new Date(a.lastModified).getTime()
+      const dateB = new Date(b.lastModified).getTime()
+      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
+    } else if (sortBy === 'size') {
+      // For folders, use 0 as size for sorting
+      const sizeA = 'size' in a ? a.size : 0
+      const sizeB = 'size' in b ? b.size : 0
+      return sortOrder === 'asc' ? sizeA - sizeB : sizeB - sizeA
+    }
+    return 0
+  }
+
+  return items
+}
+
+function starredItems() {
+  // Recursively find all starred items
+  const findStarredItems = (folder) => {
+    let result = []
+
+    for (const item of folder.items) {
+      if (item.starred) {
+        result.push(item)
+      }
+
+      if (item.type === 'folder') {
+        result = [...result, ...findStarredItems(item)]
+      }
+    }
+
+    return result
+  }
+
+  return findStarredItems(rootFolder)
+}
+
+function sharedItems() {
+  // Recursively find all shared items
+  const findSharedItems = (folder) => {
+    let result = []
+
+    for (const item of folder.items) {
+      if (item.shared) {
+        result.push(item)
+      }
+
+      if (item.type === 'folder') {
+        result = [...result, ...findSharedItems(item)]
+      }
+    }
+
+    return result
+  }
+
+  return findSharedItems(rootFolder)
+}
+
+function recentItems() {
+  // Recursively find all items and sort by lastModified
+  const findAllItems = (folder) => {
+    let result = []
+
+    for (const item of folder.items) {
+      result.push(item)
+
+      if (item.type === 'folder') {
+        result = [...result, ...findAllItems(item)]
+      }
+    }
+
+    return result
+  }
+
+  return findAllItems(rootFolder)
+    .filter(item => item.type !== 'folder') // Only include files
+    .sort((a, b) => {
+      const dateA = new Date(a.lastModified).getTime()
+      const dateB = new Date(b.lastModified).getTime()
+      return dateB - dateA
+    })
+    .slice(0, 10) // Get only the 10 most recent items
+}
+
+// Methods
+function navigateToFolder(folder) {
+  currentFolder = folder
+
+  // Update path
+  const pathIndex = currentPath.findIndex(p => p === folder.name)
+  if (pathIndex !== -1) {
+    // If folder is already in path, truncate path to this folder
+    currentPath = currentPath.slice(0, pathIndex + 1)
+  } else {
+    // Otherwise add to path
+    currentPath.push(folder.name)
+  }
+
+  // Clear selection
+  selectedItems = []
+}
+
+function navigateUp() {
+  if (currentPath.length <= 1) return
+
+  // Remove current folder from path
+  currentPath.pop()
+
+  // Find parent folder
+  let parent = rootFolder
+  for (let i = 1; i < currentPath.length; i++) {
+    const folderName = currentPath[i]
+    const folder = parent.items.find(item =>
+      item.type === 'folder' && item.name === folderName
+    )
+
+    if (folder) {
+      parent = folder
+    }
+  }
+
+  currentFolder = parent
+  selectedItems = []
+}
+
+function navigateToPath(index) {
+  if (index >= currentPath.length - 1) return
+
+  // Truncate path to selected index
+  currentPath = currentPath.slice(0, index + 1)
+
+  // Find folder at path
+  let folder = rootFolder
+  for (let i = 1; i < currentPath.length; i++) {
+    const folderName = currentPath[i]
+    const foundFolder = folder.items.find(item =>
+      item.type === 'folder' && item.name === folderName
+    )
+
+    if (foundFolder) {
+      folder = foundFolder
+    }
+  }
+
+  currentFolder = folder
+  selectedItems = []
+}
+
+function toggleItemSelection(item, event) {
+  const index = selectedItems.findIndex(i => i.id === item.id)
+
+  if (event.ctrlKey || event.metaKey) {
+    // Toggle selection with Ctrl/Cmd key
+    if (index === -1) {
+      selectedItems.push(item)
+    } else {
+      selectedItems.splice(index, 1)
+    }
+  } else {
+    // Single selection
+    selectedItems = [item]
+  }
+}
+
+function toggleStar(item) {
+  item.starred = !item.starred
+}
+
+function toggleShare(item) {
+  item.shared = !item.shared
+}
+
+function formatFileSize(bytes) {
+  if (bytes === 0) return '0 Bytes'
+
+  const k = 1024
+  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
+  const i = Math.floor(Math.log(bytes) / Math.log(k))
+
+  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+}
+
+function formatDate(dateString) {
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric'
+  }
+}
+
+function getFileIcon(type) {
+  return fileTypeIcons[type] || fileTypeIcons.default
+}
+
+function createNewFolder() {
+  if (!newFolderName.trim()) return
+
+  const newFolder = {
+    id: Date.now(), // Generate a unique ID
+    name: newFolderName.trim(),
+    type: 'folder',
+    path: `${currentFolder.path}/${newFolderName.trim()}`,
+    lastModified: new Date().toISOString(),
+    starred: false,
+    shared: false,
+    items: []
+  }
+
+  currentFolder.items.push(newFolder)
+  newFolderName = ''
+  showCreateFolderModal = false
+}
+
+function deleteSelectedItems() {
+  if (selectedItems.length === 0) return
+
+  // Remove selected items from current folder
+  for (const item of selectedItems) {
+    const index = currentFolder.items.findIndex(i => i.id === item.id)
+    if (index !== -1) {
+      currentFolder.items.splice(index, 1)
+    }
+  }
+
+  selectedItems = []
+  showDeleteConfirmation = false
+}
+</script>
+
+@title('Dashboard - File Manager')
+<div class="flex flex-col h-full">
+  <!-- Main content -->
+  <div class="flex flex-1">
+    <!-- Sidebar -->
+    <div class="[
+      'border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300',
+      showSidePanel ? 'w-64' : 'w-0 overflow-hidden'
+    ] {{ }}">
+      <div class="flex flex-col h-full">
+        <!-- Storage overview -->
+        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage</h3>
+          <div class="mt-2" style="height: 120px;">
+            <canvas id="chart_1"></canvas>
+          </div>
+          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
+            <div class="flex justify-between py-0.5">
+              <span>Used</span>
+              <span>{{ formatFileSize(storageStats.used) }}</span>
+            </div>
+            <div class="flex justify-between py-0.5">
+              <span>Available</span>
+              <span>{{ formatFileSize(storageStats.available) }}</span>
+            </div>
+            <div class="flex justify-between py-0.5 font-medium text-stone-700 dark:text-neutral-300">
+              <span>Total</span>
+              <span>{{ formatFileSize(storageStats.total) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Storage by type -->
+        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage by Type</h3>
+          <div class="mt-2" style="height: 120px;">
+            <canvas id="chart_2"></canvas>
+          </div>
+          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
+            <div class="flex justify-between py-0.5">
+              <span>Documents</span>
+              <span>{{ formatFileSize(storageByType.documents) }}</span>
+            </div>
+            <div class="flex justify-between py-0.5">
+              <span>Images</span>
+              <span>{{ formatFileSize(storageByType.images) }}</span>
+            </div>
+            <div class="flex justify-between py-0.5">
+              <span>Videos</span>
+              <span>{{ formatFileSize(storageByType.videos) }}</span>
+            </div>
+            <div class="flex justify-between py-0.5">
+              <span>Other</span>
+              <span>{{ formatFileSize(storageByType.other) }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Navigation -->
+        <nav class="overflow-y-auto flex-1 p-2">
+          <div class="space-y-0.5">
+            <button
+              onclick="navigateToFolder(rootFolder)"
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
+              class="[
+                currentFolder.id === rootFolder.id
+                  ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                  : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
+              ] {{ }}"
+            >
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
+              Home
+            </button>
+
+            <button
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
+            >
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-star"></div>
+              Starred
+              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">
+                {{ starredItems.length }}
+              </span>
+            </button>
+
+            <button
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
+            >
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-share-01"></div>
+              Shared
+              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">
+                {{ sharedItems.length }}
+              </span>
+            </button>
+
+            <button
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
+            >
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-clock-04"></div>
+              Recent
+            </button>
+
+            <button
+              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
+            >
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-waste"></div>
+              Trash
+            </button>
+          </div>
+
+          <div class="mt-6">
+            <h3 class="px-2.5 font-semibold text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+              Folders
+            </h3>
+            <div class="mt-1 space-y-0.5">
+              @foreach(rootFolder.items.filter(item => item.type === 'folder') as folder)
+              <button
+                onclick="navigateToFolder(folder)"
+                class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
+                class="[
+                  currentFolder.id === folder.id
+                    ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
+                    : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
+                ] {{ }}"
+              >
+                <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-folder-02"></div>
+                {{ folder.name }}
+              </button>
+              @endforeach
+            </div>
+          </div>
+        </nav>
+
+        <!-- Upload button -->
+        <div class="p-4 border-stone-200/60 border-t dark:border-neutral-700">
+          <button
+            onclick="showUploadModal = true"
+            class="flex items-center justify-center px-4 py-2 w-full font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
+            Upload Files
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content area -->
+    <div class="flex flex-1 flex-col bg-white dark:bg-neutral-900">
+      <!-- Toolbar -->
+      <div class="p-4 bg-white dark:bg-neutral-900 border-b border-stone-200/60 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <!-- Toggle sidebar button -->
+          <button
+            onclick="showSidePanel = !showSidePanel"
+            class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
+          >
+            <div class="h-5 w-5 i-hugeicons-menu-01"></div>
+          </button>
+
+          <!-- Search -->
+          <div class="ml-4 max-w-lg w-full lg:max-w-xs">
+            <label for="search" class="sr-only">Search</label>
+            <div class="relative text-gray-400 focus-within:text-gray-600 dark:focus-within:text-gray-300">
+              <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                <div class="h-5 w-5 i-hugeicons-search-01"></div>
+              </div>
+              <input
+                id="search"
+                value="{{ searchQuery }}"
+                class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full leading-5 text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+                placeholder="Search files and folders..."
+                type="search"
+              />
+            </div>
+          </div>
+
+          <!-- View and sort options -->
+          <div class="flex items-center space-x-2">
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                onclick="viewMode = 'grid'"
+                class="[
+                  'relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium',
+                  viewMode === 'grid'
+                    ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
+                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-grid-view"></div>
+              </button>
+              <button
+                onclick="viewMode = 'list'"
+                class="[
+                  'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium',
+                  viewMode === 'list'
+                    ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
+                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
+              </button>
+            </div>
+
+            <!-- Sort options -->
+            <select
+              value="{{ sortBy }}"
+              class="block pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+            >
+              <option value="name">Name</option>
+              <option value="lastModified">Date</option>
+              <option value="size">Size</option>
+            </select>
+
+            <button
+              onclick="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
+              class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
+            >
+              <div class="[
+                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                'h-5 w-5'
+              ] {{ }}"></div>
+            </button>
+          </div>
+
+          <!-- Actions -->
+          <div class="flex items-center space-x-2">
+            <button
+              onclick="showCreateFolderModal = true"
+              class="inline-flex items-center px-3 py-2 font-medium leading-4 text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
+            >
+              <div class="mr-2 h-4 w-4 i-hugeicons-folder-add"></div>
+              New Folder
+            </button>
+            <button
+              onclick="showUploadModal = true"
+              class="inline-flex items-center px-3 py-2 font-medium leading-4 text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
+            >
+              <div class="mr-2 h-4 w-4 i-hugeicons-upload-01"></div>
+              Upload
+            </button>
+          </div>
+        </div>
+
+        <!-- Breadcrumbs -->
+        <nav class="flex mt-4" aria-label="Breadcrumb">
+          <ol class="flex items-center space-x-1">
+            @foreach(currentPath as index, path)
+            <li>
+              <div class="flex items-center">
+                @if(index > 0)
+                <span class="mx-1 text-gray-400 dark:text-neutral-500">/</span>
+                @endif
+                <button
+                  onclick="navigateToPath(index)"
+                  class="[
+                    'text-sm font-medium',
+                    index === currentPath.length - 1
+                      ? 'text-indigo-600 dark:text-indigo-400'
+                      : 'text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300'
+                  ] {{ }}"
+                >
+                  {{ path }}
+                </button>
+              </div>
+            </li>
+            @endforeach
+          </ol>
+        </nav>
+      </div>
+
+      <!-- Content -->
+      <div class="overflow-auto flex-1 p-4 bg-stone-50/50 dark:bg-neutral-900">
+        <!-- Empty state -->
+        @if(filteredItems.length === 0)
+        <div class="flex flex-col items-center justify-center h-full text-center">
+          <div class="h-16 w-16 text-gray-400 dark:text-neutral-600 i-hugeicons-folder-02"></div>
+          <h3 class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No items</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+            {{ searchQuery ? 'No items match your search.' : 'This folder is empty.' }}
+          </p>
+          <div class="flex mt-6 space-x-4">
+            <button
+              onclick="showCreateFolderModal = true"
+              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+            >
+              <div class="mr-2 h-5 w-5 i-hugeicons-folder-add"></div>
+              New Folder
+            </button>
+            <button
+              onclick="showUploadModal = true"
+              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+            >
+              <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
+              Upload Files
+            </button>
+          </div>
+        </div>
+        @elseif(viewMode === 'grid')
+        <!-- Grid view -->
+        <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          @foreach(filteredItems as item)
+          <div
+            onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
+            @contextmenu.prevent
+            class="[
+              'relative group p-4 rounded-lg border cursor-pointer transition-all duration-200',
+              selectedItems.some(i => i.id === item.id)
+                ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-700'
+                : 'bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-gray-600'
+            ] {{ }}"
+          >
+            <!-- Item icon -->
+            <div class="flex justify-center mb-4">
+              <div
+                class="[
+                  item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
+                  'h-12 w-12',
+                  item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400'
+                ] {{ }}"
+              ></div>
+            </div>
+
+            <!-- Item name -->
+            <div class="text-center">
+              <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.name }}</p>
+              @if(item.type !== 'folder')
+              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
+                {{ formatFileSize(item.size) }}
+              </p>
+              @endif
+            </div>
+
+            <!-- Actions -->
+            <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onclick="toggleStar(item); event.stopPropagation()"
+                class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
+                class="[
+                  item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-neutral-500'
+                ] {{ }}"
+              >
+                <div class="h-4 w-4 i-hugeicons-star"></div>
+              </button>
+              <button
+                onclick="toggleShare(item); event.stopPropagation()"
+                class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
+                class="[
+                  item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-neutral-500'
+                ] {{ }}"
+              >
+                <div class="h-4 w-4 i-hugeicons-share-01"></div>
+              </button>
+            </div>
+          </div>
+          @endforeach
+        </div>
+        @else
+        <!-- List view -->
+        <div class="overflow-hidden ring-1 ring-stone-200/80 rounded-xl dark:ring-neutral-700 shadow-sm">
+          <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
+            <thead class="bg-stone-50/80 dark:bg-neutral-800">
+              <tr>
+                <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+                  Name
+                </th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+                  Size
+                </th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
+                  Modified
+                </th>
+                <th scope="col" class="relative pl-3 pr-6 py-3.5">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
+              @foreach(filteredItems as item)
+              <tr
+                onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
+                class="[
+                  'cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors',
+                  selectedItems.some(i => i.id === item.id)
+                    ? 'bg-blue-50/50 dark:bg-blue-900/20'
+                    : ''
+                ] {{ }}"
+              >
+                <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div
+                      class="[
+                        item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
+                        'h-5 w-5 mr-3',
+                        item.type === 'folder' ? 'text-blue-500 dark:text-blue-400' : 'text-stone-500 dark:text-neutral-400'
+                      ] {{ }}"
+                    ></div>
+                    <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
+                  </div>
+                </td>
+                <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
+                  {{ item.type === 'folder' ? '-' : formatFileSize(item.size) }}
+                </td>
+                <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
+                  {{ formatDate(item.lastModified) }}
+                </td>
+                <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      onclick="toggleStar(item); event.stopPropagation()"
+                      class="text-gray-400 hover:text-yellow-500"
+                      class="'text-yellow-500': { {{ } }} item.starred"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-star"></div>
+                    </button>
+                    <button
+                      onclick="toggleShare(item); event.stopPropagation()"
+                      class="text-gray-400 hover:text-indigo-500"
+                      class="'text-indigo-500': { {{ } }} item.shared"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-share-01"></div>
+                    </button>
+                    <button
+                      onclick="selectedItems = [item]; showDeleteConfirmation = true; event.stopPropagation()"
+                      class="text-gray-400 hover:text-red-500"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-waste"></div>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+        @endif
+      </div>
+    </div>
+  </div>
+
+  <!-- Create Folder Modal -->
+  @if(showCreateFolderModal)
+  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showCreateFolderModal = false"></div>
+
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
+        <div class="sm:flex sm:items-start">
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+            <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-folder-add"></div>
+          </div>
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
+              Create New Folder
+            </h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
+                Enter a name for the new folder.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <input
+            type="text"
+            value="{{ newFolderName }}"
+            class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
+            placeholder="Folder name"
+            @keyup.enter="createNewFolder"
+          />
+        </div>
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+          <button
+            type="button"
+            onclick="createNewFolder"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            Create
+          </button>
+          <button
+            type="button"
+            onclick="showCreateFolderModal = false"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+
+  <!-- Upload Modal -->
+  @if(showUploadModal)
+  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showUploadModal = false"></div>
+
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
+        <div class="sm:flex sm:items-start">
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full">
+            <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-upload-01"></div>
+          </div>
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
+              Upload Files
+            </h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
+                Select files to upload to the current folder.
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="mt-4">
+          <div class="flex justify-center pb-6 pt-5 px-6 border-2 border-dashed border-gray-300 rounded-md dark:border-neutral-600">
+            <div class="space-y-1 text-center">
+              <div class="mx-auto h-12 w-12 text-gray-400 dark:text-neutral-500 i-hugeicons-upload-01"></div>
+              <div class="flex text-gray-600 text-sm dark:text-neutral-400">
+                <label for="file-upload" class="relative font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 bg-white dark:bg-neutral-800 rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-800 cursor-pointer">
+                  <span>Upload a file</span>
+                  <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple />
+                </label>
+                <p class="pl-1">or drag and drop</p>
+              </div>
+              <p class="text-gray-500 text-xs dark:text-neutral-400">
+                PNG, JPG, GIF, PDF, DOCX up to 10MB
+              </p>
+            </div>
+          </div>
+        </div>
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+          <button
+            type="button"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            Upload
+          </button>
+          <button
+            type="button"
+            onclick="showUploadModal = false"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+
+  <!-- Delete Confirmation Modal -->
+  @if(showDeleteConfirmation)
+  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showDeleteConfirmation = false"></div>
+
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
+
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
+        <div class="sm:flex sm:items-start">
+          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-red-100 dark:bg-red-900 rounded-full">
+            <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-02"></div>
+          </div>
+          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
+              Delete {{ selectedItems.length > 1 ? 'Items' : 'Item' }}
+            </h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
+                Are you sure you want to delete {{ selectedItems.length > 1 ? 'these items' : 'this item' }}? This action cannot be undone.
+              </p>
+            </div>
+            @if(selectedItems.length > 0)
+            <div class="overflow-y-auto mt-3 max-h-40">
+              <ul class="divide-gray-200 divide-y dark:divide-neutral-700">
+                @foreach(selectedItems as item)
+                <li class="flex items-center py-2">
+                  <div
+                    class="[
+                      item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
+                      'h-5 w-5 mr-3',
+                      item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400'
+                    ] {{ }}"
+                  ></div>
+                  <span class="text-gray-700 text-sm dark:text-neutral-300">{{ item.name }}</span>
+                </li>
+                @endforeach
+              </ul>
+            </div>
+            @endif
+          </div>
+        </div>
+        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+          <button
+            type="button"
+            onclick="deleteSelectedItems"
+            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-red-600 hover:bg-red-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            Delete
+          </button>
+          <button
+            type="button"
+            onclick="showDeleteConfirmation = false"
+            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+          >
+            Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  @endif
+</div>
+
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'doughnut',
+    data: storageChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'doughnut',
+    data: storageByTypeChartData,
+    options: doughnutChartOptions,
+  })
+}
+
+</script>
+
+@endsection

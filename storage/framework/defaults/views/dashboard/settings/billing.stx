@@ -1,0 +1,62 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+import { useBillable } from '../../../functions/billing/payments'
+import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.stx'
+import PaymentMethod from '../../../components/Dashboard/Billing/PaymentMethod.stx'
+import Plans from '../../../components/Dashboard/Billing/Plans.stx'
+import LoadingDetails from '../../../components/Dashboard/Skeleton/LoadingCard.stx'
+import TransactionHistory from '../../../components/Dashboard/Transaction/index.stx'
+
+const { isEmpty, showCurrentPlan } = useBillable()
+
+const paymentStore = usePaymentStore()
+
+</script>
+<div class="container mx-auto px-4 py-8 lg:px-8">
+  <div id="subscribed">
+    <TransactionHistory />
+    <div class="flex space-x-8">
+      <div class="mt-16 px-8 py-6 w-2/3 bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+        @if(paymentStore.isStateLoading('fetchActivePlan') && paymentStore.isStateLoading('fetchStripeCustomer'))
+          <LoadingDetails :height="24" />
+        @else
+          <div class="w-full">
+            @if(showCurrentPlan)
+              <ActivePlan />
+            @else
+              <Plans />
+            @endif
+          </div>
+        @endif
+      </div>
+      <PaymentMethod />
+    </div>
+  </div>
+</div>
+<script client>
+import { onMount } from 'stx'
+import { useAuth } from '../../../functions/auth'
+
+onMount(async () => {
+  const { user } = useAuth()
+  const userId = user.value?.id
+
+  if (!userId) return
+
+  await paymentStore.fetchStripeCustomer(userId).then(async () => {
+    if (!isEmpty(paymentStore.getStripeCustomer)) {
+      await paymentStore.fetchDefaultPaymentMethod(userId)
+      await paymentStore.fetchUserActivePlan(userId)
+      await paymentStore.fetchTransactionHistory(userId)
+    }
+  })
+})
+</script>
+
+@endsection

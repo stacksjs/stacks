@@ -1,0 +1,647 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+const toast = (opts: { message: string, type?: string }) => {
+  // Simple notification — will be replaced by proper toast system
+  console.log(`[${opts.type || 'success'}] ${opts.message}`)
+}
+
+// Define page metadata
+const pageTitle = 'Product Detail'
+
+const route = useRoute()
+const router = useRouter()
+
+// Product data structure
+interface Product {
+  id: number
+  name: string
+  price: number
+  description: string
+  category: string
+  stock: number
+  status: string
+  images: string[]
+  videos: string[]
+  manufacturer: string
+  variants: string[]
+  unit: string
+  taxRate: number
+  specifications: Record<string, string>
+  similarProducts?: number[]
+}
+
+// Sample product data - in a real app, this would be fetched from an API
+let product = null
+let loading = true
+let activeImageIndex = 0
+let showVideoModal = false
+let activeVideoUrl = ''
+
+// Edit dialog state
+let showEditDialog = false
+let editingProduct = null
+
+// Similar products dialog state
+let showSimilarProductsDialog = false
+
+// All products for similar products selection
+let allProducts = []
+
+// Similar products to display
+function similarProducts() {
+  if (!product || !product.similarProducts || !allProducts.length) return []
+
+  return allProducts.filter(p => product.value?.similarProducts?.includes(p.id))
+}
+
+// Function to handle image selection
+function selectImage(index: number): void {
+  activeImageIndex = index
+}
+
+// Function to open video modal
+function openVideoModal(videoUrl: string): void {
+  activeVideoUrl = videoUrl
+  showVideoModal = true
+}
+
+// Function to close video modal
+function closeVideoModal(): void {
+  showVideoModal = false
+  activeVideoUrl = ''
+}
+
+// Function to go back to products list
+function goBack(): void {
+  router.push('/commerce/products')
+}
+
+// Function to edit product
+function editProduct(): void {
+  if (!product) return
+
+  editingProduct = JSON.parse(JSON.stringify(product)) as Product
+  showEditDialog = true
+}
+
+// Function to save edited product
+function saveProduct(): void {
+  if (!editingProduct || !product) return
+
+  // Update the product
+  product = { ...editingProduct }
+
+  // Show success message
+  toast({
+    message: 'Product updated successfully',
+    type: 'success',
+  })
+
+  // Close the dialog
+  showEditDialog = false
+}
+
+// Function to open similar products dialog
+function openSimilarProductsDialog(): void {
+  if (!product) return
+
+  editingProduct = JSON.parse(JSON.stringify(product)) as Product
+  showSimilarProductsDialog = true
+}
+
+// Function to save similar products
+function saveSimilarProducts(): void {
+  if (!editingProduct || !product) return
+
+  // Update only the similarProducts field
+  product.similarProducts = editingProduct.similarProducts || []
+
+  // Show success message
+  toast({
+    message: 'Similar products updated successfully',
+    type: 'success',
+  })
+
+  // Close the dialog
+  showSimilarProductsDialog = false
+}
+
+// Function to delete product
+function deleteProduct(): void {
+  toast({
+    message: 'Delete functionality would be implemented here',
+    type: 'error',
+  })
+  // After successful deletion, navigate back to products list
+  // router.push('/commerce/products')
+}
+</script>
+<main>
+  <div class="container mx-auto px-4 py-8">
+    <!-- Loading state -->
+    @if(loading)
+      <div class="flex items-center justify-center h-64">
+        <div class="h-12 w-12 border-b-2 border-primary border-t-2 rounded-full animate-spin"></div>
+      </div>
+    @elseif(product)
+      <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow-md">
+        <!-- Header with back button and actions -->
+        <div class="flex items-center justify-between p-6 border-b border-gray-200 dark:border-neutral-700">
+          <div class="flex items-center">
+            <button onclick="goBack" class="mr-4 text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+              </svg>
+            </button>
+            <h1 class="font-bold text-2xl text-gray-900 dark:text-white">{{ product.name }}</h1>
+          </div>
+          <div class="flex space-x-2">
+            <button onclick="editProduct" class="px-4 py-2 text-white bg-primary hover:bg-primary-dark rounded-md transition-colors">
+              Edit
+            </button>
+            <button onclick="deleteProduct" class="px-4 py-2 text-white bg-red-500 hover:bg-red-600 rounded-md transition-colors">
+              Delete
+            </button>
+          </div>
+        </div>
+
+        <!-- Product content -->
+        <div class="grid gap-8 grid-cols-1 md:grid-cols-2 p-6">
+          <!-- Images and videos section -->
+          <div>
+            <!-- Main image -->
+            <div class="aspect-square overflow-hidden mb-4 bg-gray-100 dark:bg-neutral-700 rounded-lg">
+              <img :src="product.images[activeImageIndex]" :alt="product.name" class="object-contain h-full w-full">
+            </div>
+
+            <!-- Thumbnails -->
+            <div class="grid gap-2 grid-cols-5">
+              @foreach(product.images as image, index)
+                <div
+                  onclick="selectImage(index)"
+                  class="aspect-square overflow-hidden rounded-md cursor-pointer"
+                  class="'ring-2 { {{ } }} === activeImageIndex index ring-primary':"
+                >
+                  <img :src="image" alt="{{ `${product.name} thumbnail ${index + 1}` }}" class="object-cover h-full w-full">
+                </div>
+              @endforeach
+
+              <!-- Video thumbnails -->
+              @foreach(product.videos as video, index)
+                <div
+                  onclick="openVideoModal(video)"
+                  class="flex aspect-square overflow-hidden items-center justify-center bg-gray-200 dark:bg-neutral-600 rounded-md cursor-pointer"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-gray-500 dark:text-neutral-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                </div>
+              @endforeach
+            </div>
+          </div>
+
+          <!-- Product details -->
+          <div>
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-2">
+                <h2 class="font-bold text-3xl text-gray-900 dark:text-white">{{ product.name }}</h2>
+                <span class="px-3 py-1 text-sm rounded-full" class="text-green-800 text-red-800 text-yellow-800 dark:bg-green-800 dark:bg-red-800 dark:bg-yellow-800 'Active', 'bg-green-100 'bg-red-100 'bg-yellow-100 'Low 'Out { {{ } }} === === === of product.status product.status product.status Stock' Stock', dark:text-green-100': dark:text-red-100': dark:text-yellow-100':">
+                  {{ product.status }}
+                </span>
+              </div>
+              <p class="font-semibold text-2xl text-gray-900 dark:text-white">${{ product.price.toFixed(2) }}</p>
+            </div>
+
+            <div class="mb-6">
+              <h3 class="mb-2 font-semibold text-gray-900 text-lg dark:text-white">Description</h3>
+              <p class="text-gray-700 dark:text-neutral-300">{{ product.description }}</p>
+            </div>
+
+            <div class="grid gap-4 grid-cols-2 mb-6">
+              <div>
+                <h3 class="mb-2 font-semibold text-gray-900 text-lg dark:text-white">Details</h3>
+                <ul class="space-y-2">
+                  <li class="flex justify-between">
+                    <span class="text-gray-600 dark:text-neutral-400">Category:</span>
+                    <span class="text-gray-900 dark:text-white">{{ product.category }}</span>
+                  </li>
+                  <li class="flex justify-between">
+                    <span class="text-gray-600 dark:text-neutral-400">Manufacturer:</span>
+                    <span class="text-gray-900 dark:text-white">{{ product.manufacturer }}</span>
+                  </li>
+                  <li class="flex justify-between">
+                    <span class="text-gray-600 dark:text-neutral-400">Stock:</span>
+                    <span class="text-gray-900 dark:text-white">{{ product.stock }} {{ product.unit }}s</span>
+                  </li>
+                  <li class="flex justify-between">
+                    <span class="text-gray-600 dark:text-neutral-400">Tax Rate:</span>
+                    <span class="text-gray-900 dark:text-white">{{ product.taxRate }}%</span>
+                  </li>
+                </ul>
+              </div>
+
+              <div>
+                <h3 class="mb-2 font-semibold text-gray-900 text-lg dark:text-white">Variants</h3>
+                @if(product.variants.length > 0)
+                  @foreach(product.variants as variant)
+                    <span
+                      class="inline-block mb-2 mr-2 px-3 py-1 text-gray-800 text-sm dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 rounded-full"
+                    >
+                      {{ variant }}
+                    </span>
+                  @endforeach
+                @else
+                  <p class="text-gray-600 dark:text-neutral-400">No variants available</p>
+                @endif
+              </div>
+            </div>
+
+            <div class="mb-6">
+              <h3 class="mb-2 font-semibold text-gray-900 text-lg dark:text-white">Specifications</h3>
+              <div class="p-4 bg-gray-50 dark:bg-neutral-700 rounded-lg">
+                <dl class="grid gap-x-4 gap-y-2 grid-cols-1 sm:grid-cols-2">
+                  @foreach(Object.entries(product.specifications) as [key, value])
+                    <div class="pb-2 sm:pb-0 border-b border-gray-200 dark:border-neutral-600">
+                      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">{{ key }}</dt>
+                      <dd class="mt-1 text-gray-900 text-sm dark:text-white">{{ value }}</dd>
+                    </div>
+                  @endforeach
+                </dl>
+              </div>
+            </div>
+
+            <!-- Similar Products Section -->
+            <div class="mb-6">
+              <div class="flex items-center justify-between mb-2">
+                <h3 class="font-semibold text-gray-900 text-lg dark:text-white">Similar Products</h3>
+                <button
+                  onclick="openSimilarProductsDialog"
+                  class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300"
+                >
+                  Manage
+                </button>
+              </div>
+
+              @if(similarProducts.length > 0)
+                <div class="grid gap-4 grid-cols-2">
+                  @foreach(similarProducts as similarProduct)
+                    <div
+                      class="flex overflow-hidden flex-col border border-gray-200 rounded-lg dark:border-neutral-700"
+                    >
+                      <img
+                        :src="similarProduct.images[0]"
+                        :alt="similarProduct.name"
+                        class="object-cover h-32 w-full"
+                      >
+                      <div class="p-3">
+                        <h4 class="font-medium text-gray-900 dark:text-white">{{ similarProduct.name }}</h4>
+                        <p class="text-gray-500 text-sm dark:text-neutral-400">{{ similarProduct.category }}</p>
+                        <p class="mt-1 font-semibold text-gray-900 text-sm dark:text-white">${{ similarProduct.price.toFixed(2) }}</p>
+                      </div>
+                    </div>
+                  @endforeach
+                </div>
+              @else
+                <p class="text-gray-600 text-sm dark:text-neutral-400">No similar products available</p>
+              @endif
+            </div>
+          </div>
+        </div>
+      </div>
+    @else
+      <div class="p-8 text-center">
+        <p class="text-gray-600 text-xl dark:text-neutral-400">Product not found</p>
+        <button onclick="goBack" class="mt-4 px-4 py-2 text-white bg-primary hover:bg-primary-dark rounded-md transition-colors">
+          Back to Products
+        </button>
+      </div>
+    @endif
+
+    <!-- Video Modal -->
+    @if(showVideoModal)
+      <div class="flex fixed inset-0 z-50 items-center justify-center bg-black bg-opacity-75">
+        <div class="relative max-w-4xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+          <div class="flex items-center justify-between p-4 border-b border-gray-200 dark:border-neutral-700">
+            <h3 class="font-semibold text-gray-900 text-lg dark:text-white">Product Video</h3>
+            <button onclick="closeVideoModal" class="text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-200">
+              <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="p-6">
+            <!-- In a real app, you would use a video player component here -->
+            <div class="flex aspect-video items-center justify-center bg-black">
+              <p class="text-white">Video would play here: {{ activeVideoUrl }}</p>
+              <!-- Example of video element (commented out as we don't have real videos) -->
+              <!-- <video controls class="h-full w-full">
+                <source :src="activeVideoUrl" type="video/mp4">
+                Your browser does not support the video tag.
+              </video> -->
+            </div>
+          </div>
+        </div>
+      </div>
+    @endif
+
+    <!-- Edit Product Dialog -->
+    @if(showEditDialog)
+      <div class="flex fixed inset-0 z-50 items-center justify-center bg-black/50" x-show="showEditDialog">
+        <div class="fixed inset-0" aria-hidden="true" onclick="showEditDialog = false"></div>
+
+        <div class="relative z-10 mx-auto p-6 max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-xl shadow-xl">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-medium text-gray-900 text-lg dark:text-white">Edit Product</h3>
+                <button
+                  class="p-1 text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  onclick="showEditDialog = false"
+                >
+                  <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
+                </button>
+              </div>
+
+              @if(editingProduct)
+                <div class="space-y-4">
+                  <!-- Basic Information -->
+                  <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
+                    <div>
+                      <label for="product-name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
+                      <input
+                        id="product-name"
+                        value="{{ editingProduct.name }}"
+                        type="text"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label for="product-price" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Price</label>
+                      <input
+                        id="product-price"
+                        v-model.number="editingProduct.price"
+                        type="number"
+                        step="0.01"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label for="product-category" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Category</label>
+                      <input
+                        id="product-category"
+                        value="{{ editingProduct.category }}"
+                        type="text"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label for="product-stock" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Stock</label>
+                      <input
+                        id="product-stock"
+                        v-model.number="editingProduct.stock"
+                        type="number"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      />
+                    </div>
+                    <div>
+                      <label for="product-status" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
+                      <select
+                        id="product-status"
+                        value="{{ editingProduct.status }}"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Low Stock">Low Stock</option>
+                        <option value="Out of Stock">Out of Stock</option>
+                      </select>
+                    </div>
+                    <div>
+                      <label for="product-manufacturer" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Manufacturer</label>
+                      <input
+                        id="product-manufacturer"
+                        value="{{ editingProduct.manufacturer }}"
+                        type="text"
+                        class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="product-description" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Description</label>
+                    <textarea
+                      id="product-description"
+                      value="{{ editingProduct.description }}"
+                      rows="4"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    ></textarea>
+                  </div>
+
+                  <div class="flex justify-end mt-6 space-x-3">
+                    <button
+                      onclick="showEditDialog = false"
+                      class="px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onclick="saveProduct"
+                      class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              @endif
+            </div>
+          </div>
+        </div>
+    @endif
+
+    <!-- Similar Products Dialog -->
+    @if(showSimilarProductsDialog)
+      <div class="flex fixed inset-0 z-50 items-center justify-center bg-black/50" x-show="showSimilarProductsDialog">
+        <div class="fixed inset-0" aria-hidden="true" onclick="showSimilarProductsDialog = false"></div>
+
+        <div class="relative z-10 mx-auto p-6 max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-xl shadow-xl">
+              <div class="flex items-center justify-between mb-4">
+                <h3 class="font-medium text-gray-900 text-lg dark:text-white">Manage Similar Products</h3>
+                <button
+                  class="p-1 text-gray-400 dark:text-neutral-300 hover:text-gray-500 dark:hover:text-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+                  onclick="showSimilarProductsDialog = false"
+                >
+                  <div class="h-5 w-5 i-hugeicons-cancel-01"></div>
+                </button>
+              </div>
+
+              @if(editingProduct)
+                <div class="space-y-4">
+                  <p class="text-gray-500 text-sm dark:text-neutral-400">
+                    Select products that are similar to <strong>{{ editingProduct.name }}</strong>. These will be shown as recommendations.
+                  </p>
+
+                  <div class="overflow-y-auto max-h-96 border border-gray-200 rounded-md dark:border-neutral-700">
+                    <ul class="divide-gray-200 divide-y dark:divide-neutral-700">
+                      @foreach(allProducts.filter(p => p.id !== editingProduct.id) as similarProduct)
+                        <li
+                          class="flex items-center px-4 py-3 hover:bg-gray-50 dark:hover:bg-neutral-700"
+                        >
+                          <input
+                            id="{{ `similar-product-${similarProduct.id}` }}"
+                            type="checkbox"
+                            value="{{ similarProduct.id }}"
+                            value="{{ editingProduct.similarProducts }}"
+                            class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-500"
+                          />
+                          <label for="{{ `similar-product-${similarProduct.id}` }}" class="flex items-center ml-3 cursor-pointer">
+                            <img :src="similarProduct.images[0]" alt="" class="object-cover flex-shrink-0 h-10 w-10 rounded-md">
+                            <div class="ml-3">
+                              <p class="font-medium text-gray-900 text-sm dark:text-white">{{ similarProduct.name }}</p>
+                              <p class="text-gray-500 text-sm dark:text-neutral-400">{{ similarProduct.category }} - ${{ similarProduct.price.toFixed(2) }}</p>
+                            </div>
+                          </label>
+                        </li>
+                      @endforeach
+                    </ul>
+                  </div>
+
+                  <div class="flex justify-end mt-6 space-x-3">
+                    <button
+                      onclick="showSimilarProductsDialog = false"
+                      class="px-4 py-2 font-medium text-gray-700 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onclick="saveSimilarProducts"
+                      class="px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
+                    >
+                      Save Changes
+                    </button>
+                  </div>
+                </div>
+              @endif
+            </div>
+          </div>
+        </div>
+    @endif
+  </div>
+</main>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  // Simulate API call
+  setTimeout(() => {
+    // In a real app, you would fetch the product by ID from the route params
+    const productId = parseInt(route.params.id as string)
+
+    // Sample data for all products (simplified)
+    allProducts = [
+      {
+        id: 1,
+        name: 'Margherita Pizza',
+        price: 12.99,
+        description: 'Classic Italian pizza with tomato sauce, fresh mozzarella, basil, and extra virgin olive oil.',
+        category: 'Pizza',
+        stock: 78,
+        status: 'Active',
+        images: ['https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
+        videos: [],
+        manufacturer: 'Pizza Palace',
+        variants: ['Size', 'Crust Type'],
+        unit: 'Whole',
+        taxRate: 7,
+        specifications: {},
+        similarProducts: [2, 5]
+      },
+      {
+        id: 2,
+        name: 'Classic Cheeseburger',
+        price: 9.99,
+        description: 'Juicy beef patty with melted cheese, lettuce, tomato, and special sauce.',
+        category: 'Burgers',
+        stock: 124,
+        status: 'Active',
+        images: ['https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
+        videos: [],
+        manufacturer: 'Burger Bistro',
+        variants: ['Size', 'Protein', 'Toppings'],
+        unit: 'Piece',
+        taxRate: 7,
+        specifications: {},
+        similarProducts: [1]
+      },
+      {
+        id: 5,
+        name: 'Fettuccine Alfredo',
+        price: 13.99,
+        description: 'Creamy pasta with parmesan cheese sauce.',
+        category: 'Pasta',
+        stock: 210,
+        status: 'Active',
+        images: ['https://images.unsplash.com/photo-1645112411341-6c4fd023882c?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'],
+        videos: [],
+        manufacturer: 'Pasta Paradise',
+        variants: ['Size', 'Protein'],
+        unit: 'Serving',
+        taxRate: 7,
+        specifications: {},
+        similarProducts: [1]
+      }
+    ]
+
+    // Sample data
+    product = {
+      id: productId || 1,
+      name: 'Margherita Pizza',
+      price: 12.99,
+      description: 'Classic Italian pizza with tomato sauce, fresh mozzarella, basil, and extra virgin olive oil. Made with our signature hand-tossed dough and baked in a wood-fired oven for the perfect crispy yet chewy crust.',
+      category: 'Pizza',
+      stock: 78,
+      status: 'Active',
+      images: [
+        'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+        'https://images.unsplash.com/photo-1593560708920-61dd98c46a4e?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80',
+        'https://images.unsplash.com/photo-1574071318508-1cdbab80d002?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1000&q=80'
+      ],
+      videos: [
+        'https://example.com/videos/margherita-pizza.mp4',
+        'https://example.com/videos/pizza-preparation.mp4'
+      ],
+      manufacturer: 'Pizza Palace',
+      variants: ['Size', 'Crust Type'],
+      unit: 'Whole',
+      taxRate: 7,
+      specifications: {
+        'Calories': '250 per slice',
+        'Preparation Time': '15-20 minutes',
+        'Ingredients': 'Dough, Tomato Sauce, Fresh Mozzarella, Basil, Olive Oil, Salt',
+        'Allergens': 'Wheat, Dairy',
+        'Dietary': 'Vegetarian',
+        'Serving Size': '8 slices per pizza'
+      },
+      similarProducts: [2, 5]
+    }
+    loading = false
+  }, 1000)
+})
+</script>
+
+<style>
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+</style>
+
+@endsection

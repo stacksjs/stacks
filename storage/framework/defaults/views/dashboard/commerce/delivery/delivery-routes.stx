@@ -1,0 +1,437 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import DeliveryRoutesTable from '../../../../components/Dashboard/Commerce/Delivery/DeliveryRoutesTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import { useDeliveryRoutes } from '../../../../functions/commerce/shippings/delivery-routes'
+
+// Get delivery routes data and functions from the composable
+const { deliveryRoutes, createDeliveryRoute, fetchDeliveryRoutes, updateDeliveryRoute, deleteDeliveryRoute } = useDeliveryRoutes()
+
+// Modal state
+let showAddModal = false
+let showEditModal = false
+let editingRoute = null
+let newDeliveryRoute = {
+  driver: '',
+  vehicle: '',
+  stops: 0,
+  delivery_time: 0,
+  total_distance: 0
+}
+
+function openAddModal() {
+  newDeliveryRoute = {
+    driver: '',
+    vehicle: '',
+    stops: 0,
+    delivery_time: 0,
+    total_distance: 0
+  }
+  showAddModal = true
+}
+
+function closeAddModal() {
+  showAddModal = false
+}
+
+function openEditModal(route) {
+  editingRoute = route
+  newDeliveryRoute = {
+    driver: route.driver,
+    vehicle: route.vehicle,
+    stops: route.stops,
+    delivery_time: route.delivery_time,
+    total_distance: route.total_distance
+  }
+  showEditModal = true
+}
+
+function closeEditModal() {
+  showEditModal = false
+  editingRoute = null
+}
+
+async function addDeliveryRoute() {
+  try {
+    await createDeliveryRoute(newDeliveryRoute)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create delivery route:', error)
+  }
+}
+
+async function saveDeliveryRoute() {
+  if (!editingRoute) return
+
+  try {
+    await updateDeliveryRoute({
+      ...editingRoute,
+      ...newDeliveryRoute
+    }
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update delivery route:', error)
+  }
+}
+
+// Search and filtering
+let searchQuery = ''
+let currentPage = 1
+const itemsPerPage = 5
+
+function filteredRoutes() {
+  const routes = Array.isArray(deliveryRoutes) ? deliveryRoutes : []
+
+  if (!searchQuery) return routes
+
+  const query = searchQuery.toLowerCase()
+  return routes.filter(route =>
+    route.driver.toLowerCase().includes(query) ||
+    route.vehicle.toLowerCase().includes(query) ||
+    route.stops.toString().includes(query) ||
+    route.delivery_time.toString().includes(query) ||
+    route.total_distance.toString().includes(query)
+  )
+}
+
+function paginatedRoutes() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredRoutes.slice(start, end)
+}
+
+// Event handlers
+const handleSearch = (query) => {
+  searchQuery = query
+  currentPage = 1
+}
+
+const handleAddRoute = () => {
+  openAddModal()
+}
+
+const handleEditRoute = (route) => {
+  openEditModal(route)
+}
+
+const handleDeleteRoute = async (route) => {
+  if (confirm(`Are you sure you want to delete this delivery route?`)) {
+    try {
+      await deleteDeliveryRoute(route.id)
+    } catch (error) {
+      console.error('Failed to delete delivery route:', error)
+    }
+  }
+}
+
+const viewRouteOnMap = (route) => {
+  alert(`View route on map: ${route.driver} (${route.stops} stops)`)
+}
+
+const handlePrevPage = () => {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredRoutes.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+const handlePageChange = (page) => {
+  currentPage = page
+}
+
+// Tab configuration
+const tabs = [
+  { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
+  { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
+  { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
+  { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
+  { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
+  { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
+  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
+]
+</script>
+
+@title('Dashboard - Delivery Routes')
+<div class="py-6">
+  <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
+    <!-- Tab Navigation -->
+    <TabNavigation
+      modelValue="routes"
+      :tabs="tabs"
+    />
+
+    <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <h2 class="font-medium text-gray-900 text-lg dark:text-white">Delivery Routes</h2>
+          <button
+            onclick="handleAddRoute"
+            type="button"
+            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            <div class="mr-2 h-5 w-5 i-hugeicons-plus-sign" />
+            Add Route
+          </button>
+        </div>
+        <div class="mt-4">
+          <SearchFilter
+            placeholder="Search delivery routes..."
+            @search="handleSearch"
+            class="w-full md:w-96"
+          />
+        </div>
+      </div>
+
+      <DeliveryRoutesTable
+        :routes="paginatedRoutes"
+        @view-map="viewRouteOnMap"
+        @edit="handleEditRoute"
+        @delete="handleDeleteRoute"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredRoutes.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Delivery Route Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Delivery Route</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="route-driver" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Driver</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="route-driver"
+                        value="{{ newDeliveryRoute.driver }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter driver name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="route-vehicle" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Vehicle</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="route-vehicle"
+                        value="{{ newDeliveryRoute.vehicle }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter vehicle information"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 grid-cols-3">
+                    <div>
+                      <label for="route-stops" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Stops</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="route-stops"
+                          value="{{ newDeliveryRoute.stops }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="route-delivery-time" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Delivery Time (hours)</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="route-delivery-time"
+                          value="{{ newDeliveryRoute.delivery_time }}"
+                          step="0.1"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="route-total-distance" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Total Distance (km)</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="route-total-distance"
+                          value="{{ newDeliveryRoute.total_distance }}"
+                          step="0.1"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="addDeliveryRoute"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Add Route
+            </button>
+            <button
+              type="button"
+              onclick="closeAddModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  <!-- Edit Delivery Route Modal -->
+  @if(showEditModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit Delivery Route</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit-route-driver" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Driver</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-route-driver"
+                        value="{{ newDeliveryRoute.driver }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter driver name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-route-vehicle" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Vehicle</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-route-vehicle"
+                        value="{{ newDeliveryRoute.vehicle }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter vehicle information"
+                      />
+                    </div>
+                  </div>
+
+                  <div class="grid gap-4 grid-cols-3">
+                    <div>
+                      <label for="edit-route-stops" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Stops</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-route-stops"
+                          value="{{ newDeliveryRoute.stops }}"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="edit-route-delivery-time" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Delivery Time (hours)</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-route-delivery-time"
+                          value="{{ newDeliveryRoute.delivery_time }}"
+                          step="0.1"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label for="edit-route-total-distance" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Total Distance (km)</label>
+                      <div class="mt-2">
+                        <input
+                          type="number"
+                          id="edit-route-total-distance"
+                          value="{{ newDeliveryRoute.total_distance }}"
+                          step="0.1"
+                          class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                          placeholder="0"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="saveDeliveryRoute"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onclick="closeEditModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</div>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await fetchDeliveryRoutes()
+})
+</script>
+
+@endsection

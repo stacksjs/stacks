@@ -1,0 +1,466 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  elements: {
+    line: {
+      tension: 0.4,
+    },
+  },
+}
+
+const requestVolumeData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Requests',
+      data: [1200, 1900, 800, 1600, 2400, 2100, 1800, 2200],
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderColor: 'rgb(59, 130, 246)',
+      fill: true,
+    }
+  ]
+}
+
+const responseTimeData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Average',
+      data: [320, 280, 300, 390, 420, 350, 360, 380],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: false,
+    },
+    {
+      label: 'p95',
+      data: [480, 420, 450, 580, 630, 525, 540, 570],
+      borderColor: 'rgb(147, 197, 253)',
+      backgroundColor: 'rgba(147, 197, 253, 0.1)',
+      fill: false,
+    }
+  ]
+}
+
+const successRateData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Success Rate',
+      data: [98, 97, 99, 96, 95, 97, 98, 96],
+      borderColor: 'rgb(34, 197, 94)',
+      backgroundColor: 'rgba(34, 197, 94, 0.1)',
+      fill: true,
+    },
+    {
+      label: 'Error Rate',
+      data: [2, 3, 1, 4, 5, 3, 2, 4],
+      borderColor: 'rgb(239, 68, 68)',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      fill: true,
+    }
+  ]
+}
+
+const statusCodesData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: '2xx',
+      data: [980, 970, 990, 960, 950, 970, 980, 960],
+      backgroundColor: 'rgba(34, 197, 94, 0.7)',
+    },
+    {
+      label: '3xx',
+      data: [15, 20, 8, 25, 30, 20, 15, 25],
+      backgroundColor: 'rgba(234, 179, 8, 0.7)',
+    },
+    {
+      label: '4xx/5xx',
+      data: [5, 10, 2, 15, 20, 10, 5, 15],
+      backgroundColor: 'rgba(239, 68, 68, 0.7)',
+    }
+  ]
+}
+
+const barChartOptions = {
+  ...chartOptions,
+  scales: {
+    ...chartOptions.scales,
+    x: {
+      ...chartOptions.scales.x,
+      stacked: true,
+    },
+    y: {
+      ...chartOptions.scales.y,
+      stacked: true,
+    },
+  },
+}
+</script>
+
+@title('Dashboard - Requests')
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="mb-8 px-4 sm:px-6 lg:px-8">
+    <div>
+      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+        Last 30 days
+      </h3>
+
+      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <dt>
+            <div class="absolute p-3 bg-blue-500 rounded-md">
+              <div class="h-6 w-6 text-white i-hugeicons-global" />
+            </div>
+
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
+              Total Requests
+            </p>
+          </dt>
+
+          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
+              71,897
+            </p>
+
+            <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
+              <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+              </svg>
+              <span class="sr-only"> Increased by </span>
+              122
+            </p>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <dt>
+            <div class="absolute p-3 bg-blue-500 rounded-md">
+              <div class="h-6 w-6 text-white i-hugeicons-clock-01" />
+            </div>
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
+              Avg. Request Time
+            </p>
+          </dt>
+
+          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
+              365 ms
+            </p>
+
+            <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
+              <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
+              </svg>
+              <span class="sr-only"> Increased by </span>
+              12 s
+            </p>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <dt>
+            <div class="absolute p-3 bg-blue-500 rounded-md">
+              <div class="h-6 w-6 text-white i-hugeicons-checkmark-circle-02" />
+            </div>
+
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
+              Success Rate
+            </p>
+          </dt>
+
+          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
+              94.57%
+            </p>
+
+            <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm dark:text-red-400">
+              <svg class="flex-shrink-0 self-center h-5 w-5 text-red-500 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
+              </svg>
+              <span class="sr-only"> Decreased by </span>
+              3.2%
+            </p>
+
+            <!-- <div class="absolute bottom-0 inset-x-0 px-4 py-4 sm:px-6 bg-gray-50">
+              <div class="text-sm">
+                <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Success Rate</span></a>
+              </div>
+            </div> -->
+          </dd>
+        </div>
+      </dl>
+    </div>
+  </div>
+
+  <!-- Graphs Section -->
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <!-- Request Volume Graph -->
+      <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Request Volume</h3>
+          <div class="flex items-center space-x-4">
+            <select class="pl-3 pr-8 py-1.5 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
+              <option>Last 24 hours</option>
+              <option>Last 7 days</option>
+              <option>Last 30 days</option>
+            </select>
+          </div>
+        </div>
+        <div class="relative h-[300px]">
+          <canvas id="chart_1"></canvas>
+        </div>
+      </div>
+
+      <!-- Response Time Graph -->
+      <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Response Time</h3>
+        </div>
+        <div class="relative h-[300px]">
+          <canvas id="chart_2"></canvas>
+        </div>
+      </div>
+
+      <!-- Success Rate Graph -->
+      <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Success Rate</h3>
+        </div>
+        <div class="relative h-[300px]">
+          <canvas id="chart_3"></canvas>
+        </div>
+      </div>
+
+      <!-- Status Code Distribution -->
+      <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Status Codes</h3>
+        </div>
+        <div class="relative h-[300px]">
+          <canvas id="chart_4"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="pt-12 px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+          Request History
+        </h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+          A list of all the requests that came in.
+        </p>
+      </div>
+
+      <!-- <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
+        <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
+          Deploy
+        </button>
+      </div> -->
+    </div>
+
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg dark:ring-neutral-600 shadow">
+            <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
+              <thead class="bg-gray-50 dark:bg-neutral-700">
+                <tr>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
+                    When
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
+                    Method
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
+                    Status
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
+                    Duration
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
+                    IP Address
+                  </th>
+
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-100">
+                    Memory Usage
+                  </th>
+
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                    <span class="sr-only">Edit</span>
+                  </th>
+                </tr>
+              </thead>
+
+              <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
+                <tr>
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
+                    05/04/2024 11:02:34<span class="text-gray-400 dark:text-neutral-500">:123</span> AM UTC <em class="text-gray-400 dark:text-neutral-500">(2 mins ago)</em>
+                  </td>
+
+                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="inline-flex items-center px-2 py-1 font-medium text-slate-700 text-xs dark:text-slate-300 bg-slate-50 dark:bg-slate-700 ring-1 ring-inset ring-slate-600/20 rounded-md dark:ring-slate-500/20">
+                      GET
+                    </span>
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs dark:text-green-400 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-600/20 ring-inset rounded-md dark:ring-green-500/20">
+                      Success
+                    </span>
+                  </td>
+
+                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    16ms
+                  </td>
+
+                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    127.0.0.1
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    128MB
+                  </td>
+
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">View<span class="sr-only">, Request</span></a>
+                  </td>
+                </tr>
+
+                <tr>
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
+                    05/04/2024 11:01:34<span class="text-gray-400 dark:text-neutral-500">:123</span> AM UTC <em class="text-gray-400 dark:text-neutral-500">(3 mins ago)</em>
+                  </td>
+
+                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="inline-flex items-center px-2 py-1 font-medium text-slate-700 text-xs dark:text-slate-300 bg-slate-50 dark:bg-slate-700 ring-1 ring-inset ring-slate-600/20 rounded-md dark:ring-slate-500/20">
+                      POST
+                    </span>
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    <span class="inline-flex items-center px-2 py-1 font-medium text-red-700 text-xs dark:text-red-400 bg-red-50 dark:bg-red-900/20 ring-1 ring-inset ring-red-600/20 rounded-md dark:ring-red-500/20">
+                      Error
+                    </span>
+                  </td>
+
+                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    42ms
+                  </td>
+
+                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                    127.0.0.1
+                  </td>
+
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                    98MB
+                  </td>
+
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">View<span class="sr-only">, Request</span></a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'line',
+    data: requestVolumeData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'line',
+    data: responseTimeData,
+    options: chartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'line',
+    data: successRateData,
+    options: chartOptions,
+  })
+}
+
+const chart_4_ctx = document.getElementById('chart_4')
+if (chart_4_ctx) {
+  new Chart(chart_4_ctx, {
+    type: 'bar',
+    data: statusCodesData,
+    options: barChartOptions,
+  })
+}
+
+</script>
+
+@endsection

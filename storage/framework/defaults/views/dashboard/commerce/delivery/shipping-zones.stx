@@ -1,0 +1,438 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
+import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
+import ShippingZonesTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingZonesTable.stx'
+import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
+import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
+import type { NewShippingZone } from '../../../../types/defaults'
+
+const { shippingZones, createShippingZone, fetchShippingZones, updateShippingZone, deleteShippingZone } = useShippingZones()
+
+let showAddModal = false
+let showEditModal = false
+let editingZone = null
+let newShippingZone = {
+  name: '',
+  countries: '',
+  regions: '',
+  postal_codes: '',
+  shipping_method_id: 0,
+  status: 'Active'
+}
+
+function openAddModal() {
+  newShippingZone = {
+    name: '',
+    countries: '',
+    regions: '',
+    postal_codes: '',
+    shipping_method_id: 0,
+    status: 'Active'
+  }
+  showAddModal = true
+}
+
+function closeAddModal() {
+  showAddModal = false
+}
+
+function openEditModal(zone) {
+  editingZone = zone
+  newShippingZone = {
+    name: zone.name,
+    countries: zone.countries || '',
+    regions: zone.regions || '',
+    postal_codes: zone.postal_codes || '',
+    shipping_method_id: zone.shipping_method_id,
+    status: zone.status
+  }
+  showEditModal = true
+}
+
+function closeEditModal() {
+  showEditModal = false
+  editingZone = null
+}
+
+async function addShippingZone() {
+  try {
+    const zoneData = {
+      ...newShippingZone,
+      shipping_method_id: 1
+    }
+    await createShippingZone(zoneData)
+    closeAddModal()
+  } catch (error) {
+    console.error('Failed to create shipping zone:', error)
+  }
+}
+
+async function saveShippingZone() {
+  if (!editingZone) return
+
+  try {
+    await updateShippingZone({
+      ...editingZone,
+      ...newShippingZone
+    }
+    closeEditModal()
+  } catch (error) {
+    console.error('Failed to update shipping zone:', error)
+  }
+}
+
+let searchQuery = ''
+let currentPage = 1
+const itemsPerPage = 5
+
+function filteredShippingZones() {
+  const zones = Array.isArray(shippingZones) ? shippingZones : []
+
+  if (!searchQuery) return zones
+
+  const query = searchQuery.toLowerCase()
+  return zones.filter(zone =>
+    zone.name.toLowerCase().includes(query) ||
+    zone.countries?.toLowerCase().includes(query) ||
+    zone.regions?.toLowerCase().includes(query)
+  )
+}
+
+function paginatedShippingZones() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  const sliced = filteredShippingZones.slice(start, end)
+
+  return sliced.map(zone => ({
+    id: zone.id,
+    name: zone.name,
+    countries: zone.countries || '',
+    regions: zone.regions || '',
+    postal_codes: zone.postal_codes || '',
+    status: zone.status,
+    shipping_method_id: zone.shipping_method_id
+  }))
+}
+
+const handleSearch = (query) => {
+  searchQuery = query
+  currentPage = 1
+}
+
+const handleAddZone = () => {
+  openAddModal()
+}
+
+const handleEditZone = (zone) => {
+  openEditModal(zone)
+}
+
+const handleDeleteZone = async (zone) => {
+  if (confirm(`Are you sure you want to delete ${zone.name}?`)) {
+    try {
+      await deleteShippingZone(zone.id)
+    } catch (error) {
+      console.error('Failed to delete shipping zone:', error)
+    }
+  }
+}
+
+const handlePrevPage = () => {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+const handleNextPage = () => {
+  const totalPages = Math.ceil(filteredShippingZones.length / itemsPerPage)
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+const handlePageChange = (page) => {
+  currentPage = page
+}
+
+const tabs = [
+  { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
+  { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
+  { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
+  { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
+  { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
+  { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
+  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
+]
+
+</script>
+
+@title('Dashboard - Shipping Zones')
+<div class="py-6">
+  <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
+    <!-- Tab Navigation -->
+    <TabNavigation
+      modelValue="zones"
+      :tabs="tabs"
+    />
+
+    <div class="overflow-hidden mt-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6 border-b border-gray-200 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <h2 class="font-medium text-gray-900 text-lg dark:text-white">Shipping Zones</h2>
+          <button
+            onclick="handleAddZone"
+            type="button"
+            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            <div class="mr-2 h-5 w-5 i-hugeicons-plus-sign" />
+            Add Zone
+          </button>
+        </div>
+        <div class="mt-4">
+          <SearchFilter
+            placeholder="Search shipping zones..."
+            @search="handleSearch"
+            class="w-full md:w-96"
+          />
+        </div>
+      </div>
+
+      <ShippingZonesTable
+        :zones="paginatedShippingZones"
+        @edit="handleEditZone"
+        @delete="handleDeleteZone"
+      />
+
+      <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
+        <Pagination
+          :current-page="currentPage"
+          :total-items="filteredShippingZones.length"
+          :items-per-page="itemsPerPage"
+          @prev="handlePrevPage"
+          @next="handleNextPage"
+          @page="handlePageChange"
+        />
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Shipping Zone Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Shipping Zone</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="zone-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="zone-name"
+                        value="{{ newShippingZone.name }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter zone name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="zone-countries" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Countries</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="zone-countries"
+                        value="{{ newShippingZone.countries }}"
+                        rows="3"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter countries (comma-separated)"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="zone-regions" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Regions</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="zone-regions"
+                        value="{{ newShippingZone.regions }}"
+                        rows="3"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter regions (comma-separated)"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="zone-postal-codes" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Postal Codes</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="zone-postal-codes"
+                        value="{{ newShippingZone.postal_codes }}"
+                        rows="3"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter postal codes (comma-separated)"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="zone-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="zone-status"
+                        value="{{ newShippingZone.status }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="addShippingZone"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Add Zone
+            </button>
+            <button
+              type="button"
+              onclick="closeAddModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  <!-- Edit Shipping Zone Modal -->
+  @if(showEditModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Edit Shipping Zone</h3>
+              <div class="mt-4">
+                <div class="space-y-4">
+                  <div>
+                    <label for="edit-zone-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Zone Name</label>
+                    <div class="mt-2">
+                      <input
+                        type="text"
+                        id="edit-zone-name"
+                        value="{{ newShippingZone.name }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter zone name"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-zone-countries" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Countries</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="edit-zone-countries"
+                        value="{{ newShippingZone.countries }}"
+                        rows="3"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter countries (comma-separated)"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-zone-regions" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Regions</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="edit-zone-regions"
+                        value="{{ newShippingZone.regions }}"
+                        rows="3"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter regions (comma-separated)"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-zone-postal-codes" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Postal Codes</label>
+                    <div class="mt-2">
+                      <textarea
+                        id="edit-zone-postal-codes"
+                        value="{{ newShippingZone.postal_codes }}"
+                        rows="3"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                        placeholder="Enter postal codes (comma-separated)"
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <label for="edit-zone-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
+                    <div class="mt-2">
+                      <select
+                        id="edit-zone-status"
+                        value="{{ newShippingZone.status }}"
+                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      >
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="saveShippingZone"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Save Changes
+            </button>
+            <button
+              type="button"
+              onclick="closeEditModal"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</div>
+<script client>
+import { onMount } from 'stx'
+
+onMount(async () => {
+  await fetchShippingZones()
+})
+</script>
+
+@endsection

@@ -1,0 +1,588 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+// Sample taxes data
+let taxes = [
+  {
+    id: 1,
+    name: 'US Digital Services',
+    rate: 0.0,
+    type: 'Sales Tax',
+    country: 'United States',
+    region: 'All',
+    active: true,
+    createdAt: '2023-05-10',
+    isDefault: true
+  },
+  {
+    id: 2,
+    name: 'EU Digital VAT',
+    rate: 20.0,
+    type: 'VAT',
+    country: 'European Union',
+    region: 'All',
+    active: true,
+    createdAt: '2023-05-15',
+    isDefault: false
+  },
+  {
+    id: 3,
+    name: 'UK Digital Services',
+    rate: 20.0,
+    type: 'VAT',
+    country: 'United Kingdom',
+    region: 'All',
+    active: true,
+    createdAt: '2023-05-20',
+    isDefault: false
+  },
+  {
+    id: 4,
+    name: 'Canada GST/HST',
+    rate: 5.0,
+    type: 'GST',
+    country: 'Canada',
+    region: 'All',
+    active: true,
+    createdAt: '2023-06-01',
+    isDefault: false
+  },
+  {
+    id: 5,
+    name: 'Australia GST',
+    rate: 10.0,
+    type: 'GST',
+    country: 'Australia',
+    region: 'All',
+    active: true,
+    createdAt: '2023-06-15',
+    isDefault: false
+  },
+  {
+    id: 6,
+    name: 'Japan Consumption Tax',
+    rate: 10.0,
+    type: 'Consumption Tax',
+    country: 'Japan',
+    region: 'All',
+    active: true,
+    createdAt: '2023-07-01',
+    isDefault: false
+  },
+  {
+    id: 7,
+    name: 'Norway VAT',
+    rate: 25.0,
+    type: 'VAT',
+    country: 'Norway',
+    region: 'All',
+    active: true,
+    createdAt: '2023-07-15',
+    isDefault: false
+  },
+  {
+    id: 8,
+    name: 'New Zealand GST',
+    rate: 15.0,
+    type: 'GST',
+    country: 'New Zealand',
+    region: 'All',
+    active: true,
+    createdAt: '2023-08-01',
+    isDefault: false
+  },
+  {
+    id: 9,
+    name: 'Singapore GST',
+    rate: 8.0,
+    type: 'GST',
+    country: 'Singapore',
+    region: 'All',
+    active: true,
+    createdAt: '2023-08-15',
+    isDefault: false
+  },
+  {
+    id: 10,
+    name: 'South Africa VAT',
+    rate: 15.0,
+    type: 'VAT',
+    country: 'South Africa',
+    region: 'All',
+    active: true,
+    createdAt: '2023-09-01',
+    isDefault: false
+  }
+]
+
+// Filter and sort options
+let searchQuery = ''
+let sortBy = 'name'
+let sortOrder = 'asc'
+let activeFilter = 'all'
+let countryFilter = 'all'
+let typeFilter = 'all'
+
+// Get unique countries for filter
+function countries() {
+  const uniqueCountries = new Set(taxes.map(t => t.country))
+  return Array.from(uniqueCountries).sort()
+}
+
+// Get unique tax types for filter
+function taxTypes() {
+  const uniqueTypes = new Set(taxes.map(t => t.type))
+  return Array.from(uniqueTypes).sort()
+}
+
+// Computed filtered and sorted taxes
+function filteredTaxes() {
+  return taxes
+    .filter(tax => {
+      // Apply search filter
+      const matchesSearch = tax.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           tax.country.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                           tax.region.toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Apply active filter
+      const matchesActive = activeFilter === 'all' ||
+                           (activeFilter === 'active' && tax.active) ||
+                           (activeFilter === 'inactive' && !tax.active)
+
+      // Apply country filter
+      const matchesCountry = countryFilter === 'all' ||
+                            tax.country === countryFilter
+
+      // Apply type filter
+      const matchesType = typeFilter === 'all' ||
+                         tax.type === typeFilter
+
+      return matchesSearch && matchesActive && matchesCountry && matchesType
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy === 'rate') {
+        comparison = a.rate - b.rate
+      } else if (sortBy === 'country') {
+        comparison = a.country.localeCompare(b.country)
+      } else if (sortBy === 'createdAt') {
+        comparison = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+}
+
+// Toggle sort order
+function toggleSort(column) {
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy = column
+    sortOrder = 'asc'
+  }
+}
+
+// Modal state
+let showAddModal = false
+let newTax = {
+  name: '',
+  rate: 0,
+  type: 'Percentage',
+  country: '',
+  region: '',
+  active: true,
+  isDefault: false
+}
+
+function openAddModal() {
+  newTax = {
+    name: '',
+    rate: 0,
+    type: 'Percentage',
+    country: '',
+    region: '',
+    active: true,
+    isDefault: false
+  }
+  showAddModal = true
+}
+
+function closeAddModal() {
+  showAddModal = false
+}
+
+function addTax() {
+  // In a real app, this would send data to the server
+  const id = Math.max(...taxes.map(t => t.id)) + 1
+  const currentDate = new Date().toISOString().split('T')[0]
+
+  // If this is set as default, update other taxes
+  if (newTax.isDefault) {
+    taxes.forEach(tax => {
+      tax.isDefault = false
+    })
+  }
+
+  taxes.push({
+    id,
+    name: newTax.name || '',
+    rate: newTax.rate,
+    type: newTax.type || '',
+    country: newTax.country || '',
+    region: newTax.region || 'All',
+    active: newTax.active,
+    createdAt: currentDate,
+    isDefault: newTax.isDefault || false
+  }
+  closeAddModal()
+}
+</script>
+
+@title('Dashboard - Commerce Taxes')
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Tax Rates</h1>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+            Manage tax rates for your products across different countries and regions. Digital services often have specific tax requirements based on customer location.
+          </p>
+        </div>
+        <div class="mt-4 sm:mt-0">
+          <button
+            type="button"
+            onclick="openAddModal"
+            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            <div class="mr-1 h-5 w-5 i-hugeicons-plus-sign"></div>
+            Add tax
+          </button>
+        </div>
+      </div>
+
+      <!-- Filters -->
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
+        <div class="relative max-w-sm">
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+          </div>
+          <input
+            value="{{ searchQuery }}"
+            type="text"
+            class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            placeholder="Search taxes..."
+          />
+        </div>
+
+        <div class="flex flex-col gap-4 sm:flex-row">
+          <select
+            value="{{ activeFilter }}"
+            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+          >
+            <option value="all">All Taxes</option>
+            <option value="active">Active Only</option>
+            <option value="inactive">Inactive Only</option>
+          </select>
+
+          <select
+            value="{{ countryFilter }}"
+            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+          >
+            <option value="all">All Countries</option>
+            @foreach(countries as country)
+              <option value="{{ country }}">{{ country }}</option>
+            @endforeach
+          </select>
+
+          <select
+            value="{{ typeFilter }}"
+            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+          >
+            <option value="all">All Types</option>
+            @foreach(taxTypes as type)
+              <option value="{{ type }}">{{ type }}</option>
+            @endforeach
+          </select>
+        </div>
+      </div>
+
+      <!-- Taxes table -->
+      <div class="flow-root mt-6">
+        <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+          <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+            <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+              <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+                <thead class="bg-gray-50 dark:bg-neutral-700">
+                  <tr>
+                    <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                      <button onclick="toggleSort('name')" class="inline-flex items-center group">
+                        Name
+                        <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                          @if(sortBy === 'name')
+                            <div class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ] {{ }}"></div>
+                          @else
+                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                      <button onclick="toggleSort('rate')" class="inline-flex items-center group">
+                        Rate (%)
+                        <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                          @if(sortBy === 'rate')
+                            <div class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ] {{ }}"></div>
+                          @else
+                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Type</th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
+                      <button onclick="toggleSort('country')" class="inline-flex items-center group">
+                        Country
+                        <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                          @if(sortBy === 'country')
+                            <div class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ] {{ }}"></div>
+                          @else
+                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Region</th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Status</th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Default</th>
+                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-right text-sm dark:text-neutral-200">
+                      <button onclick="toggleSort('createdAt')" class="inline-flex items-center text-right group">
+                        Created
+                        <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
+                          @if(sortBy === 'createdAt')
+                            <div class="[
+                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
+                              'h-4 w-4'
+                            ] {{ }}"></div>
+                          @else
+                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
+                          @endif
+                        </span>
+                      </button>
+                    </th>
+                    <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                      <span class="sr-only">Actions</span>
+                    </th>
+                  </tr>
+                </thead>
+                <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                  @foreach(filteredTaxes as tax)
+                    <tr>
+                      <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">
+                        {{ tax.name }}
+                      </td>
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ tax.rate }}%</td>
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                        {{ tax.type }}
+                      </td>
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                        {{ tax.country }}
+                      </td>
+                      <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                        {{ tax.region }}
+                      </td>
+                      <td class="px-3 py-4 text-sm whitespace-nowrap">
+                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
+                              class="text-green-700 text-red-700 dark:bg-green-900/30 dark:bg-red-900/30 ring-1 ring-1 ring-green-600/20 ring-inset ring-inset ring-red-600/20 !tax.active 'bg-green-50 'bg-red-50 { {{ } }} tax.active, dark:text-green-400': dark:text-red-400':">
+                          {{ tax.active ? 'Active' : 'Inactive' }}
+                        </span>
+                      </td>
+                      <td class="px-3 py-4 text-sm whitespace-nowrap">
+                        @if(tax.isDefault)
+                          <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-600/20 ring-inset rounded-md">
+                            Default
+                          </span>
+                        @endif
+                      </td>
+                      <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
+                        {{ tax.createdAt }}
+                      </td>
+                      <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                        <div class="flex items-center justify-end space-x-2">
+                          <button type="button" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
+                            <div class="h-5 w-5 i-hugeicons-edit-01"></div>
+                          </button>
+                          <button type="button" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
+                            <div class="h-5 w-5 i-hugeicons-waste"></div>
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  @endforeach
+                  @if(filteredTaxes.length === 0)
+                    <tr>
+                      <td colspan="8" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                        No taxes found matching your criteria
+                      </td>
+                    </tr>
+                  @endif
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add Tax Modal -->
+  @if(showAddModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Tax Rate</h3>
+              <div class="mt-2">
+                <div class="text-gray-500 text-sm dark:text-neutral-400">
+                  <p>Set up tax rates for different countries and regions where your SaaS products are sold.</p>
+                  <p class="mt-2">For digital services, tax is typically based on the customer's location rather than your business location.</p>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4">
+              <div class="space-y-4">
+                <div>
+                  <label for="tax-name" class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Name</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-name"
+                      type="text"
+                      value="{{ newTax.name }}"
+                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="tax-rate" class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Rate (%)</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-rate"
+                      type="number"
+                      step="0.01"
+                      value="{{ newTax.rate }}"
+                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    />
+                  </div>
+                  <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Enter the percentage rate (e.g., 20 for 20%)</p>
+                </div>
+
+                <div>
+                  <label for="tax-type" class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Type</label>
+                  <div class="mt-1">
+                    <select
+                      id="tax-type"
+                      value="{{ newTax.type }}"
+                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    >
+                      <option value="VAT">VAT</option>
+                      <option value="GST">GST</option>
+                      <option value="Sales Tax">Sales Tax</option>
+                      <option value="Digital Services Tax">Digital Services Tax</option>
+                      <option value="Consumption Tax">Consumption Tax</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div>
+                  <label for="tax-country" class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Country</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-country"
+                      type="text"
+                      value="{{ newTax.country }}"
+                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="tax-region" class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Region</label>
+                  <div class="mt-1">
+                    <input
+                      id="tax-region"
+                      type="text"
+                      value="{{ newTax.region }}"
+                      placeholder="All"
+                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    />
+                  </div>
+                </div>
+
+                <div class="flex items-center">
+                  <input
+                    id="active"
+                    value="{{ newTax.active }}"
+                    type="checkbox"
+                    class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
+                  >
+                  <label for="active" class="block ml-2 text-gray-900 text-sm dark:text-white">Active</label>
+                </div>
+
+                <div class="flex items-center">
+                  <input
+                    id="isDefault"
+                    value="{{ newTax.isDefault }}"
+                    type="checkbox"
+                    class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600 dark:focus:ring-offset-neutral-800"
+                  >
+                  <label for="isDefault" class="block ml-2 text-gray-900 text-sm dark:text-white">Set as default tax rate</label>
+                </div>
+                <p class="text-gray-500 text-sm dark:text-neutral-400">This tax rate will be applied to new SaaS subscriptions by default</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+            <button
+              type="button"
+              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+              onclick="addTax"
+            >
+              Add
+            </button>
+            <button
+              type="button"
+              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+              onclick="closeAddModal"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</main>
+
+@endsection

@@ -1,0 +1,1340 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+// Define list type
+interface List {
+  id: number
+  name: string
+  description: string
+  type: 'email' | 'sms' | 'both'
+  tags: string[]
+  subscriberCount: number
+  openRate?: number
+  clickRate?: number
+  unsubscribeRate?: number
+  lastSent: string | null
+  dateCreated: string
+  status: 'Active' | 'Draft' | 'Archived'
+  isDefault: boolean
+}
+
+// Define subscriber type
+interface Subscriber {
+  id: number
+  email: string
+  phone: string | null
+  firstName: string | null
+  lastName: string | null
+  dateSubscribed: string
+  status: 'Subscribed' | 'Unsubscribed' | 'Bounced'
+  source: string
+  listIds: number[]
+}
+
+// Sample lists data
+let lists = [
+  {
+    id: 1,
+    name: 'Newsletter Subscribers',
+    description: 'Main newsletter list for weekly updates',
+    type: 'email',
+    tags: ['newsletter', 'main'],
+    subscriberCount: 1245,
+    openRate: 24.5,
+    clickRate: 3.2,
+    unsubscribeRate: 0.5,
+    lastSent: '2023-12-15',
+    dateCreated: '2023-01-10',
+    status: 'Active',
+    isDefault: true
+  },
+  {
+    id: 2,
+    name: 'Product Announcements',
+    description: 'Customers interested in new product releases',
+    type: 'email',
+    tags: ['products', 'announcements'],
+    subscriberCount: 876,
+    openRate: 32.1,
+    clickRate: 5.7,
+    unsubscribeRate: 0.3,
+    lastSent: '2023-12-01',
+    dateCreated: '2023-02-15',
+    status: 'Active',
+    isDefault: false
+  },
+  {
+    id: 3,
+    name: 'SMS Promotions',
+    description: 'Customers who opted in for SMS promotional messages',
+    type: 'sms',
+    tags: ['sms', 'promotions'],
+    subscriberCount: 542,
+    openRate: undefined,
+    clickRate: 8.3,
+    unsubscribeRate: 1.2,
+    lastSent: '2023-11-25',
+    dateCreated: '2023-03-20',
+    status: 'Active',
+    isDefault: false
+  },
+  {
+    id: 4,
+    name: 'Abandoned Cart Reminders',
+    description: 'Customers who abandoned their shopping carts',
+    type: 'both',
+    tags: ['cart', 'recovery'],
+    subscriberCount: 328,
+    openRate: 41.2,
+    clickRate: 12.5,
+    unsubscribeRate: 0.8,
+    lastSent: '2023-12-10',
+    dateCreated: '2023-04-05',
+    status: 'Active',
+    isDefault: false
+  },
+  {
+    id: 5,
+    name: 'VIP Customers',
+    description: 'High-value customers for exclusive offers',
+    type: 'both',
+    tags: ['vip', 'exclusive'],
+    subscriberCount: 156,
+    openRate: 58.7,
+    clickRate: 24.3,
+    unsubscribeRate: 0.1,
+    lastSent: '2023-12-05',
+    dateCreated: '2023-05-12',
+    status: 'Active',
+    isDefault: false
+  },
+  {
+    id: 6,
+    name: 'Re-engagement Campaign',
+    description: 'Inactive customers we want to win back',
+    type: 'email',
+    tags: ['inactive', 'win-back'],
+    subscriberCount: 723,
+    openRate: 12.8,
+    clickRate: 1.9,
+    unsubscribeRate: 3.2,
+    lastSent: '2023-11-15',
+    dateCreated: '2023-06-20',
+    status: 'Active',
+    isDefault: false
+  },
+  {
+    id: 7,
+    name: 'Event Attendees',
+    description: 'Customers who registered for upcoming events',
+    type: 'both',
+    tags: ['events', 'webinars'],
+    subscriberCount: 412,
+    openRate: 38.5,
+    clickRate: 9.7,
+    unsubscribeRate: 0.4,
+    lastSent: '2023-12-08',
+    dateCreated: '2023-07-15',
+    status: 'Active',
+    isDefault: false
+  },
+  {
+    id: 8,
+    name: 'Beta Testers',
+    description: 'Customers interested in testing new features',
+    type: 'email',
+    tags: ['beta', 'testing'],
+    subscriberCount: 189,
+    openRate: 45.2,
+    clickRate: 18.6,
+    unsubscribeRate: 0.2,
+    lastSent: '2023-11-30',
+    dateCreated: '2023-08-10',
+    status: 'Active',
+    isDefault: false
+  }
+]
+
+// Sample subscribers data (not displayed directly but used for import/export functionality)
+let subscribers = [
+  {
+    id: 1,
+    email: 'john.doe@example.com',
+    phone: '+15551234567',
+    firstName: 'John',
+    lastName: 'Doe',
+    dateSubscribed: '2023-01-15',
+    status: 'Subscribed',
+    source: 'Website Signup',
+    listIds: [1, 2, 4]
+  },
+  {
+    id: 2,
+    email: 'jane.smith@example.com',
+    phone: '+15559876543',
+    firstName: 'Jane',
+    lastName: 'Smith',
+    dateSubscribed: '2023-02-20',
+    status: 'Subscribed',
+    source: 'Product Purchase',
+    listIds: [1, 3, 5]
+  },
+  {
+    id: 3,
+    email: 'robert.johnson@example.com',
+    phone: null,
+    firstName: 'Robert',
+    lastName: 'Johnson',
+    dateSubscribed: '2023-03-10',
+    status: 'Subscribed',
+    source: 'Lead Magnet',
+    listIds: [1, 2]
+  }
+]
+
+// Filter and sort options
+let searchQuery = ''
+let sortBy = 'dateCreated'
+let sortOrder = 'desc'
+let typeFilter = 'all'
+let statusFilter = 'all'
+let viewMode = 'list' // Default to list view and save in localStorage
+
+// Available list types and statuses
+const listTypes = ['all', 'email', 'sms', 'both']
+const statuses = ['all', 'Active', 'Draft', 'Archived']
+
+// Computed filtered and sorted lists
+function filteredLists() {
+  return lists
+    .filter(list => {
+      // Apply search filter
+      const matchesSearch =
+        list.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        list.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        list.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+
+      // Apply type filter
+      const matchesType = typeFilter === 'all' || list.type === typeFilter
+
+      // Apply status filter
+      const matchesStatus = statusFilter === 'all' || list.status === statusFilter
+
+      return matchesSearch && matchesType && matchesStatus
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy === 'dateCreated') {
+        comparison = new Date(a.dateCreated).getTime() - new Date(b.dateCreated).getTime()
+      } else if (sortBy === 'name') {
+        comparison = a.name.localeCompare(b.name)
+      } else if (sortBy === 'subscriberCount') {
+        comparison = a.subscriberCount - b.subscriberCount
+      } else if (sortBy === 'openRate') {
+        const aRate = a.openRate ?? 0
+        const bRate = b.openRate ?? 0
+        comparison = aRate - bRate
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+}
+
+// Pagination
+let currentPage = 1
+let itemsPerPage = 8
+function totalPages() { return Math.ceil(filteredLists.length / itemsPerPage) }
+
+function paginatedLists() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredLists.slice(start, end)
+}
+
+function changePage(page) {
+  currentPage = page
+}
+
+function previousPage() {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+function nextPage() {
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+// Toggle sort order
+function toggleSort(column) {
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy = column
+    sortOrder = 'desc'
+  }
+}
+
+// Get status badge class
+const getStatusClass = (status) => {
+  switch (status) {
+    case 'Active':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'Draft':
+      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+    case 'Archived':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+// Get type badge class
+const getTypeClass = (type) => {
+  switch (type) {
+    case 'email':
+      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'sms':
+      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
+    case 'both':
+      return 'bg-indigo-50 text-indigo-700 ring-1 ring-inset ring-indigo-600/20 dark:bg-indigo-900/30 dark:text-indigo-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+// Modal state for adding/editing list
+let showListModal = false
+let isEditMode = false
+let currentList = null
+
+// Computed properties for form fields to handle null currentList
+const listName = computed({
+  get: () => currentList.value?.name || '',
+  set: (value) => { if (currentList) currentList.name = value }
+}
+
+const listDescription = computed({
+  get: () => currentList.value?.description || '',
+  set: (value) => { if (currentList) currentList.description = value }
+}
+
+const listType = computed({
+  get: () => currentList.value?.type || 'email',
+  set: (value: 'email' | 'sms' | 'both') => { if (currentList) currentList.type = value }
+}
+
+const listTags = computed({
+  get: () => currentList.value?.tags.join(', ') || '',
+  set: (value) => {
+    if (currentList) {
+      currentList.tags = value.split(',').map(tag => tag.trim()).filter(tag => tag !== '')
+    }
+  }
+}
+
+const listStatus = computed({
+  get: () => currentList.value?.status || 'Draft',
+  set: (value: 'Active' | 'Draft' | 'Archived') => { if (currentList) currentList.status = value }
+}
+
+const listIsDefault = computed({
+  get: () => currentList.value?.isDefault || false,
+  set: (value) => { if (currentList) currentList.isDefault = value }
+}
+
+// Functions for managing lists
+function openAddListModal() {
+  isEditMode = false
+  currentList = {
+    id: Math.max(...lists.map(l => l.id)) + 1,
+    name: '',
+    description: '',
+    type: 'email',
+    tags: [],
+    subscriberCount: 0,
+    openRate: undefined,
+    clickRate: undefined,
+    unsubscribeRate: undefined,
+    lastSent: null,
+    dateCreated: new Date().toISOString().split('T')[0] || '2023-01-01', // Fallback date
+    status: 'Draft',
+    isDefault: false
+  }
+  showListModal = true
+}
+
+function openEditListModal(list) {
+  isEditMode = true
+  currentList = { ...list }
+  showListModal = true
+}
+
+function closeListModal() {
+  showListModal = false
+}
+
+function saveList() {
+  if (!currentList) return
+
+  // If setting this list as default, unset default on all other lists
+  if (currentList.isDefault) {
+    lists.forEach(list => {
+      if (list.id !== currentList.value!.id) {
+        list.isDefault = false
+      }
+    })
+  }
+
+  if (isEditMode) {
+    // Update existing list
+    const index = lists.findIndex(l => l.id === currentList.value!.id)
+    if (index !== -1) {
+      lists[index] = { ...currentList }
+    }
+  } else {
+    // Add new list
+    lists.push({ ...currentList })
+  }
+
+  closeListModal()
+}
+
+// Function to delete a list
+function deleteList(listId) {
+  if (confirm('Are you sure you want to delete this list? This will not delete the subscribers.')) {
+    const index = lists.findIndex(l => l.id === listId)
+    if (index !== -1) {
+      // Check if it's the default list
+      if (lists[index].isDefault) {
+        alert('Cannot delete the default list. Please set another list as default first.')
+        return
+      }
+      lists.splice(index, 1)
+    }
+  }
+}
+
+// Function to duplicate a list
+function duplicateList(list) {
+  const newList: List = {
+    ...list,
+    id: Math.max(...lists.map(l => l.id)) + 1,
+    name: `${list.name} (Copy)`,
+    subscriberCount: 0,
+    lastSent: null,
+    dateCreated: new Date().toISOString().split('T')[0] || '2023-01-01', // Fallback date
+    isDefault: false
+  }
+  lists.push(newList)
+}
+
+// Function to export list subscribers
+function exportList(listId) {
+  // In a real application, this would generate a CSV file with subscriber data
+  const list = lists.find(l => l.id === listId)
+  if (!list) return
+
+  const listSubscribers = subscribers.filter(s => s.listIds.includes(listId))
+
+  alert(`Exporting ${listSubscribers.length} subscribers from "${list.name}" list.`)
+
+  // This would normally trigger a download
+  console.log('Exporting subscribers:', listSubscribers)
+}
+
+// Function to import subscribers to a list
+function importSubscribers(listId) {
+  // In a real application, this would open a file upload dialog
+  alert('This would open a file upload dialog to import subscribers.')
+}
+
+// Calculate statistics
+function totalLists() { return lists.length }
+function totalEmailLists() { return lists.filter(l => l.type === 'email' || l.type === 'both' }.length)
+function totalSmsLists() { return lists.filter(l => l.type === 'sms' || l.type === 'both' }.length)
+function totalSubscribers() {
+  // In a real application, this would count unique subscribers
+  return lists.reduce((sum, list) => sum + list.subscriberCount, 0)
+}
+
+// Show import modal
+let showImportModal = false
+let importListId = null
+
+function openImportModal(listId) {
+  importListId = listId
+  showImportModal = true
+}
+
+function closeImportModal() {
+  showImportModal = false
+  importListId = null
+}
+
+// Bulk operations
+let selectedLists = []
+let selectAll = false
+
+function toggleSelectAll() {
+  if (selectAll) {
+    selectedLists = paginatedLists().map(list => list.id)
+  } else {
+    selectedLists = []
+  }
+}
+
+function toggleListSelection(listId) {
+  const index = selectedLists.indexOf(listId)
+  if (index === -1) {
+    selectedLists.push(listId)
+  } else {
+    selectedLists.splice(index, 1)
+  }
+
+  // Update selectAll based on whether all visible lists are selected
+  selectAll = paginatedLists().every(list => selectedLists.includes(list.id))
+}
+
+function bulkDelete() {
+  if (selectedLists.length === 0) return
+
+  if (confirm(`Are you sure you want to delete ${selectedLists.length} lists?`)) {
+    // Check if any selected list is a default list
+    const hasDefault = lists.some(list => list.isDefault && selectedLists.includes(list.id))
+
+    if (hasDefault) {
+      alert('Cannot delete the default list. Please set another list as default first.')
+      return
+    }
+
+    lists = lists.filter(list => !selectedLists.includes(list.id))
+    selectedLists = []
+    selectAll = false
+  }
+}
+
+function bulkChangeStatus(status) {
+  if (selectedLists.length === 0) return
+
+  lists.forEach(list => {
+    if (selectedLists.includes(list.id)) {
+      list.status = status
+    }
+  })
+}
+</script>
+
+@title('Dashboard - Marketing Lists')
+<main>
+    <div class="px-6 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <!-- Header section -->
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Marketing Lists</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Manage your email and SMS subscriber lists
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <button
+              type="button"
+              onclick="openAddListModal"
+              class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              <div class="mr-1 h-5 w-5 i-hugeicons-plus-sign"></div>
+              Create list
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+          <!-- Total lists card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                    <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-list-check"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Lists</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalLists }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Email lists card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-indigo-100 dark:bg-indigo-900 rounded-md">
+                    <div class="h-6 w-6 text-indigo-600 dark:text-indigo-300 i-hugeicons-mail"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Email Lists</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalEmailLists }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- SMS lists card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-purple-100 dark:bg-purple-900 rounded-md">
+                    <div class="h-6 w-6 text-purple-600 dark:text-purple-300 i-hugeicons-message-square-01"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">SMS Lists</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalSmsLists }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total subscribers card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 rounded-md">
+                    <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-users-01"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Subscribers</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalSubscribers }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bulk actions toolbar (visible when items are selected) -->
+        @if(selectedLists.length > 0)
+        <div class="mt-6 p-4 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center">
+              <span class="text-gray-700 text-sm dark:text-neutral-300">{{ selectedLists.length }} lists selected</span>
+            </div>
+            <div class="flex space-x-2">
+              <div class="inline-block relative text-left">
+                <button
+                  type="button"
+                  class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                >
+                  Change status
+                  <div class="ml-1 h-5 w-5 i-hugeicons-chevron-down"></div>
+                </button>
+                <div class="absolute right-0 z-10 mt-2 w-56 bg-white dark:bg-neutral-700 ring-1 ring-black ring-opacity-5 rounded-md dark:ring-neutral-600 focus:outline-none shadow-lg origin-top-right" role="menu" aria-orientation="vertical" aria-labelledby="menu-button" tabindex="-1" style="display: none;">
+                  <div class="py-1" role="none">
+                    <button onclick="bulkChangeStatus('Active')" class="block px-4 py-2 text-gray-700 text-sm dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-600" role="menuitem">Mark as Active</button>
+                    <button onclick="bulkChangeStatus('Draft')" class="block px-4 py-2 text-gray-700 text-sm dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-600" role="menuitem">Mark as Draft</button>
+                    <button onclick="bulkChangeStatus('Archived')" class="block px-4 py-2 text-gray-700 text-sm dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-600" role="menuitem">Archive</button>
+                  </div>
+                </div>
+              </div>
+              <button
+                onclick="bulkDelete"
+                class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
+              >
+                <div class="mr-1 h-5 w-5 i-hugeicons-waste"></div>
+                Delete selected
+              </button>
+            </div>
+          </div>
+        </div>
+        @endif
+
+        <!-- Filters and view options -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
+          <div class="relative max-w-sm">
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+            </div>
+            <input
+              value="{{ searchQuery }}"
+              type="text"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+              placeholder="Search lists..."
+            />
+          </div>
+
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <!-- Type filter -->
+            <select
+              value="{{ typeFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Types</option>
+              <option value="email">Email Only</option>
+              <option value="sms">SMS Only</option>
+              <option value="both">Email & SMS</option>
+            </select>
+
+            <!-- Status filter -->
+            <select
+              value="{{ statusFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Statuses</option>
+              @foreach(statuses.slice(1) as status)
+              <option value="{{ status }}">
+                {{ status }}
+              </option>
+              @endforeach
+            </select>
+
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                type="button"
+                onclick="viewMode = 'grid'"
+                class="[
+                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'grid'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-grid"></div>
+              </button>
+              <button
+                type="button"
+                onclick="viewMode = 'list'"
+                class="[
+                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'list'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort options -->
+        <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
+          <span class="mr-2">Sort by:</span>
+          <button
+            onclick="toggleSort('name')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'name' { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Name
+            @if(sortBy === 'name')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+              <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+              @endif
+            </span>
+            @endif
+          </button>
+          <button
+            onclick="toggleSort('subscriberCount')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'subscriberCount' { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Subscribers
+            @if(sortBy === 'subscriberCount')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+              <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+              @endif
+            </span>
+            @endif
+          </button>
+          <button
+            onclick="toggleSort('openRate')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'openRate' { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Open Rate
+            @if(sortBy === 'openRate')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+              <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+              @endif
+            </span>
+            @endif
+          </button>
+          <button
+            onclick="toggleSort('dateCreated')"
+            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'dateCreated' 'font-semibold { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Date Created
+            @if(sortBy === 'dateCreated')
+            <span class="ml-1">
+              @if(sortOrder === 'asc')
+              <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+              <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+              @endif
+            </span>
+            @endif
+          </button>
+        </div>
+
+        <!-- List view -->
+        @if(viewMode === 'list')
+        <div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-700">
+              <tr>
+                <th scope="col" class="relative px-7 sm:px-6 sm:w-12">
+                  <input
+                    type="checkbox"
+                    class="absolute left-4 top-1/2 -mt-2 h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
+                    checked="{{ selectAll }}"
+                    onchange="toggleSelectAll"
+                  />
+                </th>
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">List Name</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Type</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-white">Subscribers</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-white">Open Rate</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-white">Last Sent</th>
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+              @if(paginatedLists().length === 0)
+              <tr>
+                <td colspan="8" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                  No lists found. Try adjusting your search or filter.
+                </td>
+              </tr>
+              @endif
+              @foreach(paginatedLists as list)
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
+                <td class="relative px-7 sm:px-6 sm:w-12">
+                  <div class="absolute left-4 top-1/2 -mt-2">
+                    <input
+                      type="checkbox"
+                      class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
+                      checked="{{ selectedLists.includes(list.id) }}"
+                      onchange="toggleListSelection(list.id)"
+                    />
+                  </div>
+                </td>
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 bg-gray-100 dark:bg-neutral-700 rounded-md">
+                      @if(list.type === 'email')
+                      <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-mail"></div>
+                      @elseif(list.type === 'sms')
+                      <div class="h-6 w-6 text-purple-600 dark:text-purple-400 i-hugeicons-message-square-01"></div>
+                      @else
+                      <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-mail-message-square"></div>
+                      @endif
+                    </div>
+                    <div class="ml-4">
+                      <div class="flex items-center font-medium text-gray-900 dark:text-white">
+                        {{ list.name }}
+                        @if(list.isDefault)
+                        <span class="inline-flex items-center ml-2 px-1.5 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-600/20 ring-inset rounded-full">
+                          Default
+                        </span>
+                        @endif
+                      </div>
+                      <div class="line-clamp-1 text-gray-500 dark:text-neutral-400">{{ list.description }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <span :class="[getTypeClass(list.type), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                    {{ list.type === 'email' ? 'Email' : list.type === 'sms' ? 'SMS' : 'Email & SMS' }}
+                  </span>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <span :class="[getStatusClass(list.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                    {{ list.status }}
+                  </span>
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                  {{ list.subscriberCount }}
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                  {{ list.openRate !== undefined ? `${list.openRate}%` : 'N/A' }}
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                  {{ list.lastSent || 'Never' }}
+                </td>
+                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                  <div class="flex justify-end space-x-2">
+                    <button
+                      onclick="openImportModal(list.id)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
+                      title="Import subscribers"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-upload-01"></div>
+                      <span class="sr-only">Import subscribers to {{ list.name }}</span>
+                    </button>
+                    <button
+                      onclick="exportList(list.id)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
+                      title="Export subscribers"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-download-01"></div>
+                      <span class="sr-only">Export subscribers from {{ list.name }}</span>
+                    </button>
+                    <button
+                      onclick="duplicateList(list)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
+                      title="Duplicate list"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-copy-01"></div>
+                      <span class="sr-only">Duplicate {{ list.name }}</span>
+                    </button>
+                    <button
+                      onclick="openEditListModal(list)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
+                      title="Edit list"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-edit-01"></div>
+                      <span class="sr-only">Edit {{ list.name }}</span>
+                    </button>
+                    <button
+                      onclick="deleteList(list.id)"
+                      class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
+                      title="Delete list"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-waste"></div>
+                      <span class="sr-only">Delete {{ list.name }}</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+        @endif
+
+        <!-- Grid view -->
+        @if(viewMode === 'grid')
+        <div class="mt-6">
+          @if(paginatedLists().length === 0)
+          <div class="py-12 text-center">
+            <div class="mx-auto h-12 w-12 text-gray-400 i-hugeicons-list-check"></div>
+            <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-white">No lists found</h3>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or filter to find what you're looking for.</p>
+          </div>
+          @else
+          <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <!-- List card -->
+            @foreach(paginatedLists as list)
+            <div
+              class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition group"
+            >
+              <!-- List header with type icon -->
+              <div class="relative p-4 border-b border-gray-200 dark:border-neutral-700">
+                <div class="flex items-center justify-between">
+                  <div class="flex items-center">
+                    <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 bg-gray-100 dark:bg-neutral-700 rounded-md">
+                      @if(list.type === 'email')
+                      <div class="h-6 w-6 text-blue-600 dark:text-blue-400 i-hugeicons-mail"></div>
+                      @elseif(list.type === 'sms')
+                      <div class="h-6 w-6 text-purple-600 dark:text-purple-400 i-hugeicons-message-square-01"></div>
+                      @else
+                      <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-mail-message-square"></div>
+                      @endif
+                    </div>
+                    <div class="ml-3">
+                      <h3 class="flex items-center font-medium text-gray-900 text-sm dark:text-white">
+                        {{ list.name }}
+                        @if(list.isDefault)
+                        <span class="inline-flex items-center ml-2 px-1.5 py-0.5 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-600/20 ring-inset rounded-full">
+                          Default
+                        </span>
+                        @endif
+                      </h3>
+                      <span :class="[getTypeClass(list.type), 'mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium']">
+                        {{ list.type === 'email' ? 'Email' : list.type === 'sms' ? 'SMS' : 'Email & SMS' }}
+                      </span>
+                    </div>
+                  </div>
+                  <span :class="[getStatusClass(list.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                    {{ list.status }}
+                  </span>
+                </div>
+              </div>
+
+              <!-- List info -->
+              <div class="p-4">
+                <p class="line-clamp-2 text-gray-500 text-sm dark:text-neutral-400">{{ list.description }}</p>
+
+                <div class="grid gap-4 grid-cols-2 mt-4 text-sm">
+                  <div>
+                    <div class="text-gray-500 dark:text-neutral-400">Subscribers</div>
+                    <div class="font-medium text-gray-900 dark:text-white">{{ list.subscriberCount }}</div>
+                  </div>
+                  <div>
+                    <div class="text-gray-500 dark:text-neutral-400">Open Rate</div>
+                    <div class="font-medium text-gray-900 dark:text-white">{{ list.openRate !== undefined ? `${list.openRate}%` : 'N/A' }}</div>
+                  </div>
+                  <div>
+                    <div class="text-gray-500 dark:text-neutral-400">Last Sent</div>
+                    <div class="font-medium text-gray-900 dark:text-white">{{ list.lastSent || 'Never' }}</div>
+                  </div>
+                  <div>
+                    <div class="text-gray-500 dark:text-neutral-400">Created</div>
+                    <div class="font-medium text-gray-900 dark:text-white">{{ list.dateCreated }}</div>
+                  </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-4">
+                  <div class="flex items-center">
+                    <input
+                      type="checkbox"
+                      class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
+                      checked="{{ selectedLists.includes(list.id) }}"
+                      onchange="toggleListSelection(list.id)"
+                    />
+                    <span class="ml-2 text-gray-500 text-xs dark:text-neutral-400">Select</span>
+                  </div>
+                  <div class="flex space-x-2">
+                    <button
+                      onclick="openEditListModal(list)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
+                    >
+                      <div class="h-4 w-4 i-hugeicons-edit-01"></div>
+                      <span class="sr-only">Edit</span>
+                    </button>
+                    <button
+                      onclick="deleteList(list.id)"
+                      class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 transition-colors"
+                    >
+                      <div class="h-4 w-4 i-hugeicons-waste"></div>
+                      <span class="sr-only">Delete</span>
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+            @endforeach
+          </div>
+          @endif
+        </div>
+        @endif
+
+        <!-- Pagination -->
+        @if(totalPages > 1)
+        <div class="flex items-center justify-between mt-6 px-4 py-3 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
+          <div class="flex sm:hidden flex-1 justify-between">
+            <button
+              onclick="previousPage"
+              disabled="{{ currentPage === 1 }}"
+              class="[
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
+              ] {{ }}"
+            >
+              Previous
+            </button>
+            <button
+              onclick="nextPage"
+              disabled="{{ currentPage === totalPages }}"
+              class="[
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
+                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
+              ] {{ }}"
+            >
+              Next
+            </button>
+          </div>
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-gray-700 text-sm dark:text-neutral-300">
+                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredLists.length) }}</span> of
+                <span class="font-medium">{{ filteredLists.length }}</span> results
+              </p>
+            </div>
+            <div>
+              <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+                <button
+                  onclick="previousPage"
+                  disabled="{{ currentPage === 1 }}"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:outline-offset-0"
+                  class="'opacity-50 { {{ } }} === 1 currentPage cursor-not-allowed':"
+                >
+                  <span class="sr-only">Previous</span>
+                  <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
+                </button>
+                @foreach(totalPages as page)
+                <button
+                  onclick="changePage(page)"
+                  class="[
+                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600',
+                    page === currentPage
+                      ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
+                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700'
+                  ] {{ }}"
+                >
+                  {{ page }}
+                </button>
+                @endforeach
+                <button
+                  onclick="nextPage"
+                  disabled="{{ currentPage === totalPages }}"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0"
+                  class="'opacity-50 { {{ } }} === currentPage cursor-not-allowed': totalPages"
+                >
+                  <span class="sr-only">Next</span>
+                  <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+        @endif
+      </div>
+    </div>
+
+    <!-- Add/Edit List Modal -->
+    @if(showListModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="absolute right-0 top-0 pr-4 pt-4">
+            <button
+              type="button"
+              onclick="closeListModal"
+              class="text-gray-400 dark:text-neutral-500 hover:text-gray-500 dark:hover:text-gray-400 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <span class="sr-only">Close</span>
+              <div class="h-6 w-6 i-hugeicons-can"></div>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 sm:ml-4 sm:mt-0 w-full text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
+                {{ isEditMode ? 'Edit List' : 'Create New List' }}
+              </h3>
+              <div class="mt-4">
+                <form onsubmit="saveList; return false" class="space-y-4">
+                  <!-- List name -->
+                  <div>
+                    <label for="list-name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
+                    <input
+                      type="text"
+                      id="list-name"
+                      value="{{ listName }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      required
+                    />
+                  </div>
+
+                  <!-- List description -->
+                  <div>
+                    <label for="list-description" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Description</label>
+                    <textarea
+                      id="list-description"
+                      value="{{ listDescription }}"
+                      rows="3"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    ></textarea>
+                  </div>
+
+                  <!-- List type -->
+                  <div>
+                    <label for="list-type" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Type</label>
+                    <select
+                      id="list-type"
+                      value="{{ listType }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    >
+                      <option value="email">Email Only</option>
+                      <option value="sms">SMS Only</option>
+                      <option value="both">Email & SMS</option>
+                    </select>
+                  </div>
+
+                  <!-- List tags -->
+                  <div>
+                    <label for="list-tags" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Tags (comma separated)</label>
+                    <input
+                      type="text"
+                      id="list-tags"
+                      value="{{ listTags }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      placeholder="newsletter, promo, vip"
+                    />
+                  </div>
+
+                  <!-- List status -->
+                  <div>
+                    <label for="list-status" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
+                    <select
+                      id="list-status"
+                      value="{{ listStatus }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    >
+                      <option value="Active">Active</option>
+                      <option value="Draft">Draft</option>
+                      <option value="Archived">Archived</option>
+                    </select>
+                  </div>
+
+                  <!-- Default list checkbox -->
+                  <div class="mt-4">
+                    <div class="flex items-center">
+                      <input
+                        id="list-default"
+                        type="checkbox"
+                        value="{{ listIsDefault }}"
+                        class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-500"
+                      />
+                      <label for="list-default" class="block ml-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Set as default list</label>
+                    </div>
+                    @if(listIsDefault)
+                    <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
+                      This will unset any other default list. New subscribers will be added to this list by default.
+                    </p>
+                    @endif
+                  </div>
+
+                  <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+                    <button
+                      type="submit"
+                      class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
+                    >
+                      {{ isEditMode ? 'Save Changes' : 'Create List' }}
+                    </button>
+                    <button
+                      type="button"
+                      onclick="closeListModal"
+                      class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    @endif
+
+    <!-- Import Subscribers Modal -->
+    @if(showImportModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="absolute right-0 top-0 pr-4 pt-4">
+            <button
+              type="button"
+              onclick="closeImportModal"
+              class="text-gray-400 dark:text-neutral-500 hover:text-gray-500 dark:hover:text-gray-400 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <span class="sr-only">Close</span>
+              <div class="h-6 w-6 i-hugeicons-can"></div>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900 rounded-full">
+              <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-upload-01"></div>
+            </div>
+            <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Import Subscribers</h3>
+              <div class="mt-2">
+                <p class="text-gray-500 text-sm dark:text-neutral-400">
+                  Upload a CSV file with subscriber data to import into this list.
+                </p>
+              </div>
+              <div class="mt-4">
+                <div class="flex items-center justify-center w-full">
+                  <label for="dropzone-file" class="flex flex-col items-center justify-center h-32 w-full bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-700 border-2 border-dashed border-gray-300 rounded-lg dark:border-neutral-600 cursor-pointer">
+                    <div class="flex flex-col items-center justify-center pb-6 pt-5">
+                      <div class="mb-3 h-10 w-10 text-gray-400 dark:text-neutral-500 i-hugeicons-upload-01"></div>
+                      <p class="mb-2 text-gray-500 text-sm dark:text-neutral-400"><span class="font-semibold">Click to upload</span> or drag and drop</p>
+                      <p class="text-gray-500 text-xs dark:text-neutral-400">CSV file (MAX. 10MB)</p>
+                    </div>
+                    <input id="dropzone-file" type="file" class="hidden" accept=".csv" />
+                  </label>
+                </div>
+                <div class="mt-4">
+                  <p class="text-gray-500 text-xs dark:text-neutral-400">
+                    Your CSV should include the following columns: email, phone (optional), first_name (optional), last_name (optional)
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+            <button
+              type="button"
+              class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
+              onclick="importSubscribers(importListId || 0)"
+            >
+              Import
+            </button>
+            <button
+              type="button"
+              onclick="closeImportModal"
+              class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+    @endif
+  </main>
+
+@endsection

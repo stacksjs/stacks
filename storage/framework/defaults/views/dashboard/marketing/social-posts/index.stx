@@ -1,0 +1,1219 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+// Define post type
+interface SocialPost {
+  id: number
+  content: string
+  images: string[]
+  platform: string
+  status: string
+  scheduledDate: string
+  publishedDate: string | null
+  author: string
+  authorAvatar: string
+  likes: number
+  reposts: number
+  replies: number
+  engagement: number
+  tags: string[]
+  isThreadStarter: boolean
+  threadId: number | null
+  threadSize: number
+}
+
+// Sample posts data
+let posts = [
+  {
+    id: 1,
+    content: "Just launched our new summer menu! Come try our refreshing new salads and smoothies. Perfect for the hot weather! #SummerMenu #HealthyEating",
+    images: ["https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Published",
+    scheduledDate: "2023-06-15T10:00:00",
+    publishedDate: "2023-06-15T10:00:00",
+    author: "Marketing Team",
+    authorAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    likes: 28,
+    reposts: 12,
+    replies: 5,
+    engagement: 4.5,
+    tags: ["SummerMenu", "HealthyEating"],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  },
+  {
+    id: 2,
+    content: "We're excited to announce our partnership with local farmers to bring you the freshest ingredients possible! Supporting local has always been our priority. #LocalFarmers #FarmToTable",
+    images: ["https://images.unsplash.com/photo-1595855759920-86582396756a?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Scheduled",
+    scheduledDate: "2023-07-01T09:30:00",
+    publishedDate: null,
+    author: "Marketing Team",
+    authorAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["LocalFarmers", "FarmToTable"],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  },
+  {
+    id: 3,
+    content: "Thread: Our chef's journey to creating the perfect burger (1/4\n\nIt all started with a passion for quality ingredients and the perfect bun-to-patty ratio. #BurgerStory #CulinaryJourney",
+    images: ["https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Draft",
+    scheduledDate: "2023-07-05T12:00:00",
+    publishedDate: null,
+    author: "Chef Michael",
+    authorAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["BurgerStory", "CulinaryJourney"],
+    isThreadStarter: true,
+    threadId: 101,
+    threadSize: 4
+  },
+  {
+    id: 4,
+    content: "Thread: Our chef's journey to creating the perfect burger (2/4)\n\nThe search for the perfect blend of beef cuts took months of experimentation. We settled on a mix of chuck, brisket, and short rib. #BurgerStory #BeefBlend",
+    images: [],
+    platform: "Bluesky",
+    status: "Draft",
+    scheduledDate: "2023-07-05T12:05:00",
+    publishedDate: null,
+    author: "Chef Michael",
+    authorAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["BurgerStory", "BeefBlend"],
+    isThreadStarter: false,
+    threadId: 101,
+    threadSize: 4
+  },
+  {
+    id: 5,
+    content: "Join us this weekend for our special brunch menu! Mimosas included with every order. Reservations recommended. #WeekendBrunch #Mimosas",
+    images: ["https://images.unsplash.com/photo-1533089860892-a9c9f5a37eb5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Failed",
+    scheduledDate: "2023-06-20T08:00:00",
+    publishedDate: null,
+    author: "Marketing Team",
+    authorAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["WeekendBrunch", "Mimosas"],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  },
+  {
+    id: 6,
+    content: "Customer appreciation week starts tomorrow! Enjoy 15% off all orders and a free dessert with purchases over $30. Thank you for your continued support! #CustomerAppreciation #FreeDesert",
+    images: ["https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Published",
+    scheduledDate: "2023-06-25T11:00:00",
+    publishedDate: "2023-06-25T11:00:00",
+    author: "Marketing Team",
+    authorAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    likes: 45,
+    reposts: 23,
+    replies: 15,
+    engagement: 8.3,
+    tags: ["CustomerAppreciation", "FreeDesert"],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  },
+  {
+    id: 7,
+    content: "We're hiring! Looking for passionate chefs and servers to join our team. Competitive pay and benefits. Send your resume to careers@ourrestaurant.com #NowHiring #RestaurantJobs",
+    images: [],
+    platform: "Bluesky",
+    status: "Scheduled",
+    scheduledDate: "2023-07-10T14:00:00",
+    publishedDate: null,
+    author: "HR Team",
+    authorAvatar: "https://randomuser.me/api/portraits/men/67.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["NowHiring", "RestaurantJobs"],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  },
+  {
+    id: 8,
+    content: "Thread: Our chef's journey to creating the perfect burger (3/4)\n\nThe secret to our juicy burgers? We cook them sous vide before finishing them on a blazing hot grill. #BurgerStory #CookingTechniques",
+    images: [],
+    platform: "Bluesky",
+    status: "Draft",
+    scheduledDate: "2023-07-05T12:10:00",
+    publishedDate: null,
+    author: "Chef Michael",
+    authorAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["BurgerStory", "CookingTechniques"],
+    isThreadStarter: false,
+    threadId: 101,
+    threadSize: 4
+  },
+  {
+    id: 9,
+    content: "Thread: Our chef's journey to creating the perfect burger (4/4)\n\nCome try the result of our journey - The Ultimate Burger - available now for a limited time! #BurgerStory #LimitedTimeOffer",
+    images: ["https://images.unsplash.com/photo-1565299507177-b0ac66763828?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Draft",
+    scheduledDate: "2023-07-05T12:15:00",
+    publishedDate: null,
+    author: "Chef Michael",
+    authorAvatar: "https://randomuser.me/api/portraits/men/32.jpg",
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: ["BurgerStory", "LimitedTimeOffer"],
+    isThreadStarter: false,
+    threadId: 101,
+    threadSize: 4
+  },
+  {
+    id: 10,
+    content: "Happy hour just got happier! Join us Monday-Friday from 4-6pm for half-price appetizers and $5 signature cocktails. #HappyHour #Cocktails",
+    images: ["https://images.unsplash.com/photo-1551024709-8f23befc6f87?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80"],
+    platform: "Bluesky",
+    status: "Published",
+    scheduledDate: "2023-06-10T16:00:00",
+    publishedDate: "2023-06-10T16:00:00",
+    author: "Marketing Team",
+    authorAvatar: "https://randomuser.me/api/portraits/women/44.jpg",
+    likes: 37,
+    reposts: 18,
+    replies: 8,
+    engagement: 6.3,
+    tags: ["HappyHour", "Cocktails"],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  }
+])
+
+// Filter and sort options
+let searchQuery = ''
+let sortBy = 'scheduledDate'
+let sortOrder = 'desc'
+let statusFilter = 'all'
+let platformFilter = 'all'
+let authorFilter = 'all'
+let viewMode = 'compact' // 'detailed' or 'compact'
+
+// Available statuses
+const statuses = ['all', 'Published', 'Scheduled', 'Draft', 'Failed']
+
+// Available platforms
+const platforms = ['all', 'Bluesky', 'Twitter', 'Instagram', 'Facebook']
+
+// Get unique authors from posts
+function authors() {
+  const uniqueAuthors = new Set(['all'])
+  posts.forEach(post => uniqueAuthors.add(post.author))
+  return Array.from(uniqueAuthors)
+}
+
+// Computed filtered and sorted posts
+function filteredPosts() {
+  return posts
+    .filter(post => {
+      // Apply search filter
+      const matchesSearch =
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase())) ||
+        post.author.toLowerCase().includes(searchQuery.toLowerCase())
+
+      // Apply status filter
+      const matchesStatus = statusFilter === 'all' || post.status === statusFilter
+
+      // Apply platform filter
+      const matchesPlatform = platformFilter === 'all' || post.platform === platformFilter
+
+      // Apply author filter
+      const matchesAuthor = authorFilter === 'all' || post.author === authorFilter
+
+      return matchesSearch && matchesStatus && matchesPlatform && matchesAuthor
+    })
+    .sort((a, b) => {
+      // Apply sorting
+      let comparison = 0
+      if (sortBy === 'scheduledDate') {
+        comparison = new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime()
+      } else if (sortBy === 'engagement') {
+        comparison = a.engagement - b.engagement
+      } else if (sortBy === 'author') {
+        comparison = a.author.localeCompare(b.author)
+      }
+
+      return sortOrder === 'asc' ? comparison : -comparison
+    })
+}
+
+// Pagination
+let currentPage = 1
+let itemsPerPage = 5
+function totalPages() { return Math.ceil(filteredPosts.length / itemsPerPage) }
+
+function paginatedPosts() {
+  const start = (currentPage - 1) * itemsPerPage
+  const end = start + itemsPerPage
+  return filteredPosts.slice(start, end)
+}
+
+function changePage(page: number): void {
+  currentPage = page
+}
+
+function previousPage(): void {
+  if (currentPage > 1) {
+    currentPage--
+  }
+}
+
+function nextPage(): void {
+  if (currentPage < totalPages) {
+    currentPage++
+  }
+}
+
+// Toggle sort order
+function toggleSort(column: string): void {
+  if (sortBy === column) {
+    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortBy = column
+    sortOrder = 'desc'
+  }
+}
+
+// Get status badge class
+const getStatusClass = (status: string): string => {
+  switch (status) {
+    case 'Published':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'Scheduled':
+      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'Draft':
+      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+    case 'Failed':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+// Format date
+function formatDate(date: string | null): string {
+  if (!date) return 'N/A';
+
+  const options: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  };
+  return new Date(date).toLocaleDateString(undefined, options);
+}
+
+// Modal state for editing post
+let showPostModal = false
+let currentPost = null
+let isNewPost = false
+
+function openNewPostModal(): void {
+  currentPost = {
+    id: Math.max(...posts.map(p => p.id)) + 1,
+    content: '',
+    images: [],
+    platform: 'Bluesky',
+    status: 'Draft',
+    scheduledDate: new Date().toISOString(),
+    publishedDate: null,
+    author: 'Marketing Team',
+    authorAvatar: 'https://randomuser.me/api/portraits/women/44.jpg',
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0,
+    tags: [],
+    isThreadStarter: false,
+    threadId: null,
+    threadSize: 0
+  }
+  isNewPost = true
+  showPostModal = true
+}
+
+function openEditPostModal(post: SocialPost): void {
+  currentPost = { ...post }
+  isNewPost = false
+  showPostModal = true
+}
+
+function closePostModal(): void {
+  showPostModal = false
+}
+
+function savePost(): void {
+  if (!currentPost) return
+
+  if (isNewPost) {
+    // Add new post
+    posts.push({ ...currentPost })
+  } else {
+    // Update existing post
+    const index = posts.findIndex(p => p.id === currentPost.value!.id)
+    if (index !== -1) {
+      posts[index] = { ...currentPost }
+    }
+  }
+
+  closePostModal()
+}
+
+// Delete post
+function deletePost(postId: number): void {
+  const index = posts.findIndex(p => p.id === postId)
+  if (index !== -1) {
+    posts.splice(index, 1)
+  }
+}
+
+// Duplicate post
+function duplicatePost(post: SocialPost): void {
+  const newPost = {
+    ...post,
+    id: Math.max(...posts.map(p => p.id)) + 1,
+    status: 'Draft',
+    publishedDate: null,
+    likes: 0,
+    reposts: 0,
+    replies: 0,
+    engagement: 0
+  }
+  posts.push(newPost)
+}
+
+// Calculate summary statistics
+function totalPosts() { return posts.length }
+function publishedPosts() { return posts.filter(p => p.status === 'Published' }.length)
+function scheduledPosts() { return posts.filter(p => p.status === 'Scheduled' }.length)
+function draftPosts() { return posts.filter(p => p.status === 'Draft' }.length)
+
+// Extract tags from content
+function extractTags(content: string): string[] {
+  const tags: string[] = []
+  const matches = content.match(/#[a-zA-Z0-9]+/g)
+  if (matches) {
+    matches.forEach(tag => {
+      tags.push(tag.substring(1)) // Remove the # symbol
+    })
+  }
+  return tags
+}
+
+// Update tags when content changes
+function updateTags(): void {
+  if (currentPost) {
+    currentPost.tags = extractTags(currentPost.content)
+  }
+}
+
+// Create thread from selected posts
+function createThread(posts: SocialPost[]): void {
+  if (posts.length < 2) return
+
+  const threadId = Date.now()
+  posts.forEach((post, index) => {
+    post.threadId = threadId
+    post.isThreadStarter = index === 0
+    post.threadSize = posts.length
+  })
+}
+
+// Get thread posts
+function getThreadPosts(threadId: number): SocialPost[] {
+  return posts.filter(post => post.threadId === threadId)
+    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime())
+}
+
+// Check if post is part of a thread
+function isPartOfThread(post: SocialPost): boolean {
+  return post.threadId !== null
+}
+
+// Add image to post
+function addImageToPost(url: string): void {
+  if (currentPost && currentPost.images.length < 4) {
+    currentPost.images.push(url)
+  }
+}
+
+// Remove image from post
+function removeImageFromPost(index: number): void {
+  if (currentPost) {
+    currentPost.images.splice(index, 1)
+  }
+}
+
+// Truncate text for display
+function truncateText(text: string, max: number): string {
+  if (text.length <= maxLength) return text
+  return text.substring(0, maxLength) + '...'
+}
+</script>
+
+<main>
+    <div class="px-6 py-6 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl">
+        <!-- Header section -->
+        <div class="sm:flex sm:items-center sm:justify-between">
+          <div>
+            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Social Media Posts</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Create, schedule, and manage your social media posts for Bluesky
+            </p>
+          </div>
+          <div class="mt-4 sm:mt-0">
+            <button
+              onclick="openNewPostModal"
+              class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              <div class="mr-2 h-5 w-5 i-hugeicons-plus-sign"></div>
+              New Post
+            </button>
+          </div>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+          <!-- Total posts card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                    <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-document-validation"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Posts</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ totalPosts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Published posts card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 rounded-md">
+                    <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-checkmark-circle-02"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Published</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ publishedPosts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Scheduled posts card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                    <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-clock-01"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Scheduled</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ scheduledPosts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Draft posts card -->
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-5">
+              <div class="flex items-center">
+                <div class="flex-shrink-0">
+                  <div class="p-2 h-10 w-10 bg-yellow-100 dark:bg-yellow-900 rounded-md">
+                    <div class="h-6 w-6 text-yellow-600 dark:text-yellow-300 i-hugeicons-edit-01"></div>
+                  </div>
+                </div>
+                <div class="flex-1 ml-5 w-0">
+                  <dl>
+                    <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Drafts</dt>
+                    <dd>
+                      <div class="font-medium text-gray-900 text-lg dark:text-white">{{ draftPosts }}</div>
+                    </dd>
+                  </dl>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters and view options -->
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
+          <div class="relative max-w-sm">
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+            </div>
+            <input
+              value="{{ searchQuery }}"
+              type="text"
+              class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+              placeholder="Search posts..."
+            />
+          </div>
+
+          <div class="flex flex-col gap-4 sm:flex-row">
+            <!-- Status filter -->
+            <select
+              value="{{ statusFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Statuses</option>
+              @foreach(statuses.slice(1) as status)
+<option value="{{ status }}">
+                {{ status }}
+              </option>
+            </select>
+
+            <!-- Platform filter -->
+            <select
+              value="{{ platformFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Platforms</option>
+              @foreach(platforms.slice(1) as platform)
+<option value="{{ platform }}">
+                {{ platform }}
+              </option>
+            </select>
+
+            <!-- Author filter -->
+            <select
+              value="{{ authorFilter }}"
+              class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              <option value="all">All Authors</option>
+              @foreach(authors.slice(1) as author)
+<option value="{{ author }}">
+                {{ author }}
+              </option>
+            </select>
+
+            <!-- View mode toggle -->
+            <div class="flex rounded-md shadow-sm">
+              <button
+                type="button"
+                onclick="viewMode = 'detailed'"
+                class="[
+                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'detailed'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-grid"></div>
+              </button>
+              <button
+                type="button"
+                onclick="viewMode = 'compact'"
+                class="[
+                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+                  viewMode === 'compact'
+                    ? 'bg-blue-600 text-white ring-blue-600'
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+                ] {{ }}"
+              >
+                <div class="h-5 w-5 i-hugeicons-list-view"></div>
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sort options -->
+        <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
+          <span class="mr-2">Sort by:</span>
+          <button
+            onclick="toggleSort('scheduledDate')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'font-semibold 'scheduledDate' { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Date
+            @if(sortBy === 'scheduledDate')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+            </span>
+          </button>
+          <button
+            onclick="toggleSort('engagement')"
+            class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'engagement' 'font-semibold { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Engagement
+            @if(sortBy === 'engagement')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+            </span>
+          </button>
+          <button
+            onclick="toggleSort('author')"
+            class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
+            class="text-blue-600 'author' 'font-semibold { {{ } }} === sortBy dark:text-blue-400':"
+          >
+            Author
+            @if(sortBy === 'author')
+<span class="ml-1">
+              @if(sortOrder === 'asc')
+<div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @else
+<div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+            </span>
+          </button>
+        </div>
+
+        <!-- Detailed view -->
+        @if(viewMode === 'detailed')
+<div class="mt-6">
+          @if(paginatedPosts.length === 0)
+<div class="py-12 text-center">
+            <div class="mx-auto h-12 w-12 text-gray-400 i-hugeicons-document-validation"></div>
+            <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-white">No posts found</h3>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or filter to find what you're looking for.</p>
+          </div>
+
+          @else
+<div class="space-y-6">
+            <!-- Post card -->
+            @foreach(paginatedPosts as post)
+<div
+              class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm"
+            >
+              <div class="p-6">
+                <div class="flex items-start justify-between">
+                  <!-- Author info and platform -->
+                  <div class="flex items-start space-x-4">
+                    <img
+                      :src="post.authorAvatar"
+                      :alt="post.author"
+                      class="object-cover h-12 w-12 rounded-full"
+                    />
+                    <div>
+                      <h3 class="font-medium text-base text-gray-900 dark:text-white">{{ post.author }}</h3>
+                      <div class="flex items-center mt-1">
+                        <span
+                          class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-600/20 ring-inset rounded-full"
+                        >
+                          {{ post.platform }}
+                        </span>
+                        <span class="ml-2 text-gray-500 text-sm dark:text-neutral-400">{{ formatDate(post.scheduledDate) }}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Status badge and thread info -->
+                  <div class="flex flex-col items-end space-y-2">
+                    <span
+                      :class="[getStatusClass(post.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']"
+                    >
+                      {{ post.status }}
+                    </span>
+                    @if(isPartOfThread(post))
+<span
+                      class="inline-flex items-center px-2 py-1 w-fit font-medium text-purple-700 text-xs dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 ring-1 ring-inset ring-purple-600/20 rounded-full"
+                    >
+                      Thread {{ post.isThreadStarter ? '(Starter)' : '' }}
+                    </span>
+                  </div>
+                </div>
+
+                <!-- Post content -->
+                <div class="mt-4">
+                  <p class="text-gray-500 text-sm dark:text-neutral-400">{{ post.content }}</p>
+                </div>
+
+                <!-- Post images -->
+                @if(post.images.length > 0)
+<div class="mt-4">
+                  <div class="grid gap-2 grid-cols-2">
+                    @foreach(post.images as index => image)
+<div
+                      class="aspect-square overflow-hidden relative rounded-lg"
+                    >
+                      <img
+                        :src="image"
+                        alt="{{ `Image ${index + 1}` }}"
+                        class="object-cover h-full w-full"
+                      />
+                    </div>
+                  </div>
+                </div>
+
+                <!-- Tags -->
+                @if(post.tags.length > 0)
+<div class="flex flex-wrap gap-2 mt-4">
+                  @foreach(post.tags as tag)
+<span
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-600 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-800 ring-1 ring-gray-500/10 ring-inset rounded-full"
+                  >
+                    #{{ tag }}
+                  </span>
+                </div>
+
+                <!-- Engagement metrics (only for published posts) -->
+                @if(post.status === 'Published')
+<div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
+                  <div class="flex items-center">
+                    <div class="mr-1 h-4 w-4 i-hugeicons-heart"></div>
+                    <span>{{ post.likes }} likes</span>
+                  </div>
+                  <div class="flex items-center ml-4">
+                    <div class="mr-1 h-4 w-4 i-hugeicons-refresh-02"></div>
+                    <span>{{ post.reposts }} reposts</span>
+                  </div>
+                  <div class="flex items-center ml-4">
+                    <div class="mr-1 h-4 w-4 i-hugeicons-bubble-chat"></div>
+                    <span>{{ post.replies }} replies</span>
+                  </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex justify-end mt-4 space-x-3">
+                  @if(post.status === 'Draft' || post.status === 'Scheduled')
+<button
+                    class="inline-flex items-center px-2.5 py-1.5 font-semibold text-blue-700 text-sm dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 ring-1 ring-blue-600/20 ring-inset rounded-md shadow-sm"
+                  >
+                    <div class="mr-1 h-4 w-4 i-hugeicons-paper-plane"></div>
+                    Publish Now
+                  </button>
+                  <button
+                    onclick="duplicatePost(post)"
+                    class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                  >
+                    <div class="mr-1 h-4 w-4 i-hugeicons-copy"></div>
+                    Duplicate
+                  </button>
+                  <button
+                    onclick="openEditPostModal(post)"
+                    class="p-1.5 text-gray-700 dark:text-neutral-300 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                    title="Edit post"
+                  >
+                    <div class="h-4 w-4 i-hugeicons-edit-01"></div>
+                    <span class="sr-only">Edit</span>
+                  </button>
+                  <button
+                    onclick="deletePost(post.id)"
+                    class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                  >
+                    <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
+                    Delete
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Compact view -->
+        @if(viewMode === 'compact')
+<div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-700">
+              <tr>
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">Content</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Platform</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Author</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-white">Date</th>
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+              @if(paginatedPosts.length === 0)
+<tr>
+                <td colspan="6" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                  No posts found. Try adjusting your search or filter.
+                </td>
+              </tr>
+              @foreach(paginatedPosts as post)
+<tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
+                  <div class="flex items-center max-w-md">
+                    @if(post.images && post.images.length > 0)
+<div class="flex-shrink-0 mr-3 h-10 w-10">
+                      <img :src="post.images[0]" alt="Post image" class="object-cover h-10 w-10 rounded-md" />
+                    </div>
+                    @else
+<div class="flex flex-shrink-0 items-center justify-center mr-3 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                      <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-bubble-chat"></div>
+                    </div>
+                    <div class="text-gray-900 truncate dark:text-white">{{ post.content }}</div>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <div class="flex items-center">
+                    @if(post.platform === 'Bluesky')
+<div class="mr-1.5 h-5 w-5 text-blue-500 i-hugeicons-cloud"></div>
+                    @elseif(post.platform === 'Twitter')
+<div class="mr-1.5 h-5 w-5 text-blue-400 i-hugeicons-twitter"></div>
+                    @elseif(post.platform === 'Instagram')
+<div class="mr-1.5 h-5 w-5 text-pink-500 i-hugeicons-instagram"></div>
+                    @elseif(post.platform === 'Facebook')
+<div class="mr-1.5 h-5 w-5 text-blue-600 i-hugeicons-facebook"></div>
+                    @elseif(post.platform === 'LinkedIn')
+<div class="mr-1.5 h-5 w-5 text-blue-700 i-hugeicons-linkedin"></div>
+                    <div class="text-gray-900 dark:text-white">{{ post.platform }}</div>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div class="flex-shrink-0 h-8 w-8">
+                      <img :src="post.authorAvatar" :alt="post.author" class="object-cover h-8 w-8 rounded-full" />
+                    </div>
+                    <div class="ml-2 text-gray-900 dark:text-white">{{ post.author }}</div>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <div class="flex flex-col space-y-2">
+                    <span :class="[getStatusClass(post.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                      {{ post.status }}
+                    </span>
+                    @if(isPartOfThread(post))
+<span
+                      class="inline-flex items-center px-2 py-1 w-fit font-medium text-purple-700 text-xs dark:text-purple-400 bg-purple-50 dark:bg-purple-900/30 ring-1 ring-inset ring-purple-600/20 rounded-full"
+                    >
+                      Thread {{ post.isThreadStarter ? '(Starter)' : '' }}
+                    </span>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                  {{ formatDate(post.scheduledDate || post.publishedDate) }}
+                </td>
+                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                  <div class="flex justify-end space-x-3">
+                    <button
+                      onclick="openEditPostModal(post)"
+                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-all"
+                      title="Edit post"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-edit-01"></div>
+                      <span class="sr-only">Edit</span>
+                    </button>
+                    <button
+                      onclick="deletePost(post.id)"
+                      class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-all"
+                      title="Delete post"
+                    >
+                      <div class="h-5 w-5 i-hugeicons-waste"></div>
+                      <span class="sr-only">Delete</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Pagination -->
+        @if(totalPages > 1)
+<div class="flex items-center justify-between mt-6 px-4 py-3 sm:px-6 border-gray-200 border-t dark:border-neutral-700">
+          <div class="flex sm:hidden flex-1 justify-between">
+            <button
+              onclick="previousPage"
+              disabled="{{ currentPage === 1 }}"
+              class="[
+                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
+                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
+              ] {{ }}"
+            >
+              Previous
+            </button>
+            <button
+              onclick="nextPage"
+              disabled="{{ currentPage === totalPages }}"
+              class="[
+                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
+                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
+              ] {{ }}"
+            >
+              Next
+            </button>
+          </div>
+          <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+            <div>
+              <p class="text-gray-700 text-sm dark:text-neutral-300">
+                Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
+                <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredPosts.length) }}</span> of
+                <span class="font-medium">{{ filteredPosts.length }}</span> results
+              </p>
+            </div>
+            <div>
+              <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+                <button
+                  onclick="previousPage"
+                  disabled="{{ currentPage === 1 }}"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 focus:outline-offset-0"
+                  class="'opacity-50 { {{ } }} === 1 currentPage cursor-not-allowed':"
+                >
+                  <span class="sr-only">Previous</span>
+                  <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
+                </button>
+                @foreach(totalPages as page)
+<button
+                  onclick="changePage(page)"
+                  class="[
+                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600',
+                    page === currentPage
+                      ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
+                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700'
+                  ] {{ }}"
+                >
+                  {{ page }}
+                </button>
+                <button
+                  onclick="nextPage"
+                  disabled="{{ currentPage === totalPages }}"
+                  class="inline-flex relative focus:z-20 items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 focus:outline-offset-0"
+                  class="'opacity-50 { {{ } }} === currentPage cursor-not-allowed': totalPages"
+                >
+                  <span class="sr-only">Next</span>
+                  <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
+                </button>
+              </nav>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Post Edit/Create Modal -->
+    @if(showPostModal)
+<div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="absolute right-0 top-0 pr-4 pt-4">
+            <button
+              type="button"
+              onclick="closePostModal"
+              class="text-gray-400 dark:text-neutral-500 hover:text-gray-500 dark:hover:text-gray-400 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <span class="sr-only">Close</span>
+              <div class="h-6 w-6 i-hugeicons-cancel-circle"></div>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 sm:ml-4 sm:mt-0 w-full text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
+                {{ isNewPost ? 'Create New Post' : 'Edit Post' }}
+              </h3>
+              <div class="mt-4">
+                <form onsubmit="savePost; return false" class="space-y-4">
+                  <!-- Platform selection -->
+                  <div>
+                    <label for="post-platform" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Platform</label>
+                    <select
+                      id="post-platform" 
+                      value="{{ currentPost.platform }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    >
+                      @foreach(platforms.slice(1) as platform)
+<option value="{{ platform }}">
+                        {{ platform }}
+                      </option>
+                    </select>
+                  </div>
+
+                  <!-- Post content -->
+                  <div>
+                    <label for="post-content" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Content</label>
+                    <textarea
+                      id="post-content" 
+                      value="{{ currentPost.content }}"
+                      oninput="updateTags"
+                      rows="4"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      placeholder="What's on your mind? Use #hashtags for better discoverability."
+                      required
+                    ></textarea>
+                    <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+                      {{ currentPost?.content?.length || 0 }}/300 characters
+                    </p>
+                  </div>
+
+                  <!-- Images -->
+                  <div>
+                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Images</label>
+                    @if(currentPost && currentPost.images.length > 0)
+<div class="grid gap-2 grid-cols-2 mt-2">
+                      @foreach(currentPost.images as index => image)
+<div
+                        class="aspect-square overflow-hidden relative rounded-lg"
+                      >
+                        <img
+                          :src="image"
+                          alt="{{ `Image ${index + 1}` }}"
+                          class="object-cover h-full w-full"
+                        />
+                        <button
+                          type="button"
+                          onclick="removeImageFromPost(index)"
+                          class="absolute right-1 top-1 p-1 text-white bg-gray-800 bg-opacity-75 hover:bg-opacity-100 rounded-full"
+                        >
+                          <div class="h-4 w-4 i-hugeicons-cancel-circle"></div>
+                        </button>
+                      </div>
+                    </div>
+                    <div class="mt-2" >
+                      <button
+                        type="button"
+                        class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                      >
+                        <div class="mr-1 h-4 w-4 i-hugeicons-image-01"></div>
+                        Add Image
+                      </button>
+                    </div>
+                  </div>
+
+                  <!-- Tags -->
+                  <div>
+                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Tags</label>
+                    @if(currentPost && currentPost.tags.length > 0)
+<div class="flex flex-wrap gap-2 mt-2">
+                      @foreach(currentPost.tags as tag)
+<span
+                        class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-600/20 ring-inset rounded-full"
+                      >
+                        #{{ tag }}
+                      </span>
+                    </div>
+                    @else
+<p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
+                      Add #hashtags in your content to automatically generate tags
+                    </p>
+                  </div>
+
+                  <!-- Schedule date and time -->
+                  <div>
+                    <label for="post-schedule" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Schedule Date & Time</label>
+                    <input
+                      type="datetime-local"
+                      id="post-schedule" 
+                      value="{{ currentPost.scheduledDate }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                      required
+                    />
+                  </div>
+
+                  <!-- Status -->
+                  <div>
+                    <label for="post-status" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
+                    <select
+                      id="post-status" 
+                      value="{{ currentPost.status }}"
+                      class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
+                    >
+                      <option value="Draft">Draft</option>
+                      <option value="Scheduled">Scheduled</option>
+                    </select>
+                  </div>
+
+                  <!-- Thread options (if creating a new post) -->
+                  @if(isNewPost)
+<div>
+                    <div class="flex items-center">
+                      <input
+                        id="create-thread"
+                        type="checkbox"
+                        class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-500"
+                      />
+                      <label for="create-thread" class="block ml-2 font-medium text-gray-700 text-sm dark:text-neutral-300">
+                        Create as thread starter (for multi-post threads)
+                      </label>
+                    </div>
+                  </div>
+
+                  <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+                    <button
+                      type="submit"
+                      class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
+                    >
+                      {{ isNewPost ? 'Create Post' : 'Save Changes' }}
+                    </button>
+                    <button
+                      type="button"
+                      onclick="closePostModal"
+                      class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                    >
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+
+@endsection

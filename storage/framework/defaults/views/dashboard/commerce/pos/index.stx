@@ -1,0 +1,1050 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+// Define menu item type
+interface MenuItem {
+  id: number
+  name: string
+  description: string
+  price: number
+  salePrice: number | null
+  category: string
+  tags: string[]
+  imageUrl: string
+  available: boolean
+  featured: boolean
+  rating: number
+  reviewCount: number
+  preparationTime: string
+  allergies: string[]
+}
+
+// Define category type
+interface Category {
+  id: number
+  name: string
+  slug: string
+  count: number
+}
+
+// Define order type
+interface OrderItem {
+  menuItemId: number
+  name: string
+  price: number
+  quantity: number
+  specialInstructions: string
+  modifiers: string[]
+}
+
+interface Order {
+  id: number
+  tableNumber: number
+  items: OrderItem[]
+  status: 'new' | 'in-progress' | 'ready' | 'served' | 'paid'
+  createdAt: string
+  totalAmount: number
+}
+
+// Sample menu items data
+let menuItems = [
+  {
+    id: 1,
+    name: 'Classic Cheeseburger',
+    description: 'Juicy beef patty with melted cheese, lettuce, tomato, and special sauce on a brioche bun',
+    price: 12.99,
+    salePrice: null,
+    category: 'Burgers',
+    tags: ['beef', 'cheese', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1568901346375-23c9450c58cd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: true,
+    rating: 4.8,
+    reviewCount: 243,
+    preparationTime: '15 min',
+    allergies: ['dairy']
+  },
+  {
+    id: 2,
+    name: 'Margherita Pizza',
+    description: 'Classic pizza with tomato sauce, fresh mozzarella, basil, and olive oil on a thin crust',
+    price: 14.99,
+    salePrice: 12.99,
+    category: 'Pizza',
+    tags: ['vegetarian', 'italian', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1604382354936-07c5d9983bd3?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: true,
+    rating: 4.7,
+    reviewCount: 189,
+    preparationTime: '20 min',
+    allergies: ['gluten', 'dairy']
+  },
+  {
+    id: 3,
+    name: 'Chicken Caesar Salad',
+    description: 'Crisp romaine lettuce with grilled chicken, parmesan cheese, croutons, and Caesar dressing',
+    price: 11.99,
+    salePrice: null,
+    category: 'Salads',
+    tags: ['chicken', 'healthy'],
+    imageUrl: 'https://images.unsplash.com/photo-1550304943-4f24f54ddde9?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: false,
+    rating: 4.5,
+    reviewCount: 124,
+    preparationTime: '10 min',
+    allergies: ['dairy', 'egg']
+  },
+  {
+    id: 4,
+    name: 'Spicy Ramen Bowl',
+    description: 'Authentic Japanese ramen with spicy broth, sliced pork, soft-boiled egg, and fresh vegetables',
+    price: 15.99,
+    salePrice: null,
+    category: 'Asian',
+    tags: ['spicy', 'japanese', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1569718212165-3a8278d5f624?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: true,
+    rating: 4.9,
+    reviewCount: 201,
+    preparationTime: '15 min',
+    allergies: ['egg', 'soy', 'gluten']
+  },
+  {
+    id: 5,
+    name: 'Veggie Wrap',
+    description: 'Fresh vegetables, hummus, and feta cheese wrapped in a spinach tortilla',
+    price: 9.99,
+    salePrice: 8.49,
+    category: 'Wraps',
+    tags: ['vegetarian', 'healthy'],
+    imageUrl: 'https://images.unsplash.com/photo-1626700051175-6818013e1d4f?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: false,
+    rating: 4.4,
+    reviewCount: 98,
+    preparationTime: '5 min',
+    allergies: ['dairy', 'gluten']
+  },
+  {
+    id: 6,
+    name: 'BBQ Pulled Pork Sandwich',
+    description: 'Slow-cooked pulled pork with BBQ sauce, coleslaw, and pickles on a brioche bun',
+    price: 13.99,
+    salePrice: null,
+    category: 'Sandwiches',
+    tags: ['pork', 'bbq'],
+    imageUrl: 'https://images.unsplash.com/photo-1513185041617-8ab03f83d6c5?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: false,
+    rating: 4.6,
+    reviewCount: 156,
+    preparationTime: '12 min',
+    allergies: ['gluten']
+  },
+  {
+    id: 7,
+    name: 'Chocolate Brownie Sundae',
+    description: 'Warm chocolate brownie topped with vanilla ice cream, chocolate sauce, and whipped cream',
+    price: 8.99,
+    salePrice: null,
+    category: 'Desserts',
+    tags: ['chocolate', 'sweet', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1563805042-7684c019e1cb?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: true,
+    rating: 4.9,
+    reviewCount: 178,
+    preparationTime: '8 min',
+    allergies: ['dairy', 'egg', 'gluten']
+  },
+  {
+    id: 8,
+    name: 'Iced Caramel Macchiato',
+    description: 'Espresso with vanilla syrup, milk, and caramel drizzle over ice',
+    price: 5.99,
+    salePrice: null,
+    category: 'Beverages',
+    tags: ['coffee', 'cold'],
+    imageUrl: 'https://images.unsplash.com/photo-1461023058943-07fcbe16d735?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: false,
+    rating: 4.7,
+    reviewCount: 143,
+    preparationTime: '3 min',
+    allergies: ['dairy']
+  },
+  {
+    id: 9,
+    name: 'Chicken Wings (12 pc',
+    description: 'Crispy chicken wings with your choice of sauce: Buffalo, BBQ, or Honey Garlic',
+    price: 16.99,
+    salePrice: 14.99,
+    category: 'Appetizers',
+    tags: ['chicken', 'spicy', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1608039755401-742074f0548d?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: true,
+    rating: 4.8,
+    reviewCount: 215,
+    preparationTime: '18 min',
+    allergies: []
+  },
+  {
+    id: 10,
+    name: 'Vegetable Stir Fry',
+    description: 'Fresh vegetables stir-fried with tofu in a savory sauce, served with steamed rice',
+    price: 13.49,
+    salePrice: null,
+    category: 'Asian',
+    tags: ['vegetarian', 'healthy'],
+    imageUrl: 'https://images.unsplash.com/photo-1512621776951-a57141f2eefd?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: false,
+    rating: 4.5,
+    reviewCount: 87,
+    preparationTime: '15 min',
+    allergies: ['soy']
+  },
+  {
+    id: 11,
+    name: 'Beef Tacos (3 pc)',
+    description: 'Soft corn tortillas filled with seasoned beef, lettuce, cheese, and pico de gallo',
+    price: 10.99,
+    salePrice: null,
+    category: 'Mexican',
+    tags: ['beef', 'spicy'],
+    imageUrl: 'https://images.unsplash.com/photo-1551504734-5ee1c4a1479b?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: false,
+    rating: 4.6,
+    reviewCount: 132,
+    preparationTime: '10 min',
+    allergies: ['dairy']
+  },
+  {
+    id: 12,
+    name: 'Strawberry Cheesecake',
+    description: 'Creamy New York-style cheesecake topped with fresh strawberry sauce',
+    price: 7.99,
+    salePrice: null,
+    category: 'Desserts',
+    tags: ['sweet', 'popular'],
+    imageUrl: 'https://images.unsplash.com/photo-1565958011703-44f9829ba187?ixlib=rb-4.0.3&ixid=MnwxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8&auto=format&fit=crop&w=500&h=500&q=80',
+    available: true,
+    featured: true,
+    rating: 4.9,
+    reviewCount: 167,
+    preparationTime: '0 min',
+    allergies: ['dairy', 'gluten']
+  }
+])
+
+// Categories derived from menu items
+const categories = computed<Category[]>(() => {
+  const categoryMap = new Map<string, number>()
+
+  menuItems.forEach(item => {
+    const count = categoryMap.get(item.category) || 0
+    categoryMap.set(item.category, count + 1)
+  }
+
+  return Array.from(categoryMap.entries()).map(([name, count], index) => ({
+    id: index + 1,
+    name,
+    slug: name.toLowerCase().replace(/\s+/g, '-'),
+    count
+  }))
+}
+
+// Current table number
+let tableNumber = 1
+const availableTables = Array.from({ length: 20 }, (_, i) => i + 1)
+
+// Filter and sort options
+let searchQuery = ''
+let categoryFilter = 'all'
+let viewMode = 'grid' // Default to grid view for better imagery
+
+// Computed filtered and sorted menu items
+function filteredMenuItems() {
+  return menuItems
+    .filter(item => {
+      // Apply search filter
+      const matchesSearch =
+        item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
+
+      // Apply category filter
+      const matchesCategory = categoryFilter === 'all' || item.category === categoryFilter
+
+      return matchesSearch && matchesCategory
+    })
+}
+
+// Current order
+const currentOrder = reactive<Order>({
+  id: 1,
+  tableNumber: 1,
+  items: [],
+  status: 'new',
+  createdAt: new Date().toISOString(),
+  totalAmount: 0
+}
+
+// Add item to order
+function addToOrder(menuItem: MenuItem, quantity = 1): void {
+  const existingItem = currentOrder.items.find(item => item.menuItemId === menuItem.id)
+
+  if (existingItem) {
+    existingItem.quantity += quantity
+  } else {
+    currentOrder.items.push({
+      menuItemId: menuItem.id,
+      name: menuItem.name,
+      price: menuItem.salePrice !== null ? menuItem.salePrice : menuItem.price,
+      quantity,
+      specialInstructions: '',
+      modifiers: []
+    }
+  }
+
+  updateOrderTotal()
+}
+
+// Remove item from order
+function removeFromOrder(index: number): void {
+  currentOrder.items.splice(index, 1)
+  updateOrderTotal()
+}
+
+// Update item quantity
+function updateItemQuantity(index: number, quantity: number): void {
+  if (quantity <= 0) {
+    removeFromOrder(index)
+    return
+  }
+
+  const item = currentOrder.items[index]
+  if (item) {
+    item.quantity = quantity
+    updateOrderTotal()
+  }
+}
+
+// Update order total
+function updateOrderTotal(): void {
+  currentOrder.totalAmount = currentOrder.items.reduce((total, item) => {
+    return total + (item.price * item.quantity)
+  }, 0)
+}
+
+// Special instructions modal
+let showSpecialInstructionsModal = false
+let currentEditingItemIndex = -1
+let tempSpecialInstructions = ''
+
+function openSpecialInstructionsModal(index: number): void {
+  const item = currentOrder.items[index]
+  if (item) {
+    currentEditingItemIndex = index
+    tempSpecialInstructions = item.specialInstructions
+    showSpecialInstructionsModal = true
+  }
+}
+
+function saveSpecialInstructions(): void {
+  if (currentEditingItemIndex >= 0) {
+    const item = currentOrder.items[currentEditingItemIndex]
+    if (item) {
+      item.specialInstructions = tempSpecialInstructions
+    }
+  }
+  showSpecialInstructionsModal = false
+}
+
+// Place order functionality
+let orderPlaced = false
+let orderSummary = null
+
+function placeOrder(): void {
+  if (currentOrder.items.length === 0) {
+    alert('Please add items to your order')
+    return
+  }
+
+  // Update order status
+  currentOrder.tableNumber = tableNumber
+  currentOrder.status = 'new'
+  currentOrder.createdAt = new Date().toISOString()
+
+  // Save a copy of the current order for summary display
+  orderSummary = JSON.parse(JSON.stringify(currentOrder)) as Order
+
+  // Show order confirmation
+  orderPlaced = true
+
+  // Reset order for a new one
+  setTimeout(() => {
+    currentOrder.items = []
+    currentOrder.totalAmount = 0
+    currentOrder.id++
+    orderPlaced = false
+    orderSummary = null
+  }, 10000) // Reset after 10 seconds
+}
+
+// Table selection
+function selectTable(table: number): void {
+  tableNumber = table
+}
+
+// Get allergy tag class
+const getAllergyClass = (allergy: string): string => {
+  switch (allergy) {
+    case 'dairy':
+      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'gluten':
+      return 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/30 dark:text-yellow-400'
+    case 'egg':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'soy':
+      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
+    case 'nuts':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+// Add the scrollToOrder function to the script
+function scrollToOrder(): void {
+  const orderElement = document.getElementById('order-section')
+  if (orderElement) {
+    orderElement.scrollIntoView({ behavior: 'smooth' })
+  }
+}
+</script>
+
+@title('Self-Service Menu')
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <!-- Header section -->
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Self-Service Menu</h1>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+            Device {{ tableNumber }} - Browse and order directly from your device
+          </p>
+        </div>
+        <div class="flex gap-4 items-center mt-4 sm:mt-0">
+          <!-- Device selection dropdown -->
+          <div>
+            <label for="table-select" class="sr-only">Select Device</label>
+            <select
+              id="table-select"
+              value="{{ tableNumber }}"
+              onchange="selectTable(tableNumber)"
+              class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            >
+              @foreach(availableTables as table)
+                <option value="{{ table }}">
+                  Device {{ table }}
+                </option>
+              @endforeach
+            </select>
+          </div>
+
+          <!-- View cart button -->
+          <button
+            type="button"
+            onclick="scrollToOrder"
+            class="inline-flex relative items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            <div class="mr-1 h-5 w-5 i-hugeicons-shopping-cart-02"></div>
+            View Receipt
+            @if(currentOrder.items.length > 0)
+              <span
+                class="flex absolute items-center justify-center h-5 w-5 font-bold text-white text-xs bg-red-600 rounded-full -right-2 -top-2"
+              >
+                {{ currentOrder.items.length }}
+              </span>
+            @endif
+          </button>
+        </div>
+      </div>
+
+      <!-- Summary cards -->
+      <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
+        <!-- Total products card -->
+        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
+                  <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-package"></div>
+                </div>
+              </div>
+              <div class="flex-1 ml-5 w-0">
+                <dl>
+                  <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Items</dt>
+                  <dd>
+                    <div class="font-medium text-gray-900 text-lg dark:text-white">{{ menuItems.length }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Device selection card -->
+        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="p-5">
+            <div class="flex items-center">
+              <div class="flex-shrink-0">
+                <div class="p-2 h-10 w-10 bg-yellow-100 dark:bg-yellow-900 rounded-md">
+                  <div class="h-6 w-6 text-yellow-600 dark:text-yellow-300 i-hugeicons-tablet"></div>
+                </div>
+              </div>
+              <div class="flex-1 ml-5 w-0">
+                <dl>
+                  <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Device</dt>
+                  <dd>
+                    <div class="font-medium text-gray-900 text-lg dark:text-white">{{ tableNumber }}</div>
+                  </dd>
+                </dl>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Category navigation -->
+      <div class="overflow-x-auto mt-6 pb-2">
+        <div class="inline-flex space-x-2">
+          <button
+            onclick="categoryFilter = 'all'"
+            class="px-4 py-2 font-medium text-sm rounded-full transition"
+            class="text-gray-800 text-white' dark:text-white dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600' : ? 'all' 'bg-blue-600 'bg-gray-100 {{ }} === categoryFilter"
+          >
+            All
+          </button>
+          @foreach(categories as category)
+            <button
+              onclick="categoryFilter = category.name"
+              class="px-4 py-2 font-medium text-sm rounded-full transition"
+              class="text-gray-800 text-white' dark:text-white dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600' : ? 'bg-blue-600 'bg-gray-100 {{ }} === category.name categoryFilter"
+            >
+              {{ category.name }}
+            </button>
+          @endforeach
+        </div>
+      </div>
+
+      <!-- Search bar -->
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-4">
+        <div class="relative max-w-sm">
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+          </div>
+          <input
+            value="{{ searchQuery }}"
+            type="text"
+            class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            placeholder="Search menu..."
+          />
+        </div>
+
+        <!-- View mode toggle -->
+        <div class="flex rounded-md shadow-sm">
+          <button
+            type="button"
+            onclick="viewMode = 'grid'"
+            class="[
+              'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+              viewMode === 'grid'
+                ? 'bg-blue-600 text-white ring-blue-600'
+                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+            ] {{ }}"
+          >
+            <div class="h-5 w-5 i-hugeicons-grid"></div>
+          </button>
+          <button
+            type="button"
+            onclick="viewMode = 'list'"
+            class="[
+              'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
+              viewMode === 'list'
+                ? 'bg-blue-600 text-white ring-blue-600'
+                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
+            ] {{ }}"
+          >
+            <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
+          </button>
+        </div>
+      </div>
+
+      <!-- Menu items grid view -->
+      @if(viewMode === 'grid')
+        <div class="mt-6">
+          @if(filteredMenuItems.length === 0)
+            <div class="py-12 text-center">
+              <div class="mx-auto h-12 w-12 text-gray-400 i-hugeicons-box-01"></div>
+              <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-white">No menu items found</h3>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or category filter.</p>
+            </div>
+          @else
+            <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              <!-- Menu item card -->
+              @foreach(filteredMenuItems as item)
+                <div
+                  class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition group"
+                  class="!item.available 'opacity-70': { {{ } }}"
+                >
+                  <!-- Item image with badges -->
+                  <div class="aspect-square overflow-hidden relative bg-gray-200 dark:bg-neutral-700">
+                    <img
+                      :src="item.imageUrl"
+                      :alt="item.name"
+                      class="object-cover h-full w-full duration-300 transition-transform group-hover:scale-105"
+                    />
+                    @if(!item.available)
+                      <span
+                        class="absolute right-2 top-2 px-2 py-0.5 font-medium text-red-700 text-xs dark:text-red-400 bg-red-50 dark:bg-red-900/30 ring-1 ring-inset ring-red-600/20 rounded-full"
+                      >
+                        Unavailable
+                      </span>
+                    @endif
+                    @if(item.featured)
+                      <span
+                        class="absolute left-2 top-2 px-2 py-0.5 font-medium text-xs text-yellow-700 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 ring-1 ring-inset ring-yellow-600/20 rounded-full"
+                      >
+                        Popular
+                      </span>
+                    @endif
+                  </div>
+
+                  <!-- Item info -->
+                  <div class="p-4">
+                    <div class="flex items-center justify-between">
+                      <h3 class="font-medium text-gray-900 text-sm dark:text-white">{{ item.name }}</h3>
+                      <div class="flex items-center">
+                        <div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
+                        <span class="ml-1 text-gray-600 text-sm dark:text-neutral-400">{{ item.rating }}</span>
+                      </div>
+                    </div>
+
+                    <p class="mt-1 line-clamp-2 text-gray-500 text-sm dark:text-neutral-400">{{ item.description }}</p>
+
+                    <div class="flex flex-wrap gap-1 mt-2">
+                      @foreach(item.allergies as allergy)
+                        <span
+                          :class="getAllergyClass(allergy)"
+                          class="inline-flex items-center px-2 py-0.5 font-medium text-xs rounded-full"
+                        >
+                          {{ allergy }}
+                        </span>
+                      @endforeach
+                    </div>
+
+                    <div class="flex items-center justify-between mt-2">
+                      <div>
+                        @if(item.salePrice !== null)
+                          <span class="font-medium text-gray-900 text-sm dark:text-white">${{ item.salePrice.toFixed(2) }}</span>
+                        @endif
+                        <span
+                          :class="[item.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-neutral-400' : 'text-sm font-medium text-gray-900 dark:text-white']"
+                        >
+                          ${{ item.price.toFixed(2) }}
+                        </span>
+                      </div>
+                      <span class="text-gray-500 text-xs dark:text-neutral-400">
+                        {{ item.preparationTime }}
+                      </span>
+                    </div>
+
+                    <button
+                      onclick="addToOrder(item)"
+                      disabled="{{ !item.available }}"
+                      class="mt-3 px-3 py-2 w-full font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add to Order
+                    </button>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          @endif
+        </div>
+      @endif
+
+      <!-- Menu items list view -->
+      @if(viewMode === 'list')
+        <div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-700">
+              <tr>
+                <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">Item</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Category</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Price</th>
+                <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Prep Time</th>
+                <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                  <span class="sr-only">Actions</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+              @if(filteredMenuItems.length === 0)
+                <tr>
+                  <td colspan="5" class="py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                    No menu items found. Try adjusting your search or category filter.
+                  </td>
+                </tr>
+              @endif
+              @foreach(filteredMenuItems as item)
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700" class="!item.available 'opacity-70': { {{ } }}">
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="flex-shrink-0 h-10 w-10">
+                        <img :src="item.imageUrl" :alt="item.name" class="object-cover h-10 w-10 rounded-md" />
+                      </div>
+                      <div class="ml-4">
+                        <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>
+                        <div class="mt-1 max-w-xs line-clamp-1 text-gray-500 text-xs dark:text-neutral-400">{{ item.description }}</div>
+                      </div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ item.category }}</td>
+                  <td class="px-3 py-4 text-sm whitespace-nowrap">
+                    @if(item.salePrice !== null)
+                      <div class="font-medium text-gray-900 dark:text-white">${{ item.salePrice.toFixed(2) }}</div>
+                      <div class="line-through text-gray-500 text-xs dark:text-neutral-400">${{ item.price.toFixed(2) }}</div>
+                    @else
+                      <div class="font-medium text-gray-900 dark:text-white">${{ item.price.toFixed(2) }}</div>
+                    @endif
+                  </td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ item.preparationTime }}</td>
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                    <button
+                      onclick="addToOrder(item)"
+                      disabled="{{ !item.available }}"
+                      class="px-2.5 py-1.5 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      Add
+                    </button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      @endif
+
+      <!-- Current Order section (cart) -->
+      <div id="order-section" class="overflow-hidden mt-8 bg-white dark:bg-neutral-800 rounded-lg shadow-sm">
+        <div class="p-4 receipt-container">
+          <div class="mx-auto p-4 max-w-sm bg-white dark:bg-neutral-800 shadow-md receipt">
+            <!-- Receipt header -->
+            <h1 class="mb-3 font-bold text-center text-xl dark:text-white logo">Self-Service Menu</h1>
+            <div class="mb-2 font-mono text-center text-sm dark:text-neutral-300 address">
+              Device #{{ tableNumber }} - Local Location
+            </div>
+            <div class="flex justify-between mb-2 font-mono text-xs dark:text-neutral-400 transactionDetails">
+              <div class="detail">REG#01</div>
+              <div class="detail">TRN#{{ currentOrder.id }}</div>
+              <div class="detail">DEV#{{ tableNumber }}</div>
+            </div>
+            <div class="mb-2 font-mono text-center text-xs dark:text-neutral-400 transactionDetails">
+              {{ new Date().toLocaleDateString() }} {{ new Date().toLocaleTimeString() }}
+            </div>
+            <div class="my-2 break font-mono text-center text-xs dark:text-neutral-400">
+              *************************************
+            </div>
+
+            @if(currentOrder.items.length === 0)
+              <div class="p-6 text-center">
+                <div class="mx-auto h-12 w-12 text-gray-400 i-hugeicons-receipt"></div>
+                <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-white">Your receipt is empty</h3>
+                <p class="mt-1 font-mono text-gray-500 text-sm dark:text-neutral-400">Add items from the menu to get started.</p>
+              </div>
+            @else
+              <!-- Receipt items -->
+              @foreach(currentOrder.items as item, index)
+                <div class="flex justify-between my-1 font-mono text-xs dark:text-neutral-300 transactionDetails">
+                  <div class="detail">{{ item.quantity }}</div>
+                  <div class="flex-grow mx-2 detail">{{ item.name }}</div>
+                  <div class="detail">${{ (item.price * item.quantity).toFixed(2) }}</div>
+                </div>
+              @endforeach
+
+              @foreach(currentOrder.items as item, index)
+                <div class="mb-2 mt-0">
+                  @if(item.specialInstructions)
+                    <p class="pl-5 font-mono text-gray-500 text-xs dark:text-neutral-400">
+                      {{ item.specialInstructions }}
+                    </p>
+                  @endif
+                </div>
+              @endforeach
+
+              <div class="mb-2 mt-2 pt-2 border-dashed border-gray-200 border-t dark:border-neutral-700 item-actions">
+                <div class="flex items-center justify-between mb-1">
+                  <span class="font-mono text-gray-700 text-xs dark:text-neutral-300">Edit Items:</span>
+                </div>
+                @foreach(currentOrder.items as item, index)
+                  <div class="flex items-center justify-between mb-1 px-1 py-1 text-xs bg-gray-50 dark:bg-neutral-700 rounded">
+                    <div class="flex items-center">
+                      <span class="font-mono">{{ item.name }}</span>
+                    </div>
+                    <div class="flex items-center">
+                      <button
+                        onclick="updateItemQuantity(index, item.quantity - 1)"
+                        class="p-1 text-gray-400 dark:text-neutral-500 focus:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 rounded-full focus:outline-none"
+                      >
+                        <div class="h-4 w-4 i-hugeicons-minus"></div>
+                      </button>
+                      <span class="mx-1 font-mono text-gray-700 dark:text-neutral-300">{{ item.quantity }}</span>
+                      <button
+                        onclick="updateItemQuantity(index, item.quantity + 1)"
+                        class="p-1 text-gray-400 dark:text-neutral-500 focus:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 rounded-full focus:outline-none"
+                      >
+                        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
+                      </button>
+                      <button
+                        onclick="openSpecialInstructionsModal(index)"
+                        class="ml-1 p-1 text-gray-400 dark:text-neutral-500 focus:text-gray-500 hover:text-gray-500 dark:hover:text-gray-400 rounded-full focus:outline-none"
+                      >
+                        <div class="h-4 w-4 i-hugeicons-edit-01"></div>
+                      </button>
+                      <button
+                        onclick="removeFromOrder(index)"
+                        class="ml-1 p-1 text-gray-400 dark:text-neutral-500 focus:text-red-500 hover:text-red-500 dark:hover:text-red-400 rounded-full focus:outline-none"
+                      >
+                        <div class="h-4 w-4 i-hugeicons-waste"></div>
+                      </button>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+
+              <!-- Receipt total -->
+              <div class="my-2 break font-mono text-center text-xs dark:text-neutral-400">
+                *************************************
+              </div>
+
+              <div class="flex justify-between my-1 font-mono text-xs dark:text-neutral-300 paymentDetails">
+                <div class="font-bold detail">SUBTOTAL</div>
+                <div class="font-bold detail">${{ currentOrder.totalAmount.toFixed(2) }}</div>
+              </div>
+              <div class="flex justify-between my-1 font-mono text-xs dark:text-neutral-300 paymentDetails">
+                <div class="detail">TAX</div>
+                <div class="detail">${{ (currentOrder.totalAmount * 0.0825).toFixed(2) }}</div>
+              </div>
+              <div class="flex justify-between my-1 pt-1 font-bold font-mono text-xs dark:text-neutral-300 border-dashed border-gray-200 border-t dark:border-neutral-700 paymentDetails">
+                <div class="detail">TOTAL</div>
+                <div class="detail">${{ (currentOrder.totalAmount * 1.0825).toFixed(2) }}</div>
+              </div>
+
+              <div class="my-4 text-center receiptBarcode">
+                <div class="font-mono text-3xl dark:text-neutral-300 barcode">
+                  |||||||||||||||||||
+                </div>
+                <div class="font-mono text-xs dark:text-neutral-400">
+                  {{ Date.now().toString().substring(0, 12) }}
+                </div>
+              </div>
+
+              <div class="mb-3 font-mono text-center text-xs dark:text-neutral-400 returnPolicy">
+                Thank you for your purchase!
+              </div>
+
+              <div class="mt-4">
+                <button
+                  onclick="placeOrder"
+                  class="flex justify-center px-4 py-3 w-full font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
+                >
+                  Complete Purchase
+                </button>
+              </div>
+            @endif
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Special Instructions Modal -->
+  @if(showSpecialInstructionsModal)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div class="absolute right-0 top-0 pr-4 pt-4">
+            <button
+              type="button"
+              onclick="showSpecialInstructionsModal = false"
+              class="text-gray-400 dark:text-neutral-500 hover:text-gray-500 dark:hover:text-gray-400 bg-white dark:bg-neutral-800 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+            >
+              <span class="sr-only">Close</span>
+              <div class="h-6 w-6 i-hugeicons-can"></div>
+            </button>
+          </div>
+          <div class="sm:flex sm:items-start">
+            <div class="mt-3 sm:ml-4 sm:mt-0 w-full text-center sm:text-left">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
+                Special Instructions
+              </h3>
+              <div class="mt-4">
+                <textarea
+                  value="{{ tempSpecialInstructions }}"
+                  rows="4"
+                  class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                  placeholder="Any special requests for this item?"
+                ></textarea>
+              </div>
+              <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
+                <button
+                  type="button"
+                  onclick="saveSpecialInstructions"
+                  class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
+                >
+                  Save
+                </button>
+                <button
+                  type="button"
+                  onclick="showSpecialInstructionsModal = false"
+                  class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+
+  <!-- Order Confirmation Modal -->
+  @if(orderPlaced)
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity"></div>
+
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+          <div>
+            <div class="flex items-center justify-center mx-auto h-12 w-12 bg-green-100 dark:bg-green-900 rounded-full">
+              <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-check"></div>
+            </div>
+            <div class="mt-3 sm:mt-5 text-center">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">
+                Purchase Complete!
+              </h3>
+              <div class="mt-2">
+                <p class="text-gray-500 text-sm dark:text-neutral-400">
+                  Your purchase on device {{ orderSummary?.tableNumber }} has been confirmed.
+                </p>
+              </div>
+              <div class="mt-4 pt-4 border-gray-200 border-t dark:border-neutral-700">
+                <h4 class="font-medium font-mono text-gray-900 text-sm dark:text-white">Receipt Summary</h4>
+
+                <!-- Receipt style summary -->
+                <div class="mx-auto p-4 max-w-sm font-mono">
+                  <div class="mb-2 text-center text-gray-500 text-xs dark:text-neutral-400">
+                    {{ new Date().toLocaleDateString() }} {{ new Date().toLocaleTimeString() }}
+                  </div>
+
+                  <div class="my-2 break text-center text-xs dark:text-neutral-400">
+                    *************************************
+                  </div>
+
+                  @foreach(orderSummary?.items || [] as item, index)
+                    <div class="flex justify-between my-1 text-gray-700 text-sm dark:text-neutral-300">
+                      <div class="flex">
+                        <span class="mr-2">{{ item.quantity }}</span>
+                        <span>{{ item.name }}</span>
+                      </div>
+                      <span>${{ (item.price * item.quantity).toFixed(2) }}</span>
+                    </div>
+                  @endforeach
+
+                  <div class="my-2 break text-center text-xs dark:text-neutral-400">
+                    *************************************
+                  </div>
+
+                  <div class="flex justify-between mt-2 font-bold text-sm">
+                    <span class="text-gray-900 dark:text-white">TOTAL</span>
+                    <span class="text-gray-900 dark:text-white">${{ orderSummary?.totalAmount?.toFixed(2) || '0.00' }}</span>
+                  </div>
+
+                  <div class="my-4 text-center receiptBarcode">
+                    <div class="text-2xl dark:text-neutral-300 barcode">
+                      |||||||||||||||||||
+                    </div>
+                    <div class="text-xs dark:text-neutral-400">
+                      {{ Date.now().toString().substring(0, 12) }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-5 sm:mt-6">
+            <button
+              type="button"
+              onclick="orderPlaced = false"
+              class="inline-flex justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+            >
+              Continue Browsing
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  @endif
+</main>
+<style scoped>
+.receipt-container {
+  background: #f1f1f1;
+  padding: 20px 10px;
+}
+
+.receipt {
+  font-family: 'Courier New', monospace;
+  background: #fff;
+  box-shadow: 5px 5px 19px #ccc;
+}
+
+.barcode {
+  font-family: 'Libre Barcode 128', monospace, 'Courier New';
+  font-size: 42px;
+  text-align: center;
+}
+
+.dark .receipt {
+  box-shadow: 5px 5px 19px #111;
+}
+
+.break {
+  text-align: center;
+  font-weight: bold;
+}
+
+@media print {
+  .receipt {
+    box-shadow: none;
+  }
+}
+</style>
+
+@endsection

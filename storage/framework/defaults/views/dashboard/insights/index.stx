@@ -1,0 +1,893 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+interface SystemMetrics {
+  cpu: number
+  memory: {
+    used: number
+    total: number
+  }
+  storage: {
+    used: number
+    total: number
+  }
+}
+
+interface QueueStats {
+  queued: number
+  processing: number
+  processed: number
+  released: number
+  failed: number
+}
+
+interface Exception {
+  type: string
+  location: string
+  count: number
+  latest: string
+}
+
+interface CacheKey {
+  name: string
+  hits: number
+  misses: number
+  hitRate: number
+  lastAccessed?: string
+  ttl?: number
+}
+
+interface Cache {
+  hits: number
+  misses: number
+  hitRate: number
+  keys: CacheKey[]
+}
+
+interface SlowQuery {
+  query: string
+  location: string
+  count: number
+  slowest: number
+}
+
+interface SlowRoute {
+  method: string
+  route: string
+  count: number
+  slowest: number
+  action?: string
+}
+
+interface User {
+  name: string
+  email: string
+  requests: number
+}
+
+let systemMetrics = {
+  cpu: 6,
+  memory: {
+    used: 786,
+    total: 969,
+  },
+  storage: {
+    used: 6,
+    total: 10,
+  },
+}
+
+let queues = {
+  default: {
+    queued: 70,
+    processing: 15,
+    processed: 250,
+    released: 5,
+    failed: 2,
+  },
+  high: {
+    queued: 23,
+    processing: 8,
+    processed: 180,
+    released: 3,
+    failed: 1,
+  },
+}
+
+let exceptions = [
+  {
+    type: 'App\\Exceptions\\FlightOverbookedException',
+    location: 'app/Jobs/ProcessBooking.ts:33',
+    count: 36,
+    latest: '2 minutes ago',
+  },
+  {
+    type: 'Illuminate\\Http\\Client\\RequestException',
+    location: 'app/Actions/FlightAction.ts:91',
+    count: 22,
+    latest: '5 minutes ago',
+  },
+]
+
+let cache = {
+  hits: 1675,
+  misses: 284,
+  hitRate: 85.5,
+  keys: [
+    {
+      name: 'flight:2',
+      hits: 137,
+      misses: 14,
+      hitRate: 90.73,
+      lastAccessed: '2 minutes ago',
+      ttl: 3600
+    },
+    {
+      name: 'flight:3',
+      hits: 132,
+      misses: 15,
+      hitRate: 89.8,
+      lastAccessed: '5 minutes ago',
+      ttl: 3600
+    },
+    {
+      name: 'flight:8',
+      hits: 138,
+      misses: 7,
+      hitRate: 95.17,
+      lastAccessed: '1 minute ago',
+      ttl: 3600
+    },
+  ],
+}
+
+let slowQueries = [
+  {
+    query: "insert into `tickets` (`flight_id`, `user_id`, `price`, `created_at`, `updated_at`) values (?, ?, ?, ?, ?)",
+    location: "app/Actions/FlightAction.ts:26",
+    count: 347,
+    slowest: 3099,
+  },
+  {
+    query: "select `id`, `departs_at` from `flights` where `departs_at` > ? order by `departs_at` asc",
+    location: "app/Actions/FlightAction.ts:91",
+    count: 363,
+    slowest: 3088,
+  },
+]
+
+let slowRoutes = [
+  {
+    method: 'DELETE',
+    route: '/flights/{flight}',
+    count: 520,
+    slowest: 2997,
+    action: 'app/Actions/FlightAction.ts:destroy',
+  },
+  {
+    method: 'POST',
+    route: '/flights/{flight}/tickets',
+    count: 543,
+    slowest: 2996,
+    action: 'app/Actions/FlightAction.ts:createTicket',
+  },
+]
+
+let users = [
+  { name: 'Chris Breuer', email: 'chris@stacksjs.com', requests: 68 },
+  { name: 'Avery', email: 'avery@stacksjs.com', requests: 65 },
+  { name: 'Michael', email: 'michael@stacksjs.com', requests: 51 },
+  { name: 'Glenn', email: 'glenn@stacksjs.com', requests: 50 },
+  { name: 'Zoltan', email: 'zoltan@stacksjs.com', requests: 47 },
+]
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  elements: {
+    line: {
+      tension: 0.4,
+    },
+  },
+}
+
+const pieChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: 'bottom',
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+        padding: 20,
+      },
+    },
+  },
+  cutout: '65%',
+}
+
+const cpuData = {
+  labels: ['12am', '1am', '2am', '3am', '4am', '5am', '6am'],
+  datasets: [
+    {
+      label: 'CPU Usage',
+      data: [4, 8, 15, 3, 7, 6, 5],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: true,
+    },
+  ],
+}
+
+const memoryData = {
+  labels: ['12am', '1am', '2am', '3am', '4am', '5am', '6am'],
+  datasets: [
+    {
+      label: 'Memory Usage',
+      data: [750, 800, 850, 786, 820, 880, 786],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: true,
+    },
+  ],
+}
+
+const storageData = {
+  labels: ['Used', 'Available'],
+  datasets: [
+    {
+      data: [systemMetrics.storage.used, systemMetrics.storage.total - systemMetrics.storage.used],
+      backgroundColor: [
+        'rgb(59, 130, 246)',
+        'rgba(200, 200, 200, 0.2)',
+      ],
+      borderColor: [
+        'rgb(59, 130, 246)',
+        'rgba(200, 200, 200, 0.2)',
+      ],
+      borderWidth: 1,
+    },
+  ],
+}
+
+const queueData = {
+  labels: ['12am', '1am', '2am', '3am', '4am', '5am', '6am'],
+  datasets: [
+    {
+      label: 'Processed',
+      data: [150, 220, 180, 200, 250, 230, 180],
+      borderColor: 'rgb(16, 185, 129)',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      fill: true,
+    },
+    {
+      label: 'Failed',
+      data: [5, 8, 3, 4, 2, 5, 3],
+      borderColor: 'rgb(239, 68, 68)',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      fill: true,
+    },
+  ],
+}
+
+const getQueueData = (name) => ({
+  labels: ['12am', '1am', '2am', '3am', '4am', '5am', '6am'],
+  datasets: [
+    {
+      label: 'Processed',
+      data: name === 'default' ? [150, 220, 180, 200, 250, 230, 180] : [120, 180, 150, 170, 220, 200, 150],
+      borderColor: 'rgb(16, 185, 129)',
+      backgroundColor: 'rgba(16, 185, 129, 0.1)',
+      fill: true,
+    },
+    {
+      label: 'Failed',
+      data: name === 'default' ? [5, 8, 3, 4, 2, 5, 3] : [3, 5, 2, 3, 1, 4, 2],
+      borderColor: 'rgb(239, 68, 68)',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      fill: true,
+    }
+  ],
+}
+
+const queueChartOptions = {
+  ...chartOptions,
+  plugins: {
+    ...chartOptions.plugins,
+    legend: {
+      display: false
+    }
+  },
+  scales: {
+    ...chartOptions.scales,
+    y: {
+      ...chartOptions.scales.y,
+      max: 300,
+      ticks: {
+        ...chartOptions.scales.y.ticks,
+        stepSize: 50,
+      }
+    }
+  }
+}
+
+const queueStatusColors = {
+  queued: 'bg-blue-500',
+  processing: 'bg-yellow-500',
+  processed: 'bg-green-500',
+  released: 'bg-purple-500',
+  failed: 'bg-red-500',
+}
+
+const getQueueStatusColor = (status) => {
+  return queueStatusColors[status] || 'bg-gray-500'
+}
+
+const statsCards = [
+  {
+    title: 'Total Requests',
+    value: '71,897',
+    change: '+122',
+    changeType: 'increase',
+    icon: 'i-hugeicons-arrow-up-01',
+  },
+  {
+    title: 'Average Response Time',
+    value: '235ms',
+    change: '-12ms',
+    changeType: 'decrease',
+    icon: 'i-hugeicons-clock-01',
+  },
+  {
+    title: 'Success Rate',
+    value: '99.95%',
+    change: '+0.2%',
+    changeType: 'increase',
+    icon: 'i-hugeicons-check-circle',
+  },
+]
+</script>
+
+@title('Dashboard - Insights')
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <!-- Stats Overview -->
+  <div class="mb-8 px-4 sm:px-6 lg:px-8">
+    <div>
+      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+        System Overview
+      </h3>
+
+      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+        @foreach(stat in statsCards)
+          <div
+               class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+            <dt>
+              <div class="absolute p-3 bg-blue-500 rounded-md">
+                <div :class="[stat.icon, 'h-6 w-6 text-white']" />
+              </div>
+              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">
+                {{ stat.title }}
+              </p>
+            </dt>
+            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
+                {{ stat }}
+              </p>
+              <p class="[
+                'ml-2 flex items-baseline text-sm font-semibold',
+                stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
+              ] {{ }}">
+                @if(stat.changeType === 'increase')
+                  <span class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-up" />
+                @else
+                  <span class="flex-shrink-0 self-center h-5 w-5 text-red-500 i-hugeicons-arrow-down-02" />
+                @endif
+                {{ stat.change }}
+              </p>
+            </dd>
+          </div>
+        @endforeach
+      </dl>
+    </div>
+  </div>
+
+  <!-- System Metrics -->
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+          System Metrics
+        </h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+          Real-time monitoring of your system's performance and resource usage.
+        </p>
+      </div>
+    </div>
+
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-3 mt-8">
+      <!-- CPU Usage -->
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">CPU Usage</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.cpu }}%</span>
+          </div>
+          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+            <div
+              class="h-2 bg-blue-500 rounded-full"
+              style="{{ { width: `${systemMetrics.cpu}%` } }}"
+            ></div>
+          </div>
+          <div class="mt-4 h-32">
+            <canvas id="cpuChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Memory Usage -->
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Memory</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">
+              {{ systemMetrics.memory.used }}MB / {{ systemMetrics.memory.total }}MB
+            </span>
+          </div>
+          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+            <div
+              class="h-2 bg-blue-500 rounded-full"
+              style="{{ { width: `${(systemMetrics.memory.used / systemMetrics.memory.total) * 100}%` } }}"
+            ></div>
+          </div>
+          <div class="mt-4 h-32">
+            <canvas id="memoryChart"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Storage Usage -->
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Storage</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">
+              {{ systemMetrics.storage.used }}GB / {{ systemMetrics.storage.total }}GB
+            </span>
+          </div>
+          <div class="mt-4 h-32">
+            <canvas id="storageChart"></canvas>
+          </div>
+          <div class="flex justify-center mt-4 space-x-4">
+            <div class="flex items-center">
+              <div class="mr-2 h-3 w-3 bg-blue-500 rounded-full"></div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Used ({{ systemMetrics.storage.used }}GB)</span>
+            </div>
+            <div class="flex items-center">
+              <div class="mr-2 h-3 w-3 bg-gray-200 dark:bg-neutral-600 rounded-full"></div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Queue Monitoring & Cache Performance -->
+  <div class="mt-8 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <!-- Queue Monitoring -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+              Queue Monitoring
+            </h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Real-time monitoring of your application's queue processing.
+            </p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="space-y-8">
+              <!-- Queue Stats -->
+              @foreach(stats, name in queues)
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">
+                        {{ name }}
+                      </h4>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                      @foreach(value, status in stats)
+                        <div class="relative group">
+                          <div class="flex items-center space-x-2 cursor-help"
+                             class="'failed' 'processed', 'processing', 'queued', 'released', 'text-blue-700 'text-green-700 'text-purple-700 'text-red-700 'text-yellow-700 { {{ } }} === === === === === status status status status status dark:text-blue-300': dark:text-green-300': dark:text-purple-300': dark:text-red-300': dark:text-yellow-300':">
+                            <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
+                            <span class="font-mono text-xs">{{ value }}</span>
+                          </div>
+                          <div class="hidden group-hover:block absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2">
+                            <div class="relative">
+                              <div class="px-2 py-1 font-medium text-white text-xs whitespace-nowrap bg-gray-900 dark:bg-neutral-700 rounded shadow-lg">
+                                {{ status.charAt(0).toUpperCase() + status.slice(1) }} Jobs
+                              </div>
+                              <div class="absolute left-1/2 top-full border-4 border-t-gray-900 border-transparent dark:border-t-gray-700 -translate-x-1/2"></div>
+                            </div>
+                          </div>
+                        </div>
+                      @endforeach
+                    </div>
+                  </div>
+
+                  <!-- Queue Chart -->
+                  <div>
+                    <div class="flex items-center mb-2 space-x-4">
+                      <div class="flex items-center space-x-2">
+                        <div class="h-1 w-4 bg-green-500 rounded"></div>
+                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Processed</span>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <div class="h-1 w-4 bg-red-500 rounded"></div>
+                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Failed</span>
+                      </div>
+                    </div>
+                    <div class="h-48">
+                      <canvas id="queueChart-{{ name }}" class="queue-chart" data-queue="{{ name }}"></canvas>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cache Performance -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+              Cache Performance
+            </h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Real-time monitoring of your application's cache performance and hit rates.
+            </p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <!-- Main Stats -->
+            <div class="grid gap-8 grid-cols-3">
+              <div class="text-center">
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cache.hits }}</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hits</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cache.misses }}</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Misses</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cache.hitRate }}%</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hit Rate</p>
+              </div>
+            </div>
+
+            <!-- Cache Keys -->
+            <div class="mt-8">
+              <div class="space-y-4">
+                @foreach(key in cache.keys)
+                  <div
+                       class="p-4 border border-gray-100 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors">
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center space-x-3">
+                        <div class="h-2 w-2 bg-blue-500 rounded-full"></div>
+                        <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.name }}</span>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">TTL: {{ key.ttl }}s</span>
+                        <span class="font-mono text-gray-400 text-xs">|</span>
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ key.lastAccessed }}</span>
+                      </div>
+                    </div>
+
+                    <!-- Hit Rate Progress -->
+                    <div class="flex items-center space-x-3">
+                      <div class="overflow-hidden flex-1 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+                        <div class="h-full bg-blue-500 rounded-full" style="{{ { width: `${key.hitRate}%` } }}"></div>
+                      </div>
+                      <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.hitRate }}%</span>
+                    </div>
+
+                    <!-- Hits/Misses Stats -->
+                    <div class="flex items-center mt-3 space-x-4 text-xs">
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-green-500 i-hugeicons-checkmark-circle-02" />
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.hits }} hits</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-red-500 i-hugeicons-x-circle" />
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.misses }} misses</span>
+                      </div>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Exceptions & Slow Queries -->
+  <div class="mt-8 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <!-- Exceptions -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+              Exceptions
+            </h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Recent application exceptions and their occurrence rates.
+            </p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="space-y-4">
+              @foreach(exception in exceptions)
+                <div
+                     class="relative p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
+                  <div class="mb-3">
+                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">
+                      {{ exception.type }}
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
+                    <div class="flex items-center space-x-2">
+                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square" />
+                      <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.location }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01" />
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.latest }}</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy" />
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.count }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="absolute left-0 top-0 h-full w-1 bg-red-500 rounded-l-lg"></div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Slow Queries -->
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+              Slow Queries
+            </h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+              Database queries that are taking longer than expected to execute.
+            </p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="space-y-4">
+              @foreach(query in slowQueries)
+                <div
+                     class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
+                  <div class="mb-3">
+                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">
+                      {{ query.query }}
+                    </div>
+                  </div>
+                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
+                    <div class="flex items-center space-x-2">
+                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square" />
+                      <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.location }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01" />
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.count }}</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy" />
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.slowest }}ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              @endforeach
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Slow Routes & Documentation -->
+    <div class="mt-6">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <!-- Slow Routes -->
+        <div>
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
+                Slow Routes
+              </h1>
+              <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+                Routes that are taking longer than expected to respond (>1000ms).
+              </p>
+            </div>
+          </div>
+
+          <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+            <div class="p-6">
+              <div class="space-y-4">
+                @foreach(route in slowRoutes)
+                  <div
+                       class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
+                    <div class="mb-3">
+                      <div class="flex items-center space-x-3">
+                        <span class="px-2 py-1 font-medium text-xs rounded-md"
+                              class="text-blue-700 text-green-700 text-purple-700 text-red-700 text-yellow-700 dark:bg-blue-900 dark:bg-green-900 dark:bg-purple-900 dark:bg-red-900 dark:bg-yellow-900 'bg-blue-100 'bg-green-100 'bg-purple-100 'bg-red-100 'bg-yellow-100 'DELETE', 'GET', 'PATCH' 'POST', 'PUT', { {{ } }} === === === === === route.method route.method route.method route.method route.method dark:text-blue-100': dark:text-green-100': dark:text-purple-100': dark:text-red-100': dark:text-yellow-100':">
+                          {{ route.method }}
+                        </span>
+                        <span class="font-mono text-gray-900 text-sm dark:text-neutral-100">{{ route.route }}</span>
+                      </div>
+                      @if(route.action)
+                        <div class="flex items-center mt-2 space-x-2">
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square" />
+                          <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ route.action }}</span>
+                        </div>
+                      @endif
+                    </div>
+                    <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
+                      <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-1">
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01" />
+                          <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.count }} requests</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-energy" />
+                          <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.slowest }}ms</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                @endforeach
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Documentation Card -->
+        <div>
+          <div class="flex overflow-hidden items-center justify-center h-full dark:bg-neutral-700 rounded-lg">
+            <div class="p-6">
+              <div class="flex flex-col items-center text-center">
+                <div class="mb-4 h-12 w-12 text-blue-500 i-hugeicons-puzzle-piece" />
+                <h3 class="mb-2 font-medium text-gray-900 text-lg dark:text-neutral-100">
+                  Extend Your Dashboard
+                </h3>
+                <p class="mb-6 max-w-sm text-gray-500 text-sm dark:text-neutral-400">
+                  Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.
+                </p>
+                <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm">
+                  <div class="mr-2 h-5 w-5 i-hugeicons-book-open" />
+                  Read the Documentation
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const cpuCtx = document.getElementById('cpuChart')
+if (cpuCtx) {
+  new Chart(cpuCtx, {
+    type: 'line',
+    data: cpuData,
+    options: chartOptions,
+  })
+}
+
+const memoryCtx = document.getElementById('memoryChart')
+if (memoryCtx) {
+  new Chart(memoryCtx, {
+    type: 'line',
+    data: memoryData,
+    options: chartOptions,
+  })
+}
+
+const storageCtx = document.getElementById('storageChart')
+if (storageCtx) {
+  new Chart(storageCtx, {
+    type: 'doughnut',
+    data: storageData,
+    options: pieChartOptions,
+  })
+}
+
+document.querySelectorAll('.queue-chart').forEach((canvas) => {
+  const queueName = canvas.getAttribute('data-queue')
+  if (queueName) {
+    new Chart(canvas, {
+      type: 'line',
+      data: getQueueData(queueName),
+      options: queueChartOptions,
+    })
+  }
+})
+</script>
+
+@endsection

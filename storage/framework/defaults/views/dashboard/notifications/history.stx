@@ -1,0 +1,455 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default'
+})
+
+import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
+import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.stx'
+
+interface NotificationEntry {
+  id: string
+  type: 'email' | 'sms' | 'push' | 'discord' | 'slack'
+  recipient: string
+  subject: string
+  content: string
+  status: 'sent' | 'delivered' | 'failed' | 'pending'
+  sent_at: string
+  delivered_at?: string
+  error?: string
+  metadata?: Record<string, any>
+}
+
+// Pagination and filtering state
+let notifications = []
+let currentPage = 1
+let perPage = 10
+let totalNotifications = 0
+let isLoading = true
+let searchQuery = ''
+let selectedType = 'all'
+let selectedStatus = 'all'
+let dateRange = null
+let showFilters = false
+let sortField = null
+let sortDirection = 'desc'
+
+// Filter options
+const notificationTypes = ['all', 'email', 'sms', 'push', 'discord', 'slack']
+const statusTypes = ['all', 'sent', 'delivered', 'failed', 'pending']
+
+// Status colors
+const notificationStatusColors: Record<string, string> = {
+  delivered: 'text-green-700 dark:text-green-300 bg-green-50 dark:bg-green-900/50 ring-green-600/20',
+  sent: 'text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/50 ring-blue-600/20',
+  pending: 'text-yellow-700 dark:text-yellow-300 bg-yellow-50 dark:bg-yellow-900/50 ring-yellow-600/20',
+  failed: 'text-red-700 dark:text-red-300 bg-red-50 dark:bg-red-900/50 ring-red-600/20',
+}
+
+const getStatusColor = (status: string): string => {
+  return notificationStatusColors[status] || 'text-gray-700 dark:text-neutral-300 bg-gray-50 dark:bg-neutral-900/50 ring-gray-600/20'
+}
+
+const getChannelIcon = (type: string): string => {
+  switch (type) {
+    case 'email':
+      return 'i-hugeicons-mail-01'
+    case 'sms':
+      return 'i-hugeicons-smart-phone-01'
+    case 'push':
+      return 'i-hugeicons-notification-01'
+    case 'discord':
+      return 'i-hugeicons-discord'
+    case 'slack':
+      return 'i-hugeicons-slack'
+    default:
+      return 'i-hugeicons-notification-03'
+  }
+}
+
+// Generate mock data
+const generateMockNotifications = () => {
+  const types = ['email', 'sms', 'push', 'discord', 'slack'] as const
+  const statuses = ['sent', 'delivered', 'failed', 'pending'] as const
+  const subjects = [
+    'Welcome to our platform',
+    'Your account has been updated',
+    'Security alert',
+    'Password reset request',
+    'New login detected',
+    'Subscription renewed',
+    'Payment processed',
+    'Order confirmation',
+  ]
+
+  return Array.from({ length: 100 }, (_, i) => {
+    const typeIndex = Math.floor(Math.random() * types.length)
+    const statusIndex = Math.floor(Math.random() * statuses.length)
+    const subjectIndex = Math.min(Math.floor(Math.random() * subjects.length), subjects.length - 1)
+
+    const type = types[typeIndex] as NotificationEntry['type']
+    const status = statuses[statusIndex] as NotificationEntry['status']
+    const subject = subjects[subjectIndex] || 'System Notification'
+    const sent_at = new Date(Date.now() - Math.random() * 7 * 24 * 60 * 60 * 1000).toISOString()
+    const delivered_at = status === 'delivered' ? new Date(new Date(sent_at).getTime() + Math.random() * 60000).toISOString() : undefined
+
+    const notification: NotificationEntry = {
+      id: `${i + 1}`,
+      type,
+      recipient: type === 'email' ? 'user@example.com' :
+                type === 'sms' ? '+1234567890' :
+                type === 'push' ? 'device-token-123' :
+                type === 'discord' ? 'Channel #announcements' : '#general',
+      subject,
+      content: 'Notification content goes here...',
+      status,
+      sent_at,
+      delivered_at,
+      error: status === 'failed' ? 'Failed to deliver notification' : undefined,
+      metadata: {
+        device: type === 'push' ? 'iOS' : undefined,
+        browser: type === 'push' ? 'Safari' : undefined,
+      },
+    }
+
+    return notification
+  }
+}
+
+// Computed properties for filtering
+function filteredNotifications() {
+  return notifications.filter(notification => {
+    if (selectedType !== 'all' && notification.type !== selectedType) return false
+    if (selectedStatus !== 'all' && notification.status !== selectedStatus) return false
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase()
+      return notification.subject.toLowerCase().includes(query) ||
+             notification.recipient.toLowerCase().includes(query) ||
+             notification.content.toLowerCase().includes(query)
+    )}
+    return true
+  )}
+)}
+
+// Add sorting functionality
+function sortedNotifications() {
+  if (!sortField) return filteredNotifications
+
+  return [...filteredNotifications].sort((a, b) => {
+    const aValue = a[sortField.value!]
+    const bValue = b[sortField.value!]
+
+    if (!aValue && !bValue) return 0
+    if (!aValue) return 1
+    if (!bValue) return -1
+
+    const comparison = new Date(aValue).getTime() - new Date(bValue).getTime()
+    return sortDirection === 'asc' ? comparison : -comparison
+  )}
+)}
+
+function paginatedNotifications() {
+  const start = (currentPage - 1) * perPage
+  const end = start + perPage
+  return sortedNotifications.slice(start, end)
+}
+
+function totalPages() { return Math.ceil(filteredNotifications.length / perPage) }
+
+// Methods
+const handleRetry = async (notificationId) => {
+  // Implement retry logic
+  console.log('Retrying notification:', notificationId)
+}
+
+const resetFilters = () => {
+  selectedType = 'all'
+  selectedStatus = 'all'
+  searchQuery = ''
+  dateRange = null
+}
+
+const formatDate = (date) => {
+  return new Date(date).toLocaleString()
+}
+
+const toggleSort = (field) => {
+  if (sortField === field) {
+    sortDirection = sortDirection === 'asc' ? 'desc' : 'asc'
+  } else {
+    sortField = field
+    sortDirection = 'desc'
+  }
+}
+
+// Add state for error modal
+let isErrorModalOpen = false
+let selectedNotification = null
+
+// Function to open error modal
+const openErrorModal = (notification) => {
+  selectedNotification = notification
+  isErrorModalOpen = true
+}
+
+// Function to close error modal
+const closeErrorModal = () => {
+  isErrorModalOpen = false
+}
+
+</script>
+
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <!-- Header -->
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Notification History</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
+          A complete history of all notifications sent through the system
+        </p>
+      </div>
+      <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
+        <button
+          onclick="showFilters = !showFilters"
+          type="button"
+          class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+        >
+          <div class="mr-2 h-5 w-5 i-hugeicons-filter" />
+          {{ showFilters ? 'Hide Filters' : 'Show Filters' }}
+        </button>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    @if(showFilters)
+    <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-4">
+      <!-- Search -->
+      <div class="flex-1 min-w-0">
+        <label for="search" class="sr-only">Search notifications</label>
+        <div class="relative rounded-md shadow-sm">
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01" />
+          </div>
+          <input
+            value="{{ searchQuery }}"
+            type="search"
+            name="search"
+            id="search"
+            class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+            placeholder="Search notifications..."
+          >
+        </div>
+      </div>
+
+      <!-- Type Filter -->
+      <div>
+        <select
+          value="{{ selectedType }}"
+          class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+        >
+          @foreach(notificationTypes as type)
+          <option value="{{ type }}">
+            {{ type === 'all' ? 'All Types' : type.charAt(0).toUpperCase() + type.slice(1) }}
+          </option>
+          @endforeach
+        </select>
+      </div>
+
+      <!-- Status Filter -->
+      <div>
+        <select
+          value="{{ selectedStatus }}"
+          class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
+        >
+          @foreach(statusTypes as status)
+          <option value="{{ status }}">
+            {{ status === 'all' ? 'All Statuses' : status.charAt(0).toUpperCase() + status.slice(1) }}
+          </option>
+          @endforeach
+        </select>
+      </div>
+
+      <!-- Reset Filters -->
+      <div class="flex items-end">
+        <button
+          onclick="resetFilters"
+          type="button"
+          class="px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+        >
+          Reset Filters
+        </button>
+      </div>
+    </div>
+    @endif
+
+    <!-- Notification List -->
+    <div class="flow-root mt-8">
+      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg dark:ring-opacity-20 shadow">
+            <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
+              <thead class="bg-gray-50 dark:bg-neutral-600">
+                <tr>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Type</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Recipient</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Subject</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Status</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100 cursor-pointer" onclick="toggleSort('sent_at')">
+                    <div class="flex items-center justify-end">
+                      Sent
+                      @if(sortField === 'sent_at')
+                      <div class="ml-2">
+                        @if(sortDirection === 'desc')
+                        <div class="h-4 w-4 i-hugeicons-chevron-down" />
+                        @else
+                        <div class="h-4 w-4 i-hugeicons-chevron-up" />
+                        @endif
+                      </div>
+                      @else
+                      <div class="ml-2">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-arrows-up-down" />
+                      </div>
+                      @endif
+                    </div>
+                  </th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100 cursor-pointer" onclick="toggleSort('delivered_at')">
+                    <div class="flex items-center justify-end">
+                      Delivered
+                      @if(sortField === 'delivered_at')
+                      <div class="ml-2">
+                        @if(sortDirection === 'desc')
+                        <div class="h-4 w-4 i-hugeicons-chevron-down" />
+                        @else
+                        <div class="h-4 w-4 i-hugeicons-chevron-up" />
+                        @endif
+                      </div>
+                      @else
+                      <div class="ml-2">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-arrows-up-down" />
+                      </div>
+                      @endif
+                    </div>
+                  </th>
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
+                    <span class="sr-only">Actions</span>
+                  </th>
+                </tr>
+              </thead>
+              <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
+                @if(isLoading)
+                <tr>
+                  <td colspan="7" class="px-3 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                    <div class="flex justify-center">
+                      <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+                    </div>
+                  </td>
+                </tr>
+                @elseif(paginatedNotifications.length === 0)
+                <tr>
+                  <td colspan="7" class="px-3 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
+                    No notifications found matching your criteria
+                  </td>
+                </tr>
+                @endif
+                @foreach(paginatedNotifications as notification)
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div :class="getChannelIcon(notification.type)" class="mr-2 h-5 w-5" />
+                      <span class="capitalize font-medium text-gray-900 dark:text-neutral-100">{{ notification.type }}</span>
+                    </div>
+                  </td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ notification.recipient }}</td>
+                  <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
+                    <div class="max-w-xs truncate">{{ notification.subject }}</div>
+                  </td>
+                  <td class="px-3 py-4 text-sm whitespace-nowrap">
+                    <NotificationStatusBadge :status="notification.status" />
+                  </td>
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                    {{ formatDate(notification.sent_at) }}
+                  </td>
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
+                    {{ notification.delivered_at ? formatDate(notification.delivered_at) : '-' }}
+                  </td>
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                    <div class="flex justify-end space-x-2">
+                      @if(notification.status === 'failed')
+                      <button
+                        onclick="handleRetry(notification.id)"
+                        type="button"
+                        class="text-blue-600 hover:text-blue-900 dark:hover:text-blue-400"
+                      >
+                        Retry
+                      </button>
+                      @endif
+                      <button
+                        onclick="openErrorModal(notification)"
+                        type="button"
+                        class="text-gray-600 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-200"
+                      >
+                        View Logs
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+                @endforeach
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="flex items-center justify-between mt-4">
+      <div class="flex items-center">
+        <p class="text-gray-700 text-sm dark:text-neutral-300">
+          Showing
+          <span class="font-medium">{{ (currentPage - 1) * perPage + 1 }}</span>
+          to
+          <span class="font-medium">{{ Math.min(currentPage * perPage, filteredNotifications.length) }}</span>
+          of
+          <span class="font-medium">{{ filteredNotifications.length }}</span>
+          results
+        </p>
+      </div>
+      <div class="flex items-center space-x-2">
+        @if(currentPage > 1)
+        <button
+          type="button"
+          class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600"
+          onclick="currentPage--"
+        >
+          Previous
+        </button>
+        @endif
+        <button
+          type="button"
+          class="inline-flex relative focus:z-10 items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600"
+          disabled="{{ currentPage === totalPages }}"
+          onclick="currentPage++"
+        >
+          Next
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add the error modal component at the end of the template -->
+  <NotificationErrorModal
+    :is-open="isErrorModalOpen"
+    :notification-id="selectedNotification?.id || ''"
+    :notification-type="selectedNotification?.type || 'email'"
+    :error-message="selectedNotification?.error || 'No error information available'"
+    :sent-at="selectedNotification?.sent_at || ''"
+    @close="closeErrorModal"
+  />
+</div>
+
+
+@endsection

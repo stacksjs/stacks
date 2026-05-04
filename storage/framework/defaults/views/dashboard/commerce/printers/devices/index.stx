@@ -1,0 +1,320 @@
+@extends('layouts/default')
+
+@section('content')
+<script server>
+definePageMeta({
+  middleware: ['auth']
+})
+
+// Sample data for the printers dashboard
+const printers = [
+  { id: 1, username: 'Checkout-1', macAddress: '00:1B:44:11:3A:B7', location: 'Main Floor', terminal: 'POS-1', status: 'Online', lastPing: '2 mins ago', printCount: 1245, errorCount: 3 },
+  { id: 2, username: 'Checkout-2', macAddress: '00:1B:44:11:3A:C8', location: 'Main Floor', terminal: 'POS-2', status: 'Online', lastPing: '1 min ago', printCount: 987, errorCount: 0 },
+  { id: 3, username: 'Kitchen-1', macAddress: '00:1B:44:11:3B:D9', location: 'Kitchen', terminal: 'KDS-1', status: 'Offline', lastPing: '3 hours ago', printCount: 876, errorCount: 12 },
+  { id: 4, username: 'Checkout-3', macAddress: '00:1B:44:11:3C:E0', location: 'Second Floor', terminal: 'POS-3', status: 'Online', lastPing: '5 mins ago', printCount: 765, errorCount: 1 },
+  { id: 5, username: 'Pickup-1', macAddress: '00:1B:44:11:3D:F1', location: 'Pickup Area', terminal: 'POS-4', status: 'Warning', lastPing: '10 mins ago', printCount: 654, errorCount: 5 },
+  { id: 6, username: 'Checkout-4', macAddress: '00:1B:44:11:3E:02', location: 'Main Floor', terminal: 'POS-5', status: 'Online', lastPing: '3 mins ago', printCount: 543, errorCount: 0 },
+  { id: 7, username: 'Kitchen-2', macAddress: '00:1B:44:11:3F:13', location: 'Kitchen', terminal: 'KDS-2', status: 'Online', lastPing: '4 mins ago', printCount: 432, errorCount: 2 },
+]
+
+// Status distribution data for pie chart
+const statusData = {
+  labels: ['Online', 'Offline', 'Warning'],
+  datasets: [
+    {
+      backgroundColor: ['#10B981', '#EF4444', '#F59E0B'],
+      data: [5, 1, 1],
+    },
+  ],
+}
+
+// Print volume data for bar chart
+const printVolumeData = {
+  labels: ['Checkout-1', 'Checkout-2', 'Kitchen-1', 'Checkout-3', 'Pickup-1', 'Checkout-4', 'Kitchen-2'],
+  datasets: [
+    {
+      label: 'Print Count',
+      backgroundColor: 'rgba(59, 130, 246, 0.8)',
+      data: [1245, 987, 876, 765, 654, 543, 432],
+    },
+  ],
+}
+
+// Error rate data for bar chart
+const errorRateData = {
+  labels: ['Checkout-1', 'Checkout-2', 'Kitchen-1', 'Checkout-3', 'Pickup-1', 'Checkout-4', 'Kitchen-2'],
+  datasets: [
+    {
+      label: 'Error Count',
+      backgroundColor: 'rgba(239, 68, 68, 0.8)',
+      data: [3, 0, 12, 1, 5, 0, 2],
+    },
+  ],
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: true,
+      position: 'bottom',
+    },
+  },
+}
+
+const barChartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      display: false,
+    },
+  },
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        display: true,
+        color: 'rgba(0, 0, 0, 0.05)',
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+    },
+  },
+}
+
+// Filter options
+let locationFilter = 'All Locations'
+let statusFilter = 'All Statuses'
+const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area']
+const statuses = ['All Statuses', 'Online', 'Offline', 'Warning']
+
+// Computed filtered printers
+function filteredPrinters() {
+  return printers.filter(printer => {
+    const locationMatch = locationFilter === 'All Locations' || printer.location === locationFilter
+    const statusMatch = statusFilter === 'All Statuses' || printer.status === statusFilter
+    return locationMatch && statusMatch
+  )}
+)}
+
+// Stats summary
+const totalPrinters = printers.length
+const onlinePrinters = printers.filter(p => p.status === 'Online').length
+const offlinePrinters = printers.filter(p => p.status === 'Offline').length
+const warningPrinters = printers.filter(p => p.status === 'Warning').length
+const totalPrints = printers.reduce((sum, printer) => sum + printer.printCount, 0)
+const totalErrors = printers.reduce((sum, printer) => sum + printer.errorCount, 0)
+const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
+</script>
+
+@title('Receipt Printers - Analytics')
+<div class="p-6 space-y-6">
+
+  <PageHeader title="Receipt Printers Dashboard" description="Monitor and manage your receipt printers across all locations" />
+
+        <!-- Stats -->
+        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Printers</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPrinters }}</dd>
+            <dd class="flex items-center mt-2 text-sm">
+              <span class="text-green-600 dark:text-green-400">{{ onlinePrinters }} Online</span>
+              <span class="mx-2 text-gray-500 dark:text-neutral-400">•</span>
+              <span class="text-red-600 dark:text-red-400">{{ offlinePrinters }} Offline</span>
+              <span class="mx-2 text-gray-500 dark:text-neutral-400">•</span>
+              <span class="text-yellow-600 dark:text-yellow-400">{{ warningPrinters }} Warning</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Prints</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPrints.toLocaleString() }}</dd>
+            <dd class="flex items-center mt-2 text-gray-600 text-sm dark:text-neutral-400">
+              <span>Across all printers</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Error Rate</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ errorRate }}%</dd>
+            <dd class="flex items-center mt-2 text-gray-600 text-sm dark:text-neutral-400">
+              <span>{{ totalErrors }} total errors</span>
+            </dd>
+          </div>
+
+          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Printer Health</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">
+              {{ Math.round((onlinePrinters / totalPrinters) * 100) }}%
+            </dd>
+            <dd class="flex items-center mt-2 text-sm dark:text-green-400' dark:text-yellow-400' : ? 'text-green-600 'text-yellow-600 {{ }} === onlinePrinters totalPrinters">
+              <div :class="mr-1' mr-1' h-4 h-4 w-4 w-4 : ? 'i-hugeicons-alert-01 'i-hugeicons-check-circle === onlinePrinters totalPrinters"></div>
+              <span>{{ onlinePrinters === totalPrinters ? 'All systems operational' : 'Attention needed' }}</span>
+            </dd>
+          </div>
+        </dl>
+
+        <!-- Charts -->
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-3 mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Printer Status</h3>
+              <div class="mt-2 h-64">
+                <canvas id="chart_1"></canvas>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden lg:col-span-2 bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Print Volume by Printer</h3>
+              <div class="mt-2 h-64">
+                <canvas id="chart_2"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Filters -->
+        <div class="flex flex-wrap gap-4 mt-8">
+          <div class="w-full sm:w-auto">
+            <label for="location-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Location</label>
+            <select
+              id="location-filter"
+              value="{{ locationFilter }}"
+              class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+            >
+              @foreach(locations as location)
+                <option value="{{ location }}">{{ location }}</option>
+              @endforeach
+            </select>
+          </div>
+          <div class="w-full sm:w-auto">
+            <label for="status-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
+            <select
+              id="status-filter"
+              value="{{ statusFilter }}"
+              class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
+            >
+              @foreach(statuses as status)
+                <option value="{{ status }}">{{ status }}</option>
+              @endforeach
+            </select>
+          </div>
+        </div>
+
+        <!-- Printers Table -->
+        <div class="mt-4">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="flex items-center justify-between px-4 py-5 sm:px-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Receipt Printers</h3>
+              <span class="text-gray-500 text-sm dark:text-neutral-400">Showing {{ filteredPrinters.length }} of {{ printers.length }} printers</span>
+            </div>
+            <div class="border-gray-200 border-t dark:border-neutral-700">
+              <div class="overflow-x-auto">
+                <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+                  <thead class="bg-gray-50 dark:bg-neutral-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Name</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Mac Address</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Location</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Terminal</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Status</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Last Ping</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Print Count</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                    @foreach(filteredPrinters as printer)
+                      <tr>
+                        <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ printer.username }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ printer.macAddress }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ printer.location }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ printer.terminal }}</td>
+                        <td class="px-6 py-4 whitespace-nowrap">
+                          <span class="inline-flex px-2 font-semibold leading-5 text-green-800 text-red-800 text-xs text-yellow-800 dark:text-green-300' dark:text-red-300' dark:text-yellow-300' dark:bg-green-900 dark:bg-red-900 dark:bg-yellow-900 rounded-full : : ? ? 'bg-green-100 'bg-red-100 'bg-yellow-100 'Offline' 'Online' {{ }} === === printer.status printer.status">
+                            {{ printer.status }}
+                          </span>
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ printer.lastPing }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                          {{ printer.printCount.toLocaleString() }}
+                          @if(printer.errorCount > 0)
+                            <span class="ml-1 text-red-500 text-xs">({{ printer.errorCount }} errors)</span>
+                          @endif
+                        </td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
+                          <div class="flex space-x-2">
+                            <button class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors">
+                              <div class="h-5 w-5 i-hugeicons-refresh"></div>
+                            </button>
+                            <button class="text-gray-400 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-gray-300 duration-150 transition-colors">
+                              <div class="h-5 w-5 i-hugeicons-settings-02"></div>
+                            </button>
+                            <button class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-colors">
+                              <div class="h-5 w-5 i-hugeicons-electric-plugs"></div>
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Error Rate Chart -->
+        <div class="mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="p-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Error Count by Printer</h3>
+              <div class="mt-2 h-64">
+                <canvas id="chart_3"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+</div>
+
+<script client>
+const { Chart, registerables } = await import('@stacksjs/charts')
+Chart.register(...registerables)
+
+const chart_1_ctx = document.getElementById('chart_1')
+if (chart_1_ctx) {
+  new Chart(chart_1_ctx, {
+    type: 'pie',
+    data: statusData,
+    options: chartOptions,
+  })
+}
+
+const chart_2_ctx = document.getElementById('chart_2')
+if (chart_2_ctx) {
+  new Chart(chart_2_ctx, {
+    type: 'bar',
+    data: printVolumeData,
+    options: barChartOptions,
+  })
+}
+
+const chart_3_ctx = document.getElementById('chart_3')
+if (chart_3_ctx) {
+  new Chart(chart_3_ctx, {
+    type: 'bar',
+    data: errorRateData,
+    options: barChartOptions,
+  })
+}
+
+</script>
+
+@endsection
