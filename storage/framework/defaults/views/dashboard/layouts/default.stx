@@ -79,22 +79,33 @@ window.craft._sidebarSelectHandler = (event) => {
 <script client>
 // Sidebar layout — the web sidebar renders in browsers; the native
 // Craft sidebar takes over inside the macOS window. We pick which one
-// is "active" off three signals:
+// is "active" off four signals:
 //   1. `?native-sidebar=1` — appended to the dashboard URL by
 //      dashboard-utils.buildDashboardUrl when nativeSidebar is enabled
+//      (only present on the FIRST page load — internal navigation drops it)
 //   2. `window.__craftNativeSidebar` — set by Craft's WKUserScript
 //   3. `window.craft.window` — Craft's JS bridge is bound (window mode)
+//   4. `sessionStorage["craft-native-sidebar"]` — sticky persistence so
+//      every navigation inside the Craft window keeps native mode even
+//      though `?native-sidebar=1` only rides the initial URL.
 //
 // When any of those say "native is active", the HTML sidebar self-
 // hides and the body padding is zeroed so the native NSOutlineView
-// owns that column.
+// owns that column. The sticky sessionStorage flag is what makes
+// this work after the user clicks any sidebar link — without it, every
+// internal navigation re-rendered both sidebars side by side.
 document.documentElement.setAttribute('data-has-stacks-sidebar', 'true')
 var hasFlag = Boolean(window.__craftNativeSidebar)
 var hasApi = Boolean(window.craft && window.craft.window)
 var hasParam = window.location.search.indexOf('native-sidebar=1') !== -1
-if (hasFlag || hasApi || hasParam) {
+var hasSticky = false
+try { hasSticky = sessionStorage.getItem('craft-native-sidebar') === '1' }
+catch (e) { /* sessionStorage unavailable — fall back to per-load detection */ }
+if (hasFlag || hasApi || hasParam || hasSticky) {
   window.__craftNativeSidebar = true
   document.documentElement.setAttribute('data-craft-native-sidebar', 'true')
+  try { sessionStorage.setItem('craft-native-sidebar', '1') }
+  catch (e) { /* sessionStorage unavailable — next nav will re-detect via the other signals */ }
 }
 
 // Inject the body-gutter + Craft-hide rules once. The id guard makes
