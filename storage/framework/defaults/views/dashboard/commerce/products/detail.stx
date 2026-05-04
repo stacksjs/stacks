@@ -532,8 +532,6 @@ function deleteProduct(): void {
   </div>
 </main>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   // Simulate API call
   setTimeout(() => {

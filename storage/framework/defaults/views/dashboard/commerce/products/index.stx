@@ -522,8 +522,6 @@ async function addProduct(): Promise<void> {
   @endif
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await Promise.all([
     fetchProducts(),

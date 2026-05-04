@@ -1108,8 +1108,6 @@ const updateServerDefaults = (server: ServerConfig) => {
   </div>
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   if (diagramContainer) {
     updateVisualization()

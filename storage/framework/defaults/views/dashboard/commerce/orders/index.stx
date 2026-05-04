@@ -149,8 +149,6 @@ async function confirmDelete() {
   />
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await fetchOrders()
 })

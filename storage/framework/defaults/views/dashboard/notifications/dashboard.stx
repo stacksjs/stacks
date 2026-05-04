@@ -513,8 +513,6 @@ if (chart_2_ctx) {
   })
 }
 
-import { onMount } from 'stx'
-
 onMount(async () => {
   isLoading = true
   await new Promise(resolve => setTimeout(resolve, 500))

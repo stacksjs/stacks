@@ -40,7 +40,6 @@ const paymentStore = usePaymentStore()
   </div>
 </div>
 <script client>
-import { onMount } from 'stx'
 import { useAuth } from '../../../functions/auth'
 
 onMount(async () => {

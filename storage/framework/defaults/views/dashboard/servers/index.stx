@@ -993,8 +993,6 @@ const getEventTypeIcon = (type) => {
   </div>
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   if (diagramContainer) {
     updateVisualization()

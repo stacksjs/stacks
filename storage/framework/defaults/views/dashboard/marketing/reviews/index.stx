@@ -1619,8 +1619,6 @@ const renderSourceChart = () => {
   </div>
 
 <script client>
-import { onMount } from 'stx'
-
 onMount(() => {
   // Initial render of all D3 charts
   renderRatingChart()

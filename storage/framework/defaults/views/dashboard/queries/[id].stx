@@ -383,8 +383,6 @@ const queryTypeBadges = {
   </main>
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   const id = route.params.id
   fetchQuery(id)

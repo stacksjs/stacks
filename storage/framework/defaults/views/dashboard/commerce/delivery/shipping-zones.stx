@@ -428,8 +428,6 @@ const tabs = [
   @endif
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await fetchShippingZones()
 })

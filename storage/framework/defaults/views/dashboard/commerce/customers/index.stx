@@ -408,8 +408,6 @@ async function addCustomer(): Promise<void> {
     </div>
   @endif
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await fetchCustomers()
 })

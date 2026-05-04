@@ -429,8 +429,6 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
   @endif
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await fetchCategories()
 })

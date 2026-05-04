@@ -854,8 +854,6 @@ const getEventTypeIcon = (type: string) => {
   </div>
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   if (diagramContainer) {
     // Add rounded corners to all service icon rectangles

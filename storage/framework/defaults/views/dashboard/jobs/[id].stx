@@ -394,8 +394,6 @@ const openFile = (file, line) => {
   </div>
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   isLoading = true
   try {

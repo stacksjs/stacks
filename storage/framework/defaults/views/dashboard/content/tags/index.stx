@@ -1136,8 +1136,6 @@ if (chart_3_ctx) {
   })
 }
 
-import { onMount } from 'stx'
-
 onMount(async () => {
   await fetchTags()
 })

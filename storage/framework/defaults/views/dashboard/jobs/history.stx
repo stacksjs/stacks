@@ -251,8 +251,6 @@ const handleRetry = async (jobId) => {
   </div>
 </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await new Promise(resolve => setTimeout(resolve, 1000))
 

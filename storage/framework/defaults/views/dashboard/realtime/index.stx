@@ -590,8 +590,6 @@ if (chart_1_ctx) {
   })
 }
 
-import { onMount } from 'stx'
-
 onMount(async () => {
   connect()
 })

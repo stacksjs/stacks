@@ -23,8 +23,6 @@ const router = useRouter()
     </div>
   </div>
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   // Redirect to shipping methods by default
   router.replace('/commerce/delivery/shipping-methods')

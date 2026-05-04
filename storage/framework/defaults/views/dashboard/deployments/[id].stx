@@ -291,8 +291,6 @@ function getStatus(conclusion) {
   </div>
 @endif
 <script client>
-import { onMount } from 'stx'
-
 onMount(async () => {
   await gitStore.fetchWorkflowAction(route.params.id)
 })

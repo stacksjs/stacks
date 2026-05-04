@@ -547,8 +547,6 @@ if (chart_2_ctx) {
   })
 }
 
-import { onMount } from 'stx'
-
 onMount(async () => {
   await fetchCoupons()
 })
