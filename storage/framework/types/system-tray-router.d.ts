@@ -93,8 +93,8 @@ declare module 'vue-router/auto' {
 
   export const useLink: UseLinkFnTyped<RouteNamedMap>
 
-  export function onBeforeRouteLeave(guard: NavigationGuard<RouteNamedMap>): void
-  export function onBeforeRouteUpdate(guard: NavigationGuard<RouteNamedMap>): void
+  export function onBeforeRouteLeave(_guard: NavigationGuard<RouteNamedMap>): void
+  export function onBeforeRouteUpdate(_guard: NavigationGuard<RouteNamedMap>): void
 
   export const RouterLink: RouterLinkTyped<RouteNamedMap>
   export const RouterLinkProps: RouterLinkPropsTyped<RouteNamedMap>

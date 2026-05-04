@@ -155,7 +155,7 @@ export function policy(model: string | { name: string }, policyClass: new () => 
  * Register a callback to run before all gate checks
  *
  * @example
- * before((user, ability) => {
+ * before((user, _ability) => {
  *   if (user?.isSuperAdmin) return true // Super admins can do anything
  *   return null // Continue to normal checks
  * })

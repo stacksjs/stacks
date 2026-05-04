@@ -296,7 +296,7 @@ export const Jobs = {
  * ])
  *   .name('Onboard User')
  *   .allowFailures()
- *   .then(async (b) => console.log('All done!'))
+ *   .then(async (_b) => console.log('All done!'))
  *   .dispatch()
  * ```
  */

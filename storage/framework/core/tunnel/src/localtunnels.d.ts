@@ -5,7 +5,7 @@
 declare module 'localtunnels' {
   import { EventEmitter } from 'node:events'
 
-  export function startLocalTunnel(options: {
+  export function startLocalTunnel(_options: {
     port: number
     subdomain?: string
     host?: string

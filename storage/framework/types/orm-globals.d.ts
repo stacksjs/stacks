@@ -62,7 +62,7 @@ declare global {
    *
    * @example
    * // Bare — accepts any key:
-   * function handle(request: RequestInstance) { ... }
+   * function handle(_request: RequestInstance) { ... }
    *
    * @example
    * // Model-aware — full narrowing:

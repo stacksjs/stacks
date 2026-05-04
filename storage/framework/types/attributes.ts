@@ -1,5 +1,5 @@
 export interface Attributes { 
- name: string
+name: string
       slug: string
       description: string
       post_count: number
@@ -227,4 +227,4 @@ export interface Attributes {
       product_name: string
       product_sku: string
       product_image: string
-     } 
+    } 

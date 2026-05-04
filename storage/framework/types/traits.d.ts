@@ -14,37 +14,37 @@ interface CustomAttributes {
   }
 
 interface RequestDataMigrations {
-       name: string
+      name: string
       timestamp: string
-     
+    
     }
 export interface MigrationsRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataMigrations
-       name: string
+      name: string
       timestamp: string
-     
+    
     }
 
 interface RequestDataPasswordResets {
-       email: string
+      email: string
       token: string
       created_at: string
-     
+    
     }
 export interface PasswordResetsRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataPasswordResets
-       email: string
+      email: string
       token: string
       created_at: string
-     
+    
     }
 
 interface RequestDataPasskeys {
-       id: number
+      id: number
       cred_public_key: string
       user_id: number
       webauthn_user_id: string
@@ -57,13 +57,13 @@ interface RequestDataPasskeys {
       created_at: string
       updated_at: string
       last_used_at: string
-     
+    
     }
 export interface PasskeysRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataPasskeys
-       id: number
+      id: number
       cred_public_key: string
       user_id: number
       webauthn_user_id: string
@@ -76,11 +76,11 @@ export interface PasskeysRequestType extends Request {
       created_at: string
       updated_at: string
       last_used_at: string
-     
+    
     }
 
 interface RequestDataCommentables {
-       id: number
+      id: number
       title: string
       body: string
       status: string
@@ -91,13 +91,13 @@ interface RequestDataCommentables {
       user_id: number | null
       created_at: string
       updated_at: string | null
-     
+    
     }
 export interface CommentablesRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataCommentables
-       id: number
+      id: number
       title: string
       body: string
       status: string
@@ -108,31 +108,31 @@ export interface CommentablesRequestType extends Request {
       user_id: number | null
       created_at: string
       updated_at: string | null
-     
+    
     }
 
 interface RequestDataCommentableUpvotes {
-       id: number
+      id: number
       user_id: number
       upvoteable_id: number
       upvoteable_type: string
       created_at: string
-     
+    
     }
 export interface CommentableUpvotesRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataCommentableUpvotes
-       id: number
+      id: number
       user_id: number
       upvoteable_id: number
       upvoteable_type: string
       created_at: string
-     
+    
     }
 
 interface RequestDataCategorizable {
-       id: number
+      id: number
       name: string
       slug: string
       description: string
@@ -140,13 +140,13 @@ interface RequestDataCategorizable {
       categorizable_type: string
       created_at: string
       updated_at: string
-     
+    
     }
 export interface CategorizableRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataCategorizable
-       id: number
+      id: number
       name: string
       slug: string
       description: string
@@ -154,11 +154,11 @@ export interface CategorizableRequestType extends Request {
       categorizable_type: string
       created_at: string
       updated_at: string
-     
+    
     }
 
 interface RequestDataTaggable {
-       id: number
+      id: number
       name: string
       slug: string
       description: string
@@ -166,13 +166,13 @@ interface RequestDataTaggable {
       taggable_type: string
       created_at: string
       updated_at: string
-     
+    
     }
 export interface TaggableRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataTaggable
-       id: number
+      id: number
       name: string
       slug: string
       description: string
@@ -180,51 +180,51 @@ export interface TaggableRequestType extends Request {
       taggable_type: string
       created_at: string
       updated_at: string
-     
+    
     }
 
 interface RequestDataTaggableModels {
-       id: number
+      id: number
       tag_id: number
       taggable_id: number
       taggable_type: string
       created_at: string
       updated_at: string | null
-     
+    
     }
 export interface TaggableModelsRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataTaggableModels
-       id: number
+      id: number
       tag_id: number
       taggable_id: number
       taggable_type: string
       created_at: string
       updated_at: string | null
-     
+    
     }
 
 interface RequestDataCategorizableModels {
-       id: number
+      id: number
       category_id: number
       categorizable_id: number
       categorizable_type: string
       created_at: string
       updated_at: string | null
-     
+    
     }
 export interface CategorizableModelsRequestType extends Request {
       validate(attributes?: CustomAttributes): void
-       get: <T = string>(element: string, defaultValue?: T) => T
+      get: <T = string>(element: string, defaultValue?: T) => T
       all(): RequestDataCategorizableModels
-       id: number
+      id: number
       category_id: number
       categorizable_id: number
       categorizable_type: string
       created_at: string
       updated_at: string | null
-     
+    
     }
 
 export type TraitRequest = MigrationsRequestType | PasswordResetsRequestType | PasskeysRequestType | CommentablesRequestType | CommentableUpvotesRequestType | CategorizableRequestType | TaggableRequestType | TaggableModelsRequestType | CategorizableModelsRequestType

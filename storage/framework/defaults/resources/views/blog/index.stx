@@ -16,7 +16,7 @@ try {
 
   const rawPosts = db.query(`
     SELECT p.id, p.uuid, p.title, p.excerpt, p.poster, p.views, p.published_at,
-           p.is_featured, p.status, a.name as author_name
+          p.is_featured, p.status, a.name as author_name
     FROM posts p
     LEFT JOIN authors a ON p.author_id = a.id
     WHERE p.status = 'published'

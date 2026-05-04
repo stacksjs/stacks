@@ -17,13 +17,13 @@
  *   .name('Process Podcasts')
  *   .allowFailures()
  *   .onQueue('podcasts')
- *   .then(async (batch) => {
+ *   .then(async (_batch) => {
  *     console.log('All jobs completed!')
  *   })
- *   .catch(async (batch, error) => {
+ *   .catch(async (_batch, error) => {
  *     console.log('A job failed:', error)
  *   })
- *   .finally(async (batch) => {
+ *   .finally(async (_batch) => {
  *     console.log('Batch finished')
  *   })
  *   .dispatch()
@@ -440,7 +440,7 @@ export class DispatchedBatch {
  * ```typescript
  * const batch = Batch.create([job1, job2, job3])
  *   .name('My Batch')
- *   .then(async (batch) => console.log('Done!'))
+ *   .then(async (_batch) => console.log('Done!'))
  *   .dispatch()
  * ```
  */

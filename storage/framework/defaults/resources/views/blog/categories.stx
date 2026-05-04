@@ -13,7 +13,7 @@ try {
 
   const rawCategories = db.query(`
     SELECT c.id, c.name, c.slug, c.description,
-           COUNT(cm.categorizable_id) as post_count
+          COUNT(cm.categorizable_id) as post_count
     FROM categories c
     LEFT JOIN categorizable_models cm ON c.id = cm.category_id AND cm.categorizable_type = 'posts'
     GROUP BY c.id

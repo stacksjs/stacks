@@ -84,7 +84,7 @@ export abstract class BaseEmailDriver implements EmailDriver {
       return [addresses]
     }
 
-    return addresses.map((addr) => {
+    return addresses.map((_addr) => {
       if (typeof addr === 'string')
         return addr
       if (!addr.name) return addr.address
