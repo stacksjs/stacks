@@ -10,7 +10,6 @@ definePageMeta({
 import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import Button from '../../../components/Dashboard/UI/Button.stx'
-import Input from '../../../components/Dashboard/UI/Input.stx'
 import Badge from '../../../components/Dashboard/UI/Badge.stx'
 import EmptyState from '../../../components/Dashboard/UI/EmptyState.stx'
 
@@ -46,72 +45,79 @@ function statusVariant(status: string) {
 }
 </script>
 
-<div class="p-6 space-y-6">
+<div class="px-6 pt-6 pb-12 mx-auto max-w-6xl space-y-6">
 
   <PageHeader
     title="Dependencies"
     description="Discover and manage system dependencies installed via tea / pantry"
   />
 
-  <!-- Search card -->
-  <Card variant="default" padding="lg">
-    <div class="space-y-4">
-      <div class="flex gap-3 items-start p-4 text-neutral-600 text-sm dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/70 rounded-lg dark:border-white/5">
-        <div class="flex-shrink-0 mt-0.5 h-5 w-5 text-blue-500 i-hugeicons-information-circle"></div>
-        <p>
-          Dependencies are installed via <a href="https://pkgx.dev/" target="_blank" rel="noopener" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">tea</a> /
-          pantry. Search the registry by name to install or upgrade.
-        </p>
-      </div>
-
-      <form class="flex gap-3 items-end">
-        <div class="flex-1">
-          <Input
-            label="Search for a dependency"
-            placeholder="e.g. redis, postgresql, openssl"
+  <!-- Search row -->
+  <Card variant="default" padding="md">
+    <div class="flex gap-3 items-end">
+      <div class="flex-1 min-w-0">
+        <label class="block mb-1.5 font-medium text-neutral-700 text-sm dark:text-neutral-200">
+          Search the registry
+        </label>
+        <div class="relative">
+          <svg class="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+          </svg>
+          <input
+            type="search"
             name="dependency-search"
+            placeholder="redis, postgresql, openssl…"
+            class="block pl-9 pr-3 py-2 w-full text-neutral-900 text-sm dark:text-white bg-white dark:bg-white/5 border border-black/10 dark:border-white/15 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500/40 focus:border-blue-500/50 placeholder:text-neutral-400"
           />
         </div>
-        <Button type="submit" variant="primary" size="md">
-          <div class="h-4 w-4 i-hugeicons-search-01"></div>
-          Search
-        </Button>
-      </form>
+      </div>
+      <Button type="submit" variant="primary" size="md">Search</Button>
     </div>
+    <p class="mt-3 text-neutral-500 text-xs dark:text-neutral-400">
+      Dependencies install through <a href="https://pkgx.dev/" target="_blank" rel="noopener" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">tea</a> /
+      pantry. Installed binaries land in <code class="px-1 py-0.5 font-mono text-[11px] bg-black/5 dark:bg-white/10 rounded">~/.local/share/pantry</code>.
+    </p>
   </Card>
 
-  <!-- Stat row -->
-  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+  <!-- Stats -->
+  <div class="grid gap-3 grid-cols-3">
     <Card variant="default" padding="md">
-      <div class="flex gap-4 items-center">
-        <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
-          <span class="h-5 w-5 text-blue-600 dark:text-blue-400 i-hugeicons-package"></span>
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
         </div>
-        <div>
-          <p class="text-neutral-500 text-xs uppercase tracking-wide dark:text-neutral-400">Total</p>
-          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ totalCount }}</p>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Total</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalCount }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
-      <div class="flex gap-4 items-center">
-        <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
-          <span class="h-5 w-5 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02"></span>
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
         </div>
-        <div>
-          <p class="text-neutral-500 text-xs uppercase tracking-wide dark:text-neutral-400">Installed</p>
-          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ installedCount }}</p>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Installed</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ installedCount }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
-      <div class="flex gap-4 items-center">
-        <div class="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
-          <span class="h-5 w-5 text-amber-600 dark:text-amber-400 i-hugeicons-time-04"></span>
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="9"/>
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 7v5l3 2"/>
+          </svg>
         </div>
-        <div>
-          <p class="text-neutral-500 text-xs uppercase tracking-wide dark:text-neutral-400">Pending</p>
-          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ pendingCount }}</p>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Pending</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ pendingCount }}</p>
         </div>
       </div>
     </Card>
@@ -119,9 +125,13 @@ function statusVariant(status: string) {
 
   <!-- Installed table -->
   <Card variant="default" padding="none">
-    <div class="px-5 py-4 border-b border-neutral-200/60 dark:border-white/5">
-      <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Installed</h3>
-      <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ totalCount }} dependencies tracked by pantry</p>
+    <div class="flex items-baseline justify-between px-5 py-4 border-b border-neutral-200/60 dark:border-white/5">
+      <div>
+        <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Installed</h3>
+        <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
+          {{ totalCount }} {{ totalCount === 1 ? 'dependency' : 'dependencies' }} tracked by pantry
+        </p>
+      </div>
     </div>
 
     @if(dependencies.length === 0)
@@ -129,36 +139,35 @@ function statusVariant(status: string) {
         <EmptyState
           title="No dependencies yet"
           description="Search above to install your first dependency."
-          icon="i-hugeicons-package"
         />
       </div>
     @else
       <div class="overflow-x-auto">
         <table class="min-w-full divide-y divide-neutral-200/60 dark:divide-white/5">
-          <thead class="bg-neutral-50/70 dark:bg-white/[0.02]">
+          <thead class="bg-neutral-50/60 dark:bg-white/[0.02]">
             <tr>
-              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Name</th>
-              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Version</th>
-              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Source</th>
-              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</th>
-              <th class="px-5 py-3 text-right">
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Name</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Version</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Source</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Status</th>
+              <th class="px-5 py-2.5 text-right">
                 <span class="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
           <tbody class="divide-y divide-neutral-200/60 dark:divide-white/5">
             @foreach(dependencies as dep)
-              <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+              <tr class="hover:bg-neutral-50/70 dark:hover:bg-white/[0.02] transition-colors">
                 <td class="px-5 py-3 font-medium text-neutral-900 text-sm dark:text-white">{{ dep.name }}</td>
-                <td class="px-5 py-3 font-mono text-neutral-500 text-sm tabular-nums dark:text-neutral-400">{{ dep.version }}</td>
+                <td class="px-5 py-3 font-mono text-neutral-500 text-[13px] tabular-nums dark:text-neutral-400">{{ dep.version }}</td>
                 <td class="px-5 py-3 text-neutral-500 text-sm capitalize dark:text-neutral-400">{{ dep.source ?? 'unknown' }}</td>
                 <td class="px-5 py-3">
                   <Badge :variant="statusVariant(dep.status)" size="sm">{{ dep.status }}</Badge>
                 </td>
-                <td class="px-5 py-3">
-                  <div class="flex gap-2 justify-end">
+                <td class="px-5 py-3 text-right">
+                  <div class="inline-flex gap-1">
                     @if(dep.status === 'installed')
-                      <Button variant="ghost" size="sm">Upgrade</Button>
+                      <Button variant="secondary" size="sm">Upgrade</Button>
                       <Button variant="ghost" size="sm">Remove</Button>
                     @else
                       <Button variant="primary" size="sm">Install</Button>
