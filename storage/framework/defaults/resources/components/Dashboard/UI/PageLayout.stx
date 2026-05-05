@@ -1,0 +1,46 @@
+<script server>
+interface PageLayoutProps {
+  maxWidth?: 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full'
+  padding?: 'none' | 'sm' | 'md' | 'lg'
+  spacing?: 'none' | 'sm' | 'md' | 'lg'
+}
+
+const { maxWidth = '7xl', padding = 'md', spacing = 'md' } = defineProps<PageLayoutProps>()
+
+const widthClasses = {
+  md: 'max-w-md',
+  lg: 'max-w-lg',
+  xl: 'max-w-xl',
+  '2xl': 'max-w-2xl',
+  '3xl': 'max-w-3xl',
+  '4xl': 'max-w-4xl',
+  '5xl': 'max-w-5xl',
+  '6xl': 'max-w-6xl',
+  '7xl': 'max-w-7xl',
+  full: 'max-w-full',
+}
+
+const paddingClasses = {
+  none: '',
+  sm: 'px-4 pt-4 pb-8',
+  md: 'px-6 pt-6 pb-12',
+  lg: 'px-8 pt-8 pb-16',
+}
+
+const spacingClasses = {
+  none: '',
+  sm: 'space-y-3',
+  md: 'space-y-6',
+  lg: 'space-y-8',
+}
+
+const containerClass = [
+  'mx-auto',
+  widthClasses[maxWidth] || widthClasses['7xl'],
+  paddingClasses[padding] || paddingClasses.md,
+  spacingClasses[spacing] || spacingClasses.md,
+].filter(Boolean).join(' ')
+</script>
+<div class="{{ containerClass }}">
+  <slot />
+</div>
