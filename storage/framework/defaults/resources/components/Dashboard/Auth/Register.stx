@@ -1,6 +1,6 @@
 @import('../UI/Input', '../UI/Button')
 
-<script>
+<script server>
 interface RegisterProps {
   title?: string
   subtitle?: string

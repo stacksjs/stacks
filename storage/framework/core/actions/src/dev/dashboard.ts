@@ -213,6 +213,13 @@ async function startStxServer(): Promise<void> {
 
   // serve() starts a long-lived server — do NOT await it.
   // It resolves only when the server stops, which is never during dev.
+  //
+  // `auth: false` disables stx-bun-plugin's bundled auth middleware so
+  // pages declaring `definePageMeta({ middleware: ['auth'] })` aren't
+  // gated against an `auth-token` cookie that doesn't exist in the
+  // local dashboard. The dashboard runs entirely on the developer's
+  // machine and is not meant to be authenticated; without this flag
+  // every page silently 302'd to /login.
   const serverPromise = serve({
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
@@ -221,6 +228,7 @@ async function startStxServer(): Promise<void> {
     partialsDir: dashboardPath,
     quiet: true,
     routes: configRoutes,
+    auth: false,
     ...(stxModule && { stxModule }),
   } as any)
 
