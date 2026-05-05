@@ -167,7 +167,11 @@ async function startDefaultServer() {
   await serve({
     patterns: [userViewsPath, defaultViewsPath],
     port: preferredPort,
-    componentsDir: 'storage/framework/defaults/resources/components/Dashboard',
+    // Wider than the dashboard subdir so both Dashboard/* and
+    // Storefront/* (and any future <Namespace>/Component.stx) get
+    // resolved. stx-serve walks one subdirectory deep, so this
+    // gives us discovery without enumerating every namespace.
+    componentsDir: 'storage/framework/defaults/resources/components',
     layoutsDir: userLayoutsPath,
     partialsDir: userComponentsPath,
     fallbackLayoutsDir: defaultLayoutsPath,

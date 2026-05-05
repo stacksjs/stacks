@@ -219,7 +219,11 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         await serve({
           patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
           port,
-          componentsDir: 'storage/framework/defaults/resources/components/Dashboard',
+          // Wider than the dashboard subdir so both Dashboard/* and
+          // Storefront/* (and any future <Namespace>/Component.stx) get
+          // resolved. stx-serve walks one subdirectory deep, so this
+          // gives us discovery without enumerating every namespace.
+          componentsDir: 'storage/framework/defaults/resources/components',
           layoutsDir,
           partialsDir,
           fallbackPartialsDir: 'resources/views',

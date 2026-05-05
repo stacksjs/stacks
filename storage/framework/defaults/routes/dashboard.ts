@@ -56,6 +56,23 @@ route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.
 route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
 
 // ============================================================================
+// Storefront (anonymous cart + multi-step checkout)
+//
+// CSRF is skipped because the storefront uses progressive-enhancement
+// HTML forms — there's no JS to mint a token — and each cart is
+// already gated by an opaque, HttpOnly session cookie that can't be
+// guessed. Apps that want classic CSRF on top can re-register the
+// same routes in their `routes/api.ts` without `.skipCsrf()`.
+// ============================================================================
+
+route.get('/api/cart', 'Actions/Storefront/GetCartAction').skipCsrf()
+route.post('/api/cart/add', 'Actions/Storefront/AddToCartAction').skipCsrf()
+route.post('/api/cart/update', 'Actions/Storefront/UpdateCartItemAction').skipCsrf()
+route.post('/api/checkout/contact', 'Actions/Storefront/CheckoutContactAction').skipCsrf()
+route.post('/api/checkout/shipping', 'Actions/Storefront/CheckoutShippingAction').skipCsrf()
+route.post('/api/checkout/place', 'Actions/Storefront/PlaceOrderAction').skipCsrf()
+
+// ============================================================================
 // Health & System
 // ============================================================================
 
