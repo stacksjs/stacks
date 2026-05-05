@@ -2,6 +2,8 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../components/Dashboard/UI/PageLayout.stx'
+
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
 
 const topPosts = [
@@ -57,24 +59,22 @@ function draftProgressLabel(id) {
 </script>
 
 @title('Dashboard - Blog')
-<main>
-  <div class="overflow-hidden relative isolate">
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
-        <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Content Dashboard</h1>
+<PageLayout>
+  <div>
+    <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Content Dashboard</h1>
+    <div class="flex items-center justify-between mt-4">
+      <p class="text-gray-500 text-sm dark:text-neutral-400">Overview of your blog's performance</p>
+      <div class="relative">
+        <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+          @foreach(timeRanges as range)
+            <option value="{{ range }}">{{ range }}</option>
+          @endforeach
+        </select>
+      </div>
+    </div>
+  </div>
 
-        <div class="flex items-center justify-between mt-4">
-          <p class="text-gray-500 text-sm dark:text-neutral-400">Overview of your blog's performance</p>
-          <div class="relative">
-            <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-              @foreach(timeRanges as range)
-                <option value="{{ range }}">{{ range }}</option>
-              @endforeach
-            </select>
-          </div>
-        </div>
-
-        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
           <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
             <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Posts</dt>
             <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPosts }}</dd>
@@ -112,7 +112,7 @@ function draftProgressLabel(id) {
           </div>
         </dl>
 
-        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2">
           <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
               <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Page Views</h3>
@@ -132,7 +132,7 @@ function draftProgressLabel(id) {
           </div>
         </div>
 
-        <div class="mt-8">
+        <div>
           <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="flex items-center justify-between px-4 py-5 sm:px-6">
               <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Performing Posts</h3>
@@ -186,7 +186,7 @@ function draftProgressLabel(id) {
           </div>
         </div>
 
-        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
+        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2">
           <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="flex items-center justify-between px-4 py-5 sm:px-6">
               <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Recent Comments</h3>
@@ -326,11 +326,8 @@ function draftProgressLabel(id) {
               </div>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
   </div>
-</main>
+</PageLayout>
 
 <script client>
 

@@ -121,8 +121,6 @@
 </div>
 
 <script client>
-import { useChart } from '../../composables'
-
 interface SeoEntry {
   id: number
   title: string
