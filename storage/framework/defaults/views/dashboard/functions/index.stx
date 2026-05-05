@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
-import Card from '../../../components/Dashboard/UI/Card.stx'
-import Button from '../../../components/Dashboard/UI/Button.stx'
-import Badge from '../../../components/Dashboard/UI/Badge.stx'
-import EmptyState from '../../../components/Dashboard/UI/EmptyState.stx'
 
 interface FunctionRow {
   name: string

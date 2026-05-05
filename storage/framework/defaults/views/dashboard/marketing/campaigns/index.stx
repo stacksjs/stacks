@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 
 // Define campaign type
 interface Campaign {

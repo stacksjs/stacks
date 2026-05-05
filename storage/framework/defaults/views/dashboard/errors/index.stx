@@ -1,10 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import Tooltip from '../../../components/Dashboard/Tooltip.stx'
-</script>
-
 @title('Dashboard - Errors')
 <div class="py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">

@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-import TabNavigation from '../../../../components/Dashboard/Commerce/Delivery/TabNavigation.stx'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
-import ShippingMethodsTable from '../../../../components/Dashboard/Commerce/Delivery/ShippingMethodsTable.stx'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 
 const tabs = [
   { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },

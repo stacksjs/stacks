@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 // Types
 interface DateRange {
   id: string

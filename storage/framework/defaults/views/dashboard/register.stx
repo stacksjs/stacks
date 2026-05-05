@@ -7,7 +7,6 @@ definePageMeta({
   layout: 'guest'
 })
 
-import Register from '../../components/Dashboard/Auth/Register.stx'
 import { useAuth } from '../../functions/auth'
 
 const router = useRouter()

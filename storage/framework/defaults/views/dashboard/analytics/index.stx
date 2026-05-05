@@ -6,10 +6,6 @@
  * Analytics Dashboard - macOS Style
  * Overview of analytics with macOS-inspired design.
  */
-import Card from '../../../components/Dashboard/UI/Card.stx'
-import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
-import RouterLink from '../../../components/Dashboard/UI/RouterLink.stx'
-
 const analyticsCards = [
   { name: 'Web Analytics', description: 'Page views, sessions, and user behavior', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },
   { name: 'Blog Analytics', description: 'Post performance and engagement', icon: 'i-hugeicons-edit-02', to: '/analytics/blog' },

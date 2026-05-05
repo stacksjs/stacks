@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded'] as const
 const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer'] as const
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const

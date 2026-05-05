@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import OrdersTable from '../../../../components/Dashboard/Commerce/OrdersTable.stx'
 
 const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
 const orderTypes = [

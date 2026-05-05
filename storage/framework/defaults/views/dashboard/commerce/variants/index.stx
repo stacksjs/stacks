@@ -1,11 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
-</script>
-
-      <div class="sm:flex sm:items-center sm:justify-between">
+<div class="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Variants</h1>
           <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">

@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import ProductsTable from '../../../../components/Dashboard/Commerce/ProductsTable.stx'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
-</script>
-
 @title('Dashboard - Commerce Products')
 <div class="p-6 space-y-6">
 

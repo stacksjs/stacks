@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Consumption Tax'] as const
 </script>
 

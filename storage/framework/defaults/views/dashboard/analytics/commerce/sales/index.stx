@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import PageLayout from '../../../../../components/Dashboard/UI/PageLayout.stx'
 const productsRaw = [
   { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450 },
   { name: 'Wireless Earbuds', sku: 'WE-200', sales: 3567, revenue: 178350 },

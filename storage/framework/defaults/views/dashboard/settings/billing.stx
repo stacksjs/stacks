@@ -3,11 +3,6 @@
 @section('content')
 <script server>
 import { useBillable } from '../../../functions/billing/payments'
-import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.stx'
-import PaymentMethod from '../../../components/Dashboard/Billing/PaymentMethod.stx'
-import Plans from '../../../components/Dashboard/Billing/Plans.stx'
-import LoadingDetails from '../../../components/Dashboard/Skeleton/LoadingCard.stx'
-import TransactionHistory from '../../../components/Dashboard/Transaction/index.stx'
 
 const { isEmpty, showCurrentPlan } = useBillable()
 

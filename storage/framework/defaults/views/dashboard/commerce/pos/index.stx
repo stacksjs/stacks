@@ -1,10 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
-</script>
-
 @title('Self-Service Menu')
 <PageLayout>
       <!-- Header -->

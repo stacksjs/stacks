@@ -1,7 +1,12 @@
 export default {
   root: 'resources',
   pagesDir: 'views',
-  componentsDir: 'views/components',
+  // STX walks `componentsDir` recursively when resolving `<TagName />` against
+  // the filesystem, so dropping the `views/` prefix here points at the real
+  // shared components tree (`resources/components/Dashboard/UI/...`) and lets
+  // pages use `<PageLayout />`, `<PageHeader />`, etc. without an explicit
+  // `import` line in `<script server>`.
+  componentsDir: 'components',
   layoutsDir: 'views/layouts',
   partialsDir: 'views/partials',
 

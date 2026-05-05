@@ -2,9 +2,6 @@
 
 @section('content')
 <script server>
-import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.stx'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
-import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 
 // Statuses are server-rendered into the <select>; never mutate at runtime.
 const statuses = ['all', 'Active', 'Inactive'] as const

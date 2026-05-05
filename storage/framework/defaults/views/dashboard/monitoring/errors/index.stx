@@ -1,10 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import { StatsCard, Card, Button, Input, Select, Badge, Table, Pagination, Modal } from '../../../../components/Dashboard/UI'
-</script>
-
 @title('Dashboard - Error Tracking')
 <div class="p-6 space-y-6">
 

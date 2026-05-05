@@ -2,9 +2,6 @@
 
 @section('content')
 <script server>
-import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
-import Card from '../../../components/Dashboard/UI/Card.stx'
-import Badge from '../../../components/Dashboard/UI/Badge.stx'
 
 interface Metric {
   label: string

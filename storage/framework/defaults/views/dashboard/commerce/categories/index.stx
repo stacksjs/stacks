@@ -1,11 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import CategoriesTable from '../../../../components/Dashboard/Commerce/CategoriesTable.stx'
-import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
-</script>
-
 @title('Dashboard - Commerce Categories')
 <div class="p-6 space-y-6">
 

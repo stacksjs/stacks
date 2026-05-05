@@ -2,7 +2,6 @@
 
 @section('content')
 <script server>
-import PageLayout from '../../../../../components/Dashboard/UI/PageLayout.stx'
 const pagesRaw = [
   { path: '/products', entries: 3800, visitors: 3800, views: 5100 },
   { path: '/products/category/electronics', entries: 1213, visitors: 1213, views: 1539 },

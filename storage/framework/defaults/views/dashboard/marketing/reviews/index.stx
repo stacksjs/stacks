@@ -3,7 +3,6 @@
 @section('content')
 <script server>
 import * as d3 from 'd3'
-import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 
 // Define review type
 interface Review {
