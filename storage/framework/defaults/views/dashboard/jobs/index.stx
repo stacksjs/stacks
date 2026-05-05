@@ -4,7 +4,6 @@
 <script server>
 definePageMeta({
   middleware: ['auth'],
-  layout: 'default'
 })
 
 import Card from '../../../components/Dashboard/UI/Card.stx'
@@ -13,13 +12,118 @@ import Button from '../../../components/Dashboard/UI/Button.stx'
 import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
 import Select from '../../../components/Dashboard/UI/Select.stx'
 import RouterLink from '../../../components/Dashboard/UI/RouterLink.stx'
+</script>
+
+@title('Dashboard - Jobs')
+<div>
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
+    <StatsCard title="Total Jobs" value="71,897" :trend="12" trend-label="vs last hour" icon="i-hugeicons-layers-01" icon-bg="primary" />
+    <StatsCard title="Avg Processing Time" value="2.3s" :trend="-15" trend-label="Faster than yesterday" icon="i-hugeicons-clock-01" icon-bg="success" />
+    <StatsCard title="Jobs Per Minute" value="42" :trend="-8" trend-label="vs last hour" icon="i-hugeicons-flash" icon-bg="warning" />
+  </div>
+
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
+    <Card variant="default" padding="lg">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Throughput</h3>
+          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
+        </div>
+        <Select :value="timeRange" :options="timeRangeOptions" size="sm" class="w-36" />
+      </div>
+      <div class="relative h-[280px]">
+        <div :show="isLoading" class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
+          <div class="h-6 w-6 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+        </div>
+        <canvas id="jobs_throughput_chart"></canvas>
+      </div>
+    </Card>
+
+    <Card variant="default" padding="lg">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Wait Time</h3>
+          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Average time jobs spend in queue</p>
+        </div>
+      </div>
+      <div class="relative h-[280px]">
+        <div :show="isLoading" class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
+          <div class="h-6 w-6 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+        </div>
+        <canvas id="jobs_wait_chart"></canvas>
+      </div>
+    </Card>
+  </div>
+
+  <Card variant="default" padding="none">
+    <div class="px-5 py-4 border-b border-black/5 dark:border-white/5">
+      <div class="flex items-center justify-between">
+        <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Recent Jobs</h3>
+        <RouterLink to="/jobs/history" class="inline-flex gap-1 items-center text-[13px] text-blue-600 dark:text-blue-400 hover:text-blue-500">
+          <span>View All</span>
+          <div class="h-3.5 w-3.5 i-hugeicons-arrow-right-01"></div>
+        </RouterLink>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-black/5 divide-y dark:divide-white/5">
+        <thead>
+          <tr class="bg-black/[0.02] dark:bg-white/[0.02]">
+            <th scope="col" class="pl-5 pr-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Job</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Queue</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Status</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Runtime</th>
+            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Started</th>
+            <th scope="col" class="relative pl-3 pr-5 py-3"><span class="sr-only">Actions</span></th>
+          </tr>
+        </thead>
+        <tbody class="divide-black/5 divide-y dark:divide-white/5">
+          @foreach(recentJobs() as job)
+            <tr class="dark:bg-neutral-800/[0.02] hover:bg-black/[0.02] dark:hover:bg-white transition-colors">
+              <td class="pl-5 pr-3 py-3.5 whitespace-nowrap">
+                <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ job.name }}</div>
+                <div class="flex gap-1 items-center mt-1">
+                  @foreach(job.tags as tag)
+                    <Badge size="xs" variant="default">{{ tag }}</Badge>
+                  @endforeach
+                </div>
+              </td>
+              <td class="px-3 py-3.5 whitespace-nowrap">
+                <div class="text-[13px] text-neutral-900 dark:text-white">{{ job.queue }}</div>
+                <div class="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">Priority: {{ job.priority }}</div>
+              </td>
+              <td class="px-3 py-3.5 whitespace-nowrap">
+                <Badge :variant="getStatusVariant(job.status)" size="sm">{{ job.status }}</Badge>
+                <div :show="{{ job.status === 'failed' ? 'true' : 'false' }}" class="mt-1 text-[11px] text-red-600 dark:text-red-400">Attempts: {{ job.attempts }}</div>
+              </td>
+              <td class="px-3 py-3.5 whitespace-nowrap">
+                <div class="font-mono text-[13px] text-neutral-900 dark:text-white">{{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}</div>
+              </td>
+              <td class="px-3 py-3.5 text-[12px] text-neutral-500 whitespace-nowrap dark:text-neutral-400">
+                <div>{{ job.started_at || '-' }}</div>
+                <div :show="{{ job.completed_at ? 'true' : 'false' }}">Completed: {{ job.completed_at }}</div>
+              </td>
+              <td class="relative pl-3 pr-5 py-3.5 text-right whitespace-nowrap">
+                <Button :href="`/jobs/${job.id}`" variant="ghost" size="sm">View</Button>
+              </td>
+            </tr>
+          @endforeach
+        </tbody>
+      </table>
+    </div>
+  </Card>
+</div>
+
+<script client>
+import { useChart } from '../composables'
 
 interface Job {
   id: string
   name: string
   status: 'queued' | 'processing' | 'completed' | 'failed'
   queue: string
-  payload: any
+  payload: Record<string, unknown>
   created_at: string
   started_at?: string
   completed_at?: string
@@ -30,61 +134,18 @@ interface Job {
   runtime?: number
 }
 
-let recentJobs = [
-  {
-    id: '1',
-    name: 'ProcessPodcast',
-    status: 'completed',
-    queue: 'default',
-    payload: { podcast_id: 123 },
-    created_at: '2024-03-14 10:00:00',
-    started_at: '2024-03-14 10:00:01',
-    completed_at: '2024-03-14 10:00:05',
-    attempts: 1,
-    runtime: 4.2,
-    tags: ['podcast', 'media'],
-    priority: 1,
-  },
-  {
-    id: '2',
-    name: 'SendNewsletter',
-    status: 'failed',
-    queue: 'high',
-    payload: { newsletter_id: 456 },
-    created_at: '2024-03-14 10:01:00',
-    started_at: '2024-03-14 10:01:01',
-    error: 'SMTP connection failed',
-    attempts: 3,
-    tags: ['email', 'newsletter'],
-    priority: 2,
-  },
-  {
-    id: '3',
-    name: 'GenerateReport',
-    status: 'processing',
-    queue: 'default',
-    payload: { report_id: 789 },
-    created_at: '2024-03-14 10:02:00',
-    started_at: '2024-03-14 10:02:01',
-    attempts: 1,
-    tags: ['report'],
-    priority: 1,
-  },
-  {
-    id: '4',
-    name: 'SyncInventory',
-    status: 'queued',
-    queue: 'low',
-    payload: { sync_id: 101 },
-    created_at: '2024-03-14 10:03:00',
-    attempts: 0,
-    tags: ['inventory', 'sync'],
-    priority: 3,
-  },
-]
+interface ChartLike { destroy: () => void }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
-let timeRange = 'hour'
-let isLoading = false
+const recentJobs = state<Job[]>([
+  { id: '1', name: 'ProcessPodcast', status: 'completed', queue: 'default', payload: { podcast_id: 123 }, created_at: '2024-03-14 10:00:00', started_at: '2024-03-14 10:00:01', completed_at: '2024-03-14 10:00:05', attempts: 1, runtime: 4.2, tags: ['podcast', 'media'], priority: 1 },
+  { id: '2', name: 'SendNewsletter', status: 'failed', queue: 'high', payload: { newsletter_id: 456 }, created_at: '2024-03-14 10:01:00', started_at: '2024-03-14 10:01:01', error: 'SMTP connection failed', attempts: 3, tags: ['email', 'newsletter'], priority: 2 },
+  { id: '3', name: 'GenerateReport', status: 'processing', queue: 'default', payload: { report_id: 789 }, created_at: '2024-03-14 10:02:00', started_at: '2024-03-14 10:02:01', attempts: 1, tags: ['report'], priority: 1 },
+  { id: '4', name: 'SyncInventory', status: 'queued', queue: 'low', payload: { sync_id: 101 }, created_at: '2024-03-14 10:03:00', attempts: 0, tags: ['inventory', 'sync'], priority: 3 },
+])
+
+const timeRange = state('hour')
+const isLoading = state(false)
 
 const timeRangeOptions = [
   { value: 'hour', label: 'Last Hour' },
@@ -92,95 +153,34 @@ const timeRangeOptions = [
   { value: 'week', label: 'Last Week' },
 ]
 
+let chartHandles: Array<{ destroy: () => void }> = []
+
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(0, 0, 0, 0.05)',
-      },
-      ticks: {
-        color: 'rgb(115, 115, 115)',
-        font: {
-          family: '-apple-system, BlinkMacSystemFont, "SF Pro Text"',
-          size: 11,
-        },
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(115, 115, 115)',
-        font: {
-          family: '-apple-system, BlinkMacSystemFont, "SF Pro Text"',
-          size: 11,
-        },
-      },
-    },
+    y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' }, ticks: { color: 'rgb(115, 115, 115)', font: { family: '-apple-system, BlinkMacSystemFont, "SF Pro Text"', size: 11 } } },
+    x: { grid: { display: false }, ticks: { color: 'rgb(115, 115, 115)', font: { family: '-apple-system, BlinkMacSystemFont, "SF Pro Text"', size: 11 } } },
   },
   plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      align: 'end',
-      labels: {
-        color: 'rgb(115, 115, 115)',
-        font: {
-          family: '-apple-system, BlinkMacSystemFont, "SF Pro Text"',
-          size: 11,
-        },
-        boxWidth: 10,
-        padding: 12,
-      },
-    },
-    tooltip: {
-      mode: 'index',
-      intersect: false,
-      backgroundColor: 'rgba(255, 255, 255, 0.95)',
-      titleColor: '#171717',
-      bodyColor: '#525252',
-      borderColor: 'rgba(0, 0, 0, 0.1)',
-      borderWidth: 1,
-      padding: 10,
-      cornerRadius: 8,
-    },
+    legend: { display: true, position: 'top', align: 'end', labels: { color: 'rgb(115, 115, 115)', font: { family: '-apple-system, BlinkMacSystemFont, "SF Pro Text"', size: 11 }, boxWidth: 10, padding: 12 } },
+    tooltip: { mode: 'index', intersect: false, backgroundColor: 'rgba(255, 255, 255, 0.95)', titleColor: '#171717', bodyColor: '#525252', borderColor: 'rgba(0, 0, 0, 0.1)', borderWidth: 1, padding: 10, cornerRadius: 8 },
   },
-  interaction: {
-    mode: 'index',
-    intersect: false,
-  },
+  interaction: { mode: 'index', intersect: false },
 }
 
-const getThroughputData = () => {
+function getThroughputData() {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
     datasets: [
-      {
-        label: 'Processed',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 50),
-        borderColor: 'rgb(52, 199, 89)',
-        backgroundColor: 'rgba(52, 199, 89, 0.1)',
-        fill: true,
-        tension: 0.3,
-      },
-      {
-        label: 'Failed',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)),
-        borderColor: 'rgb(255, 59, 48)',
-        backgroundColor: 'rgba(255, 59, 48, 0.1)',
-        fill: true,
-        tension: 0.3,
-      },
+      { label: 'Processed', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 50), borderColor: 'rgb(52, 199, 89)', backgroundColor: 'rgba(52, 199, 89, 0.1)', fill: true, tension: 0.3 },
+      { label: 'Failed', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 10)), borderColor: 'rgb(255, 59, 48)', backgroundColor: 'rgba(255, 59, 48, 0.1)', fill: true, tension: 0.3 },
     ],
   }
 }
 
-const getWaitTimeData = () => {
+function getWaitTimeData() {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
@@ -195,11 +195,8 @@ const getWaitTimeData = () => {
   }
 }
 
-let throughputData = getThroughputData()
-let waitTimeData = getWaitTimeData()
-
-const getStatusVariant = (status) => {
-  const map = {
+function getStatusVariant(status: string): string {
+  const map: Record<string, string> = {
     queued: 'primary',
     processing: 'warning',
     completed: 'success',
@@ -208,195 +205,24 @@ const getStatusVariant = (status) => {
   return map[status] || 'default'
 }
 
-</script>
-
-@title('Dashboard - Jobs')
-<div>
-  <!-- Stats Overview -->
-  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-    <StatsCard
-      title="Total Jobs"
-      value="71,897"
-      :trend="12"
-      trend-label="vs last hour"
-      icon="i-hugeicons-layers-01"
-      icon-bg="primary"
-    />
-    <StatsCard
-      title="Avg Processing Time"
-      value="2.3s"
-      :trend="-15"
-      trend-label="Faster than yesterday"
-      icon="i-hugeicons-clock-01"
-      icon-bg="success"
-    />
-    <StatsCard
-      title="Jobs Per Minute"
-      value="42"
-      :trend="-8"
-      trend-label="vs last hour"
-      icon="i-hugeicons-flash"
-      icon-bg="warning"
-    />
-  </div>
-
-  <!-- Queue Performance Charts -->
-  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
-    <!-- Throughput Chart -->
-    <Card variant="default" padding="lg">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Throughput</h3>
-          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
-        </div>
-        <Select
-          value="{{ timeRange }}"
-          :options="timeRangeOptions"
-          size="sm"
-          class="w-36"
-        />
-      </div>
-      <div class="relative h-[280px]">
-        @if(isLoading)
-          <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
-            <div class="h-6 w-6 border-b-2 border-blue-500 rounded-full animate-spin" />
-          </div>
-        @endif
-        <canvas id="chart_1"></canvas>
-      </div>
-    </Card>
-
-    <!-- Wait Time Chart -->
-    <Card variant="default" padding="lg">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Wait Time</h3>
-          <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Average time jobs spend in queue</p>
-        </div>
-      </div>
-      <div class="relative h-[280px]">
-        @if(isLoading)
-          <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
-            <div class="h-6 w-6 border-b-2 border-blue-500 rounded-full animate-spin" />
-          </div>
-        @endif
-        <canvas id="chart_2"></canvas>
-      </div>
-    </Card>
-  </div>
-
-  <!-- Recent Jobs -->
-  <Card variant="default" padding="none">
-    <div class="px-5 py-4 border-b border-black/5 dark:border-white/5">
-      <div class="flex items-center justify-between">
-        <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Recent Jobs</h3>
-        <RouterLink
-          to="/jobs/history"
-          class="inline-flex gap-1 items-center text-[13px] text-blue-600 dark:text-blue-400 hover:text-blue-500"
-        >
-          <span>View All</span>
-          <div class="h-3.5 w-3.5 i-hugeicons-arrow-right-01" />
-        </RouterLink>
-      </div>
-    </div>
-
-    <div class="overflow-x-auto">
-      <table class="min-w-full divide-black/5 divide-y dark:divide-white/5">
-        <thead>
-          <tr class="bg-black/[0.02] dark:bg-white/[0.02]">
-            <th scope="col" class="pl-5 pr-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Job</th>
-            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Queue</th>
-            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Status</th>
-            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Runtime</th>
-            <th scope="col" class="px-3 py-3 font-semibold text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Started</th>
-            <th scope="col" class="relative pl-3 pr-5 py-3">
-              <span class="sr-only">Actions</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody class="divide-black/5 divide-y dark:divide-white/5">
-          @foreach(recentJobs as job)
-            <tr class="dark:bg-neutral-800/[0.02] hover:bg-black/[0.02] dark:hover:bg-white transition-colors">
-              <td class="pl-5 pr-3 py-3.5 whitespace-nowrap">
-                <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ job.name }}</div>
-                <div class="flex gap-1 items-center mt-1">
-                  @foreach(job.tags as tag)
-                    <Badge size="xs" variant="default">
-                      {{ tag }}
-                    </Badge>
-                  @endforeach
-                </div>
-              </td>
-              <td class="px-3 py-3.5 whitespace-nowrap">
-                <div class="text-[13px] text-neutral-900 dark:text-white">{{ job.queue }}</div>
-                <div class="mt-0.5 text-[11px] text-neutral-500 dark:text-neutral-400">Priority: {{ job.priority }}</div>
-              </td>
-              <td class="px-3 py-3.5 whitespace-nowrap">
-                <Badge :variant="getStatusVariant(job.status)" size="sm">
-                  {{ job.status }}
-                </Badge>
-                @if(job.status === 'failed')
-                  <div class="mt-1 text-[11px] text-red-600 dark:text-red-400">
-                    Attempts: {{ job.attempts }}
-                  </div>
-                @endif
-              </td>
-              <td class="px-3 py-3.5 whitespace-nowrap">
-                <div class="font-mono text-[13px] text-neutral-900 dark:text-white">
-                  {{ job.runtime ? `${job.runtime.toFixed(1)}s` : '-' }}
-                </div>
-              </td>
-              <td class="px-3 py-3.5 text-[12px] text-neutral-500 whitespace-nowrap dark:text-neutral-400">
-                <div>{{ job.started_at || '-' }}</div>
-                @if(job.completed_at)
-                  <div>Completed: {{ job.completed_at }}</div>
-                @endif
-              </td>
-              <td class="relative pl-3 pr-5 py-3.5 text-right whitespace-nowrap">
-                <Button
-                  
-                  :href="`/jobs/${job.id}`"
-                  variant="ghost"
-                  size="sm"
-                >
-                  View
-                </Button>
-              </td>
-            </tr>
-          @endforeach
-        </tbody>
-      </table>
-    </div>
-  </Card>
-</div>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: throughputData,
-    options: chartOptions,
-  })
-}
-
-const chart_2_ctx = document.getElementById('chart_2')
-if (chart_2_ctx) {
-  new Chart(chart_2_ctx, {
-    type: 'line',
-    data: waitTimeData,
-    options: chartOptions,
-  })
-}
-
 onMount(async () => {
-  isLoading = true
+  isLoading.set(true)
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+
+  const throughput = useChart({ Chart: Ctor, id: 'jobs_throughput_chart', type: 'line', data: getThroughputData(), options: chartOptions })
+  const wait = useChart({ Chart: Ctor, id: 'jobs_wait_chart', type: 'line', data: getWaitTimeData(), options: chartOptions })
+  chartHandles = [throughput.instance, wait.instance].filter((c): c is ChartLike => c !== null)
+
   await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading = false
+  isLoading.set(false)
+})
+
+onDestroy(() => {
+  chartHandles.forEach(c => c.destroy())
+  chartHandles = []
 })
 </script>
-
 
 @endsection
