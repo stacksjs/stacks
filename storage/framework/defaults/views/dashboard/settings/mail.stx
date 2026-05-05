@@ -1,6 +1,10 @@
 @extends('layouts/default')
 
 @section('content')
+<script server>
+import PageLayout from '../../../components/Dashboard/UI/PageLayout.stx'
+</script>
+
 <script>
 import { useMailSettings } from '../../../functions/settings/mail'
 
@@ -15,7 +19,7 @@ function handleSubmit(event: Event) {
 fetchSettings()
 </script>
 
-<main>
+<PageLayout maxWidth="full" padding="none" spacing="none">
   <SettingsHeader />
 
   <!-- Settings forms -->
@@ -183,6 +187,6 @@ fetchSettings()
       </form>
     </div>
   </div>
-</main>
+</PageLayout>
 
 @endsection
