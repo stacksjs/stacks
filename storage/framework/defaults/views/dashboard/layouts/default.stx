@@ -1,3 +1,42 @@
+<script>
+// Dashboard-wide chart helpers exposed on window so feature pages can call
+// `useChart(...)` / `useCharts(...)` without importing the composables
+// module. The page's `<script client>` blocks run inside a non-module
+// `<script data-stx-scoped>` tag, so an ES `import` at the top of the
+// file is a syntax error. Exposing these globals here lets every page
+// drop the import and call the helper directly.
+;(function () {
+  if (typeof window === 'undefined') return
+  if (window.useChart) return
+
+  function useChart(opts) {
+    if (typeof document === 'undefined')
+      return { instance: null, destroy: function () {} }
+    var el = document.getElementById(opts.id)
+    if (!el) {
+      console.warn('[useChart] no element with id "' + opts.id + '" — chart not initialised')
+      return { instance: null, destroy: function () {} }
+    }
+    var instance = new opts.Chart(el, { type: opts.type, data: opts.data, options: opts.options })
+    return {
+      instance: instance,
+      destroy: function () { instance.destroy() },
+    }
+  }
+
+  function useCharts(specs) {
+    var handles = specs.map(useChart)
+    return {
+      handles: handles,
+      destroyAll: function () { handles.forEach(function (h) { h.destroy() }) },
+    }
+  }
+
+  window.useChart = useChart
+  window.useCharts = useCharts
+})()
+</script>
+
 <script client>
 // Craft native sidebar integration
 // Maps sidebar itemIds to STX page routes for SPA navigation
@@ -165,12 +204,12 @@ const stacksSidebarBottom = _sb.bottom
 <!--
   Sidebar (web). The fixed-position panel sits in the left 240px of
   the viewport; the global stylesheet injected by the script above
-  reserves a matching `padding-left` on <body> so the rest of the
+  reserves a matching padding-left on the body so the rest of the
   page (navbar, main, footer) flows after it. When Craft is hosting
   the dashboard in a native window, its WKUserScript stamps
-  `data-craft-native-sidebar='true'` on <html> and the same stylesheet
-  hides this panel + zeroes the gutter so the native macOS sidebar
-  is the only one on screen.
+  data-craft-native-sidebar='true' on the html element and the same
+  stylesheet hides this panel + zeroes the gutter so the native
+  macOS sidebar is the only one on screen.
 -->
 <div class="sidebar-root">
   <div class="sidebar-fixed">
