@@ -222,7 +222,6 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 
 <script client>
 import { useCoupons } from '../../../../functions/commerce/coupons'
-import { useCharts } from '../../composables'
 import type { Coupons, NewCoupon } from '../../../../types/defaults'
 
 const { coupons, createCoupon, fetchCoupons, deleteCoupon, updateCoupon } = useCoupons()

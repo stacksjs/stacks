@@ -170,7 +170,6 @@
 </main>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface DeviceRow {
   name: string

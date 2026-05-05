@@ -169,7 +169,6 @@
 </main>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface ReferrerRow { name: string, visitors: number, views: number, percentage: number, type?: string }
 interface ReferrerTypeRow { name: string, visitors: number, percentage: number }

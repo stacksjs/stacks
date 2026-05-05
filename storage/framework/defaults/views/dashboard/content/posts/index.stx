@@ -101,7 +101,6 @@
 </div>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface BlogPost {
   id: number

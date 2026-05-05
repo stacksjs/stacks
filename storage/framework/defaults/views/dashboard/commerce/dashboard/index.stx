@@ -184,7 +184,6 @@ function orderStatusClass(status) {
 </main>
 
 <script client>
-import { useCharts } from '../../composables'
 
 const timeRange = state<string>('Last 30 days')
 

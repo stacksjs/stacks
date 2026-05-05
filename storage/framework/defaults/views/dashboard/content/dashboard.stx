@@ -333,7 +333,6 @@ function draftProgressLabel(id) {
 </main>
 
 <script client>
-import { useChart } from '../composables'
 
 interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike

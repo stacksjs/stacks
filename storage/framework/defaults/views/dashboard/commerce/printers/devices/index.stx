@@ -171,7 +171,6 @@ const statuses = ['All Statuses', 'Online', 'Offline', 'Warning'] as const
 </div>
 
 <script client>
-import { useCharts } from '../../../composables'
 
 interface Printer {
   id: number

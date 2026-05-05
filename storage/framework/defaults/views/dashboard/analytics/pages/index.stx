@@ -140,7 +140,6 @@
 </main>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface PageRow {
   path: string

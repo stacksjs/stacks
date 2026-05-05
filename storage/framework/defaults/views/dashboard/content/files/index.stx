@@ -256,7 +256,6 @@
 </div>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface FileItem {
   id: number

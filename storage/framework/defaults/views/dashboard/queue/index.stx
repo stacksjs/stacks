@@ -235,7 +235,6 @@
 </div>
 
 <script client>
-import { useChart } from '../composables'
 
 interface QueueStats {
   queued: number

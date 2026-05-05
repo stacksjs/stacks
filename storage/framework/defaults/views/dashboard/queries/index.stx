@@ -155,7 +155,6 @@
 </style>
 
 <script client>
-import { useChart } from '../composables'
 
 interface QueryRecord {
   id: string

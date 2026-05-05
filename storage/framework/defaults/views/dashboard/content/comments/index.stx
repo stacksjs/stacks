@@ -185,7 +185,6 @@ const timeRanges = [
 </div>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface Comment {
   id: number

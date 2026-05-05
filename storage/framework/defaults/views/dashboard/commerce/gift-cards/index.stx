@@ -347,7 +347,6 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 <script client>
 import { useGiftCards } from '../../../../functions/commerce/gift-cards'
 import { useAuth } from '../../../../functions/auth'
-import { useCharts } from '../../composables'
 
 interface GiftCard {
   id?: number

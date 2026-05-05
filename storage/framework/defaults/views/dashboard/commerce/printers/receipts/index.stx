@@ -188,7 +188,6 @@ const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This m
 </div>
 
 <script client>
-import { useCharts } from '../../../composables'
 
 interface PrintLog {
   id: number

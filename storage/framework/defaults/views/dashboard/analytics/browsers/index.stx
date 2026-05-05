@@ -135,7 +135,6 @@
 </main>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface BrowserRow {
   name: string

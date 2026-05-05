@@ -243,7 +243,6 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 </div>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface Tag {
   id: number

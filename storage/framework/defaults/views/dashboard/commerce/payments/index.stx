@@ -316,7 +316,6 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 </main>
 
 <script client>
-import { useCharts } from '../../composables'
 
 interface PaymentTransaction {
   id: number

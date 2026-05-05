@@ -155,7 +155,6 @@ const componentList = [
 </script>
 
 <script client>
-import { useChart } from '../composables'
 
 interface DownloadStats {
   labels: string[]

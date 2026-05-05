@@ -382,7 +382,6 @@
 </main>
 
 <script client>
-import { useChart } from '../../composables'
 
 interface WaitlistEntry {
   id: number

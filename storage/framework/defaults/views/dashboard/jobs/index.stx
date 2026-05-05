@@ -112,7 +112,6 @@ import RouterLink from '../../../components/Dashboard/UI/RouterLink.stx'
 </div>
 
 <script client>
-import { useChart } from '../composables'
 
 interface Job {
   id: string
