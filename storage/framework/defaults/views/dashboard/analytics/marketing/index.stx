@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const campaignsRaw = [
   { name: 'Summer Sale 2024', id: 'SUMMER24', spend: 25000, revenue: 75000, roi: 200, conversions: 1500 },
   { name: 'New Product Launch', id: 'NEWPROD', spend: 20000, revenue: 60000, roi: 200, conversions: 1200 },

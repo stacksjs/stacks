@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth']
-})
-
 import * as d3 from 'd3'
 
 // Update ServerConfig interface

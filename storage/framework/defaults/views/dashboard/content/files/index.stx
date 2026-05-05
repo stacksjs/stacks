@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 @title('Dashboard - File Manager')
 <div class="flex flex-col h-full">
   <div class="flex flex-1">

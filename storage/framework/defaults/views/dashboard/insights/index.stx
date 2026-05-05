@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
-
 interface SystemMetrics {
   cpu: number
   memory: {

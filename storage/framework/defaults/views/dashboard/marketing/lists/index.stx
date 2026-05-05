@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
-
 // Define list type
 interface List {
   id: number

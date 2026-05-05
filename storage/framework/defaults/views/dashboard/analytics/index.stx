@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
-
 /**
  * Analytics Dashboard - macOS Style
  * Overview of analytics with macOS-inspired design.

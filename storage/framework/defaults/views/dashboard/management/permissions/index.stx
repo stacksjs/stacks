@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const recentPermissionChanges = [
   { id: '#PCH-1234', user: 'John Smith', role: 'editor', action: 'Added', resource: 'edit articles', date: '2023-12-01' },
   { id: '#PCH-1233', user: 'Sarah Johnson', role: 'admin', action: 'Removed', resource: 'delete users', date: '2023-12-01' },

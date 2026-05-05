@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 import CouponsTable from '../../../../components/Dashboard/Commerce/CouponsTable.stx'
 import CouponsForm from '../../../../components/Dashboard/Commerce/Forms/CouponsForm.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'

@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 <div :show="hasWorkflowRun" class="px-4 py-8 sm:px-6 lg:px-8">
   <div class="px-6 py-8 text-sm bg-white dark:bg-neutral-800 rounded-lg">
     <div class="px-4 sm:px-0">

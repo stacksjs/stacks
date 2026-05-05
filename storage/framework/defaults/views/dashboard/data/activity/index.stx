@@ -2,1210 +2,263 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
+const logNames = [
+  { id: 'default', name: 'Default' },
+  { id: 'auth', name: 'Authentication' },
+  { id: 'users', name: 'Users' },
+  { id: 'posts', name: 'Posts' },
+  { id: 'comments', name: 'Comments' },
+  { id: 'media', name: 'Media' },
+  { id: 'deployment', name: 'Deployment' },
+  { id: 'server', name: 'Server' },
+  { id: 'commerce', name: 'Commerce' },
+  { id: 'blog', name: 'Blog' },
+]
 
-// Laravel-style activity log interfaces
-interface User {
-  id: string
-  name: string
-  email: string
-  avatar?: string
-}
+const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
+</script>
 
+@title('Dashboard - Activity Log')
+<div class="p-6 space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Activity Log</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Audit trail of recent activity</p>
+    </div>
+    <div class="flex items-center gap-2">
+      <button @click="toggleAutoRefresh()" class="{{ autoRefreshButtonClass }}">
+        <div class="mr-2 h-4 w-4 i-hugeicons-refresh"></div>
+        {{ autoRefreshLabel }}
+      </button>
+    </div>
+  </div>
+
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center">
+    <div class="relative max-w-sm">
+      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+        <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+      </div>
+      <input x-model="searchTerm" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" placeholder="Search activity..." />
+    </div>
+    <select x-model="logNameFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+      <option value="all">All Channels</option>
+      @foreach(logNames as ln)
+        <option value="{{ ln.id }}">{{ ln.name }}</option>
+      @endforeach
+    </select>
+    <select x-model="eventFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+      @foreach(eventTypes as ev)
+        <option value="{{ ev }}">{{ ev === 'all' ? 'All Events' : ev.charAt(0).toUpperCase() + ev.slice(1) }}</option>
+      @endforeach
+    </select>
+  </div>
+
+  <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-neutral-700 shadow">
+    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+      <thead class="bg-gray-50 dark:bg-neutral-700/50">
+        <tr>
+          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">When</th>
+          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Causer</th>
+          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Channel</th>
+          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Event</th>
+          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Description</th>
+          <th class="relative px-4 py-3.5"><span class="sr-only">Actions</span></th>
+        </tr>
+      </thead>
+      <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+        <template :for="log in paginatedLogs()">
+          <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
+            <td class="px-4 py-3 whitespace-nowrap"><div class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(log.created_at) }}</div></td>
+            <td class="px-4 py-3 whitespace-nowrap">
+              <div class="flex items-center gap-2">
+                <img :show="log.causer?.avatar" :src="log.causer?.avatar" alt="" class="h-6 w-6 rounded-full" />
+                <div class="font-medium text-gray-900 text-sm dark:text-white">{{ log.causer?.name ?? 'System' }}</div>
+              </div>
+            </td>
+            <td class="px-4 py-3 whitespace-nowrap"><span class="{{ logNameBadgeClass(log.log_name) }}">{{ log.log_name }}</span></td>
+            <td class="px-4 py-3 whitespace-nowrap"><span class="{{ eventBadgeClass(log.event) }}">{{ log.event }}</span></td>
+            <td class="px-4 py-3"><div class="max-w-md text-gray-700 text-sm dark:text-neutral-300">{{ log.description }}</div></td>
+            <td class="px-4 py-3 font-medium text-right text-sm whitespace-nowrap">
+              <button @click="openLog(log)" class="text-blue-600 hover:text-blue-500">View</button>
+            </td>
+          </tr>
+        </template>
+        <tr :show="paginatedLogs().length === 0">
+          <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No activity found.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div :show="totalPages() > 1" class="flex items-center justify-between">
+    <p class="text-gray-700 text-sm dark:text-neutral-300">Page {{ currentPage }} of {{ totalPages }}</p>
+    <nav class="inline-flex -space-x-px rounded-md shadow-sm">
+      <button @click="prevPage()" :disabled="currentPage() === 1" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 disabled:opacity-50">
+        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
+      </button>
+      <button @click="nextPage()" :disabled="currentPage() === totalPages()" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 disabled:opacity-50">
+        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
+      </button>
+    </nav>
+  </div>
+
+  <div :show="selectedLog() !== null" class="relative z-10">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-2xl sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Activity Detail</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ selectedLog()?.description }}</p>
+          <dl class="grid gap-3 grid-cols-2 mt-4 text-sm">
+            <div>
+              <dt class="font-medium text-gray-500 dark:text-neutral-400">When</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ formatDate(selectedLog()?.created_at ?? '') }}</dd>
+            </div>
+            <div>
+              <dt class="font-medium text-gray-500 dark:text-neutral-400">Channel</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ selectedLog()?.log_name }}</dd>
+            </div>
+            <div>
+              <dt class="font-medium text-gray-500 dark:text-neutral-400">Event</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ selectedLog()?.event }}</dd>
+            </div>
+            <div>
+              <dt class="font-medium text-gray-500 dark:text-neutral-400">Subject</dt>
+              <dd class="mt-1 text-gray-900 dark:text-white">{{ selectedLog()?.subject_type }} #{{ selectedLog()?.subject_id }}</dd>
+            </div>
+          </dl>
+          <pre class="mt-4 overflow-auto p-3 max-h-64 font-mono text-gray-800 text-xs bg-gray-50 dark:bg-neutral-900 dark:text-neutral-200 rounded">{{ selectedLogJSON }}</pre>
+          <div class="flex justify-end mt-5">
+            <button @click="closeLog()" class="inline-flex justify-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
 interface ActivityLog {
   id: string
   log_name: string
   description: string
   subject_type: string
   subject_id: string
-  causer_type: string | null
-  causer_id: string | null
-  properties: Record<string, any>
-  created_at: string
-  updated_at: string
   event: string
-  batch_uuid?: string
-
-  // Computed properties for display
-  causer?: User
-  subject_name?: string
-  icon?: string
-  color?: string
+  causer?: { name: string, avatar?: string }
+  properties?: Record<string, unknown>
+  created_at: string
 }
 
-// Add pagination
-let currentPage = 1
-let itemsPerPage = 10
-let totalItems = 0
-
-let activityLogs = []
-let logNameFilter = 'all'
-let searchTerm = ''
-let autoRefresh = true
-let selectedLog = null
-let isLoading = false
-let eventFilter = 'all'
-let subjectTypeFilter = 'all'
-
-// Sample users for the activity logs
-const users: User[] = [
-  { id: '1', name: 'Chris Breuer', email: 'chris@stacksjs.com', avatar: 'https://i.pravatar.cc/150?u=chris' },
-  { id: '2', name: 'John Doe', email: 'john@example.com', avatar: 'https://i.pravatar.cc/150?u=john' },
-  { id: '3', name: 'Jane Smith', email: 'jane@example.com', avatar: 'https://i.pravatar.cc/150?u=jane' },
-  { id: '4', name: 'System', email: 'system@stacksjs.com' },
+const sampleLogs: ActivityLog[] = [
+  { id: '1', log_name: 'auth', description: 'User logged in', subject_type: 'User', subject_id: '1', event: 'created', causer: { name: 'Chris Breuer', avatar: 'https://i.pravatar.cc/150?u=chris' }, created_at: new Date(Date.now() - 1000 * 60 * 5).toISOString() },
+  { id: '2', log_name: 'posts', description: 'Created post "10 Tips for Better Code"', subject_type: 'Post', subject_id: '12', event: 'created', causer: { name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?u=jane' }, created_at: new Date(Date.now() - 1000 * 60 * 30).toISOString() },
+  { id: '3', log_name: 'deployment', description: 'Deployed v1.4.2 to production', subject_type: 'Deployment', subject_id: '88', event: 'created', causer: { name: 'System' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 2).toISOString() },
+  { id: '4', log_name: 'comments', description: 'Approved comment from Sarah Williams', subject_type: 'Comment', subject_id: '40', event: 'updated', causer: { name: 'Chris Breuer', avatar: 'https://i.pravatar.cc/150?u=chris' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 6).toISOString() },
+  { id: '5', log_name: 'users', description: 'Updated profile settings', subject_type: 'User', subject_id: '2', event: 'updated', causer: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=john' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 12).toISOString() },
+  { id: '6', log_name: 'media', description: 'Uploaded 4 images to /Images', subject_type: 'Media', subject_id: '102', event: 'created', causer: { name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?u=jane' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 18).toISOString() },
+  { id: '7', log_name: 'commerce', description: 'Order #1024 placed', subject_type: 'Order', subject_id: '1024', event: 'created', causer: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=john' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 26).toISOString() },
+  { id: '8', log_name: 'auth', description: 'User logged out', subject_type: 'User', subject_id: '2', event: 'deleted', causer: { name: 'John Doe', avatar: 'https://i.pravatar.cc/150?u=john' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 36).toISOString() },
+  { id: '9', log_name: 'server', description: 'Restarted node-1', subject_type: 'Server', subject_id: 'node-1', event: 'updated', causer: { name: 'System' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 48).toISOString() },
+  { id: '10', log_name: 'blog', description: 'Published post "Vue 3 Tips"', subject_type: 'Post', subject_id: '88', event: 'updated', causer: { name: 'Jane Smith', avatar: 'https://i.pravatar.cc/150?u=jane' }, created_at: new Date(Date.now() - 1000 * 60 * 60 * 72).toISOString() },
 ]
 
-// Sample log names (similar to Laravel channels)
-const logNames = [
-  { id: 'default', name: 'Default', color: 'blue' },
-  { id: 'auth', name: 'Authentication', color: 'indigo' },
-  { id: 'users', name: 'Users', color: 'purple' },
-  { id: 'posts', name: 'Posts', color: 'pink' },
-  { id: 'comments', name: 'Comments', color: 'rose' },
-  { id: 'media', name: 'Media', color: 'amber' },
-  { id: 'deployment', name: 'Deployment', color: 'emerald' },
-  { id: 'server', name: 'Server', color: 'cyan' },
-  { id: 'commerce', name: 'Commerce', color: 'orange' },
-  { id: 'blog', name: 'Blog', color: 'violet' },
-]
+const logs = state<ActivityLog[]>(sampleLogs)
+const searchTerm = state('')
+const logNameFilter = state<'all' | string>('all')
+const eventFilter = state<'all' | string>('all')
+const currentPage = state(1)
+const itemsPerPage = state(10)
+const autoRefresh = state(true)
+const selectedLog = state<ActivityLog | null>(null)
 
-// Sample subject types
-const subjectTypes = [
-  { type: 'App\\Models\\User', name: 'User' },
-  { type: 'App\\Models\\Post', name: 'Post' },
-  { type: 'App\\Models\\Comment', name: 'Comment' },
-  { type: 'App\\Models\\Media', name: 'Media' },
-  { type: 'App\\Models\\Role', name: 'Role' },
-  { type: 'App\\Models\\Permission', name: 'Permission' },
-  { type: 'App\\Models\\Order', name: 'Order' },
-  { type: 'App\\Services\\Deployment', name: 'Deployment' },
-  { type: 'App\\Services\\Server', name: 'Server' },
-  { type: 'App\\Services\\Api', name: 'API' },
-  { type: 'App\\Services\\Backup', name: 'Backup' },
-]
-
-// Sample activity logs in Laravel Spatie Activity Log format
-const sampleActivityLogs: ActivityLog[] = [
-  {
-    id: '1',
-    log_name: 'default',
-    description: 'created',
-    subject_type: 'App\\Models\\User',
-    subject_id: '5',
-    causer_type: 'App\\Models\\User',
-    causer_id: '1',
-    properties: {
-      attributes: {
-        name: 'New User',
-        email: 'newuser@example.com',
-        created_at: new Date().toISOString(),
-      },
-      ip_address: '192.168.1.1',
-      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-    },
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    event: 'created',
-  },
-  {
-    id: '2',
-    log_name: 'users',
-    description: 'updated',
-    subject_type: 'App\\Models\\User',
-    subject_id: '2',
-    causer_type: 'App\\Models\\User',
-    causer_id: '1',
-    properties: {
-      old: {
-        name: 'John Doe',
-        email: 'john.old@example.com',
-      },
-      attributes: {
-        name: 'John Doe',
-        email: 'john@example.com',
-      },
-      ip_address: '192.168.1.1',
-      user_agent: 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7)',
-    },
-    created_at: new Date(Date.now() - 5000).toISOString(),
-    updated_at: new Date(Date.now() - 5000).toISOString(),
-    event: 'updated',
-  },
-  {
-    id: '3',
-    log_name: 'auth',
-    description: 'logged in',
-    subject_type: 'App\\Models\\User',
-    subject_id: '3',
-    causer_type: 'App\\Models\\User',
-    causer_id: '3',
-    properties: {
-      ip_address: '192.168.1.100',
-      user_agent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)',
-    },
-    created_at: new Date(Date.now() - 15000).toISOString(),
-    updated_at: new Date(Date.now() - 15000).toISOString(),
-    event: 'login',
-  },
-  {
-    id: '4',
-    log_name: 'posts',
-    description: 'created',
-    subject_type: 'App\\Models\\Post',
-    subject_id: '42',
-    causer_type: 'App\\Models\\User',
-    causer_id: '2',
-    properties: {
-      attributes: {
-        title: 'Getting Started with Stacks.js',
-        slug: 'getting-started-with-stacks-js',
-        content: 'This is a comprehensive guide to Stacks.js...',
-        published: true,
-        created_at: new Date(Date.now() - 60000).toISOString(),
-      },
-      ip_address: '192.168.1.50',
-    },
-    created_at: new Date(Date.now() - 60000).toISOString(),
-    updated_at: new Date(Date.now() - 60000).toISOString(),
-    event: 'created',
-  },
-  {
-    id: '5',
-    log_name: 'posts',
-    description: 'updated',
-    subject_type: 'App\\Models\\Post',
-    subject_id: '42',
-    causer_type: 'App\\Models\\User',
-    causer_id: '1',
-    properties: {
-      old: {
-        title: 'Getting Started with Stacks.js',
-        content: 'This is a comprehensive guide to Stacks.js...',
-      },
-      attributes: {
-        title: 'The Ultimate Guide to Stacks.js',
-        content: 'This is a comprehensive guide to Stacks.js with updated information...',
-      },
-      ip_address: '192.168.1.1',
-    },
-    created_at: new Date(Date.now() - 120000).toISOString(),
-    updated_at: new Date(Date.now() - 120000).toISOString(),
-    event: 'updated',
-  },
-  {
-    id: '6',
-    log_name: 'comments',
-    description: 'created',
-    subject_type: 'App\\Models\\Comment',
-    subject_id: '101',
-    causer_type: 'App\\Models\\User',
-    causer_id: '3',
-    properties: {
-      attributes: {
-        post_id: 42,
-        content: 'Great article! Very helpful for beginners.',
-        created_at: new Date(Date.now() - 180000).toISOString(),
-      },
-      ip_address: '192.168.1.100',
-    },
-    created_at: new Date(Date.now() - 180000).toISOString(),
-    updated_at: new Date(Date.now() - 180000).toISOString(),
-    event: 'created',
-  },
-  {
-    id: '7',
-    log_name: 'auth',
-    description: 'failed login attempt',
-    subject_type: 'App\\Models\\User',
-    subject_id: '2',
-    causer_type: null,
-    causer_id: null,
-    properties: {
-      ip_address: '192.168.1.200',
-      user_agent: 'Mozilla/5.0 (iPhone; CPU iPhone OS 14_7_1)',
-      reason: 'Invalid credentials',
-      attempt: 2,
-    },
-    created_at: new Date(Date.now() - 240000).toISOString(),
-    updated_at: new Date(Date.now() - 240000).toISOString(),
-    event: 'login_failed',
-  },
-  {
-    id: '8',
-    log_name: 'media',
-    description: 'uploaded',
-    subject_type: 'App\\Models\\Media',
-    subject_id: '56',
-    causer_type: 'App\\Models\\User',
-    causer_id: '1',
-    properties: {
-      attributes: {
-        filename: 'stacks-architecture.png',
-        size: '1.2MB',
-        mime_type: 'image/png',
-        path: '/storage/uploads/stacks-architecture.png',
-      },
-      ip_address: '192.168.1.1',
-    },
-    created_at: new Date(Date.now() - 300000).toISOString(),
-    updated_at: new Date(Date.now() - 300000).toISOString(),
-    event: 'uploaded',
-  },
-  {
-    id: '9',
-    log_name: 'posts',
-    description: 'deleted',
-    subject_type: 'App\\Models\\Post',
-    subject_id: '41',
-    causer_type: 'App\\Models\\User',
-    causer_id: '1',
-    properties: {
-      old: {
-        title: 'Deprecated Feature Guide',
-        slug: 'deprecated-feature-guide',
-        content: 'This guide covers features that are now deprecated...',
-        published: true,
-      },
-      ip_address: '192.168.1.1',
-    },
-    created_at: new Date(Date.now() - 360000).toISOString(),
-    updated_at: new Date(Date.now() - 360000).toISOString(),
-    event: 'deleted',
-  },
-  {
-    id: '10',
-    log_name: 'default',
-    description: 'system backup completed',
-    subject_type: 'App\\Services\\Backup',
-    subject_id: '5',
-    causer_type: 'App\\Models\\User',
-    causer_id: '4',
-    properties: {
-      attributes: {
-        size: '256MB',
-        files_count: 1250,
-        destination: 's3://backups/daily/2023-05-15.zip',
-        duration: '45s',
-      },
-    },
-    created_at: new Date(Date.now() - 420000).toISOString(),
-    updated_at: new Date(Date.now() - 420000).toISOString(),
-    event: 'completed',
-  },
-  {
-    id: '11',
-    log_name: 'deployment',
-    description: 'Production deployment successful',
-    subject_type: 'App\\Services\\Deployment',
-    subject_id: '123',
-    causer_type: 'App\\Models\\User',
-    causer_id: '1',
-    properties: {
-      environment: 'production',
-      branch: 'main',
-      commit: '7829abc',
-      duration: '45s',
-      status: 'success',
-    },
-    created_at: new Date(Date.now() - 10 * 60000).toISOString(), // 10 minutes ago
-    updated_at: new Date(Date.now() - 10 * 60000).toISOString(),
-    event: 'completed',
-  },
-  {
-    id: '12',
-    log_name: 'blog',
-    description: 'New blog post published',
-    subject_type: 'App\\Models\\Post',
-    subject_id: '45',
-    causer_type: 'App\\Models\\User',
-    causer_id: '3',
-    properties: {
-      attributes: {
-        title: 'Getting Started with Activity Logs',
-        slug: 'getting-started-with-activity-logs',
-        status: 'published',
-        created_at: new Date(Date.now() - 60 * 60000).toISOString(), // 1 hour ago
-      },
-      status: 'success',
-    },
-    created_at: new Date(Date.now() - 60 * 60000).toISOString(),
-    updated_at: new Date(Date.now() - 60 * 60000).toISOString(),
-    event: 'published',
-  },
-  {
-    id: '13',
-    log_name: 'server',
-    description: 'Server maintenance completed',
-    subject_type: 'App\\Services\\Server',
-    subject_id: '2',
-    causer_type: 'App\\Models\\User',
-    causer_id: '4',
-    properties: {
-      server: 'app-server-01',
-      maintenance_type: 'scheduled',
-      duration: '120m',
-      status: 'success',
-    },
-    created_at: new Date(Date.now() - 3 * 60 * 60000).toISOString(), // 3 hours ago
-    updated_at: new Date(Date.now() - 3 * 60 * 60000).toISOString(),
-    event: 'maintained',
-  },
-  {
-    id: '14',
-    log_name: 'default',
-    description: 'API rate limit exceeded',
-    subject_type: 'App\\Services\\Api',
-    subject_id: '1',
-    causer_type: null,
-    causer_id: null,
-    properties: {
-      endpoint: '/api/v1/users',
-      limit: 1000,
-      period: '1 hour',
-      ip: '192.168.1.50',
-      status: 'error',
-    },
-    created_at: new Date(Date.now() - 5 * 60 * 60000).toISOString(), // 5 hours ago
-    updated_at: new Date(Date.now() - 5 * 60 * 60000).toISOString(),
-    event: 'exceeded',
-  },
-  {
-    id: '15',
-    log_name: 'commerce',
-    description: 'New order received',
-    subject_type: 'App\\Models\\Order',
-    subject_id: '1001',
-    causer_type: 'App\\Models\\User',
-    causer_id: '2',
-    properties: {
-      attributes: {
-        order_number: 'ORD-1001',
-        total: '$129.99',
-        items: 3,
-        status: 'pending',
-        created_at: new Date(Date.now() - 12 * 60 * 60000).toISOString(), // 12 hours ago
-      },
-      status: 'success',
-    },
-    created_at: new Date(Date.now() - 12 * 60 * 60000).toISOString(),
-    updated_at: new Date(Date.now() - 12 * 60 * 60000).toISOString(),
-    event: 'created',
-  },
-]
-
-// Process logs to add computed properties
-const processLogs = (logs: ActivityLog[]) => {
-  return logs.map(log => {
-    // Find causer (user who performed the action)
-    const causer = log.causer_id ? users.find(u => u.id === log.causer_id) : undefined
-
-    // Get subject name based on type and properties
-    let subject_name = ''
-    if (log.subject_type === 'App\\Models\\User' && log.properties?.attributes?.name) {
-      subject_name = log.properties.attributes.name
-    } else if (log.subject_type === 'App\\Models\\Post' && log.properties?.attributes?.title) {
-      subject_name = log.properties.attributes.title
-    } else if (log.subject_type === 'App\\Models\\Media' && log.properties?.attributes?.filename) {
-      subject_name = log.properties.attributes.filename
-    } else if (log.subject_type === 'App\\Services\\Backup') {
-      subject_name = 'System Backup'
-    } else if (log.subject_type === 'App\\Services\\Deployment') {
-      subject_name = `Deployment to ${log.properties?.environment || 'unknown'}`
-    } else if (log.subject_type === 'App\\Services\\Server') {
-      subject_name = log.properties?.server || 'Server'
-    } else if (log.subject_type === 'App\\Services\\Api') {
-      subject_name = log.properties?.endpoint || 'API'
-    } else if (log.subject_type === 'App\\Models\\Order' && log.properties?.attributes?.order_number) {
-      subject_name = log.properties.attributes.order_number
-    } else {
-      // Get the last part of the subject type as a fallback
-      const parts = log.subject_type.split('\\')
-      subject_name = `${parts[parts.length - 1]} #${log.subject_id}`
-    }
-
-    // Determine icon and color based on event and status
-    let icon = 'i-hugeicons-information-circle'
-    let color = 'text-blue-500'
-
-    // Check if there's a status in properties
-    const status = log.properties?.status
-
-    if (status === 'error') {
-      icon = 'i-hugeicons-alert-02'
-      color = 'text-red-500'
-    } else if (status === 'warning') {
-      icon = 'i-hugeicons-alert-02'
-      color = 'text-amber-500'
-    } else {
-      // If no status, use event to determine icon/color
-      switch (log.event) {
-        case 'created':
-          icon = 'i-hugeicons-plus-sign-circle'
-          color = 'text-green-500'
-          break
-        case 'updated':
-          icon = 'i-hugeicons-edit-01'
-          color = 'text-blue-500'
-          break
-        case 'deleted':
-          icon = 'i-hugeicons-waste'
-          color = 'text-red-500'
-          break
-        case 'login':
-          icon = 'i-hugeicons-login-03'
-          color = 'text-indigo-500'
-          break
-        case 'login_failed':
-          icon = 'i-hugeicons-login-03'
-          color = 'text-amber-500'
-          break
-        case 'uploaded':
-          icon = 'i-hugeicons-upload-03'
-          color = 'text-purple-500'
-          break
-        case 'completed':
-          icon = 'i-hugeicons-checkmark-circle-02'
-          color = 'text-green-500'
-          break
-        case 'published':
-          icon = 'i-hugeicons-book-open-01'
-          color = 'text-violet-500'
-          break
-        case 'maintained':
-          icon = 'i-hugeicons-settings-01'
-          color = 'text-cyan-500'
-          break
-        case 'exceeded':
-          icon = 'i-hugeicons-alert-02'
-          color = 'text-red-500'
-          break
-        default:
-          icon = 'i-hugeicons-information-circle'
-          color = 'text-gray-500'
-      }
-    }
-
-    return {
-      ...log,
-      causer,
-      subject_name,
-      icon,
-      color
-    }
-  })
-}
-
-function filteredLogs() {
-  return activityLogs.filter(log => {
-    const matchesSearch = log.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.subject_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      log.causer?.name.toLowerCase().includes(searchTerm.toLowerCase());
-
-    const matchesLogName = logNameFilter === 'all' || log.log_name === logNameFilter;
-
-    const matchesEvent = eventFilter === 'all' || log.event === eventFilter;
-
-    const matchesSubjectType = subjectTypeFilter === 'all' || log.subject_type === subjectTypeFilter;
-
-    return matchesSearch && matchesLogName && matchesEvent && matchesSubjectType;
-  }).sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
-});
-
-// Add pagination computed properties
-function paginatedLogs() {
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  totalItems = filteredLogs.length;
-  return filteredLogs.slice(startIndex, endIndex);
-});
-
-function totalPages() {
-  return Math.ceil(totalItems / itemsPerPage);
-});
-
-// Add pagination methods
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages) {
-    currentPage = page;
+const filteredLogs = derived(() => {
+  let list = [...logs()]
+  if (logNameFilter() !== 'all')
+    list = list.filter(l => l.log_name === logNameFilter())
+  if (eventFilter() !== 'all')
+    list = list.filter(l => l.event === eventFilter())
+  const q = searchTerm().toLowerCase()
+  if (q) {
+    list = list.filter(l =>
+      l.description.toLowerCase().includes(q)
+      || l.subject_type.toLowerCase().includes(q)
+      || (l.causer?.name ?? '').toLowerCase().includes(q),
+    )
   }
-};
-
-const nextPage = () => {
-  if (currentPage < totalPages) {
-    currentPage++;
-  }
-};
-
-const prevPage = () => {
-  if (currentPage > 1) {
-    currentPage--;
-  }
-};
-
-const resetFilters = () => {
-  searchTerm = '';
-  logNameFilter = 'all';
-  eventFilter = 'all';
-  subjectTypeFilter = 'all';
-  currentPage = 1;
-};
-
-// Helper functions for UI
-const getLogNameClasses = (logName: string): { bg: string, text: string, ring: string } => {
-  const log = logNames.find(l => l.id === logName);
-  if (log) {
-    switch (log.color) {
-      case 'blue':
-        return { bg: 'bg-blue-100', text: 'text-blue-800', ring: 'ring-blue-500' }
-      case 'indigo':
-        return { bg: 'bg-indigo-100', text: 'text-indigo-800', ring: 'ring-indigo-500' }
-      case 'purple':
-        return { bg: 'bg-purple-100', text: 'text-purple-800', ring: 'ring-purple-500' }
-      case 'pink':
-        return { bg: 'bg-pink-100', text: 'text-pink-800', ring: 'ring-pink-500' }
-      case 'rose':
-        return { bg: 'bg-rose-100', text: 'text-rose-800', ring: 'ring-rose-500' }
-      case 'amber':
-        return { bg: 'bg-amber-100', text: 'text-amber-800', ring: 'ring-amber-500' }
-      default:
-        return { bg: 'bg-gray-100', text: 'text-gray-800', ring: 'ring-gray-500' }
-    }
-  }
-  return { bg: 'bg-gray-100', text: 'text-gray-800', ring: 'ring-gray-500' }
-}
-
-const getLogRowClass = (event: string) => {
-  switch (event) {
-    case 'deleted':
-      return 'bg-red-50 bg-opacity-50'
-    case 'created':
-      return 'bg-green-50 bg-opacity-50'
-    case 'login_failed':
-      return 'bg-amber-50 bg-opacity-50'
-    case 'uploaded':
-      return 'bg-purple-50 bg-opacity-50'
-    default:
-      return ''
-  }
-}
-
-// These functions are no longer needed as we're using the icon and color directly from the processed log
-// But we'll keep them as empty functions to avoid template errors
-const getLogIcon = (icon: string | undefined) => icon || 'i-hugeicons-information-circle'
-const getLogIconColor = (color: string | undefined) => color || 'text-gray-500'
-
-let refreshInterval: number | undefined
-
-onUnmounted(() => {
-  stopAutoRefresh()
-}
-
-const startAutoRefresh = () => {
-  if (autoRefresh) {
-    refreshInterval = window.setInterval(() => {
-      // In reality, this would fetch new logs
-      // fetchNewLogs()
-    }, 2000)
-  }
-}
-
-const stopAutoRefresh = () => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval)
-    refreshInterval = undefined
-  }
-}
-
-const toggleAutoRefresh = () => {
-  autoRefresh = !autoRefresh
-  if (autoRefresh) {
-    startAutoRefresh()
-  } else {
-    stopAutoRefresh()
-  }
-}
-
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top' as const,
-      align: 'end' as const,
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-  },
-}
-
-// Generate mock activity volume data
-const getLogVolumeData = () => {
-  const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
-  return {
-    labels,
-    datasets: [
-      {
-        label: 'Created',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 40) + 20),
-        borderColor: 'rgb(16, 185, 129)', // Green
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Updated',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 50),
-        borderColor: 'rgb(59, 130, 246)', // Blue
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Deleted',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 20)),
-        borderColor: 'rgb(239, 68, 68)', // Red
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Login',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 60) + 30),
-        borderColor: 'rgb(139, 92, 246)', // Purple
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Failed Login',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 5),
-        borderColor: 'rgb(245, 158, 11)', // Amber
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        fill: true,
-      }
-    ],
-  }
-}
-
-let logVolumeData = getLogVolumeData()
-
-// Add timeRange ref
-let timeRange = 'day'
-
-</script>
-
-@title('Dashboard - Activity Log')
-<div class="p-6 space-y-6">
-
-  <PageHeader title="Activity Log" description="Monitor user actions and system events" />
-
-    <!-- Log Volume Chart -->
-    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Activity Volume</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Distribution of activity types over time</p>
-          </div>
-          <select
-            value="{{ timeRange }}"
-            class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="day">Last 24 Hours</option>
-            <option value="week">Last 7 Days</option>
-            <option value="month">Last 30 Days</option>
-            <option value="year">Last Year</option>
-          </select>
-        </div>
-        <div class="relative h-[300px]">
-          @if(isLoading)
-          <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
-            <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-          </div>
-          @endif
-          <canvas id="chart_1"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Control Panel -->
-    <div class="flow-root mt-8">
-      <div class="mb-6 space-y-4">
-        <div class="flex flex-wrap gap-4 items-center">
-          <div class="flex-1 min-w-[200px]">
-            <input
-              value="{{ searchTerm }}"
-              type="text"
-              placeholder="Search activities..."
-              class="px-4 py-2 w-full dark:text-neutral-100 dark:bg-neutral-700 border rounded-lg dark:border-neutral-600"
-            >
-          </div>
-
-          <select
-            value="{{ logNameFilter }}"
-            class="px-4 py-2 min-w-[140px] dark:text-neutral-100 bg-white dark:bg-neutral-700 border rounded-lg dark:border-neutral-600"
-          >
-            <option value="all">All Logs</option>
-            @foreach(logNames as log)
-<option value="{{ log.id }}">{{ log.name }}</option>
-            @endforeach
-          </select>
-
-          <select
-            value="{{ eventFilter }}"
-            class="px-4 py-2 min-w-[140px] dark:text-neutral-100 bg-white dark:bg-neutral-700 border rounded-lg dark:border-neutral-600"
-          >
-            <option value="all">All Events</option>
-            <option value="created">Created</option>
-            <option value="updated">Updated</option>
-            <option value="deleted">Deleted</option>
-            <option value="login">Login</option>
-            <option value="login_failed">Failed Login</option>
-            <option value="uploaded">Uploaded</option>
-            <option value="completed">Completed</option>
-            <option value="published">Published</option>
-            <option value="maintained">Maintained</option>
-            <option value="exceeded">Rate Limited</option>
-          </select>
-
-          <select
-            value="{{ subjectTypeFilter }}"
-            class="px-4 py-2 min-w-[140px] dark:text-neutral-100 bg-white dark:bg-neutral-700 border rounded-lg dark:border-neutral-600"
-          >
-            <option value="all">All Models</option>
-            @foreach(subjectTypes as subject)
-<option value="{{ subject.type }}">{{ subject.name }}</option>
-            @endforeach
-          </select>
-
-          <button
-            class="flex gap-2 items-center px-4 py-2 rounded-lg {{ autoRefresh ? 'bg-blue-100 text-blue-700 dark:bg-blue-800 dark:text-blue-200' : 'bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-neutral-300' }}"
-            onclick="toggleAutoRefresh"
-          >
-            <i
-              class="h-4 w-4 i-hugeicons-refresh {{ autoRefresh ? 'animate-spin' : '' }}"
-              aria-hidden="true"
-            />
-            {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
-          </button>
-
-          @if(searchTerm || logNameFilter !== 'all' || eventFilter !== 'all' || subjectTypeFilter !== 'all')
-          <button
-            class="flex gap-2 items-center px-4 py-2 text-gray-700 dark:text-neutral-300 bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 rounded-lg"
-            onclick="resetFilters"
-          >
-            <i class="h-4 w-4 i-hugeicons-cancel-01" aria-hidden="true" />
-            Reset Filters
-          </button>
-          @endif
-        </div>
-      </div>
-
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
-            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-              <thead class="bg-gray-50 dark:bg-neutral-800">
-                <tr>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400">Time</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400">Caused By</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400">Event</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400">Log</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-400">Subject</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-400">Details</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                @foreach(paginatedLogs() as log)
-<tr
-                  class="hover:bg-gray-50 dark:hover:bg-neutral-600 cursor-pointer {{ }} getLogRowClass(log.event)"
-                  onclick="selectedLog = log"
-                >
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="text-gray-900 text-sm dark:text-neutral-200">
-                      <i
-                        class="mr-2 h-4 w-4 text-gray-400 dark:text-neutral-500 i-hugeicons-clock-01"
-                        aria-hidden="true"
-                      />
-                      {{ new Date(log.created_at).toLocaleTimeString() }}
-                    </div>
-                    <div class="text-gray-500 text-xs dark:text-neutral-400">
-                      {{ new Date(log.created_at).toLocaleDateString() }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      @if(log.causer)
-                      <div class="flex-shrink-0 h-8 w-8">
-                        @if(log.causer.avatar)
-                        <img
-                          class="h-8 w-8 rounded-full"
-                          src="{{ log.causer.avatar }}"
-                          alt=""
-                        />
-                        @else
-                        <div
-                          class="flex items-center justify-center h-8 w-8 text-gray-600 dark:text-neutral-300 bg-gray-200 dark:bg-neutral-600 rounded-full"
-                        >
-                          {{ log.causer.name.charAt(0) }}
-                        </div>
-                        @endif
-                      </div>
-                      @endif
-                      @if(log.causer)
-                      <div class="ml-3">
-                        <div class="font-medium text-gray-900 text-sm dark:text-neutral-200">
-                          {{ log.causer.name }}
-                        </div>
-                        <div class="text-gray-500 text-xs dark:text-neutral-400">
-                          {{ log.causer.email }}
-                        </div>
-                      </div>
-                      @else
-                      <div class="text-gray-500 text-sm dark:text-neutral-400">
-                        System
-                      </div>
-                      @endif
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <div class="flex items-center">
-                      <i
-                        class="mr-2 h-5 w-5 {{ {{ }} }} log.color log.icon"
-                        aria-hidden="true"
-                      />
-                      <span class="capitalize text-gray-900 text-sm dark:text-neutral-200">{{ log.event }}</span>
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 whitespace-nowrap">
-                    <span
-                      class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full"
-                      class="{{ {{ }} }} getLogNameClasses(log.log_name).bg getLogNameClasses(log.log_name).text"
-                    >
-                      {{ logNames.find(l => l.id === log.log_name)?.name || log.log_name }}
-                    </span>
-                  </td>
-                  <td class="px-6 py-4">
-                    <div class="text-gray-900 text-sm dark:text-neutral-200">{{ log.subject_name }}</div>
-                    <div class="text-gray-500 text-xs dark:text-neutral-400">
-                      {{ log.description }}
-                    </div>
-                  </td>
-                  <td class="px-6 py-4 text-right whitespace-nowrap">
-                    <button class="text-gray-400 dark:text-neutral-500 hover:text-blue-500 dark:hover:text-blue-400 duration-150 transition-colors">
-                      <i class="h-5 w-5 i-hugeicons-view" aria-hidden="true" />
-                    </button>
-                  </td>
-                </tr>
-                @endforeach
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pagination Controls -->
-      <div class="flex items-center justify-between mt-4">
-        <div class="flex items-center">
-          <span class="text-gray-700 text-sm dark:text-neutral-400">
-            Showing <span class="font-medium">{{ paginatedLogs.length }}</span> of <span class="font-medium">{{ totalItems }}</span> results
-          </span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <select
-            value="{{ itemsPerPage }}"
-            class="px-2 py-1 text-sm dark:text-neutral-200 dark:bg-neutral-700 border rounded-md dark:border-neutral-600"
-            onchange="currentPage = 1"
-          >
-            <option value="{{ 10 }}">10 per page</option>
-            <option value="{{ 25 }}">25 per page</option>
-            <option value="{{ 50 }}">50 per page</option>
-            <option value="{{ 100 }}">100 per page</option>
-          </select>
-
-          <div class="flex items-center space-x-1">
-            <button
-              onclick="prevPage"
-              disabled="{{ currentPage === 1 }}"
-              class="px-2 py-1 text-sm dark:text-neutral-300 border rounded-md dark:border-neutral-600"
-              class="'hover:bg-gray-100 dark:hover:bg-neutral-600' cursor-not-allowed' : ? 'opacity-50 === 1 currentPage"
-            >
-              <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true" />
-            </button>
-
-            @foreach(Math.min(5, totalPages) as page)
-<button
-              onclick="goToPage(page)"
-              class="px-3 py-1 text-sm border rounded-md dark:border-neutral-600"
-              class="text-white dark:text-neutral-300' 'hover:bg-gray-100 dark:bg-blue-700' dark:hover:bg-neutral-600 : ? 'bg-blue-600 === currentPage page"
-            >
-              {{ page }}
-            </button>
-            @endforeach
-
-            @if(totalPages > 5)
-            <span class="px-2 dark:text-neutral-400">...</span>
-            @endif
-
-            @if(totalPages > 5)
-            <button
-              onclick="goToPage(totalPages)"
-              class="px-3 py-1 text-sm dark:text-neutral-300 border rounded-md dark:border-neutral-600"
-              class="text-white 'hover:bg-gray-100 dark:bg-blue-700' dark:hover:bg-neutral-600' : ? 'bg-blue-600 === currentPage totalPages"
-            >
-              {{ totalPages }}
-            </button>
-            @endif
-
-            <button
-              onclick="nextPage"
-              disabled="{{ currentPage === totalPages || totalPages === 0 }}"
-              class="px-2 py-1 text-sm dark:text-neutral-300 border rounded-md dark:border-neutral-600"
-              class="'hover:bg-gray-100 dark:hover:bg-neutral-600' cursor-not-allowed' : ? 'opacity-50 === === || 0 currentPage totalPages totalPages"
-            >
-              <i class="h-4 w-4 i-hugeicons-arrow-right-01" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <!-- Activity Detail Modal -->
-      <Teleport to="body">
-        @if(selectedLog)
-        <div
-          class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50"
-          @click.self="selectedLog = null"
-        >
-          <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg">
-            <div class="flex items-center justify-between mb-4">
-              <h3 class="font-semibold text-lg dark:text-white">Activity Details</h3>
-              <button
-                onclick="selectedLog = null"
-                class="text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-200"
-              >
-                <i
-                  class="h-5 w-5 i-hugeicons-cancel-01"
-                  aria-hidden="true"
-                />
-              </button>
-            </div>
-
-            @if(selectedLog)
-            <div class="space-y-6">
-              <!-- Header with user info -->
-              <div class="flex items-start">
-                @if(selectedLog.causer)
-                <div class="flex-shrink-0 h-10 w-10">
-                  @if(selectedLog.causer.avatar)
-                  <img
-                    class="h-10 w-10 rounded-full"
-                    src="{{ selectedLog.causer.avatar }}"
-                    alt=""
-                  />
-                  @else
-                  <div
-                    class="flex items-center justify-center h-10 w-10 text-gray-600 text-lg dark:text-neutral-300 bg-gray-200 dark:bg-neutral-600 rounded-full"
-                  >
-                    {{ selectedLog.causer.name.charAt(0) }}
-                  </div>
-                  @endif
-                </div>
-                @endif
-                <div class="flex-1 ml-4">
-                  <div class="flex items-center justify-between">
-                    <div>
-                      <h4 class="font-medium text-gray-900 text-lg dark:text-white">
-                        {{ selectedLog.causer ? selectedLog.causer.name : 'System' }}
-                      </h4>
-                      <p class="text-gray-500 text-sm dark:text-neutral-400">
-                        {{ selectedLog.causer ? selectedLog.causer.email : '' }}
-                      </p>
-                    </div>
-                    <div class="flex items-center">
-                      <i
-                        class="mr-2 h-5 w-5 selectedLog.color selectedLog.icon {{ {{ }} }}"
-                        aria-hidden="true"
-                      />
-                      <span class="capitalize font-medium text-sm">{{ selectedLog.event }}</span>
-                    </div>
-                  </div>
-                  <p class="mt-1 text-gray-700 text-sm dark:text-neutral-300">
-                    <span class="capitalize font-medium">{{ selectedLog.description }}</span>
-                    <span class="text-gray-500 dark:text-neutral-400"> - {{ new Date(selectedLog.created_at).toLocaleString() }}</span>
-                  </p>
-                </div>
-              </div>
-
-              <!-- Activity details -->
-              <div class="p-4 bg-gray-50 dark:bg-neutral-700 rounded-lg">
-                <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
-                  <div>
-                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Log Channel</label>
-                    <div class="mt-1">
-                      <span
-                        class="inline-flex px-2 py-1 font-semibold leading-5 text-xs rounded-full"
-                        class="{{ {{ }} }} getLogNameClasses(selectedLog.log_name).bg getLogNameClasses(selectedLog.log_name).text"
-                      >
-                        {{ logNames.find(l => l.id === selectedLog.log_name)?.name || selectedLog.log_name }}
-                      </span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Subject Type</label>
-                    <p class="mt-1 text-gray-900 text-sm dark:text-neutral-200">
-                      {{ subjectTypes.find(s => s.type === selectedLog.subject_type)?.name || selectedLog.subject_type }}
-                    </p>
-                  </div>
-
-                  <div>
-                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Subject</label>
-                    <p class="mt-1 text-gray-900 text-sm dark:text-neutral-200">{{ selectedLog.subject_name }}</p>
-                  </div>
-
-                  <div>
-                    <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Subject ID</label>
-                    <p class="mt-1 font-mono text-gray-900 text-sm dark:text-neutral-200">{{ selectedLog.subject_id }}</p>
-                  </div>
-                </div>
-              </div>
-
-              <!-- Changed attributes -->
-              @if(selectedLog.properties?.attributes || selectedLog.properties?.old)
-              <div>
-                <h4 class="mb-2 font-medium text-base text-gray-900 dark:text-white">Changed Attributes</h4>
-
-                <div class="overflow-hidden bg-gray-50 dark:bg-neutral-700 rounded-lg">
-                  <div class="px-4 py-3 bg-gray-100 dark:bg-neutral-600 border-b border-gray-200 dark:border-neutral-600">
-                    <div class="grid grid-cols-3 font-medium text-gray-500 text-xs uppercase dark:text-neutral-300">
-                      <div>Attribute</div>
-                      @if(selectedLog.properties?.old)
-                      <div>Old Value</div>
-                      @endif
-                      <div>New Value</div>
-                    </div>
-                  </div>
-
-                  <div class="divide-gray-200 divide-y dark:divide-neutral-600">
-                    @if(selectedLog.properties?.attributes)
-                    @foreach(selectedLog.properties.attributes as key => value)
-<div
-                      class="grid grid-cols-3 px-4 py-3 text-sm"
-                      @show="key !== 'created_at' && key !== 'updated_at'"
-                    >
-                      <div class="font-medium text-gray-900 dark:text-white">{{ key }}</div>
-                      @if(selectedLog.properties?.old)
-                      <div class="text-gray-700 dark:text-neutral-300">
-                        {{ selectedLog.properties.old[key] || '-' }}
-                      </div>
-                      @endif
-                      <div class="text-gray-900 dark:text-white">{{ value }}</div>
-                    </div>
-                    @endforeach
-                    @elseif(selectedLog.properties?.old)
-                    @foreach(selectedLog.properties.old as key => value)
-<div
-                      class="grid grid-cols-3 px-4 py-3 text-sm"
-                      @show="key !== 'created_at' && key !== 'updated_at'"
-                    >
-                      <div class="font-medium text-gray-900 dark:text-white">{{ key }}</div>
-                      <div class="text-gray-700 dark:text-neutral-300">{{ value }}</div>
-                      <div class="text-gray-900 dark:text-white">-</div>
-                    </div>
-                    @endforeach
-                    @endif
-                  </div>
-                </div>
-              </div>
-              @endif
-
-              <!-- Additional metadata -->
-              @if(selectedLog.properties && Object.keys(selectedLog.properties).some(key => key !== 'attributes' && key !== 'old'))
-              <div>
-                <h4 class="mb-2 font-medium text-base text-gray-900 dark:text-white">Additional Metadata</h4>
-                <div class="p-4 bg-gray-50 dark:bg-neutral-700 rounded-lg">
-                  @foreach(selectedLog.properties as key => value)
-<div
-                    @show="key !== 'attributes' && key !== 'old'"
-                    class="mb-3 last:mb-0"
-                  >
-                    <label class="block capitalize font-medium text-gray-700 text-sm dark:text-neutral-300">{{ key }}</label>
-                    <div class="mt-1">
-                      @if(typeof value === 'string')
-                      <span class="text-gray-900 text-sm dark:text-neutral-200">
-                        {{ value }}
-                      </span>
-                      @else
-                      <pre class="overflow-x-auto p-2 text-gray-900 text-sm dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded">{{ JSON.stringify(value, null, 2) }}</pre>
-                      @endif
-                    </div>
-                  </div>
-                  @endforeach
-                </div>
-              </div>
-              @endif
-            </div>
-            @endif
-          </div>
-        </div>
-        @endif
-      </Teleport>
-    </div>
-  </div>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: logVolumeData,
-    options: chartOptions,
-  })
-}
-
-onMount(async () => {
-  activityLogs = processLogs(sampleActivityLogs)
-  startAutoRefresh()
+  return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
 })
-</script>
 
+const totalPages = derived(() => Math.max(1, Math.ceil(filteredLogs().length / itemsPerPage())))
+const paginatedLogs = derived(() => {
+  const start = (currentPage() - 1) * itemsPerPage()
+  return filteredLogs().slice(start, start + itemsPerPage())
+})
+
+const autoRefreshLabel = derived(() => autoRefresh() ? 'Auto Refresh: On' : 'Auto Refresh: Off')
+const autoRefreshButtonClass = derived(() => autoRefresh()
+  ? 'inline-flex items-center px-3 py-1.5 font-semibold text-sm text-white bg-green-600 hover:bg-green-500 rounded-md shadow-sm'
+  : 'inline-flex items-center px-3 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm')
+
+const selectedLogJSON = derived(() => {
+  const log = selectedLog()
+  return log ? JSON.stringify(log, null, 2) : ''
+})
+
+function formatDate(s: string) {
+  if (!s)
+    return ''
+  return new Date(s).toLocaleString()
+}
+
+function logNameBadgeClass(name: string) {
+  const base = 'inline-flex items-center px-2 py-0.5 font-medium text-xs rounded-full'
+  const map: Record<string, string> = {
+    auth: `${base} bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200`,
+    users: `${base} bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200`,
+    posts: `${base} bg-pink-100 text-pink-800 dark:bg-pink-900 dark:text-pink-200`,
+    comments: `${base} bg-rose-100 text-rose-800 dark:bg-rose-900 dark:text-rose-200`,
+    media: `${base} bg-amber-100 text-amber-800 dark:bg-amber-900 dark:text-amber-200`,
+    deployment: `${base} bg-emerald-100 text-emerald-800 dark:bg-emerald-900 dark:text-emerald-200`,
+    server: `${base} bg-cyan-100 text-cyan-800 dark:bg-cyan-900 dark:text-cyan-200`,
+    commerce: `${base} bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-200`,
+    blog: `${base} bg-violet-100 text-violet-800 dark:bg-violet-900 dark:text-violet-200`,
+  }
+  return map[name] ?? `${base} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200`
+}
+
+function eventBadgeClass(ev: string) {
+  const base = 'inline-flex items-center px-2 py-0.5 font-medium text-xs rounded'
+  switch (ev) {
+    case 'created': return `${base} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`
+    case 'updated': return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200`
+    case 'deleted': return `${base} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`
+    case 'restored': return `${base} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`
+    default: return `${base} bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-200`
+  }
+}
+
+function toggleAutoRefresh() {
+  autoRefresh.set(!autoRefresh())
+}
+
+function openLog(log: ActivityLog) {
+  selectedLog.set(log)
+}
+
+function closeLog() {
+  selectedLog.set(null)
+}
+
+function nextPage() {
+  if (currentPage() < totalPages())
+    currentPage.set(currentPage() + 1)
+}
+
+function prevPage() {
+  if (currentPage() > 1)
+    currentPage.set(currentPage() - 1)
+}
+</script>
 
 @endsection

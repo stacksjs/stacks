@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const commonPorts = [
   { port: '22', name: 'SSH' },
   { port: '80', name: 'HTTP' },

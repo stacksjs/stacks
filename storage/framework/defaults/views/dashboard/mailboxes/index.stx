@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 @title('Dashboard - Emails')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">

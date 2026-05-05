@@ -1,9 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-</script>
-
 <main>
   <div class="flex overflow-hidden relative items-center min-h-[80vh] isolate">
     <div class="px-6 py-6 sm:px-6 lg:px-8 w-full">
@@ -88,6 +85,5 @@
     </div>
   </div>
 </main>
-
 
 @endsection

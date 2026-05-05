@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Consumption Tax'] as const
 </script>
 

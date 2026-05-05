@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area'] as const
 const statuses = ['All Statuses', 'Online', 'Offline', 'Warning'] as const
 </script>

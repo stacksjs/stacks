@@ -1234,5 +1234,4 @@ function truncateText(text: string, max: number): string {
     @endif
   </main>
 
-
 @endsection

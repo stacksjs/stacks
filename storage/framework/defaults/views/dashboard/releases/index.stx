@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const releaseList = [
   { version: 'v1.0.0', codename: 'Playa Vista', size: '5kb', path: './storage/framework/libs/dist/*', created_at: '04-19-2022 09:04:20' },
   { version: 'v1.0.0-rc.1', codename: '', size: '5kb', path: './storage/framework/libs/dist/*', created_at: '04-19-2022 09:04:20' },

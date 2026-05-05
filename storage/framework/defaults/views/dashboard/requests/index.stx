@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth']
-})
-
 const chartOptions = {
   responsive: true,
   maintainAspectRatio: false,

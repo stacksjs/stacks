@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
-
 interface Log {
   id: string
   timestamp: string
@@ -969,6 +964,5 @@ onMount(async () => {
   startAutoRefresh()
 })
 </script>
-
 
 @endsection

@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default',
-})
-
 const pagesRaw = [
   { path: '/', entries: 1800, visitors: 1800, views: 2100 },
   { path: '/blog', entries: 113, visitors: 113, views: 139 },

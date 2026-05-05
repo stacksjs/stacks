@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth']
-})
-
 import { useBillable } from '../../../functions/billing/payments'
 import ActivePlan from '../../../components/Dashboard/Billing/ActivePlan.stx'
 import PaymentMethod from '../../../components/Dashboard/Billing/PaymentMethod.stx'

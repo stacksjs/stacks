@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth']
-})
-
 import * as d3 from 'd3'
 
 // Service types and their relationships based on the cloud directory structure

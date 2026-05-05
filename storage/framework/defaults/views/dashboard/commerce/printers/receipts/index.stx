@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 const printerOptions = ['All Printers', 'Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1'] as const
 const statuses = ['All Statuses', 'Success', 'Warning', 'Failed'] as const
 const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Last month'] as const

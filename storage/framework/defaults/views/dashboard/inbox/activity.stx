@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 @title('Mail - Activity Dashboard')
 <div class="min-h-screen dark:bg-neutral-800">
   <div class="flex h-screen">

@@ -1940,5 +1940,4 @@ const removeCondition = (index: number) => {
   </main>
     @endif
 
-
 @endsection

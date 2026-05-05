@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 <div class="min-h-screen">
   <header class="flex sticky top-0 z-10 flex-wrap gap-6 items-center justify-between px-4 py-4 sm:px-6 lg:px-8 bg-white dark:bg-neutral-900 shadow-sm">
     <div>

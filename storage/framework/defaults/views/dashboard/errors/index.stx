@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 import Tooltip from '../../../components/Dashboard/Tooltip.stx'
 </script>
 

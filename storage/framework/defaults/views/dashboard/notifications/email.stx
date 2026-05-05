@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 import NotificationStatusBadge from '../../../components/Dashboard/NotificationStatusBadge.stx'
 import NotificationErrorModal from '../../../components/Dashboard/NotificationErrorModal.stx'
 </script>

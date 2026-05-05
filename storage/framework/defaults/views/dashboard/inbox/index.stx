@@ -2,11 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default',
-})
-
 const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.stx')).default
 
 const folders = [

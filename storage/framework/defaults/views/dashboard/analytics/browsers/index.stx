@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 @title('Dashboard - Browser Analytics')
 <main>
   <div class="px-6 py-6 sm:px-6 lg:px-8">

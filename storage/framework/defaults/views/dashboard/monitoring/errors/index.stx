@@ -2,10 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-
 import { StatsCard, Card, Button, Input, Select, Badge, Table, Pagination, Modal } from '../../../../components/Dashboard/UI'
 </script>
 

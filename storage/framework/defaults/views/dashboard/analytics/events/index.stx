@@ -2,13 +2,6 @@
 
 @section('content')
 <script server>
-definePageMeta({
-  middleware: ['auth'],
-  layout: 'default'
-})
-
-
-
 // Types
 interface DateRange {
   id: string
@@ -1215,6 +1208,5 @@ function createEventChart(eventId) {
 
 updateDataForDateRange()
 </script>
-
 
 @endsection

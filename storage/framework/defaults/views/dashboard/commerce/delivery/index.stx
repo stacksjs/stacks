@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: ['auth'],
-})
-</script>
-
 @title('Dashboard - Commerce Delivery')
 <div class="py-6">
   <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
