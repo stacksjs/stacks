@@ -523,8 +523,19 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
 }
 
 /**
- * Generate migrations based on model changes
- * This is the new bun-query-builder style that compares models to generate diffs
+ * Generate migrations based on model changes.
+ *
+ * Compares the current `app/Models/*` definitions to the stored snapshot
+ * (`.qb/model-snapshot.<dialect>.json`) via bun-query-builder, then — if
+ * there are changes — writes the resulting ALTER/CREATE/DROP statements
+ * out to a fresh file in `database/migrations/`. Each statement is
+ * grouped by table + DDL verb and lands in its own file using the
+ * runner's existing naming convention so it picks them up the same way
+ * as a hand-written migration.
+ *
+ * Without this write step the qb generator stages the diff in memory but
+ * the runner never sees it, so model edits silently no-op'd — defeating
+ * the "models are the source of truth" promise.
  */
 export async function generateMigrations(): Promise<Result<string, Error>> {
   try {
@@ -540,7 +551,11 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
     const result = await qbGenerateMigration(modelsDir, { dialect })
 
     if (result.hasChanges) {
-      log.success('Migrations generated')
+      const written = persistGeneratedMigrations(result.sqlStatements ?? [])
+      if (written > 0)
+        log.success(`Migrations generated (${written} file${written === 1 ? '' : 's'})`)
+      else
+        log.success('Migrations generated')
     }
     else {
       log.info('No changes detected')
@@ -551,6 +566,104 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
   catch (error) {
     return err(handleError('Migration generation failed', error))
   }
+}
+
+/**
+ * Write generated SQL to `database/migrations/` so the runner picks it up.
+ * Returns the number of files written.
+ */
+function persistGeneratedMigrations(sqlStatements: string[]): number {
+  if (!sqlStatements?.length)
+    return 0
+
+  const migrationsDir = join(process.cwd(), 'database', 'migrations')
+  try { require('node:fs').mkdirSync(migrationsDir, { recursive: true }) }
+  catch { /* already exists */ }
+
+  // Skip statements already represented in committed migrations. The qb
+  // diff will sometimes restate things after the snapshot gets rewritten,
+  // and we'd rather no-op than create a duplicate file.
+  let existingSql = ''
+  try {
+    for (const f of readdirSync(migrationsDir).filter(f => f.endsWith('.sql')))
+      existingSql += `\n${readFileSync(join(migrationsDir, f), 'utf8')}`
+  }
+  catch { /* nothing committed yet */ }
+  const normalize = (s: string): string => s.replace(/\s+/g, ' ').trim()
+  const haystack = normalize(existingSql)
+
+  const groups = groupGeneratedStatements(sqlStatements)
+  let written = 0
+  let cursor = nextMigrationNumber(migrationsDir)
+
+  for (const group of groups) {
+    const fresh = group.statements.filter(stmt => !haystack.includes(normalize(stmt)))
+    if (fresh.length === 0)
+      continue
+
+    const filename = `${String(cursor).padStart(10, '0')}-${group.label}.sql`
+    const filePath = join(migrationsDir, filename)
+    const body = `${fresh.map(s => s.trim().replace(/;\s*$/, '')).join(';\n')};\n`
+    writeFileSync(filePath, body)
+    log.debug(`[migration] Wrote ${filename} (${fresh.length} stmt${fresh.length === 1 ? '' : 's'})`)
+    written += 1
+    cursor += 1
+  }
+
+  return written
+}
+
+interface GeneratedGroup {
+  label: string
+  statements: string[]
+}
+
+/**
+ * Group generated SQL by the migration filename style the runner already
+ * uses for hand-written files: `create-<table>-table`,
+ * `alter-<table>-<col>`, `create-<index>-index-in-<table>`, or
+ * `drop-<table>-table`. Anything we can't match falls back to `auto-misc`.
+ */
+function groupGeneratedStatements(sqlStatements: string[]): GeneratedGroup[] {
+  const groups = new Map<string, string[]>()
+  const push = (label: string, stmt: string): void => {
+    const list = groups.get(label) ?? []
+    list.push(stmt)
+    groups.set(label, list)
+  }
+
+  for (const raw of sqlStatements) {
+    const stmt = raw.trim()
+    if (!stmt) continue
+
+    const create = stmt.match(/^\s*CREATE\s+TABLE\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
+    if (create) { push(`create-${create[1]}-table`, stmt); continue }
+
+    const alter = stmt.match(/^\s*ALTER\s+TABLE\s+["`]?(\w+)["`]?\s+(?:ADD\s+COLUMN\s+["`]?(\w+)["`]?|DROP\s+COLUMN\s+["`]?(\w+)["`]?|ADD\s+CONSTRAINT)/i)
+    if (alter) { push(`alter-${alter[1]}-${alter[2] || alter[3] || 'constraint'}`, stmt); continue }
+
+    const idx = stmt.match(/^\s*CREATE\s+(?:UNIQUE\s+)?INDEX\s+(?:IF\s+NOT\s+EXISTS\s+)?["`]?(\w+)["`]?\s+ON\s+["`]?(\w+)["`]?/i)
+    if (idx) { push(`create-${idx[1]}-index-in-${idx[2]}`, stmt); continue }
+
+    const drop = stmt.match(/^\s*DROP\s+TABLE\s+(?:IF\s+EXISTS\s+)?["`]?(\w+)["`]?/i)
+    if (drop) { push(`drop-${drop[1]}-table`, stmt); continue }
+
+    push('auto-misc', stmt)
+  }
+
+  return [...groups.entries()].map(([label, statements]) => ({ label, statements }))
+}
+
+function nextMigrationNumber(migrationsDir: string): number {
+  let max = 0
+  try {
+    for (const f of readdirSync(migrationsDir)) {
+      const m = f.match(/^(\d+)-/)
+      if (m) max = Math.max(max, Number.parseInt(m[1], 10))
+    }
+  }
+  catch { /* directory missing — start at 1 */ }
+  return max + 1
 }
 
 /**
