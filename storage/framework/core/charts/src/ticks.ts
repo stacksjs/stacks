@@ -1,5 +1,20 @@
 import { format } from '@ts-charts/format'
-import { scaleLinear } from '@ts-charts/scale'
+import { scaleLinear as rawScaleLinear } from '@ts-charts/scale'
+
+/**
+ * Local shape for `scaleLinear()` so the chained `.domain().nice().ticks()`
+ * call stays typed. ts-charts ships its scale .d.ts with the
+ * `default` qualifier dropped (bun-plugin-dtsx bug), which makes
+ * `scaleLinear()` look not-callable to `tsc`.
+ */
+interface ScaleLinearLike {
+  (x: number): number
+  domain(d: number[]): ScaleLinearLike
+  range(r: number[]): ScaleLinearLike
+  ticks(count?: number): number[]
+  nice(count?: number): ScaleLinearLike
+}
+const scaleLinear = rawScaleLinear as unknown as () => ScaleLinearLike
 
 /**
  * Compute "nice" tick values for a numeric range.
@@ -12,7 +27,7 @@ export function niceTicks(min: number, max: number, count: number = 8): number[]
     return [Number.isFinite(min) ? min : 0]
 
   const scale = scaleLinear().domain([min, max]).nice(count)
-  const ticks = scale.ticks(count) as number[]
+  const ticks = scale.ticks(count)
   if (ticks.length === 0)
     return [min, max]
   return ticks

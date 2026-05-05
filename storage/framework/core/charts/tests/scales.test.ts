@@ -1,5 +1,23 @@
 import { describe, expect, it } from 'bun:test'
-import { scaleBand, scaleLinear } from '@ts-charts/scale'
+import { scaleBand as rawScaleBand, scaleLinear as rawScaleLinear } from '@ts-charts/scale'
+
+// ts-charts' published .d.ts is currently incomplete (the
+// default-export qualifier is dropped during type bundling), so we
+// retype the constructors locally to keep the tests strict-friendly.
+interface ScaleLinearLike {
+  (x: number): number
+  domain(d: number[]): ScaleLinearLike
+  range(r: number[]): ScaleLinearLike
+}
+interface ScaleBandLike<T> {
+  (key: T): number
+  domain(d: T[]): ScaleBandLike<T>
+  range(r: number[]): ScaleBandLike<T>
+  paddingInner(p: number): ScaleBandLike<T>
+  bandwidth(): number
+}
+const scaleLinear = rawScaleLinear as unknown as () => ScaleLinearLike
+const scaleBand = rawScaleBand as unknown as <T>() => ScaleBandLike<T>
 
 /**
  * The Chart class delegates X/Y pixel mapping to ts-charts' `scaleLinear`
@@ -14,7 +32,7 @@ describe('chart scale math via ts-charts', () => {
     // The smaller domain value (0) should land at the BOTTOM of the
     // plot (pixel 100), the larger (200) at the TOP (pixel 0). This
     // mirrors the inversion `chart.ts` applies for canvas Y.
-    const s = scaleLinear().domain([0, 200]).range([100, 0]) as (n: number) => number
+    const s = scaleLinear().domain([0, 200]).range([100, 0])
     expect(s(0)).toBe(100)
     expect(s(200)).toBe(0)
     expect(s(100)).toBe(50)
@@ -24,7 +42,7 @@ describe('chart scale math via ts-charts', () => {
     // The line/area renderer maps `(count, i) -> px` with `scaleLinear`
     // domain [0, count - 1] and range [plot.x, plot.x + plot.w]. With
     // count = 5 across [0, 100] we expect points at 0, 25, 50, 75, 100.
-    const s = scaleLinear().domain([0, 4]).range([0, 100]) as (n: number) => number
+    const s = scaleLinear().domain([0, 4]).range([0, 100])
     expect(s(0)).toBe(0)
     expect(s(1)).toBe(25)
     expect(s(2)).toBe(50)
@@ -52,7 +70,7 @@ describe('chart scale math via ts-charts', () => {
       .range([0, plotW])
       .paddingInner(0.3)
 
-    const bw = xBand.bandwidth() as number
+    const bw = xBand.bandwidth()
     // Allow for d3-scale's slightly different gap allocation. We
     // accept anything within 5% of the legacy width.
     expect(Math.abs(bw - expected) / expected).toBeLessThan(0.05)
@@ -60,10 +78,10 @@ describe('chart scale math via ts-charts', () => {
 
   it('scaleBand returns a unique left-edge per category in domain order', () => {
     const xBand = scaleBand<number>().domain([0, 1, 2, 3]).range([0, 200]).paddingInner(0.3)
-    const x0 = xBand(0) as number
-    const x1 = xBand(1) as number
-    const x2 = xBand(2) as number
-    const x3 = xBand(3) as number
+    const x0 = xBand(0)
+    const x1 = xBand(1)
+    const x2 = xBand(2)
+    const x3 = xBand(3)
     expect(x1).toBeGreaterThan(x0)
     expect(x2).toBeGreaterThan(x1)
     expect(x3).toBeGreaterThan(x2)

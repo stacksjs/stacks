@@ -33,6 +33,32 @@ interface HitItem {
   value: number
 }
 
+/**
+ * Local shape for `scaleLinear()` from `@ts-charts/scale`. The
+ * package's published .d.ts is incomplete (the default-export
+ * qualifier and the `ContinuousScale` import both get stripped at
+ * build time), so we declare just enough of the API to keep the
+ * call sites typed without leaking `any` everywhere.
+ */
+interface ScaleLinearLike {
+  (x: number): number
+  domain(d: number[]): ScaleLinearLike
+  range(r: number[]): ScaleLinearLike
+  ticks(count?: number): number[]
+  nice(count?: number): ScaleLinearLike
+}
+
+/**
+ * Local shape for `scaleBand()` — same story as ScaleLinearLike.
+ */
+interface ScaleBandLike<T> {
+  (key: T): number
+  domain(d: T[]): ScaleBandLike<T>
+  range(r: number[]): ScaleBandLike<T>
+  paddingInner(p: number): ScaleBandLike<T>
+  bandwidth(): number
+}
+
 const DEFAULT_GRID_COLOR = 'rgba(148, 163, 184, 0.18)'
 const DEFAULT_TEXT_COLOR = '#64748b'
 const DEFAULT_BG = 'rgba(15, 23, 42, 0.92)'
@@ -339,8 +365,14 @@ export class Chart {
   private scaleX(plot: Box, count: number, i: number): number {
     if (count <= 1)
       return plot.x + plot.w / 2
-    const s = scaleLinear().domain([0, count - 1]).range([plot.x, plot.x + plot.w])
-    return s(i) as number
+    // ts-charts ships its scale .d.ts with the `default` keyword
+    // dropped (bun-plugin-dtsx bug — it stripped the import of
+    // `ContinuousScale` and the `default` qualifier on the linear
+    // export), so TS flags `scaleLinear()` as not-callable. Locally
+    // re-type to a callable scale to keep the call sites tidy.
+    const linear = scaleLinear as unknown as () => ScaleLinearLike
+    const s = linear().domain([0, count - 1]).range([plot.x, plot.x + plot.w])
+    return s(i)
   }
 
   /**
@@ -351,8 +383,9 @@ export class Chart {
   private scaleY(plot: Box, axis: AxisLayout, value: number): number {
     if (axis.max === axis.min)
       return plot.y + plot.h / 2
-    const s = scaleLinear().domain([axis.min, axis.max]).range([plot.y + plot.h, plot.y])
-    return s(value) as number
+    const linear = scaleLinear as unknown as () => ScaleLinearLike
+    const s = linear().domain([axis.min, axis.max]).range([plot.y + plot.h, plot.y])
+    return s(value)
   }
 
   private drawLines(plot: Box, labels: string[], datasets: ChartDataset[], yAxis: AxisLayout, yAxis1: AxisLayout | null): void {
@@ -455,12 +488,13 @@ export class Chart {
     // padding ratio d3-scale uses by default. Each band is then split
     // among datasets in unstacked mode.
     const indices = Array.from({ length: count }, (_, i) => i)
-    const xBand = scaleBand<number>().domain(indices).range([plot.x, plot.x + plot.w]).paddingInner(0.3)
-    const groupWidth = xBand.bandwidth() as number
+    const band = scaleBand as unknown as <T>() => ScaleBandLike<T>
+    const xBand = band<number>().domain(indices).range([plot.x, plot.x + plot.w]).paddingInner(0.3)
+    const groupWidth = xBand.bandwidth()
     const barWidth = stacked ? groupWidth : groupWidth / Math.max(1, datasets.length)
 
     for (let i = 0; i < count; i++) {
-      const cx = xBand(i) as number
+      const cx = xBand(i)
       let posStack = 0
       let negStack = 0
 
