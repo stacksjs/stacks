@@ -165,7 +165,14 @@ async function generateDefineModelIndex(entries: ScanEntry[], outputPath: string
  * including defineModel()-based model definitions and resource functions.
  */
 export async function generateAutoImportFiles(): Promise<void> {
-  const functionsPath = path.resourcesPath('functions')
+  const userFunctionsPath = path.resourcesPath('functions')
+  // Framework-default functions (e.g. storage/framework/defaults/functions/
+  // commerce/coupons.ts → useCoupons) are also auto-importable so dashboard
+  // pages can call them without an explicit `import` line. User functions
+  // come first so a project-level helper of the same name shadows the
+  // default.
+  const defaultFunctionsPath = path.storagePath('framework/defaults/functions')
+  const functionsPath = userFunctionsPath
   const outputDir = path.storagePath('framework/auto-imports')
 
   // defineModel() model definition directories. User models override framework
@@ -187,7 +194,7 @@ export async function generateAutoImportFiles(): Promise<void> {
 
   // Generate runtime index for functions
   const functionsIndexPath = `${outputDir}/functions.ts`
-  await (generateRuntimeIndex as any)([functionsPath], functionsIndexPath)
+  await (generateRuntimeIndex as any)([userFunctionsPath, defaultFunctionsPath], functionsIndexPath)
 
   // Generate runtime index for defineModel models (default exports).
   // Defaults root is scanned NON-recursively (so gated subdirs stay opt-in),
@@ -236,6 +243,10 @@ export * from './controllers'
  */
 export function initiateImports(): void {
   const functionsPath = path.resourcesPath('functions')
+  // Framework-default helpers (`storage/framework/defaults/functions/...`)
+  // are also surfaced globally so dashboard pages can call `useCoupons()`,
+  // `useCustomers()`, etc. without an explicit import.
+  const defaultFunctionsPath = path.storagePath('framework/defaults/functions')
 
   // defineModel() model definition directories (user models take priority).
   // Defaults root is non-recursive so opt-in subdirs must be explicitly added.
@@ -305,7 +316,8 @@ export function initiateImports(): void {
     dts: path.storagePath('framework/types/server-auto-imports.d.ts'),
     imports: [...defineModelImports, ...jobImports, ...controllerImports],
     // Use dirs to auto-scan and import all exports from resources/functions
-    dirs: [functionsPath],
+    // (user) plus storage/framework/defaults/functions (framework defaults).
+    dirs: [functionsPath, defaultFunctionsPath],
     eslint: {
       enabled: true,
       filepath: path.storagePath('framework/server-auto-imports.json'),
