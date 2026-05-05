@@ -1,160 +1,177 @@
 @extends('layouts/default')
 
 @section('content')
-<script>
+<script server>
+definePageMeta({
+  middleware: ['auth'],
+  layout: 'default',
+})
+
+import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
+import Card from '../../../components/Dashboard/UI/Card.stx'
+import Button from '../../../components/Dashboard/UI/Button.stx'
+import Input from '../../../components/Dashboard/UI/Input.stx'
+import Badge from '../../../components/Dashboard/UI/Badge.stx'
+import EmptyState from '../../../components/Dashboard/UI/EmptyState.stx'
+
+interface Dependency {
+  name: string
+  version: string
+  status: 'installed' | 'pending' | 'outdated' | 'failed'
+  source?: 'pantry' | 'npm' | 'system'
+  description?: string
+}
+
+// Placeholder rows. Wire this up to `pantry list --json` (or whatever
+// the real source of truth is) once the dependency manager has an API
+// surface. The shape above is what the table renders against — keep
+// it stable so the wiring is a one-line swap of `dependencies = …`.
+const dependencies: Dependency[] = [
+  { name: 'NPM', version: '18.15.1', status: 'pending', source: 'pantry' },
+  { name: 'Redis', version: '6.9.0', status: 'installed', source: 'pantry' },
+  { name: 'PostgreSQL', version: '16.2', status: 'installed', source: 'pantry' },
+  { name: 'Bun', version: '1.3.14', status: 'installed', source: 'system' },
+]
+
+const totalCount = dependencies.length
+const installedCount = dependencies.filter(d => d.status === 'installed').length
+const pendingCount = dependencies.filter(d => d.status === 'pending').length
+
+function statusVariant(status: string) {
+  if (status === 'installed') return 'success'
+  if (status === 'pending') return 'warning'
+  if (status === 'outdated') return 'info'
+  if (status === 'failed') return 'danger'
+  return 'default'
+}
 </script>
 
-<div class="px-4 py-8 sm:px-6 lg:px-8">
-  <form class="px-6 py-4 text-sm bg-white dark:bg-neutral-800 rounded-lg">
-    <div class="py-2">
-      <div class="flex flex-row p-4 text-gray-600 text-sm dark:text-neutral-400 bg-gray-50 dark:bg-neutral-700 rounded-lg">
-        <div class="flex-shrink-0 h-6 w-6 text-gray-400 i-hugeicons-information-circle" />
-        <div class="flex flex-grow ml-4 mt-0.5">
-          <p class="">
-            Search for dependencies using tea.
-          </p>
+<div class="p-6 space-y-6">
+
+  <PageHeader
+    title="Dependencies"
+    description="Discover and manage system dependencies installed via tea / pantry"
+  />
+
+  <!-- Search card -->
+  <Card variant="default" padding="lg">
+    <div class="space-y-4">
+      <div class="flex gap-3 items-start p-4 text-neutral-600 text-sm dark:text-neutral-400 bg-neutral-50 dark:bg-neutral-800/60 border border-neutral-200/70 rounded-lg dark:border-white/5">
+        <div class="flex-shrink-0 mt-0.5 h-5 w-5 text-blue-500 i-hugeicons-information-circle"></div>
+        <p>
+          Dependencies are installed via <a href="https://pkgx.dev/" target="_blank" rel="noopener" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">tea</a> /
+          pantry. Search the registry by name to install or upgrade.
+        </p>
+      </div>
+
+      <form class="flex gap-3 items-end">
+        <div class="flex-1">
+          <Input
+            label="Search for a dependency"
+            placeholder="e.g. redis, postgresql, openssl"
+            name="dependency-search"
+          />
+        </div>
+        <Button type="submit" variant="primary" size="md">
+          <div class="h-4 w-4 i-hugeicons-search-01"></div>
+          Search
+        </Button>
+      </form>
+    </div>
+  </Card>
+
+  <!-- Stat row -->
+  <div class="grid gap-4 grid-cols-1 md:grid-cols-3">
+    <Card variant="default" padding="md">
+      <div class="flex gap-4 items-center">
+        <div class="p-3 bg-blue-100 dark:bg-blue-900/30 rounded-lg">
+          <span class="h-5 w-5 text-blue-600 dark:text-blue-400 i-hugeicons-package"></span>
+        </div>
+        <div>
+          <p class="text-neutral-500 text-xs uppercase tracking-wide dark:text-neutral-400">Total</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ totalCount }}</p>
         </div>
       </div>
-      <div class="flex flex-col mt-4">
-        <label class="dark:text-neutral-100">Search for a depedency.</label>
-        <div class="flex flex-col mt-1">
-          <input
-            type="text"
-            class="block px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:text-neutral-200 dark:bg-neutral-800 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-none focus:ring-2 focus:ring-blue-500 required:border-red-500 shadow-sm"
-            list="artisanCommands"
-          >
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-4 items-center">
+        <div class="p-3 bg-green-100 dark:bg-green-900/30 rounded-lg">
+          <span class="h-5 w-5 text-green-600 dark:text-green-400 i-hugeicons-checkmark-circle-02"></span>
+        </div>
+        <div>
+          <p class="text-neutral-500 text-xs uppercase tracking-wide dark:text-neutral-400">Installed</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ installedCount }}</p>
         </div>
       </div>
-    </div>
-    <div>
-      <div class="flex justify-end mt-4">
-        <AppButton passed-class="primary-button" loading-text="Adding..." button-text="Add" />
-      </div>
-    </div>
-  </form>
-
-  <div class="mt-16 px-6 py-4 text-sm bg-white dark:bg-neutral-800 rounded-lg">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-          Dependencies
-        </h1>
-      </div>
-    </div>
-    <div class="flow-root mt-8">
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
-            <thead>
-              <tr>
-                <th
-                  scope="col"
-                  class="pl-4 pr-3 py-3 sm:pl-0 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400"
-                >
-                  Name
-                </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400"
-                >
-                  Version
-                </th>
-                <th
-                  scope="col"
-                  class="px-3 py-3 font-medium text-gray-500 text-left text-xs tracking-wide uppercase dark:text-neutral-400"
-                >
-                  Status
-                </th>
-                <th
-                  scope="col"
-                  class="relative pl-3 pr-4 py-3 sm:pr-0"
-                >
-                  <span class="sr-only">Edit</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-600">
-              <tr>
-                <td class="pl-4 pr-3 py-4 sm:pl-0 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                  NPM
-                </td>
-                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
-                  18.15.1
-                </td>
-                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
-                  Pending
-                </td>
-                <td class="relative pl-3 pr-4 py-4 sm:pr-0 font-medium text-right text-sm whitespace-nowrap">
-                  <a
-                    href="#"
-                    class="font-normal text-blue-600 text-xs hover:text-blue-900 hover:underline"
-                  >Install</a>
-
-                  <a
-                    href="#"
-                    class="pl-2 font-normal text-blue-600 text-xs hover:text-blue-900 hover:underline"
-                  >Remove</a>
-                </td>
-              </tr>
-              <tr>
-                <td class="pl-4 pr-3 py-4 sm:pl-0 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                  Redis
-                </td>
-                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
-                  6.9
-                </td>
-                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
-                  Installed
-                </td>
-                <td class="flex justify-end pl-3 pr-4 py-4 sm:pr-0 font-medium text-sm whitespace-nowrap">
-                  <a
-                    href="#"
-                    class="text-gray-400 text-left hover:text-neutral-500 duration-150 ease-in-out transition"
-                  >
-
-                    <div class="h-5 w-5 i-hugeicons-ellipsis-vertical" />
-
-                    @if(false)
-                      <div
-                        class="absolute right-16 z-10 mt-2 w-48 bg-white dark:bg-neutral-800 ring-1 ring-black ring-opacity-5 rounded-md focus:outline-none shadow-lg origin-top-right dropdown-menu"
-                        role="menu"
-                        aria-orientation="vertical"
-                        aria-labelledby="menu-button"
-                        tabindex="-1"
-                      >
-                        <div
-                          class="py-1"
-                          role="none"
-                        >
-                          <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" -->
-                          <a
-                            id="menu-item-0"
-                            href="#"
-                            class="block px-4 py-1.5 text-gray-700 text-xs hover:bg-neutral-50"
-                            role="menuitem"
-                            tabindex="-1"
-                          >Edit</a>
-
-                          <a
-                            id="menu-item-2"
-                            href="#"
-                            class="block px-4 py-1.5 text-gray-700 text-xs hover:bg-neutral-50"
-                            role="menuitem"
-                            tabindex="-1"
-                          >Uninstall</a>
-                        </div>
-                      </div>
-                    @endif
-                  </a>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-4 items-center">
+        <div class="p-3 bg-amber-100 dark:bg-amber-900/30 rounded-lg">
+          <span class="h-5 w-5 text-amber-600 dark:text-amber-400 i-hugeicons-time-04"></span>
+        </div>
+        <div>
+          <p class="text-neutral-500 text-xs uppercase tracking-wide dark:text-neutral-400">Pending</p>
+          <p class="font-semibold text-2xl text-neutral-900 dark:text-white">{{ pendingCount }}</p>
         </div>
       </div>
-    </div>
+    </Card>
   </div>
-</div>
 
+  <!-- Installed table -->
+  <Card variant="default" padding="none">
+    <div class="px-5 py-4 border-b border-neutral-200/60 dark:border-white/5">
+      <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Installed</h3>
+      <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">{{ totalCount }} dependencies tracked by pantry</p>
+    </div>
+
+    @if(dependencies.length === 0)
+      <div class="p-8">
+        <EmptyState
+          title="No dependencies yet"
+          description="Search above to install your first dependency."
+          icon="i-hugeicons-package"
+        />
+      </div>
+    @else
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200/60 dark:divide-white/5">
+          <thead class="bg-neutral-50/70 dark:bg-white/[0.02]">
+            <tr>
+              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Name</th>
+              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Version</th>
+              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Source</th>
+              <th class="px-5 py-3 font-medium text-left text-neutral-500 text-xs tracking-wide uppercase dark:text-neutral-400">Status</th>
+              <th class="px-5 py-3 text-right">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200/60 dark:divide-white/5">
+            @foreach(dependencies as dep)
+              <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
+                <td class="px-5 py-3 font-medium text-neutral-900 text-sm dark:text-white">{{ dep.name }}</td>
+                <td class="px-5 py-3 font-mono text-neutral-500 text-sm tabular-nums dark:text-neutral-400">{{ dep.version }}</td>
+                <td class="px-5 py-3 text-neutral-500 text-sm capitalize dark:text-neutral-400">{{ dep.source ?? 'unknown' }}</td>
+                <td class="px-5 py-3">
+                  <Badge :variant="statusVariant(dep.status)" size="sm">{{ dep.status }}</Badge>
+                </td>
+                <td class="px-5 py-3">
+                  <div class="flex gap-2 justify-end">
+                    @if(dep.status === 'installed')
+                      <Button variant="ghost" size="sm">Upgrade</Button>
+                      <Button variant="ghost" size="sm">Remove</Button>
+                    @else
+                      <Button variant="primary" size="sm">Install</Button>
+                    @endif
+                  </div>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    @endif
+  </Card>
+</div>
 
 @endsection
