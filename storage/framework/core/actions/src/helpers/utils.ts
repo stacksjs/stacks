@@ -95,6 +95,8 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
       }
       else {
         const port = Number(process.env.PORT) || 3000
+        const apiPort = Number(process.env.PORT_API) || 3008
+        const apiBase = `http://127.0.0.1:${apiPort}`
 
         // Resolve serve(): prefer the project-vendored pantry copy so
         // framework patches dropped into pantry/ take effect even when
@@ -134,18 +136,114 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         }
         catch { /* config not available — keep default */ }
 
+        // Per-request cookie helper exposed on globalThis for stx
+        // server-script blocks. stx-serve does not pass the raw
+        // Request into template context, so anonymous-cart and
+        // session-aware pages would otherwise have no way to read
+        // their own cookie during SSR.
+        const { AsyncLocalStorage } = await import('node:async_hooks')
+        const requestStore = new AsyncLocalStorage<{ cookies: Record<string, string>, url: string }>()
+        ;(globalThis as any).requestContext = {
+          cookie(name: string): string | null {
+            const ctx = requestStore.getStore()
+            return ctx?.cookies?.[name] ?? null
+          },
+          url(): string {
+            return requestStore.getStore()?.url ?? ''
+          },
+        }
+        const parseCookies = (req: Request): Record<string, string> => {
+          const out: Record<string, string> = {}
+          const header = req.headers.get('cookie') || ''
+          if (!header)
+            return out
+          for (const part of header.split(';')) {
+            const trimmed = part.trim()
+            const eq = trimmed.indexOf('=')
+            if (eq === -1)
+              continue
+            const k = trimmed.slice(0, eq).trim()
+            const v = trimmed.slice(eq + 1).trim()
+            if (!k)
+              continue
+            try { out[k] = decodeURIComponent(v) }
+            catch { out[k] = v }
+          }
+          return out
+        }
+        const proxyToApi = async (req: Request): Promise<Response> => {
+          const incoming = new URL(req.url)
+          const target = `${apiBase}${incoming.pathname}${incoming.search}`
+          const fwd = new Headers(req.headers)
+          fwd.delete('host')
+          fwd.delete('content-length')
+          fwd.set('x-forwarded-host', incoming.host)
+          fwd.set('x-forwarded-proto', incoming.protocol.replace(':', ''))
+          const body = req.method === 'GET' || req.method === 'HEAD'
+            ? undefined
+            : await req.arrayBuffer()
+          const upstream = await fetch(target, {
+            method: req.method,
+            headers: fwd,
+            body,
+            redirect: 'manual',
+          })
+          const out = new Headers(upstream.headers)
+          out.delete('content-length')
+          out.delete('content-encoding')
+          return new Response(upstream.body, {
+            status: upstream.status,
+            statusText: upstream.statusText,
+            headers: out,
+          })
+        }
+
+        // Layouts/partials live alongside views by default
+        // (resources/views/layouts, resources/views/components). Older
+        // scaffolds put them at resources/layouts and resources/components,
+        // so we prefer the new layout when present and fall back to the
+        // legacy paths otherwise.
+        const firstExisting = async (candidates: string[]): Promise<string> => {
+          for (const candidate of candidates) {
+            try {
+              if (await Bun.file(p.projectPath(candidate)).exists())
+                return candidate
+            }
+            catch { /* ignore */ }
+          }
+          return candidates[0]
+        }
+        const layoutsDir = await firstExisting(['resources/views/layouts', 'resources/layouts'])
+        const partialsDir = await firstExisting(['resources/views/components', 'resources/components'])
+
         await serve({
           patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
           port,
           componentsDir: 'storage/framework/defaults/resources/components/Dashboard',
-          layoutsDir: 'resources/layouts',
-          partialsDir: 'resources/components',
+          layoutsDir,
+          partialsDir,
           fallbackPartialsDir: 'resources/views',
           quiet: true,
           ...(stxModule && { stxModule }),
           auth: {
             cookieName: authCookie,
             redirectTo: '/login',
+          },
+          // /api/** → API dev server. Storefront forms posting to local
+          // routes need this; without it stx-serve answers with a 404
+          // page since it doesn't know about bun-router actions.
+          // We also stash cookies in AsyncLocalStorage so server-script
+          // blocks rendering this request can pull them via
+          // globalThis.requestContext.
+          onRequest: async (req: Request) => {
+            const url = new URL(req.url)
+            if (url.pathname.startsWith('/api/'))
+              return proxyToApi(req)
+            requestStore.enterWith({
+              cookies: parseCookies(req),
+              url: req.url,
+            })
+            return null
           },
         })
       }
