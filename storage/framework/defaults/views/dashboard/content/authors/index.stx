@@ -2,1519 +2,266 @@
 
 @section('content')
 <script server>
-import * as d3 from 'd3'
-// Define author type
-interface Author {
-  id: string
-  name: string
-  email: string
-  bio: string
-  avatar: string
-  postCount: number
-  role: 'admin' | 'editor' | 'contributor'
-  createdAt: string
-}
-
-// Sample authors data
-let authors = [
-  {
-    id: '1',
-    name: 'John Doe',
-    email: 'john.doe@example.com',
-    bio: 'Senior developer with 10+ years of experience in web technologies. Passionate about JavaScript and modern frameworks.',
-    avatar: '/images/avatars/avatar-1.jpg',
-    postCount: 24,
-    role: 'admin',
-    createdAt: '2023-01-15T09:30:00Z'
-  },
-  {
-    id: '2',
-    name: 'Jane Smith',
-    email: 'jane.smith@example.com',
-    bio: 'UX/UI designer specializing in user-centered design. Advocate for accessibility and inclusive design practices.',
-    avatar: '/images/avatars/avatar-2.jpg',
-    postCount: 18,
-    role: 'editor',
-    createdAt: '2023-02-20T14:20:00Z'
-  },
-  {
-    id: '3',
-    name: 'Robert Johnson',
-    email: 'robert.j@example.com',
-    bio: 'Full-stack developer with a focus on backend technologies. Experienced in building scalable applications.',
-    avatar: '/images/avatars/avatar-3.jpg',
-    postCount: 12,
-    role: 'contributor',
-    createdAt: '2023-03-10T11:15:00Z'
-  },
-  {
-    id: '4',
-    name: 'Emily Chen',
-    email: 'emily.chen@example.com',
-    bio: 'Content strategist and technical writer. Specializes in creating clear, concise documentation for developers.',
-    avatar: '/images/avatars/avatar-4.jpg',
-    postCount: 15,
-    role: 'editor',
-    createdAt: '2023-03-25T16:45:00Z'
-  },
-  {
-    id: '5',
-    name: 'Michael Brown',
-    email: 'michael.b@example.com',
-    bio: 'DevOps engineer with expertise in CI/CD pipelines and cloud infrastructure. AWS certified professional.',
-    avatar: '/images/avatars/avatar-5.jpg',
-    postCount: 8,
-    role: 'contributor',
-    createdAt: '2023-04-05T08:30:00Z'
-  },
-  {
-    id: '6',
-    name: 'Sarah Wilson',
-    email: 'sarah.w@example.com',
-    bio: 'Frontend developer specializing in React and Vue.js. Passionate about creating responsive and accessible interfaces.',
-    avatar: '/images/avatars/avatar-6.jpg',
-    postCount: 10,
-    role: 'contributor',
-    createdAt: '2023-04-18T13:40:00Z'
-  },
-  {
-    id: '7',
-    name: 'David Lee',
-    email: 'david.lee@example.com',
-    bio: 'Security specialist with a background in penetration testing and vulnerability assessment. CISSP certified.',
-    avatar: '/images/avatars/avatar-7.jpg',
-    postCount: 6,
-    role: 'editor',
-    createdAt: '2023-05-02T10:10:00Z'
-  },
-  {
-    id: '8',
-    name: 'Lisa Taylor',
-    email: 'lisa.t@example.com',
-    bio: 'Data scientist with expertise in machine learning and AI. Passionate about using data to solve real-world problems.',
-    avatar: '/images/avatars/avatar-8.jpg',
-    postCount: 9,
-    role: 'contributor',
-    createdAt: '2023-05-15T09:45:00Z'
-  },
-  {
-    id: '9',
-    name: 'James Wilson',
-    email: 'james.w@example.com',
-    bio: 'Mobile app developer with experience in both iOS and Android platforms. Advocate for cross-platform development.',
-    avatar: '/images/avatars/avatar-9.jpg',
-    postCount: 7,
-    role: 'contributor',
-    createdAt: '2023-06-01T15:30:00Z'
-  },
-  {
-    id: '10',
-    name: 'Amanda Garcia',
-    email: 'amanda.g@example.com',
-    bio: 'Product manager with a background in software development. Focused on creating user-centric products.',
-    avatar: '/images/avatars/avatar-10.jpg',
-    postCount: 5,
-    role: 'editor',
-    createdAt: '2023-06-15T11:25:00Z'
-  },
-  {
-    id: '11',
-    name: 'Thomas Wright',
-    email: 'thomas.w@example.com',
-    bio: 'Backend developer specializing in API design and database optimization. Experienced with SQL and NoSQL databases.',
-    avatar: '/images/avatars/avatar-11.jpg',
-    postCount: 11,
-    role: 'contributor',
-    createdAt: '2023-07-01T13:40:00Z'
-  },
-  {
-    id: '12',
-    name: 'Olivia Martinez',
-    email: 'olivia.m@example.com',
-    bio: 'Technical lead with experience managing development teams. Passionate about mentoring junior developers.',
-    avatar: '/images/avatars/avatar-12.jpg',
-    postCount: 14,
-    role: 'admin',
-    createdAt: '2023-07-15T08:50:00Z'
-  }
-]
-
-// Chart and diagram functionality
-let timeRange = '30'
-let isLoading = false
-let diagramContainer = null
-let selectedModel = null
-const router = useRouter()
-
-// Helper function to format dates
-const formatDate = (daysAgo: number) => {
-  const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  }
-}
-
-// Format date string for display
-const formatDateString = (dateString: string) => {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: '2-digit',
-    day: '2-digit',
-    hour: '2-digit',
-    minute: '2-digit'
-  }).replace(',', '')
-}
-
-// Generate date labels for the selected time range
-const generateDateLabels = (days: number) => {
-  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
-}
-
-// Generate mock growth data
-const generateGrowthData = (days: number, baseCount: number, dailyGrowth: number) => {
-  return Array.from({ length: days }, (_, i) => {
-    const dayVariance = Math.random() * dailyGrowth * 0.5 // 50% variance
-    const daysFromStart = days - 1 - i
-    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
-  }).reverse()
-}
-
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      type: 'linear' as const,
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        callback: function(this: Scale<CoreScaleOptions>, tickValue: string | number) {
-          const value = Number(tickValue)
-          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-          if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
-          return value.toString()
-        }
-      },
-    },
-    x: {
-      type: 'category' as const,
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top' as const,
-      align: 'end' as const,
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      mode: 'index' as const,
-      intersect: false,
-      callbacks: {
-        label: (context: any) => {
-          let label = context.dataset.label || ''
-          if (label) label += ': '
-          if (context.parsed.y !== null) {
-            const value = context.parsed.y
-            if (value >= 1000000) return `${label}${(value / 1000000).toFixed(1)}M`
-            if (value >= 1000) return `${label}${(value / 1000).toFixed(1)}k`
-            return `${label}${value}`
-          }
-          return label
-        }
-      }
-    }
-  },
-  interaction: {
-    mode: 'index' as const,
-    intersect: false,
-  },
-} as const
-
-// Chart data
-function chartData() {
-  const days = Number(timeRange)
-  const labels = generateDateLabels(days)
-  const baseCount = authors.length // Starting with current authors count
-  const dailyGrowth = Math.max(1, Math.floor(baseCount * 0.01)) // Average 1% growth per day
-
-  return {
-    labels,
-    datasets: [{
-      label: 'Total Authors',
-      data: generateGrowthData(days, baseCount, dailyGrowth),
-      borderColor: 'rgb(59, 130, 246)', // Blue color for authors
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: true,
-      tension: 0.4
-    }, {
-      label: 'Total Posts',
-      data: generateGrowthData(days, authors.reduce((sum, author) => sum + author.postCount, 0), dailyGrowth * 2), // Posts grow faster
-      borderColor: 'rgb(34, 197, 94)', // Green color for posts
-      backgroundColor: 'rgba(34, 197, 94, 0.1)',
-      fill: true,
-      tension: 0.4
-    }]
-  }
-}
-
-// Model node interface
-interface ModelNode extends d3.SimulationNodeDatum {
-  id: string
-  name: string
-  description: string
-  properties: string[]
-  relationships: string[]
-  emoji: string
-  color: string
-  x?: number
-  y?: number
-  fx?: number | null
-  fy?: number | null
-}
-
-// Relationship link interface
-interface RelationshipLink {
-  source: string | ModelNode
-  target: string | ModelNode
-  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
-}
-
-// Author model and its relationships
-const models: ModelNode[] = [
-  {
-    id: 'author',
-    name: 'Author',
-    description: 'Core author model representing blog content creators with profile information.',
-    properties: ['id', 'name', 'email', 'bio', 'avatar', 'role'],
-    relationships: ['posts', 'categories', 'comments'],
-    emoji: '✍️',
-    color: '#2563EB'
-  },
-  {
-    id: 'post',
-    name: 'Post',
-    description: 'Blog post content created by authors. Each post can belong to multiple categories.',
-    properties: ['id', 'title', 'content', 'author_id', 'published_at'],
-    relationships: ['author', 'categories', 'comments', 'tags'],
-    emoji: '📝',
-    color: '#60A5FA'
-  },
-  {
-    id: 'category',
-    name: 'Category',
-    description: 'Organizational structure for grouping related blog posts.',
-    properties: ['id', 'name', 'slug', 'description'],
-    relationships: ['posts', 'authors', 'tags'],
-    emoji: '🏷️',
-    color: '#3B82F6'
-  },
-  {
-    id: 'tag',
-    name: 'Tag',
-    description: 'Labels that can be applied to posts for more granular categorization.',
-    properties: ['id', 'name', 'slug'],
-    relationships: ['posts', 'categories'],
-    emoji: '🔖',
-    color: '#818CF8'
-  },
-  {
-    id: 'comment',
-    name: 'Comment',
-    description: 'User-generated feedback on blog posts.',
-    properties: ['id', 'content', 'post_id', 'user_id'],
-    relationships: ['post', 'user'],
-    emoji: '💬',
-    color: '#93C5FD'
-  },
-  {
-    id: 'user',
-    name: 'User',
-    description: 'Application users who can read and comment on blog posts.',
-    properties: ['id', 'name', 'email', 'password'],
-    relationships: ['comments'],
-    emoji: '👤',
-    color: '#BFDBFE'
-  }
-]
-
-// Define relationships
-const relationships: RelationshipLink[] = [
-  { source: 'author', target: 'post', type: 'hasMany' },
-  { source: 'post', target: 'author', type: 'belongsTo' },
-  { source: 'post', target: 'category', type: 'belongsToMany' },
-  { source: 'category', target: 'post', type: 'belongsToMany' },
-  { source: 'post', target: 'comment', type: 'hasMany' },
-  { source: 'comment', target: 'post', type: 'belongsTo' },
-  { source: 'user', target: 'comment', type: 'hasMany' },
-  { source: 'comment', target: 'user', type: 'belongsTo' },
-  // New relationships
-  { source: 'author', target: 'category', type: 'belongsToMany' },
-  { source: 'category', target: 'author', type: 'belongsToMany' },
-  { source: 'tag', target: 'post', type: 'belongsToMany' },
-  { source: 'post', target: 'tag', type: 'belongsToMany' },
-  { source: 'tag', target: 'category', type: 'belongsTo' },
-  { source: 'category', target: 'tag', type: 'hasMany' }
-]
-
-// Visualization state
-let simulation: d3.Simulation<ModelNode, undefined>
-
-// Function to get route path for a model
-const getModelRoute = (modelId: string) => {
-  const routes: Record<string, string> = {
-    author: '/blog/authors',
-    authors: '/blog/authors',
-    post: '/blog/posts',
-    posts: '/blog/posts',
-    category: '/blog/categories',
-    categories: '/blog/categories',
-    comment: '/blog/comments',
-    comments: '/blog/comments',
-    user: '/models/users',
-    users: '/models/users'
-  }
-  return routes[modelId] || '/blog'
-}
-
-// Download functions
-const downloadSVG = () => {
-  if (!diagramContainer) return
-
-  const svgElement = diagramContainer.querySelector('svg')
-  if (!svgElement) return
-
-  // Create a copy of the SVG to modify for download
-  const svgClone = svgElement.cloneNode(true) as SVGElement
-  svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-
-  const svgData = new XMLSerializer().serializeToString(svgClone)
-  const blob = new Blob([svgData], { type: 'image/svg+xml' })
-  const url = URL.createObjectURL(blob)
-
-  const link = document.createElement('a')
-  link.href = url
-  link.download = 'author-model-relationships.svg'
-  document.body.appendChild(link)
-  link.click()
-  document.body.removeChild(link)
-  URL.revokeObjectURL(url)
-}
-
-const downloadPNG = () => {
-  if (!diagramContainer) return
-
-  const svgElement = diagramContainer.querySelector('svg')
-  if (!svgElement) return
-
-  // Create a copy of the SVG to modify for download
-  const svgClone = svgElement.cloneNode(true) as SVGElement
-  svgClone.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
-
-  const svgData = new XMLSerializer().serializeToString(svgClone)
-  const canvas = document.createElement('canvas')
-  const ctx = canvas.getContext('2d')
-  if (!ctx) return
-
-  // Create an image from the SVG
-  const img = new Image()
-  const blob = new Blob([svgData], { type: 'image/svg+xml' })
-  const url = URL.createObjectURL(blob)
-
-  img.onload = () => {
-    // Set canvas size to match the SVG
-    canvas.width = img.width
-    canvas.height = img.height
-
-    // Draw white background and the image
-    ctx.fillStyle = 'white'
-    ctx.fillRect(0, 0, canvas.width, canvas.height)
-    ctx.drawImage(img, 0, 0)
-
-    // Convert to PNG and download
-    canvas.toBlob((pngBlob) => {
-      if (!pngBlob) return
-      const pngUrl = URL.createObjectURL(pngBlob)
-      const link = document.createElement('a')
-      link.href = pngUrl
-      link.download = 'author-model-relationships.png'
-      document.body.appendChild(link)
-      link.click()
-      document.body.removeChild(link)
-      URL.revokeObjectURL(pngUrl)
-    }, 'image/png')
-
-    URL.revokeObjectURL(url)
-  }
-
-  img.src = url
-}
-
-// Original author management functions
-let searchQuery = ''
-let sortBy = 'name'
-let sortOrder = 'asc'
-let roleFilter = 'all'
-let itemsPerPage = 10
-let currentPage = 1
-
-// New Author Modal
-interface NewAuthorForm {
-  name: string
-  email: string
-  bio: string
-  role: 'admin' | 'editor' | 'contributor'
-}
-
-let newAuthor = {
-  name: '',
-  email: '',
-  bio: '',
-  role: 'contributor'
-}
-let showNewAuthorModal = false
-
-// Edit Author Modal
-let showEditModal = false
-let authorToEdit = null
-
-// Delete Confirmation Modal
-let showDeleteConfirmation = false
-let authorToDelete = null
-let selectedAuthorIds = []
-let selectAll = false
-
-// Computed properties
-function filteredAuthors() {
-  let result = [...authors]
-
-  // Apply role filter
-  if (roleFilter !== 'all') {
-    result = result.filter(author => author.role === roleFilter)
-  }
-
-  // Apply search filter
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase()
-    result = result.filter(author =>
-      author.name.toLowerCase().includes(query) ||
-      author.email.toLowerCase().includes(query) ||
-      author.bio.toLowerCase().includes(query)
-    )
-  }
-
-  // Apply sorting
-  result.sort((a, b) => {
-    const sortField = sortBy as keyof Author
-    let aValue = a[sortField]
-    let bValue = b[sortField]
-
-    // Handle string comparison
-    if (typeof aValue === 'string' && typeof bValue === 'string') {
-      aValue = aValue.toLowerCase()
-      bValue = bValue.toLowerCase()
-    }
-
-    if (sortOrder === 'asc') {
-      return aValue > bValue ? 1 : -1
-    } else {
-      return aValue < bValue ? 1 : -1
-    }
-  }
-
-  return result
-}
-
-// Pagination
-function totalPages() { return Math.ceil(filteredAuthors.length / itemsPerPage) }
-
-function paginatedAuthors() {
-  const startIndex = (currentPage - 1) * itemsPerPage
-  const endIndex = startIndex + itemsPerPage
-  return filteredAuthors.slice(startIndex, endIndex)
-}
-
-function paginationRange() {
-  const range: number[] = []
-  const maxVisiblePages = 5
-  const startPage = Math.max(1, currentPage - Math.floor(maxVisiblePages / 2))
-  const endPage = Math.min(totalPages, startPage + maxVisiblePages - 1)
-
-  for (let i = startPage; i <= endPage; i++) {
-    range.push(i)
-  }
-
-  return range
-}
-
-// Methods
-function openNewAuthorModal(): void {
-  newAuthor = {
-    name: '',
-    email: '',
-    bio: '',
-    role: 'contributor'
-  }
-  showNewAuthorModal = true
-}
-
-function closeNewAuthorModal(): void {
-  showNewAuthorModal = false
-}
-
-function createAuthor(): void {
-  // Validate required fields
-  if (!newAuthor.name || !newAuthor.email) return
-
-  const newId = (Math.max(...authors.map(a => parseInt(a.id))) + 1).toString()
-  const currentDate = new Date().toISOString()
-
-  authors.push({
-    id: newId,
-    name: newAuthor.name,
-    email: newAuthor.email,
-    bio: newAuthor.bio || '', // Ensure bio is never undefined
-    avatar: '/images/avatars/avatar-1.jpg', // Cycle through available avatars
-    postCount: 0,
-    role: newAuthor.role,
-    createdAt: currentDate
-  }
-
-  closeNewAuthorModal()
-}
-
-function openEditModal(author: Author): void {
-  authorToEdit = { ...author }
-  showEditModal = true
-}
-
-function closeEditModal(): void {
-  showEditModal = false
-}
-
-function updateAuthor(): void {
-  if (!authorToEdit) return
-
-  const author = authorToEdit // Store in a variable to avoid null checks
-  const index = authors.findIndex(a => a.id === author.id)
-  if (index !== -1) {
-    authors[index] = { ...author }
-  }
-
-  closeEditModal()
-}
-
-function confirmDeleteAuthor(author: Author): void {
-  authorToDelete = author
-  selectedAuthorIds = []
-  showDeleteConfirmation = true
-}
-
-function confirmDeleteSelected(): void {
-  showDeleteConfirmation = true
-}
-
-function closeDeleteModal(): void {
-  showDeleteConfirmation = false
-  authorToDelete = null
-}
-
-function deleteSelectedAuthors(): void {
-  if (selectedAuthorIds.length > 1) {
-    // Delete multiple authors
-    authors = authors.filter(author => !selectedAuthorIds.includes(author.id))
-    selectedAuthorIds = []
-  } else if (authorToDelete) {
-    // Delete single author
-    const author = authorToDelete // Store in a variable to avoid null checks
-    authors = authors.filter(a => a.id !== author.id)
-  }
-
-  closeDeleteModal()
-}
-
-function toggleSelectAll(): void {
-  if (selectAll) {
-    // Select all authors on current page
-    selectedAuthorIds = paginatedAuthors.map(author => author.id)
-  } else {
-    // Deselect all
-    selectedAuthorIds = []
-  }
-}
-
-function toggleAuthorSelection(authorId: string): void {
-  const index = selectedAuthorIds.indexOf(authorId)
-  if (index === -1) {
-    selectedAuthorIds.push(authorId)
-  } else {
-    selectedAuthorIds.splice(index, 1)
-  }
-
-  // Update selectAll based on whether all authors are selected
-  selectAll = paginatedAuthors.every(author => selectedAuthorIds.includes(author.id))
-}
-
-function hasSelectedAuthors() { return selectedAuthorIds.length > 0 }
-
-// Get role badge class
-const getRoleBadgeClass = (role: string): string => {
-  switch (role) {
-    case 'admin':
-      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/20 dark:text-purple-400 dark:ring-purple-500/30'
-    case 'editor':
-      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-blue-500/30'
-    case 'contributor':
-      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30'
-    default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/20 dark:text-neutral-400 dark:ring-neutral-500/30'
-  }
-}
+definePageMeta({
+  middleware: ['auth'],
+})
 </script>
 
 <div class="p-6 space-y-6">
+  <div class="flex items-center justify-between">
+    <div>
+      <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Authors</h1>
+      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage all your blog authors</p>
+    </div>
+    <button @click="openNewAuthorModal()" class="inline-flex items-center gap-2 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
+      <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
+      New Author
+    </button>
+  </div>
 
-  <PageHeader title="Authors" description="Manage your blog authors">
-    <template #actions>
-      <Button variant="primary" onclick="openNewAuthorModal">
-        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
-        Add Author
-      </Button>
-    </template>
-  </PageHeader>
+  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Total Authors</dt>
+      <dd class="mt-1 font-semibold text-3xl text-gray-900 dark:text-white">{{ totalAuthors }}</dd>
+    </div>
+    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Total Posts</dt>
+      <dd class="mt-1 font-semibold text-3xl text-gray-900 dark:text-white">{{ totalPosts }}</dd>
+    </div>
+    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Top Author</dt>
+      <dd class="mt-1 font-semibold text-3xl text-gray-900 dark:text-white">{{ topAuthorName }}</dd>
+      <dd class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ topAuthorPosts }} posts</dd>
+    </div>
+    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Avg Posts / Author</dt>
+      <dd class="mt-1 font-semibold text-3xl text-gray-900 dark:text-white">{{ avgPostsPerAuthor }}</dd>
+    </div>
+  </dl>
 
-    <!-- Stats section -->
-    <div class="mb-8 px-4 sm:px-6 lg:px-8">
-      <div>
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-          Last 30 days
-        </h3>
-
-        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-blue-500 rounded-md">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-                </svg>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-                Total Authors
-              </p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-                {{ authors.length }}
-              </p>
-              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
-                <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                {{ Math.floor(authors.length * 0.05) }}
-              </p>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-green-500 rounded-md">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 7.5h1.5m-1.5 3h1.5m-7.5 3h7.5m-7.5 3h7.5m3-9h3.375c.621 0 1.125.504 1.125 1.125V18a2.25 2.25 0 01-2.25 2.25M16.5 7.5V18a2.25 2.25 0 002.25 2.25M16.5 7.5V4.875c0-.621-.504-1.125-1.125-1.125H4.125C3.504 3.75 3 4.254 3 4.875V18a2.25 2.25 0 002.25 2.25h13.5M6 7.5h3v3H6v-3z" />
-                </svg>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-                Total Posts
-              </p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-                {{ authors.reduce((sum, author) => sum + author.postCount, 0) }}
-              </p>
-              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
-                <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                {{ Math.floor(authors.reduce((sum, author) => sum + author.postCount, 0) * 0.08) }}
-              </p>
-            </dd>
-          </div>
-
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-purple-500 rounded-md">
-                <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 6a3.75 3.75 0 11-7.5 0 3.75 3.75 0 017.5 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-                Admin Authors
-              </p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-                {{ authors.filter(author => author.role === 'admin').length }}
-              </p>
-              <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
-                <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                  <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-                </svg>
-                <span class="sr-only"> Increased by </span>
-                {{ Math.floor(authors.filter(author => author.role === 'admin').length * 0.03) }}
-              </p>
-            </dd>
-          </div>
-        </dl>
+  <div class="grid gap-5 grid-cols-1 lg:grid-cols-2">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="p-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Posts per Author</h3>
+        <div class="mt-2 h-80"><canvas id="authors_posts_chart"></canvas></div>
       </div>
     </div>
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="p-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Author Distribution</h3>
+        <div class="mt-2 h-80"><canvas id="authors_distribution_chart"></canvas></div>
+      </div>
+    </div>
+  </div>
 
-    <!-- Growth Chart -->
-    <div class="mb-8 px-4 sm:px-6 lg:px-8">
-      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div class="relative max-w-sm">
+      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+        <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+      </div>
+      <input x-model="searchQuery" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" placeholder="Search authors..." />
+    </div>
+    <select x-model="sortBy" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+      <option value="postCount">Sort by Posts</option>
+      <option value="name">Sort by Name</option>
+      <option value="created_at">Sort by Joined</option>
+    </select>
+  </div>
+
+  <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+    <template :for="author in filteredAuthors()">
+      <div class="overflow-hidden p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <div class="flex items-center gap-4">
+          <img :src="author.avatar" :alt="author.name" class="h-16 w-16 rounded-full" />
+          <div class="flex-1 min-w-0">
+            <h3 class="font-semibold text-gray-900 truncate dark:text-white">{{ author.name }}</h3>
+            <p class="text-gray-500 text-sm truncate dark:text-neutral-400">{{ author.email }}</p>
+            <p class="text-gray-500 text-xs dark:text-neutral-500">{{ author.role }}</p>
+          </div>
+        </div>
+        <p class="mt-4 text-gray-600 text-sm dark:text-neutral-300 line-clamp-2">{{ author.bio }}</p>
+        <div class="grid gap-2 grid-cols-3 mt-4 pt-4 border-t border-gray-200 dark:border-neutral-700">
+          <div class="text-center">
+            <div class="font-semibold text-gray-900 text-lg dark:text-white">{{ author.postCount }}</div>
+            <div class="text-gray-500 text-xs dark:text-neutral-400">Posts</div>
+          </div>
+          <div class="text-center">
+            <div class="font-semibold text-gray-900 text-lg dark:text-white">{{ formatNumber(author.totalViews) }}</div>
+            <div class="text-gray-500 text-xs dark:text-neutral-400">Views</div>
+          </div>
+          <div class="text-center">
+            <div class="font-semibold text-gray-900 text-lg dark:text-white">{{ author.totalComments }}</div>
+            <div class="text-gray-500 text-xs dark:text-neutral-400">Comments</div>
+          </div>
+        </div>
+      </div>
+    </template>
+    <div :show="filteredAuthors().length === 0" class="col-span-full px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No authors found.</div>
+  </div>
+
+  <div :show="showNewAuthorModal" class="relative z-10">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
+    <div class="fixed inset-0 overflow-y-auto z-10">
+      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
+        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">New Author</h3>
+          <div class="mt-4 space-y-4">
             <div>
-              <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Author Growth & Activity</h3>
-              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Track author registrations and post activity over time</p>
+              <label class="block font-medium text-gray-900 text-sm dark:text-white">Name</label>
+              <input x-model="newAuthorName" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" />
             </div>
-            <div class="flex items-center space-x-4">
-              <select
-                value="{{ timeRange }}"
-                class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-                <option value="365">Last year</option>
+            <div>
+              <label class="block font-medium text-gray-900 text-sm dark:text-white">Email</label>
+              <input x-model="newAuthorEmail" type="email" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" />
+            </div>
+            <div>
+              <label class="block font-medium text-gray-900 text-sm dark:text-white">Role</label>
+              <select x-model="newAuthorRole" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm">
+                <option>Author</option>
+                <option>Editor</option>
+                <option>Admin</option>
               </select>
             </div>
           </div>
-          <div class="relative h-[400px]">
-            @if(isLoading)
-<div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
-              <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-            </div>
-            @endif
-            <canvas id="chart_1"></canvas>
+          <div class="sm:grid sm:gap-3 sm:grid-cols-2 mt-5">
+            <button @click="closeNewAuthorModal()" class="inline-flex justify-center px-3 py-2 sm:col-start-1 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
+            <button @click="createAuthor()" :disabled="!newAuthorName() || !newAuthorEmail()" class="inline-flex justify-center px-3 py-2 sm:col-start-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 shadow-sm">Create</button>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- Model Relationships Diagram -->
-    <div class="mb-8 px-4 sm:px-6 lg:px-8">
-      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Author Model Relationships</h3>
-              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Interactive diagram showing Author model relationships. Click on any model to view details.</p>
-            </div>
-            <div class="flex items-center space-x-2">
-              <button
-                onclick="downloadSVG"
-                class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-              >
-                <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                SVG
-              </button>
-              <button
-                onclick="downloadPNG"
-                class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-              >
-                <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                </svg>
-                PNG
-              </button>
-            </div>
-          </div>
-          <div class="flex">
-            <div ref="diagramContainer" class="relative flex-1 h-[400px]">
-              <!-- D3 diagram will be rendered here -->
-            </div>
-
-            @if(selectedModel)
-<div class="ml-6 p-4 w-64 bg-gray-50 dark:bg-neutral-600 rounded-lg">
-              <div class="flex items-center mb-4">
-                <span class="mr-2 text-2xl">{{ selectedModel.emoji }}</span>
-                <h4 class="font-semibold text-gray-900 text-lg dark:text-neutral-100">{{ selectedModel.name }}</h4>
-              </div>
-
-              <div class="mb-4">
-                <p class="text-gray-600 text-sm dark:text-neutral-400">{{ selectedModel.description }}</p>
-              </div>
-
-              <div class="mb-4">
-                <h5 class="mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Properties</h5>
-                <ul class="space-y-1">
-                  @foreach(selectedModel.properties as prop)
-<li class="font-mono text-gray-600 text-sm dark:text-neutral-400">
-                    {{ prop }}
-                  </li>
-                  @endforeach
-                </ul>
-              </div>
-
-              <div class="mb-6">
-                <h5 class="mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Relationships</h5>
-                <ul class="space-y-1">
-                  @foreach(selectedModel.relationships as rel)
-<li class="font-mono text-sm">
-                    <a                       href="{{ getModelRoute(rel.toLowerCase()) }}"
-                      class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 duration-150 transition-colors"
-                    >
-                      {{ rel }}
-                    </a>
-                  </li>
-                  @endforeach
-                </ul>
-              </div>
-
-              <a 
-                href="{{ getModelRoute(selectedModel.id) }}"
-                class="block px-4 py-2 w-full font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm duration-150 transition-colors"
-              >
-                View Details
-              </a>
-            </div>
-            @endif
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Authors Table -->
-    <div class="pt-12 px-4 sm:px-6 lg:px-8">
-
-      <!-- Search and filters -->
-      <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mt-6">
-        <div class="relative max-w-md w-full">
-          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-            <svg class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-              <path fill-rule="evenodd" d="M9 3.5a5.5 5.5 0 100 11 5.5 5.5 0 000-11zM2 9a7 7 0 1112.452 4.391l3.328 3.329a.75.75 0 11-1.06 1.06l-3.329-3.328A7 7 0 012 9z" clip-rule="evenodd" />
-            </svg>
-          </div>
-          <input
-            value="{{ searchQuery }}"
-            type="search"
-            placeholder="Search authors..."
-            class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:placeholder:text-neutral-300 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-          />
-        </div>
-
-        <div class="flex flex-col gap-3 sm:flex-row sm:items-center mt-4 sm:mt-0">
-          <select
-            value="{{ roleFilter }}"
-            class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="all">All Roles</option>
-            <option value="admin">Admin</option>
-            <option value="editor">Editor</option>
-            <option value="contributor">Contributor</option>
-          </select>
-
-          <select
-            value="{{ itemsPerPage }}"
-            class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="{{ 5 }}">5 per page</option>
-            <option value="{{ 10 }}">10 per page</option>
-            <option value="{{ 20 }}">20 per page</option>
-            <option value="{{ 50 }}">50 per page</option>
-          </select>
-        </div>
-      </div>
-
-      <!-- Bulk actions -->
-      @if(hasSelectedAuthors)
-<div class="flex items-center justify-between mt-4 p-3 bg-gray-50 dark:bg-neutral-600 rounded-md">
-        <div class="text-gray-700 text-sm dark:text-neutral-300">
-          <span class="font-medium">{{ selectedAuthorIds.length }}</span> author{{ selectedAuthorIds.length > 1 ? 's' : '' }} selected
-        </div>
-        <div class="flex space-x-2">
-          <button
-            onclick="confirmDeleteSelected"
-            class="inline-flex items-center px-3 py-1.5 font-medium text-sm text-white bg-red-600 hover:bg-red-700 rounded-md shadow-sm"
-          >
-            <svg class="mr-1.5 h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-            </svg>
-            Delete Selected
-          </button>
-        </div>
-      </div>
-      @endif
-
-      <div class="flow-root mt-8">
-        <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-          <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-            <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
-              <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600 authors-table">
-                <thead class="bg-gray-50 dark:bg-neutral-600">
-                  <tr>
-                    <th scope="col" class="relative px-3 py-3.5">
-                      <input
-                        type="checkbox"
-                        checked="{{ selectAll }}"
-                        onchange="toggleSelectAll"
-                        class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
-                      />
-                    </th>
-                    <th
-                      scope="col"
-                      class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100 cursor-pointer"
-                      onclick="sortBy = 'id'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-                    >
-                      ID
-                      @if(sortBy === 'id')
-<span class="ml-1">
-                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
-                      </span>
-                      @endif
-                    </th>
-
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100 cursor-pointer"
-                      onclick="sortBy = 'name'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-                    >
-                      Name
-                      @if(sortBy === 'name')
-<span class="ml-1">
-                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
-                      </span>
-                      @endif
-                    </th>
-
-                    <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                      Role
-                    </th>
-
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100 cursor-pointer"
-                      onclick="sortBy = 'postCount'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-                    >
-                      Posts
-                      @if(sortBy === 'postCount')
-<span class="ml-1">
-                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
-                      </span>
-                      @endif
-                    </th>
-
-                    <th
-                      scope="col"
-                      class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100 cursor-pointer"
-                      onclick="sortBy = 'createdAt'; sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-                    >
-                      Created At
-                      @if(sortBy === 'createdAt')
-<span class="ml-1">
-                        {{ sortOrder === 'asc' ? '↑' : '↓' }}
-                      </span>
-                      @endif
-                    </th>
-
-                    <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                      <span class="sr-only">Actions</span>
-                    </th>
-                  </tr>
-                </thead>
-
-                <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                  @foreach(paginatedAuthors() as author)
-<tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
-                    <td class="relative px-3 py-4">
-                      <input
-                        type="checkbox"
-                        checked="{{ selectedAuthorIds.includes(author.id) }}"
-                        onchange="toggleAuthorSelection(author.id)"
-                        class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
-                      />
-                    </td>
-                    <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                      {{ author.id }}
-                    </td>
-
-                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                      <div class="flex items-center">
-                        <div class="flex-shrink-0 h-10 w-10">
-                          <img
-                            src="{{ author.avatar }}"
-                            alt=""
-                            class="h-10 w-10 rounded-full"
-                          >
-                        </div>
-
-                        <div class="ml-4">
-                          <div class="flex items-center font-medium text-gray-900 text-sm dark:text-neutral-100">
-                            {{ author.name }}
-                          </div>
-                          <div class="text-gray-500 text-sm dark:text-neutral-400">
-                            {{ author.email }}
-                          </div>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                      <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md {{ getRoleBadgeClass(author.role) }}">
-                        {{ author.role }}
-                      </span>
-                    </td>
-
-                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                      {{ author.postCount }}
-                    </td>
-
-                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                      {{ formatDateString(author.createdAt) }}
-                    </td>
-
-                    <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                      <button onclick="openEditModal(author)" class="mr-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                        Edit
-                      </button>
-                      <button onclick="confirmDeleteAuthor(author)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                        Delete
-                      </button>
-                    </td>
-                  </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pagination -->
-      <div class="flex items-center justify-between mt-6">
-        <div class="text-gray-700 text-sm dark:text-neutral-300">
-          Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredAuthors.length) }}</span> of <span class="font-medium">{{ filteredAuthors.length }}</span> authors
-        </div>
-        <div class="flex space-x-2">
-          <button
-            onclick="currentPage = Math.max(1, currentPage - 1)"
-            disabled="{{ currentPage === 1 }}"
-            class="'opacity-50 { {{ } }} === 1 currentPage cursor-not-allowed':"
-            class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-          >
-            Previous
-          </button>
-          <div class="flex space-x-1">
-            @foreach(paginationRange() as page)
-<button
-              onclick="currentPage = page"
-              class="text-gray-700 text-white dark:text-neutral-200 dark:bg-neutral-600 hover:bg-gray-50 !== 'bg-blue-600 'bg-white { {{ } }} === currentPage currentPage page page, hover:bg-blue-500': dark:hover:bg-neutral-500':"
-              class="inline-flex items-center px-3 py-1.5 font-medium text-sm ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-            >
-              {{ page }}
-            </button>
-            @endforeach
-          </div>
-          <button
-            onclick="currentPage = Math.min(totalPages, currentPage + 1)"
-            disabled="{{ currentPage === totalPages }}"
-            class="'opacity-50 { {{ } }} === currentPage cursor-not-allowed': totalPages"
-            class="inline-flex items-center px-3 py-1.5 font-medium text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-600 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-          >
-            Next
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- New Author Modal -->
-    @if(showNewAuthorModal)
-<div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeNewAuthorModal"></div>
-
-        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block overflow-hidden sm:my-8 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
-          <div class="pb-4 pt-5 px-4 sm:p-6 sm:pb-4 bg-white dark:bg-neutral-700">
-            <div class="sm:flex sm:items-start">
-              <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 7.5v3m0 0v3m0-3h3m-3 0h-3m-2.25-4.125a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zM4.501 20.118a7.5 7.5 0 0114.998 0A17.933 17.933 0 0112 21.75c-2.676 0-5.216-.584-7.499-1.632z" />
-                </svg>
-              </div>
-              <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
-                <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-neutral-100">Add New Author</h3>
-                <div class="mt-2">
-                  <p class="text-gray-500 text-sm dark:text-neutral-400">
-                    Create a new author account. Authors can create and manage blog content.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <div class="mt-6 space-y-4">
-              <div>
-                <label for="name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
-                <input
-                  type="text"
-                  id="name"
-                  value="{{ newAuthor.name }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                  placeholder="Enter full name"
-                />
-              </div>
-
-              <div>
-                <label for="email" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Email</label>
-                <input
-                  type="email"
-                  id="email"
-                  value="{{ newAuthor.email }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                  placeholder="email@example.com"
-                />
-              </div>
-
-              <div>
-                <label for="role" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Role</label>
-                <select
-                  id="role"
-                  value="{{ newAuthor.role }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="editor">Editor</option>
-                  <option value="contributor">Contributor</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="bio" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Bio</label>
-                <textarea
-                  id="bio"
-                  value="{{ newAuthor.bio }}"
-                  rows="3"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                  placeholder="Brief author biography"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="sm:flex sm:flex-row-reverse px-4 py-3 sm:px-6 bg-gray-50 dark:bg-neutral-800">
-            <button
-              type="button"
-              onclick="createAuthor"
-              class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-            >
-              Create
-            </button>
-            <button
-              type="button"
-              onclick="closeNewAuthorModal"
-              class="inline-flex justify-center mt-3 px-4 py-2 sm:ml-3 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    @endif
-
-    <!-- Edit Author Modal -->
-    @if(showEditModal)
-<div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeEditModal"></div>
-
-        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block overflow-hidden sm:my-8 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
-          <div class="pb-4 pt-5 px-4 sm:p-6 sm:pb-4 bg-white dark:bg-neutral-700">
-            <div class="sm:flex sm:items-start">
-              <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-blue-100 dark:bg-blue-900 rounded-full">
-                <svg class="h-6 w-6 text-blue-600 dark:text-blue-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M16.862 4.487l1.687-1.688a1.875 1.875 0 112.652 2.652L10.582 16.07a4.5 4.5 0 01-1.897 1.13L6 18l.8-2.685a4.5 4.5 0 011.13-1.897l8.932-8.931zm0 0L19.5 7.125M18 14v4.75A2.25 2.25 0 0115.75 21H5.25A2.25 2.25 0 013 18.75V8.25A2.25 2.25 0 015.25 6H10" />
-                </svg>
-              </div>
-              <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
-                <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-neutral-100">Edit Author</h3>
-                <div class="mt-2">
-                  <p class="text-gray-500 text-sm dark:text-neutral-400">
-                    Update author information and permissions.
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            @if(authorToEdit)
-<div class="mt-6 space-y-4">
-              <div>
-                <label for="edit-name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
-                <input
-                  type="text"
-                  id="edit-name"
-                  value="{{ authorToEdit.name }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label for="edit-email" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Email</label>
-                <input
-                  type="email"
-                  id="edit-email"
-                  value="{{ authorToEdit.email }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                />
-              </div>
-
-              <div>
-                <label for="edit-role" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Role</label>
-                <select
-                  id="edit-role"
-                  value="{{ authorToEdit.role }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                >
-                  <option value="admin">Admin</option>
-                  <option value="editor">Editor</option>
-                  <option value="contributor">Contributor</option>
-                </select>
-              </div>
-
-              <div>
-                <label for="edit-bio" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Bio</label>
-                <textarea
-                  id="edit-bio"
-                  value="{{ authorToEdit.bio }}"
-                  rows="3"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                ></textarea>
-              </div>
-
-              <div>
-                <label for="edit-posts" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Post Count</label>
-                <input
-                  type="number"
-                  id="edit-posts"
-                  value="{{ authorToEdit.postCount }}"
-                  class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-600 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                />
-              </div>
-            </div>
-            @endif
-          </div>
-
-          <div class="sm:flex sm:flex-row-reverse px-4 py-3 sm:px-6 bg-gray-50 dark:bg-neutral-800">
-            <button
-              type="button"
-              onclick="updateAuthor"
-              class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-            >
-              Save Changes
-            </button>
-            <button
-              type="button"
-              onclick="closeEditModal"
-              class="inline-flex justify-center mt-3 px-4 py-2 sm:ml-3 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    @endif
-
-    <!-- Delete Confirmation Modal -->
-    @if(showDeleteConfirmation)
-<div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeDeleteModal"></div>
-
-        <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-        <div class="inline-block overflow-hidden sm:my-8 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-700 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
-          <div class="pb-4 pt-5 px-4 sm:p-6 sm:pb-4 bg-white dark:bg-neutral-700">
-            <div class="sm:flex sm:items-start">
-              <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-red-100 dark:bg-red-900 rounded-full">
-                <svg class="h-6 w-6 text-red-600 dark:text-red-300" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126zM12 15.75h.007v.008H12v-.008z" />
-                </svg>
-              </div>
-              <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
-                <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-neutral-100">Delete Confirmation</h3>
-                <div class="mt-2">
-                  <p class="text-gray-500 text-sm dark:text-neutral-400">
-                    {{ selectedAuthorIds.length > 1
-                      ? `Are you sure you want to delete ${selectedAuthorIds.length} authors? This action cannot be undone.`
-                      : authorToDelete
-                        ? `Are you sure you want to delete ${authorToDelete.name}? This action cannot be undone.`
-                        : 'Are you sure you want to delete this author? This action cannot be undone.' }}
-                  </p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div class="sm:flex sm:flex-row-reverse px-4 py-3 sm:px-6 bg-gray-50 dark:bg-neutral-800">
-            <button
-              type="button"
-              onclick="deleteSelectedAuthors"
-              class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-red-600 hover:bg-red-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 shadow-sm"
-            >
-              Delete
-            </button>
-            <button
-              type="button"
-              onclick="closeDeleteModal"
-              class="inline-flex justify-center mt-3 px-4 py-2 sm:ml-3 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 shadow-sm"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-    @endif
   </div>
-
-<style scoped>
-/* Add these styles for the diagram */
-:deep(svg) {
-  background-color: transparent;
-  border-radius: 0.5rem;
-}
-
-:deep(line) {
-  stroke-linecap: round;
-}
-
-:deep(text) {
-  user-select: none;
-}
-
-:deep(circle) {
-  cursor: pointer;
-  transition: r 0.2s ease;
-}
-
-:deep(g:hover) text {
-  font-weight: bold;
-}
-
-/* Chart styles */
-.chart-container {
-  position: relative;
-  height: 400px;
-}
-
-/* Table styles */
-.authors-table th {
-  font-weight: 600;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.05em;
-}
-
-.authors-table tbody tr {
-  transition: background-color 0.2s;
-}
-
-.authors-table tbody tr:hover {
-  background-color: rgba(243, 244, 246, 0.5);
-}
-
-.dark .authors-table tbody tr:hover {
-  background-color: rgba(55, 65, 81, 0.3);
-}
-
-/* Badge styles */
-.role-badge {
-  display: inline-flex;
-  align-items: center;
-  padding: 0.125rem 0.5rem;
-  border-radius: 9999px;
-  font-size: 0.75rem;
-  font-weight: 500;
-  text-transform: capitalize;
-}
-
-.role-badge.admin {
-  background-color: rgba(79, 70, 229, 0.1);
-  color: rgb(79, 70, 229);
-}
-
-.role-badge.editor {
-  background-color: rgba(16, 185, 129, 0.1);
-  color: rgb(16, 185, 129);
-}
-
-.role-badge.contributor {
-  background-color: rgba(245, 158, 11, 0.1);
-  color: rgb(245, 158, 11);
-}
-
-.dark .role-badge.admin {
-  background-color: rgba(99, 102, 241, 0.2);
-  color: rgb(165, 180, 252);
-}
-
-.dark .role-badge.editor {
-  background-color: rgba(16, 185, 129, 0.2);
-  color: rgb(110, 231, 183);
-}
-
-.dark .role-badge.contributor {
-  background-color: rgba(245, 158, 11, 0.2);
-  color: rgb(252, 211, 77);
-}
-</style>
+</div>
 
 <script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
+import { useChart } from '../../composables'
 
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: chartData,
-    options: chartOptions,
-  })
+interface Author {
+  id: number
+  name: string
+  email: string
+  role: string
+  avatar: string
+  bio: string
+  postCount: number
+  totalViews: number
+  totalComments: number
+  created_at: string
 }
 
+interface ChartLike { destroy: () => void }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+const initialAuthors: Author[] = [
+  { id: 1, name: 'Jane Doe', email: 'jane@example.com', role: 'Editor', avatar: 'https://i.pravatar.cc/150?img=1', bio: 'Tech writer with 10+ years of experience covering web frameworks and performance.', postCount: 24, totalViews: 145000, totalComments: 312, created_at: '2022-01-15' },
+  { id: 2, name: 'John Smith', email: 'john@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=2', bio: 'Specialist in TypeScript and frontend tooling.', postCount: 18, totalViews: 98000, totalComments: 220, created_at: '2022-04-08' },
+  { id: 3, name: 'Michael Brown', email: 'michael@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=3', bio: 'Reviews hardware and software for developers.', postCount: 12, totalViews: 64000, totalComments: 145, created_at: '2022-09-21' },
+  { id: 4, name: 'Emily Davis', email: 'emily@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=4', bio: 'Accessibility advocate and design systems engineer.', postCount: 9, totalViews: 41000, totalComments: 88, created_at: '2023-02-14' },
+  { id: 5, name: 'Sarah Williams', email: 'sarah@example.com', role: 'Author', avatar: 'https://i.pravatar.cc/150?img=5', bio: 'Backend engineer focused on API design and databases.', postCount: 6, totalViews: 22000, totalComments: 47, created_at: '2023-06-30' },
+]
+
+const authors = state<Author[]>(initialAuthors)
+const searchQuery = state('')
+const sortBy = state<'postCount' | 'name' | 'created_at'>('postCount')
+const showNewAuthorModal = state(false)
+const newAuthorName = state('')
+const newAuthorEmail = state('')
+const newAuthorRole = state('Author')
+
+const filteredAuthors = derived(() => {
+  let list = [...authors()]
+  const q = searchQuery().toLowerCase()
+  if (q)
+    list = list.filter(a => a.name.toLowerCase().includes(q) || a.email.toLowerCase().includes(q))
+  list.sort((a, b) => {
+    if (sortBy() === 'name')
+      return a.name.localeCompare(b.name)
+    if (sortBy() === 'created_at')
+      return new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+    return b.postCount - a.postCount
+  })
+  return list
+})
+
+const totalAuthors = derived(() => authors().length)
+const totalPosts = derived(() => authors().reduce((s, a) => s + a.postCount, 0))
+const topAuthor = derived(() => authors().reduce((top, a) => a.postCount > top.postCount ? a : top, { name: 'None', postCount: 0 } as Author))
+const topAuthorName = derived(() => topAuthor().name)
+const topAuthorPosts = derived(() => topAuthor().postCount)
+const avgPostsPerAuthor = derived(() => totalAuthors() > 0 ? (totalPosts() / totalAuthors()).toFixed(1) : '0.0')
+
+function formatNumber(n: number) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+function openNewAuthorModal() {
+  newAuthorName.set('')
+  newAuthorEmail.set('')
+  newAuthorRole.set('Author')
+  showNewAuthorModal.set(true)
+}
+
+function closeNewAuthorModal() {
+  showNewAuthorModal.set(false)
+}
+
+function createAuthor() {
+  if (!newAuthorName() || !newAuthorEmail())
+    return
+  const newId = (authors()[authors().length - 1]?.id ?? 0) + 1
+  authors.set([...authors(), {
+    id: newId,
+    name: newAuthorName(),
+    email: newAuthorEmail(),
+    role: newAuthorRole(),
+    avatar: `https://i.pravatar.cc/150?img=${newId}`,
+    bio: '',
+    postCount: 0,
+    totalViews: 0,
+    totalComments: 0,
+    created_at: new Date().toISOString().slice(0, 10),
+  }])
+  closeNewAuthorModal()
+}
+
+let chartHandles: ChartLike[] = []
+
+onMount(async () => {
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+
+  const list = authors()
+  const labels = list.map(a => a.name)
+  const data = list.map(a => a.postCount)
+  const palette = ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(236, 72, 153, 0.8)']
+
+  const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } } }
+  const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }
+
+  const handles: Array<ChartLike | null> = [
+    useChart({
+      Chart: Ctor,
+      id: 'authors_posts_chart',
+      type: 'bar',
+      data: { labels, datasets: [{ label: 'Posts', backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 4, data }] },
+      options: chartOptions,
+    }) as ChartLike | null,
+    useChart({
+      Chart: Ctor,
+      id: 'authors_distribution_chart',
+      type: 'doughnut',
+      data: { labels, datasets: [{ data, backgroundColor: palette.slice(0, labels.length), borderWidth: 0 }] },
+      options: doughnutOptions,
+    }) as ChartLike | null,
+  ]
+  chartHandles = handles.filter((h): h is ChartLike => h !== null)
+})
+
+onDestroy(() => {
+  chartHandles.forEach(h => h.destroy())
+  chartHandles = []
+})
 </script>
 
 @endsection
