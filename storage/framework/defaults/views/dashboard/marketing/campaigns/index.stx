@@ -1059,9 +1059,11 @@ const removeCondition = (index: number) => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('startDate')"
@@ -1073,9 +1075,11 @@ const removeCondition = (index: number) => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <!-- <button
             onclick="toggleSort('budget')"
@@ -1087,9 +1091,11 @@ const removeCondition = (index: number) => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button> -->
           <button
             onclick="toggleSort('goalProgress')"
@@ -1101,9 +1107,11 @@ const removeCondition = (index: number) => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
         </div>
 
@@ -1130,6 +1138,7 @@ const removeCondition = (index: number) => {
                   No campaigns found. Try adjusting your search or filter.
                 </td>
               </tr>
+              @endif
               @foreach(paginatedCampaigns() as campaign)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
@@ -1176,6 +1185,7 @@ const removeCondition = (index: number) => {
                       <div class="h-5 w-5 i-hugeicons-paper-plane"></div>
                       <span class="sr-only">Send Test</span>
                     </button>
+                    @endif
                     @if(campaign.status === 'draft')
 <button
                       onclick="sendCampaign(campaign)"
@@ -1185,6 +1195,7 @@ const removeCondition = (index: number) => {
                       <div class="h-5 w-5 i-hugeicons-send"></div>
                       <span class="sr-only">Send Campaign</span>
                     </button>
+                    @endif
                     <button
                       onclick="openEditCampaignModal(campaign)"
                       class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-all"
@@ -1208,6 +1219,7 @@ const removeCondition = (index: number) => {
             </tbody>
           </table>
         </div>
+        @endif
 
         <!-- Detailed view (cards) -->
         @if(viewMode === 'detailed')
@@ -1218,6 +1230,7 @@ const removeCondition = (index: number) => {
             <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-white">No campaigns found</h3>
             <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or filters.</p>
           </div>
+          @endif
 
           @else
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
@@ -1280,6 +1293,7 @@ const removeCondition = (index: number) => {
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.emailTemplate }}</span>
                   </div>
                 </div>
+                @endif
 
                 <!-- SMS campaign details -->
                 @if(campaign.type === 'SMS')
@@ -1303,6 +1317,7 @@ const removeCondition = (index: number) => {
                     <span class="font-medium text-gray-900 dark:text-white">{{ campaign.smsCharacterCount }}/160</span>
                   </div>
                 </div>
+                @endif
 
                 <div class="mt-4">
                   <div class="flex justify-between mb-1 text-sm">
@@ -1329,6 +1344,7 @@ const removeCondition = (index: number) => {
                     <div class="-ml-0.5 mr-2 h-4 w-4 i-hugeicons-paper-plane"></div>
                     Test
                   </button>
+                  @endif
                   @if(campaign.status === 'draft')
 <button
                     onclick="sendCampaign(campaign)"
@@ -1337,6 +1353,7 @@ const removeCondition = (index: number) => {
                     <div class="-ml-0.5 mr-2 h-4 w-4 i-hugeicons-send"></div>
                     Send
                   </button>
+                  @endif
                   <button
                     onclick="openEditCampaignModal(campaign)"
                     class="inline-flex items-center px-3 py-2 font-medium leading-4 text-gray-700 text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 shadow-sm"
@@ -1357,6 +1374,7 @@ const removeCondition = (index: number) => {
             @endforeach
           </div>
         </div>
+        @endif
 
         <!-- Pagination -->
         @if(totalPages > 1)
@@ -1425,6 +1443,7 @@ const removeCondition = (index: number) => {
             </div>
           </div>
         </div>
+        @endif
       </div>
     </div>
 
@@ -1566,6 +1585,7 @@ const removeCondition = (index: number) => {
                             />
                           </div>
                         </div>
+                        @endif
 
                         <div class="space-y-4">
                           <div>
@@ -1600,6 +1620,7 @@ const removeCondition = (index: number) => {
                               class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                             />
                           </div>
+                          @endif
 
                           @if(currentCampaign.goalTrigger === 'button_click')
 <div>
@@ -1614,6 +1635,7 @@ const removeCondition = (index: number) => {
                               class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                             />
                           </div>
+                          @endif
 
                           @if(currentCampaign.goalTrigger === 'custom_event')
 <div>
@@ -1628,6 +1650,7 @@ const removeCondition = (index: number) => {
                               class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                             />
                           </div>
+                          @endif
 
                           <!-- Model Event Configuration -->
                           @if(currentCampaign.goalTrigger === 'model_event')
@@ -1646,6 +1669,7 @@ const removeCondition = (index: number) => {
                                 Initialize Model Event
                               </button>
                             </div>
+                            @endif
 
                             @else
 <template>
@@ -1697,6 +1721,7 @@ const removeCondition = (index: number) => {
                                   class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                                 />
                               </div>
+                              @endif
 
                               <!-- Conditions -->
                               <div>
@@ -1860,12 +1885,14 @@ const removeCondition = (index: number) => {
                               </div>
                             </div>
                           </div>
+                          @endif
 
                           <!-- Text Message Campaign Fields -->
                           @if(currentCampaign.type === 'SMS')
 <div class="sm:col-span-6">
                             <!-- ... rest of the existing template ... -->
                           </div>
+                          @endif
 
                           <!-- Goal Tracking Fields -->
                           <div class="sm:col-span-6">
@@ -1899,6 +1926,7 @@ const removeCondition = (index: number) => {
                             </button>
                           </div>
                         </div>
+                          @endif
                       </div>
                     </div>
                   </div>
@@ -1910,6 +1938,7 @@ const removeCondition = (index: number) => {
       </div>
     </div>
   </main>
+    @endif
 
 
 @endsection

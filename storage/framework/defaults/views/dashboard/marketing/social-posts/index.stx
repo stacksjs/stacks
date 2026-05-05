@@ -690,9 +690,11 @@ function truncateText(text: string, max: number): string {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('engagement')"
@@ -704,9 +706,11 @@ function truncateText(text: string, max: number): string {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('author')"
@@ -718,9 +722,11 @@ function truncateText(text: string, max: number): string {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
         </div>
 
@@ -733,6 +739,7 @@ function truncateText(text: string, max: number): string {
             <h3 class="mt-2 font-semibold text-gray-900 text-sm dark:text-white">No posts found</h3>
             <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Try adjusting your search or filter to find what you're looking for.</p>
           </div>
+          @endif
 
           @else
 <div class="space-y-6">
@@ -776,6 +783,7 @@ function truncateText(text: string, max: number): string {
                     >
                       Thread {{ post.isThreadStarter ? '(Starter)' : '' }}
                     </span>
+                    @endif
                   </div>
                 </div>
 
@@ -801,6 +809,7 @@ function truncateText(text: string, max: number): string {
                     @endforeach
                   </div>
                 </div>
+                @endif
 
                 <!-- Tags -->
                 @if(post.tags.length > 0)
@@ -813,6 +822,7 @@ function truncateText(text: string, max: number): string {
                   </span>
                   @endforeach
                 </div>
+                @endif
 
                 <!-- Engagement metrics (only for published posts) -->
                 @if(post.status === 'Published')
@@ -830,6 +840,7 @@ function truncateText(text: string, max: number): string {
                     <span>{{ post.replies }} replies</span>
                   </div>
                 </div>
+                @endif
 
                 <!-- Actions -->
                 <div class="flex justify-end mt-4 space-x-3">
@@ -840,6 +851,7 @@ function truncateText(text: string, max: number): string {
                     <div class="mr-1 h-4 w-4 i-hugeicons-paper-plane"></div>
                     Publish Now
                   </button>
+                  @endif
                   <button
                     onclick="duplicatePost(post)"
                     class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
@@ -868,6 +880,7 @@ function truncateText(text: string, max: number): string {
             @endforeach
           </div>
         </div>
+        @endif
 
         <!-- Compact view -->
         @if(viewMode === 'compact')
@@ -892,6 +905,7 @@ function truncateText(text: string, max: number): string {
                   No posts found. Try adjusting your search or filter.
                 </td>
               </tr>
+              @endif
               @foreach(paginatedPosts() as post)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
@@ -900,6 +914,7 @@ function truncateText(text: string, max: number): string {
 <div class="flex-shrink-0 mr-3 h-10 w-10">
                       <img src="{{ post.images[0] }}" alt="Post image" class="object-cover h-10 w-10 rounded-md" />
                     </div>
+                    @endif
                     @else
 <div class="flex flex-shrink-0 items-center justify-center mr-3 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
                       <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-bubble-chat"></div>
@@ -911,6 +926,7 @@ function truncateText(text: string, max: number): string {
                   <div class="flex items-center">
                     @if(post.platform === 'Bluesky')
 <div class="mr-1.5 h-5 w-5 text-blue-500 i-hugeicons-cloud"></div>
+                    @endif
                     @elseif(post.platform === 'Twitter')
 <div class="mr-1.5 h-5 w-5 text-blue-400 i-hugeicons-twitter"></div>
                     @elseif(post.platform === 'Instagram')
@@ -941,6 +957,7 @@ function truncateText(text: string, max: number): string {
                     >
                       Thread {{ post.isThreadStarter ? '(Starter)' : '' }}
                     </span>
+                    @endif
                   </div>
                 </td>
                 <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">
@@ -971,6 +988,7 @@ function truncateText(text: string, max: number): string {
             </tbody>
           </table>
         </div>
+        @endif
 
         <!-- Pagination -->
         @if(totalPages > 1)
@@ -1033,6 +1051,7 @@ function truncateText(text: string, max: number): string {
             </div>
           </div>
         </div>
+        @endif
       </div>
     </div>
 
@@ -1117,6 +1136,7 @@ function truncateText(text: string, max: number): string {
                       </div>
                       @endforeach
                     </div>
+                    @endif
                     <div class="mt-2" >
                       <button
                         type="button"
@@ -1141,6 +1161,7 @@ function truncateText(text: string, max: number): string {
                       </span>
                       @endforeach
                     </div>
+                    @endif
                     @else
 <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
                       Add #hashtags in your content to automatically generate tags
@@ -1186,6 +1207,7 @@ function truncateText(text: string, max: number): string {
                       </label>
                     </div>
                   </div>
+                  @endif
 
                   <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
                     <button
@@ -1209,6 +1231,7 @@ function truncateText(text: string, max: number): string {
         </div>
       </div>
     </div>
+    @endif
   </main>
 
 

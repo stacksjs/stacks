@@ -821,6 +821,7 @@ const getRoleBadgeClass = (role: string): string => {
 <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
               <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
             </div>
+            @endif
             <canvas id="chart_1"></canvas>
           </div>
         </div>
@@ -906,6 +907,7 @@ const getRoleBadgeClass = (role: string): string => {
                 View Details
               </a>
             </div>
+            @endif
           </div>
         </div>
       </div>
@@ -971,6 +973,7 @@ const getRoleBadgeClass = (role: string): string => {
           </button>
         </div>
       </div>
+      @endif
 
       <div class="flow-root mt-8">
         <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
@@ -997,6 +1000,7 @@ const getRoleBadgeClass = (role: string): string => {
 <span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
+                      @endif
                     </th>
 
                     <th
@@ -1009,6 +1013,7 @@ const getRoleBadgeClass = (role: string): string => {
 <span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
+                      @endif
                     </th>
 
                     <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
@@ -1025,6 +1030,7 @@ const getRoleBadgeClass = (role: string): string => {
 <span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
+                      @endif
                     </th>
 
                     <th
@@ -1037,6 +1043,7 @@ const getRoleBadgeClass = (role: string): string => {
 <span class="ml-1">
                         {{ sortOrder === 'asc' ? '↑' : '↓' }}
                       </span>
+                      @endif
                     </th>
 
                     <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
@@ -1243,6 +1250,7 @@ const getRoleBadgeClass = (role: string): string => {
         </div>
       </div>
     </div>
+    @endif
 
     <!-- Edit Author Modal -->
     @if(showEditModal)
@@ -1325,6 +1333,7 @@ const getRoleBadgeClass = (role: string): string => {
                 />
               </div>
             </div>
+            @endif
           </div>
 
           <div class="sm:flex sm:flex-row-reverse px-4 py-3 sm:px-6 bg-gray-50 dark:bg-neutral-800">
@@ -1346,6 +1355,7 @@ const getRoleBadgeClass = (role: string): string => {
         </div>
       </div>
     </div>
+    @endif
 
     <!-- Delete Confirmation Modal -->
     @if(showDeleteConfirmation)
@@ -1397,6 +1407,7 @@ const getRoleBadgeClass = (role: string): string => {
         </div>
       </div>
     </div>
+    @endif
   </div>
 
 <style scoped>

@@ -225,6 +225,7 @@ const deleteRole = (roleId: number) => {
               <select value="{{ timeRange }}" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
                 @foreach(timeRanges as range)
 <option value="{{ range }}">{{ range }}</option>
+                @endforeach
               </select>
             </div>
           </div>
@@ -321,6 +322,7 @@ const deleteRole = (roleId: number) => {
                         <button onclick="deleteRole(role.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                       </td>
                     </tr>
+                    @endforeach
                   </tbody>
                 </table>
               </div>
@@ -371,6 +373,7 @@ const deleteRole = (roleId: number) => {
                         <button class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
                       </td>
                     </tr>
+                    @endforeach
                   </tbody>
                 </table>
               </div>
@@ -409,6 +412,7 @@ const deleteRole = (roleId: number) => {
                       <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ change.resource }}</td>
                       <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ change.date }}</td>
                     </tr>
+                    @endforeach
                   </tbody>
                 </table>
               </div>
@@ -472,6 +476,7 @@ const deleteRole = (roleId: number) => {
                           {{ permission.name }}
                         </label>
                       </div>
+                      @endforeach
                     </div>
                   </div>
 
@@ -497,6 +502,7 @@ const deleteRole = (roleId: number) => {
         </div>
       </div>
     </div>
+    @endif
 
     <!-- Permission Modal -->
     @if(showPermissionModal)
@@ -564,6 +570,7 @@ const deleteRole = (roleId: number) => {
         </div>
       </div>
     </div>
+    @endif
 </div>
 
 

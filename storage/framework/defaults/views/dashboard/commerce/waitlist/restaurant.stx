@@ -1224,6 +1224,7 @@ function updateCharts(): void {
 <option value="{{ status }}">
                 {{ status }}
               </option>
+              @endforeach
             </select>
 
             <!-- Table Preference filter -->
@@ -1236,6 +1237,7 @@ function updateCharts(): void {
 <option value="{{ preference }}">
                 {{ preference }}
               </option>
+              @endforeach
             </select>
           </div>
         </div>
@@ -1253,9 +1255,11 @@ function updateCharts(): void {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('checkInTime')"
@@ -1267,9 +1271,11 @@ function updateCharts(): void {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('estimatedWaitMinutes')"
@@ -1281,9 +1287,11 @@ function updateCharts(): void {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
         </div>
 
@@ -1319,6 +1327,7 @@ function updateCharts(): void {
             </div>
           </div>
         </div>
+        @endif
 
         <!-- Waitlist table -->
         <div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
@@ -1363,6 +1372,7 @@ function updateCharts(): void {
                   No parties currently on the waitlist.
                 </td>
               </tr>
+              @endif
               @foreach(paginatedEntries() as entry)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
@@ -1405,6 +1415,7 @@ function updateCharts(): void {
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
                   @if(entry.status === 'Waiting')
 <span class="font-medium text-gray-900 dark:text-white">#{{ entry.queuePosition }}</span>
+                  @endif
                   @else
 <span class="text-gray-500 dark:text-neutral-400">-</span>
                 </td>
@@ -1425,6 +1436,7 @@ function updateCharts(): void {
                       <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
                       <span class="sr-only">Seat</span>
                     </button>
+                    @endif
                     @if(entry.status === 'Waiting')
 <button
                       onclick="markAsNoShow(entry.id)"
@@ -1433,9 +1445,11 @@ function updateCharts(): void {
                       <div class="h-5 w-5 i-hugeicons-cancel-circle"></div>
                       <span class="sr-only">No Show</span>
                     </button>
+                    @endif
                   </div>
                 </td>
               </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
@@ -1485,6 +1499,7 @@ function updateCharts(): void {
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   onclick="goToPage(currentPage + 1)"
                   disabled="{{ currentPage === totalPages }}"
@@ -1599,6 +1614,7 @@ function updateCharts(): void {
 <option value="{{ preference }}">
                         {{ preference }}
                       </option>
+                      @endforeach
                     </select>
                   </div>
                 </div>
@@ -1618,6 +1634,7 @@ function updateCharts(): void {
 <option value="{{ preference }}">
                         {{ preference }}
                       </option>
+                      @endforeach
                     </select>
                   </div>
                 </div>
@@ -1673,6 +1690,7 @@ function updateCharts(): void {
         </div>
       </div>
     </div>
+    @endif
 
     <!-- Notification modal -->
     @if(showNotificationModal)
@@ -1717,6 +1735,7 @@ function updateCharts(): void {
         </div>
       </div>
     </div>
+    @endif
   </main>
 
 <script client>

@@ -89,6 +89,7 @@
 <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
               <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
             </div>
+            @endif
             <canvas id="chart_1"></canvas>
           </div>
         </div>
@@ -148,6 +149,7 @@
 <li class="font-mono text-gray-600 text-sm dark:text-neutral-400">
                     {{ prop }}
                   </li>
+                  @endforeach
                 </ul>
               </div>
 
@@ -162,6 +164,7 @@
                       {{ rel }}
                     </a>
                   </li>
+                  @endforeach
                 </ul>
               </div>
 
@@ -172,6 +175,7 @@
                 View Details
               </a>
             </div>
+            @endif
           </div>
         </div>
       </div>

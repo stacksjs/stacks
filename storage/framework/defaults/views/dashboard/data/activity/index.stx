@@ -784,6 +784,7 @@ let timeRange = 'day'
             <option value="all">All Logs</option>
             @foreach(logNames as log)
 <option value="{{ log.id }}">{{ log.name }}</option>
+            @endforeach
           </select>
 
           <select
@@ -810,6 +811,7 @@ let timeRange = 'day'
             <option value="all">All Models</option>
             @foreach(subjectTypes as subject)
 <option value="{{ subject.type }}">{{ subject.name }}</option>
+            @endforeach
           </select>
 
           <button
@@ -931,6 +933,7 @@ let timeRange = 'day'
                     </button>
                   </td>
                 </tr>
+                @endforeach
               </tbody>
             </table>
           </div>
@@ -974,6 +977,7 @@ let timeRange = 'day'
             >
               {{ page }}
             </button>
+            @endforeach
 
             @if(totalPages > 5)
             <span class="px-2 dark:text-neutral-400">...</span>
@@ -1133,6 +1137,7 @@ let timeRange = 'day'
                       @endif
                       <div class="text-gray-900 dark:text-white">{{ value }}</div>
                     </div>
+                    @endforeach
                     @elseif(selectedLog.properties?.old)
                     @foreach(selectedLog.properties.old as key => value)
 <div
@@ -1143,6 +1148,7 @@ let timeRange = 'day'
                       <div class="text-gray-700 dark:text-neutral-300">{{ value }}</div>
                       <div class="text-gray-900 dark:text-white">-</div>
                     </div>
+                    @endforeach
                     @endif
                   </div>
                 </div>
@@ -1170,6 +1176,7 @@ let timeRange = 'day'
                       @endif
                     </div>
                   </div>
+                  @endforeach
                 </div>
               </div>
               @endif

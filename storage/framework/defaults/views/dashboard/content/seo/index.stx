@@ -592,6 +592,7 @@ function getPostTitleById(id: number): string {
             </div>
           </div>
         </div>
+        @endif
 
         <!-- SEO Table -->
         <div class="flow-root mt-6">
@@ -689,12 +690,14 @@ function getPostTitleById(id: number): string {
                       </div>
                     </td>
                   </tr>
+                  @endforeach
                   @if(paginatedSeoData.length === 0)
 <tr>
                     <td colspan="6" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">
                       No SEO data found. Try adjusting your search.
                     </td>
                   </tr>
+                  @endif
                 </tbody>
               </table>
             </div>
@@ -745,6 +748,7 @@ function getPostTitleById(id: number): string {
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   onclick="currentPage = Math.min(totalPages, currentPage + 1)"
                   disabled="{{ currentPage === totalPages }}"
@@ -757,6 +761,7 @@ function getPostTitleById(id: number): string {
             </div>
           </div>
         </div>
+        @endif
       </div>
     </div>
 </main>
@@ -829,6 +834,7 @@ function getPostTitleById(id: number): string {
 <span class="text-red-500 dark:text-red-400">
                         (Too long)
                       </span>
+                      @endif
                     </p>
                   </div>
 
@@ -875,6 +881,7 @@ function getPostTitleById(id: number): string {
 <span class="text-red-500 dark:text-red-400">
                         (Too long)
                       </span>
+                      @endif
                     </p>
                   </div>
 
@@ -941,6 +948,7 @@ function getPostTitleById(id: number): string {
               </div>
             </div>
           </div>
+          @endif
           <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
@@ -961,6 +969,7 @@ function getPostTitleById(id: number): string {
       </div>
     </div>
   </div>
+  @endif
 
   <!-- Global Settings Modal -->
   @if(showGlobalSettingsModal)
@@ -1132,6 +1141,7 @@ function getPostTitleById(id: number): string {
       </div>
     </div>
   </div>
+  @endif
 
   <!-- Bulk Optimization Modal -->
   @if(showBulkOptimizationModal)
@@ -1265,6 +1275,7 @@ function getPostTitleById(id: number): string {
       </div>
     </div>
   </div>
+  @endif
 
   <!-- SEO Analysis Modal -->
   @if(showAnalysisModal)
@@ -1450,6 +1461,7 @@ function getPostTitleById(id: number): string {
               </div>
             </div>
           </div>
+          @endif
           <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
@@ -1470,5 +1482,6 @@ function getPostTitleById(id: number): string {
       </div>
     </div>
 </div>
+  @endif
 
 @endsection

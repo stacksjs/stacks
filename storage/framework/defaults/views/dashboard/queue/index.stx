@@ -506,6 +506,7 @@ workers = workers.map(worker => ({
                       <div class="mr-1 h-4 w-4 i-hugeicons-play" />
                       Start
                     </button>
+                    @endif
                     @if(worker.status === 'running')
 <button
                       onclick="pauseWorker(worker.id)"
@@ -514,6 +515,7 @@ workers = workers.map(worker => ({
                       <div class="mr-1 h-4 w-4 i-hugeicons-pause" />
                       Pause
                     </button>
+                    @endif
                     @if(worker.status === 'running')
 <button
                       onclick="stopWorker(worker.id)"
@@ -522,6 +524,7 @@ workers = workers.map(worker => ({
                       <div class="mr-1 h-4 w-4 i-hugeicons-stop" />
                       Stop
                     </button>
+                    @endif
                   </div>
                   <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
                     Last heartbeat: {{ worker.last_heartbeat }}
@@ -573,6 +576,7 @@ workers = workers.map(worker => ({
                         </div>
                       </div>
                     </div>
+                    @endif
                   </div>
                 </div>
               </div>

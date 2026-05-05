@@ -367,6 +367,7 @@ const copyQuery = (queryId: string, queryText: string) => {
 <div class="flex absolute inset-0 z-10 items-center justify-center bg-white/50 dark:bg-neutral-900/50">
             <div class="h-8 w-8 text-blue-600 dark:text-blue-400 animate-spin i-hugeicons-loading-01"></div>
           </div>
+          @endif
 
           <div class="overflow-hidden bg-white dark:bg-neutral-900 sm:rounded-md shadow">
             <ul role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
@@ -405,6 +406,7 @@ const copyQuery = (queryId: string, queryText: string) => {
 <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 ring-1 ring-blue-700/10 ring-inset rounded-md dark:ring-blue-400/30">
                       {{ table }}
                     </span>
+                    @endforeach
                   </div>
                 </div>
 
@@ -424,6 +426,7 @@ const copyQuery = (queryId: string, queryText: string) => {
                         >
                           @if(copiedQuery === query.id)
 <div class="h-4 w-4 i-hugeicons-checkmark"></div>
+                          @endif
                           @else
 <div class="h-4 w-4 i-hugeicons-copy-01"></div>
                         </button>
@@ -433,6 +436,7 @@ const copyQuery = (queryId: string, queryText: string) => {
                       <div class="mt-1 p-3 bg-gray-100 dark:bg-neutral-700 rounded-md">
                         @if(query.bindings && query.bindings.length)
 <pre class="overflow-x-auto font-mono text-gray-800 text-xs dark:text-neutral-200">{{ JSON.stringify(query.bindings, null, 2) }}</pre>
+                        @endif
                         @else
 <p class="text-gray-500 text-xs dark:text-neutral-400">No bindings</p>
                       </div>
@@ -452,6 +456,7 @@ const copyQuery = (queryId: string, queryText: string) => {
                           <div class="flex-shrink-0 mr-2 mt-0.5 h-5 w-5 text-yellow-500 i-hugeicons-lightbulb-02"></div>
                           <span class="text-gray-700 text-sm dark:text-neutral-300">{{ suggestion }}</span>
                         </li>
+                        @endforeach
                       </ul>
 
                       <h4 class="mb-2 mt-4 font-medium text-gray-900 text-sm dark:text-white">Source</h4>
@@ -469,7 +474,9 @@ const copyQuery = (queryId: string, queryText: string) => {
 <span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-green-700 text-xs dark:text-green-300 bg-green-50 dark:bg-green-900/20 ring-1 ring-green-700/10 ring-inset rounded-md dark:ring-green-400/30">
                               {{ index }}
                             </span>
+                            @endforeach
                           </div>
+                          @endif
                           @else
 <p class="text-gray-500 text-xs dark:text-neutral-400">No indexes used</p>
                         </div>
@@ -482,7 +489,9 @@ const copyQuery = (queryId: string, queryText: string) => {
 <span class="inline-flex items-center mb-2 mr-2 px-2 py-1 font-medium text-red-700 text-xs dark:text-red-300 bg-red-50 dark:bg-red-900/20 ring-1 ring-inset ring-red-700/10 rounded-md dark:ring-red-400/30">
                               {{ index }}
                             </span>
+                            @endforeach
                           </div>
+                          @endif
                           @else
 <p class="text-gray-500 text-xs dark:text-neutral-400">No missing indexes identified</p>
                         </div>
@@ -490,11 +499,14 @@ const copyQuery = (queryId: string, queryText: string) => {
                     </div>
                   </div>
                 </div>
+                @endif
               </li>
+              @endforeach
               @if(filteredQueries.length === 0)
 <li class="px-4 py-6 sm:px-6 text-center text-gray-500 text-sm dark:text-neutral-400">
                 No slow queries found matching your criteria.
               </li>
+              @endif
             </ul>
           </div>
         </div>

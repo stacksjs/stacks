@@ -245,6 +245,7 @@ const commonPorts = [
 <option value="{{ port.port }}">
                   {{ port.port }} ({{ port.name }})
                 </option>
+                @endforeach
                 <option value="custom">Custom Port</option>
               </select>
               @if(newRule.port === 'custom')
@@ -353,6 +354,7 @@ const commonPorts = [
                     </button>
                   </td>
                 </tr>
+                @endforeach
               </tbody>
             </table>
           </div>

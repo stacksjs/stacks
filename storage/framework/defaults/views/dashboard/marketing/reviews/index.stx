@@ -1102,9 +1102,11 @@ const renderSourceChart = () => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('rating')"
@@ -1116,9 +1118,11 @@ const renderSourceChart = () => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
           <button
             onclick="toggleSort('helpful')"
@@ -1130,9 +1134,11 @@ const renderSourceChart = () => {
 <span class="ml-1">
               @if(sortOrder === 'asc')
 <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+              @endif
               @else
 <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
             </span>
+            @endif
           </button>
         </div>
 
@@ -1160,6 +1166,7 @@ const renderSourceChart = () => {
                   No reviews found. Try adjusting your search or filter.
                 </td>
               </tr>
+              @endif
               @foreach(paginatedReviews() as review)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
@@ -1167,6 +1174,7 @@ const renderSourceChart = () => {
                     <div class="flex-shrink-0 h-10 w-10">
                       @if(review.authorAvatar)
 <img class="h-10 w-10 rounded-full" src="{{ review.authorAvatar }}" alt="" />
+                      @endif
                       @else
 <div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
                         <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
@@ -1190,6 +1198,7 @@ const renderSourceChart = () => {
 <div class="mr-0.5">
                       @if(star === 'full')
 <div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
+                      @endif
                       @else
 <div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                     </div>
@@ -1221,6 +1230,7 @@ const renderSourceChart = () => {
                       <div class="h-5 w-5 i-hugeicons-edit-01"></div>
                       <span class="sr-only">Respond</span>
                     </button>
+                    @endif
                     @if(review.status === 'unread')
 <button
                       onclick="markAsRead(review)"
@@ -1230,6 +1240,7 @@ const renderSourceChart = () => {
                       <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
                       <span class="sr-only">Mark as Read</span>
                     </button>
+                    @endif
                     <button
                       onclick="flagReview(review)"
                       class="text-gray-400 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 duration-150 transition-all"
@@ -1261,6 +1272,7 @@ const renderSourceChart = () => {
             </tbody>
           </table>
         </div>
+        @endif
 
         <!-- Detailed view (cards) -->
         @else
@@ -1269,6 +1281,7 @@ const renderSourceChart = () => {
 <div class="col-span-full py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
             No reviews found. Try adjusting your search or filter.
           </div>
+          @endif
           @foreach(paginatedReviews() as review)
 <div
             class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow"
@@ -1281,6 +1294,7 @@ const renderSourceChart = () => {
                   <div class="flex-shrink-0 h-10 w-10">
                     @if(review.authorAvatar)
 <img class="h-10 w-10 rounded-full" src="{{ review.authorAvatar }}" alt="" />
+                    @endif
                     @else
 <div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
                       <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
@@ -1304,6 +1318,7 @@ const renderSourceChart = () => {
 <div class="mr-0.5">
                     @if(star === 'full')
 <div class="h-5 w-5 text-yellow-400 i-hugeicons-star"></div>
+                    @endif
                     @else
 <div class="h-5 w-5 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                   </div>
@@ -1332,6 +1347,7 @@ const renderSourceChart = () => {
                 >
                   Read more
                 </button>
+                @endif
               </div>
 
               <!-- Tags -->
@@ -1345,6 +1361,7 @@ const renderSourceChart = () => {
                 </span>
                 @endforeach
               </div>
+              @endif
 
               <!-- Response section -->
               @if(review.response)
@@ -1360,6 +1377,7 @@ const renderSourceChart = () => {
                 </div>
                 <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.response.content }}</p>
               </div>
+              @endif
 
               <!-- Helpful metrics -->
               <div class="flex items-center mt-4 text-gray-500 text-xs dark:text-neutral-400">
@@ -1376,6 +1394,7 @@ const renderSourceChart = () => {
                   <div class="mr-1 h-4 w-4 i-hugeicons-check-verified"></div>
                   <span>Verified</span>
                 </div>
+                @endif
               </div>
 
               <!-- Action buttons -->
@@ -1388,6 +1407,7 @@ const renderSourceChart = () => {
                   <div class="mr-1 h-4 w-4 i-hugeicons-message-text-edit"></div>
                   Respond
                 </button>
+                @endif
                 @if(review.status === 'unread')
 <button
                   onclick="markAsRead(review)"
@@ -1396,6 +1416,7 @@ const renderSourceChart = () => {
                   <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
                   Mark as Read
                 </button>
+                @endif
                 <div class="flex space-x-2">
                   <button
                     onclick="flagReview(review)"
@@ -1531,6 +1552,7 @@ const renderSourceChart = () => {
             <div class="flex-shrink-0 h-8 w-8">
               @if(currentReview.authorAvatar)
 <img class="h-8 w-8 rounded-full" src="{{ currentReview.authorAvatar }}" alt="" />
+              @endif
               @else
 <div class="flex items-center justify-center h-8 w-8 bg-gray-200 rounded-full">
                 <div class="h-5 w-5 text-gray-500 i-hugeicons-user"></div>
@@ -1543,6 +1565,7 @@ const renderSourceChart = () => {
 <div class="mr-0.5">
                   @if(star === 'full')
 <div class="h-4 w-4 text-yellow-400 i-hugeicons-star"></div>
+                  @endif
                   @else
 <div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                 </div>
@@ -1553,6 +1576,7 @@ const renderSourceChart = () => {
           </div>
           <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">{{ currentReview.content }}</p>
         </div>
+        @endif
 
         <!-- Response form -->
         <div class="mt-4">
@@ -1643,5 +1667,6 @@ onMount(() => {
   })
 })
 </script>
+  @endif
 
 @endsection

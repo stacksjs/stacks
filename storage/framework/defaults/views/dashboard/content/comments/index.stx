@@ -778,6 +778,7 @@ function commentStats() {
             </div>
           </div>
         </div>
+        @endif
 
         <!-- Comments Table -->
         <div class="flow-root mt-6">
@@ -878,6 +879,7 @@ function commentStats() {
                           <div class="h-5 w-5 i-hugeicons-check"></div>
                           <span class="sr-only">Approve</span>
                         </button>
+                        @endif
                         @if(comment.status !== 'pending')
 <button
                           onclick="updateCommentStatus(comment, 'pending')"
@@ -887,6 +889,7 @@ function commentStats() {
                           <div class="h-5 w-5 i-hugeicons-clock-01"></div>
                           <span class="sr-only">Mark as Pending</span>
                         </button>
+                        @endif
                         @if(comment.status !== 'spam')
 <button
                           onclick="updateCommentStatus(comment, 'spam')"
@@ -896,6 +899,7 @@ function commentStats() {
                           <div class="h-5 w-5 i-hugeicons-flag-02"></div>
                           <span class="sr-only">Mark as Spam</span>
                         </button>
+                        @endif
                         <button
                           onclick="openEditModal(comment)"
                           class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 duration-150 transition-colors"
@@ -922,6 +926,7 @@ function commentStats() {
                       No comments found. Try adjusting your search or filters.
                     </td>
                   </tr>
+                  @endif
                 </tbody>
               </table>
             </div>
@@ -985,6 +990,7 @@ function commentStats() {
             </div>
           </div>
         </div>
+        @endif
       </div>
 
   <!-- Edit Comment Modal -->
@@ -1070,6 +1076,7 @@ function commentStats() {
               </div>
             </div>
           </div>
+          @endif
           <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
             <button
               type="button"
@@ -1091,6 +1098,7 @@ function commentStats() {
       </div>
     </div>
   </div>
+  @endif
 
   <!-- Delete Confirmation Modal -->
   @if(showDeleteModal)
@@ -1135,6 +1143,7 @@ function commentStats() {
                     @endforeach
                   </ul>
                 </div>
+                @endif
                 @elseif(commentToDelete)
 <div class="mt-4">
                   <p class="font-medium text-gray-700 text-sm dark:text-neutral-300">{{ truncateText(commentToDelete.content, 100) }}</p>
@@ -1163,6 +1172,7 @@ function commentStats() {
       </div>
     </div>
   </div>
+  @endif
 </div>
 
 <script client>
