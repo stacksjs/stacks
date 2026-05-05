@@ -12,7 +12,10 @@ export const DEFAULT_PALETTE = [
 ]
 
 export function paletteColor(index: number): string {
-  return DEFAULT_PALETTE[index % DEFAULT_PALETTE.length]
+  // The palette is a non-empty literal-typed const, so the modulo
+  // index is always in bounds — but the strict-null compiler flag
+  // can't see that. Fall back to the first color defensively.
+  return DEFAULT_PALETTE[index % DEFAULT_PALETTE.length] ?? DEFAULT_PALETTE[0]!
 }
 
 export function withAlpha(color: string, alpha: number): string {

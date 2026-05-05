@@ -7,7 +7,7 @@ describe('niceTicks', () => {
     expect(ticks[0]).toBeLessThanOrEqual(0)
     expect(ticks[ticks.length - 1]).toBeGreaterThanOrEqual(87)
     for (let i = 1; i < ticks.length; i++)
-      expect(ticks[i]).toBeGreaterThan(ticks[i - 1])
+      expect(ticks[i]).toBeGreaterThan(ticks[i - 1]!)
   })
 
   it('handles zero range gracefully', () => {

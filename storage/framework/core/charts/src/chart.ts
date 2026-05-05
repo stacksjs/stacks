@@ -1,6 +1,13 @@
 import type { ChartConfig, ChartData, ChartDataset, ChartOptions, ChartType, TooltipCallbackContext } from './types'
 import { scaleBand, scaleLinear } from '@ts-charts/scale'
-import { arc as d3Arc, pie as d3Pie } from '@ts-charts/shape'
+import {
+  arc as d3Arc,
+  area as d3Area,
+  curveLinear,
+  curveMonotoneX,
+  line as d3Line,
+  pie as d3Pie,
+} from '@ts-charts/shape'
 import { paletteColor, withAlpha } from './colors'
 import { formatTick, niceTicks } from './ticks'
 
@@ -175,7 +182,7 @@ export class Chart {
       this.ctx.font = `${t.font?.size ?? 14}px system-ui, sans-serif`
       this.ctx.textAlign = 'center'
       this.ctx.textBaseline = 'top'
-      this.ctx.fillText(t.text, width / 2, 8)
+      this.ctx.fillText(t.text ?? '', width / 2, 8)
     }
 
     this.drawLegend(legend, datasets)
@@ -245,7 +252,10 @@ export class Chart {
     }
 
     const ticks = niceTicks(min, max, cfg.ticks?.maxTicksLimit ?? 6)
-    return { ticks, min: ticks[0], max: ticks[ticks.length - 1] }
+    // niceTicks always returns at least one element, but the type
+    // system can't see that — fall back to the resolved domain so
+    // downstream consumers always get concrete numbers.
+    return { ticks, min: ticks[0] ?? min, max: ticks[ticks.length - 1] ?? max }
   }
 
   private drawGridAndYAxis(plot: Box, axis: AxisLayout, side: 'left' | 'right'): void {
@@ -315,7 +325,7 @@ export class Chart {
 
     for (let i = 0; i < labels.length; i += step) {
       const x = this.scaleX(plot, labels.length, i)
-      this.ctx.fillText(labels[i], x, plot.y + plot.h + 8)
+      this.ctx.fillText(labels[i] ?? '', x, plot.y + plot.h + 8)
     }
     this.ctx.restore()
   }
@@ -364,28 +374,46 @@ export class Chart {
         value: v,
       }))
 
-      if (fillColor && points.length > 0) {
+      if (points.length === 0)
+        return
+
+      // Chart.js's `tension` field controls smoothing. We map any
+      // non-zero tension to d3-shape's `curveMonotoneX`, which is
+      // visually closer to the Chart.js look than `curveCardinal`
+      // and never overshoots, so axis grids stay tight.
+      const curve = (ds.tension ?? 0) > 0 ? curveMonotoneX : curveLinear
+
+      // Filled area under the line (Chart.js semantic: `fill: true`
+      // floods between the line and the x-axis baseline).
+      if (fillColor) {
+        const baseline = plot.y + plot.h
+        const areaGen = (d3Area() as any)
+          .x((p: { x: number }) => p.x)
+          .y0(() => baseline)
+          .y1((p: { y: number }) => p.y)
+          .curve(curve)
+          .context(this.ctx)
         this.ctx.beginPath()
-        this.ctx.moveTo(points[0].x, plot.y + plot.h)
-        for (const p of points)
-          this.ctx.lineTo(p.x, p.y)
-        this.ctx.lineTo(points[points.length - 1].x, plot.y + plot.h)
-        this.ctx.closePath()
+        areaGen(points)
         this.ctx.fillStyle = fillColor
         this.ctx.fill()
+        areaGen.context(null)
       }
 
+      // Line stroke through the same point set.
+      const lineGen = (d3Line() as any)
+        .x((p: { x: number }) => p.x)
+        .y((p: { y: number }) => p.y)
+        .curve(curve)
+        .context(this.ctx)
       this.ctx.beginPath()
+      lineGen(points)
       this.ctx.lineWidth = ds.borderWidth ?? 2
       this.ctx.strokeStyle = color
       this.ctx.lineJoin = 'round'
       this.ctx.lineCap = 'round'
-      points.forEach((p, i) => {
-        if (i === 0)
-          this.ctx.moveTo(p.x, p.y)
-        else this.ctx.lineTo(p.x, p.y)
-      })
       this.ctx.stroke()
+      lineGen.context(null)
 
       const r = ds.pointRadius ?? 0
       if (r > 0) {
@@ -486,8 +514,9 @@ export class Chart {
       return
 
     const ds = datasets[0]
+    if (!ds)
+      return
     const labels = this.data.labels ?? []
-    const total = ds.data.reduce((a, b) => a + (b || 0), 0) || 1
 
     const legend = this.layoutLegend(width, height)
     let plotW = width
@@ -534,7 +563,6 @@ export class Chart {
       .endAngle(-Math.PI / 2 + Math.PI * 2)
       .sort(null)
     const slices = pieLayout(ds.data) as Array<{ startAngle: number, endAngle: number, value: number, index: number }>
-    void total
 
     const slicePath = (d3Arc() as any)
       .innerRadius(inner)
@@ -715,6 +743,7 @@ export class Chart {
     const lines: string[] = []
     items.forEach((it) => {
       const ds = this.data.datasets[it.datasetIndex]
+      if (!ds) return
       const ctx: TooltipCallbackContext = {
         dataset: ds,
         datasetIndex: it.datasetIndex,
@@ -730,15 +759,19 @@ export class Chart {
     })
 
     const titleOut = cb?.title
-      ? cb.title(items.map(it => ({
-          dataset: this.data.datasets[it.datasetIndex],
-          datasetIndex: it.datasetIndex,
-          dataIndex: it.dataIndex,
-          parsed: { y: it.value },
-          raw: it.value,
-          label: it.label,
-          formattedValue: formatTick(it.value),
-        })))
+      ? cb.title(items.flatMap((it) => {
+          const ds = this.data.datasets[it.datasetIndex]
+          if (!ds) return []
+          return [{
+            dataset: ds,
+            datasetIndex: it.datasetIndex,
+            dataIndex: it.dataIndex,
+            parsed: { y: it.value },
+            raw: it.value,
+            label: it.label,
+            formattedValue: formatTick(it.value),
+          }]
+        }))
       : items[0]?.label
     const titleText = Array.isArray(titleOut) ? titleOut.join('\n') : titleOut
 
