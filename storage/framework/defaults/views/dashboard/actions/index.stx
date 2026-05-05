@@ -1,7 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script>
+<script server>
 </script>
 
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">

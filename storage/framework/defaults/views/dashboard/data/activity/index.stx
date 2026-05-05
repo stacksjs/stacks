@@ -852,7 +852,7 @@ let timeRange = 'day'
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                @foreach(paginatedLogs as log)
+                @foreach(paginatedLogs() as log)
 <tr
                   class="hover:bg-gray-50 dark:hover:bg-neutral-600 cursor-pointer {{ }} getLogRowClass(log.event)"
                   onclick="selectedLog = log"

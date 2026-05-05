@@ -584,7 +584,7 @@ let timeRange = 'day'
         </div>
 
         <div class="flex flex-wrap gap-2">
-          @foreach(project in projects)
+          @foreach(projects as project)
             <button
               onclick="toggleProject(project.id)"
               class="inline-flex items-center px-3 py-1 font-medium text-sm rounded-full transition-colors"
@@ -614,7 +614,7 @@ let timeRange = 'day'
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
-                @foreach(log in paginatedLogs)
+                @foreach(paginatedLogs() as log)
                   <tr
                     class="hover:bg-gray-50 cursor-pointer {{ }} getLogRowClass(log.type)"
                     onclick="selectedLog = log"
@@ -701,7 +701,7 @@ let timeRange = 'day'
               <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true" />
             </button>
 
-            @foreach(page in Math.min(5, totalPages))
+            @foreach(Math.min(5, totalPages as page))
               <button
                 onclick="goToPage(page)"
                 class="px-3 py-1 text-sm border rounded-md"

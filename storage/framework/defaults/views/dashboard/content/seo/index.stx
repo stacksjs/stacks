@@ -626,7 +626,7 @@ function getPostTitleById(id: number): string {
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(paginatedSeoData as item)
+                  @foreach(paginatedSeoData() as item)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                     <td class="relative px-4 py-4 sm:px-6 whitespace-nowrap">
                       <div class="flex items-center">
@@ -742,7 +742,7 @@ function getPostTitleById(id: number): string {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
-                @foreach(paginationRange as page)
+                @foreach(paginationRange() as page)
 <button
                   onclick="currentPage = page"
                   class="[

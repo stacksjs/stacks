@@ -852,7 +852,7 @@ function bulkChangeStatus(status) {
                 </td>
               </tr>
               @endif
-              @foreach(paginatedLists as list)
+              @foreach(paginatedLists() as list)
               <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="relative px-7 sm:px-6 sm:w-12">
                   <div class="absolute left-4 top-1/2 -mt-2">
@@ -970,7 +970,7 @@ function bulkChangeStatus(status) {
           @else
           <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <!-- List card -->
-            @foreach(paginatedLists as list)
+            @foreach(paginatedLists() as list)
             <div
               class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition group"
             >
@@ -1109,7 +1109,7 @@ function bulkChangeStatus(status) {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
-                @foreach(totalPages as page)
+                @foreach(totalPages() as page)
                 <button
                   onclick="changePage(page)"
                   class="[

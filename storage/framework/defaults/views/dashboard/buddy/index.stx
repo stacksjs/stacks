@@ -1,7 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script>
+<script server>
 interface User {
   id: number
   name: string

@@ -1044,7 +1044,7 @@ const getRoleBadgeClass = (role: string): string => {
                 </thead>
 
                 <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                  @foreach(paginatedAuthors as author)
+                  @foreach(paginatedAuthors() as author)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                     <td class="relative px-3 py-4">
                       <input
@@ -1124,7 +1124,7 @@ const getRoleBadgeClass = (role: string): string => {
             Previous
           </button>
           <div class="flex space-x-1">
-            @foreach(paginationRange as page)
+            @foreach(paginationRange() as page)
 <button
               onclick="currentPage = page"
               class="text-gray-700 text-white dark:text-neutral-200 dark:bg-neutral-600 hover:bg-gray-50 !== 'bg-blue-600 'bg-white { {{ } }} === currentPage currentPage page page, hover:bg-blue-500': dark:hover:bg-neutral-500':"

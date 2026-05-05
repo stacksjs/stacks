@@ -1164,7 +1164,7 @@ const renderSourceChart = () => {
                   No reviews found. Try adjusting your search or filter.
                 </td>
               </tr>
-              @foreach(paginatedReviews as review)
+              @foreach(paginatedReviews() as review)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <div class="flex items-center">
@@ -1271,7 +1271,7 @@ const renderSourceChart = () => {
 <div class="col-span-full py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
             No reviews found. Try adjusting your search or filter.
           </div>
-          @foreach(paginatedReviews as review)
+          @foreach(paginatedReviews() as review)
 <div
             class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow"
             class="'opacity-60': 'ring-2 { {{ } }} review.isHidden review.isHighlighted, ring-yellow-400':"
@@ -1467,7 +1467,7 @@ const renderSourceChart = () => {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-chevron-left"></div>
                 </button>
-                @foreach(displayedPages as page)
+                @foreach(displayedPages() as page)
 <button
                   onclick="currentPage = page"
                   class="[

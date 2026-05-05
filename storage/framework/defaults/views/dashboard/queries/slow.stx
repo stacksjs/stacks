@@ -370,7 +370,7 @@ const copyQuery = (queryId: string, queryText: string) => {
 
           <div class="overflow-hidden bg-white dark:bg-neutral-900 sm:rounded-md shadow">
             <ul role="list" class="divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(filteredQueries as query)
+              @foreach(filteredQueries() as query)
 <li class="hover:bg-gray-50 dark:hover:bg-neutral-800 cursor-pointer group" onclick="toggleQueryDetails(query.id)">
                 <!-- Summary view -->
                 <div class="px-4 py-4 sm:px-6">

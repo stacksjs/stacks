@@ -295,7 +295,7 @@ const closeErrorModal = () => {
                   </td>
                 </tr>
                 @endif
-                @foreach(paginatedNotifications as notification)
+                @foreach(paginatedNotifications() as notification)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                   <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
                     {{ notification.recipient }}

@@ -403,7 +403,7 @@ const statsCards = [
       </h3>
 
       <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-        @foreach(stat in statsCards)
+        @foreach(statsCards as stat)
           <div
                class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <dt>
@@ -623,7 +623,7 @@ const statsCards = [
             <!-- Cache Keys -->
             <div class="mt-8">
               <div class="space-y-4">
-                @foreach(key in cache.keys)
+                @foreach(cache.keys as key)
                   <div
                        class="p-4 border border-gray-100 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors">
                     <div class="flex items-center justify-between mb-3">
@@ -686,7 +686,7 @@ const statsCards = [
         <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="p-6">
             <div class="space-y-4">
-              @foreach(exception in exceptions)
+              @foreach(exceptions as exception)
                 <div
                      class="relative p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
                   <div class="mb-3">
@@ -734,7 +734,7 @@ const statsCards = [
         <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <div class="p-6">
             <div class="space-y-4">
-              @foreach(query in slowQueries)
+              @foreach(slowQueries as query)
                 <div
                      class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
                   <div class="mb-3">
@@ -785,7 +785,7 @@ const statsCards = [
           <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <div class="p-6">
               <div class="space-y-4">
-                @foreach(route in slowRoutes)
+                @foreach(slowRoutes as route)
                   <div
                        class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
                     <div class="mb-3">

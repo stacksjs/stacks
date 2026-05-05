@@ -62,7 +62,18 @@ const dateRanges: DateRange[] = [
 
 // Selected date range
 let selectedDateRange = 'last30days'
-let dateRangeDisplay = 'Last 30 Days: Feb 5, 2024 to Mar 6, 2024'
+
+// Compute the date-range label from "now" so the placeholder doesn't
+// ship looking out of date. Real data should replace this once the
+// analytics backend is wired up.
+function formatRangeLabel(days) {
+  const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const end = new Date()
+  const start = new Date()
+  start.setDate(end.getDate() - days)
+  return `Last ${days} Days: ${fmt(start)} to ${fmt(end)}`
+}
+let dateRangeDisplay = formatRangeLabel(30)
 let comparisonType = 'no-comparison'
 let customStartDate = ''
 let customEndDate = ''
@@ -346,23 +357,32 @@ function updateDataForDateRange() {
   console.log('Updating data for date range:', selectedDateRange)
   console.log('Comparison type:', comparisonType)
 
-  // Update date range display
+  // Update date range display. Computed from "now" so the labels stay
+  // accurate without anyone editing this file every quarter.
+  const fmt = (d) => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+  const now = new Date()
+  const daysAgo = (n) => { const d = new Date(); d.setDate(d.getDate() - n); return d }
   if (selectedDateRange === 'last7days') {
-    dateRangeDisplay = 'Last 7 Days: Feb 28, 2024 to Mar 6, 2024'
+    dateRangeDisplay = `Last 7 Days: ${fmt(daysAgo(7))} to ${fmt(now)}`
   } else if (selectedDateRange === 'last30days') {
-    dateRangeDisplay = 'Last 30 Days: Feb 5, 2024 to Mar 6, 2024'
+    dateRangeDisplay = formatRangeLabel(30)
   } else if (selectedDateRange === 'thisMonth') {
-    dateRangeDisplay = 'This Month: Mar 1, 2024 to Mar 6, 2024'
+    const start = new Date(now.getFullYear(), now.getMonth(), 1)
+    dateRangeDisplay = `This Month: ${fmt(start)} to ${fmt(now)}`
   } else if (selectedDateRange === 'lastMonth') {
-    dateRangeDisplay = 'Last Month: Feb 1, 2024 to Feb 29, 2024'
+    const start = new Date(now.getFullYear(), now.getMonth() - 1, 1)
+    const end = new Date(now.getFullYear(), now.getMonth(), 0)
+    dateRangeDisplay = `Last Month: ${fmt(start)} to ${fmt(end)}`
   } else if (selectedDateRange === 'thisYear') {
-    dateRangeDisplay = 'This Year: Jan 1, 2024 to Mar 6, 2024'
+    const start = new Date(now.getFullYear(), 0, 1)
+    dateRangeDisplay = `This Year: ${fmt(start)} to ${fmt(now)}`
   } else if (selectedDateRange === 'custom' && customStartDate && customEndDate) {
     const start = formatDate(customStartDate)
     const end = formatDate(customEndDate)
     dateRangeDisplay = `Custom Range: ${start} to ${end}`
   } else {
-    dateRangeDisplay = 'All Time: Sep 7, 2023 to Mar 6, 2024'
+    const start = new Date(now.getFullYear() - 1, now.getMonth(), now.getDate())
+    dateRangeDisplay = `All Time: ${fmt(start)} to ${fmt(now)}`
   }
 
   // Generate comparison data if needed
@@ -641,7 +661,7 @@ function handleComparisonTypeChange() {
               </tr>
             </thead>
             <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(activeEvents as event)
+              @foreach(activeEvents() as event)
               <tr
                 class="hover:bg-gray-50 dark:hover:bg-neutral-700/50 cursor-pointer"
                 onclick="viewEventDetails(event)"
@@ -830,7 +850,7 @@ window.addEventListener('load', () => {
               </tr>
             </thead>
             <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(blockedEvents as event)
+              @foreach(blockedEvents() as event)
               <tr
                 class="hover:bg-gray-50 dark:hover:bg-neutral-700/50"
               >

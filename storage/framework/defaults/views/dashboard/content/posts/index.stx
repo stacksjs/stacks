@@ -206,7 +206,7 @@ let showNewPostModal = false
       emptyDescription="Try adjusting your search or filters"
       emptyIcon="i-hugeicons-quill-write-02"
     >
-      @foreach(paginatedPosts as post)
+      @foreach(paginatedPosts() as post)
         <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
           <td class="px-4 py-3">
             <div class="overflow-hidden h-14 w-24 bg-neutral-100 dark:bg-neutral-700 rounded">

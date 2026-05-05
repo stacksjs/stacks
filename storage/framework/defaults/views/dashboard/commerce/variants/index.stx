@@ -308,7 +308,7 @@ export default {
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(filteredVariantTypes as variantType)
+                  @foreach(filteredVariantTypes() as variantType)
                     <tr>
                       <td class="pl-4 pr-3 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">
                         {{ variantType.name }}

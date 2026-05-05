@@ -605,7 +605,7 @@ function scrollToOrder(): void {
           @else
             <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
               <!-- Menu item card -->
-              @foreach(filteredMenuItems as item)
+              @foreach(filteredMenuItems() as item)
                 <div
                   class="overflow-hidden relative bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm hover:shadow-md transition group"
                   class="!item.available 'opacity-70': { {{ } }}"
@@ -710,7 +710,7 @@ function scrollToOrder(): void {
                   </td>
                 </tr>
               @endif
-              @foreach(filteredMenuItems as item)
+              @foreach(filteredMenuItems() as item)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700" class="!item.available 'opacity-70': { {{ } }}">
                   <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                     <div class="flex items-center">

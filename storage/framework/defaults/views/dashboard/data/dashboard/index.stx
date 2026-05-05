@@ -1146,7 +1146,7 @@ onUnmounted(() => {
           value="{{ selectedModelType }}"
           class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
         >
-          @foreach(modelTypes as type)
+          @foreach(modelTypes() as type)
             <option value="{{ type }}">{{ type }}</option>
           @endforeach
         </select>

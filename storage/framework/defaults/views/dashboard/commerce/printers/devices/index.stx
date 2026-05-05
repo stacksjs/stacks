@@ -231,7 +231,7 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                    @foreach(filteredPrinters as printer)
+                    @foreach(filteredPrinters() as printer)
                       <tr>
                         <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ printer.username }}</td>
                         <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ printer.macAddress }}</td>

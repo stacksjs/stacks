@@ -841,7 +841,7 @@ function deleteSelectedItems() {
         @elseif(viewMode === 'grid')
         <!-- Grid view -->
         <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          @foreach(filteredItems as item)
+          @foreach(filteredItems() as item)
           <div
             onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
             @contextmenu.prevent
@@ -918,7 +918,7 @@ function deleteSelectedItems() {
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-              @foreach(filteredItems as item)
+              @foreach(filteredItems() as item)
               <tr
                 onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
                 class="[

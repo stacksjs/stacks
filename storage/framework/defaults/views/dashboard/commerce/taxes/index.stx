@@ -299,7 +299,7 @@ function addTax() {
             class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
           >
             <option value="all">All Countries</option>
-            @foreach(countries as country)
+            @foreach(countries() as country)
               <option value="{{ country }}">{{ country }}</option>
             @endforeach
           </select>
@@ -309,7 +309,7 @@ function addTax() {
             class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
           >
             <option value="all">All Types</option>
-            @foreach(taxTypes as type)
+            @foreach(taxTypes() as type)
               <option value="{{ type }}">{{ type }}</option>
             @endforeach
           </select>
@@ -394,7 +394,7 @@ function addTax() {
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(filteredTaxes as tax)
+                  @foreach(filteredTaxes() as tax)
                     <tr>
                       <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">
                         {{ tax.name }}

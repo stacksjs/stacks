@@ -740,7 +740,7 @@ function truncateText(text: string, max: number): string {
           @else
 <div class="space-y-6">
             <!-- Post card -->
-            @foreach(paginatedPosts as post)
+            @foreach(paginatedPosts() as post)
 <div
               class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm"
             >
@@ -892,7 +892,7 @@ function truncateText(text: string, max: number): string {
                   No posts found. Try adjusting your search or filter.
                 </td>
               </tr>
-              @foreach(paginatedPosts as post)
+              @foreach(paginatedPosts() as post)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
                   <div class="flex items-center max-w-md">
@@ -1015,7 +1015,7 @@ function truncateText(text: string, max: number): string {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
-                @foreach(totalPages as page)
+                @foreach(totalPages() as page)
 <button
                   onclick="changePage(page)"
                   class="[

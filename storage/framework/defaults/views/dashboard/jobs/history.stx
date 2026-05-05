@@ -170,7 +170,7 @@ const handleRetry = async (jobId) => {
                     </td>
                   </tr>
                 @else
-                  @foreach(paginatedJobs as job)
+                  @foreach(paginatedJobs() as job)
                     <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                       <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                         <div class="font-medium text-gray-900 dark:text-neutral-100">{{ job.name }}</div>

@@ -1136,7 +1136,7 @@ const removeCondition = (index: number) => {
                   No campaigns found. Try adjusting your search or filter.
                 </td>
               </tr>
-              @foreach(paginatedCampaigns as campaign)
+              @foreach(paginatedCampaigns() as campaign)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <div class="flex items-center">
@@ -1225,7 +1225,7 @@ const removeCondition = (index: number) => {
 
           @else
 <div class="grid gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-            @foreach(paginatedCampaigns as campaign)
+            @foreach(paginatedCampaigns() as campaign)
 <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
               <div class="px-4 py-5 sm:p-6">
                 <div class="flex items-center justify-between">
@@ -1404,7 +1404,7 @@ const removeCondition = (index: number) => {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
-                @foreach(displayedPages as page)
+                @foreach(displayedPages() as page)
 <button
                   onclick="goToPage(page)"
                   class="[

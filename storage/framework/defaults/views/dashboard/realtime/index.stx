@@ -501,7 +501,7 @@ let activeConnections = [
                 class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
               >
                 <option value="{{ null }}">All Events</option>
-                @foreach(eventTypes as type)
+                @foreach(eventTypes() as type)
                   <option value="{{ type }}">
                     {{ type }}
                   </option>
@@ -537,7 +537,7 @@ let activeConnections = [
               </tr>
             </thead>
             <tbody class="divide-gray-200 divide-y dark:divide-neutral-600">
-              @foreach(filteredEvents as event)
+              @foreach(filteredEvents() as event)
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
                   <td class="py-4 font-medium text-sm">
                     <span

@@ -237,7 +237,7 @@ const totalPages = 1105
                     </tr>
                   </thead>
                   <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                    @foreach(filteredPrints as print)
+                    @foreach(filteredPrints() as print)
                       <tr>
                         <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">#{{ print.id.toString().padStart(6, '0') }}</td>
                         <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ print.printer }}</td>

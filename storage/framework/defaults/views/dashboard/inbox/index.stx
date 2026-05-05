@@ -542,7 +542,7 @@ function inboxUnreadCount() {
 
           <div class="overflow-y-auto flex-1">
             <ul class="divide-gray-200 divide-y dark:divide-neutral-600">
-              @foreach(filteredEmails as email)
+              @foreach(filteredEmails() as email)
               <li
                 onclick="openEmail(email)"
                 class="dark:bg-neutral-700' dark:bg-neutral-700' hover:bg-gray-50 dark:hover:bg-neutral-600 cursor-pointer : !email.read ? 'bg-white 'bg-white {{ }}"

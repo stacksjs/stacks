@@ -592,7 +592,7 @@ async function fetchCategories() {
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(paginatedCategories as category)
+                  @foreach(paginatedCategories() as category)
                   <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                     <td class="relative px-4 py-4 sm:px-6 whitespace-nowrap">
                       <div class="flex items-center">
@@ -699,7 +699,7 @@ async function fetchCategories() {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
-                @foreach(paginationRange as page)
+                @foreach(paginationRange() as page)
                 <button
                   onclick="currentPage = page"
                   :class="inline-flex inline-flex z-10 focus:z-20 focus:z-20 items-center items-center px-4 px-4 py-2 py-2 font-semibold font-semibold text-gray-900 text-sm text-sm text-white dark:text-neutral-200 bg-blue-600 dark:bg-blue-700' hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-600 focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 focus:outline-offset-0 : ? 'relative 'relative === currentPage page"

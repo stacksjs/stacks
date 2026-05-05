@@ -697,7 +697,7 @@ function deleteReview(reviewId) {
             @else
               <div class="space-y-6">
                 <!-- Review card -->
-                @foreach(paginatedReviews as review)
+                @foreach(paginatedReviews() as review)
                   <div
                     class="overflow-hidden bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 shadow-sm"
                   >
@@ -846,7 +846,7 @@ function deleteReview(reviewId) {
                     </td>
                   </tr>
                 @endif
-                @foreach(paginatedReviews as review)
+                @foreach(paginatedReviews() as review)
                   <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                     <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                       <div class="flex items-center">
@@ -958,7 +958,7 @@ function deleteReview(reviewId) {
                     <span class="sr-only">Previous</span>
                     <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                   </button>
-                  @foreach(totalPages as page)
+                  @foreach(totalPages() as page)
                     <button
                       onclick="changePage(page)"
                       class="[

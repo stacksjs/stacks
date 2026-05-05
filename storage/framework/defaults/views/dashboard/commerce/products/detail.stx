@@ -291,7 +291,7 @@ function deleteProduct(): void {
 
               @if(similarProducts.length > 0)
                 <div class="grid gap-4 grid-cols-2">
-                  @foreach(similarProducts as similarProduct)
+                  @foreach(similarProducts() as similarProduct)
                     <div
                       class="flex overflow-hidden flex-col border border-gray-200 rounded-lg dark:border-neutral-700"
                     >

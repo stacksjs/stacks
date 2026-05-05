@@ -1363,7 +1363,7 @@ function updateCharts(): void {
                   No parties currently on the waitlist.
                 </td>
               </tr>
-              @foreach(paginatedEntries as entry)
+              @foreach(paginatedEntries() as entry)
 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                   <input
@@ -1485,7 +1485,7 @@ function updateCharts(): void {
                   <span class="sr-only">Previous</span>
                   <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
                 </button>
-                @foreach(totalPages as page)
+                @foreach(totalPages() as page)
 <button
                   onclick="goToPage(page)"
                   class="[

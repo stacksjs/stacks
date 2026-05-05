@@ -1,7 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script>
+<script server>
 import CodeEditor from '../../../components/Dashboard/CodeEditor.stx'
 
 let envValues = ''

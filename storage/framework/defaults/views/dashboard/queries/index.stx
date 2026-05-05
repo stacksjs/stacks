@@ -470,7 +470,7 @@ function filteredQueries() {
             </tr>
           </thead>
           <tbody class="bg-white dark:bg-neutral-900 divide-gray-200 divide-y dark:divide-neutral-700">
-            @foreach(filteredQueries as query)
+            @foreach(filteredQueries() as query)
               <tr>
                 <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm">
                   <div class="flex gap-2 items-center mb-1">

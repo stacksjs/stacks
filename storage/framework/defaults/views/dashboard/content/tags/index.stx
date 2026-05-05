@@ -718,7 +718,7 @@ function formatDate(dateString: string): string {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(paginatedTags as tag)
+                @foreach(paginatedTags() as tag)
                 <tr :class="dark:bg-blue-900/10' selectedTagIds.includes(tag.id) : ? '' 'bg-blue-50">
                   <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-sm">
                     <div class="flex items-center">
@@ -846,7 +846,7 @@ function formatDate(dateString: string): string {
               <span class="sr-only">Previous</span>
               <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
             </button>
-            @foreach(paginationRange as page)
+            @foreach(paginationRange() as page)
               @if(page !== '...')
               <button
                 onclick="currentPage = typeof page === 'number' ? page : currentPage"
