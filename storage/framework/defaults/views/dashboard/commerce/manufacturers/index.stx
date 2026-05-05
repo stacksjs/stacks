@@ -1,10 +1,12 @@
 @extends('layouts/default')
 
 @section('content')
+<script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
+</script>
+
 @title('Dashboard - Food Vendors')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Manufacturers</h1>
@@ -198,10 +200,7 @@
           <button type="button" @click="closeAddModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 interface Manufacturer {
   id: number

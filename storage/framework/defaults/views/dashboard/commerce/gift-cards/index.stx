@@ -2,14 +2,13 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 const statuses = ['all', 'Active', 'Used', 'Expired'] as const
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 </script>
 
 @title('Dashboard - Commerce Gift Cards')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Gift Cards</h1>
@@ -340,10 +339,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
           </button>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 import { useGiftCards } from '../../../../functions/commerce/gift-cards'
 import { useAuth } from '../../../../functions/auth'

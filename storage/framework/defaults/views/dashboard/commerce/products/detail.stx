@@ -1,8 +1,12 @@
 @extends('layouts/default')
 
 @section('content')
+<script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
+</script>
+
 @title('Product Detail')
-<main>
+<PageLayout maxWidth="full" padding="sm" spacing="none">
   <div class="container mx-auto px-4 py-8">
     <!-- Loading state -->
     <div :show="loading" class="flex items-center justify-center h-64">
@@ -261,7 +265,7 @@
       </div>
     </div>
   </div>
-</main>
+</PageLayout>
 
 <script client>
 interface ProductDetail {

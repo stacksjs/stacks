@@ -2,6 +2,7 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 
 const topProducts = [
@@ -31,10 +32,7 @@ function orderStatusClass(status) {
 </script>
 
 @title('Dashboard - Commerce')
-<main>
-  <div class="overflow-hidden relative isolate">
-    <div class="px-6 py-6 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-7xl">
+<PageLayout>
         <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Commerce Dashboard</h1>
 
         <!-- Time range selector -->
@@ -179,10 +177,7 @@ function orderStatusClass(status) {
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 
 const timeRange = state<string>('Last 30 days')

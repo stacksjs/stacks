@@ -2,15 +2,14 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded'] as const
 const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer'] as const
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 </script>
 
 @title('Dashboard - Commerce Payments')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
         <div>
           <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Payments</h1>
@@ -311,10 +310,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 
 interface PaymentTransaction {

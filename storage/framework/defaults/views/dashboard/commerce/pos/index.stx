@@ -1,10 +1,12 @@
 @extends('layouts/default')
 
 @section('content')
+<script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
+</script>
+
 @title('Self-Service Menu')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <!-- Header -->
       <div class="sm:flex sm:items-center sm:justify-between">
         <div>
@@ -370,10 +372,7 @@
           <button type="button" @click="dismissOrderConfirmation()" class="inline-flex justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Continue Browsing</button>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 interface MenuItem {
   id: number

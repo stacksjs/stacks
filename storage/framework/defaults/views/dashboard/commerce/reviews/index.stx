@@ -1,10 +1,12 @@
 @extends('layouts/default')
 
 @section('content')
+<script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
+</script>
+
 @title('Dashboard - Commerce Reviews')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <!-- Header -->
       <div class="sm:flex sm:items-center sm:justify-between">
         <div>
@@ -433,10 +435,7 @@
           </div>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 interface Product {
   id: number
