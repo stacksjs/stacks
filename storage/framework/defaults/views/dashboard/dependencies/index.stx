@@ -17,18 +17,18 @@ interface Dependency {
   name: string
   version: string
   status: 'installed' | 'pending' | 'outdated' | 'failed'
-  source?: 'pantry' | 'npm' | 'system'
+  source?: 'pantry' | 'system'
   description?: string
 }
 
 // Placeholder rows. Wire this up to `pantry list --json` (or whatever
-// the real source of truth is) once the dependency manager has an API
-// surface. The shape above is what the table renders against — keep
-// it stable so the wiring is a one-line swap of `dependencies = …`.
+// the real source of truth is) once the Pantry CLI exposes a listing
+// API. The shape above is what the table renders against — keep it
+// stable so the wiring is a one-line swap of `dependencies = …`.
 const dependencies: Dependency[] = [
-  { name: 'NPM', version: '18.15.1', status: 'pending', source: 'pantry' },
-  { name: 'Redis', version: '6.9.0', status: 'installed', source: 'pantry' },
-  { name: 'PostgreSQL', version: '16.2', status: 'installed', source: 'pantry' },
+  { name: 'Node.js', version: '22.11.0', status: 'pending', source: 'pantry' },
+  { name: 'Redis', version: '8.0.0', status: 'installed', source: 'pantry' },
+  { name: 'PostgreSQL', version: '18.3', status: 'installed', source: 'pantry' },
   { name: 'Bun', version: '1.3.14', status: 'installed', source: 'system' },
 ]
 
@@ -49,7 +49,7 @@ function statusVariant(status: string) {
 
   <PageHeader
     title="Dependencies"
-    description="Discover and manage system dependencies installed via tea / pantry"
+    description="Discover and manage system dependencies installed via Pantry"
   />
 
   <!-- Search row -->
@@ -74,8 +74,8 @@ function statusVariant(status: string) {
       <Button type="submit" variant="primary" size="md">Search</Button>
     </div>
     <p class="mt-3 text-neutral-500 text-xs dark:text-neutral-400">
-      Dependencies install through <a href="https://pkgx.dev/" target="_blank" rel="noopener" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">tea</a> /
-      pantry. Installed binaries land in <code class="px-1 py-0.5 font-mono text-[11px] bg-black/5 dark:bg-white/10 rounded">~/.local/share/pantry</code>.
+      Dependencies install through <a href="https://github.com/stacksjs/pantry" target="_blank" rel="noopener" class="font-medium text-blue-600 dark:text-blue-400 hover:underline">Pantry</a> —
+      our package manager and registry. Installed binaries land in <code class="px-1 py-0.5 font-mono text-[11px] bg-black/5 dark:bg-white/10 rounded">pantry/.bin</code>.
     </p>
   </Card>
 
@@ -129,7 +129,7 @@ function statusVariant(status: string) {
       <div>
         <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Installed</h3>
         <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
-          {{ totalCount }} {{ totalCount === 1 ? 'dependency' : 'dependencies' }} tracked by pantry
+          {{ totalCount }} {{ totalCount === 1 ? 'dependency' : 'dependencies' }} tracked by Pantry
         </p>
       </div>
     </div>
