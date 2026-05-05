@@ -1,23 +1,5 @@
 import { describe, expect, it } from 'bun:test'
-import { scaleBand as rawScaleBand, scaleLinear as rawScaleLinear } from '@ts-charts/scale'
-
-// ts-charts' published .d.ts is currently incomplete (the
-// default-export qualifier is dropped during type bundling), so we
-// retype the constructors locally to keep the tests strict-friendly.
-interface ScaleLinearLike {
-  (x: number): number
-  domain(d: number[]): ScaleLinearLike
-  range(r: number[]): ScaleLinearLike
-}
-interface ScaleBandLike<T> {
-  (key: T): number
-  domain(d: T[]): ScaleBandLike<T>
-  range(r: number[]): ScaleBandLike<T>
-  paddingInner(p: number): ScaleBandLike<T>
-  bandwidth(): number
-}
-const scaleLinear = rawScaleLinear as unknown as () => ScaleLinearLike
-const scaleBand = rawScaleBand as unknown as <T>() => ScaleBandLike<T>
+import { scaleBand, scaleLinear } from '@ts-charts/scale'
 
 /**
  * The Chart class delegates X/Y pixel mapping to ts-charts' `scaleLinear`
@@ -65,7 +47,7 @@ describe('chart scale math via ts-charts', () => {
     const plotW = 800
     const expected = (plotW / count) * 0.7
 
-    const xBand = scaleBand<number>()
+    const xBand = scaleBand()
       .domain(Array.from({ length: count }, (_, i) => i))
       .range([0, plotW])
       .paddingInner(0.3)
@@ -77,7 +59,7 @@ describe('chart scale math via ts-charts', () => {
   })
 
   it('scaleBand returns a unique left-edge per category in domain order', () => {
-    const xBand = scaleBand<number>().domain([0, 1, 2, 3]).range([0, 200]).paddingInner(0.3)
+    const xBand = scaleBand().domain([0, 1, 2, 3]).range([0, 200]).paddingInner(0.3)
     const x0 = xBand(0)
     const x1 = xBand(1)
     const x2 = xBand(2)
