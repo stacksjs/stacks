@@ -2,6 +2,7 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 // Types
 interface DateRange {
   id: string
@@ -449,9 +450,7 @@ function handleComparisonTypeChange() {
 </script>
 
 @title('Dashboard - Events & Goals')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <!-- Header with date range selector -->
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div class="flex items-center space-x-2">
@@ -1148,9 +1147,7 @@ stacks.trackEvent('{{ selectedEvent.name }}', {
         </div>
       </div>
       @endif
-    </div>
-  </div>
-</main>
+</PageLayout>
 <script client>
 const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)

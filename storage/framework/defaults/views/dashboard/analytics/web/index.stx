@@ -2,6 +2,7 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../../components/Dashboard/UI/PageLayout.stx'
 const pagesRaw = [
   { path: '/', entries: 1800, visitors: 1800, views: 2100 },
   { path: '/blog', entries: 113, visitors: 113, views: 139 },
@@ -69,9 +70,7 @@ const analyticsOverview = {
 </script>
 
 @title('Dashboard - Web Analytics')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div class="flex items-center space-x-2">
           <div class="h-5 w-5 text-gray-500 dark:text-neutral-400 i-hugeicons-calendar-03"></div>
@@ -277,10 +276,7 @@ const analyticsOverview = {
           <div class="flex justify-end mt-2"><a href="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</a></div>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 
 interface ChartLike { destroy: () => void }

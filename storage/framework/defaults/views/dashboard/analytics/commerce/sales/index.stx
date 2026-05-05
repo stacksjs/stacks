@@ -2,6 +2,7 @@
 
 @section('content')
 <script server>
+import PageLayout from '../../../../../components/Dashboard/UI/PageLayout.stx'
 const productsRaw = [
   { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450 },
   { name: 'Wireless Earbuds', sku: 'WE-200', sales: 3567, revenue: 178350 },
@@ -61,9 +62,7 @@ function formatCurrency(amount) {
 </script>
 
 @title('Dashboard - Commerce Sales Analytics')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
+<PageLayout>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
         <div class="flex items-center space-x-2">
           <div class="h-5 w-5 text-gray-500 dark:text-neutral-400 i-hugeicons-calendar-03"></div>
@@ -245,10 +244,7 @@ function formatCurrency(amount) {
           <a href="/dashboard/commerce/analytics/sales/customers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all customers</a>
         </div>
       </div>
-    </div>
-  </div>
-</main>
-
+</PageLayout>
 <script client>
 
 interface ChartLike { destroy: () => void }
