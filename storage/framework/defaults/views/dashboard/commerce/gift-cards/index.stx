@@ -3,263 +3,11 @@
 @section('content')
 <script server>
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
 
-import { useGiftCards } from '../../../../functions/commerce/gift-cards'
-import { useAuth } from '../../../../functions/auth'
-
-// Get gift cards data and functions from the composable
-const { giftCards, createGiftCard, fetchGiftCards } = useGiftCards()
-const { user } = useAuth()
-
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        display: true,
-        color: 'rgba(0, 0, 0, 0.05)',
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-    },
-  },
-}
-
-// Generate monthly data for charts
-function monthlyChartData() {
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-  // Sample data - in a real app, this would be calculated from actual usage data
-  const salesData = [2, 3, 5, 4, 6, 8, 7, 10, 12, 15, 18, 20]
-  const revenueData = [100, 150, 250, 200, 300, 400, 350, 500, 600, 750, 900, 1000]
-
-  // Gift card sales chart data
-  const giftCardSalesData = {
-    labels: months,
-    datasets: [
-      {
-        label: 'Gift Card Sales',
-        backgroundColor: 'rgba(59, 130, 246, 0.2)',
-        borderColor: 'rgba(59, 130, 246, 1)',
-        borderWidth: 2,
-        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
-        fill: true,
-        tension: 0.4,
-        data: salesData,
-      },
-    ],
-  }
-
-  // Gift card revenue chart data
-  const giftCardRevenueData = {
-    labels: months,
-    datasets: [
-      {
-        label: 'Gift Card Revenue',
-        backgroundColor: 'rgba(16, 185, 129, 0.8)',
-        borderColor: 'rgba(16, 185, 129, 1)',
-        borderWidth: 1,
-        borderRadius: 4,
-        data: revenueData,
-      },
-    ],
-  }
-
-  return {
-    giftCardSalesData,
-    giftCardRevenueData
-  }
-}
-
-// Time range selector
-let timeRange = 'Last 30 days'
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
-
-// Filter and sort options
-let searchQuery = ''
-let sortBy = 'purchaseDate'
-let sortOrder = 'desc'
-let statusFilter = 'all'
-
-// Available statuses
-const statuses = ['all', 'Active', 'Used', 'Expired']
-
-// Computed gift card statistics
-function giftCardStats() {
-  const activeGiftCards = giftCards.filter(c => c.status === 'Active').length
-  const totalGiftCards = giftCards.length
-
-  // Calculate total initial value and current balance
-  const totalInitialValue = giftCards.reduce((sum, card) => sum + card.initial_balance, 0)
-  const totalCurrentBalance = giftCards.reduce((sum, card) => sum + card.current_balance, 0)
-
-  // Calculate amount redeemed
-  const totalRedeemed = totalInitialValue - totalCurrentBalance
-
-  // Calculate redemption rate
-  const redemptionRate = totalInitialValue > 0
-    ? ((totalRedeemed / totalInitialValue) * 100).toFixed(1)
-    : '0.0'
-
-  return {
-    activeGiftCards,
-    totalGiftCards,
-    totalInitialValue: totalInitialValue.toFixed(2),
-    totalCurrentBalance: totalCurrentBalance.toFixed(2),
-    totalRedeemed: totalRedeemed.toFixed(2),
-    redemptionRate
-  }
-}
-
-// Computed filtered and sorted gift cards
-function filteredGiftCards() {
-  return giftCards
-    .filter(card => {
-      // Apply search filter
-      const matchesSearch =
-        card.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.recipient_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        card.recipient_email?.toLowerCase().includes(searchQuery.toLowerCase())
-
-      // Apply status filter
-      const matchesStatus = statusFilter === 'all' || card.status === statusFilter
-
-      return matchesSearch && matchesStatus
-    })
-    .sort((a, b) => {
-      // Apply sorting
-      let comparison = 0
-      if (sortBy === 'pur') {
-        comparison = new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-      } else if (sortBy === 'expiry_date') {
-        comparison = new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
-      } else if (sortBy === 'initial_balance') {
-        comparison = a.initial_balance - b.initial_balance
-      } else if (sortBy === 'current_balance') {
-        comparison = a.current_balance - b.current_balance
-      }
-
-      return sortOrder === 'asc' ? comparison : -comparison
-    })
-}
-
-// Toggle sort order
-function toggleSort(column) {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortBy = column
-    sortOrder = 'desc'
-  }
-}
-
-// Get status badge class
-const getStatusClass = (status) => {
-  switch (status) {
-    case 'Active':
-      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-    case 'Used':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
-    case 'Expired':
-      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
-    default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
-  }
-}
-
-// Define global date variables
-const oneYearFromNow = new Date()
-oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
-const futureDate = oneYearFromNow.toISOString().split('T')[0]
-
-// Modal state
-let showAddModal = false
-let newGiftCard = {
-  code: '',
-  initialValue: 50,
-  recipient: '',
-  email: '',
-  expiryDate: futureDate
-}
-
-function openAddModal() {
-  newGiftCard = {
-    code: generateGiftCardCode(),
-    initialValue: 50,
-    recipient: '',
-    email: '',
-    expiryDate: futureDate
-  }
-  showAddModal = true
-}
-
-function closeAddModal() {
-  showAddModal = false
-}
-
-function generateGiftCardCode() {
-  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
-  let code = 'GFT-'
-
-  // Generate 4 characters
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-
-  code += '-'
-
-  // Generate 4 more characters
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-
-  code += '-'
-
-  // Generate 4 more characters
-  for (let i = 0; i < 4; i++) {
-    code += chars.charAt(Math.floor(Math.random() * chars.length))
-  }
-
-  return code
-}
-
-async function addGiftCard() {
-  const newGiftCardData = {
-    code: newGiftCard.code,
-    initial_balance: newGiftCard.initialValue,
-    current_balance: newGiftCard.initialValue,
-    customer_id: user.value?.id || 1,
-    status: 'Active',
-    recipient_email: newGiftCard.email,
-    recipient_name: newGiftCard.recipient,
-    expiry_date: new Date(newGiftCard.expiryDate).getTime(),
-    is_active: true,
-    is_digital: true
-  }
-
-  try {
-    await createGiftCard(newGiftCardData)
-    closeAddModal()
-  } catch (error) {
-    console.error('Failed to create gift card:', error)
-  }
-}
+const statuses = ['all', 'Active', 'Used', 'Expired'] as const
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 </script>
 
 @title('Dashboard - Commerce Gift Cards')
@@ -276,7 +24,7 @@ async function addGiftCard() {
         <div class="mt-4 sm:mt-0">
           <button
             type="button"
-            onclick="openAddModal"
+            @click="openAddModal()"
             class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
           >
             <div class="mr-1 h-5 w-5 i-hugeicons-plus-sign"></div>
@@ -291,7 +39,7 @@ async function addGiftCard() {
           Overview of your gift card performance
         </p>
         <div class="relative">
-          <select value="{{ timeRange }}" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+          <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
             @foreach(timeRanges as range)
               <option value="{{ range }}">{{ range }}</option>
             @endforeach
@@ -303,16 +51,16 @@ async function addGiftCard() {
       <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
         <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
           <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Active Gift Cards</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ giftCardStats.activeGiftCards }}</dd>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ giftCardStats().activeGiftCards }}</dd>
           <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
             <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-            <span>{{ Math.round(giftCardStats.activeGiftCards / giftCardStats.totalGiftCards * 100) }}% of total</span>
+            <span>{{ giftCardStats().totalGiftCards > 0 ? Math.round(giftCardStats().activeGiftCards / giftCardStats().totalGiftCards * 100) : 0 }}% of total</span>
           </dd>
         </div>
 
         <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
           <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Value</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">${{ parseFloat(giftCardStats.totalInitialValue).toLocaleString() }}</dd>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">${{ Number.parseFloat(giftCardStats().totalInitialValue).toLocaleString() }}</dd>
           <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
             <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
             <span>10.5% increase</span>
@@ -321,16 +69,16 @@ async function addGiftCard() {
 
         <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
           <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Current Balance</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">${{ parseFloat(giftCardStats.totalCurrentBalance).toLocaleString() }}</dd>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">${{ Number.parseFloat(giftCardStats().totalCurrentBalance).toLocaleString() }}</dd>
           <dd class="flex items-center mt-2 text-blue-600 text-sm dark:text-blue-400">
             <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-            <span>${{ parseFloat(giftCardStats.totalRedeemed).toLocaleString() }} redeemed</span>
+            <span>${{ Number.parseFloat(giftCardStats().totalRedeemed).toLocaleString() }} redeemed</span>
           </dd>
         </div>
 
         <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
           <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Redemption Rate</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ giftCardStats.redemptionRate }}%</dd>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ giftCardStats().redemptionRate }}%</dd>
           <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
             <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
             <span>5.2% increase</span>
@@ -366,7 +114,7 @@ async function addGiftCard() {
             <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
           </div>
           <input
-            value="{{ searchQuery }}"
+            x-model="searchQuery"
             type="text"
             class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             placeholder="Search gift cards..."
@@ -375,14 +123,11 @@ async function addGiftCard() {
 
         <div class="flex flex-col gap-4 sm:flex-row">
           <select
-            value="{{ statusFilter }}"
+            x-model="statusFilter"
             class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
           >
-            <option value="all">All Statuses</option>
-            @foreach(statuses.slice(1) as status)
-              <option value="{{ status }}">
-                {{ status }}
-              </option>
+            @foreach(statuses as status)
+              <option value="{{ status }}">{{ status === 'all' ? 'All Statuses' : status }}</option>
             @endforeach
           </select>
         </div>
@@ -407,50 +152,34 @@ async function addGiftCard() {
                     </th>
                     <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">Recipient</th>
                     <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-                      <button onclick="toggleSort('initialValue')" class="inline-flex items-center group">
+                      <button @click="toggleSort('initial_balance')" class="inline-flex items-center group">
                         Initial Value
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                          @if(sortBy === 'initialValue')
-                            <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} === sortOrder"></div>
-                          @else
-                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
-                          @endif
+                          <div class="h-4 w-4 {{ sortBy() === 'initial_balance' ? (sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'i-hugeicons-arrows-up-down' }}"></div>
                         </span>
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-                      <button onclick="toggleSort('currentBalance')" class="inline-flex items-center group">
+                      <button @click="toggleSort('current_balance')" class="inline-flex items-center group">
                         Balance
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                          @if(sortBy === 'currentBalance')
-                            <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} === sortOrder"></div>
-                          @else
-                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
-                          @endif
+                          <div class="h-4 w-4 {{ sortBy() === 'current_balance' ? (sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'i-hugeicons-arrows-up-down' }}"></div>
                         </span>
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-                      <button onclick="toggleSort('purchaseDate')" class="inline-flex items-center group">
+                      <button @click="toggleSort('purchaseDate')" class="inline-flex items-center group">
                         Purchase Date
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                          @if(sortBy === 'purchaseDate')
-                            <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} === sortOrder"></div>
-                          @else
-                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
-                          @endif
+                          <div class="h-4 w-4 {{ sortBy() === 'purchaseDate' ? (sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'i-hugeicons-arrows-up-down' }}"></div>
                         </span>
                       </button>
                     </th>
                     <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-200">
-                      <button onclick="toggleSort('expiryDate')" class="inline-flex items-center group">
+                      <button @click="toggleSort('expiry_date')" class="inline-flex items-center group">
                         Expiry Date
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                          @if(sortBy === 'expiryDate')
-                            <div class="h-4 w-4 : ? 'asc' 'i-hugeicons-arrow-down-02' 'i-hugeicons-arrow-up-02' {{ }} === sortOrder"></div>
-                          @else
-                            <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
-                          @endif
+                          <div class="h-4 w-4 {{ sortBy() === 'expiry_date' ? (sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02') : 'i-hugeicons-arrows-up-down' }}"></div>
                         </span>
                       </button>
                     </th>
@@ -483,7 +212,7 @@ async function addGiftCard() {
                         {{ card.expiry_date }}
                       </td>
                       <td class="px-3 py-4 text-sm whitespace-nowrap">
-                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md {{ }} getStatusClass(card.status)">
+                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md {{ getStatusClass(card.status) }}">
                           {{ card.status }}
                         </span>
                       </td>
@@ -499,7 +228,7 @@ async function addGiftCard() {
                       </td>
                     </tr>
                   @endforeach
-                  @if(filteredGiftCards.length === 0)
+                  @if(filteredGiftCards().length === 0)
                     <tr>
                       <td colspan="8" class="px-6 py-4 text-center text-gray-500 text-sm dark:text-neutral-400">
                         No gift cards found matching your criteria
@@ -515,135 +244,333 @@ async function addGiftCard() {
     </div>
   </div>
 
-  <!-- Add Gift Card Modal -->
-  @if(showAddModal)
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+  <!-- Add Gift Card Modal — kept mounted; toggle via :show. -->
+  <div :show="showAddModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal()"></div>
 
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-          <div>
-            <div class="mt-3 sm:mt-5 text-center">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Create New Gift Card</h3>
-              <div class="mt-4">
-                <div class="space-y-4">
-                  <div>
-                    <label for="gift-card-code" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Gift Card Code</label>
-                    <div class="mt-2">
-                      <input
-                        type="text"
-                        id="gift-card-code"
-                        value="{{ newGiftCard.code }}"
-                        readonly
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 bg-gray-50 dark:bg-neutral-700 dark:bg-neutral-900 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                      />
-                      <p class="mt-1 text-gray-500 text-left text-xs dark:text-neutral-400">Auto-generated code</p>
-                    </div>
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div>
+          <div class="mt-3 sm:mt-5 text-center">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Create New Gift Card</h3>
+            <div class="mt-4">
+              <div class="space-y-4">
+                <div>
+                  <label for="gift-card-code" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Gift Card Code</label>
+                  <div class="mt-2">
+                    <input
+                      type="text"
+                      id="gift-card-code"
+                      x-model="newGiftCardCode"
+                      readonly
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 bg-gray-50 dark:bg-neutral-700 dark:bg-neutral-900 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                    />
+                    <p class="mt-1 text-gray-500 text-left text-xs dark:text-neutral-400">Auto-generated code</p>
                   </div>
+                </div>
 
-                  <div>
-                    <label for="gift-card-value" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Value</label>
-                    <div class="mt-2">
-                      <div class="relative rounded-md shadow-sm">
-                        <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                          <span class="text-gray-500 sm:text-sm">$</span>
-                        </div>
-                        <input
-                          type="number"
-                          id="gift-card-value"
-                          value="{{ newGiftCard.initialValue }}"
-                          class="block pl-7 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-                        />
+                <div>
+                  <label for="gift-card-value" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Value</label>
+                  <div class="mt-2">
+                    <div class="relative rounded-md shadow-sm">
+                      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                        <span class="text-gray-500 sm:text-sm">$</span>
                       </div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <label for="recipient-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Recipient Name</label>
-                    <div class="mt-2">
                       <input
-                        type="text"
-                        id="recipient-name"
-                        value="{{ newGiftCard.recipient }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                        placeholder="Enter recipient name"
+                        type="number"
+                        id="gift-card-value"
+                        x-model.number="newGiftCardInitialValue"
+                        class="block pl-7 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
                       />
                     </div>
                   </div>
+                </div>
 
-                  <div>
-                    <label for="recipient-email" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Recipient Email</label>
-                    <div class="mt-2">
-                      <input
-                        type="email"
-                        id="recipient-email"
-                        value="{{ newGiftCard.email }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                        placeholder="Enter recipient email"
-                      />
-                    </div>
+                <div>
+                  <label for="recipient-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Recipient Name</label>
+                  <div class="mt-2">
+                    <input
+                      type="text"
+                      id="recipient-name"
+                      x-model="newGiftCardRecipient"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      placeholder="Enter recipient name"
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label for="expiry-date" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Expiry Date</label>
-                    <div class="mt-2">
-                      <input
-                        type="date"
-                        id="expiry-date"
-                        value="{{ newGiftCard.expiryDate }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                      />
-                    </div>
+                <div>
+                  <label for="recipient-email" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Recipient Email</label>
+                  <div class="mt-2">
+                    <input
+                      type="email"
+                      id="recipient-email"
+                      x-model="newGiftCardEmail"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      placeholder="Enter recipient email"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label for="expiry-date" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Expiry Date</label>
+                  <div class="mt-2">
+                    <input
+                      type="date"
+                      id="expiry-date"
+                      x-model="newGiftCardExpiryDate"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                    />
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-            <button
-              type="button"
-              onclick="addGiftCard"
-              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-            >
-              Create
-            </button>
-            <button
-              type="button"
-              onclick="closeAddModal"
-              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-            >
-              Cancel
-            </button>
-          </div>
+        </div>
+        <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+          <button
+            type="button"
+            @click="addGiftCard()"
+            class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            Create
+          </button>
+          <button
+            type="button"
+            @click="closeAddModal()"
+            class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
-  @endif
+  </div>
 </main>
+
 <script client>
+import { useGiftCards } from '../../../../functions/commerce/gift-cards'
+import { useAuth } from '../../../../functions/auth'
+import { useCharts } from '../../composables'
+
+interface GiftCard {
+  id?: number
+  code: string
+  initial_balance: number
+  current_balance: number
+  customer_id?: number
+  status: string
+  recipient_email?: string
+  recipient_name?: string
+  expiry_date: string | number
+  created_at?: string
+  is_active?: boolean
+  is_digital?: boolean
+}
+
+const { giftCards, createGiftCard, fetchGiftCards } = useGiftCards()
+const { user } = useAuth()
+
+const timeRange = state<string>('Last 30 days')
+const searchQuery = state('')
+const sortBy = state<'initial_balance' | 'current_balance' | 'purchaseDate' | 'expiry_date'>('purchaseDate')
+const sortOrder = state<'asc' | 'desc'>('desc')
+const statusFilter = state<string>('all')
+
+// Modal + form signals.
+const oneYearFromNow = new Date()
+oneYearFromNow.setFullYear(oneYearFromNow.getFullYear() + 1)
+const futureDate = oneYearFromNow.toISOString().split('T')[0] || ''
+
+const showAddModal = state(false)
+const newGiftCardCode = state('')
+const newGiftCardInitialValue = state(50)
+const newGiftCardRecipient = state('')
+const newGiftCardEmail = state('')
+const newGiftCardExpiryDate = state(futureDate)
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    y: { beginAtZero: true, grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' } },
+    x: { grid: { display: false } },
+  },
+}
+
+function monthlyChartData(): { giftCardSalesData: unknown, giftCardRevenueData: unknown } {
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  const salesData = [2, 3, 5, 4, 6, 8, 7, 10, 12, 15, 18, 20]
+  const revenueData = [100, 150, 250, 200, 300, 400, 350, 500, 600, 750, 900, 1000]
+
+  return {
+    giftCardSalesData: {
+      labels: months,
+      datasets: [{
+        label: 'Gift Card Sales',
+        backgroundColor: 'rgba(59, 130, 246, 0.2)',
+        borderColor: 'rgba(59, 130, 246, 1)',
+        borderWidth: 2,
+        pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+        pointBorderColor: '#fff',
+        pointHoverBackgroundColor: '#fff',
+        pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+        fill: true,
+        tension: 0.4,
+        data: salesData,
+      }],
+    },
+    giftCardRevenueData: {
+      labels: months,
+      datasets: [{
+        label: 'Gift Card Revenue',
+        backgroundColor: 'rgba(16, 185, 129, 0.8)',
+        borderColor: 'rgba(16, 185, 129, 1)',
+        borderWidth: 1,
+        borderRadius: 4,
+        data: revenueData,
+      }],
+    },
+  }
+}
+
+function giftCardStats(): { activeGiftCards: number, totalGiftCards: number, totalInitialValue: string, totalCurrentBalance: string, totalRedeemed: string, redemptionRate: string } {
+  const list = giftCards.value as GiftCard[]
+  const activeGiftCards = list.filter(c => c.status === 'Active').length
+  const totalGiftCards = list.length
+  const totalInitialValue = list.reduce((sum, c) => sum + c.initial_balance, 0)
+  const totalCurrentBalance = list.reduce((sum, c) => sum + c.current_balance, 0)
+  const totalRedeemed = totalInitialValue - totalCurrentBalance
+  const redemptionRate = totalInitialValue > 0
+    ? ((totalRedeemed / totalInitialValue) * 100).toFixed(1)
+    : '0.0'
+
+  return {
+    activeGiftCards,
+    totalGiftCards,
+    totalInitialValue: totalInitialValue.toFixed(2),
+    totalCurrentBalance: totalCurrentBalance.toFixed(2),
+    totalRedeemed: totalRedeemed.toFixed(2),
+    redemptionRate,
+  }
+}
+
+const filteredGiftCards = derived(() => {
+  const q = searchQuery().toLowerCase()
+  const filter = statusFilter()
+  const by = sortBy()
+  const dir = sortOrder()
+
+  return (giftCards.value as GiftCard[])
+    .filter((c) => {
+      const matchesSearch
+        = c.code.toLowerCase().includes(q)
+          || (c.recipient_name?.toLowerCase().includes(q) ?? false)
+          || (c.recipient_email?.toLowerCase().includes(q) ?? false)
+      const matchesStatus = filter === 'all' || c.status === filter
+      return matchesSearch && matchesStatus
+    })
+    .sort((a, b) => {
+      let cmp = 0
+      if (by === 'purchaseDate')
+        cmp = new Date(a.created_at ?? 0).getTime() - new Date(b.created_at ?? 0).getTime()
+      else if (by === 'expiry_date')
+        cmp = new Date(a.expiry_date).getTime() - new Date(b.expiry_date).getTime()
+      else if (by === 'initial_balance')
+        cmp = a.initial_balance - b.initial_balance
+      else if (by === 'current_balance')
+        cmp = a.current_balance - b.current_balance
+      return dir === 'asc' ? cmp : -cmp
+    })
+})
+
+function toggleSort(column: 'initial_balance' | 'current_balance' | 'purchaseDate' | 'expiry_date'): void {
+  if (sortBy() === column) {
+    sortOrder.update(d => d === 'asc' ? 'desc' : 'asc')
+  }
+  else {
+    sortBy.set(column)
+    sortOrder.set('desc')
+  }
+}
+
+function getStatusClass(status: string): string {
+  switch (status) {
+    case 'Active':
+      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'Used':
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+    case 'Expired':
+      return 'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/30 dark:text-red-400'
+    default:
+      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+  }
+}
+
+function generateGiftCardCode(): string {
+  const chars = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ'
+  const segment = (): string => {
+    let s = ''
+    for (let i = 0; i < 4; i++)
+      s += chars.charAt(Math.floor(Math.random() * chars.length))
+    return s
+  }
+  return `GFT-${segment()}-${segment()}-${segment()}`
+}
+
+function openAddModal(): void {
+  newGiftCardCode.set(generateGiftCardCode())
+  newGiftCardInitialValue.set(50)
+  newGiftCardRecipient.set('')
+  newGiftCardEmail.set('')
+  newGiftCardExpiryDate.set(futureDate)
+  showAddModal.set(true)
+}
+
+function closeAddModal(): void {
+  showAddModal.set(false)
+}
+
+async function addGiftCard(): Promise<void> {
+  const payload = {
+    code: newGiftCardCode(),
+    initial_balance: newGiftCardInitialValue(),
+    current_balance: newGiftCardInitialValue(),
+    customer_id: (user.value as { id?: number } | null)?.id ?? 1,
+    status: 'Active',
+    recipient_email: newGiftCardEmail(),
+    recipient_name: newGiftCardRecipient(),
+    expiry_date: new Date(newGiftCardExpiryDate()).getTime(),
+    is_active: true,
+    is_digital: true,
+  }
+
+  try {
+    await createGiftCard(payload as unknown as GiftCard)
+    closeAddModal()
+  }
+  catch (error) {
+    // eslint-disable-next-line no-console
+    console.error('Failed to create gift card:', error)
+  }
+}
+
 const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: monthlyChartData.giftCardSalesData,
-    options: chartOptions,
-  })
-}
-
-const chart_2_ctx = document.getElementById('chart_2')
-if (chart_2_ctx) {
-  new Chart(chart_2_ctx, {
-    type: 'bar',
-    data: monthlyChartData.giftCardRevenueData,
-    options: chartOptions,
-  })
-}
+const chartData = monthlyChartData()
+const { destroyAll } = useCharts([
+  { Chart, id: 'chart_1', type: 'line', data: chartData.giftCardSalesData, options: chartOptions },
+  { Chart, id: 'chart_2', type: 'bar', data: chartData.giftCardRevenueData, options: chartOptions },
+])
 
 onMount(async () => {
   await fetchGiftCards()
+})
+
+onDestroy(() => {
+  destroyAll()
 })
 </script>
 
