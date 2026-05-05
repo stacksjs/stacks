@@ -32,21 +32,15 @@ function orderStatusClass(status) {
 
 @title('Dashboard - Commerce')
 <PageLayout>
-        <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Commerce Dashboard</h1>
-
-        <!-- Time range selector -->
-        <div class="flex items-center justify-between mt-4">
-          <p class="text-gray-500 text-sm dark:text-neutral-400">
-            Overview of your store's performance
-          </p>
-          <div class="relative">
-            <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+        <PageHeader title="Commerce Dashboard" description="Overview of your store's performance">
+          <template #actions>
+            <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
               @foreach(timeRanges as range)
                 <option value="{{ range }}">{{ range }}</option>
               @endforeach
             </select>
-          </div>
-        </div>
+          </template>
+        </PageHeader>
 
         <!-- Stats — currently canned numbers; wire to derived(orders) once a real source is plumbed in. -->
         <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
