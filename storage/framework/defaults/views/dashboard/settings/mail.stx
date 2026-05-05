@@ -15,7 +15,7 @@ function handleSubmit(event: Event) {
 fetchSettings()
 </script>
 
-<PageLayout maxWidth="full" padding="none" spacing="none">
+<PageLayout variant="bare">
   <SettingsHeader />
 
   <!-- Settings forms -->

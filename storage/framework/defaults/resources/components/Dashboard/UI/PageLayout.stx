@@ -1,11 +1,31 @@
 <script server>
 interface PageLayoutProps {
+  /**
+   * Visual variant.
+   *
+   * - `default` — standard centered column with `mx-auto` + max-width
+   *   gutter. Use for almost every page.
+   * - `centered` — vertically centered hero block on a min-height
+   *   container. Use for splash / 404 / empty-route pages.
+   * - `bare` — no container at all. Use when the page wants to own
+   *   its own gutter (e.g. a settings page with side-by-side panels
+   *   that already pad themselves).
+   */
+  variant?: 'default' | 'centered' | 'bare'
   maxWidth?: 'md' | 'lg' | 'xl' | '2xl' | '3xl' | '4xl' | '5xl' | '6xl' | '7xl' | 'full'
   padding?: 'none' | 'sm' | 'md' | 'lg'
   spacing?: 'none' | 'sm' | 'md' | 'lg'
+  /** Optional min-height utility for the `centered` variant. */
+  minHeight?: 'screen' | '70vh' | '80vh' | '90vh'
 }
 
-const { maxWidth = '7xl', padding = 'md', spacing = 'md' } = defineProps<PageLayoutProps>()
+const {
+  variant = 'default',
+  maxWidth = '7xl',
+  padding = 'md',
+  spacing = 'md',
+  minHeight = '80vh',
+} = defineProps<PageLayoutProps>()
 
 const widthClasses = {
   md: 'max-w-md',
@@ -34,13 +54,31 @@ const spacingClasses = {
   lg: 'space-y-8',
 }
 
-const containerClass = [
-  'mx-auto',
-  widthClasses[maxWidth] || widthClasses['7xl'],
-  paddingClasses[padding] || paddingClasses.md,
-  spacingClasses[spacing] || spacingClasses.md,
-].filter(Boolean).join(' ')
+const minHeightClasses = {
+  'screen': 'min-h-screen',
+  '70vh': 'min-h-[70vh]',
+  '80vh': 'min-h-[80vh]',
+  '90vh': 'min-h-[90vh]',
+}
+
+const widthClass = widthClasses[maxWidth] || widthClasses['7xl']
+const paddingClass = paddingClasses[padding] || paddingClasses.md
+const spacingClass = spacingClasses[spacing] || spacingClasses.md
+const minHeightClass = minHeightClasses[minHeight] || minHeightClasses['80vh']
+
+const defaultClass = ['mx-auto', widthClass, paddingClass, spacingClass].filter(Boolean).join(' ')
+const centeredClass = ['flex items-center justify-center', minHeightClass, paddingClass].filter(Boolean).join(' ')
 </script>
-<div class="{{ containerClass }}">
+@if(variant === 'bare')
   <slot />
-</div>
+@elseif(variant === 'centered')
+  <div class="{{ centeredClass }}">
+    <div class="mx-auto w-full {{ widthClass }} {{ spacingClass }}">
+      <slot />
+    </div>
+  </div>
+@else
+  <div class="{{ defaultClass }}">
+    <slot />
+  </div>
+@endif
