@@ -2,127 +2,11 @@
 
 @section('content')
 <script server>
-import * as d3 from 'd3'
-let timeRange = '30'
-let isLoading = false
+definePageMeta({
+  middleware: ['auth'],
+})
 
-const formatDate = (daysAgo) => {
-  const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  }
-}
-
-const generateDateLabels = (days) => {
-  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i)).reverse()
-}
-
-const generateGrowthData = (days, baseCount, dailyGrowth) => {
-  return Array.from({ length: days }, (_, i) => {
-    const dayVariance = Math.random() * dailyGrowth * 0.5
-    const daysFromStart = days - 1 - i
-    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
-  }).reverse()
-}
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      type: 'linear',
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        callback: function(tickValue) {
-          const value = Number(tickValue)
-          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-          if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
-          return value.toString()
-        }
-      },
-    },
-    x: {
-      type: 'category',
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      align: 'end',
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      mode: 'index',
-      intersect: false,
-      callbacks: {
-        label: (context) => {
-          let label = context.dataset.label || ''
-          if (label) label += ': '
-          if (context.parsed.y !== null) {
-            const value = context.parsed.y
-            if (value >= 1000000) return `${label}${(value / 1000000).toFixed(1)}M subscribers`
-            if (value >= 1000) return `${label}${(value / 1000).toFixed(1)}k subscribers`
-            return `${label}${value} subscribers`
-          }
-          return label
-        }
-      }
-    }
-  },
-  interaction: {
-    mode: 'index',
-    intersect: false,
-  },
-}
-
-function chartData() {
-  const days = parseInt(timeRange)
-  const labels = generateDateLabels(days)
-  const baseCount = 500
-  const dailyGrowth = 5
-
-  return {
-    labels,
-    datasets: [{
-      label: 'Total Subscribers',
-      data: generateGrowthData(days, baseCount, dailyGrowth),
-      borderColor: 'rgb(14, 165, 233)',
-      backgroundColor: 'rgba(14, 165, 233, 0.1)',
-      fill: true,
-      tension: 0.4
-    }]
-  }
-}
-
-const router = useRouter()
-
-interface ModelNode extends d3.SimulationNodeDatum {
+interface ModelNode {
   id: string
   name: string
   description: string
@@ -130,132 +14,46 @@ interface ModelNode extends d3.SimulationNodeDatum {
   relationships: string[]
   emoji: string
   color: string
-  x?: number
-  y?: number
-  fx?: number | null
-  fy?: number | null
 }
 
-interface RelationshipLink {
-  source: string | ModelNode
-  target: string | ModelNode
-  type: 'hasMany' | 'belongsTo' | 'hasOne' | 'belongsToMany'
-}
-
-let selectedModel = null
-
-const models = [
-  {
-    id: 'subscriber',
-    name: 'Subscriber',
-    description: 'Manages newsletter and communication preferences for users and contacts. Tracks subscription status and email preferences.',
-    properties: ['id', 'email', 'status'],
-    relationships: ['subscriberEmails'],
-    emoji: '📫',
-    color: '#0D9488'
-  },
-  {
-    id: 'subscriberEmail',
-    name: 'SubscriberEmail',
-    description: 'Tracks email communications sent to subscribers, including campaign history and engagement metrics.',
-    properties: ['id', 'email', 'subscriber_id'],
-    relationships: ['subscriber'],
-    emoji: '✉️',
-    color: '#2DD4BF'
-  }
+const models: ModelNode[] = [
+  { id: 'subscriber', name: 'Subscriber', description: 'Manages newsletter and communication preferences for users and contacts. Tracks subscription status and email preferences.', properties: ['id', 'email', 'status'], relationships: ['subscriberEmails'], emoji: '📫', color: '#0D9488' },
+  { id: 'subscriberEmail', name: 'SubscriberEmail', description: 'Tracks email communications sent to subscribers, including campaign history and engagement metrics.', properties: ['id', 'email', 'subscriber_id'], relationships: ['subscriber'], emoji: '✉️', color: '#2DD4BF' },
 ]
-
-const relationships = [
-  { source: 'subscriber', target: 'subscriberEmail', type: 'hasMany' },
-  { source: 'subscriberEmail', target: 'subscriber', type: 'belongsTo' }
-]
-
-let diagramContainer = null
-let simulation
-
-const getModelRoute = (modelId) => {
-  const routes = {
-    subscriber: '/models/subscribers',
-    subscribers: '/models/subscribers',
-    subscriberEmail: '/models/subscriber-emails',
-    subscriberEmails: '/models/subscriber-emails'
-  }
-  return routes[modelId] || '/models'
-}
-
 </script>
 
 @title('Dashboard - Subscribers')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
-    <div>
-      <h3 class="font-semibold leading-6 text-base text-gray-900">
-        Last 30 days
-      </h3>
-
-      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
-              </svg>
-            </div>
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate">
-              Total Subscribers
-            </p>
-          </dt>
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900">
-              1,234
-            </p>
-            <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
-              <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-              </svg>
-              <span class="sr-only"> Increased by </span>
-              122
-            </p>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" />
-              </svg>
-            </div>
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate">
-              Unsubscribes
-            </p>
-          </dt>
-
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900">
-              12
-            </p>
-
-            <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">
-              <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-              </svg>
-              <span class="sr-only"> Increased by </span>
-              4
-            </p>
-
-            <!-- <div class="absolute bottom-0 inset-x-0 px-4 py-4 sm:px-6 bg-gray-50">
-              <div class="text-sm">
-                <a href="#" class="font-medium text-blue-600 hover:text-blue-500">View all<span class="sr-only"> Average Deploy Time</span></a>
-              </div>
-            </div> -->
-          </dd>
-        </div>
-      </dl>
-    </div>
+    <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Last 30 days</h3>
+    <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+      <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <dt>
+          <div class="absolute p-3 bg-blue-500 rounded-md">
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" /></svg>
+          </div>
+          <p class="ml-16 font-medium text-gray-500 text-sm truncate">Total Subscribers</p>
+        </dt>
+        <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+          <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">1,234</p>
+          <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">122</p>
+        </dd>
+      </div>
+      <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <dt>
+          <div class="absolute p-3 bg-blue-500 rounded-md">
+            <svg class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 9v.906a2.25 2.25 0 01-1.183 1.981l-6.478 3.488M2.25 9v.906a2.25 2.25 0 001.183 1.981l6.478 3.488m8.839 2.51l-4.66-2.51m0 0l-1.023-.55a2.25 2.25 0 00-2.134 0l-1.022.55m0 0l-4.661 2.51m16.5 1.615a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V8.844a2.25 2.25 0 011.183-1.98l7.5-4.04a2.25 2.25 0 012.134 0l7.5 4.04a2.25 2.25 0 011.183 1.98V19.5z" /></svg>
+          </div>
+          <p class="ml-16 font-medium text-gray-500 text-sm truncate">Unsubscribes</p>
+        </dt>
+        <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+          <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">12</p>
+          <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm">4</p>
+        </dd>
+      </div>
+    </dl>
   </div>
 
-  <!-- Growth Chart -->
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
     <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
@@ -265,10 +63,7 @@ const getModelRoute = (modelId) => {
             <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Track subscriber count over time</p>
           </div>
           <div class="flex items-center space-x-4">
-            <select
-              value="{{ timeRange }}"
-              class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-            >
+            <select x-model="timeRange" @change="changeTimeRange()" class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
               <option value="90">Last 90 days</option>
@@ -277,12 +72,10 @@ const getModelRoute = (modelId) => {
           </div>
         </div>
         <div class="relative h-[400px]">
-          @if(isLoading)
-          <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
+          <div :show="isLoading" class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
             <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
           </div>
-          @endif
-          <canvas id="chart_1"></canvas>
+          <canvas id="subscriber_growth_chart"></canvas>
         </div>
       </div>
     </div>
@@ -294,60 +87,47 @@ const getModelRoute = (modelId) => {
         <div class="flex items-center justify-between mb-6">
           <div>
             <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Subscriber Model Relationships</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Interactive diagram showing Subscriber model relationships. Click on any model to view details.</p>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Click any model to view details.</p>
           </div>
         </div>
         <div class="flex">
-          <div ref="diagramContainer" class="relative flex-1 h-[400px]">
-            <!-- D3 diagram will be rendered here -->
+          <div class="relative flex-1 h-[400px] flex flex-wrap gap-4 items-start justify-start p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
+            @foreach(models as model)
+              <button type="button" @click="selectModel({{ JSON.stringify(model) }})" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 dark:ring-neutral-600 rounded-lg shadow-sm">
+                <span class="text-3xl">{{ model.emoji }}</span>
+                <span class="mt-2 font-medium text-gray-900 text-sm dark:text-neutral-100">{{ model.name }}</span>
+              </button>
+            @endforeach
           </div>
 
-          @if(selectedModel)
-          <div class="ml-6 p-4 w-64 bg-gray-50 dark:bg-neutral-600 rounded-lg">
+          <div :show="selectedModel() !== null" class="ml-6 p-4 w-64 bg-gray-50 dark:bg-neutral-600 rounded-lg">
             <div class="flex items-center mb-4">
-              <span class="mr-2 text-2xl">{{ selectedModel.emoji }}</span>
-              <h4 class="font-semibold text-gray-900 text-lg dark:text-neutral-100">{{ selectedModel.name }}</h4>
+              <span class="mr-2 text-2xl">{{ selectedModel()?.emoji }}</span>
+              <h4 class="font-semibold text-gray-900 text-lg dark:text-neutral-100">{{ selectedModel()?.name }}</h4>
             </div>
-
             <div class="mb-4">
-              <p class="text-gray-600 text-sm dark:text-neutral-400">{{ selectedModel.description }}</p>
+              <p class="text-gray-600 text-sm dark:text-neutral-400">{{ selectedModel()?.description }}</p>
             </div>
-
             <div class="mb-4">
               <h5 class="mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Properties</h5>
               <ul class="space-y-1">
-                @foreach(selectedModel.properties as prop)
-                <li class="font-mono text-gray-600 text-sm dark:text-neutral-400">
-                  {{ prop }}
-                </li>
-                @endforeach
+                <template :for="prop in (selectedModel()?.properties ?? [])">
+                  <li class="font-mono text-gray-600 text-sm dark:text-neutral-400">{{ prop }}</li>
+                </template>
               </ul>
             </div>
-
             <div class="mb-6">
               <h5 class="mb-2 font-medium text-gray-700 text-sm dark:text-neutral-300">Relationships</h5>
               <ul class="space-y-1">
-                @foreach(selectedModel.relationships as rel)
-                <li class="font-mono text-sm">
-                  <a                     href="{{ getModelRoute(rel.toLowerCase()) }}"
-                    class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 duration-150 transition-colors"
-                  >
-                    {{ rel }}
-                  </a>
-                </li>
-                @endforeach
+                <template :for="rel in (selectedModel()?.relationships ?? [])">
+                  <li class="font-mono text-sm">
+                    <a :href="resolveModelRoute(rel)" class="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">{{ rel }}</a>
+                  </li>
+                </template>
               </ul>
             </div>
-
-            @if(selectedModel.id !== 'subscriber')
-            <a               href="{{ getModelRoute(selectedModel.id) }}"
-              class="block px-4 py-2 w-full font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm duration-150 transition-colors"
-            >
-              View Details
-            </a>
-            @endif
+            <a :show="selectedModel()?.id !== 'subscriber'" :href="resolveModelRoute(selectedModel()?.id ?? '')" class="block px-4 py-2 w-full font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">View Details</a>
           </div>
-          @endif
         </div>
       </div>
     </div>
@@ -356,21 +136,13 @@ const getModelRoute = (modelId) => {
   <div class="pt-12 px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900">
-          Subscribers
-        </h1>
-        <p class="mt-2 text-gray-700 text-sm">
-          A list of all your project subscribers.
-        </p>
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Subscribers</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">A list of all your project subscribers.</p>
       </div>
-
       <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
-        <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
-          Add Subscriber
-        </button>
+        <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Add Subscriber</button>
       </div>
     </div>
-
     <div class="flow-root mt-8">
       <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
         <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
@@ -378,101 +150,33 @@ const getModelRoute = (modelId) => {
             <table class="min-w-full divide-gray-300 divide-y">
               <thead class="bg-gray-50 dark:bg-neutral-700/50">
                 <tr>
-                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm">
-                    ID
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Email
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    User
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Status
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm">
-                    Unsubscribed At
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm">
-                    Created At
-                  </th>
-
-                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                    <span class="sr-only">Edit</span>
-                  </th>
+                  <th class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm">ID</th>
+                  <th class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">Email</th>
+                  <th class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">User</th>
+                  <th class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">Status</th>
+                  <th class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm">Unsubscribed At</th>
+                  <th class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm">Created At</th>
+                  <th class="relative pl-3 pr-4 py-3.5 sm:pr-6"><span class="sr-only">Edit</span></th>
                 </tr>
               </thead>
-
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
                 <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">
-                    1
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                    <div class="flex items-center font-medium text-gray-900 text-sm dark:text-neutral-100">
-                      chris@stacksjs.com
-                    </div>
-                  </td>
-
-                  <!-- could be empty if no relationship exists -->
-                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                    Chris Breuer
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs bg-green-50 ring-1 ring-green-600/20 ring-inset rounded-md">Subscribed</span>
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
-                    <!-- 2024/01/22 11:00am -->
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
-                    2024/01/02
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Subscriber</span></a>
-                  </td>
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">1</td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap"><div class="flex items-center font-medium text-gray-900 text-sm dark:text-neutral-100">chris@stacksjs.com</div></td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">Chris Breuer</td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap"><span class="inline-flex items-center px-2 py-1 font-medium text-green-700 text-xs bg-green-50 ring-1 ring-green-600/20 ring-inset rounded-md">Subscribed</span></td>
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap"></td>
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">2024/01/02</td>
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap"><a href="#" class="text-blue-600 hover:text-blue-900">Edit</a></td>
                 </tr>
-
                 <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">
-                    2
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                    <div class="flex items-center font-medium text-gray-900 text-sm dark:text-neutral-100">
-                      buddy@stacksjs.com
-                    </div>
-                  </td>
-
-                  <!-- could be empty if no relationship exists -->
-                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                    <!-- Chris Breuer -->
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                    <span class="inline-flex items-center px-2 py-1 font-medium text-slate-700 text-xs bg-slate-50 ring-1 ring-inset ring-slate-600/20 rounded-md">Unsubscribed</span>
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
-                    2024/01/22 11:00am
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">
-                    2024/01/02
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 hover:text-blue-900">Edit<span class="sr-only">, Subscriber</span></a>
-                  </td>
+                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">2</td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap"><div class="flex items-center font-medium text-gray-900 text-sm dark:text-neutral-100">buddy@stacksjs.com</div></td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap"></td>
+                  <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap"><span class="inline-flex items-center px-2 py-1 font-medium text-slate-700 text-xs bg-slate-50 ring-1 ring-inset ring-slate-600/20 rounded-md">Unsubscribed</span></td>
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">2024/01/22 11:00am</td>
+                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap">2024/01/02</td>
+                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap"><a href="#" class="text-blue-600 hover:text-blue-900">Edit</a></td>
                 </tr>
               </tbody>
             </table>
@@ -482,171 +186,100 @@ const getModelRoute = (modelId) => {
     </div>
   </div>
 </div>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
 
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: chartData,
-    options: chartOptions,
-  })
+<script client>
+import { useChart } from '../composables'
+
+interface ChartLike { destroy: () => void, data: { labels: string[], datasets: Array<{ data: number[] }> }, update: () => void }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+interface ModelNode {
+  id: string
+  name: string
+  description: string
+  properties: string[]
+  relationships: string[]
+  emoji: string
+  color: string
+}
+
+const timeRange = state('30')
+const isLoading = state(false)
+const selectedModel = state<ModelNode | null>(null)
+
+function selectModel(model: ModelNode) {
+  selectedModel.set(model)
+}
+
+function resolveModelRoute(id: string) {
+  const routes: Record<string, string> = {
+    subscriber: '/models/subscribers', subscribers: '/models/subscribers',
+    subscriberEmail: '/models/subscriber-emails', subscriberEmails: '/models/subscriber-emails',
+  }
+  return routes[id] || '/models'
+}
+
+function formatDateOffset(daysAgo: number) {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function generateGrowthData(days: number, baseCount: number, dailyGrowth: number) {
+  return Array.from({ length: days }, (_, i) => {
+    const dayVariance = Math.random() * dailyGrowth * 0.5
+    const daysFromStart = days - 1 - i
+    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
+  }).reverse()
+}
+
+function buildSeries() {
+  const days = Number.parseInt(timeRange())
+  const labels = Array.from({ length: days }, (_, i) => formatDateOffset(days - 1 - i)).reverse()
+  return { labels, data: generateGrowthData(days, 500, 5) }
+}
+
+let chartHandle: ChartLike | null = null
+
+function changeTimeRange() {
+  if (!chartHandle)
+    return
+  const series = buildSeries()
+  chartHandle.data.labels = series.labels
+  chartHandle.data.datasets[0].data = series.data
+  chartHandle.update()
 }
 
 onMount(async () => {
-  isLoading = true
-  await new Promise(resolve => setTimeout(resolve, 500))
-  isLoading = false
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+  const series = buildSeries()
+  chartHandle = useChart({
+    Chart: Ctor,
+    id: 'subscriber_growth_chart',
+    type: 'line',
+    data: {
+      labels: series.labels,
+      datasets: [{ label: 'Total Subscribers', data: series.data, borderColor: 'rgb(14, 165, 233)', backgroundColor: 'rgba(14, 165, 233, 0.1)', fill: true, tension: 0.4 }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      scales: {
+        y: { type: 'linear', beginAtZero: true, grid: { color: 'rgba(200, 200, 200, 0.1)' }, ticks: { color: 'rgb(156, 163, 175)' } },
+        x: { type: 'category', grid: { display: false }, ticks: { color: 'rgb(156, 163, 175)' } },
+      },
+      plugins: { legend: { display: true, position: 'top', align: 'end', labels: { color: 'rgb(156, 163, 175)', boxWidth: 12, padding: 15 } } },
+      interaction: { mode: 'index', intersect: false },
+    },
+  }) as unknown as ChartLike
+})
 
-  const subscriberModel = models.find(model => model.id === 'subscriber')
-  if (subscriberModel) {
-    selectedModel = subscriberModel
-  }
-
-  if (!diagramContainer) return
-
-  const width = 800
-  const height = 400
-  const svg = d3.select(diagramContainer)
-    .append('svg')
-    .attr('width', width)
-    .attr('height', height)
-    .attr('viewBox', [0, 0, width, height])
-    .attr('style', 'max-width: 100%; height: auto;')
-
-  svg.append('defs').selectAll('marker')
-    .data(['arrow'])
-    .join('marker')
-    .attr('id', d => d)
-    .attr('viewBox', '0 -5 10 10')
-    .attr('refX', 25)
-    .attr('refY', 0)
-    .attr('markerWidth', 6)
-    .attr('markerHeight', 6)
-    .attr('orient', 'auto')
-    .append('path')
-    .attr('fill', '#999')
-    .attr('d', 'M0,-5L10,0L0,5')
-
-  simulation = d3.forceSimulation(models)
-    .force('link', d3.forceLink(relationships)
-      .id(d => d.id)
-      .distance(150))
-    .force('charge', d3.forceManyBody().strength(-800))
-    .force('center', d3.forceCenter(width / 2, height / 2))
-
-  const link = svg.append('g')
-    .selectAll('line')
-    .data(relationships)
-    .join('line')
-    .attr('stroke', '#999')
-    .attr('stroke-opacity', 0.6)
-    .attr('stroke-width', 2)
-    .attr('marker-end', 'url(#arrow)')
-
-  const node = svg.append('g')
-    .selectAll('g')
-    .data(models)
-    .join('g')
-    .call((selection) => {
-      const drag = d3.drag()
-        .on('start', dragstarted)
-        .on('drag', dragged)
-        .on('end', dragended)
-      return drag(selection)
-    }
-    .style('cursor', 'pointer')
-    .on('click', (event, d) => {
-      selectedModel = d
-      if (event.detail === 2) {
-        router.push(getModelRoute(d.id))
-      }
-    }
-
-  node.on('mouseover', function() {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(200)
-      .attr('r', 22)
-  }
-  .on('mouseout', function() {
-    d3.select(this).select('circle')
-      .transition()
-      .duration(200)
-      .attr('r', 20)
-  }
-
-  node.append('circle')
-    .attr('r', 20)
-    .attr('fill', d => d.color)
-
-  node.append('text')
-    .attr('dy', '0.35em')
-    .attr('text-anchor', 'middle')
-    .text(d => d.emoji)
-    .attr('font-size', '20px')
-
-  node.append('text')
-    .attr('dy', 35)
-    .attr('text-anchor', 'middle')
-    .text(d => d.name)
-    .attr('fill', '#374151')
-    .attr('font-size', '14px')
-    .attr('font-weight', 'bold')
-
-  simulation.on('tick', () => {
-    link
-      .attr('x1', d => d.source.x)
-      .attr('y1', d => d.source.y)
-      .attr('x2', d => d.target.x)
-      .attr('y2', d => d.target.y)
-
-    node
-      .attr('transform', d => `translate(${d.x},${d.y})`)
-  }
-
-  function dragstarted(event) {
-    if (!event.active) simulation.alphaTarget(0.3).restart()
-    event.subject.fx = event.subject.x
-    event.subject.fy = event.subject.y
-  }
-
-  function dragged(event) {
-    event.subject.fx = event.x
-    event.subject.fy = event.y
-  }
-
-  function dragended(event) {
-    if (!event.active) simulation.alphaTarget(0)
-    event.subject.fx = null
-    event.subject.fy = null
-  }
+onDestroy(() => {
+  chartHandle?.destroy()
+  chartHandle = null
 })
 </script>
-
-<style scoped>
-:deep(svg) {
-  background-color: transparent;
-  border-radius: 0.5rem;
-}
-
-:deep(line) {
-  stroke-linecap: round;
-}
-
-:deep(text) {
-  user-select: none;
-}
-
-:deep(circle) {
-  cursor: grab;
-}
-
-:deep(circle:active) {
-  cursor: grabbing;
-}
-</style>
 
 @endsection
