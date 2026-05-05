@@ -3,59 +3,294 @@
 @section('content')
 <script server>
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
+</script>
 
-// Register ChartJS components
-// File and folder interfaces
+@title('Dashboard - File Manager')
+<div class="flex flex-col h-full">
+  <div class="flex flex-1">
+    <div class="border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300 {{ sidePanelClass }}">
+      <div :show="showSidePanel" class="flex flex-col h-full">
+        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage</h3>
+          <div class="mt-2" style="height: 120px;"><canvas id="files_storage_chart"></canvas></div>
+          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
+            <div class="flex justify-between py-0.5"><span>Used</span><span>{{ usedLabel }}</span></div>
+            <div class="flex justify-between py-0.5"><span>Available</span><span>{{ availableLabel }}</span></div>
+            <div class="flex justify-between py-0.5 font-medium text-stone-700 dark:text-neutral-300"><span>Total</span><span>{{ totalLabel }}</span></div>
+          </div>
+        </div>
+
+        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
+          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage by Type</h3>
+          <div class="mt-2" style="height: 120px;"><canvas id="files_type_chart"></canvas></div>
+          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
+            <div class="flex justify-between py-0.5"><span>Documents</span><span>{{ docsLabel }}</span></div>
+            <div class="flex justify-between py-0.5"><span>Images</span><span>{{ imgsLabel }}</span></div>
+            <div class="flex justify-between py-0.5"><span>Videos</span><span>{{ videosLabel }}</span></div>
+            <div class="flex justify-between py-0.5"><span>Other</span><span>{{ otherLabel }}</span></div>
+          </div>
+        </div>
+
+        <nav class="overflow-y-auto flex-1 p-2">
+          <div class="space-y-0.5">
+            <button @click="navigateToRoot()" class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700">
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
+              Home
+            </button>
+            <button class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md">
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-star"></div>
+              Starred
+              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">{{ starredCount }}</span>
+            </button>
+            <button class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md">
+              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-share-01"></div>
+              Shared
+              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">{{ sharedCount }}</span>
+            </button>
+          </div>
+          <div class="mt-6">
+            <h3 class="px-2.5 font-semibold text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Folders</h3>
+            <div class="mt-1 space-y-0.5">
+              <template :for="folder in topLevelFolders()">
+                <button @click="navigateToFolder(folder)" class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md">
+                  <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-folder-02"></div>
+                  {{ folder.name }}
+                </button>
+              </template>
+            </div>
+          </div>
+        </nav>
+
+        <div class="p-4 border-stone-200/60 border-t dark:border-neutral-700">
+          <button @click="openUploadModal()" class="flex items-center justify-center px-4 py-2 w-full font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm">
+            <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
+            Upload Files
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex flex-1 flex-col bg-white dark:bg-neutral-900">
+      <div class="p-4 bg-white dark:bg-neutral-900 border-b border-stone-200/60 dark:border-neutral-700">
+        <div class="flex items-center justify-between">
+          <button @click="toggleSidePanel()" class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md">
+            <div class="h-5 w-5 i-hugeicons-menu-01"></div>
+          </button>
+
+          <div class="ml-4 max-w-lg w-full lg:max-w-xs">
+            <div class="relative">
+              <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+                <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+              </div>
+              <input x-model="searchQuery" type="search" placeholder="Search files and folders..." class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full leading-5 text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500" />
+            </div>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <div class="flex rounded-md shadow-sm">
+              <button @click="setViewMode('grid')" class="{{ gridViewClass }}">
+                <div class="h-5 w-5 i-hugeicons-grid-view"></div>
+              </button>
+              <button @click="setViewMode('list')" class="{{ listViewClass }}">
+                <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
+              </button>
+            </div>
+
+            <select x-model="sortBy" class="block pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
+              <option value="name">Name</option>
+              <option value="lastModified">Date</option>
+              <option value="size">Size</option>
+            </select>
+
+            <button @click="toggleSortOrder()" class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md">
+              <div class="{{ sortOrderIcon }} h-5 w-5"></div>
+            </button>
+          </div>
+
+          <div class="flex items-center space-x-2">
+            <button @click="openCreateFolderModal()" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
+              <div class="mr-2 h-4 w-4 i-hugeicons-folder-add"></div>
+              New Folder
+            </button>
+            <button @click="openUploadModal()" class="inline-flex items-center px-3 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 rounded-md">
+              <div class="mr-2 h-4 w-4 i-hugeicons-upload-01"></div>
+              Upload
+            </button>
+          </div>
+        </div>
+
+        <nav class="flex mt-4">
+          <ol class="flex items-center space-x-1">
+            <template :for="(path, index) in currentPath()">
+              <li>
+                <div class="flex items-center">
+                  <span :show="index > 0" class="mx-1 text-gray-400 dark:text-neutral-500">/</span>
+                  <button @click="navigateToPath(index)" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300">{{ path }}</button>
+                </div>
+              </li>
+            </template>
+          </ol>
+        </nav>
+      </div>
+
+      <div class="overflow-auto flex-1 p-4 bg-stone-50/50 dark:bg-neutral-900">
+        <div :show="filteredItems().length === 0" class="flex flex-col items-center justify-center h-full text-center">
+          <div class="h-16 w-16 text-gray-400 dark:text-neutral-600 i-hugeicons-folder-02"></div>
+          <h3 class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No items</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ emptyHint }}</p>
+        </div>
+
+        <div :show="filteredItems().length > 0 && viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
+          <template :for="item in filteredItems()">
+            <div @click="onItemClick(item)" class="relative group p-4 rounded-lg border cursor-pointer transition-all duration-200 bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700">
+              <div class="flex justify-center mb-4">
+                <div class="{{ itemIconClass(item) }} h-12 w-12"></div>
+              </div>
+              <div class="text-center">
+                <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.name }}</p>
+                <p :show="item.type !== 'folder'" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ formatFileSize(item.size ?? 0) }}</p>
+              </div>
+              <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button @click="onStarClick(item, $event)" class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full {{ starButtonClass(item) }}">
+                  <div class="h-4 w-4 i-hugeicons-star"></div>
+                </button>
+                <button @click="onShareClick(item, $event)" class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full {{ shareButtonClass(item) }}">
+                  <div class="h-4 w-4 i-hugeicons-share-01"></div>
+                </button>
+              </div>
+            </div>
+          </template>
+        </div>
+
+        <div :show="filteredItems().length > 0 && viewMode() === 'list'" class="overflow-hidden ring-1 ring-stone-200/80 rounded-xl dark:ring-neutral-700 shadow-sm">
+          <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
+            <thead class="bg-stone-50/80 dark:bg-neutral-800">
+              <tr>
+                <th class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Name</th>
+                <th class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Size</th>
+                <th class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">Modified</th>
+                <th class="relative pl-3 pr-6 py-3.5"><span class="sr-only">Actions</span></th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
+              <template :for="item in filteredItems()">
+                <tr @click="onItemClick(item)" class="cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
+                  <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
+                    <div class="flex items-center">
+                      <div class="{{ itemIconClass(item) }} h-5 w-5 mr-3"></div>
+                      <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
+                    </div>
+                  </td>
+                  <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">{{ item.type === 'folder' ? '-' : formatFileSize(item.size ?? 0) }}</td>
+                  <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.lastModified) }}</td>
+                  <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
+                    <div class="flex justify-end space-x-2">
+                      <button @click="onStarClick(item, $event)" class="{{ starButtonClass(item) }}"><div class="h-5 w-5 i-hugeicons-star"></div></button>
+                      <button @click="onShareClick(item, $event)" class="{{ shareButtonClass(item) }}"><div class="h-5 w-5 i-hugeicons-share-01"></div></button>
+                      <button @click="onDeleteClick(item, $event)" class="text-gray-400 hover:text-red-500"><div class="h-5 w-5 i-hugeicons-waste"></div></button>
+                    </div>
+                  </td>
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div :show="showCreateFolderModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75" @click="closeCreateFolderModal()"></div>
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle">&#8203;</span>
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl align-bottom sm:align-middle">
+        <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Create New Folder</h3>
+        <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Enter a name for the new folder.</p>
+        <input x-model="newFolderName" type="text" placeholder="Folder name" class="block mt-4 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm" />
+        <div class="sm:flex sm:flex-row-reverse mt-5">
+          <button type="button" @click="createNewFolder()" class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm">Create</button>
+          <button type="button" @click="closeCreateFolderModal()" class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 shadow-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div :show="showUploadModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75" @click="closeUploadModal()"></div>
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle">&#8203;</span>
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl align-bottom sm:align-middle">
+        <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Upload Files</h3>
+        <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Select files to upload to the current folder.</p>
+        <div class="mt-4 flex justify-center pb-6 pt-5 px-6 border-2 border-dashed border-gray-300 rounded-md dark:border-neutral-600">
+          <div class="space-y-1 text-center">
+            <div class="mx-auto h-12 w-12 text-gray-400 dark:text-neutral-500 i-hugeicons-upload-01"></div>
+            <div class="flex text-gray-600 text-sm dark:text-neutral-400">
+              <label for="file-upload" class="relative font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 bg-white dark:bg-neutral-800 rounded-md cursor-pointer">
+                <span>Upload a file</span>
+                <input id="file-upload" type="file" class="sr-only" multiple />
+              </label>
+              <p class="pl-1">or drag and drop</p>
+            </div>
+            <p class="text-gray-500 text-xs dark:text-neutral-400">PNG, JPG, GIF, PDF, DOCX up to 10MB</p>
+          </div>
+        </div>
+        <div class="sm:flex sm:flex-row-reverse mt-5">
+          <button type="button" class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 rounded-md shadow-sm">Upload</button>
+          <button type="button" @click="closeUploadModal()" class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 shadow-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div :show="showDeleteConfirmation" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75" @click="closeDeleteConfirmation()"></div>
+    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
+      <span class="hidden sm:inline-block sm:h-screen sm:align-middle">&#8203;</span>
+      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl align-bottom sm:align-middle">
+        <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Delete Item</h3>
+        <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Are you sure you want to delete this item? This action cannot be undone.</p>
+        <div class="sm:flex sm:flex-row-reverse mt-5">
+          <button type="button" @click="deleteSelectedItems()" class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-red-600 hover:bg-red-700 rounded-md shadow-sm">Delete</button>
+          <button type="button" @click="closeDeleteConfirmation()" class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 shadow-sm">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
+import { useChart } from '../../composables'
+
 interface FileItem {
   id: number
   name: string
   type: string
-  size: number
+  size?: number
   path: string
   lastModified: string
   starred: boolean
   shared: boolean
+  items?: FileItem[]
 }
 
-interface FolderItem {
-  id: number
-  name: string
-  type: 'folder'
-  path: string
-  lastModified: string
-  starred: boolean
-  shared: boolean
-  items: (FileItem | FolderItem)[]
+interface ChartLike { destroy: () => void }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+const fileTypeIcons: Record<string, string> = {
+  pdf: 'i-hugeicons-pdf-01', doc: 'i-hugeicons-doc-01', docx: 'i-hugeicons-doc-01',
+  xls: 'i-hugeicons-xls-01', xlsx: 'i-hugeicons-xls-01',
+  ppt: 'i-hugeicons-ppt-01', pptx: 'i-hugeicons-ppt-01',
+  jpg: 'i-hugeicons-jpg-01', jpeg: 'i-hugeicons-jpg-01',
+  png: 'i-hugeicons-png-01', gif: 'i-hugeicons-gif-01', svg: 'i-hugeicons-svg-01',
+  txt: 'i-hugeicons-txt-01', zip: 'i-hugeicons-zip-01',
+  mp3: 'i-hugeicons-mp3-01', mp4: 'i-hugeicons-mp-4-01',
+  folder: 'i-hugeicons-folder-02', default: 'i-hugeicons-file-02',
 }
 
-type Item = FileItem | FolderItem
-
-// File types and their icons
-const fileTypeIcons = {
-  pdf: 'i-hugeicons-pdf-01',
-  doc: 'i-hugeicons-doc-01',
-  docx: 'i-hugeicons-doc-01',
-  xls: 'i-hugeicons-xls-01',
-  xlsx: 'i-hugeicons-xls-01',
-  ppt: 'i-hugeicons-ppt-01',
-  pptx: 'i-hugeicons-ppt-01',
-  jpg: 'i-hugeicons-jpg-01',
-  jpeg: 'i-hugeicons-jpg-01',
-  png: 'i-hugeicons-png-01',
-  gif: 'i-hugeicons-gif-01',
-  svg: 'i-hugeicons-svg-01',
-  txt: 'i-hugeicons-txt-01',
-  zip: 'i-hugeicons-zip-01',
-  mp3: 'i-hugeicons-mp3-01',
-  mp4: 'i-hugeicons-mp-4-01',
-  folder: 'i-hugeicons-folder-02',
-  default: 'i-hugeicons-file-02'
-}
-
-// Sample file structure
-const rootFolder = {
+const rootFolder: FileItem = {
   id: 1,
   name: 'Root',
   type: 'folder',
@@ -64,1082 +299,320 @@ const rootFolder = {
   starred: false,
   shared: false,
   items: [
-    {
-      id: 2,
-      name: 'Documents',
-      type: 'folder',
-      path: '/Documents',
-      lastModified: '2023-12-01T10:00:00',
-      starred: true,
-      shared: true,
-      items: [
-        {
-          id: 6,
-          name: 'Project Proposal.pdf',
-          type: 'pdf',
-          size: 2500000,
-          path: '/Documents/Project Proposal.pdf',
-          lastModified: '2023-12-05T14:30:00',
-          starred: true,
-          shared: true
-        },
-        {
-          id: 7,
-          name: 'Meeting Notes.docx',
-          type: 'docx',
-          size: 350000,
-          path: '/Documents/Meeting Notes.docx',
-          lastModified: '2023-12-10T09:15:00',
-          starred: false,
-          shared: false
-        },
-        {
-          id: 8,
-          name: 'Budget.xlsx',
-          type: 'xlsx',
-          size: 1200000,
-          path: '/Documents/Budget.xlsx',
-          lastModified: '2023-12-08T16:45:00',
-          starred: false,
-          shared: true
-        }
-      ]
-    },
-    {
-      id: 3,
-      name: 'Images',
-      type: 'folder',
-      path: '/Images',
-      lastModified: '2023-12-02T11:30:00',
-      starred: false,
-      shared: false,
-      items: [
-        {
-          id: 9,
-          name: 'Profile Photo.jpg',
-          type: 'jpg',
-          size: 1800000,
-          path: '/Images/Profile Photo.jpg',
-          lastModified: '2023-12-03T13:20:00',
-          starred: true,
-          shared: false
-        },
-        {
-          id: 10,
-          name: 'Banner.png',
-          type: 'png',
-          size: 2700000,
-          path: '/Images/Banner.png',
-          lastModified: '2023-12-04T10:10:00',
-          starred: false,
-          shared: true
-        },
-        {
-          id: 11,
-          name: 'Icon.svg',
-          type: 'svg',
-          size: 150000,
-          path: '/Images/Icon.svg',
-          lastModified: '2023-12-05T09:05:00',
-          starred: false,
-          shared: false
-        }
-      ]
-    },
-    {
-      id: 4,
-      name: 'Videos',
-      type: 'folder',
-      path: '/Videos',
-      lastModified: '2023-12-03T14:00:00',
-      starred: false,
-      shared: false,
-      items: [
-        {
-          id: 12,
-          name: 'Product Demo.mp4',
-          type: 'mp4',
-          size: 15000000,
-          path: '/Videos/Product Demo.mp4',
-          lastModified: '2023-12-06T15:30:00',
-          starred: false,
-          shared: true
-        },
-        {
-          id: 13,
-          name: 'Tutorial.mp4',
-          type: 'mp4',
-          size: 25000000,
-          path: '/Videos/Tutorial.mp4',
-          lastModified: '2023-12-07T11:45:00',
-          starred: true,
-          shared: true
-        }
-      ]
-    },
-    {
-      id: 5,
-      name: 'Downloads',
-      type: 'folder',
-      path: '/Downloads',
-      lastModified: '2023-12-04T09:00:00',
-      starred: false,
-      shared: false,
-      items: [
-        {
-          id: 14,
-          name: 'Software Update.zip',
-          type: 'zip',
-          size: 45000000,
-          path: '/Downloads/Software Update.zip',
-          lastModified: '2023-12-08T10:20:00',
-          starred: false,
-          shared: false
-        },
-        {
-          id: 15,
-          name: 'E-book.pdf',
-          type: 'pdf',
-          size: 3500000,
-          path: '/Downloads/E-book.pdf',
-          lastModified: '2023-12-09T14:10:00',
-          starred: true,
-          shared: false
-        }
-      ]
-    }
-  ]
+    { id: 2, name: 'Documents', type: 'folder', path: '/Documents', lastModified: '2023-12-01T10:00:00', starred: true, shared: true, items: [
+      { id: 6, name: 'Project Proposal.pdf', type: 'pdf', size: 2500000, path: '/Documents/Project Proposal.pdf', lastModified: '2023-12-05T14:30:00', starred: true, shared: true },
+      { id: 7, name: 'Meeting Notes.docx', type: 'docx', size: 350000, path: '/Documents/Meeting Notes.docx', lastModified: '2023-12-10T09:15:00', starred: false, shared: false },
+      { id: 8, name: 'Budget.xlsx', type: 'xlsx', size: 1200000, path: '/Documents/Budget.xlsx', lastModified: '2023-12-08T16:45:00', starred: false, shared: true },
+    ] },
+    { id: 3, name: 'Images', type: 'folder', path: '/Images', lastModified: '2023-12-02T11:30:00', starred: false, shared: false, items: [
+      { id: 9, name: 'Profile Photo.jpg', type: 'jpg', size: 1800000, path: '/Images/Profile Photo.jpg', lastModified: '2023-12-03T13:20:00', starred: true, shared: false },
+      { id: 10, name: 'Banner.png', type: 'png', size: 2700000, path: '/Images/Banner.png', lastModified: '2023-12-04T10:10:00', starred: false, shared: true },
+      { id: 11, name: 'Icon.svg', type: 'svg', size: 150000, path: '/Images/Icon.svg', lastModified: '2023-12-05T09:05:00', starred: false, shared: false },
+    ] },
+    { id: 4, name: 'Videos', type: 'folder', path: '/Videos', lastModified: '2023-12-03T14:00:00', starred: false, shared: false, items: [
+      { id: 12, name: 'Product Demo.mp4', type: 'mp4', size: 15000000, path: '/Videos/Product Demo.mp4', lastModified: '2023-12-06T15:30:00', starred: false, shared: true },
+      { id: 13, name: 'Tutorial.mp4', type: 'mp4', size: 25000000, path: '/Videos/Tutorial.mp4', lastModified: '2023-12-07T11:45:00', starred: true, shared: true },
+    ] },
+    { id: 5, name: 'Downloads', type: 'folder', path: '/Downloads', lastModified: '2023-12-04T09:00:00', starred: false, shared: false, items: [
+      { id: 14, name: 'Software Update.zip', type: 'zip', size: 45000000, path: '/Downloads/Software Update.zip', lastModified: '2023-12-08T10:20:00', starred: false, shared: false },
+      { id: 15, name: 'E-book.pdf', type: 'pdf', size: 3500000, path: '/Downloads/E-book.pdf', lastModified: '2023-12-09T14:10:00', starred: true, shared: false },
+    ] },
+  ],
 }
 
-// Current state
-let currentFolder = rootFolder
-let currentPath = ['Root']
-let selectedItems = []
-let viewMode = 'grid'
-let sortBy = 'name'
-let sortOrder = 'asc'
-let searchQuery = ''
-let showUploadModal = false
-let showCreateFolderModal = false
-let newFolderName = ''
-let showDeleteConfirmation = false
-let showSidePanel = true
+const root = state<FileItem>(rootFolder)
+const currentFolderId = state<number>(rootFolder.id)
+const searchQuery = state('')
+const sortBy = state<'name' | 'lastModified' | 'size'>('name')
+const sortOrder = state<'asc' | 'desc'>('asc')
+const viewMode = state<'grid' | 'list'>('grid')
+const showSidePanel = state(true)
+const showUploadModal = state(false)
+const showCreateFolderModal = state(false)
+const showDeleteConfirmation = state(false)
+const newFolderName = state('')
+const itemToDelete = state<FileItem | null>(null)
 
-// Storage statistics for charts
-const storageStats = {
-  total: 100 * 1024 * 1024 * 1024, // 100 GB
-  used: 45 * 1024 * 1024 * 1024, // 45 GB
-  available: 55 * 1024 * 1024 * 1024 // 55 GB
-}
+const storageStats = { total: 100 * 1024 ** 3, used: 45 * 1024 ** 3, available: 55 * 1024 ** 3 }
+const storageByType = { documents: 15 * 1024 ** 3, images: 10 * 1024 ** 3, videos: 18 * 1024 ** 3, other: 2 * 1024 ** 3 }
 
-// Storage usage by type
-const storageByType = {
-  documents: 15 * 1024 * 1024 * 1024, // 15 GB
-  images: 10 * 1024 * 1024 * 1024, // 10 GB
-  videos: 18 * 1024 * 1024 * 1024, // 18 GB
-  other: 2 * 1024 * 1024 * 1024 // 2 GB
-}
-
-// Chart data
-function storageChartData() {
-  return {
-    labels: ['Used', 'Available'],
-    datasets: [
-      {
-        backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(200, 200, 200, 0.6)'],
-        borderColor: ['rgba(54, 162, 235, 1)', 'rgba(200, 200, 200, 1)'],
-        borderWidth: 1,
-        data: [storageStats.used, storageStats.available]
-      }
-    ]
-  }
-}
-
-function storageByTypeChartData() {
-  return {
-    labels: ['Documents', 'Images', 'Videos', 'Other'],
-    datasets: [
-      {
-        backgroundColor: [
-          'rgba(255, 99, 132, 0.6)',
-          'rgba(54, 162, 235, 0.6)',
-          'rgba(255, 206, 86, 0.6)',
-          'rgba(75, 192, 192, 0.6)'
-        ],
-        borderColor: [
-          'rgba(255, 99, 132, 1)',
-          'rgba(54, 162, 235, 1)',
-          'rgba(255, 206, 86, 1)',
-          'rgba(75, 192, 192, 1)'
-        ],
-        borderWidth: 1,
-        data: [
-          storageByType.documents,
-          storageByType.images,
-          storageByType.videos,
-          storageByType.other
-        ]
-      }
-    ]
-  }
-}
-
-// Chart options
-const doughnutChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      position: 'bottom',
+function findFolderById(folder: FileItem, id: number): FileItem | null {
+  if (folder.id === id)
+    return folder
+  for (const child of folder.items ?? []) {
+    if (child.type === 'folder') {
+      const found = findFolderById(child, id)
+      if (found)
+        return found
     }
   }
+  return null
 }
 
-// Computed properties
-function filteredItems() {
-  let items = [...currentFolder.items]
-
-  // Apply search filter
-  if (searchQuery) {
-    const query = searchQuery.toLowerCase()
-    items = items.filter(item => item.name.toLowerCase().includes(query))
+function findPathToId(folder: FileItem, id: number, path: string[] = []): string[] | null {
+  const next = [...path, folder.name]
+  if (folder.id === id)
+    return next
+  for (const child of folder.items ?? []) {
+    if (child.type === 'folder') {
+      const found = findPathToId(child, id, next)
+      if (found)
+        return found
+    }
   }
+  return null
+}
 
-  // Apply sorting
+const currentFolder = derived(() => findFolderById(root(), currentFolderId()) ?? root())
+const currentPath = derived(() => findPathToId(root(), currentFolderId()) ?? ['Root'])
+
+const filteredItems = derived(() => {
+  let items = [...(currentFolder().items ?? [])]
+  const q = searchQuery().toLowerCase()
+  if (q)
+    items = items.filter(item => item.name.toLowerCase().includes(q))
   items.sort((a, b) => {
-    if (sortBy === 'name') {
-      return sortOrder === 'asc'
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name)
-    } else if (sortBy === 'lastModified') {
-      const dateA = new Date(a.lastModified).getTime()
-      const dateB = new Date(b.lastModified).getTime()
-      return sortOrder === 'asc' ? dateA - dateB : dateB - dateA
-    } else if (sortBy === 'size') {
-      // For folders, use 0 as size for sorting
-      const sizeA = 'size' in a ? a.size : 0
-      const sizeB = 'size' in b ? b.size : 0
-      return sortOrder === 'asc' ? sizeA - sizeB : sizeB - sizeA
-    }
-    return 0
-  }
-
+    if (sortBy() === 'name')
+      return sortOrder() === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+    if (sortBy() === 'lastModified')
+      return sortOrder() === 'asc' ? new Date(a.lastModified).getTime() - new Date(b.lastModified).getTime() : new Date(b.lastModified).getTime() - new Date(a.lastModified).getTime()
+    const sa = a.size ?? 0
+    const sb = b.size ?? 0
+    return sortOrder() === 'asc' ? sa - sb : sb - sa
+  })
   return items
-}
+})
 
-function starredItems() {
-  // Recursively find all starred items
-  const findStarredItems = (folder) => {
-    let result = []
-
-    for (const item of folder.items) {
-      if (item.starred) {
-        result.push(item)
-      }
-
-      if (item.type === 'folder') {
-        result = [...result, ...findStarredItems(item)]
-      }
-    }
-
-    return result
+function countByPredicate(folder: FileItem, predicate: (item: FileItem) => boolean): number {
+  let count = 0
+  for (const item of folder.items ?? []) {
+    if (predicate(item))
+      count++
+    if (item.type === 'folder')
+      count += countByPredicate(item, predicate)
   }
-
-  return findStarredItems(rootFolder)
+  return count
 }
 
-function sharedItems() {
-  // Recursively find all shared items
-  const findSharedItems = (folder) => {
-    let result = []
+const starredCount = derived(() => countByPredicate(root(), i => i.starred))
+const sharedCount = derived(() => countByPredicate(root(), i => i.shared))
+const topLevelFolders = derived(() => (root().items ?? []).filter(i => i.type === 'folder'))
 
-    for (const item of folder.items) {
-      if (item.shared) {
-        result.push(item)
-      }
+const sidePanelClass = derived(() => showSidePanel() ? 'w-64' : 'w-0 overflow-hidden')
+const sortOrderIcon = derived(() => sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02')
+const gridViewClass = derived(() => viewMode() === 'grid'
+  ? 'relative inline-flex items-center px-3 py-2 rounded-l-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
+  : 'relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
+const listViewClass = derived(() => viewMode() === 'list'
+  ? 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
+  : 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
 
-      if (item.type === 'folder') {
-        result = [...result, ...findSharedItems(item)]
-      }
-    }
+const usedLabel = derived(() => formatFileSize(storageStats.used))
+const availableLabel = derived(() => formatFileSize(storageStats.available))
+const totalLabel = derived(() => formatFileSize(storageStats.total))
+const docsLabel = derived(() => formatFileSize(storageByType.documents))
+const imgsLabel = derived(() => formatFileSize(storageByType.images))
+const videosLabel = derived(() => formatFileSize(storageByType.videos))
+const otherLabel = derived(() => formatFileSize(storageByType.other))
 
-    return result
-  }
+const emptyHint = derived(() => searchQuery() ? 'No items match your search.' : 'This folder is empty.')
 
-  return findSharedItems(rootFolder)
-}
-
-function recentItems() {
-  // Recursively find all items and sort by lastModified
-  const findAllItems = (folder) => {
-    let result = []
-
-    for (const item of folder.items) {
-      result.push(item)
-
-      if (item.type === 'folder') {
-        result = [...result, ...findAllItems(item)]
-      }
-    }
-
-    return result
-  }
-
-  return findAllItems(rootFolder)
-    .filter(item => item.type !== 'folder') // Only include files
-    .sort((a, b) => {
-      const dateA = new Date(a.lastModified).getTime()
-      const dateB = new Date(b.lastModified).getTime()
-      return dateB - dateA
-    })
-    .slice(0, 10) // Get only the 10 most recent items
-}
-
-// Methods
-function navigateToFolder(folder) {
-  currentFolder = folder
-
-  // Update path
-  const pathIndex = currentPath.findIndex(p => p === folder.name)
-  if (pathIndex !== -1) {
-    // If folder is already in path, truncate path to this folder
-    currentPath = currentPath.slice(0, pathIndex + 1)
-  } else {
-    // Otherwise add to path
-    currentPath.push(folder.name)
-  }
-
-  // Clear selection
-  selectedItems = []
-}
-
-function navigateUp() {
-  if (currentPath.length <= 1) return
-
-  // Remove current folder from path
-  currentPath.pop()
-
-  // Find parent folder
-  let parent = rootFolder
-  for (let i = 1; i < currentPath.length; i++) {
-    const folderName = currentPath[i]
-    const folder = parent.items.find(item =>
-      item.type === 'folder' && item.name === folderName
-    )
-
-    if (folder) {
-      parent = folder
-    }
-  }
-
-  currentFolder = parent
-  selectedItems = []
-}
-
-function navigateToPath(index) {
-  if (index >= currentPath.length - 1) return
-
-  // Truncate path to selected index
-  currentPath = currentPath.slice(0, index + 1)
-
-  // Find folder at path
-  let folder = rootFolder
-  for (let i = 1; i < currentPath.length; i++) {
-    const folderName = currentPath[i]
-    const foundFolder = folder.items.find(item =>
-      item.type === 'folder' && item.name === folderName
-    )
-
-    if (foundFolder) {
-      folder = foundFolder
-    }
-  }
-
-  currentFolder = folder
-  selectedItems = []
-}
-
-function toggleItemSelection(item, event) {
-  const index = selectedItems.findIndex(i => i.id === item.id)
-
-  if (event.ctrlKey || event.metaKey) {
-    // Toggle selection with Ctrl/Cmd key
-    if (index === -1) {
-      selectedItems.push(item)
-    } else {
-      selectedItems.splice(index, 1)
-    }
-  } else {
-    // Single selection
-    selectedItems = [item]
-  }
-}
-
-function toggleStar(item) {
-  item.starred = !item.starred
-}
-
-function toggleShare(item) {
-  item.shared = !item.shared
-}
-
-function formatFileSize(bytes) {
-  if (bytes === 0) return '0 Bytes'
-
+function formatFileSize(bytes: number) {
+  if (bytes === 0)
+    return '0 Bytes'
   const k = 1024
   const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB']
   const i = Math.floor(Math.log(bytes) / Math.log(k))
-
-  return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  return `${Number.parseFloat((bytes / k ** i).toFixed(2))} ${sizes[i]}`
 }
 
-function formatDate(dateString) {
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric'
+function formatDate(dateString: string) {
+  return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+}
+
+function getFileIcon(type: string) {
+  return fileTypeIcons[type] ?? fileTypeIcons.default
+}
+
+function itemIconClass(item: FileItem) {
+  return item.type === 'folder'
+    ? 'i-hugeicons-folder-02 text-indigo-400 dark:text-indigo-300'
+    : `${getFileIcon(item.type)} text-gray-500 dark:text-neutral-400`
+}
+
+function starButtonClass(item: FileItem) {
+  return item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-neutral-500 hover:text-yellow-500'
+}
+
+function shareButtonClass(item: FileItem) {
+  return item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-neutral-500 hover:text-indigo-500'
+}
+
+function navigateToRoot() {
+  currentFolderId.set(root().id)
+}
+
+function navigateToFolder(folder: FileItem) {
+  currentFolderId.set(folder.id)
+}
+
+function navigateToPath(index: number) {
+  const path = currentPath()
+  if (index >= path.length - 1)
+    return
+  const targetName = path[index]
+  let folder = root()
+  for (let i = 1; i <= index; i++) {
+    const next = (folder.items ?? []).find(it => it.type === 'folder' && it.name === path[i])
+    if (next)
+      folder = next
   }
+  if (folder.name === targetName || index === 0)
+    currentFolderId.set(folder.id)
 }
 
-function getFileIcon(type) {
-  return fileTypeIcons[type] || fileTypeIcons.default
+function toggleSidePanel() {
+  showSidePanel.set(!showSidePanel())
+}
+
+function setViewMode(mode: 'grid' | 'list') {
+  viewMode.set(mode)
+}
+
+function toggleSortOrder() {
+  sortOrder.set(sortOrder() === 'asc' ? 'desc' : 'asc')
+}
+
+function onItemClick(item: FileItem) {
+  if (item.type === 'folder')
+    navigateToFolder(item)
+}
+
+function onStarClick(item: FileItem, event: Event) {
+  event.stopPropagation()
+  toggleFlag(item.id, 'starred')
+}
+
+function onShareClick(item: FileItem, event: Event) {
+  event.stopPropagation()
+  toggleFlag(item.id, 'shared')
+}
+
+function onDeleteClick(item: FileItem, event: Event) {
+  event.stopPropagation()
+  itemToDelete.set(item)
+  showDeleteConfirmation.set(true)
+}
+
+function toggleFlag(id: number, key: 'starred' | 'shared') {
+  function visit(folder: FileItem): FileItem {
+    return {
+      ...folder,
+      items: (folder.items ?? []).map((child) => {
+        if (child.id === id)
+          return { ...child, [key]: !child[key] }
+        if (child.type === 'folder')
+          return visit(child)
+        return child
+      }),
+    }
+  }
+  root.set(visit(root()))
+}
+
+function openCreateFolderModal() {
+  newFolderName.set('')
+  showCreateFolderModal.set(true)
+}
+
+function closeCreateFolderModal() {
+  showCreateFolderModal.set(false)
+}
+
+function openUploadModal() {
+  showUploadModal.set(true)
+}
+
+function closeUploadModal() {
+  showUploadModal.set(false)
+}
+
+function closeDeleteConfirmation() {
+  showDeleteConfirmation.set(false)
+  itemToDelete.set(null)
 }
 
 function createNewFolder() {
-  if (!newFolderName.trim()) return
-
-  const newFolder = {
-    id: Date.now(), // Generate a unique ID
-    name: newFolderName.trim(),
+  const name = newFolderName().trim()
+  if (!name)
+    return
+  const newFolder: FileItem = {
+    id: Date.now(),
+    name,
     type: 'folder',
-    path: `${currentFolder.path}/${newFolderName.trim()}`,
+    path: `${currentFolder().path}/${name}`,
     lastModified: new Date().toISOString(),
     starred: false,
     shared: false,
-    items: []
+    items: [],
   }
-
-  currentFolder.items.push(newFolder)
-  newFolderName = ''
-  showCreateFolderModal = false
+  function visit(folder: FileItem): FileItem {
+    if (folder.id === currentFolderId())
+      return { ...folder, items: [...(folder.items ?? []), newFolder] }
+    return { ...folder, items: (folder.items ?? []).map(child => child.type === 'folder' ? visit(child) : child) }
+  }
+  root.set(visit(root()))
+  showCreateFolderModal.set(false)
 }
 
 function deleteSelectedItems() {
-  if (selectedItems.length === 0) return
-
-  // Remove selected items from current folder
-  for (const item of selectedItems) {
-    const index = currentFolder.items.findIndex(i => i.id === item.id)
-    if (index !== -1) {
-      currentFolder.items.splice(index, 1)
+  const target = itemToDelete()
+  if (!target) {
+    closeDeleteConfirmation()
+    return
+  }
+  function visit(folder: FileItem): FileItem {
+    return {
+      ...folder,
+      items: (folder.items ?? []).filter(c => c.id !== target.id).map(c => c.type === 'folder' ? visit(c) : c),
     }
   }
-
-  selectedItems = []
-  showDeleteConfirmation = false
-}
-</script>
-
-@title('Dashboard - File Manager')
-<div class="flex flex-col h-full">
-  <!-- Main content -->
-  <div class="flex flex-1">
-    <!-- Sidebar -->
-    <div class="border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300 {{ showSidePanel ? 'w-64' : 'w-0 overflow-hidden' }}">
-      <div class="flex flex-col h-full">
-        <!-- Storage overview -->
-        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
-          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage</h3>
-          <div class="mt-2" style="height: 120px;">
-            <canvas id="chart_1"></canvas>
-          </div>
-          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
-            <div class="flex justify-between py-0.5">
-              <span>Used</span>
-              <span>{{ formatFileSize(storageStats.used) }}</span>
-            </div>
-            <div class="flex justify-between py-0.5">
-              <span>Available</span>
-              <span>{{ formatFileSize(storageStats.available) }}</span>
-            </div>
-            <div class="flex justify-between py-0.5 font-medium text-stone-700 dark:text-neutral-300">
-              <span>Total</span>
-              <span>{{ formatFileSize(storageStats.total) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Storage by type -->
-        <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
-          <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage by Type</h3>
-          <div class="mt-2" style="height: 120px;">
-            <canvas id="chart_2"></canvas>
-          </div>
-          <div class="mt-2 text-stone-500 text-xs dark:text-neutral-400">
-            <div class="flex justify-between py-0.5">
-              <span>Documents</span>
-              <span>{{ formatFileSize(storageByType.documents) }}</span>
-            </div>
-            <div class="flex justify-between py-0.5">
-              <span>Images</span>
-              <span>{{ formatFileSize(storageByType.images) }}</span>
-            </div>
-            <div class="flex justify-between py-0.5">
-              <span>Videos</span>
-              <span>{{ formatFileSize(storageByType.videos) }}</span>
-            </div>
-            <div class="flex justify-between py-0.5">
-              <span>Other</span>
-              <span>{{ formatFileSize(storageByType.other) }}</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Navigation -->
-        <nav class="overflow-y-auto flex-1 p-2">
-          <div class="space-y-0.5">
-            <button
-              onclick="navigateToFolder(rootFolder)"
-              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
-              class="{{ currentFolder.id === rootFolder.id
-                  ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
-                  : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white' }}"
-            >
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
-              Home
-            </button>
-
-            <button
-              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
-            >
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-star"></div>
-              Starred
-              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">
-                {{ starredItems.length }}
-              </span>
-            </button>
-
-            <button
-              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
-            >
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-share-01"></div>
-              Shared
-              <span class="ml-auto px-2 py-0.5 text-stone-600 text-xs dark:text-neutral-300 bg-stone-200/60 dark:bg-neutral-700 rounded-full">
-                {{ sharedItems.length }}
-              </span>
-            </button>
-
-            <button
-              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
-            >
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-clock-04"></div>
-              Recent
-            </button>
-
-            <button
-              class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors"
-            >
-              <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-waste"></div>
-              Trash
-            </button>
-          </div>
-
-          <div class="mt-6">
-            <h3 class="px-2.5 font-semibold text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
-              Folders
-            </h3>
-            <div class="mt-1 space-y-0.5">
-              @foreach(rootFolder.items.filter(item => item.type === 'folder') as folder)
-              <button
-                onclick="navigateToFolder(folder)"
-                class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
-                class="{{ currentFolder.id === folder.id
-                    ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
-                    : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white' }}"
-              >
-                <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-folder-02"></div>
-                {{ folder.name }}
-              </button>
-              @endforeach
-            </div>
-          </div>
-        </nav>
-
-        <!-- Upload button -->
-        <div class="p-4 border-stone-200/60 border-t dark:border-neutral-700">
-          <button
-            onclick="showUploadModal = true"
-            class="flex items-center justify-center px-4 py-2 w-full font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
-            Upload Files
-          </button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Main content area -->
-    <div class="flex flex-1 flex-col bg-white dark:bg-neutral-900">
-      <!-- Toolbar -->
-      <div class="p-4 bg-white dark:bg-neutral-900 border-b border-stone-200/60 dark:border-neutral-700">
-        <div class="flex items-center justify-between">
-          <!-- Toggle sidebar button -->
-          <button
-            onclick="showSidePanel = !showSidePanel"
-            class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
-          >
-            <div class="h-5 w-5 i-hugeicons-menu-01"></div>
-          </button>
-
-          <!-- Search -->
-          <div class="ml-4 max-w-lg w-full lg:max-w-xs">
-            <label for="search" class="sr-only">Search</label>
-            <div class="relative text-gray-400 focus-within:text-gray-600 dark:focus-within:text-gray-300">
-              <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                <div class="h-5 w-5 i-hugeicons-search-01"></div>
-              </div>
-              <input
-                id="search"
-                value="{{ searchQuery }}"
-                class="block placeholder-gray-500 dark:placeholder-gray-400 pl-10 pr-3 py-2 w-full leading-5 text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-                placeholder="Search files and folders..."
-                type="search"
-              />
-            </div>
-          </div>
-
-          <!-- View and sort options -->
-          <div class="flex items-center space-x-2">
-            <!-- View mode toggle -->
-            <div class="flex rounded-md shadow-sm">
-              <button
-                onclick="viewMode = 'grid'"
-                class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium {{ viewMode === 'grid'
-                    ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
-                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600' }}"
-              >
-                <div class="h-5 w-5 i-hugeicons-grid-view"></div>
-              </button>
-              <button
-                onclick="viewMode = 'list'"
-                class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium {{ viewMode === 'list'
-                    ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
-                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600' }}"
-              >
-                <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
-              </button>
-            </div>
-
-            <!-- Sort options -->
-            <select
-              value="{{ sortBy }}"
-              class="block pl-3 pr-10 py-2 w-full text-base text-gray-900 sm:text-sm dark:text-white bg-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500"
-            >
-              <option value="name">Name</option>
-              <option value="lastModified">Date</option>
-              <option value="size">Size</option>
-            </select>
-
-            <button
-              onclick="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
-              class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
-            >
-              <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-5 w-5"></div>
-            </button>
-          </div>
-
-          <!-- Actions -->
-          <div class="flex items-center space-x-2">
-            <button
-              onclick="showCreateFolderModal = true"
-              class="inline-flex items-center px-3 py-2 font-medium leading-4 text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
-            >
-              <div class="mr-2 h-4 w-4 i-hugeicons-folder-add"></div>
-              New Folder
-            </button>
-            <button
-              onclick="showUploadModal = true"
-              class="inline-flex items-center px-3 py-2 font-medium leading-4 text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800"
-            >
-              <div class="mr-2 h-4 w-4 i-hugeicons-upload-01"></div>
-              Upload
-            </button>
-          </div>
-        </div>
-
-        <!-- Breadcrumbs -->
-        <nav class="flex mt-4" aria-label="Breadcrumb">
-          <ol class="flex items-center space-x-1">
-            @foreach(currentPath as index, path)
-            <li>
-              <div class="flex items-center">
-                @if(index > 0)
-                <span class="mx-1 text-gray-400 dark:text-neutral-500">/</span>
-                @endif
-                <button
-                  onclick="navigateToPath(index)"
-                  class="text-sm font-medium {{ index === currentPath.length - 1
-                      ? 'text-indigo-600 dark:text-indigo-400'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300' }}"
-                >
-                  {{ path }}
-                </button>
-              </div>
-            </li>
-            @endforeach
-          </ol>
-        </nav>
-      </div>
-
-      <!-- Content -->
-      <div class="overflow-auto flex-1 p-4 bg-stone-50/50 dark:bg-neutral-900">
-        <!-- Empty state -->
-        @if(filteredItems.length === 0)
-        <div class="flex flex-col items-center justify-center h-full text-center">
-          <div class="h-16 w-16 text-gray-400 dark:text-neutral-600 i-hugeicons-folder-02"></div>
-          <h3 class="mt-2 font-medium text-gray-900 text-sm dark:text-white">No items</h3>
-          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">
-            {{ searchQuery ? 'No items match your search.' : 'This folder is empty.' }}
-          </p>
-          <div class="flex mt-6 space-x-4">
-            <button
-              onclick="showCreateFolderModal = true"
-              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-            >
-              <div class="mr-2 h-5 w-5 i-hugeicons-folder-add"></div>
-              New Folder
-            </button>
-            <button
-              onclick="showUploadModal = true"
-              class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-            >
-              <div class="mr-2 h-5 w-5 i-hugeicons-upload-01"></div>
-              Upload Files
-            </button>
-          </div>
-        </div>
-        @elseif(viewMode === 'grid')
-        <!-- Grid view -->
-        <div class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
-          @foreach(filteredItems() as item)
-          <div
-            onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
-            @contextmenu.prevent
-            class="relative group p-4 rounded-lg border cursor-pointer transition-all duration-200 {{ selectedItems.some(i => i.id === item.id)
-                ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-700'
-                : 'bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-gray-600' }}"
-          >
-            <!-- Item icon -->
-            <div class="flex justify-center mb-4">
-              <div
-                class="{{ item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type) }} h-12 w-12 {{ item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400' }}"
-              ></div>
-            </div>
-
-            <!-- Item name -->
-            <div class="text-center">
-              <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.name }}</p>
-              @if(item.type !== 'folder')
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">
-                {{ formatFileSize(item.size) }}
-              </p>
-              @endif
-            </div>
-
-            <!-- Actions -->
-            <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onclick="toggleStar(item); event.stopPropagation()"
-                class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
-                class="{{ item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-neutral-500' }}"
-              >
-                <div class="h-4 w-4 i-hugeicons-star"></div>
-              </button>
-              <button
-                onclick="toggleShare(item); event.stopPropagation()"
-                class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
-                class="{{ item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-neutral-500' }}"
-              >
-                <div class="h-4 w-4 i-hugeicons-share-01"></div>
-              </button>
-            </div>
-          </div>
-          @endforeach
-        </div>
-        @else
-        <!-- List view -->
-        <div class="overflow-hidden ring-1 ring-stone-200/80 rounded-xl dark:ring-neutral-700 shadow-sm">
-          <table class="min-w-full divide-stone-100 divide-y dark:divide-neutral-700">
-            <thead class="bg-stone-50/80 dark:bg-neutral-800">
-              <tr>
-                <th scope="col" class="pl-6 pr-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
-                  Name
-                </th>
-                <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
-                  Size
-                </th>
-                <th scope="col" class="px-3 py-3.5 font-semibold text-left text-stone-500 text-xs tracking-wider uppercase dark:text-neutral-400">
-                  Modified
-                </th>
-                <th scope="col" class="relative pl-3 pr-6 py-3.5">
-                  <span class="sr-only">Actions</span>
-                </th>
-              </tr>
-            </thead>
-            <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
-              @foreach(filteredItems() as item)
-              <tr
-                onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
-                class="cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors {{ selectedItems.some(i => i.id === item.id)
-                    ? 'bg-blue-50/50 dark:bg-blue-900/20'
-                    : '' }}"
-              >
-                <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div
-                      class="{{ item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type) }} h-5 w-5 mr-3 {{ item.type === 'folder' ? 'text-blue-500 dark:text-blue-400' : 'text-stone-500 dark:text-neutral-400' }}"
-                    ></div>
-                    <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
-                  </div>
-                </td>
-                <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
-                  {{ item.type === 'folder' ? '-' : formatFileSize(item.size) }}
-                </td>
-                <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">
-                  {{ formatDate(item.lastModified) }}
-                </td>
-                <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
-                  <div class="flex justify-end space-x-2">
-                    <button
-                      onclick="toggleStar(item); event.stopPropagation()"
-                      class="text-gray-400 hover:text-yellow-500"
-                      class="'text-yellow-500': { {{ } }} item.starred"
-                    >
-                      <div class="h-5 w-5 i-hugeicons-star"></div>
-                    </button>
-                    <button
-                      onclick="toggleShare(item); event.stopPropagation()"
-                      class="text-gray-400 hover:text-indigo-500"
-                      class="'text-indigo-500': { {{ } }} item.shared"
-                    >
-                      <div class="h-5 w-5 i-hugeicons-share-01"></div>
-                    </button>
-                    <button
-                      onclick="selectedItems = [item]; showDeleteConfirmation = true; event.stopPropagation()"
-                      class="text-gray-400 hover:text-red-500"
-                    >
-                      <div class="h-5 w-5 i-hugeicons-waste"></div>
-                    </button>
-                  </div>
-                </td>
-              </tr>
-              @endforeach
-            </tbody>
-          </table>
-        </div>
-        @endif
-      </div>
-    </div>
-  </div>
-
-  <!-- Create Folder Modal -->
-  @if(showCreateFolderModal)
-  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showCreateFolderModal = false"></div>
-
-      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
-        <div class="sm:flex sm:items-start">
-          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full">
-            <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-folder-add"></div>
-          </div>
-          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
-            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
-              Create New Folder
-            </h3>
-            <div class="mt-2">
-              <p class="text-gray-500 text-sm dark:text-neutral-400">
-                Enter a name for the new folder.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="mt-4">
-          <input
-            type="text"
-            value="{{ newFolderName }}"
-            class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-indigo-500 focus:ring-indigo-500 shadow-sm"
-            placeholder="Folder name"
-            @keyup.enter="createNewFolder"
-          />
-        </div>
-        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
-          <button
-            type="button"
-            onclick="createNewFolder"
-            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            Create
-          </button>
-          <button
-            type="button"
-            onclick="showCreateFolderModal = false"
-            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  @endif
-
-  <!-- Upload Modal -->
-  @if(showUploadModal)
-  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showUploadModal = false"></div>
-
-      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
-        <div class="sm:flex sm:items-start">
-          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-indigo-100 dark:bg-indigo-900 rounded-full">
-            <div class="h-6 w-6 text-indigo-600 dark:text-indigo-400 i-hugeicons-upload-01"></div>
-          </div>
-          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
-            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
-              Upload Files
-            </h3>
-            <div class="mt-2">
-              <p class="text-gray-500 text-sm dark:text-neutral-400">
-                Select files to upload to the current folder.
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="mt-4">
-          <div class="flex justify-center pb-6 pt-5 px-6 border-2 border-dashed border-gray-300 rounded-md dark:border-neutral-600">
-            <div class="space-y-1 text-center">
-              <div class="mx-auto h-12 w-12 text-gray-400 dark:text-neutral-500 i-hugeicons-upload-01"></div>
-              <div class="flex text-gray-600 text-sm dark:text-neutral-400">
-                <label for="file-upload" class="relative font-medium text-indigo-600 dark:text-indigo-400 hover:text-indigo-500 bg-white dark:bg-neutral-800 rounded-md focus-within:outline-none focus-within:ring-2 focus-within:ring-indigo-500 focus-within:ring-offset-2 dark:focus-within:ring-offset-gray-800 cursor-pointer">
-                  <span>Upload a file</span>
-                  <input id="file-upload" name="file-upload" type="file" class="sr-only" multiple />
-                </label>
-                <p class="pl-1">or drag and drop</p>
-              </div>
-              <p class="text-gray-500 text-xs dark:text-neutral-400">
-                PNG, JPG, GIF, PDF, DOCX up to 10MB
-              </p>
-            </div>
-          </div>
-        </div>
-        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
-          <button
-            type="button"
-            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-indigo-600 hover:bg-indigo-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            Upload
-          </button>
-          <button
-            type="button"
-            onclick="showUploadModal = false"
-            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  @endif
-
-  <!-- Delete Confirmation Modal -->
-  @if(showDeleteConfirmation)
-  <div class="fixed inset-0 overflow-y-auto z-10" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-    <div class="flex sm:block items-end justify-center pb-20 pt-4 px-4 sm:p-0 min-h-screen text-center">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75 transition-opacity" aria-hidden="true" onclick="showDeleteConfirmation = false"></div>
-
-      <span class="hidden sm:inline-block sm:h-screen sm:align-middle" aria-hidden="true">&#8203;</span>
-
-      <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform align-bottom sm:align-middle">
-        <div class="sm:flex sm:items-start">
-          <div class="flex flex-shrink-0 items-center justify-center mx-auto sm:mx-0 h-12 w-12 sm:h-10 sm:w-10 bg-red-100 dark:bg-red-900 rounded-full">
-            <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-02"></div>
-          </div>
-          <div class="mt-3 sm:ml-4 sm:mt-0 text-center sm:text-left">
-            <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white" id="modal-title">
-              Delete {{ selectedItems.length > 1 ? 'Items' : 'Item' }}
-            </h3>
-            <div class="mt-2">
-              <p class="text-gray-500 text-sm dark:text-neutral-400">
-                Are you sure you want to delete {{ selectedItems.length > 1 ? 'these items' : 'this item' }}? This action cannot be undone.
-              </p>
-            </div>
-            @if(selectedItems.length > 0)
-            <div class="overflow-y-auto mt-3 max-h-40">
-              <ul class="divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(selectedItems as item)
-                <li class="flex items-center py-2">
-                  <div
-                    class="{{ item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type) }} h-5 w-5 mr-3 {{ item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400' }}"
-                  ></div>
-                  <span class="text-gray-700 text-sm dark:text-neutral-300">{{ item.name }}</span>
-                </li>
-                @endforeach
-              </ul>
-            </div>
-            @endif
-          </div>
-        </div>
-        <div class="sm:flex sm:flex-row-reverse mt-5 sm:mt-4">
-          <button
-            type="button"
-            onclick="deleteSelectedItems"
-            class="inline-flex justify-center px-4 py-2 sm:ml-3 w-full sm:w-auto font-medium text-base text-white sm:text-sm bg-red-600 hover:bg-red-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            Delete
-          </button>
-          <button
-            type="button"
-            onclick="showDeleteConfirmation = false"
-            class="inline-flex justify-center mt-3 px-4 py-2 sm:mt-0 w-full sm:w-auto font-medium text-base text-gray-700 sm:text-sm dark:text-neutral-200 bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 border border-gray-300 rounded-md dark:border-neutral-600 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm"
-          >
-            Cancel
-          </button>
-        </div>
-      </div>
-    </div>
-  </div>
-  @endif
-</div>
-
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'doughnut',
-    data: storageChartData,
-    options: doughnutChartOptions,
-  })
+  root.set(visit(root()))
+  closeDeleteConfirmation()
 }
 
-const chart_2_ctx = document.getElementById('chart_2')
-if (chart_2_ctx) {
-  new Chart(chart_2_ctx, {
-    type: 'doughnut',
-    data: storageByTypeChartData,
-    options: doughnutChartOptions,
-  })
-}
+let chartHandles: ChartLike[] = []
 
+onMount(async () => {
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+
+  const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+
+  const handles: Array<ChartLike | null> = [
+    useChart({
+      Chart: Ctor,
+      id: 'files_storage_chart',
+      type: 'doughnut',
+      data: { labels: ['Used', 'Available'], datasets: [{ backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(200, 200, 200, 0.6)'], borderColor: ['rgba(54, 162, 235, 1)', 'rgba(200, 200, 200, 1)'], borderWidth: 1, data: [storageStats.used, storageStats.available] }] },
+      options: doughnutOptions,
+    }) as ChartLike | null,
+    useChart({
+      Chart: Ctor,
+      id: 'files_type_chart',
+      type: 'doughnut',
+      data: { labels: ['Documents', 'Images', 'Videos', 'Other'], datasets: [{ backgroundColor: ['rgba(255, 99, 132, 0.6)', 'rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(75, 192, 192, 0.6)'], borderColor: ['rgba(255, 99, 132, 1)', 'rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(75, 192, 192, 1)'], borderWidth: 1, data: [storageByType.documents, storageByType.images, storageByType.videos, storageByType.other] }] },
+      options: doughnutOptions,
+    }) as ChartLike | null,
+  ]
+  chartHandles = handles.filter((h): h is ChartLike => h !== null)
+})
+
+onDestroy(() => {
+  chartHandles.forEach(h => h.destroy())
+  chartHandles = []
+})
 </script>
 
 @endsection
