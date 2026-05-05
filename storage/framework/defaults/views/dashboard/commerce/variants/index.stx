@@ -260,10 +260,7 @@ export default {
                         Variant Type
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'name')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -276,10 +273,7 @@ export default {
                         Options
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'optionCount')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -292,10 +286,7 @@ export default {
                         Created
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'createdAt')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -336,7 +327,7 @@ export default {
                       </td>
                       <td class="px-3 py-4 text-sm whitespace-nowrap">
                         <span class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full"
-                              :class="text-green-800 text-red-800 dark:text-green-300' dark:text-red-300' dark:bg-green-900 dark:bg-red-900 : ? 'bg-green-100 'bg-red-100 variantType.active">
+                              class="text-green-800 text-red-800 dark:text-green-300' dark:text-red-300' dark:bg-green-900 dark:bg-red-900 : ? 'bg-green-100 'bg-red-100 variantType.active">
                           {{ variantType.active ? 'Active' : 'Inactive' }}
                         </span>
                       </td>

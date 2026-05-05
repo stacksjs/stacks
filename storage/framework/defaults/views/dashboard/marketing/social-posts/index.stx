@@ -624,6 +624,7 @@ function truncateText(text: string, max: number): string {
 <option value="{{ status }}">
                 {{ status }}
               </option>
+              @endforeach
             </select>
 
             <!-- Platform filter -->
@@ -636,6 +637,7 @@ function truncateText(text: string, max: number): string {
 <option value="{{ platform }}">
                 {{ platform }}
               </option>
+              @endforeach
             </select>
 
             <!-- Author filter -->
@@ -648,6 +650,7 @@ function truncateText(text: string, max: number): string {
 <option value="{{ author }}">
                 {{ author }}
               </option>
+              @endforeach
             </select>
 
             <!-- View mode toggle -->
@@ -655,24 +658,18 @@ function truncateText(text: string, max: number): string {
               <button
                 type="button"
                 onclick="viewMode = 'detailed'"
-                class="[
-                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'detailed'
+                class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-grid"></div>
               </button>
               <button
                 type="button"
                 onclick="viewMode = 'compact'"
-                class="[
-                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'compact'
+                class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-list-view"></div>
               </button>
@@ -749,8 +746,8 @@ function truncateText(text: string, max: number): string {
                   <!-- Author info and platform -->
                   <div class="flex items-start space-x-4">
                     <img
-                      :src="post.authorAvatar"
-                      :alt="post.author"
+                      src="{{ post.authorAvatar }}"
+                      alt="{{ post.author }}"
                       class="object-cover h-12 w-12 rounded-full"
                     />
                     <div>
@@ -769,7 +766,7 @@ function truncateText(text: string, max: number): string {
                   <!-- Status badge and thread info -->
                   <div class="flex flex-col items-end space-y-2">
                     <span
-                      :class="[getStatusClass(post.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']"
+                      class="{{ getStatusClass(post.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit"
                     >
                       {{ post.status }}
                     </span>
@@ -796,11 +793,12 @@ function truncateText(text: string, max: number): string {
                       class="aspect-square overflow-hidden relative rounded-lg"
                     >
                       <img
-                        :src="image"
+                        src="{{ image }}"
                         alt="{{ `Image ${index + 1}` }}"
                         class="object-cover h-full w-full"
                       />
                     </div>
+                    @endforeach
                   </div>
                 </div>
 
@@ -813,6 +811,7 @@ function truncateText(text: string, max: number): string {
                   >
                     #{{ tag }}
                   </span>
+                  @endforeach
                 </div>
 
                 <!-- Engagement metrics (only for published posts) -->
@@ -866,6 +865,7 @@ function truncateText(text: string, max: number): string {
                 </div>
               </div>
             </div>
+            @endforeach
           </div>
         </div>
 
@@ -898,7 +898,7 @@ function truncateText(text: string, max: number): string {
                   <div class="flex items-center max-w-md">
                     @if(post.images && post.images.length > 0)
 <div class="flex-shrink-0 mr-3 h-10 w-10">
-                      <img :src="post.images[0]" alt="Post image" class="object-cover h-10 w-10 rounded-md" />
+                      <img src="{{ post.images[0] }}" alt="Post image" class="object-cover h-10 w-10 rounded-md" />
                     </div>
                     @else
 <div class="flex flex-shrink-0 items-center justify-center mr-3 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
@@ -925,14 +925,14 @@ function truncateText(text: string, max: number): string {
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-8 w-8">
-                      <img :src="post.authorAvatar" :alt="post.author" class="object-cover h-8 w-8 rounded-full" />
+                      <img src="{{ post.authorAvatar }}" alt="{{ post.author }}" class="object-cover h-8 w-8 rounded-full" />
                     </div>
                     <div class="ml-2 text-gray-900 dark:text-white">{{ post.author }}</div>
                   </div>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
                   <div class="flex flex-col space-y-2">
-                    <span :class="[getStatusClass(post.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                    <span class="{{ getStatusClass(post.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit">
                       {{ post.status }}
                     </span>
                     @if(isPartOfThread(post))
@@ -967,6 +967,7 @@ function truncateText(text: string, max: number): string {
                   </div>
                 </td>
               </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
@@ -978,20 +979,14 @@ function truncateText(text: string, max: number): string {
             <button
               onclick="previousPage"
               disabled="{{ currentPage === 1 }}"
-              class="[
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
-              ] {{ }}"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white {{ currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }}"
             >
               Previous
             </button>
             <button
               onclick="nextPage"
               disabled="{{ currentPage === totalPages }}"
-              class="[
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
-              ] {{ }}"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white {{ currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }}"
             >
               Next
             </button>
@@ -1018,15 +1013,13 @@ function truncateText(text: string, max: number): string {
                 @foreach(totalPages() as page)
 <button
                   onclick="changePage(page)"
-                  class="[
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600',
-                    page === currentPage
+                  class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 {{ page === currentPage
                       ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700'
-                  ] {{ }}"
+                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700' }}"
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   onclick="nextPage"
                   disabled="{{ currentPage === totalPages }}"
@@ -1079,6 +1072,7 @@ function truncateText(text: string, max: number): string {
 <option value="{{ platform }}">
                         {{ platform }}
                       </option>
+                      @endforeach
                     </select>
                   </div>
 
@@ -1109,7 +1103,7 @@ function truncateText(text: string, max: number): string {
                         class="aspect-square overflow-hidden relative rounded-lg"
                       >
                         <img
-                          :src="image"
+                          src="{{ image }}"
                           alt="{{ `Image ${index + 1}` }}"
                           class="object-cover h-full w-full"
                         />
@@ -1121,6 +1115,7 @@ function truncateText(text: string, max: number): string {
                           <div class="h-4 w-4 i-hugeicons-cancel-circle"></div>
                         </button>
                       </div>
+                      @endforeach
                     </div>
                     <div class="mt-2" >
                       <button
@@ -1144,6 +1139,7 @@ function truncateText(text: string, max: number): string {
                       >
                         #{{ tag }}
                       </span>
+                      @endforeach
                     </div>
                     @else
 <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">

@@ -672,7 +672,7 @@ function handleComparisonTypeChange() {
                 <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                   <div>{{ formatNumber(event.completions) }}</div>
                   @if(isComparing && comparisonData[event.id])
-                  <div class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange.completions)">
+                  <div class="text-xs {{ getPercentageChangeClass(comparisonData[event.id].percentageChange.completions) }}">
                     {{ formatPercentageChange(comparisonData[event.id].percentageChange.completions) }}
                   </div>
                   @endif
@@ -680,7 +680,7 @@ function handleComparisonTypeChange() {
                 <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                   <div>{{ formatCurrency(event) }}</div>
                   @if(isComparing && comparisonData[event.id] && event > 0)
-                  <div class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange)">
+                  <div class="text-xs {{ getPercentageChangeClass(comparisonData[event.id].percentageChange) }}">
                     {{ formatPercentageChange(comparisonData[event.id].percentageChange) }}
                   </div>
                   @endif
@@ -688,7 +688,7 @@ function handleComparisonTypeChange() {
                 <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                   <div>{{ event.conversionRate }}%</div>
                   @if(isComparing && comparisonData[event.id])
-                  <div class="text-xs" :class="getPercentageChangeClass(comparisonData[event.id].percentageChange.conversionRate)">
+                  <div class="text-xs {{ getPercentageChangeClass(comparisonData[event.id].percentageChange.conversionRate) }}">
                     {{ formatPercentageChange(comparisonData[event.id].percentageChange.conversionRate) }}
                   </div>
                   @endif
@@ -925,7 +925,7 @@ window.addEventListener('load', () => {
                   <div class="text-gray-500 text-sm dark:text-neutral-400">Completions</div>
                   <div class="font-bold text-2xl text-gray-900 dark:text-white">{{ formatNumber(selectedEvent.completions) }}</div>
                   @if(isComparing && comparisonData[selectedEvent.id])
-                  <div class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.completions)">
+                  <div class="mt-1 text-sm {{ getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.completions) }}">
                     {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange.completions) }} {{ comparisonLabel }}
                   </div>
                   @endif
@@ -935,7 +935,7 @@ window.addEventListener('load', () => {
                   <div class="text-gray-500 text-sm dark:text-neutral-400">Conversion Rate</div>
                   <div class="font-bold text-2xl text-gray-900 dark:text-white">{{ selectedEvent.conversionRate }}%</div>
                   @if(isComparing && comparisonData[selectedEvent.id])
-                  <div class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.conversionRate)">
+                  <div class="mt-1 text-sm {{ getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange.conversionRate) }}">
                     {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange.conversionRate) }} {{ comparisonLabel }}
                   </div>
                   @endif
@@ -945,7 +945,7 @@ window.addEventListener('load', () => {
                   <div class="text-gray-500 text-sm dark:text-neutral-400">Value</div>
                   <div class="font-bold text-2xl text-gray-900 dark:text-white">{{ formatCurrency(selectedEvent) }}</div>
                   @if(isComparing && comparisonData[selectedEvent.id] && selectedEvent > 0)
-                  <div class="mt-1 text-sm" :class="getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange)">
+                  <div class="mt-1 text-sm {{ getPercentageChangeClass(comparisonData[selectedEvent.id].percentageChange) }}">
                     {{ formatPercentageChange(comparisonData[selectedEvent.id].percentageChange) }} {{ comparisonLabel }}
                   </div>
                   @endif

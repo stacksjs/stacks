@@ -150,7 +150,7 @@ const openFile = (file, line) => {
                 <dd class="col-span-2">
                   <span
                     class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
-                    :class="getJobStatusColor(job.status)"
+                    class="getJobStatusColor(job.status)"
                   >
                     {{ job.status }}
                   </span>
@@ -239,7 +239,7 @@ const openFile = (file, line) => {
                   @foreach(job.logs as log)
                     <div class="flex gap-2 items-start font-mono text-sm">
                       <span class="shrink-0 text-gray-500 dark:text-neutral-400">{{ log.timestamp }}</span>
-                      <span :class="getLogLevelColor(log.level)" class="shrink-0">[{{ log.level }}]</span>
+                      <span class="shrink-0 {{ getLogLevelColor(log.level) }}">[{{ log.level }}]</span>
                       <span class="text-gray-900 dark:text-neutral-100">{{ log.message }}</span>
                     </div>
                   @endforeach

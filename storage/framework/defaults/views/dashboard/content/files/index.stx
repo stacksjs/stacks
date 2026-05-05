@@ -546,10 +546,7 @@ function deleteSelectedItems() {
   <!-- Main content -->
   <div class="flex flex-1">
     <!-- Sidebar -->
-    <div class="[
-      'border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300',
-      showSidePanel ? 'w-64' : 'w-0 overflow-hidden'
-    ] {{ }}">
+    <div class="border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300 {{ showSidePanel ? 'w-64' : 'w-0 overflow-hidden' }}">
       <div class="flex flex-col h-full">
         <!-- Storage overview -->
         <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
@@ -605,11 +602,9 @@ function deleteSelectedItems() {
             <button
               onclick="navigateToFolder(rootFolder)"
               class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
-              class="[
-                currentFolder.id === rootFolder.id
+              class="{{ currentFolder.id === rootFolder.id
                   ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
-                  : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
-              ] {{ }}"
+                  : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white' }}"
             >
               <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
               Home
@@ -659,11 +654,9 @@ function deleteSelectedItems() {
               <button
                 onclick="navigateToFolder(folder)"
                 class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors"
-                class="[
-                  currentFolder.id === folder.id
+                class="{{ currentFolder.id === folder.id
                     ? 'bg-blue-500/15 text-blue-600 dark:bg-blue-500/20 dark:text-blue-400'
-                    : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white'
-                ] {{ }}"
+                    : 'text-stone-600 hover:bg-stone-200/50 hover:text-stone-900 dark:text-neutral-300 dark:hover:bg-neutral-700 dark:hover:text-white' }}"
               >
                 <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-folder-02"></div>
                 {{ folder.name }}
@@ -722,23 +715,17 @@ function deleteSelectedItems() {
             <div class="flex rounded-md shadow-sm">
               <button
                 onclick="viewMode = 'grid'"
-                class="[
-                  'relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium',
-                  viewMode === 'grid'
+                class="relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium {{ viewMode === 'grid'
                     ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
-                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600'
-                ] {{ }}"
+                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-grid-view"></div>
               </button>
               <button
                 onclick="viewMode = 'list'"
-                class="[
-                  'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium',
-                  viewMode === 'list'
+                class="relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium {{ viewMode === 'list'
                     ? 'bg-indigo-600 text-white border-indigo-600 dark:border-indigo-600'
-                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600'
-                ] {{ }}"
+                    : 'bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
               </button>
@@ -758,10 +745,7 @@ function deleteSelectedItems() {
               onclick="sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'"
               class="p-2 text-gray-500 dark:text-neutral-400 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md"
             >
-              <div class="[
-                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                'h-5 w-5'
-              ] {{ }}"></div>
+              <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-5 w-5"></div>
             </button>
           </div>
 
@@ -795,12 +779,9 @@ function deleteSelectedItems() {
                 @endif
                 <button
                   onclick="navigateToPath(index)"
-                  class="[
-                    'text-sm font-medium',
-                    index === currentPath.length - 1
+                  class="text-sm font-medium {{ index === currentPath.length - 1
                       ? 'text-indigo-600 dark:text-indigo-400'
-                      : 'text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300'
-                  ] {{ }}"
+                      : 'text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300' }}"
                 >
                   {{ path }}
                 </button>
@@ -845,21 +826,14 @@ function deleteSelectedItems() {
           <div
             onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
             @contextmenu.prevent
-            class="[
-              'relative group p-4 rounded-lg border cursor-pointer transition-all duration-200',
-              selectedItems.some(i => i.id === item.id)
+            class="relative group p-4 rounded-lg border cursor-pointer transition-all duration-200 {{ selectedItems.some(i => i.id === item.id)
                 ? 'bg-indigo-50 border-indigo-300 dark:bg-indigo-900/30 dark:border-indigo-700'
-                : 'bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-gray-600'
-            ] {{ }}"
+                : 'bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700 dark:hover:border-gray-600' }}"
           >
             <!-- Item icon -->
             <div class="flex justify-center mb-4">
               <div
-                class="[
-                  item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
-                  'h-12 w-12',
-                  item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400'
-                ] {{ }}"
+                class="{{ item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type) }} h-12 w-12 {{ item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400' }}"
               ></div>
             </div>
 
@@ -878,18 +852,14 @@ function deleteSelectedItems() {
               <button
                 onclick="toggleStar(item); event.stopPropagation()"
                 class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
-                class="[
-                  item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-neutral-500'
-                ] {{ }}"
+                class="{{ item.starred ? 'text-yellow-500' : 'text-gray-400 dark:text-neutral-500' }}"
               >
                 <div class="h-4 w-4 i-hugeicons-star"></div>
               </button>
               <button
                 onclick="toggleShare(item); event.stopPropagation()"
                 class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full"
-                class="[
-                  item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-neutral-500'
-                ] {{ }}"
+                class="{{ item.shared ? 'text-indigo-500' : 'text-gray-400 dark:text-neutral-500' }}"
               >
                 <div class="h-4 w-4 i-hugeicons-share-01"></div>
               </button>
@@ -921,21 +891,14 @@ function deleteSelectedItems() {
               @foreach(filteredItems() as item)
               <tr
                 onclick="item.type === 'folder' ? navigateToFolder(item) : toggleItemSelection(item, $event)"
-                class="[
-                  'cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors',
-                  selectedItems.some(i => i.id === item.id)
+                class="cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors {{ selectedItems.some(i => i.id === item.id)
                     ? 'bg-blue-50/50 dark:bg-blue-900/20'
-                    : ''
-                ] {{ }}"
+                    : '' }}"
               >
                 <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
                   <div class="flex items-center">
                     <div
-                      class="[
-                        item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
-                        'h-5 w-5 mr-3',
-                        item.type === 'folder' ? 'text-blue-500 dark:text-blue-400' : 'text-stone-500 dark:text-neutral-400'
-                      ] {{ }}"
+                      class="{{ item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type) }} h-5 w-5 mr-3 {{ item.type === 'folder' ? 'text-blue-500 dark:text-blue-400' : 'text-stone-500 dark:text-neutral-400' }}"
                     ></div>
                     <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
                   </div>
@@ -1123,11 +1086,7 @@ function deleteSelectedItems() {
                 @foreach(selectedItems as item)
                 <li class="flex items-center py-2">
                   <div
-                    class="[
-                      item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type),
-                      'h-5 w-5 mr-3',
-                      item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400'
-                    ] {{ }}"
+                    class="{{ item.type === 'folder' ? 'i-hugeicons-folder-02' : getFileIcon(item.type) }} h-5 w-5 mr-3 {{ item.type === 'folder' ? 'text-indigo-400 dark:text-indigo-300' : 'text-gray-500 dark:text-neutral-400' }}"
                   ></div>
                   <span class="text-gray-700 text-sm dark:text-neutral-300">{{ item.name }}</span>
                 </li>

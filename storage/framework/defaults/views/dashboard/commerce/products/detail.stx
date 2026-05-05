@@ -177,7 +177,7 @@ function deleteProduct(): void {
           <div>
             <!-- Main image -->
             <div class="aspect-square overflow-hidden mb-4 bg-gray-100 dark:bg-neutral-700 rounded-lg">
-              <img :src="product.images[activeImageIndex]" :alt="product.name" class="object-contain h-full w-full">
+              <img src="{{ product.images[activeImageIndex] }}" alt="{{ product.name }}" class="object-contain h-full w-full">
             </div>
 
             <!-- Thumbnails -->
@@ -188,7 +188,7 @@ function deleteProduct(): void {
                   class="aspect-square overflow-hidden rounded-md cursor-pointer"
                   class="'ring-2 { {{ } }} === activeImageIndex index ring-primary':"
                 >
-                  <img :src="image" alt="{{ `${product.name} thumbnail ${index + 1}` }}" class="object-cover h-full w-full">
+                  <img src="{{ image }}" alt="{{ `${product.name} thumbnail ${index + 1}` }}" class="object-cover h-full w-full">
                 </div>
               @endforeach
 
@@ -212,7 +212,7 @@ function deleteProduct(): void {
             <div class="mb-6">
               <div class="flex items-center justify-between mb-2">
                 <h2 class="font-bold text-3xl text-gray-900 dark:text-white">{{ product.name }}</h2>
-                <span class="px-3 py-1 text-sm rounded-full" class="text-green-800 text-red-800 text-yellow-800 dark:bg-green-800 dark:bg-red-800 dark:bg-yellow-800 'Active', 'bg-green-100 'bg-red-100 'bg-yellow-100 'Low 'Out { {{ } }} === === === of product.status product.status product.status Stock' Stock', dark:text-green-100': dark:text-red-100': dark:text-yellow-100':">
+                <span class="px-3 py-1 text-sm rounded-full {{ product.status === 'Active' ? 'bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-100' : product.status === 'Low Stock' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-800 dark:text-yellow-100' : product.status === 'Out of Stock' ? 'bg-red-100 text-red-800 dark:bg-red-800 dark:text-red-100' : '' }}">
                   {{ product.status }}
                 </span>
               </div>
@@ -296,8 +296,8 @@ function deleteProduct(): void {
                       class="flex overflow-hidden flex-col border border-gray-200 rounded-lg dark:border-neutral-700"
                     >
                       <img
-                        :src="similarProduct.images[0]"
-                        :alt="similarProduct.name"
+                        src="{{ similarProduct.images[0] }}"
+                        alt="{{ similarProduct.name }}"
                         class="object-cover h-32 w-full"
                       >
                       <div class="p-3">
@@ -342,7 +342,7 @@ function deleteProduct(): void {
               <p class="text-white">Video would play here: {{ activeVideoUrl }}</p>
               <!-- Example of video element (commented out as we don't have real videos) -->
               <!-- <video controls class="h-full w-full">
-                <source :src="activeVideoUrl" type="video/mp4">
+                <source src="{{ activeVideoUrl }}" type="video/mp4">
                 Your browser does not support the video tag.
               </video> -->
             </div>
@@ -498,7 +498,7 @@ function deleteProduct(): void {
                             class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-500"
                           />
                           <label for="{{ `similar-product-${similarProduct.id}` }}" class="flex items-center ml-3 cursor-pointer">
-                            <img :src="similarProduct.images[0]" alt="" class="object-cover flex-shrink-0 h-10 w-10 rounded-md">
+                            <img src="{{ similarProduct.images[0] }}" alt="" class="object-cover flex-shrink-0 h-10 w-10 rounded-md">
                             <div class="ml-3">
                               <p class="font-medium text-gray-900 text-sm dark:text-white">{{ similarProduct.name }}</p>
                               <p class="text-gray-500 text-sm dark:text-neutral-400">{{ similarProduct.category }} - ${{ similarProduct.price.toFixed(2) }}</p>

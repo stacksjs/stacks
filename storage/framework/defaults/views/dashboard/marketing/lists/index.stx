@@ -725,24 +725,18 @@ function bulkChangeStatus(status) {
               <button
                 type="button"
                 onclick="viewMode = 'grid'"
-                class="[
-                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'grid'
+                class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'grid'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-grid"></div>
               </button>
               <button
                 type="button"
                 onclick="viewMode = 'list'"
-                class="[
-                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'list'
+                class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'list'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
               </button>
@@ -889,12 +883,12 @@ function bulkChangeStatus(status) {
                   </div>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span :class="[getTypeClass(list.type), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                  <span class="{{ getTypeClass(list.type) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium">
                     {{ list.type === 'email' ? 'Email' : list.type === 'sms' ? 'SMS' : 'Email & SMS' }}
                   </span>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span :class="[getStatusClass(list.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                  <span class="{{ getStatusClass(list.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium">
                     {{ list.status }}
                   </span>
                 </td>
@@ -996,12 +990,12 @@ function bulkChangeStatus(status) {
                         </span>
                         @endif
                       </h3>
-                      <span :class="[getTypeClass(list.type), 'mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium']">
+                      <span class="{{ getTypeClass(list.type) }} mt-1 inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium">
                         {{ list.type === 'email' ? 'Email' : list.type === 'sms' ? 'SMS' : 'Email & SMS' }}
                       </span>
                     </div>
                   </div>
-                  <span :class="[getStatusClass(list.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']">
+                  <span class="{{ getStatusClass(list.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium">
                     {{ list.status }}
                   </span>
                 </div>
@@ -1072,20 +1066,14 @@ function bulkChangeStatus(status) {
             <button
               onclick="previousPage"
               disabled="{{ currentPage === 1 }}"
-              class="[
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
-                currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
-              ] {{ }}"
+              class="relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white {{ currentPage === 1 ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }}"
             >
               Previous
             </button>
             <button
               onclick="nextPage"
               disabled="{{ currentPage === totalPages }}"
-              class="[
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white',
-                currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700'
-              ] {{ }}"
+              class="relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white {{ currentPage === totalPages ? 'opacity-50 cursor-not-allowed' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }}"
             >
               Next
             </button>
@@ -1112,12 +1100,9 @@ function bulkChangeStatus(status) {
                 @foreach(totalPages() as page)
                 <button
                   onclick="changePage(page)"
-                  class="[
-                    'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600',
-                    page === currentPage
+                  class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset ring-gray-300 focus:z-20 focus:outline-offset-0 dark:ring-neutral-600 {{ page === currentPage
                       ? 'bg-blue-600 text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700'
-                  ] {{ }}"
+                      : 'text-gray-900 hover:bg-gray-50 dark:text-white dark:hover:bg-neutral-700' }}"
                 >
                   {{ page }}
                 </button>

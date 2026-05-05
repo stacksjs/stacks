@@ -366,7 +366,7 @@ async function handleDeleteCategory(category: Categories): Promise<void> {
                     <div class="flex justify-center mt-2">
                       @if(newCategory.image_url)
                         <img
-                          :src="imagePreview"
+                          src="{{ imagePreview }}"
                           alt="Category preview"
                           class="object-cover h-16 w-16 border border-gray-200 rounded-full dark:border-neutral-700 shadow-sm"
                           onerror="this.src='/images/categories/placeholder.jpg'"

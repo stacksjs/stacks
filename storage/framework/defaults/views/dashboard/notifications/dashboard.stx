@@ -362,7 +362,7 @@ const formatNumber = (num: number): string => {
                   <tr>
                     <td class="pl-4 pr-3 py-4 sm:pl-0 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
                       <div class="flex items-center">
-                        <div :class="getChannelIcon(notification.type)" class="mr-2 h-5 w-5" />
+                        <div class="mr-2 h-5 w-5 {{ getChannelIcon(notification.type) }}" />
                         <span class="capitalize">{{ notification.type }}</span>
                       </div>
                     </td>
@@ -371,7 +371,7 @@ const formatNumber = (num: number): string => {
                     <td class="px-3 py-4 text-sm whitespace-nowrap">
                       <span
                         class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
-                        :class="getStatusColor(notification.status)"
+                        class="getStatusColor(notification.status)"
                       >
                         {{ notification.status }}
                       </span>
@@ -458,7 +458,7 @@ const formatNumber = (num: number): string => {
       <div class="p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
         <div class="flex items-center justify-between mb-6">
           <h4 class="inline-flex items-center px-2.5 py-1 space-x-2 font-medium text-gray-800 text-sm dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">
-            <div :class="getChannelIcon(name)" class="h-4 w-4" />
+            <div class="h-4 w-4 {{ getChannelIcon(name) }}" />
             <span class="capitalize">{{ name }}</span>
           </h4>
         </div>
@@ -468,7 +468,7 @@ const formatNumber = (num: number): string => {
           <div class="grid gap-4 grid-cols-4">
             @foreach(stats as status, value)
             <div class="text-center">
-              <div class="font-mono font-semibold text-2xl" class="'delivered', 'failed' 'pending', 'sent', 'text-blue-600 'text-green-600 'text-red-600 'text-yellow-600 { {{ } }} === === === === status status status status dark:text-blue-400': dark:text-green-400': dark:text-red-400': dark:text-yellow-400':">{{ formatNumber(value) }}</div>
+              <div class="font-mono font-semibold text-2xl {{ status === 'delivered' ? 'text-green-600 dark:text-green-400' : status === 'failed' ? 'text-red-600 dark:text-red-400' : status === 'pending' ? 'text-yellow-600 dark:text-yellow-400' : status === 'sent' ? 'text-blue-600 dark:text-blue-400' : '' }}">{{ formatNumber(value) }}</div>
               <div class="capitalize text-gray-500 text-xs dark:text-neutral-400">{{ status }}</div>
             </div>
             @endforeach

@@ -294,7 +294,7 @@ function handleDateRangeChange() {
                 </td>
                 <td class="relative px-4 py-3 text-sm whitespace-nowrap">
                   @if(referrer.type)
-                  <span class="inline-flex relative z-10 items-center px-2.5 py-0.5 font-medium text-xs rounded-full" :class="getReferrerTypeBadgeClass(referrer.type)">
+                  <span class="inline-flex relative z-10 items-center px-2.5 py-0.5 font-medium text-xs rounded-full {{ getReferrerTypeBadgeClass(referrer.type) }}">
                     {{ referrer.type.charAt(0).toUpperCase() + referrer.type.slice(1) }}
                   </span>
                   @endif

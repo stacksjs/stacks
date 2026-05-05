@@ -331,7 +331,7 @@ const refreshData = () => {
         <button
           type="button"
           class="inline-flex relative items-center px-3 py-2 font-medium text-sm rounded-l-md"
-          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
+          class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
           onclick="timeRange = 'day'"
         >
           Day
@@ -339,7 +339,7 @@ const refreshData = () => {
         <button
           type="button"
           class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm"
-          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
+          class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
           onclick="timeRange = 'week'"
         >
           Week
@@ -347,7 +347,7 @@ const refreshData = () => {
         <button
           type="button"
           class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm rounded-r-md"
-          :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
+          class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
           onclick="timeRange = 'month'"
         >
           Month
@@ -452,13 +452,13 @@ const refreshData = () => {
                     <div class="flex gap-2 items-center mb-1">
                       <span
                         class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
-                        :class="queryTypeBadges[getQueryType(query.query)]"
+                        class="queryTypeBadges[getQueryType(query.query)]"
                       >
                         {{ getQueryType(query.query) }}
                       </span>
                       <div
                         class="overflow-hidden font-medium font-mono text-ellipsis text-gray-900 text-xs dark:text-white"
-                        :title="query.query"
+                        title="{{ query.query }}"
                       >
                         {{ formatQuery(query.query) }}
                       </div>
@@ -474,7 +474,7 @@ const refreshData = () => {
                   <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
                     {{ query.connection }}
                   </td>
-                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400" :class="dark:text-yellow-400' : ? '' 'text-yellow-600 > 10 query.duration">
+                  <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400 {{ query.duration > 10 ? 'text-yellow-600 dark:text-yellow-400' : '' }}">
                     {{ formatDuration(query.duration) }}
                   </td>
                   <td class="hidden lg:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">
@@ -484,7 +484,7 @@ const refreshData = () => {
                   <td class="px-3 py-4 text-sm">
                     <span
                       class="inline-flex items-center px-2 py-1 font-medium text-xs ring-1 ring-inset rounded-md"
-                      :class="getQueryStatusColor(query.status)"
+                      class="getQueryStatusColor(query.status)"
                     >
                       {{ query.status }}
                     </span>
@@ -493,7 +493,7 @@ const refreshData = () => {
                     {{ query.executed_at }}
                   </td>
                   <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm">
-                    <a :href="`/queries/${query.id}`" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
+                    <a href="{{ `/queries/${query.id}` }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
                       View<span class="sr-only">, {{ query.id }}</span>
                     </a>
                   </td>

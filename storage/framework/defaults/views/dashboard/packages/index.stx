@@ -510,12 +510,9 @@ function starsData() { return ({
                           as="template"
                         >
                           <li
-                            class="[
-                              active ? 'bg-blue-50 dark:bg-blue-700/50 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-neutral-100',
-                              'relative cursor-default select-none py-2 pl-10 pr-4 transition-colors duration-150',
-                            ] {{ }}"
+                            class="{{ active ? 'bg-blue-50 dark:bg-blue-700/50 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-neutral-100' }} relative cursor-default select-none py-2 pl-10 pr-4 transition-colors duration-150"
                           >
-                            <span :class="[selected ? 'font-medium' : 'font-normal', 'block truncate']">
+                            <span class="{{ selected ? 'font-medium' : 'font-normal' }} block truncate">
                               {{ pkg.name }}
                             </span>
                             @if(selected)
@@ -618,23 +615,17 @@ function starsData() { return ({
               <div class="flex h-9 rounded-md shadow-sm">
                 <button
                   onclick="displayMode = 'line'"
-                  class="[
-                    'px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors',
-                    displayMode === 'line'
+                  class="px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors {{ displayMode === 'line'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500'
-                  ] {{ }}"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
                 >
                   Line
                 </button>
                 <button
                   onclick="displayMode = 'bar'"
-                  class="[
-                    'px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px',
-                    displayMode === 'bar'
+                  class="px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px {{ displayMode === 'bar'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500'
-                  ] {{ }}"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
                 >
                   Bar
                 </button>
@@ -677,23 +668,17 @@ function starsData() { return ({
               <div class="flex h-9 rounded-md shadow-sm">
                 <button
                   onclick="displayMode = 'line'"
-                  class="[
-                    'px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors',
-                    displayMode === 'line'
+                  class="px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors {{ displayMode === 'line'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500'
-                  ] {{ }}"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
                 >
                   Line
                 </button>
                 <button
                   onclick="displayMode = 'bar'"
-                  class="[
-                    'px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px',
-                    displayMode === 'bar'
+                  class="px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px {{ displayMode === 'bar'
                       ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500'
-                  ] {{ }}"
+                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
                 >
                   Bar
                 </button>

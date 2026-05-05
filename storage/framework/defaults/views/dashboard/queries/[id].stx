@@ -199,13 +199,13 @@ const queryTypeBadges = {
                 <div class="flex flex-wrap gap-3 items-center mb-2">
                   <span
                     class="inline-flex items-center px-2.5 py-1 font-medium text-sm ring-1 ring-inset rounded-md"
-                    :class="getStatusColor(query.status)"
+                    class="getStatusColor(query.status)"
                   >
                     {{ query.status }}
                   </span>
                   <span
                     class="inline-flex items-center px-2.5 py-1 font-medium text-sm ring-1 ring-inset rounded-md"
-                    :class="queryTypeBadges[getQueryType(query.query)]"
+                    class="queryTypeBadges[getQueryType(query.query)]"
                   >
                     {{ getQueryType(query.query) }}
                   </span>

@@ -408,7 +408,7 @@ const statsCards = [
                class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
             <dt>
               <div class="absolute p-3 bg-blue-500 rounded-md">
-                <div :class="[stat.icon, 'h-6 w-6 text-white']" />
+                <div class="{{ stat.icon }} h-6 w-6 text-white" />
               </div>
               <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">
                 {{ stat.title }}
@@ -418,10 +418,7 @@ const statsCards = [
               <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
                 {{ stat }}
               </p>
-              <p class="[
-                'ml-2 flex items-baseline text-sm font-semibold',
-                stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600'
-              ] {{ }}">
+              <p class="ml-2 flex items-baseline text-sm font-semibold {{ stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600' }}">
                 @if(stat.changeType === 'increase')
                   <span class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-up" />
                 @else
@@ -550,7 +547,7 @@ const statsCards = [
                         <div class="relative group">
                           <div class="flex items-center space-x-2 cursor-help"
                              class="'failed' 'processed', 'processing', 'queued', 'released', 'text-blue-700 'text-green-700 'text-purple-700 'text-red-700 'text-yellow-700 { {{ } }} === === === === === status status status status status dark:text-blue-300': dark:text-green-300': dark:text-purple-300': dark:text-red-300': dark:text-yellow-300':">
-                            <div :class="[getQueueStatusColor(status), 'h-2.5 w-2.5 rounded-full']"></div>
+                            <div class="{{ getQueueStatusColor(status) }} h-2.5 w-2.5 rounded-full"></div>
                             <span class="font-mono text-xs">{{ value }}</span>
                           </div>
                           <div class="hidden group-hover:block absolute bottom-full left-1/2 z-10 mb-2 -translate-x-1/2">

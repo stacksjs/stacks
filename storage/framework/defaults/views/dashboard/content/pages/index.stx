@@ -938,10 +938,7 @@ function websiteStats() {
                         <button @click="toggleSort('title')" class="inline-flex items-center group">
                           Title
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                            <div v-if="sortBy === 'title'" class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div v-if="sortBy === 'title'" class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
@@ -950,10 +947,7 @@ function websiteStats() {
                         <button @click="toggleSort('author')" class="inline-flex items-center group">
                           Author
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                            <div v-if="sortBy === 'author'" class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div v-if="sortBy === 'author'" class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
@@ -963,10 +957,7 @@ function websiteStats() {
                         <button @click="toggleSort('views')" class="inline-flex items-center group">
                           Views
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                            <div v-if="sortBy === 'views'" class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div v-if="sortBy === 'views'" class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
@@ -975,10 +966,7 @@ function websiteStats() {
                         <button @click="toggleSort('conversions')" class="inline-flex items-center group">
                           Conversions
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                            <div v-if="sortBy === 'conversions'" class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div v-if="sortBy === 'conversions'" class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
@@ -987,10 +975,7 @@ function websiteStats() {
                         <button @click="toggleSort('published')" class="inline-flex items-center group">
                           Published
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
-                            <div v-if="sortBy === 'published'" class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div v-if="sortBy === 'published'" class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             <div v-else class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           </span>
                         </button>
@@ -1018,7 +1003,7 @@ function websiteStats() {
                       <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         <div class="overflow-hidden h-16 w-28 bg-gray-100 dark:bg-neutral-700 rounded">
                           <img
-                            :src="page.ogImage"
+                            src="{{ page.ogImage }}"
                             alt="{{ `OG image for ${page.title}` }}"
                             class="object-cover h-full w-full"
                           />
@@ -1058,7 +1043,7 @@ function websiteStats() {
                         {{ formatDate(page.published) }}
                       </td>
                       <td class="px-3 py-4 text-sm whitespace-nowrap">
-                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md" :class="getStatusClass(page.status)">
+                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md {{ getStatusClass(page.status) }}">
                           {{ page.status }}
                         </span>
                       </td>
@@ -1067,7 +1052,7 @@ function websiteStats() {
                           <button
                             @click="toggleHomepage(page.id)"
                             class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
-                            :class="text-gray-600 text-purple-800 dark:text-neutral-400' dark:text-purple-400' dark:bg-neutral-800/50 dark:bg-purple-900/30 : ? 'bg-gray-100 'bg-purple-100 page.isHomepage"
+                            class="text-gray-600 text-purple-800 dark:text-neutral-400' dark:text-purple-400' dark:bg-neutral-800/50 dark:bg-purple-900/30 : ? 'bg-gray-100 'bg-purple-100 page.isHomepage"
                           >
                             <div class="mr-1 h-3 w-3 i-hugeicons-home-01"></div>
                             Homepage
@@ -1075,7 +1060,7 @@ function websiteStats() {
                           <button
                             @click="toggleMainMenu(page.id)"
                             class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
-                            :class="text-blue-800 text-gray-600 dark:text-blue-400' dark:text-neutral-400' dark:bg-blue-900/30 dark:bg-neutral-800/50 : ? 'bg-blue-100 'bg-gray-100 page.inMainMenu"
+                            class="text-blue-800 text-gray-600 dark:text-blue-400' dark:text-neutral-400' dark:bg-blue-900/30 dark:bg-neutral-800/50 : ? 'bg-blue-100 'bg-gray-100 page.inMainMenu"
                           >
                             <div class="mr-1 h-3 w-3 i-hugeicons-menu-01"></div>
                             Menu
@@ -1083,7 +1068,7 @@ function websiteStats() {
                           <button
                             @click="toggleFooter(page.id)"
                             class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md"
-                            :class="text-gray-600 text-teal-800 dark:text-neutral-400' dark:text-teal-400' dark:bg-neutral-800/50 dark:bg-teal-900/30 : ? 'bg-gray-100 'bg-teal-100 page.inFooter"
+                            class="text-gray-600 text-teal-800 dark:text-neutral-400' dark:text-teal-400' dark:bg-neutral-800/50 dark:bg-teal-900/30 : ? 'bg-gray-100 'bg-teal-100 page.inFooter"
                           >
                             <div class="mr-1 h-3 w-3 i-hugeicons-layout-bottom"></div>
                             Footer
@@ -1127,12 +1112,9 @@ function websiteStats() {
             <button
               @click="previousPage"
               disabled="{{ currentPage === 1 }}"
-              class="[
-                'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
-                currentPage === 1
+              class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset {{ currentPage === 1
                   ? 'text-gray-400 ring-gray-300 dark:text-neutral-500 dark:ring-neutral-700'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-              ] {{ }}"
+                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
             >
               <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
             </button>
@@ -1140,24 +1122,18 @@ function websiteStats() {
               v-for="page in totalPages"
               :key="page"
               @click="changePage(page)"
-              class="[
-                'relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset',
-                page === currentPage
+              class="relative inline-flex items-center px-4 py-2 text-sm font-semibold ring-1 ring-inset {{ page === currentPage
                   ? 'z-10 bg-blue-600 text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 focus:z-20 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-              ] {{ }}"
+                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 focus:z-20 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
             >
               {{ page }}
             </button>
             <button
               @click="nextPage"
               disabled="{{ currentPage === totalPages }}"
-              class="[
-                'relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset',
-                currentPage === totalPages
+              class="relative inline-flex items-center rounded-md px-3 py-2 text-sm font-semibold ring-1 ring-inset {{ currentPage === totalPages
                   ? 'text-gray-400 ring-gray-300 dark:text-neutral-500 dark:ring-neutral-700'
-                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-              ] {{ }}"
+                  : 'text-gray-900 ring-gray-300 hover:bg-gray-50 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
             >
               <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
             </button>
@@ -1322,7 +1298,7 @@ function websiteStats() {
                     <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">OG Image</label>
                     <div class="flex items-center mt-1 space-x-4">
                       <div class="overflow-hidden h-24 w-40 bg-gray-100 dark:bg-neutral-700 rounded">
-                        <img :src="newPage.ogImage" alt="OG Image Preview" class="object-cover h-full w-full" />
+                        <img src="{{ newPage.ogImage }}" alt="OG Image Preview" class="object-cover h-full w-full" />
                       </div>
                       <button
                         type="button"

@@ -560,13 +560,11 @@ let timeRange = 'day'
           </select>
 
           <button
-            class="flex gap-2 items-center px-4 py-2 rounded-lg"
-            :class="text-blue-700' text-gray-700' : ? 'bg-blue-100 'bg-gray-100 autoRefresh"
+            class="flex gap-2 items-center px-4 py-2 rounded-lg {{ autoRefresh ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700' }}"
             onclick="toggleAutoRefresh"
           >
             <i
-              class="h-4 w-4 i-hugeicons-refresh"
-              :class=": ? '' 'animate-spin' autoRefresh"
+              class="h-4 w-4 i-hugeicons-refresh {{ autoRefresh ? 'animate-spin' : '' }}"
               aria-hidden="true"
             />
             {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
@@ -588,7 +586,7 @@ let timeRange = 'day'
             <button
               onclick="toggleProject(project.id)"
               class="inline-flex items-center px-3 py-1 font-medium text-sm rounded-full transition-colors"
-              :class="text-gray-700 hover:bg-gray-200' ring-2' selectedProjects.includes(project.id) : ? ' ' ' 'bg-gray-100 + + + getProjectClasses(project.id).bg getProjectClasses(project.id).text"
+              class="text-gray-700 hover:bg-gray-200' ring-2' selectedProjects.includes(project.id) : ? ' ' ' 'bg-gray-100 + + + getProjectClasses(project.id).bg getProjectClasses(project.id).text"
             >
               {{ project.name }}
               @if(selectedProjects.includes(project.id))
@@ -696,7 +694,7 @@ let timeRange = 'day'
               onclick="prevPage"
               disabled="{{ currentPage === 1 }}"
               class="px-2 py-1 text-sm border rounded-md"
-              :class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === 1 currentPage"
+              class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === 1 currentPage"
             >
               <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true" />
             </button>
@@ -705,7 +703,7 @@ let timeRange = 'day'
               <button
                 onclick="goToPage(page)"
                 class="px-3 py-1 text-sm border rounded-md"
-                :class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage page"
+                class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage page"
               >
                 {{ page }}
               </button>
@@ -719,7 +717,7 @@ let timeRange = 'day'
               <button
                 onclick="goToPage(totalPages)"
                 class="px-3 py-1 text-sm border rounded-md"
-                :class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage totalPages"
+                class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage totalPages"
               >
                 {{ totalPages }}
               </button>
@@ -729,7 +727,7 @@ let timeRange = 'day'
               onclick="nextPage"
               disabled="{{ currentPage === totalPages || totalPages === 0 }}"
               class="px-2 py-1 text-sm border rounded-md"
-              :class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === === || 0 currentPage totalPages totalPages"
+              class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === === || 0 currentPage totalPages totalPages"
             >
               <i class="h-4 w-4 i-hugeicons-arrow-right-01" aria-hidden="true" />
             </button>

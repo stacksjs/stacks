@@ -384,9 +384,10 @@ workers = workers.map(worker => ({
             <div class="grid gap-4 grid-cols-3">
               @foreach(stats as status => value)
 <div class="text-center">
-                <div class="font-mono font-semibold text-2xl" class="'failed' 'processed', 'processing', 'queued', 'released', 'text-blue-600 'text-green-600 'text-purple-600 'text-red-600 'text-yellow-600 { {{ } }} === === === === === status status status status status dark:text-blue-400': dark:text-green-400': dark:text-purple-400': dark:text-red-400': dark:text-yellow-400':">{{ value }}</div>
+                <div class="font-mono font-semibold text-2xl {{ status === 'failed' ? 'text-red-600 dark:text-red-400' : status === 'processed' ? 'text-green-600 dark:text-green-400' : status === 'processing' ? 'text-blue-600 dark:text-blue-400' : status === 'queued' ? 'text-yellow-600 dark:text-yellow-400' : status === 'released' ? 'text-purple-600 dark:text-purple-400' : '' }}">{{ value }}</div>
                 <div class="capitalize text-gray-500 text-xs dark:text-neutral-400">{{ status }}</div>
               </div>
+              @endforeach
             </div>
 
             <!-- Queue Progress -->
@@ -404,6 +405,7 @@ workers = workers.map(worker => ({
         </div>
       </div>
     </div>
+        @endforeach
 
       <!-- Queue Statistics -->
       <div class="my-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
@@ -420,6 +422,7 @@ workers = workers.map(worker => ({
 <option value="{{ queue }}">
                   {{ queue }}
                 </option>
+                @endforeach
               </select>
 
               <select
@@ -578,6 +581,7 @@ workers = workers.map(worker => ({
         </div>
       </div>
     </div>
+            @endforeach
   </div>
 
 <script client>

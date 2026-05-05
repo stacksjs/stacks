@@ -275,10 +275,7 @@ function addManufacturer() {
                           Manufacturer
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                             @if(sortBy === 'name')
-                              <div class="[
-                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                                'h-4 w-4'
-                              ] {{ }}"></div>
+                              <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             @else
                               <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                             @endif
@@ -291,10 +288,7 @@ function addManufacturer() {
                           Country
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                             @if(sortBy === 'country')
-                              <div class="[
-                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                                'h-4 w-4'
-                              ] {{ }}"></div>
+                              <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             @else
                               <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                             @endif
@@ -306,10 +300,7 @@ function addManufacturer() {
                           Products
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                             @if(sortBy === 'productCount')
-                              <div class="[
-                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                                'h-4 w-4'
-                              ] {{ }}"></div>
+                              <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             @else
                               <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                             @endif
@@ -322,10 +313,7 @@ function addManufacturer() {
                           Created
                           <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                             @if(sortBy === 'createdAt')
-                              <div class="[
-                                sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                                'h-4 w-4'
-                              ] {{ }}"></div>
+                              <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                             @else
                               <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                             @endif

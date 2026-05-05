@@ -359,7 +359,7 @@ const closeErrorModal = () => {
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600/50">
                   <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                     <div class="flex items-center">
-                      <div :class="getChannelIcon(notification.type)" class="mr-2 h-5 w-5" />
+                      <div class="mr-2 h-5 w-5 {{ getChannelIcon(notification.type) }}" />
                       <span class="capitalize font-medium text-gray-900 dark:text-neutral-100">{{ notification.type }}</span>
                     </div>
                   </td>

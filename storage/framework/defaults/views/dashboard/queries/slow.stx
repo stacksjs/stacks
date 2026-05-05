@@ -260,7 +260,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <button
             type="button"
             class="inline-flex relative items-center px-3 py-2 font-medium text-sm rounded-l-md"
-            :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
+            class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'day' === timeRange"
             onclick="timeRange = 'day'"
           >
             Day
@@ -268,7 +268,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <button
             type="button"
             class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm"
-            :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
+            class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'week' === timeRange"
             onclick="timeRange = 'week'"
           >
             Week
@@ -276,7 +276,7 @@ const copyQuery = (queryId: string, queryText: string) => {
           <button
             type="button"
             class="inline-flex relative items-center -ml-px px-3 py-2 font-medium text-sm rounded-r-md"
-            :class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
+            class="text-gray-700 text-white' dark:text-neutral-200 dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700' ring-1 ring-gray-300 ring-inset dark:ring-neutral-700 : ? 'bg-blue-600 'bg-white 'month' === timeRange"
             onclick="timeRange = 'month'"
           >
             Month
@@ -386,7 +386,7 @@ const copyQuery = (queryId: string, queryText: string) => {
                       </span>
                     </div>
                     <div class="flex flex-shrink-0 ml-2">
-                      <div class="h-5 w-5 text-gray-400 duration-200 transition-transform i-hugeicons-chevron-down" class="'transform { {{ } }} === currentExpandedQueryId query.id rotate-180':"></div>
+                      <div class="h-5 w-5 text-gray-400 duration-200 transition-transform i-hugeicons-chevron-down {{ currentExpandedQueryId === query.id ? 'transform rotate-180' : '' }}"></div>
                     </div>
                   </div>
                   <div class="sm:flex sm:justify-between mt-2">

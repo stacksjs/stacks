@@ -656,18 +656,12 @@ function getPostTitleById(id: number): string {
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
                       <div class="flex items-center">
-                        <div class="[
-                          'text-sm font-medium',
-                          getScoreColorClass(item.score)
-                        ] {{ }}">
+                        <div class="text-sm font-medium {{ getScoreColorClass(item.score) }}">
                           {{ item.score }}%
                         </div>
                         <div class="ml-2 h-2 w-16 bg-gray-200 dark:bg-neutral-700 rounded-full">
                           <div
-                            class="[
-                              'h-2 rounded-full',
-                              getScoreBgClass(item.score)
-                            ] {{ }}"
+                            class="h-2 rounded-full {{ getScoreBgClass(item.score) }}"
                             style="{{ { width: `${item.score}%` } }}"
                           ></div>
                         </div>
@@ -745,11 +739,9 @@ function getPostTitleById(id: number): string {
                 @foreach(paginationRange() as page)
 <button
                   onclick="currentPage = page"
-                  class="[
-                    page === currentPage
+                  class="{{ page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700'
-                  ] {{ }}"
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700' }}"
                 >
                   {{ page }}
                 </button>
@@ -1317,9 +1309,9 @@ function getPostTitleById(id: number): string {
                 <div class="flex items-center">
                   <div
                     class="flex items-center justify-center h-16 w-16 font-bold text-xl rounded-full"
-                    :class="=== => || 0) analysisPostId)?.score getScoreBgClass(seoData.find(item item.id"
+                    class="=== => || 0) analysisPostId)?.score getScoreBgClass(seoData.find(item item.id"
                   >
-                    <span :class="=== => || 0) analysisPostId)?.score getScoreColorClass(seoData.find(item item.id">
+                    <span class="=== => || 0) analysisPostId)?.score getScoreColorClass(seoData.find(item item.id">
                       {{ seoData.find(item => item.id === analysisPostId)?.score || 0 }}%
                     </span>
                   </div>

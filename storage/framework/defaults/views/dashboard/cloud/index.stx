@@ -832,6 +832,7 @@ const updateServerDefaults = (server: ServerConfig) => {
                   <span class="text-gray-500 text-sm dark:text-neutral-400">{{ key }}</span>
                   <span class="font-medium text-gray-900 text-sm dark:text-neutral-100">{{ value }}</span>
                 </div>
+                @endforeach
               @else
                 @if(selectedNode.type === 'user')
                 <div class="text-gray-500 text-sm dark:text-neutral-400">
@@ -924,6 +925,7 @@ const updateServerDefaults = (server: ServerConfig) => {
                     >
                       {{ badge }}
                     </span>
+                    @endforeach
                   </div>
                 </div>
                 <div class="flex gap-2 items-center text-gray-500 text-sm dark:text-neutral-400">
@@ -993,6 +995,7 @@ const updateServerDefaults = (server: ServerConfig) => {
 <option value="{{ region }}">
                       {{ region }}
                     </option>
+                    @endforeach
                   </select>
                 </div>
                 <div>
@@ -1008,6 +1011,7 @@ const updateServerDefaults = (server: ServerConfig) => {
 <option value="{{ type.value }}">
                         {{ type.label }}
                       </option>
+                      @endforeach
                     </select>
                   </div>
                 </div>
@@ -1023,6 +1027,7 @@ const updateServerDefaults = (server: ServerConfig) => {
 <option value="{{ version }}">
                       {{ version }}
                     </option>
+                    @endforeach
                   </select>
                 </div>
                 @endif
@@ -1099,6 +1104,7 @@ const updateServerDefaults = (server: ServerConfig) => {
               </div>
               @endif
             </div>
+            @endforeach
             @endforeach
           </div>
         </div>

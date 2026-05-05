@@ -1252,7 +1252,7 @@ function updateCharts() {
                   </div>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span :class="getStatusClass(entry.status)" class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full">
+                  <span class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full {{ getStatusClass(entry.status) }}">
                     {{ entry.status }}
                   </span>
                 </td>
@@ -1302,20 +1302,14 @@ function updateCharts() {
           <button
             onclick="prevPage"
             disabled="{{ currentPage === 1 }}"
-            class="[
-              currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-              'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
-            ] {{ }}"
+            class="{{ currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
           >
             Previous
           </button>
           <button
             onclick="nextPage"
             disabled="{{ currentPage === totalPages }}"
-            class="[
-              currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-              'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white'
-            ] {{ }}"
+            class="{{ currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
           >
             Next
           </button>
@@ -1333,10 +1327,7 @@ function updateCharts() {
               <button
                 onclick="goToPage(currentPage - 1)"
                 disabled="{{ currentPage === 1 }}"
-                class="[
-                  currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-                  'relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600'
-                ] {{ }}"
+                class="{{ currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
               >
                 <span class="sr-only">Previous</span>
                 <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
@@ -1344,12 +1335,9 @@ function updateCharts() {
               @foreach(totalPages() as page)
                 <button
                   onclick="goToPage(page)"
-                  class="[
-                    page === currentPage
+                  class="{{ page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
-                    'focus:z-20'
-                  ] {{ }}"
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700' }} focus:z-20"
                 >
                   {{ page }}
                 </button>
@@ -1357,10 +1345,7 @@ function updateCharts() {
               <button
                 onclick="goToPage(currentPage + 1)"
                 disabled="{{ currentPage === totalPages }}"
-                class="[
-                  currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700',
-                  'relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600'
-                ] {{ }}"
+                class="{{ currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
               >
                 <span class="sr-only">Next</span>
                 <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>

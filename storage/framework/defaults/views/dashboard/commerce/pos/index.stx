@@ -569,24 +569,18 @@ function scrollToOrder(): void {
           <button
             type="button"
             onclick="viewMode = 'grid'"
-            class="[
-              'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-              viewMode === 'grid'
+            class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'grid'
                 ? 'bg-blue-600 text-white ring-blue-600'
-                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-            ] {{ }}"
+                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
           >
             <div class="h-5 w-5 i-hugeicons-grid"></div>
           </button>
           <button
             type="button"
             onclick="viewMode = 'list'"
-            class="[
-              'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-              viewMode === 'list'
+            class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'list'
                 ? 'bg-blue-600 text-white ring-blue-600'
-                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-            ] {{ }}"
+                : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
           >
             <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
           </button>
@@ -613,8 +607,8 @@ function scrollToOrder(): void {
                   <!-- Item image with badges -->
                   <div class="aspect-square overflow-hidden relative bg-gray-200 dark:bg-neutral-700">
                     <img
-                      :src="item.imageUrl"
-                      :alt="item.name"
+                      src="{{ item.imageUrl }}"
+                      alt="{{ item.name }}"
                       class="object-cover h-full w-full duration-300 transition-transform group-hover:scale-105"
                     />
                     @if(!item.available)
@@ -648,7 +642,7 @@ function scrollToOrder(): void {
                     <div class="flex flex-wrap gap-1 mt-2">
                       @foreach(item.allergies as allergy)
                         <span
-                          :class="getAllergyClass(allergy)"
+                          class="getAllergyClass(allergy)"
                           class="inline-flex items-center px-2 py-0.5 font-medium text-xs rounded-full"
                         >
                           {{ allergy }}
@@ -662,7 +656,7 @@ function scrollToOrder(): void {
                           <span class="font-medium text-gray-900 text-sm dark:text-white">${{ item.salePrice.toFixed(2) }}</span>
                         @endif
                         <span
-                          :class="[item.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-neutral-400' : 'text-sm font-medium text-gray-900 dark:text-white']"
+                          class="{{ item.salePrice !== null ? 'line-through ml-2 text-sm text-gray-500 dark:text-neutral-400' : 'text-sm font-medium text-gray-900 dark:text-white' }}"
                         >
                           ${{ item.price.toFixed(2) }}
                         </span>
@@ -711,11 +705,11 @@ function scrollToOrder(): void {
                 </tr>
               @endif
               @foreach(filteredMenuItems() as item)
-                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700" class="!item.available 'opacity-70': { {{ } }}">
+                <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700 {{ !item.available ? 'opacity-70' : '' }}">
                   <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
                     <div class="flex items-center">
                       <div class="flex-shrink-0 h-10 w-10">
-                        <img :src="item.imageUrl" :alt="item.name" class="object-cover h-10 w-10 rounded-md" />
+                        <img src="{{ item.imageUrl }}" alt="{{ item.name }}" class="object-cover h-10 w-10 rounded-md" />
                       </div>
                       <div class="ml-4">
                         <div class="font-medium text-gray-900 dark:text-white">{{ item.name }}</div>

@@ -1027,24 +1027,18 @@ const removeCondition = (index: number) => {
               <button
                 type="button"
                 onclick="viewMode = 'detailed'"
-                class="[
-                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'detailed'
+                class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-grid"></div>
               </button>
               <button
                 type="button"
                 onclick="viewMode = 'compact'"
-                class="[
-                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'compact'
+                class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-list-view"></div>
               </button>
@@ -1148,12 +1142,12 @@ const removeCondition = (index: number) => {
                 </td>
                 <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                   <div class="flex items-center">
-                    <div :class="mr-2 h-4 w-4 ' ' + + getCampaignTypeColor(campaign.type) getCampaignTypeIcon(campaign.type)"></div>
+                    <div class="mr-2 h-4 w-4 ' ' + + getCampaignTypeColor(campaign.type) getCampaignTypeIcon(campaign.type)"></div>
                     {{ campaign.type }}
                   </div>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span :class="[getStatusClass(campaign.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                  <span class="{{ getStatusClass(campaign.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit">
                     {{ campaign.status }}
                   </span>
                 </td>
@@ -1165,9 +1159,10 @@ const removeCondition = (index: number) => {
                   <div class="space-y-1">
                     @foreach(getCampaignMetrics(campaign) as metric)
 <div class="flex items-center">
-                      <div :class="mr-2' h-4 w-4 ' + metric.icon"></div>
+                      <div class="mr-2' h-4 w-4 ' + metric.icon"></div>
                       <span class="text-xs">{{ metric.label }}: {{ metric }}</span>
                     </div>
+                    @endforeach
                   </div>
                 </td>
                 <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
@@ -1209,6 +1204,7 @@ const removeCondition = (index: number) => {
                   </div>
                 </td>
               </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
@@ -1230,7 +1226,7 @@ const removeCondition = (index: number) => {
               <div class="px-4 py-5 sm:p-6">
                 <div class="flex items-center justify-between">
                   <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">{{ campaign.name }}</h3>
-                  <span :class="[getStatusClass(campaign.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                  <span class="{{ getStatusClass(campaign.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit">
                     {{ campaign.status }}
                   </span>
                 </div>
@@ -1253,13 +1249,14 @@ const removeCondition = (index: number) => {
                   @foreach(getCampaignMetrics(campaign) as metric)
 <div class="col-span-1">
                     <div class="flex items-center">
-                      <div :class="mr-2 h-5 w-5 text-gray-400 dark:text-neutral-500' ' + metric.icon"></div>
+                      <div class="mr-2 h-5 w-5 text-gray-400 dark:text-neutral-500' ' + metric.icon"></div>
                       <div>
                         <div class="font-medium text-gray-900 text-sm dark:text-white">{{ metric }}</div>
                         <div class="text-gray-500 text-xs dark:text-neutral-400">{{ metric.label }}</div>
                       </div>
                     </div>
                   </div>
+                  @endforeach
                 </div>
 
                 <!-- Email campaign details -->
@@ -1357,6 +1354,7 @@ const removeCondition = (index: number) => {
                 </div>
               </div>
             </div>
+            @endforeach
           </div>
         </div>
 
@@ -1407,14 +1405,13 @@ const removeCondition = (index: number) => {
                 @foreach(displayedPages() as page)
 <button
                   onclick="goToPage(page)"
-                  class="[
-                    page === currentPage
+                  class="{{ page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
-                  ] {{ }}"
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700' }}"
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   onclick="nextPage"
                   disabled="{{ currentPage === totalPages }}"
@@ -1663,7 +1660,8 @@ const removeCondition = (index: number) => {
                                   class="block mt-1 w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
                                 >
                                   @foreach(availableModels as model)
-<option value="{{ model }}">{{ model }}</option>
+                                    <option value="{{ model }}">{{ model }}</option>
+                                  @endforeach
                                 </select>
                               </div>
 
@@ -1681,6 +1679,7 @@ const removeCondition = (index: number) => {
 <option value="{{ event }}">
                                     {{ event.charAt(0).toUpperCase() + event.slice(1) }}
                                   </option>
+                                  @endforeach
                                 </select>
                               </div>
 
@@ -1769,6 +1768,7 @@ const removeCondition = (index: number) => {
                                     </button>
                                   </div>
                                 </div>
+                                @endforeach
                               </div>
                             @endforeach
                           </div>

@@ -157,10 +157,7 @@ function isActive() { return (id } => activeConversation === id)
       @foreach(conversations as chat)
         <div
              onclick="selectConversation(chat.id)"
-             class="[
-               'p-4 cursor-pointer border-b border-gray-200',
-               isActive(chat.id) ? 'bg-blue-50' : 'hover:bg-gray-50'
-             ] {{ }}">
+             class="p-4 cursor-pointer border-b border-gray-200 {{ isActive(chat.id) ? 'bg-blue-50' : 'hover:bg-gray-50' }}">
           <div class="flex items-start justify-between">
             <div class="flex items-center space-x-3">
               <div class="relative">
@@ -210,20 +207,14 @@ function isActive() { return (id } => activeConversation === id)
       <div class="flex flex-col mx-auto space-y-4 max-w-3xl">
         @foreach(messages as message)
           <div
-               class="[
-                 'flex items-start space-x-4',
-                 message.type === 'ai' ? '' : 'justify-end'
-               ] {{ }}">
+               class="flex items-start space-x-4 {{ message.type === 'ai' ? '' : 'justify-end' }}">
             @if(message.type === 'ai')
               <div class="flex items-center justify-center h-10 w-10 bg-gradient-to-r from-blue-400 to-blue-600 rounded-full">
                 <span class="font-medium text-sm text-white">AI</span>
               </div>
             @endif
 
-            <div class="[
-                   'rounded-lg p-4 shadow max-w-lg',
-                   message.type === 'ai' ? 'bg-white dark:bg-neutral-800' : 'bg-blue-500 text-white'
-                 ] {{ }}">
+            <div class="rounded-lg p-4 shadow max-w-lg {{ message.type === 'ai' ? 'bg-white dark:bg-neutral-800' : 'bg-blue-500 text-white' }}">
               <div class="flex items-center justify-between mb-1">
                 <span class="font-medium">{{ message.user.name }}</span>
                 <span class="text-sm opacity-75">{{ message.timestamp }}</span>
@@ -238,8 +229,8 @@ function isActive() { return (id } => activeConversation === id)
             </div>
 
             @if(message.type === 'human')
-              <img :src="message.user.avatar"
-                   :alt="message.user.name"
+              <img src="{{ message.user.avatar }}"
+                   alt="{{ message.user.name }}"
                    class="h-10 w-10 rounded-full" />
             @endif
           </div>

@@ -1027,7 +1027,8 @@ const renderSourceChart = () => {
             >
               <option value="all">All Sources</option>
               @foreach(sources.filter(s => s !== 'all') as source)
-<option value="{{ source }}">{{ source }}</option>
+                <option value="{{ source }}">{{ source }}</option>
+              @endforeach
             </select>
 
             <!-- Rating filter -->
@@ -1037,7 +1038,8 @@ const renderSourceChart = () => {
             >
               <option value="all">All Ratings</option>
               @foreach(ratings.filter(r => r !== 'all') as rating)
-<option value="{{ rating }}">{{ rating }} Stars</option>
+                <option value="{{ rating }}">{{ rating }} Stars</option>
+              @endforeach
             </select>
 
             <!-- Sentiment filter -->
@@ -1068,24 +1070,18 @@ const renderSourceChart = () => {
               <button
                 type="button"
                 onclick="viewMode = 'detailed'"
-                class="[
-                  'relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'detailed'
+                class="relative inline-flex items-center rounded-l-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'detailed'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-grid"></div>
               </button>
               <button
                 type="button"
                 onclick="viewMode = 'compact'"
-                class="[
-                  'relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10',
-                  viewMode === 'compact'
+                class="relative -ml-px inline-flex items-center rounded-r-md px-3 py-2 text-sm font-semibold ring-1 ring-inset focus:z-10 {{ viewMode === 'compact'
                     ? 'bg-blue-600 text-white ring-blue-600'
-                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700'
-                ] {{ }}"
+                    : 'bg-white text-gray-900 ring-gray-300 hover:bg-gray-50 dark:bg-neutral-800 dark:text-white dark:ring-neutral-700 dark:hover:bg-neutral-700' }}"
               >
                 <div class="h-5 w-5 i-hugeicons-list-view"></div>
               </button>
@@ -1170,7 +1166,7 @@ const renderSourceChart = () => {
                   <div class="flex items-center">
                     <div class="flex-shrink-0 h-10 w-10">
                       @if(review.authorAvatar)
-<img class="h-10 w-10 rounded-full" :src="review.authorAvatar" alt="" />
+<img class="h-10 w-10 rounded-full" src="{{ review.authorAvatar }}" alt="" />
                       @else
 <div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
                         <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
@@ -1184,7 +1180,7 @@ const renderSourceChart = () => {
                 </td>
                 <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
                   <div class="flex items-center">
-                    <div :class="mr-2 h-4 w-4 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
+                    <div class="mr-2 h-4 w-4 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
                     {{ review.source }}
                   </div>
                 </td>
@@ -1197,16 +1193,17 @@ const renderSourceChart = () => {
                       @else
 <div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                     </div>
+                    @endforeach
                     <span class="ml-1">{{ review.rating }}.0</span>
                   </div>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span :class="[getSentimentClass(review.sentiment), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                  <span class="{{ getSentimentClass(review.sentiment) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit">
                     {{ review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1) }}
                   </span>
                 </td>
                 <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span :class="[getStatusClass(review.status), 'inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit']">
+                  <span class="{{ getStatusClass(review.status) }} inline-flex items-center rounded-full px-2 py-1 text-xs font-medium w-fit">
                     {{ review.status.charAt(0).toUpperCase() + review.status.slice(1) }}
                   </span>
                 </td>
@@ -1236,7 +1233,7 @@ const renderSourceChart = () => {
                     <button
                       onclick="flagReview(review)"
                       class="text-gray-400 dark:text-yellow-400 hover:text-yellow-900 dark:hover:text-yellow-300 duration-150 transition-all"
-                      :title="review.status === 'flagged' ? 'Unflag' : 'Flag'"
+                      title="{{ review.status === 'flagged' ? 'Unflag' : 'Flag' }}"
                     >
                       <div class="h-5 w-5 i-hugeicons-flag-01"></div>
                       <span class="sr-only">Flag</span>
@@ -1244,22 +1241,23 @@ const renderSourceChart = () => {
                     <button
                       onclick="highlightReview(review)"
                       class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 duration-150 transition-all"
-                      :title="review.isHighlighted ? 'Remove Highlight' : 'Highlight'"
+                      title="{{ review.isHighlighted ? 'Remove Highlight' : 'Highlight' }}"
                     >
-                      <div :class=": ? 'i-hugeicons-star' 'i-hugeicons-star' review.isHighlighted" class="h-5 w-5"></div>
+                      <div class="h-5 w-5 {{ review.isHighlighted ? 'i-hugeicons-star' : 'i-hugeicons-star' }}"></div>
                       <span class="sr-only">Highlight</span>
                     </button>
                     <button
                       onclick="hideReview(review)"
                       class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300 duration-150 transition-all"
-                      :title="review.isHidden ? 'Unhide' : 'Hide'"
+                      title="{{ review.isHidden ? 'Unhide' : 'Hide' }}"
                     >
-                      <div :class=": ? 'i-hugeicons-eye-off' 'i-hugeicons-eye' review.isHidden" class="h-5 w-5"></div>
+                      <div class="h-5 w-5 {{ review.isHidden ? 'i-hugeicons-eye-off' : 'i-hugeicons-eye' }}"></div>
                       <span class="sr-only">Hide</span>
                     </button>
                   </div>
                 </td>
               </tr>
+              @endforeach
             </tbody>
           </table>
         </div>
@@ -1282,7 +1280,7 @@ const renderSourceChart = () => {
                 <div class="flex items-center">
                   <div class="flex-shrink-0 h-10 w-10">
                     @if(review.authorAvatar)
-<img class="h-10 w-10 rounded-full" :src="review.authorAvatar" alt="" />
+<img class="h-10 w-10 rounded-full" src="{{ review.authorAvatar }}" alt="" />
                     @else
 <div class="flex items-center justify-center h-10 w-10 bg-gray-200 rounded-full">
                       <div class="h-6 w-6 text-gray-500 i-hugeicons-user"></div>
@@ -1294,7 +1292,7 @@ const renderSourceChart = () => {
                   </div>
                 </div>
                 <div class="flex items-center">
-                  <div :class="mr-2 h-5 w-5 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
+                  <div class="mr-2 h-5 w-5 ' ' + + getSourceColor(review.source) getSourceIcon(review.source)"></div>
                   <span class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(review.date) }}</span>
                 </div>
               </div>
@@ -1309,15 +1307,16 @@ const renderSourceChart = () => {
                     @else
 <div class="h-5 w-5 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                   </div>
+                  @endforeach
                 </div>
                 <span class="ml-2 text-gray-500 text-sm dark:text-neutral-400">{{ review.rating }}.0</span>
                 <span
-                  :class="[getSentimentClass(review.sentiment), 'ml-auto inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']"
+                  class="{{ getSentimentClass(review.sentiment) }} ml-auto inline-flex items-center rounded-full px-2 py-1 text-xs font-medium"
                 >
                   {{ review.sentiment.charAt(0).toUpperCase() + review.sentiment.slice(1) }}
                 </span>
                 <span
-                  :class="[getStatusClass(review.status), 'ml-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium']"
+                  class="{{ getStatusClass(review.status) }} ml-2 inline-flex items-center rounded-full px-2 py-1 text-xs font-medium"
                 >
                   {{ review.status.charAt(0).toUpperCase() + review.status.slice(1) }}
                 </span>
@@ -1344,6 +1343,7 @@ const renderSourceChart = () => {
                 >
                   {{ tag }}
                 </span>
+                @endforeach
               </div>
 
               <!-- Response section -->
@@ -1407,24 +1407,23 @@ const renderSourceChart = () => {
                   </button>
                   <button
                     onclick="highlightReview(review)"
-                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
-                    class="text-purple-700 dark:bg-purple-900 'bg-purple-50 { {{ } }} review.isHighlighted dark:text-purple-300':"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md {{ review.isHighlighted ? 'bg-purple-50 text-purple-700 dark:bg-purple-900 dark:text-purple-300' : '' }}"
                   >
-                    <div :class=": ? 'i-hugeicons-star' 'i-hugeicons-star' review.isHighlighted" class="mr-1 h-4 w-4"></div>
+                    <div class="mr-1 h-4 w-4 {{ review.isHighlighted ? 'i-hugeicons-star' : 'i-hugeicons-star' }}"></div>
                     {{ review.isHighlighted ? 'Unhighlight' : 'Highlight' }}
                   </button>
                   <button
                     onclick="hideReview(review)"
-                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md"
-                    class="text-red-700 dark:bg-red-900 'bg-red-50 { {{ } }} review.isHidden dark:text-red-300':"
+                    class="inline-flex items-center px-2 py-1 font-medium text-gray-700 text-xs dark:text-neutral-300 bg-gray-50 dark:bg-neutral-700 hover:bg-gray-100 dark:hover:bg-neutral-600 rounded-md {{ review.isHidden ? 'bg-red-50 text-red-700 dark:bg-red-900 dark:text-red-300' : '' }}"
                   >
-                    <div :class=": ? 'i-hugeicons-eye-off' 'i-hugeicons-eye' review.isHidden" class="mr-1 h-4 w-4"></div>
+                    <div class="mr-1 h-4 w-4 {{ review.isHidden ? 'i-hugeicons-eye-off' : 'i-hugeicons-eye' }}"></div>
                     {{ review.isHidden ? 'Unhide' : 'Hide' }}
                   </button>
                 </div>
               </div>
             </div>
           </div>
+          @endforeach
         </div>
 
         <!-- Pagination -->
@@ -1470,15 +1469,13 @@ const renderSourceChart = () => {
                 @foreach(displayedPages() as page)
 <button
                   onclick="currentPage = page"
-                  class="[
-                    page === currentPage
+                  class="{{ page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700',
-                    'focus:z-20 focus:outline-offset-0'
-                  ] {{ }}"
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700' }} focus:z-20 focus:outline-offset-0"
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   onclick="currentPage < totalPages ? currentPage++ : null"
                   disabled="{{ currentPage === totalPages }}"
@@ -1533,7 +1530,7 @@ const renderSourceChart = () => {
           <div class="flex items-center">
             <div class="flex-shrink-0 h-8 w-8">
               @if(currentReview.authorAvatar)
-<img class="h-8 w-8 rounded-full" :src="currentReview.authorAvatar" alt="" />
+<img class="h-8 w-8 rounded-full" src="{{ currentReview.authorAvatar }}" alt="" />
               @else
 <div class="flex items-center justify-center h-8 w-8 bg-gray-200 rounded-full">
                 <div class="h-5 w-5 text-gray-500 i-hugeicons-user"></div>
@@ -1549,6 +1546,7 @@ const renderSourceChart = () => {
                   @else
 <div class="h-4 w-4 text-gray-300 dark:text-neutral-600 i-hugeicons-star"></div>
                 </div>
+                @endforeach
                 <span class="ml-2 text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(currentReview.date) }}</span>
               </div>
             </div>

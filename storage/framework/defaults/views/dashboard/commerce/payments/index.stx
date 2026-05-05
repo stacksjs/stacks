@@ -484,10 +484,7 @@ function totalAmount() {
                         Order ID
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'orderId')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -499,10 +496,7 @@ function totalAmount() {
                         Customer
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'customer')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -514,10 +508,7 @@ function totalAmount() {
                         Amount
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'amount')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -531,10 +522,7 @@ function totalAmount() {
                         Date
                         <span class="group-focus:visible group-hover:visible flex-none ml-2 text-gray-400 rounded">
                           @if(sortBy === 'date')
-                            <div class="[
-                              sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02',
-                              'h-4 w-4'
-                            ] {{ }}"></div>
+                            <div class="{{ sortOrder === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02' }} h-4 w-4"></div>
                           @else
                             <div class="h-4 w-4 i-hugeicons-arrows-up-down"></div>
                           @endif
@@ -561,7 +549,7 @@ function totalAmount() {
                       </td>
                       <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
                         <div class="flex items-center">
-                          <div :class="[getPaymentMethodIcon(transaction.method), 'h-5 w-5 mr-1.5 text-gray-500 dark:text-neutral-400']"></div>
+                          <div class="{{ getPaymentMethodIcon(transaction.method) }} h-5 w-5 mr-1.5 text-gray-500 dark:text-neutral-400"></div>
                           <span>{{ transaction.method }}</span>
                           @if(transaction.last4)
                             <span class="ml-1 text-gray-400 text-xs">
@@ -571,7 +559,7 @@ function totalAmount() {
                         </div>
                       </td>
                       <td class="px-3 py-4 text-sm whitespace-nowrap">
-                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md" :class="getStatusClass(transaction.status)">
+                        <span class="inline-flex items-center px-2 py-1 font-medium text-xs rounded-md {{ getStatusClass(transaction.status) }}">
                           {{ transaction.status }}
                         </span>
                       </td>
@@ -611,20 +599,14 @@ function totalAmount() {
             <button
               onclick="changePage(Math.max(1, currentPage - 1))"
               disabled="{{ currentPage === 1 }}"
-              class="[
-                currentPage === 1 ? 'cursor-not-allowed opacity-50' : '',
-                'relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700'
-              ] {{ }}"
+              class="{{ currentPage === 1 ? 'cursor-not-allowed opacity-50' : '' }} relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
             >
               Previous
             </button>
             <button
               onclick="changePage(Math.min(totalPages, currentPage + 1))"
               disabled="{{ currentPage === totalPages }}"
-              class="[
-                currentPage === totalPages ? 'cursor-not-allowed opacity-50' : '',
-                'relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700'
-              ] {{ }}"
+              class="{{ currentPage === totalPages ? 'cursor-not-allowed opacity-50' : '' }} relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-neutral-600 dark:bg-neutral-800 dark:text-neutral-200 dark:hover:bg-neutral-700"
             >
               Next
             </button>
@@ -651,11 +633,9 @@ function totalAmount() {
                   @if(page === currentPage || page === 1 || page === totalPages || (page >= currentPage - 1 && page <= currentPage + 1))
                     <button
                       onclick="changePage(page)"
-                      class="[
-                        page === currentPage
+                      class="{{ page === currentPage
                           ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                          : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700',
-                      ] {{ }}"
+                          : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700' }}"
                     >
                       {{ page }}
                     </button>

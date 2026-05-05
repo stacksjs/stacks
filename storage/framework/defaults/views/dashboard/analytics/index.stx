@@ -77,7 +77,7 @@ let analyticsCards = [
       <Card variant="default" padding="md" hoverable clickable>
         <div class="flex gap-4 items-start">
           <div class="flex-shrink-0 p-2.5 text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/20 rounded-lg">
-            <div :class="[card.icon, 'h-5 w-5']" />
+            <div class="{{ card.icon }} h-5 w-5" />
           </div>
           <div class="flex-1 min-w-0">
             <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">

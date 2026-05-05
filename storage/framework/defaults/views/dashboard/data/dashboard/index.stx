@@ -1223,10 +1223,10 @@ onUnmounted(() => {
                   <tbody class="divide-gray-200 divide-y dark:divide-neutral-700">
                     @foreach(selectedModel.properties as prop)
                       <tr>
-                        <td class="px-3 py-2 font-medium text-sm whitespace-nowrap" :class="dark:text-white' dark:text-yellow-400' : ? 'id' 'text-gray-900 'text-yellow-600 === prop.name">{{ prop.name }}</td>
+                        <td class="px-3 py-2 font-medium text-sm whitespace-nowrap {{ prop.name === 'id' ? 'text-yellow-600 dark:text-yellow-400' : 'text-gray-900 dark:text-white' }}">{{ prop.name }}</td>
                         <td class="px-3 py-2 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ prop.type }}</td>
                         <td class="px-3 py-2 text-sm whitespace-nowrap">
-                          <span :class="dark:text-green-400' dark:text-red-400' : ? 'text-green-600 'text-red-600 prop.nullable">
+                          <span class="dark:text-green-400' dark:text-red-400' : ? 'text-green-600 'text-red-600 prop.nullable">
                             {{ prop.nullable ? 'Yes' : 'No' }}
                           </span>
                         </td>

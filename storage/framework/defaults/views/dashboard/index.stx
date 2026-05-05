@@ -78,7 +78,7 @@ const getActivityStatusClass = (status) => {
     <h2 class="mb-4 font-semibold text-base text-neutral-900 dark:text-white">Quick Links</h2>
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       @foreach(quickLinks as link)
-        <a :href="link.href" data-stx-link class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow">
+        <a href="{{ link.href }}" data-stx-link class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow">
           <div class="flex gap-4 items-center">
             <div class="flex-shrink-0 p-3 rounded-xl {{ }} link.color">
               <div class="h-5 w-5 text-white"></div>

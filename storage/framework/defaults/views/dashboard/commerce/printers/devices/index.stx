@@ -153,7 +153,7 @@ const errorRate = ((totalErrors / totalPrints) * 100).toFixed(2)
               {{ Math.round((onlinePrinters / totalPrinters) * 100) }}%
             </dd>
             <dd class="flex items-center mt-2 text-sm dark:text-green-400' dark:text-yellow-400' : ? 'text-green-600 'text-yellow-600 {{ }} === onlinePrinters totalPrinters">
-              <div :class="mr-1' mr-1' h-4 h-4 w-4 w-4 : ? 'i-hugeicons-alert-01 'i-hugeicons-check-circle === onlinePrinters totalPrinters"></div>
+              <div class="mr-1' mr-1' h-4 h-4 w-4 w-4 : ? 'i-hugeicons-alert-01 'i-hugeicons-check-circle === onlinePrinters totalPrinters"></div>
               <span>{{ onlinePrinters === totalPrinters ? 'All systems operational' : 'Attention needed' }}</span>
             </dd>
           </div>

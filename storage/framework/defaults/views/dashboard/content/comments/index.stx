@@ -528,7 +528,8 @@ function commentStats() {
               class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               @foreach(timeRanges as range)
-<option value="{{ range.value }}">{{ range.label }}</option>
+                <option value="{{ range.value }}">{{ range.label }}</option>
+              @endforeach
             </select>
           </div>
         </div>
@@ -854,12 +855,9 @@ function commentStats() {
                     </td>
                     <td class="px-4 py-4 whitespace-nowrap">
                       <span
-                        class="[
-                          'inline-flex items-center rounded-md px-2 py-1 text-xs font-medium',
-                          comment.status === 'approved' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30' :
+                        class="inline-flex items-center rounded-md px-2 py-1 text-xs font-medium {{ comment.status === 'approved' ? 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/20 dark:text-green-400 dark:ring-green-500/30' :
                           comment.status === 'pending' ? 'bg-yellow-50 text-yellow-700 ring-1 ring-inset ring-yellow-600/20 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-500/30' :
-                          'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-500/30'
-                        ] {{ }}"
+                          'bg-red-50 text-red-700 ring-1 ring-inset ring-red-600/20 dark:bg-red-900/20 dark:text-red-400 dark:ring-red-500/30' }}"
                       >
                         {{ comment.status.charAt(0).toUpperCase() + comment.status.slice(1) }}
                       </span>
@@ -917,6 +915,7 @@ function commentStats() {
                       </div>
                     </td>
                   </tr>
+                  @endforeach
                   @if(paginatedComments.length === 0)
 <tr>
                     <td colspan="7" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">
@@ -967,14 +966,13 @@ function commentStats() {
                 @foreach(paginationRange() as page)
 <button
                   onclick="currentPage = page"
-                  class="[
-                    page === currentPage
+                  class="{{ page === currentPage
                       ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600 dark:bg-blue-700'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700'
-                  ] {{ }}"
+                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-700' }}"
                 >
                   {{ page }}
                 </button>
+                @endforeach
                 <button
                   onclick="currentPage = Math.min(totalPages, currentPage + 1)"
                   disabled="{{ currentPage === totalPages }}"
@@ -1134,6 +1132,7 @@ function commentStats() {
 <li class="text-gray-700 text-sm dark:text-neutral-300">
                       {{ truncateText(comments.find((c: Comment) => c.id === id)?.content || '', 50) }}
                     </li>
+                    @endforeach
                   </ul>
                 </div>
                 @elseif(commentToDelete)

@@ -314,7 +314,7 @@ function handleDateRangeChange() {
                 <td class="px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                   {{ page.cls.toFixed(2) }}
                 </td>
-                <td class="px-4 py-3 font-medium text-right text-sm whitespace-nowrap" :class="getPerformanceColorClass(page.score)">
+                <td class="px-4 py-3 font-medium text-right text-sm whitespace-nowrap {{ getPerformanceColorClass(page.score) }}">
                   {{ page.score }}
                 </td>
               </tr>
