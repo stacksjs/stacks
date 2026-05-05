@@ -517,7 +517,12 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
     // Use multi-proxy mode so rpx generates a SINGLE cert covering all domains
     await startProxies({
       proxies: [
-        { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: true }] },
+        // Forward /api/** straight to the API server, preserving the prefix.
+        // The API registers its routes as /api/cart/add, /api/checkout/place,
+        // etc., so stripPrefix must be false — otherwise the API would see
+        // /cart/add and 404. The frontend's stx-serve also has a fallback
+        // proxy for direct localhost:PORT access.
+        { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
         { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
         { from: `localhost:${docsPort}`, to: docsDomain, cleanUrls: false },
         { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
