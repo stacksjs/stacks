@@ -3,66 +3,10 @@
 @section('content')
 <script server>
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
 
-// Sample data for the dashboard
-const revenueData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  datasets: [
-    {
-      label: 'Revenue',
-      backgroundColor: 'rgba(59, 130, 246, 0.2)',
-      borderColor: 'rgba(59, 130, 246, 1)',
-      borderWidth: 2,
-      pointBackgroundColor: 'rgba(59, 130, 246, 1)',
-      pointBorderColor: '#fff',
-      pointHoverBackgroundColor: '#fff',
-      pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
-      fill: true,
-      tension: 0.4,
-      data: [30000, 35000, 32000, 40000, 45000, 43000, 50000, 55000, 58000, 56000, 60000, 65000],
-    },
-  ],
-}
-
-const ordersData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  datasets: [
-    {
-      label: 'Orders',
-      backgroundColor: 'rgba(16, 185, 129, 0.8)',
-      borderColor: 'rgba(16, 185, 129, 1)',
-      borderWidth: 1,
-      borderRadius: 4,
-      data: [120, 150, 140, 160, 180, 170, 190, 210, 230, 220, 240, 260],
-    },
-  ],
-}
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: {
-    legend: {
-      display: false,
-    },
-  },
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        display: true,
-        color: 'rgba(0, 0, 0, 0.05)',
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-    },
-  },
-}
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 
 const topProducts = [
   { id: 1, name: 'Premium Headphones', price: '$199.99', sales: 1245, stock: 78 },
@@ -80,8 +24,14 @@ const recentOrders = [
   { id: '#ORD-5428', customer: 'David Wilson', date: '2023-11-29', total: '$199.99', status: 'Completed' },
 ]
 
-let timeRange = 'Last 30 days'
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+function orderStatusClass(status) {
+  switch (status) {
+    case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    case 'Processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+    case 'Shipped': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+    default: return 'bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-300'
+  }
+}
 </script>
 
 @title('Dashboard - Commerce')
@@ -97,7 +47,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
             Overview of your store's performance
           </p>
           <div class="relative">
-            <select value="{{ timeRange }}" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+            <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
               @foreach(timeRanges as range)
                 <option value="{{ range }}">{{ range }}</option>
               @endforeach
@@ -105,7 +55,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
           </div>
         </div>
 
-        <!-- Stats -->
+        <!-- Stats — currently canned numbers; wire to derived(orders) once a real source is plumbed in. -->
         <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
           <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
             <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Revenue</dt>
@@ -221,8 +171,7 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
                       <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.date }}</td>
                       <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.total }}</td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full"
-                              class="order.status order.status order.status text-blue-800 text-green-800 text-yellow-800 dark:bg-blue-900 dark:bg-green-900 dark:bg-yellow-900 'bg-blue-100 'bg-green-100 'bg-yellow-100 'Completed', 'Processing', 'Shipped' { {{ } }} === === === dark:text-blue-300': dark:text-green-300': dark:text-yellow-300':">
+                        <span class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full {{ orderStatusClass(order.status) }}">
                           {{ order.status }}
                         </span>
                       </td>
@@ -239,26 +188,60 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 </main>
 
 <script client>
+import { useCharts } from '../../composables'
+
+const timeRange = state<string>('Last 30 days')
+
+const revenueData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [{
+    label: 'Revenue',
+    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+    borderColor: 'rgba(59, 130, 246, 1)',
+    borderWidth: 2,
+    pointBackgroundColor: 'rgba(59, 130, 246, 1)',
+    pointBorderColor: '#fff',
+    pointHoverBackgroundColor: '#fff',
+    pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
+    fill: true,
+    tension: 0.4,
+    data: [30000, 35000, 32000, 40000, 45000, 43000, 50000, 55000, 58000, 56000, 60000, 65000],
+  }],
+}
+
+const ordersData = {
+  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  datasets: [{
+    label: 'Orders',
+    backgroundColor: 'rgba(16, 185, 129, 0.8)',
+    borderColor: 'rgba(16, 185, 129, 1)',
+    borderWidth: 1,
+    borderRadius: 4,
+    data: [120, 150, 140, 160, 180, 170, 190, 210, 230, 220, 240, 260],
+  }],
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: { legend: { display: false } },
+  scales: {
+    y: { beginAtZero: true, grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' } },
+    x: { grid: { display: false } },
+  },
+}
+
 const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
-const revenueCtx = document.getElementById('revenueChart')
-if (revenueCtx) {
-  new Chart(revenueCtx, {
-    type: 'line',
-    data: revenueData,
-    options: chartOptions,
-  })
-}
+const { destroyAll } = useCharts([
+  { Chart, id: 'revenueChart', type: 'line', data: revenueData, options: chartOptions },
+  { Chart, id: 'ordersChart', type: 'bar', data: ordersData, options: chartOptions },
+])
 
-const ordersCtx = document.getElementById('ordersChart')
-if (ordersCtx) {
-  new Chart(ordersCtx, {
-    type: 'bar',
-    data: ordersData,
-    options: chartOptions,
-  })
-}
+onDestroy(() => {
+  destroyAll()
+})
 </script>
 
 @endsection
