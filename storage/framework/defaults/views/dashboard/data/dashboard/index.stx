@@ -65,10 +65,7 @@ function modelRoute(id: string) {
 @title('Dashboard - Data Models')
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
-    <div>
-      <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Data Models</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Browse all models and their relationships</p>
-    </div>
+    <PageHeader title="Data Models" description="Browse all models and their relationships" />
   </div>
 
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

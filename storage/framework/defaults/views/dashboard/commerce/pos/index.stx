@@ -5,10 +5,7 @@
 <PageLayout>
       <!-- Header -->
       <div class="sm:flex sm:items-center sm:justify-between">
-        <div>
-          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Self-Service Menu</h1>
-          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Device {{ tableNumber }} - Browse and order directly from your device</p>
-        </div>
+        <PageHeader title="Self-Service Menu" description="Device {{ tableNumber }} - Browse and order directly from your device" />
         <div class="flex gap-4 items-center mt-4 sm:mt-0">
           <div>
             <label for="table-select" class="sr-only">Select Device</label>

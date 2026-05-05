@@ -50,10 +50,7 @@ const getActivityStatusClass = (status) => {
 
 <div class="mx-auto p-6 max-w-7xl">
   <!-- Header -->
-  <div class="mb-8">
-    <h1 class="font-semibold text-2xl text-neutral-900 dark:text-white">Dashboard</h1>
-    <p class="mt-1 text-neutral-500 text-sm dark:text-neutral-400">Welcome back! Here's an overview of your system.</p>
-  </div>
+  <PageHeader title="Dashboard" description="Welcome back! Here's an overview of your system." />
 
   <!-- Stats Grid -->
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">

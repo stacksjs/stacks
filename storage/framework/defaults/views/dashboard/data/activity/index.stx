@@ -21,10 +21,7 @@ const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
 @title('Dashboard - Activity Log')
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
-    <div>
-      <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Activity Log</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Audit trail of recent activity</p>
-    </div>
+    <PageHeader title="Activity Log" description="Audit trail of recent activity" />
     <div class="flex items-center gap-2">
       <button @click="toggleAutoRefresh()" class="{{ autoRefreshButtonClass }}">
         <div class="mr-2 h-4 w-4 i-hugeicons-refresh"></div>

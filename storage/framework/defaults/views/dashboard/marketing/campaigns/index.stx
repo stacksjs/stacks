@@ -879,12 +879,7 @@ const removeCondition = (index: number) => {
 <PageLayout>
         <!-- Header section -->
         <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Campaigns</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-              Manage your marketing campaigns across different channels
-            </p>
-          </div>
+          <PageHeader title="Campaigns" description="Manage your marketing campaigns across different channels" />
           <div class="mt-4 sm:mt-0">
             <button
               type="button"

@@ -4,12 +4,7 @@
 @title('Dashboard - Food Vendors')
 <PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
-        <div>
-          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Manufacturers</h1>
-          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-            Manage your product manufacturers
-          </p>
-        </div>
+        <PageHeader title="Manufacturers" description="Manage your product manufacturers" />
         <div class="mt-4 sm:mt-0">
           <button
             type="button"

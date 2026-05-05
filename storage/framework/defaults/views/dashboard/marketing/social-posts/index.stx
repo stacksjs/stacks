@@ -494,12 +494,7 @@ function truncateText(text: string, max: number): string {
 <PageLayout>
         <!-- Header section -->
         <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Social Media Posts</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-              Create, schedule, and manage your social media posts for Bluesky
-            </p>
-          </div>
+          <PageHeader title="Social Media Posts" description="Create, schedule, and manage your social media posts for Bluesky" />
           <div class="mt-4 sm:mt-0">
             <button
               onclick="openNewPostModal"

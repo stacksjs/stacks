@@ -3,10 +3,7 @@
 @section('content')
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
-    <div>
-      <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Pages</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Manage your site's static pages</p>
-    </div>
+    <PageHeader title="Pages" description="Manage your site's static pages" />
     <button @click="openNewPageModal()" class="inline-flex items-center gap-2 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
       <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
       New Page

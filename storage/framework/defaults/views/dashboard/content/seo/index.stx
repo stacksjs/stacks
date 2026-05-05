@@ -3,10 +3,7 @@
 @section('content')
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
-    <div>
-      <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">SEO</h1>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Optimize each post for search engines</p>
-    </div>
+    <PageHeader title="SEO" description="Optimize each post for search engines" />
   </div>
 
   <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">

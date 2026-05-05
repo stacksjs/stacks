@@ -8,12 +8,7 @@ const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Cons
 @title('Dashboard - Commerce Taxes')
 <PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
-        <div>
-          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Tax Rates</h1>
-          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-            Manage tax rates for your products across different countries and regions. Digital services often have specific tax requirements based on customer location.
-          </p>
-        </div>
+        <PageHeader title="Tax Rates" description="Manage tax rates for your products across different countries and regions. Digital services often have specific tax requirements based on customer location." />
         <div class="mt-4 sm:mt-0">
           <button
             type="button"

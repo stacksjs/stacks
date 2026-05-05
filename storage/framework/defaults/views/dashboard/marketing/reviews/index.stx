@@ -871,12 +871,7 @@ const renderSourceChart = () => {
 <PageLayout>
         <!-- Header section -->
         <div class="sm:flex sm:items-center sm:justify-between">
-          <div>
-            <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Customer Reviews</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-              Monitor and respond to customer reviews from Google, Yelp, and other platforms
-            </p>
-          </div>
+          <PageHeader title="Customer Reviews" description="Monitor and respond to customer reviews from Google, Yelp, and other platforms" />
           <div class="mt-4 sm:mt-0">
             <button
               type="button"
