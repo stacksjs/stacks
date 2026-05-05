@@ -4,840 +4,201 @@
 <script server>
 definePageMeta({
   middleware: ['auth'],
-  layout: 'default'
+  layout: 'default',
 })
 
-import {
-  Listbox,
-  ListboxButton,
-  ListboxOptions,
-  ListboxOption,
-} from '@stacksjs/stx'
+import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
+import Card from '../../../components/Dashboard/UI/Card.stx'
+import Button from '../../../components/Dashboard/UI/Button.stx'
+import Badge from '../../../components/Dashboard/UI/Badge.stx'
+import EmptyState from '../../../components/Dashboard/UI/EmptyState.stx'
 
-const packages = [
-  {
-    name: 'stacks',
-    version: 'v0.68.2',
-    downloads: 1001897,
-    issues: 12,
-    contributors: 24,
-    size: '5.2kb',
-    path: './packages/stacks/*',
-    createdAt: '2024-01-15',
-    codename: 'Playa Vista',
-    description: 'A modern Full Stack TypeScript framework',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'qrx',
-    version: 'v1.0.0',
-    downloads: 71897,
-    issues: 12,
-    contributors: 24,
-    size: '5.2kb',
-    path: './packages/qrx/*',
-    createdAt: '2024-01-15',
-    codename: 'Quantum',
-    description: 'High-performance QR code generator and reader',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'rpx',
-    version: 'v2.1.3',
-    downloads: 52438,
-    issues: 8,
-    contributors: 16,
-    size: '4.8kb',
-    path: './packages/rpx/*',
-    createdAt: '2024-01-20',
-    codename: 'Rapid',
-    description: 'Real-time pixel manipulation library',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'tlsx',
-    version: 'v0.9.0',
-    downloads: 23567,
-    issues: 15,
-    contributors: 9,
-    size: '7.1kb',
-    path: './packages/tlsx/*',
-    createdAt: '2024-01-25',
-    codename: 'Secure',
-    description: 'Modern TLS/SSL toolkit for Node.js',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'dtsx',
-    version: 'v1.2.0',
-    downloads: 34892,
-    issues: 6,
-    contributors: 12,
-    size: '3.9kb',
-    path: './packages/dtsx/*',
-    createdAt: '2024-01-30',
-    codename: 'TypeMaster',
-    description: 'Advanced TypeScript tooling',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'bunfig',
-    version: 'v0.8.0',
-    downloads: 18234,
-    issues: 10,
-    contributors: 7,
-    size: '2.8kb',
-    path: './packages/bunfig/*',
-    createdAt: '2024-02-05',
-    codename: 'Configure',
-    description: 'Configuration management for Bun projects',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'localtunnels',
-    version: 'v1.5.0',
-    downloads: 45673,
-    issues: 14,
-    contributors: 19,
-    size: '6.3kb',
-    path: './packages/localtunnels/*',
-    createdAt: '2024-02-10',
-    codename: 'Tunnel',
-    description: 'Secure local tunnel creation made easy',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'ts-collect',
-    version: 'v2.0.1',
-    downloads: 28945,
-    issues: 9,
-    contributors: 11,
-    size: '4.1kb',
-    path: './packages/ts-collect/*',
-    createdAt: '2024-02-15',
-    codename: 'Collector',
-    description: 'Collection utilities for TypeScript',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'ts-spreadsheets',
-    version: 'v1.3.2',
-    downloads: 39567,
-    issues: 11,
-    contributors: 15,
-    size: '8.2kb',
-    path: './packages/ts-spreadsheets/*',
-    createdAt: '2024-02-20',
-    codename: 'Excel',
-    description: 'TypeScript spreadsheet manipulation',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'bun-plugin-auto-imports',
-    version: 'v0.6.0',
-    downloads: 15678,
-    issues: 7,
-    contributors: 5,
-    size: '3.4kb',
-    path: './packages/bun-plugin-auto-imports/*',
-    createdAt: '2024-02-25',
-    codename: 'AutoImport',
-    description: 'Automatic import handling for Bun',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'bun-plugin-dtsx',
-    version: 'v0.5.0',
-    downloads: 12345,
-    issues: 5,
-    contributors: 4,
-    size: '2.9kb',
-    path: './packages/bun-plugin-dtsx/*',
-    createdAt: '2024-03-01',
-    codename: 'TypePlugin',
-    description: 'DTSX support for Bun',
-    stars: Math.floor(Math.random() * 1000) + 100
-  },
-  {
-    name: 'vite-plugin-local',
-    version: 'v1.1.0',
-    downloads: 31456,
-    issues: 13,
-    contributors: 8,
-    size: '4.7kb',
-    path: './packages/vite-plugin-local/*',
-    createdAt: '2024-03-05',
-    codename: 'Local',
-    description: 'Local development enhancements for Vite',
-    stars: Math.floor(Math.random() * 1000) + 100
-  }
+interface PackageRow {
+  name: string
+  version: string
+  description: string
+  downloads: number
+  contributors: number
+  issues: number
+  size: string
+  createdAt: string
+  url: string
+}
+
+// Placeholder data. Wire this up to the npm registry once the
+// dashboard exposes a `GET /api/dashboard/packages` endpoint that
+// returns the same shape (`name/version/downloads/...`). Until then,
+// this snapshot mirrors what stacks-org publishes.
+const packages: PackageRow[] = [
+  { name: 'stacks',                    version: 'v0.71.1', description: 'A modern Full Stack TypeScript framework',     downloads: 1001897, contributors: 24, issues: 12, size: '5.2 kB', createdAt: '2024-01-15', url: 'https://github.com/stacksjs/stacks' },
+  { name: 'qrx',                       version: 'v1.0.0',  description: 'High-performance QR code generator and reader', downloads:   71897, contributors: 24, issues: 12, size: '5.2 kB', createdAt: '2024-01-15', url: 'https://github.com/stacksjs/qrx' },
+  { name: 'rpx',                       version: 'v2.1.3',  description: 'Reverse proxy for the modern web',              downloads:   52438, contributors: 16, issues:  8, size: '4.8 kB', createdAt: '2024-01-20', url: 'https://github.com/stacksjs/rpx' },
+  { name: 'tlsx',                      version: 'v0.9.0',  description: 'Modern TLS/SSL toolkit for Node.js',            downloads:   23567, contributors:  9, issues: 15, size: '7.1 kB', createdAt: '2024-01-25', url: 'https://github.com/stacksjs/tlsx' },
+  { name: 'dtsx',                      version: 'v1.2.0',  description: 'Advanced TypeScript .d.ts tooling',             downloads:   34892, contributors: 12, issues:  6, size: '3.9 kB', createdAt: '2024-01-30', url: 'https://github.com/stacksjs/dtsx' },
+  { name: 'bunfig',                    version: 'v0.8.0',  description: 'Configuration management for Bun projects',     downloads:   18234, contributors:  7, issues: 10, size: '2.8 kB', createdAt: '2024-02-05', url: 'https://github.com/stacksjs/bunfig' },
+  { name: 'localtunnels',              version: 'v1.5.0',  description: 'Secure local tunnel creation made easy',        downloads:   45673, contributors: 19, issues: 14, size: '6.3 kB', createdAt: '2024-02-10', url: 'https://github.com/stacksjs/localtunnels' },
+  { name: 'ts-collect',                version: 'v2.0.1',  description: 'Collection utilities for TypeScript',           downloads:   28945, contributors: 11, issues:  9, size: '4.1 kB', createdAt: '2024-02-15', url: 'https://github.com/stacksjs/ts-collect' },
+  { name: 'ts-spreadsheets',           version: 'v1.3.2',  description: 'TypeScript spreadsheet generation',             downloads:   39567, contributors: 15, issues: 11, size: '8.2 kB', createdAt: '2024-02-20', url: 'https://github.com/stacksjs/ts-spreadsheets' },
+  { name: 'bun-plugin-auto-imports',   version: 'v0.6.0',  description: 'Automatic import handling for Bun',             downloads:   15678, contributors:  5, issues:  7, size: '3.4 kB', createdAt: '2024-02-25', url: 'https://github.com/stacksjs/bun-plugin-auto-imports' },
+  { name: 'bun-plugin-dtsx',           version: 'v0.5.0',  description: 'DTSX support for Bun',                          downloads:   12345, contributors:  4, issues:  5, size: '2.9 kB', createdAt: '2024-03-01', url: 'https://github.com/stacksjs/bun-plugin-dtsx' },
+  { name: 'vite-plugin-local',         version: 'v1.1.0',  description: 'Local development enhancements for Vite',       downloads:   31456, contributors:  8, issues: 13, size: '4.7 kB', createdAt: '2024-03-05', url: 'https://github.com/stacksjs/vite-plugin-local' },
 ]
 
-const getPackageUrl = (pkgName) => `https://github.com/stacksjs/${pkgName}`
+const totalDownloads = packages.reduce((s, p) => s + p.downloads, 0)
+const totalContributors = packages.reduce((s, p) => s + p.contributors, 0)
+const totalIssues = packages.reduce((s, p) => s + p.issues, 0)
+const totalPackages = packages.length
 
-const colors = [
-  { border: 'rgb(59, 130, 246)', background: 'rgba(59, 130, 246, 0.8)' },
-  { border: 'rgb(234, 179, 8)', background: 'rgba(234, 179, 8, 0.8)' },
-  { border: 'rgb(239, 68, 68)', background: 'rgba(239, 68, 68, 0.8)' },
-  { border: 'rgb(16, 185, 129)', background: 'rgba(16, 185, 129, 0.8)' },
-  { border: 'rgb(168, 85, 247)', background: 'rgba(168, 85, 247, 0.8)' },
-]
-
-const baseChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      type: 'linear',
-      beginAtZero: true,
-      min: 0,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        callback: function(tickValue, index, ticks) {
-          const value = Number(tickValue)
-          if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`
-          if (value >= 1000) return `${(value / 1000).toFixed(1)}k`
-          return value.toString()
-        }
-      },
-    },
-    x: {
-      type: 'category',
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      align: 'end',
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-  },
+function formatNumber(n: number): string {
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`
+  if (n >= 1_000) return `${(n / 1_000).toFixed(1)}k`
+  return n.toString()
 }
 
-const timeChartOptions = {
-  ...baseChartOptions,
-  interaction: {
-    mode: 'index',
-    intersect: false,
-  },
-  plugins: {
-    ...baseChartOptions.plugins,
-    tooltip: {
-      mode: 'index',
-      intersect: false,
-      callbacks: {
-        label: (context) => {
-          let label = context.dataset.label || ''
-          if (label) label += ': '
-          if (context.parsed.y !== null) {
-            const value = context.parsed.y
-            if (value >= 1000000) return `${label}${(value / 1000000).toFixed(1)}M downloads`
-            if (value >= 1000) return `${label}${(value / 1000).toFixed(1)}k downloads`
-            return `${label}${value} downloads`
-          }
-          return label
-        }
-      }
-    }
-  },
+function downloadsBadgeVariant(n: number) {
+  if (n >= 100_000) return 'success'
+  if (n >= 10_000) return 'primary'
+  return 'default'
 }
 
-function sortedPackages() {
-  return [...packages].sort((a, b) => b.downloads - a.downloads)
-}
-
-function downloadsData() { return ({
-  labels: sortedPackages.map(pkg => pkg.name },
-  datasets: [{
-    label: 'Downloads',
-    data: sortedPackages.map(pkg => pkg.downloads),
-    backgroundColor: 'rgba(59, 130, 246, 0.8)',
-    borderColor: 'rgb(59, 130, 246)',
-    borderWidth: 1
-  }]
-}))
-
-const contributorsOptions = {
-  ...baseChartOptions,
-  plugins: {
-    ...baseChartOptions.plugins,
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          return `Contributors: ${context.parsed.y}`
-        }
-      }
-    }
-  }
-}
-
-const issuesOptions = {
-  ...baseChartOptions,
-  plugins: {
-    ...baseChartOptions.plugins,
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          return `Open Issues: ${context.parsed.y}`
-        }
-      }
-    }
-  }
-}
-
-const starsOptions = {
-  ...baseChartOptions,
-  plugins: {
-    ...baseChartOptions.plugins,
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          const value = context.parsed.y
-          if (value >= 1000) return `Stars: ${(value / 1000).toFixed(1)}k`
-          return `Stars: ${value}`
-        }
-      }
-    }
-  }
-}
-
-let timeRange = '30'
-let displayMode = 'line'
-let selectedPackages = []
-let isLoading = false
-
-const formatDate = (daysAgo) => {
-  const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  }
-}
-
-const generateDateLabels = (days) => {
-  return Array.from({ length: days }, (_, i) => formatDate(days - 1 - i))
-}
-
-const generateGrowthData = (days, baseCount, dailyGrowth) => {
-  return Array.from({ length: days }, (_, i) => {
-    const dayVariance = Math.random() * dailyGrowth * 0.5
-    const daysFromStart = i
-    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
-  }
-}
-
-const generateStarGrowthData = (days, baseCount) => {
-  return Array.from({ length: days }, (_, i) => {
-    const daysFromStart = i
-    const dailyGrowth = Math.floor(Math.random() * 5) + 1
-    return Math.floor(baseCount + (dailyGrowth * daysFromStart))
-  }
-}
-
-function useCompactMode() { return packages.length > 10 }
-
-function filteredPackages() {
-  let filtered = [...packages]
-  if (useCompactMode && selectedPackages.length === 0) {
-    filtered = filtered.sort((a, b) => b.downloads - a.downloads).slice(0, 5)
-  } else if (selectedPackages.length > 0) {
-    filtered = filtered.filter(pkg => selectedPackages.includes(pkg.name))
-  }
-  return filtered.sort((a, b) => b.downloads - a.downloads)
-}
-
-function downloadsTimeData() {
-  const days = parseInt(timeRange)
-  const labels = generateDateLabels(days)
-
-  return {
-    labels,
-    datasets: filteredPackages.map((pkg, index) => {
-      const colorIndex = index % colors.length
-      const color = colors[colorIndex]
-      if (!color) return null
-
-      return {
-        label: pkg.name,
-        data: generateGrowthData(days, pkg.downloads, 100),
-        borderColor: color.border,
-        backgroundColor: displayMode === 'line'
-          ? color.background.replace('0.8', '0.1')
-          : color.background,
-        fill: true,
-        tension: 0.4
-      }
-    }).filter((dataset) => dataset !== null)
-  }
-}
-
-function starsTimeData() {
-  const days = parseInt(timeRange)
-  const labels = generateDateLabels(days)
-
-  return {
-    labels,
-    datasets: filteredPackages.map((pkg, index) => {
-      const colorIndex = index % colors.length
-      const color = colors[colorIndex]
-      if (!color) return null
-
-      return {
-        label: pkg.name,
-        data: generateStarGrowthData(days, pkg.stars),
-        borderColor: color.border,
-        backgroundColor: displayMode === 'line'
-          ? color.background.replace('0.8', '0.1')
-          : color.background,
-        fill: true,
-        tension: 0.4
-      }
-    }).filter((dataset) => dataset !== null)
-  }
-}
-
-function totalDownloads() {
-  return filteredPackages.reduce((sum, pkg) => sum + pkg.downloads, 0)
-}
-
-function totalContributors() {
-  return filteredPackages.reduce((sum, pkg) => sum + pkg.contributors, 0)
-}
-
-function totalIssues() {
-  return filteredPackages.reduce((sum, pkg) => sum + pkg.issues, 0)
-}
-
-function contributorsData() { return ({
-  labels: filteredPackages.map(pkg => pkg.name },
-  datasets: [{
-    label: 'Contributors',
-    data: filteredPackages.map(pkg => pkg.contributors),
-    backgroundColor: 'rgba(234, 179, 8, 0.8)',
-    borderColor: 'rgb(234, 179, 8)',
-    borderWidth: 1
-  }]
-}))
-
-function issuesData() { return ({
-  labels: filteredPackages.map(pkg => pkg.name },
-  datasets: [{
-    label: 'Open Issues',
-    data: filteredPackages.map(pkg => pkg.issues),
-    backgroundColor: 'rgba(239, 68, 68, 0.8)',
-    borderColor: 'rgb(239, 68, 68)',
-    borderWidth: 1
-  }]
-}))
-
-function starsData() { return ({
-  labels: filteredPackages.map(pkg => pkg.name },
-  datasets: [{
-    label: 'GitHub Stars',
-    data: filteredPackages.map(pkg => pkg.stars),
-    backgroundColor: 'rgba(168, 85, 247, 0.8)',
-    borderColor: 'rgb(168, 85, 247)',
-    borderWidth: 1
-  }]
-}))
+const sortedPackages = [...packages].sort((a, b) => b.downloads - a.downloads)
 </script>
 
-@title('Dashboard - Packages')
-<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
-  <!-- Stats Section -->
-  <div class="mb-8 px-4 sm:px-6 lg:px-8">
-    <div>
-      <div class="flex items-center justify-between">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-          Package Statistics
-        </h3>
+<div class="px-6 pt-6 pb-12 mx-auto max-w-6xl space-y-6">
 
-        @if(useCompactMode)
-          <div class="flex items-center space-x-2">
-            <div class="relative w-64">
-              <Listbox value="{{ selectedPackages }}" multiple>
-                <div class="relative">
-                  <ListboxButton
-                    class="relative pl-3 pr-10 py-1.5 h-9 w-full text-gray-900 text-left text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:outline-none focus:ring-2 focus:ring-blue-600 focus:ring-inset duration-200 transition-all cursor-default"
-                  >
-                    <span class="block truncate">
-                      {{ selectedPackages.length === 0 ? 'Select packages...' : `${selectedPackages.length} selected` }}
-                    </span>
-                    <span class="flex absolute inset-y-0 right-0 items-center pr-2 pointer-events-none">
-                      <div class="h-5 w-5 text-gray-400 dark:text-neutral-500 i-hugeicons-chevron-up-down" aria-hidden="true" />
-                    </span>
-                  </ListboxButton>
+  <PageHeader
+    title="Packages"
+    description="Open-source packages published from this monorepo"
+  >
+    <template #actions>
+      <Button variant="primary" size="md">Add package</Button>
+    </template>
+  </PageHeader>
 
-                  <transition
-                    enter-active-class="duration-100 ease-out transition"
-                    enter-from-class="opacity-0 scale-95 transform"
-                    enter-to-class="opacity-100 scale-100 transform"
-                    leave-active-class="duration-75 ease-in transition"
-                    leave-from-class="opacity-100 scale-100 transform"
-                    leave-to-class="opacity-0 scale-95 transform"
-                  >
-                    <ListboxOptions
-                      class="absolute overflow-auto z-10 mt-1 py-1 max-h-60 w-full text-sm bg-white dark:bg-neutral-600 ring-1 ring-black/5 rounded-md dark:ring-white/5 focus:outline-none shadow-lg"
-                    >
-                      @foreach(packages as pkg)
-                        <ListboxOption
-                          value="{{ pkg.name }}"
-                          v-slot="{ active, selected }"
-                          as="template"
-                        >
-                          <li
-                            class="{{ active ? 'bg-blue-50 dark:bg-blue-700/50 text-blue-900 dark:text-blue-100' : 'text-gray-900 dark:text-neutral-100' }} relative cursor-default select-none py-2 pl-10 pr-4 transition-colors duration-150"
-                          >
-                            <span class="{{ selected ? 'font-medium' : 'font-normal' }} block truncate">
-                              {{ pkg.name }}
-                            </span>
-                            @if(selected)
-<span
-                              class="flex absolute inset-y-0 left-0 items-center pl-3 text-blue-600 dark:text-blue-400"
-                            >
-                              <div class="h-5 w-5 i-hugeicons-check" aria-hidden="true" />
-                            </span>
-                          </li>
-                        </ListboxOption>
-                      @endforeach
-                    </ListboxOptions>
-                  </transition>
-                </div>
-              </Listbox>
-            </div>
-            <button
-              onclick="selectedPackages = []"
-              class="px-3 h-9 text-gray-500 text-sm dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-500 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 duration-200 transition-colors"
-            >
-              Clear
-            </button>
-          </div>
-        @endif
-        @endif
+  <!-- Stats -->
+  <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Packages</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalPackages }}</p>
+        </div>
       </div>
-
-      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-cloud-download" />
-            </div>
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Total Downloads
-            </p>
-          </dt>
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              {{ totalDownloads.toLocaleString() }}
-            </p>
-          </dd>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
+          </svg>
         </div>
-
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-user-multiple-02" />
-            </div>
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Total Contributors
-            </p>
-          </dt>
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              {{ totalContributors.toLocaleString() }}
-            </p>
-          </dd>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Downloads</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ formatNumber(totalDownloads) }}</p>
         </div>
-
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-bug-02" />
-            </div>
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Total Issues
-            </p>
-          </dt>
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              {{ totalIssues.toLocaleString() }}
-            </p>
-          </dd>
+      </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-purple-500/10 text-purple-600 dark:bg-purple-400/15 dark:text-purple-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 0a3 3 0 11-6 0 3 3 0 016 0z"/>
+          </svg>
         </div>
-      </dl>
-    </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Contributors</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalContributors }}</p>
+        </div>
+      </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Open issues</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalIssues }}</p>
+        </div>
+      </div>
+    </Card>
   </div>
 
-  <!-- Charts Section -->
-  <div class="mb-8 px-4 sm:px-6 lg:px-8">
-    <div class="grid gap-8 grid-cols-1 lg:grid-cols-2">
-      <!-- Downloads Chart -->
-      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Package Downloads</h3>
-              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Downloads over time per package</p>
-            </div>
-            <div class="flex items-center space-x-4">
-              <select
-                value="{{ timeRange }}"
-                class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-                <option value="365">Last year</option>
-              </select>
-              <div class="flex h-9 rounded-md shadow-sm">
-                <button
-                  onclick="displayMode = 'line'"
-                  class="px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors {{ displayMode === 'line'
-                      ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
-                >
-                  Line
-                </button>
-                <button
-                  onclick="displayMode = 'bar'"
-                  class="px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px {{ displayMode === 'bar'
-                      ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
-                >
-                  Bar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="relative h-[400px]">
-            @if(isLoading)
-              <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
-                <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-              </div>
-            @endif
-            <component
-              :is="displayMode === 'line' ? Line : Bar"
-              :data="downloadsTimeData"
-              :options="timeChartOptions"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Star Growth Chart -->
-      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between mb-6">
-            <div>
-              <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Star Growth</h3>
-              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">GitHub Star growth over time per package</p>
-            </div>
-            <div class="flex items-center space-x-4">
-              <select
-                value="{{ timeRange }}"
-                class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-              >
-                <option value="7">Last 7 days</option>
-                <option value="30">Last 30 days</option>
-                <option value="90">Last 90 days</option>
-                <option value="365">Last year</option>
-              </select>
-              <div class="flex h-9 rounded-md shadow-sm">
-                <button
-                  onclick="displayMode = 'line'"
-                  class="px-3 py-2 text-sm font-semibold rounded-l-md ring-1 ring-inset transition-colors {{ displayMode === 'line'
-                      ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
-                >
-                  Line
-                </button>
-                <button
-                  onclick="displayMode = 'bar'"
-                  class="px-3 py-2 text-sm font-semibold rounded-r-md ring-1 ring-inset transition-colors -ml-px {{ displayMode === 'bar'
-                      ? 'bg-blue-600 text-white ring-blue-600'
-                      : 'bg-white text-gray-600 hover:bg-gray-50 ring-gray-300 dark:bg-neutral-600 dark:text-neutral-200 dark:ring-neutral-600 dark:hover:bg-neutral-500' }}"
-                >
-                  Bar
-                </button>
-              </div>
-            </div>
-          </div>
-          <div class="h-[400px]">
-            <component
-              :is="displayMode === 'line' ? Line : Bar"
-              :data="starsTimeData"
-              :options="timeChartOptions"
-            />
-          </div>
-        </div>
-      </div>
-
-      <!-- Contributors Chart -->
-      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="mb-6">
-            <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Package Contributors</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Number of contributors per package</p>
-          </div>
-          <div class="h-[400px]">
-            <canvas id="chart_1"></canvas>
-          </div>
-        </div>
-      </div>
-
-      <!-- Issues Chart -->
-      <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="mb-6">
-            <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Open Issues</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Number of open issues per package</p>
-          </div>
-          <div class="h-[400px]">
-            <canvas id="chart_2"></canvas>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Packages Table section -->
-  <div class="pt-12 px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900">
-          Packages
-        </h1>
-        <p class="mt-2 text-gray-700 text-sm">
-          A list of all the packages you are tracking.
+  <!-- Packages table -->
+  <Card variant="default" padding="none">
+    <div class="flex items-baseline justify-between px-5 py-4 border-b border-neutral-200/60 dark:border-white/5">
+      <div>
+        <h3 class="font-semibold text-base text-neutral-900 dark:text-white">All packages</h3>
+        <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
+          {{ totalPackages }} packages, sorted by downloads
         </p>
       </div>
-
-      <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
-        <button type="button" class="block px-3 py-2 font-semibold text-center text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
-          Add Package
-        </button>
-      </div>
     </div>
 
-    <div class="flow-root mt-8">
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
-            <table class="min-w-full divide-gray-300 divide-y">
-              <thead class="bg-gray-50 dark:bg-neutral-700/50">
-                <tr>
-                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm">
-                    Package
-                  </th>
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Description
-                  </th>
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Version
-                  </th>
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Downloads
-                  </th>
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Size
-                  </th>
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm">
-                    Created At
-                  </th>
-                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                    <span class="sr-only">View</span>
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
-                @foreach(packages as pkg)
-                  <tr>
-                    <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
-                      <div class="flex items-center">
-                        <div>
-                          <div class="font-medium text-gray-900">{{ pkg.name }}</div>
-                          <div class="text-gray-500">{{ pkg.codename }}</div>
-                        </div>
-                      </div>
-                    </td>
-                    <td class="px-3 py-4 max-w-md text-gray-500 text-sm truncate whitespace-nowrap">
-                      {{ pkg.description }}
-                    </td>
-                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                      {{ pkg.version }}
-                    </td>
-                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                      {{ pkg.downloads.toLocaleString() }}
-                    </td>
-                    <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap">
-                      {{ pkg.size }}
-                    </td>
-                    <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
-                      {{ pkg.createdAt }}
-                    </td>
-                    <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                      <a href="{{ getPackageUrl(pkg.name) }}" class="text-blue-600 hover:text-blue-900">
-                        View<span class="sr-only">, {{ pkg.name }} package</span>
-                      </a>
-                    </td>
-                  </tr>
-                @endforeach
-              </tbody>
-            </table>
-          </div>
-        </div>
+    @if(packages.length === 0)
+      <div class="p-8">
+        <EmptyState
+          title="No packages yet"
+          description="Publish your first package from the monorepo."
+        />
       </div>
-    </div>
-  </div>
+    @else
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200/60 dark:divide-white/5">
+          <thead class="bg-neutral-50/60 dark:bg-white/[0.02]">
+            <tr>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Package</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Version</th>
+              <th class="px-5 py-2.5 font-medium text-right text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Downloads</th>
+              <th class="px-5 py-2.5 font-medium text-right text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Contributors</th>
+              <th class="px-5 py-2.5 font-medium text-right text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Issues</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Size</th>
+              <th class="px-5 py-2.5 text-right">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200/60 dark:divide-white/5">
+            @foreach(sortedPackages as pkg)
+              <tr class="hover:bg-neutral-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ pkg.name }}</div>
+                  <div class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400 truncate max-w-xs">{{ pkg.description }}</div>
+                </td>
+                <td class="px-5 py-3 font-mono text-neutral-600 text-xs dark:text-neutral-300 whitespace-nowrap">
+                  {{ pkg.version }}
+                </td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                  <Badge :variant="downloadsBadgeVariant(pkg.downloads)" size="sm">{{ formatNumber(pkg.downloads) }}</Badge>
+                </td>
+                <td class="px-5 py-3 text-right text-neutral-600 text-sm dark:text-neutral-300 whitespace-nowrap">
+                  {{ pkg.contributors }}
+                </td>
+                <td class="px-5 py-3 text-right text-neutral-600 text-sm dark:text-neutral-300 whitespace-nowrap">
+                  {{ pkg.issues }}
+                </td>
+                <td class="px-5 py-3 font-mono text-neutral-500 text-xs dark:text-neutral-400 whitespace-nowrap">
+                  {{ pkg.size }}
+                </td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                  <a href="{{ pkg.url }}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    GitHub
+                  </a>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    @endif
+  </Card>
+
 </div>
-
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'bar',
-    data: contributorsData,
-    options: contributorsOptions,
-  })
-}
-
-const chart_2_ctx = document.getElementById('chart_2')
-if (chart_2_ctx) {
-  new Chart(chart_2_ctx, {
-    type: 'bar',
-    data: issuesData,
-    options: issuesOptions,
-  })
-}
-
-</script>
-
 @endsection

@@ -4,488 +4,164 @@
 <script server>
 definePageMeta({
   middleware: ['auth'],
-  layout: 'default'
+  layout: 'default',
 })
 
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        callback: (value) => {
-          if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-          if (value >= 1000) return (value / 1000).toFixed(1) + 'k'
-          return value
-        }
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      align: 'end',
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          let label = context.dataset.label || ''
-          if (label) label += ': '
-          if (context.parsed.y !== null) {
-            const value = context.parsed.y
-            if (value >= 1000000) label += (value / 1000000).toFixed(1) + 'M'
-            else if (value >= 1000) label += (value / 1000).toFixed(1) + 'k'
-            else label += value
-          }
-          return label + ' downloads'
-        }
-      }
-    }
-  },
-  elements: {
-    line: {
-      tension: 0.4,
-    },
-  },
+import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
+import Card from '../../../components/Dashboard/UI/Card.stx'
+import Button from '../../../components/Dashboard/UI/Button.stx'
+import Badge from '../../../components/Dashboard/UI/Badge.stx'
+import EmptyState from '../../../components/Dashboard/UI/EmptyState.stx'
+
+interface FunctionRow {
+  name: string
+  size: string
+  path: string
+  updatedAt: string
+  createdAt: string
+  status: 'active' | 'draft' | 'archived'
 }
 
-let comparePackage = ''
-let timeRange = '7'
-let isLoading = false
+// Placeholder data. Wire this up to whatever lists `./resources/functions/*`
+// once the framework exposes a directory walker — the table renders
+// against `name/size/path/updatedAt/createdAt/status` so the swap is a
+// one-line replacement of `functions = …`.
+const functions: FunctionRow[] = [
+  { name: 'sendInvoice', size: '5.2 kB', path: './resources/functions/send-invoice.ts', updatedAt: '2026-04-19 09:04', createdAt: '2025-11-03 08:23', status: 'active' },
+  { name: 'syncCustomer', size: '3.8 kB', path: './resources/functions/sync-customer.ts', updatedAt: '2026-04-12 14:11', createdAt: '2025-12-01 11:45', status: 'active' },
+  { name: 'cleanupSessions', size: '2.1 kB', path: './resources/functions/cleanup-sessions.ts', updatedAt: '2026-03-30 22:08', createdAt: '2026-01-14 09:02', status: 'active' },
+  { name: 'reportDigest', size: '6.4 kB', path: './resources/functions/report-digest.ts', updatedAt: '2026-04-22 07:55', createdAt: '2026-02-09 13:31', status: 'draft' },
+]
 
-const formatDate = (daysAgo) => {
-  const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  }
+const totalCount = functions.length
+const activeCount = functions.filter(f => f.status === 'active').length
+const draftCount = functions.filter(f => f.status === 'draft').length
+
+function statusVariant(status: string) {
+  if (status === 'active') return 'success'
+  if (status === 'draft') return 'warning'
+  if (status === 'archived') return 'default'
+  return 'default'
 }
-
-const generateDateLabels = (days) => {
-  return Array.from({ length: days }, (_, i) => formatDate(i))
-}
-
-const generateGrowthData = (days, baseCount, dailyGrowth) => {
-  return Array.from({ length: days }, (_, i) => {
-    const dayVariance = Math.random() * dailyGrowth * 0.5
-    const daysFromStart = i
-    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
-  }
-}
-
-interface FunctionStats {
-  labels: string[]
-  data: number[]
-  compareData: number[]
-}
-
-interface FunctionStatsMap {
-  '7': FunctionStats
-  '30': FunctionStats
-  '90': FunctionStats
-  '365': FunctionStats
-}
-
-let functionStats = {
-  '7': {
-    labels: generateDateLabels(7),
-    data: [8500, 11800, 10200, 12800, 15200, 14100, 13200],
-    compareData: [6500, 8800, 7200, 9800, 11200, 10100, 9200]
-  },
-  '30': {
-    labels: generateDateLabels(30),
-    data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15000) + 8000),
-    compareData: Array.from({ length: 30 }, () => Math.floor(Math.random() * 12000) + 6000)
-  },
-  '90': {
-    labels: generateDateLabels(90),
-    data: Array.from({ length: 90 }, () => Math.floor(Math.random() * 15000) + 8000),
-    compareData: Array.from({ length: 90 }, () => Math.floor(Math.random() * 12000) + 6000)
-  },
-  '365': {
-    labels: generateDateLabels(365),
-    data: Array.from({ length: 365 }, () => Math.floor(Math.random() * 15000) + 8000),
-    compareData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 12000) + 6000)
-  }
-}
-
-let fetchError = ''
-
-const fetchFunctionData = async (days) => {
-  isLoading = true
-  fetchError = ''
-  try {
-    const baseUrl = 'http://localhost:' + (process.env.PORT_API || '3008')
-    const response = await fetch(`${baseUrl}/functions/stats?days=${days}`, {
-      headers: { 'Accept': 'application/json' },
-    })
-    if (response.ok) {
-      const data = await response.json()
-      if (data.stats) {
-        functionStats[timeRange] = data.stats
-      }
-    }
-  } catch (error) {
-    fetchError = 'Failed to load function data. Using cached data.'
-    console.error('Failed to fetch function data:', error)
-  } finally {
-    isLoading = false
-  }
-}
-
-function downloadsData() { return ({
-  labels: functionStats[timeRange].labels,
-  datasets: [
-    {
-      label: '@your/function',
-      data: functionStats[timeRange].data,
-      borderColor: 'rgb(59, 130, 246)',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: true,
-    },
-    ...(comparePackage ? [{
-      label: comparePackage,
-      data: functionStats[timeRange].compareData,
-      borderColor: 'rgb(234, 179, 8)',
-      backgroundColor: 'rgba(234, 179, 8, 0.1)',
-      fill: true,
-    }] : [])
-  ]
-}))
-
-const handleCompare = async () => {
-  if (comparePackage) {
-    await fetchFunctionData(timeRange)
-  }
-}
-
 </script>
 
-@title('Dashboard - Functions')
-<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
-  <div class="mb-8 px-4 sm:px-6 lg:px-8">
-    <div>
-      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-        Last {{ timeRange }} days
-      </h3>
+<div class="px-6 pt-6 pb-12 mx-auto max-w-6xl space-y-6">
 
-      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-cloud-download" />
-            </div>
+  <PageHeader
+    title="Functions"
+    description="Serverless functions defined in resources/functions"
+  >
+    <template #actions>
+      <Button variant="primary" size="md">Create function</Button>
+    </template>
+  </PageHeader>
 
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Total Downloads
-            </p>
-          </dt>
-
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              71,897
-            </p>
-
-            <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
-              <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-              </svg>
-
-              <span class="sr-only"> Increased by </span>
-              122
-            </p>
-          </dd>
+  <!-- Stats -->
+  <div class="grid gap-3 grid-cols-3">
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
+          </svg>
         </div>
-
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-clock-01" />
-            </div>
-
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Avg. Release Time
-            </p>
-          </dt>
-
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              3.65 mins
-            </p>
-
-            <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
-              <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
-              </svg>
-              <span class="sr-only"> Increased by </span>
-              12 s
-            </p>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <dt>
-            <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-rocket-01" />
-            </div>
-
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Releases
-            </p>
-          </dt>
-
-          <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              420
-            </p>
-
-            <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm dark:text-red-400">
-              <svg class="flex-shrink-0 self-center h-5 w-5 text-red-500 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
-              </svg>
-              <span class="sr-only"> Decreased by </span>
-              3.2%
-            </p>
-          </dd>
-        </div>
-      </dl>
-    </div>
-  </div>
-
-  <!-- Downloads Chart -->
-  <div class="mb-8 px-4 sm:px-6 lg:px-8">
-    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Download Activity</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Compare package downloads over time</p>
-          </div>
-          <div class="flex items-center space-x-4">
-            <div class="flex items-center space-x-2">
-              <input
-                value="{{ comparePackage }}"
-                type="text"
-                placeholder="Compare with package..."
-                @keyup.enter="handleCompare"
-                class="block py-1.5 w-64 text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-              />
-              <button
-                onclick="handleCompare"
-                class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-              >
-                Compare
-              </button>
-            </div>
-            <select
-              value="{{ timeRange }}"
-              class="pl-3 pr-8 py-1.5 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-            >
-              <option value="7">Last 7 days</option>
-              <option value="30">Last 30 days</option>
-              <option value="90">Last 90 days</option>
-              <option value="365">Last 365 days</option>
-            </select>
-          </div>
-        </div>
-        <div class="relative h-[400px]">
-          @if(isLoading)
-            <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
-              <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-            </div>
-          @endif
-          <canvas id="chart_1"></canvas>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Total</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalCount }}</p>
         </div>
       </div>
-    </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Active</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ activeCount }}</p>
+        </div>
+      </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Draft</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ draftCount }}</p>
+        </div>
+      </div>
+    </Card>
   </div>
 
-  <div class="pt-12 px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-          Functions
-        </h1>
-        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-          A list of all the functions in your library.
+  <!-- Functions table -->
+  <Card variant="default" padding="none">
+    <div class="flex items-baseline justify-between px-5 py-4 border-b border-neutral-200/60 dark:border-white/5">
+      <div>
+        <h3 class="font-semibold text-base text-neutral-900 dark:text-white">All functions</h3>
+        <p class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400">
+          {{ totalCount }} {{ totalCount === 1 ? 'function' : 'functions' }} loaded from <code class="px-1 py-0.5 font-mono text-[11px] bg-black/5 dark:bg-white/10 rounded">resources/functions</code>
         </p>
       </div>
-
-      <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
-        <button
-          type="button"
-          class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-        >
-          Create Function
-        </button>
-      </div>
     </div>
 
-    <div class="flow-root mt-8">
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg dark:ring-neutral-600 shadow">
-            <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
-              <thead class="bg-gray-50 dark:bg-neutral-700">
-                <tr>
-                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                    Name
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                    Size
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                    Path
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">
-                    Updated At
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">
-                    Created At
-                  </th>
-
-                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                    <span class="sr-only">Edit</span>
-                  </th>
-                </tr>
-              </thead>
-
-              <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                    Function A
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    5kb
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    ./resources/functions/function-a.ts
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    04-19-2022 09:04:20
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    01-03-2023 08:23:15
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                      <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, Component A, in IDE</span></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                    Function B
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    5kb
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    ./resources/functions/function-a.ts
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    04-19-2022 09:04:20
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    01-03-2023 08:23:15
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, Component A, in IDE</span></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                    Function C
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    5kb
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    ./resources/functions/function-a.ts
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    04-19-2022 09:04:20
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    01-03-2023 08:23:15
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, Component A, in IDE</span></a>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
-        </div>
+    @if(functions.length === 0)
+      <div class="p-8">
+        <EmptyState
+          title="No functions yet"
+          description="Create your first function in resources/functions/."
+        />
       </div>
-    </div>
-  </div>
+    @else
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200/60 dark:divide-white/5">
+          <thead class="bg-neutral-50/60 dark:bg-white/[0.02]">
+            <tr>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Name</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Path</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Size</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Status</th>
+              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Updated</th>
+              <th class="px-5 py-2.5 text-right">
+                <span class="sr-only">Actions</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-neutral-200/60 dark:divide-white/5">
+            @foreach(functions as fn)
+              <tr class="hover:bg-neutral-50/60 dark:hover:bg-white/[0.02] transition-colors">
+                <td class="px-5 py-3 font-medium text-neutral-900 text-sm dark:text-white whitespace-nowrap">
+                  {{ fn.name }}
+                </td>
+                <td class="px-5 py-3 font-mono text-neutral-500 text-xs dark:text-neutral-400 whitespace-nowrap">
+                  {{ fn.path }}
+                </td>
+                <td class="px-5 py-3 font-mono text-neutral-600 text-xs dark:text-neutral-300 whitespace-nowrap">
+                  {{ fn.size }}
+                </td>
+                <td class="px-5 py-3 whitespace-nowrap">
+                  <Badge :variant="statusVariant(fn.status)" size="sm">{{ fn.status }}</Badge>
+                </td>
+                <td class="px-5 py-3 text-neutral-500 text-xs dark:text-neutral-400 whitespace-nowrap">
+                  {{ fn.updatedAt }}
+                </td>
+                <td class="px-5 py-3 text-right whitespace-nowrap">
+                  <a href="#" class="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                    Edit
+                  </a>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+    @endif
+  </Card>
+
 </div>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: downloadsData,
-    options: chartOptions,
-  })
-}
-
-onMount(async () => {
-  await fetchFunctionData(timeRange)
-})
-</script>
-
-
 @endsection
