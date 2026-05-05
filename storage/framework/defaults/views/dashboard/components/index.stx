@@ -4,222 +4,29 @@
 <script server>
 definePageMeta({
   middleware: ['auth'],
-  layout: 'default'
 })
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        callback: (value) => {
-          if (value >= 1000000) return (value / 1000000).toFixed(1) + 'M'
-          if (value >= 1000) return (value / 1000).toFixed(1) + 'k'
-          return value
-        }
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top',
-      align: 'end',
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      callbacks: {
-        label: (context) => {
-          let label = context.dataset.label || ''
-          if (label) label += ': '
-          if (context.parsed.y !== null) {
-            const value = context.parsed.y
-            if (value >= 1000000) label += (value / 1000000).toFixed(1) + 'M'
-            else if (value >= 1000) label += (value / 1000).toFixed(1) + 'k'
-            else label += value
-          }
-          return label + ' downloads'
-        }
-      }
-    }
-  },
-  elements: {
-    line: {
-      tension: 0.4,
-    },
-  },
-}
-
-let comparePackage = ''
-let timeRange = '7'
-let isLoading = false
-
-const formatDate = (daysAgo) => {
-  const date = new Date()
-  date.setDate(date.getDate() - daysAgo)
-  return date.toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric'
-  }
-}
-
-const generateDateLabels = (days) => {
-  return Array.from({ length: days }, (_, i) => formatDate(i))
-}
-
-const generateGrowthData = (days, baseCount, dailyGrowth) => {
-  return Array.from({ length: days }, (_, i) => {
-    const dayVariance = Math.random() * dailyGrowth * 0.5
-    const daysFromStart = i
-    return Math.floor(baseCount + (dailyGrowth * daysFromStart) + dayVariance)
-  }
-}
-
-interface DownloadStats {
-  labels: string[]
-  data: number[]
-  compareData: number[]
-}
-
-interface DownloadStatsMap {
-  '7': DownloadStats
-  '30': DownloadStats
-  '90': DownloadStats
-  '365': DownloadStats
-}
-
-let downloadStats = {
-  '7': {
-    labels: generateDateLabels(7),
-    data: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
-    compareData: [9500, 11800, 10200, 12800, 15200, 14100, 13200]
-  },
-  '30': {
-    labels: generateDateLabels(30),
-    data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20000) + 10000),
-    compareData: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15000) + 8000)
-  },
-  '90': {
-    labels: generateDateLabels(90),
-    data: Array.from({ length: 90 }, () => Math.floor(Math.random() * 20000) + 10000),
-    compareData: Array.from({ length: 90 }, () => Math.floor(Math.random() * 15000) + 8000)
-  },
-  '365': {
-    labels: generateDateLabels(365),
-    data: Array.from({ length: 365 }, () => Math.floor(Math.random() * 20000) + 10000),
-    compareData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 15000) + 8000)
-  }
-}
-
-let fetchError = ''
-
-const fetchDownloadData = async (days) => {
-  isLoading = true
-  fetchError = ''
-  try {
-    const baseUrl = 'http://localhost:' + (process.env.PORT_API || '3008')
-    const response = await fetch(`${baseUrl}/components/stats?days=${days}`, {
-      headers: { 'Accept': 'application/json' },
-    })
-    if (response.ok) {
-      const data = await response.json()
-      if (data.stats) {
-        downloadStats[timeRange] = data.stats
-      }
-    }
-  } catch (error) {
-    fetchError = 'Failed to load component data. Using cached data.'
-    console.error('Failed to fetch component data:', error)
-  } finally {
-    isLoading = false
-  }
-}
-
-function downloadsData() { return ({
-  labels: downloadStats[timeRange].labels,
-  datasets: [
-    {
-      label: '@your/package',
-      data: downloadStats[timeRange].data,
-      borderColor: 'rgb(59, 130, 246)',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: true,
-    },
-    ...(comparePackage ? [{
-      label: comparePackage,
-      data: downloadStats[timeRange].compareData,
-      borderColor: 'rgb(234, 179, 8)',
-      backgroundColor: 'rgba(234, 179, 8, 0.1)',
-      fill: true,
-    }] : [])
-  ]
-}))
-
-const handleCompare = async () => {
-  if (comparePackage) {
-    await fetchDownloadData(timeRange)
-  }
-}
-
 </script>
 
 @title('Dashboard - Components')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
     <div>
-      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-        Last 30 days
-      </h3>
+      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Last 30 days</h3>
 
       <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
         <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <dt>
             <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-cloud-download" />
+              <div class="h-6 w-6 text-white i-hugeicons-cloud-download"></div>
             </div>
-
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Total Downloads
-            </p>
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Total Downloads</p>
           </dt>
-
           <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              71,897
-            </p>
-
+            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">71,897</p>
             <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
               <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
               </svg>
-
               <span class="sr-only"> Increased by </span>
               122
             </p>
@@ -229,19 +36,12 @@ const handleCompare = async () => {
         <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <dt>
             <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-clock-01" />
+              <div class="h-6 w-6 text-white i-hugeicons-clock-01"></div>
             </div>
-
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Avg. Release Time
-            </p>
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Avg. Release Time</p>
           </dt>
-
           <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              3.65 mins
-            </p>
-
+            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">3.65 mins</p>
             <p class="flex items-baseline ml-2 font-semibold text-green-600 text-sm dark:text-green-400">
               <svg class="flex-shrink-0 self-center h-5 w-5 text-green-500 dark:text-green-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 17a.75.75 0 01-.75-.75V5.612L5.29 9.77a.75.75 0 01-1.08-1.04l5.25-5.5a.75.75 0 011.08 0l5.25 5.5a.75.75 0 11-1.08 1.04l-3.96-4.158V16.25A.75.75 0 0110 17z" clip-rule="evenodd" />
@@ -255,19 +55,12 @@ const handleCompare = async () => {
         <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
           <dt>
             <div class="absolute p-3 bg-blue-500 rounded-md">
-              <div class="h-6 w-6 text-white i-hugeicons-rocket-01" />
+              <div class="h-6 w-6 text-white i-hugeicons-rocket-01"></div>
             </div>
-
-            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">
-              Releases
-            </p>
+            <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-400">Releases</p>
           </dt>
-
           <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">
-              420
-            </p>
-
+            <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">420</p>
             <p class="flex items-baseline ml-2 font-semibold text-red-600 text-sm dark:text-red-400">
               <svg class="flex-shrink-0 self-center h-5 w-5 text-red-500 dark:text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                 <path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v10.638l3.96-4.158a.75.75 0 111.08 1.04l-5.25 5.5a.75.75 0 01-1.08 0l-5.25-5.5a.75.75 0 111.08-1.04l3.96 4.158V3.75A.75.75 0 0110 3z" clip-rule="evenodd" />
@@ -281,7 +74,6 @@ const handleCompare = async () => {
     </div>
   </div>
 
-  <!-- Downloads Chart -->
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
     <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
       <div class="p-6">
@@ -292,24 +84,10 @@ const handleCompare = async () => {
           </div>
           <div class="flex items-center space-x-4">
             <div class="flex items-center space-x-2">
-              <input
-                value="{{ comparePackage }}"
-                type="text"
-                placeholder="Compare with package..."
-                @keyup.enter="handleCompare"
-                class="block py-1.5 w-64 text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-              />
-              <button
-                onclick="handleCompare"
-                class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-              >
-                Compare
-              </button>
+              <input x-model="comparePackage" type="text" placeholder="Compare with package..." @keyup.enter="handleCompare()" class="block py-1.5 w-64 text-gray-900 sm:leading-6 sm:text-sm dark:text-neutral-100 placeholder:text-gray-400 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
+              <button @click="handleCompare()" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Compare</button>
             </div>
-            <select
-              value="{{ timeRange }}"
-              class="pl-3 pr-8 py-1.5 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-            >
+            <select x-model="timeRange" @change="onTimeRangeChange()" class="pl-3 pr-8 py-1.5 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
               <option value="7">Last 7 days</option>
               <option value="30">Last 30 days</option>
               <option value="90">Last 90 days</option>
@@ -318,7 +96,7 @@ const handleCompare = async () => {
           </div>
         </div>
         <div class="h-[400px]">
-          <canvas id="chart_1"></canvas>
+          <canvas id="components_downloads_chart"></canvas>
         </div>
       </div>
     </div>
@@ -327,21 +105,12 @@ const handleCompare = async () => {
   <div class="pt-12 px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">
       <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">
-          Components
-        </h1>
-        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-          A list of all the components in your library.
-        </p>
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Components</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">A list of all the components in your library.</p>
       </div>
 
       <div class="sm:flex-none mt-4 sm:ml-16 sm:mt-0">
-        <button
-          type="button"
-          class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-        >
-          Create Component
-        </button>
+        <button type="button" class="px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Create Component</button>
       </div>
     </div>
 
@@ -352,110 +121,28 @@ const handleCompare = async () => {
             <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
               <thead class="bg-gray-50 dark:bg-neutral-700">
                 <tr>
-                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                    Name
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                    Size
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">
-                    Path
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">
-                    Updated At
-                  </th>
-
-                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">
-                    Created At
-                  </th>
-
-                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                    <span class="sr-only">Edit</span>
-                  </th>
+                  <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Name</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Size</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Path</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">Updated At</th>
+                  <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">Created At</th>
+                  <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6"><span class="sr-only">Edit</span></th>
                 </tr>
               </thead>
 
               <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                    Component A
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    30kb
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    ./resources/components/component-a.vue
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    01-03-2023 08:23:15
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    04-19-2022 09:04:20
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, Component A, in IDE</span></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                    Component B
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    30kb
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    ./resources/components/component-b.vue
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    01-03-2023 08:23:15
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    04-19-2022 09:04:20
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, Component A, in IDE</span></a>
-                  </td>
-                </tr>
-
-                <tr>
-                  <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">
-                    Component C
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    30kb
-                  </td>
-
-                  <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">
-                    ./resources/components/component-c.vue
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    01-03-2023 08:23:15
-                  </td>
-
-                  <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
-                    04-19-2022 09:04:20
-                  </td>
-
-                  <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                    <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, Component A, in IDE</span></a>
-                  </td>
-                </tr>
+                @foreach(componentList as component)
+                  <tr>
+                    <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ component.name }}</td>
+                    <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ component.size }}</td>
+                    <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ component.path }}</td>
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">{{ component.updated_at }}</td>
+                    <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">{{ component.created_at }}</td>
+                    <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                      <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, {{ component.name }}, in IDE</span></a>
+                    </td>
+                  </tr>
+                @endforeach
               </tbody>
             </table>
           </div>
@@ -464,23 +151,187 @@ const handleCompare = async () => {
     </div>
   </div>
 </div>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
 
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: downloadsData,
-    options: chartOptions,
-  })
+<script server>
+const componentList = [
+  { name: 'Component A', size: '30kb', path: './resources/components/component-a.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
+  { name: 'Component B', size: '30kb', path: './resources/components/component-b.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
+  { name: 'Component C', size: '30kb', path: './resources/components/component-c.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
+]
+</script>
+
+<script client>
+import { useChart } from '../composables'
+
+interface DownloadStats {
+  labels: string[]
+  data: number[]
+  compareData: number[]
+}
+
+interface ChartLike { destroy: () => void, update: () => void, data: { labels: string[], datasets: Array<{ label?: string, data: number[], borderColor?: string, backgroundColor?: string, fill?: boolean }> } }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+function formatDate(daysAgo: number): string {
+  const date = new Date()
+  date.setDate(date.getDate() - daysAgo)
+  return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+}
+
+function generateDateLabels(days: number): string[] {
+  return Array.from({ length: days }, (_, i) => formatDate(i))
+}
+
+const downloadStats = state<Record<string, DownloadStats>>({
+  '7': {
+    labels: generateDateLabels(7),
+    data: [12500, 15800, 14200, 16800, 19200, 18100, 17200],
+    compareData: [9500, 11800, 10200, 12800, 15200, 14100, 13200],
+  },
+  '30': {
+    labels: generateDateLabels(30),
+    data: Array.from({ length: 30 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 30 }, () => Math.floor(Math.random() * 15000) + 8000),
+  },
+  '90': {
+    labels: generateDateLabels(90),
+    data: Array.from({ length: 90 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 90 }, () => Math.floor(Math.random() * 15000) + 8000),
+  },
+  '365': {
+    labels: generateDateLabels(365),
+    data: Array.from({ length: 365 }, () => Math.floor(Math.random() * 20000) + 10000),
+    compareData: Array.from({ length: 365 }, () => Math.floor(Math.random() * 15000) + 8000),
+  },
+})
+
+const comparePackage = state('')
+const timeRange = state('7')
+const isLoading = state(false)
+const fetchError = state('')
+
+let chartHandle: ChartLike | null = null
+
+function downloadsData() {
+  const range = downloadStats()[timeRange()]
+  if (!range)
+    return { labels: [], datasets: [] }
+  const datasets: Array<{ label?: string, data: number[], borderColor?: string, backgroundColor?: string, fill?: boolean }> = [
+    { label: '@your/package', data: range.data, borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true },
+  ]
+  if (comparePackage()) {
+    datasets.push({ label: comparePackage(), data: range.compareData, borderColor: 'rgb(234, 179, 8)', backgroundColor: 'rgba(234, 179, 8, 0.1)', fill: true })
+  }
+  return { labels: range.labels, datasets }
+}
+
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: { color: 'rgba(200, 200, 200, 0.1)' },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: { family: "'JetBrains Mono', monospace" },
+        callback: (value: number | string) => {
+          const v = Number(value)
+          if (v >= 1000000)
+            return `${(v / 1000000).toFixed(1)}M`
+          if (v >= 1000)
+            return `${(v / 1000).toFixed(1)}k`
+          return v
+        },
+      },
+    },
+    x: { grid: { display: false }, ticks: { color: 'rgb(156, 163, 175)', font: { family: "'JetBrains Mono', monospace" } } },
+  },
+  plugins: {
+    legend: { display: true, position: 'top', align: 'end', labels: { color: 'rgb(156, 163, 175)', font: { family: "'JetBrains Mono', monospace" }, boxWidth: 12, padding: 15 } },
+    tooltip: {
+      callbacks: {
+        label: (context: { dataset: { label?: string }, parsed: { y: number | null } }) => {
+          let label = context.dataset.label || ''
+          if (label)
+            label += ': '
+          if (context.parsed.y !== null) {
+            const v = context.parsed.y
+            if (v >= 1000000)
+              label += `${(v / 1000000).toFixed(1)}M`
+            else if (v >= 1000)
+              label += `${(v / 1000).toFixed(1)}k`
+            else label += v
+          }
+          return `${label} downloads`
+        },
+      },
+    },
+  },
+  elements: { line: { tension: 0.4 } },
+}
+
+async function fetchDownloadData(days: string): Promise<void> {
+  isLoading.set(true)
+  fetchError.set('')
+  try {
+    const baseUrl = `http://localhost:${(globalThis as { process?: { env?: { PORT_API?: string } } }).process?.env?.PORT_API || '3008'}`
+    const response = await fetch(`${baseUrl}/components/stats?days=${days}`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (response.ok) {
+      const data = await response.json()
+      if (data.stats) {
+        const next = { ...downloadStats() }
+        next[timeRange()] = data.stats
+        downloadStats.set(next)
+      }
+    }
+  }
+  catch (error) {
+    fetchError.set('Failed to load component data. Using cached data.')
+    // eslint-disable-next-line no-console
+    console.error('Failed to fetch component data:', error)
+  }
+  finally {
+    isLoading.set(false)
+  }
+}
+
+function refreshChart(): void {
+  if (!chartHandle)
+    return
+  const next = downloadsData()
+  chartHandle.data.labels = next.labels
+  chartHandle.data.datasets = next.datasets
+  chartHandle.update()
+}
+
+async function onTimeRangeChange(): Promise<void> {
+  await fetchDownloadData(timeRange())
+  refreshChart()
+}
+
+async function handleCompare(): Promise<void> {
+  if (comparePackage()) {
+    await fetchDownloadData(timeRange())
+    refreshChart()
+  }
 }
 
 onMount(async () => {
-  await fetchDownloadData(timeRange)
+  await fetchDownloadData(timeRange())
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+  const handle = useChart({ Chart: Ctor, id: 'components_downloads_chart', type: 'line', data: downloadsData(), options: chartOptions })
+  chartHandle = handle.instance as ChartLike | null
+})
+
+onDestroy(() => {
+  chartHandle?.destroy()
+  chartHandle = null
 })
 </script>
-
 
 @endsection
