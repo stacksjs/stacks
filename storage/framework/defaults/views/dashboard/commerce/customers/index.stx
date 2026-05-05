@@ -6,200 +6,12 @@ definePageMeta({
   middleware: ['auth']
 })
 
-import { useCustomers } from '../../../../functions/commerce/customers'
 import CustomersTable from '../../../../components/Dashboard/Commerce/CustomersTable.stx'
 import Pagination from '../../../../components/Dashboard/Commerce/Delivery/Pagination.stx'
 import SearchFilter from '../../../../components/Dashboard/Commerce/Delivery/SearchFilter.stx'
 
-// Get customers data and functions from the composable
-const { customers, createCustomer, fetchCustomers, deleteCustomer } = useCustomers()
-
-// Available statuses
+// Statuses are server-rendered into the <select>; never mutate at runtime.
 const statuses = ['all', 'Active', 'Inactive'] as const
-let statusFilter = 'all'
-let sortBy = 'name'
-let sortOrder = 'asc'
-
-// Search and filtering
-let searchQuery = ''
-let currentPage = 1
-let itemsPerPage = 5
-
-// Computed filtered customers
-function filteredCustomers() {
-  return customers
-    .filter(customer => {
-      // Apply search filter
-      const matchesSearch =
-        customer.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        customer.phone.toLowerCase().includes(searchQuery.toLowerCase())
-
-      // Apply status filter
-      const matchesStatus = statusFilter === 'all' || customer.status === statusFilter
-
-      return matchesSearch && matchesStatus
-    })
-    .sort((a, b) => {
-      // Apply sorting
-      let comparison = 0
-      if (sortBy === 'name') {
-        comparison = a.name.localeCompare(b.name)
-      } else if (sortBy === 'total_spent') {
-        comparison = (a.total_spent || 0) - (b.total_spent || 0)
-      } else if (sortBy === 'last_order') {
-        const dateA = a.last_order ? new Date(a.last_order).getTime() : 0
-        const dateB = b.last_order ? new Date(b.last_order).getTime() : 0
-        comparison = dateA - dateB
-      }
-
-      return sortOrder === 'asc' ? comparison : -comparison
-    })
-}
-
-function paginatedCustomers() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return filteredCustomers().slice(start, end)
-}
-
-// Event handlers
-const handleSearch = (query: string) => {
-  searchQuery = query
-  currentPage = 1
-}
-
-const handlePrevPage = () => {
-  if (currentPage > 1) {
-    currentPage--
-  }
-}
-
-const handleNextPage = () => {
-  const totalPages = Math.ceil(filteredCustomers().length / itemsPerPage)
-  if (currentPage < totalPages) {
-    currentPage++
-  }
-}
-
-const handlePageChange = (page: number) => {
-  currentPage = page
-}
-
-// Toggle sort order
-function toggleSort(column: string): void {
-  if (sortBy === column) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortBy = column
-    sortOrder = 'asc'
-  }
-}
-
-// Customer actions
-function viewCustomer(customer: any): void {
-  window.location.href = `/dashboard/commerce/customers/${customer.id}`
-}
-
-function editCustomer(customer: any): void {
-  window.location.href = `/dashboard/commerce/customers/${customer.id}?edit=true`
-}
-
-function removeCustomer(customer: any): void {
-  customerToDelete = customer
-  showDeleteModal = true
-}
-
-// Define new customer type
-interface NewCustomer {
-  name: string
-  email: string
-  phone: string
-  status: string
-}
-
-// Modal state
-let showAddModal = false
-let showDeleteModal = false
-let customerToDelete = null
-let newCustomer = {
-  name: '',
-  email: '',
-  phone: '',
-  status: 'Active'
-}
-
-function openAddModal(): void {
-  newCustomer = {
-    name: '',
-    email: '',
-    phone: '',
-    status: 'Active'
-  }
-  showAddModal = true
-}
-
-function closeAddModal(): void {
-  showAddModal = false
-}
-
-function closeDeleteModal(): void {
-  showDeleteModal = false
-  customerToDelete = null
-}
-
-async function confirmDelete(): Promise<void> {
-  if (!customerToDelete) return
-
-  const customerId = customerToDelete.id
-
-  // Remove from local state for immediate UI update
-  customers = customers.filter(c => c.id !== customerId)
-
-  try {
-    await deleteCustomer(customerId)
-    closeDeleteModal()
-  } catch (error) {
-    // If server request fails, restore to local state
-    customers.push(customerToDelete)
-    console.error('Failed to delete customer:', error)
-  }
-}
-
-async function addCustomer(): Promise<void> {
-  // First add to local state for immediate UI update
-  const id = Math.max(...customers.map(c => c.id || 0)) + 1
-  const newCustomerData = {
-    id,
-    name: newCustomer.name,
-    email: newCustomer.email,
-    phone: newCustomer.phone,
-    total_spent: 0,
-    last_order: new Date().toISOString().split('T')[0] || '',
-    status: newCustomer.status,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  }
-  customers.push(newCustomerData)
-
-  // Then send to server
-  const customerData = {
-    name: newCustomer.name,
-    email: newCustomer.email,
-    phone: newCustomer.phone,
-    total_spent: 0,
-    last_order: new Date().toISOString().split('T')[0] || '',
-    status: newCustomer.status,
-    avatar: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
-  }
-
-  try {
-    const response = await createCustomer(customerData)
-    // customer created successfully
-  } catch (error) {
-    // If server request fails, remove from local state
-    customers = customers.filter(c => c.id !== id)
-  }
-}
 </script>
 
 @title('Dashboard - Commerce Customers')
@@ -207,7 +19,7 @@ async function addCustomer(): Promise<void> {
 
   <PageHeader title="Customers" description="Manage your store customers">
     <template #actions>
-      <Button variant="primary" onclick="openAddModal">
+      <Button variant="primary" @click="openAddModal()">
         <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
         Add Customer
       </Button>
@@ -224,7 +36,7 @@ async function addCustomer(): Promise<void> {
           />
           <div class="flex flex-col gap-4 sm:flex-row">
             <select
-              value="{{ statusFilter }}"
+              x-model="statusFilter"
               class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
               @foreach(statuses as status)
@@ -233,13 +45,13 @@ async function addCustomer(): Promise<void> {
             </select>
 
             <select
-              value="{{ itemsPerPage }}"
+              x-model.number="itemsPerPage"
               class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
-              <option value="{{ 5 }}">5 per page</option>
-              <option value="{{ 10 }}">10 per page</option>
-              <option value="{{ 25 }}">25 per page</option>
-              <option value="{{ 50 }}">50 per page</option>
+              <option value="5">5 per page</option>
+              <option value="10">10 per page</option>
+              <option value="25">25 per page</option>
+              <option value="50">50 per page</option>
             </select>
           </div>
         </div>
@@ -247,13 +59,13 @@ async function addCustomer(): Promise<void> {
 
       <!-- Customer Tables Component -->
       <CustomersTable
-        :customers="paginatedCustomers"
-        :search-query="searchQuery"
-        :status-filter="statusFilter"
-        :sort-by="sortBy"
-        :sort-order="sortOrder"
-        :current-page="currentPage"
-        :items-per-page="itemsPerPage"
+        :customers="paginatedCustomers()"
+        :search-query="searchQuery()"
+        :status-filter="statusFilter()"
+        :sort-by="sortBy()"
+        :sort-order="sortOrder()"
+        :current-page="currentPage()"
+        :items-per-page="itemsPerPage()"
         :statuses="statuses"
         @toggle-sort="toggleSort"
         @change-page="handlePageChange"
@@ -266,9 +78,9 @@ async function addCustomer(): Promise<void> {
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <Pagination
-          :current-page="currentPage"
-          :total-items="filteredCustomers.length"
-          :items-per-page="itemsPerPage"
+          :current-page="currentPage()"
+          :total-items="filteredCustomers().length"
+          :items-per-page="itemsPerPage()"
           @prev="handlePrevPage"
           @next="handleNextPage"
           @page="handlePageChange"
@@ -278,136 +90,328 @@ async function addCustomer(): Promise<void> {
   </div>
 
   <!-- Add Customer Modal -->
-  @if(showAddModal)
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeAddModal"></div>
+  <div :show="showAddModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeAddModal()"></div>
 
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-          <div>
-            <div class="mt-3 sm:mt-5 text-center">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Customer</h3>
-              <div class="mt-4">
-                <div class="space-y-4">
-                  <div>
-                    <label for="customer-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Full Name</label>
-                    <div class="mt-2">
-                      <input
-                        type="text"
-                        id="customer-name"
-                        value="{{ newCustomer.name }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                        placeholder="Enter customer name"
-                      />
-                    </div>
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div>
+          <div class="mt-3 sm:mt-5 text-center">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Add New Customer</h3>
+            <div class="mt-4">
+              <div class="space-y-4">
+                <div>
+                  <label for="customer-name" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Full Name</label>
+                  <div class="mt-2">
+                    <input
+                      type="text"
+                      id="customer-name"
+                      x-model="newCustomerName"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      placeholder="Enter customer name"
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label for="customer-email" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Email Address</label>
-                    <div class="mt-2">
-                      <input
-                        type="email"
-                        id="customer-email"
-                        value="{{ newCustomer.email }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                        placeholder="Enter email address"
-                      />
-                    </div>
+                <div>
+                  <label for="customer-email" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Email Address</label>
+                  <div class="mt-2">
+                    <input
+                      type="email"
+                      id="customer-email"
+                      x-model="newCustomerEmail"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      placeholder="Enter email address"
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label for="customer-phone" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Phone Number</label>
-                    <div class="mt-2">
-                      <input
-                        type="tel"
-                        id="customer-phone"
-                        value="{{ newCustomer.phone }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                        placeholder="Enter phone number"
-                      />
-                    </div>
+                <div>
+                  <label for="customer-phone" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Phone Number</label>
+                  <div class="mt-2">
+                    <input
+                      type="tel"
+                      id="customer-phone"
+                      x-model="newCustomerPhone"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                      placeholder="Enter phone number"
+                    />
                   </div>
+                </div>
 
-                  <div>
-                    <label for="customer-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
-                    <div class="mt-2">
-                      <select
-                        id="customer-status"
-                        value="{{ newCustomer.status }}"
-                        class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
-                      >
-                        @foreach(statuses as status)
-                          <option value="{{ status }}">{{ status }}</option>
-                        @endforeach
-                      </select>
-                    </div>
+                <div>
+                  <label for="customer-status" class="block font-medium leading-6 text-gray-900 text-left text-sm dark:text-neutral-200">Status</label>
+                  <div class="mt-2">
+                    <select
+                      id="customer-status"
+                      x-model="newCustomerStatus"
+                      class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
+                    >
+                      @foreach(statuses as status)
+                        <option value="{{ status }}">{{ status }}</option>
+                      @endforeach
+                    </select>
                   </div>
                 </div>
               </div>
             </div>
           </div>
-          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-            <button
-              type="button"
-              onclick="addCustomer"
-              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-            >
-              Add Customer
-            </button>
-            <button
-              type="button"
-              onclick="closeAddModal"
-              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-            >
-              Cancel
-            </button>
-          </div>
+        </div>
+        <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+          <button
+            type="button"
+            @click="addCustomer()"
+            class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
+          >
+            Add Customer
+          </button>
+          <button
+            type="button"
+            @click="closeAddModal()"
+            class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
-  @endif
+  </div>
 
   <!-- Delete Customer Confirmation Modal -->
-  @if(showDeleteModal)
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" onclick="closeDeleteModal"></div>
+  <div :show="showDeleteModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeDeleteModal()"></div>
 
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-          <div>
-            <div class="flex items-center justify-center mx-auto h-12 w-12 bg-red-100 dark:bg-red-900 rounded-full">
-              <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-triangle"></div>
-            </div>
-            <div class="mt-3 sm:mt-5 text-center">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Delete Customer</h3>
-              <div class="mt-2">
-                <p class="text-gray-500 text-sm dark:text-neutral-400">
-                  Are you sure you want to delete <strong>{{ customerToDelete?.name }}</strong>? This action cannot be undone.
-                </p>
-              </div>
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div>
+          <div class="flex items-center justify-center mx-auto h-12 w-12 bg-red-100 dark:bg-red-900 rounded-full">
+            <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-triangle"></div>
+          </div>
+          <div class="mt-3 sm:mt-5 text-center">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Delete Customer</h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">
+                Are you sure you want to delete <strong>{{ customerToDelete()?.name }}</strong>? This action cannot be undone.
+              </p>
             </div>
           </div>
-          <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-            <button
-              type="button"
-              onclick="confirmDelete"
-              class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
-            >
-              Delete Customer
-            </button>
-            <button
-              type="button"
-              onclick="closeDeleteModal"
-              class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-            >
-              Cancel
-            </button>
-          </div>
+        </div>
+        <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+          <button
+            type="button"
+            @click="confirmDelete()"
+            class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-red-600 shadow-sm"
+          >
+            Delete Customer
+          </button>
+          <button
+            type="button"
+            @click="closeDeleteModal()"
+            class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
+          >
+            Cancel
+          </button>
         </div>
       </div>
     </div>
-  @endif
+  </div>
+</div>
+
 <script client>
+import { useCustomers } from '../../../../functions/commerce/customers'
+
+interface Customer {
+  id: number
+  name: string
+  email: string
+  phone: string
+  total_spent?: number
+  last_order?: string
+  status: string
+  avatar?: string
+}
+
+// useCustomers wraps a useStorage ref + REST helpers. Keep it as the
+// single source of truth for the customers list — wrap reads in a
+// derived signal so template bindings re-render when the underlying
+// ref mutates (push / splice / replace).
+const { customers, createCustomer, fetchCustomers, deleteCustomer } = useCustomers()
+
+// Filtering + sorting + pagination state — local to this page.
+const statusFilter = state<'all' | 'Active' | 'Inactive'>('all')
+const sortBy = state<'name' | 'total_spent' | 'last_order'>('name')
+const sortOrder = state<'asc' | 'desc'>('asc')
+const searchQuery = state('')
+const currentPage = state(1)
+const itemsPerPage = state(5)
+
+// Modal state. Splitting newCustomer into discrete signals keeps each
+// <input x-model> binding a single signal — simpler than wiring nested
+// object updates through `update(o => ({ ...o, ... }))` per field.
+const showAddModal = state(false)
+const showDeleteModal = state(false)
+const customerToDelete = state<Customer | null>(null)
+const newCustomerName = state('')
+const newCustomerEmail = state('')
+const newCustomerPhone = state('')
+const newCustomerStatus = state<'Active' | 'Inactive'>('Active')
+
+const filteredCustomers = derived(() => {
+  const q = searchQuery().toLowerCase()
+  const filter = statusFilter()
+  const by = sortBy()
+  const dir = sortOrder()
+
+  return (customers.value as Customer[])
+    .filter((c) => {
+      const matchesSearch
+        = c.name.toLowerCase().includes(q)
+          || c.email.toLowerCase().includes(q)
+          || c.phone.toLowerCase().includes(q)
+      const matchesStatus = filter === 'all' || c.status === filter
+      return matchesSearch && matchesStatus
+    })
+    .sort((a, b) => {
+      let cmp = 0
+      if (by === 'name') {
+        cmp = a.name.localeCompare(b.name)
+      }
+      else if (by === 'total_spent') {
+        cmp = (a.total_spent || 0) - (b.total_spent || 0)
+      }
+      else if (by === 'last_order') {
+        const dateA = a.last_order ? new Date(a.last_order).getTime() : 0
+        const dateB = b.last_order ? new Date(b.last_order).getTime() : 0
+        cmp = dateA - dateB
+      }
+      return dir === 'asc' ? cmp : -cmp
+    })
+})
+
+const paginatedCustomers = derived(() => {
+  const start = (currentPage() - 1) * itemsPerPage()
+  const end = start + itemsPerPage()
+  return filteredCustomers().slice(start, end)
+})
+
+function handleSearch(query: string): void {
+  searchQuery.set(query)
+  currentPage.set(1)
+}
+
+function handlePrevPage(): void {
+  if (currentPage() > 1)
+    currentPage.update(p => p - 1)
+}
+
+function handleNextPage(): void {
+  const totalPages = Math.ceil(filteredCustomers().length / itemsPerPage())
+  if (currentPage() < totalPages)
+    currentPage.update(p => p + 1)
+}
+
+function handlePageChange(page: number): void {
+  currentPage.set(page)
+}
+
+function toggleSort(column: 'name' | 'total_spent' | 'last_order'): void {
+  if (sortBy() === column) {
+    sortOrder.update(d => d === 'asc' ? 'desc' : 'asc')
+  }
+  else {
+    sortBy.set(column)
+    sortOrder.set('asc')
+  }
+}
+
+// Customer actions — `navigate` is auto-imported.
+function viewCustomer(c: Customer): void {
+  navigate(`/dashboard/commerce/customers/${c.id}`)
+}
+
+function editCustomer(c: Customer): void {
+  navigate(`/dashboard/commerce/customers/${c.id}?edit=true`)
+}
+
+function removeCustomer(c: Customer): void {
+  customerToDelete.set(c)
+  showDeleteModal.set(true)
+}
+
+function openAddModal(): void {
+  newCustomerName.set('')
+  newCustomerEmail.set('')
+  newCustomerPhone.set('')
+  newCustomerStatus.set('Active')
+  showAddModal.set(true)
+}
+
+function closeAddModal(): void {
+  showAddModal.set(false)
+}
+
+function closeDeleteModal(): void {
+  showDeleteModal.set(false)
+  customerToDelete.set(null)
+}
+
+async function confirmDelete(): Promise<void> {
+  const target = customerToDelete()
+  if (!target)
+    return
+
+  const id = target.id
+  const list = customers.value as Customer[]
+  customers.value = list.filter(c => c.id !== id)
+
+  try {
+    await deleteCustomer(id)
+    closeDeleteModal()
+  }
+  catch (error) {
+    customers.value = [...customers.value, target]
+    // eslint-disable-next-line no-console
+    console.error('Failed to delete customer:', error)
+  }
+}
+
+async function addCustomer(): Promise<void> {
+  const list = customers.value as Customer[]
+  const id = list.length > 0 ? Math.max(...list.map(c => c.id || 0)) + 1 : 1
+  const today = new Date().toISOString().split('T')[0] || ''
+  const avatar = 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80'
+
+  const optimistic: Customer = {
+    id,
+    name: newCustomerName(),
+    email: newCustomerEmail(),
+    phone: newCustomerPhone(),
+    total_spent: 0,
+    last_order: today,
+    status: newCustomerStatus(),
+    avatar,
+  }
+  customers.value = [...list, optimistic]
+
+  try {
+    await createCustomer({
+      name: optimistic.name,
+      email: optimistic.email,
+      phone: optimistic.phone,
+      total_spent: 0,
+      last_order: today,
+      status: optimistic.status,
+      avatar,
+    })
+    closeAddModal()
+  }
+  catch (error) {
+    customers.value = (customers.value as Customer[]).filter(c => c.id !== id)
+    // eslint-disable-next-line no-console
+    console.error('Failed to create customer:', error)
+  }
+}
+
 onMount(async () => {
   await fetchCustomers()
 })
