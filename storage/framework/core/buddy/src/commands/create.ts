@@ -7,6 +7,7 @@ import { resolve } from '@stacksjs/path'
 import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { useOnline } from '@stacksjs/utils'
+import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 
 export function create(buddy: CLI): void {
   const descriptions = {
@@ -98,20 +99,27 @@ function onlineCheck() {
 
 async function download(name: string, path: string, options: CreateOptions) {
   log.info('Setting up your stack.')
-  const result = await runCommand(`bunx --bun giget stacks ${name}`, options)
+  const result = await runCommand(`bunx --bun @stacksjs/gitit stacks ${name}`, options)
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
   return result
 }
 
-async function ensureEnv(path: string, options: CreateOptions) {
+async function ensureEnv(path: string, _options: CreateOptions) {
   log.info('Ensuring your environment is ready...')
-  await runCommand('pantry --update ', { ...options, cwd: path })
+  // Bootstrap the Pantry CLI (idempotent) and install the new project's
+  // system-level dependencies declared in `config/deps.ts` — bun, sqlite,
+  // craft, etc. — so the subsequent `bun install` runs against the right
+  // toolchain.
+  await ensurePantryInstalled()
+  await ensurePantryDependencies(path)
   log.success('Environment is ready')
 }
 
 async function install(path: string, options: CreateOptions) {
   log.info('Installing & setting up Stacks')
+
+  log.info('Running bun install...')
   let result = await runCommand('bun install', { ...options, cwd: path })
 
   if (result?.isErr) {
@@ -119,6 +127,7 @@ async function install(path: string, options: CreateOptions) {
     process.exit(ExitCode.FatalError)
   }
 
+  log.info('Copying .env.example → .env')
   result = await runCommand('cp .env.example .env', { ...options, cwd: path })
 
   if (result?.isErr) {
@@ -126,11 +135,15 @@ async function install(path: string, options: CreateOptions) {
     process.exit(ExitCode.FatalError)
   }
 
-  await runAction(Action.KeyGenerate, { ...options, cwd: path })
+  log.info('Generating application key...')
+  const keyResult = await runAction(Action.KeyGenerate, { ...options, cwd: path })
+  if (keyResult.isErr) {
+    log.error(keyResult.error)
+    process.exit(ExitCode.FatalError)
+  }
 
-  // TODO: we should ask quite a few questions here, similar how we do in `buddy new my-project`, so we can generate a custom pantry.yaml file
-
-  result = await runCommand('git init', { ...options, cwd: path }) // do we need this? or does giget do this already?
+  log.info('Initializing git repository...')
+  result = await runCommand('git init', { ...options, cwd: path })
   if (result.isErr) {
     log.error(result.error)
     process.exit(ExitCode.FatalError)

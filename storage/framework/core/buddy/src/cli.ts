@@ -32,6 +32,11 @@ const skipAppKeyCheck = [
   'setup:ssl',
   'setup:oh-my-zsh',
   'deploy',
+  // `new` / `create` scaffold a brand-new project from any cwd, so the host
+  // project's APP_KEY check would either spuriously fail (no .env in cwd) or,
+  // worse, write a key into an unrelated directory.
+  'new',
+  'create',
 ].some(cmd => requestedCommand.startsWith(cmd)) || isHelpFlag || isHelpMode
 const needsFullSetup = !isVersionOnly
 
