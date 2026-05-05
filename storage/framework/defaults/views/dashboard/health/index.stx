@@ -4,214 +4,247 @@
 <script server>
 definePageMeta({
   middleware: ['auth'],
-  layout: 'default'
+  layout: 'default',
 })
 
+import PageHeader from '../../../components/Dashboard/UI/PageHeader.stx'
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import Badge from '../../../components/Dashboard/UI/Badge.stx'
-import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
 
-interface HealthMetric {
-  name: string
-  icon: string
-  status: 'success' | 'info' | 'warning' | 'danger'
-  description: string
-  metrics: { label: string; value: string }[]
+interface Metric {
+  label: string
+  value: string
 }
 
-let healthMetrics = [
+interface HealthCheck {
+  name: string
+  status: 'success' | 'info' | 'warning' | 'danger'
+  description: string
+  /** Inline SVG path data — `d=""` content for a 24x24 stroke icon. */
+  iconPath: string
+  metrics: Metric[]
+}
+
+// Placeholder data. Wire this to a real health endpoint once the
+// dashboard exposes one (e.g. `GET /api/dashboard/health`). The
+// `iconPath` strings are inline SVG `d` attributes — we render them
+// with a single shared <svg> wrapper so the icon system doesn't
+// depend on a CSS engine.
+const checks: HealthCheck[] = [
   {
     name: 'Uptime',
-    icon: 'i-hugeicons-flash',
     status: 'success',
-    description: 'Your site is up. We last checked less than a minute ago.',
+    description: 'Your site is up. Last checked less than a minute ago.',
+    iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
     metrics: [
-      { label: 'Past 7 Days', value: '100%' },
-      { label: 'Past 14 Days', value: '100%' },
-      { label: 'Past 30 Days', value: '100%' },
+      { label: 'Past 7 days', value: '100%' },
+      { label: 'Past 14 days', value: '100%' },
+      { label: 'Past 30 days', value: '100%' },
     ],
   },
   {
     name: 'Performance',
-    icon: 'i-hugeicons-rocket-01',
     status: 'success',
-    description: "Your site is fast. Last checked 3 minutes ago.",
+    description: 'Your site is fast. Last checked 3 minutes ago.',
+    iconPath: 'M13 10V3L4 14h7v7l9-11h-7z',
     metrics: [
-      { label: 'Response Time', value: '235ms' },
-      { label: 'Success Rate', value: '99.95%' },
+      { label: 'Response time', value: '235ms' },
+      { label: 'Success rate', value: '99.95%' },
     ],
   },
   {
-    name: 'Certificate Health',
-    icon: 'i-hugeicons-shield-01',
+    name: 'Certificate health',
     status: 'success',
-    description: 'Your certificate is healthy. We last checked 3 minutes ago.',
+    description: 'TLS certificate is healthy. Last checked 3 minutes ago.',
+    iconPath: 'M9 12l2 2 4-4M21 12c0 4.97-4.03 9-9 9s-9-4.03-9-9 4.03-9 9-9 9 4.03 9 9z',
     metrics: [
-      { label: 'Expires In', value: 'May 4, 2024 (14 days' },
-      { label: 'Last Renewal', value: 'Feb 4, 2024' }
+      { label: 'Expires in', value: '274 days' },
+      { label: 'Last renewal', value: '2 months ago' },
     ],
   },
   {
-    name: 'Broken Links',
-    icon: 'i-hugeicons-link-01',
+    name: 'Broken links',
     status: 'success',
-    description: 'Your site has no broken links.',
+    description: 'No broken links found across crawled pages.',
+    iconPath: 'M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1',
     metrics: [
-      { label: 'Broken Links', value: '0' },
-      { label: 'URLs Crawled', value: '583' },
+      { label: 'Broken links', value: '0' },
+      { label: 'URLs crawled', value: '583' },
     ],
   },
   {
-    name: 'Mixed Content',
-    icon: 'i-hugeicons-lock-01',
+    name: 'Mixed content',
     status: 'success',
-    description: 'We did not find mixed content. We last checked an hour ago.',
+    description: 'No mixed content found. Last checked an hour ago.',
+    iconPath: 'M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z',
     metrics: [
-      { label: 'Pieces of Mixed Content', value: '0' },
-      { label: 'URLs Crawled', value: '0' },
+      { label: 'Mixed content', value: '0' },
+      { label: 'URLs crawled', value: '583' },
     ],
   },
   {
-    name: 'Certificate Transparency',
-    icon: 'i-hugeicons-file-security',
+    name: 'Certificate transparency',
     status: 'info',
-    description: 'Your site is up. We last checked less than a minute ago.',
+    description: 'CT log entry verified. Last checked less than a minute ago.',
+    iconPath: 'M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z',
     metrics: [
-      { label: 'Last Check', value: '< 1 min ago' },
-      { label: 'Status', value: 'Verified' }
+      { label: 'Last check', value: '< 1 min ago' },
+      { label: 'Status', value: 'Verified' },
     ],
   },
   {
-    name: 'Application Health',
-    icon: 'i-hugeicons-checkmark-circle-02',
+    name: 'Application health',
     status: 'success',
-    description: 'Your application seems to be healthy. We last checked 10 minutes ago.',
+    description: 'All application checks passing. Last checked 10 minutes ago.',
+    iconPath: 'M5 13l4 4L19 7',
     metrics: [
-      { label: 'Total Health Checks', value: '2' },
-      { label: 'Failed Health Checks', value: '0' },
-      { label: 'Last Check', value: '10 min ago' },
+      { label: 'Total checks', value: '2' },
+      { label: 'Failed', value: '0' },
+      { label: 'Last check', value: '10 min ago' },
     ],
   },
   {
     name: 'DNS',
-    icon: 'i-hugeicons-globe-02',
     status: 'success',
-    description: 'DNS records found. We last checked an hour ago.',
+    description: 'DNS records resolved cleanly. Last checked an hour ago.',
+    iconPath: 'M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z',
     metrics: [
-      { label: 'DNS Records', value: '18' },
-      { label: 'URLs Crawled', value: '20' },
+      { label: 'Records', value: '18' },
+      { label: 'URLs crawled', value: '20' },
     ],
   },
 ]
 
-const getStatusVariant = (status) => {
-  const map = {
-    success: 'success',
-    info: 'primary',
-    warning: 'warning',
-    danger: 'danger',
-  }
-  return map[status] || 'default'
+const passingCount = checks.filter(c => c.status === 'success').length
+const totalCount = checks.length
+const overallStatus: 'success' | 'warning' | 'danger' =
+  checks.some(c => c.status === 'danger')
+    ? 'danger'
+    : checks.some(c => c.status === 'warning')
+      ? 'warning'
+      : 'success'
+
+const statusIconBg = {
+  success: 'bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400',
+  info: 'bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400',
+  warning: 'bg-orange-500/10 text-orange-600 dark:bg-orange-400/15 dark:text-orange-400',
+  danger: 'bg-red-500/10 text-red-600 dark:bg-red-400/15 dark:text-red-400',
 }
 
-const getStatusIconBg = (status) => {
-  const map = {
-    success: 'bg-green-500/15 text-green-600 dark:bg-green-400/20 dark:text-green-400',
-    info: 'bg-blue-500/15 text-blue-600 dark:bg-blue-400/20 dark:text-blue-400',
-    warning: 'bg-orange-500/15 text-orange-600 dark:bg-orange-400/20 dark:text-orange-400',
-    danger: 'bg-red-500/15 text-red-600 dark:bg-red-400/20 dark:text-red-400',
-  }
-  return map[status] || 'bg-neutral-500/15 text-neutral-600'
+const statusBadgeVariant = {
+  success: 'success',
+  info: 'primary',
+  warning: 'warning',
+  danger: 'danger',
+}
+
+// Pluralize the metrics-grid columns based on count. Done here in JS
+// because STX templates don't support the Vue-style array `:class`
+// binding (`:class="[a, cond ? b : c]"`); a precomputed string is
+// simpler than threading conditional classes through the template.
+function metricsGridCols(count: number) {
+  if (count <= 1) return 'grid-cols-1'
+  if (count === 2) return 'grid-cols-2'
+  return 'grid-cols-3'
 }
 </script>
 
-@title('Dashboard - Health')
-<div>
-  <!-- Overview Stats -->
-  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-6">
-    <StatsCard
-      title="Uptime"
-      value="100%"
-      :trend="0"
-      trend-label="Last 30 days"
-      icon="i-hugeicons-flash"
-      icon-bg="primary"
-    />
-    <StatsCard
-      title="Health Checks"
-      value="2/2"
-      subtitle="All checks passing"
-      icon="i-hugeicons-checkmark-circle-02"
-      icon-bg="success"
-    />
-    <StatsCard
-      title="URLs Monitored"
-      value="583"
-      subtitle="Across all pages"
-      icon="i-hugeicons-link-01"
-      icon-bg="primary"
-    />
-    <StatsCard
-      title="DNS Records"
-      value="18"
-      subtitle="Verified records"
-      icon="i-hugeicons-globe-02"
-      icon-bg="primary"
-    />
+<div class="px-6 pt-6 pb-12 mx-auto max-w-6xl space-y-6">
+
+  <PageHeader title="Health" description="System uptime, performance, and certificate checks">
+    <template #actions>
+      <Badge :variant="statusBadgeVariant[overallStatus]" size="md">
+        {{ overallStatus === 'success' ? 'All systems normal' : overallStatus === 'warning' ? 'Degraded' : 'Critical' }}
+      </Badge>
+    </template>
+  </PageHeader>
+
+  <!-- Overview stats -->
+  <div class="grid gap-4 grid-cols-2 lg:grid-cols-4">
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Uptime</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">100%</p>
+        </div>
+      </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Health checks</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ passingCount }}/{{ totalCount }}</p>
+        </div>
+      </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-purple-500/10 text-purple-600 dark:bg-purple-400/15 dark:text-purple-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">URLs monitored</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">583</p>
+        </div>
+      </div>
+    </Card>
+    <Card variant="default" padding="md">
+      <div class="flex gap-3 items-center">
+        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-cyan-500/10 text-cyan-600 dark:bg-cyan-400/15 dark:text-cyan-400 rounded-lg">
+          <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+          </svg>
+        </div>
+        <div class="min-w-0">
+          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">DNS records</p>
+          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">18</p>
+        </div>
+      </div>
+    </Card>
   </div>
 
-  <!-- Detailed Health Cards -->
-  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
-    @foreach(metric in healthMetrics)
-      <Card
-        variant="default"
-        padding="md"
-        hoverable
-      >
+  <!-- Detailed checks -->
+  <div class="grid gap-4 grid-cols-1 lg:grid-cols-2">
+    @foreach(checks as check)
+      <Card variant="default" padding="md" hoverable>
         <div class="flex gap-4 items-start">
-          <!-- Icon -->
-          <div :class="[getStatusIconBg(metric.status), 'p-2.5 rounded-lg flex-shrink-0']">
-            <div :class="[metric.icon, 'h-5 w-5']" />
+          <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 rounded-lg {{ statusIconBg[check.status] }}">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="{{ check.iconPath }}"/>
+            </svg>
           </div>
 
-          <!-- Content -->
           <div class="flex-1 min-w-0">
             <div class="flex gap-2 items-center justify-between">
-              <h3 class="font-medium text-[14px] text-neutral-900 truncate dark:text-white">
-                {{ metric.name }}
-              </h3>
-              <Badge :variant="getStatusVariant(metric.status)" size="sm">
-                {{ metric.status }}
-              </Badge>
+              <h3 class="font-medium text-[14px] text-neutral-900 truncate dark:text-white">{{ check.name }}</h3>
+              <Badge :variant="statusBadgeVariant[check.status]" size="sm">{{ check.status }}</Badge>
             </div>
-            <p class="mt-1 line-clamp-1 text-[12px] text-neutral-500 dark:text-neutral-400">
-              {{ metric.description }}
+            <p class="mt-1 line-clamp-2 text-[12px] text-neutral-500 dark:text-neutral-400">
+              {{ check.description }}
             </p>
-          </div>
-        </div>
 
-        <!-- Metrics Grid -->
-        @if(metric.metrics)
-          <div class="mt-4">
-            <dl
-              class="grid gap-3"
-              class="'grid-cols-1': 'grid-cols-2': 'grid-cols-3': { {{ } }} === === === 1 2, 3, metric.metrics.length metric.metrics.length metric.metrics.length"
-            >
-              @foreach(m in metric.metrics)
-                <div
-                  class="overflow-hidden px-3 py-2.5 bg-black/[0.03] dark:bg-white/[0.05] rounded-lg"
-                >
-                  <dt class="font-medium text-[11px] text-neutral-500 truncate dark:text-neutral-400">
-                    {{ m.label }}
-                  </dt>
-                  <dd class="mt-0.5 font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">
-                    {{ m.value }}
-                  </dd>
+            <dl class="grid gap-2 mt-4 {{ metricsGridCols(check.metrics.length) }}">
+              @foreach(check.metrics as m)
+                <div class="overflow-hidden px-3 py-2 bg-black/[0.03] dark:bg-white/[0.05] rounded-lg">
+                  <dt class="font-medium text-[11px] text-neutral-500 truncate dark:text-neutral-400">{{ m.label }}</dt>
+                  <dd class="mt-0.5 font-semibold text-[14px] text-neutral-900 tracking-tight dark:text-white">{{ m.value }}</dd>
                 </div>
               @endforeach
             </dl>
           </div>
-        @endif
+        </div>
       </Card>
     @endforeach
   </div>
