@@ -1,0 +1,50 @@
+<script>
+interface CheckoutStep {
+  key: string
+  label: string
+  href?: string
+}
+
+interface CheckoutStepsProps {
+  current: string
+  steps?: CheckoutStep[]
+}
+
+const {
+  current,
+  steps = [
+    { key: 'contact', label: 'Contact', href: '/checkout/contact' },
+    { key: 'shipping', label: 'Shipping', href: '/checkout/shipping' },
+    { key: 'payment', label: 'Payment', href: '/checkout/payment' },
+  ],
+} = defineProps<CheckoutStepsProps>()
+
+const currentIndex = steps.findIndex(s => s.key === current)
+</script>
+
+<nav aria-label="Checkout progress" class="mb-10">
+  <ol class="flex items-center gap-3 text-sm">
+    @foreach (steps as step, i)
+      <li class="flex-1 flex items-center gap-3 min-w-0">
+        <span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold flex-shrink-0
+          {{ i < currentIndex ? 'bg-stone-900 text-stone-50' : '' }}
+          {{ i === currentIndex ? 'bg-stone-900 text-stone-50 ring-4 ring-stone-200' : '' }}
+          {{ i > currentIndex ? 'bg-stone-200 text-stone-500' : '' }}">
+          @if (i < currentIndex)
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="3" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+          @else
+            {{ i + 1 }}
+          @endif
+        </span>
+        @if (step.href && i <= currentIndex)
+          <a href="{{ step.href }}" class="text-stone-900 font-semibold hover:underline truncate">{{ step.label }}</a>
+        @else
+          <span class="{{ i === currentIndex ? 'text-stone-900 font-semibold' : 'text-stone-500' }} truncate">{{ step.label }}</span>
+        @endif
+        @if (i < steps.length - 1)
+          <span class="hidden md:block flex-1 h-px bg-stone-200"></span>
+        @endif
+      </li>
+    @endforeach
+  </ol>
+</nav>

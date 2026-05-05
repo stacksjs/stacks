@@ -1,0 +1,98 @@
+@extends('layouts/storefront')
+
+@section('title', 'Checkout — Payment')
+
+<script server>
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+const token = (typeof requestContext !== 'undefined') ? requestContext.cookie('stacks_cart') : null
+let items = []
+let cart = null
+
+if (token) {
+  cart = db.query(`SELECT * FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
+  if (cart) {
+    items = db.query(`
+      SELECT product_name, quantity, total_price
+      FROM cart_items WHERE cart_id = ?1 ORDER BY id ASC
+    `).all(cart.id).map((row) => ({
+      name: row.product_name,
+      qty: Number(row.quantity),
+      lineTotal: Number(row.total_price),
+    }))
+  }
+}
+
+const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
+const shipping = subtotal === 0 ? 0 : (subtotal >= 40 ? 0 : 5)
+const total = subtotal + shipping
+
+const ready = !!cart?.email && !!cart?.shipping_name && !!cart?.shipping_address
+</script>
+
+@section('content')
+  <div class="mx-auto max-w-5xl px-6 py-12">
+    <CheckoutSteps current="payment" />
+
+    @if (items.length === 0 || !ready)
+      <div class="rounded-3xl border border-dashed border-stone-300 p-12 text-center">
+        <p class="text-stone-500">Finish the earlier steps first.</p>
+        <a href="/checkout/contact" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Go to contact</a>
+      </div>
+    @else
+      <div class="grid md:grid-cols-[1fr_360px] gap-10 items-start">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight text-stone-900">Payment</h1>
+          <p class="mt-2 text-stone-600">No card is charged — this is a demo store. Swap in Stripe at <code class="text-xs bg-stone-100 px-1.5 py-0.5 rounded">Actions/Storefront/PlaceOrderAction.ts</code>.</p>
+
+          <!-- Mock card form. The fields aren't actually submitted —
+               the real submit goes to /api/checkout/place which uses
+               the cart row state set in earlier steps. We render the
+               fields anyway so the experience matches a real store. -->
+          <form action="/api/checkout/place" method="POST" class="mt-8 space-y-5">
+            <div>
+              <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">Card number</label>
+              <input type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" autocomplete="cc-number" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+            </div>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">Expiry</label>
+                <input type="text" inputmode="numeric" placeholder="MM / YY" autocomplete="cc-exp" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+              </div>
+              <div>
+                <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">CVC</label>
+                <input type="text" inputmode="numeric" placeholder="123" autocomplete="cc-csc" class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900">
+              </div>
+            </div>
+
+            <div class="rounded-xl bg-stone-50 border border-stone-200 p-4 text-sm">
+              <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold">Ship to</p>
+              <p class="mt-1 text-stone-900">{{ cart.shipping_name }}</p>
+              <p class="text-stone-700 whitespace-pre-line">{{ cart.shipping_address }}, {{ cart.shipping_city }}, {{ cart.shipping_state }} {{ cart.shipping_zip }}</p>
+              <p class="text-stone-500 mt-2 text-xs">{{ cart.email }}</p>
+            </div>
+
+            <div class="flex items-center justify-between gap-4 pt-2">
+              <a href="/checkout/shipping" class="text-sm text-stone-500 hover:text-stone-900">← Back</a>
+              <button type="submit" class="rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors">
+                Place order — ${{ total.toFixed(2) }}
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <OrderSummary
+          items="{{ items }}"
+          subtotal="{{ subtotal }}"
+          shipping="{{ shipping }}"
+          total="{{ total }}"
+          showItems="{{ true }}"
+        />
+      </div>
+    @endif
+  </div>
+@endsection

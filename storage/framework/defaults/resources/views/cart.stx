@@ -1,0 +1,101 @@
+@extends('layouts/storefront')
+
+@section('title', 'Your cart')
+
+<script server>
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+const token = (typeof requestContext !== 'undefined') ? requestContext.cookie('stacks_cart') : null
+let items = []
+let cart = null
+
+if (token) {
+  cart = db.query(`SELECT * FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
+  if (cart) {
+    items = db.query(`
+      SELECT ci.id, ci.quantity, ci.unit_price, ci.total_price, ci.product_name,
+             ci.product_image, ci.product_sku, p.weight_grams
+      FROM cart_items ci
+      LEFT JOIN products p ON p.slug = ci.product_sku
+      WHERE ci.cart_id = ?1
+      ORDER BY ci.id ASC
+    `).all(cart.id).map((row) => ({
+      id: row.id,
+      slug: row.product_sku,
+      name: row.product_name,
+      weight: row.weight_grams ? `${row.weight_grams}g` : '',
+      qty: Number(row.quantity),
+      price: Number(row.unit_price),
+      lineTotal: Number(row.total_price),
+      image: row.product_image,
+    }))
+  }
+}
+
+// Mirror the rule used by PlaceOrderAction so the price the shopper
+// sees in their cart matches the total they're actually charged. Both
+// sides read STOREFRONT_FREE_SHIPPING_THRESHOLD / STOREFRONT_FLAT_SHIPPING
+// from the environment with the same defaults — keep them in sync via
+// app/Actions/Storefront/_shipping.ts when changing.
+const FREE_SHIPPING_THRESHOLD = Number(process.env.STOREFRONT_FREE_SHIPPING_THRESHOLD ?? 40) || 40
+const FLAT_SHIPPING = Number(process.env.STOREFRONT_FLAT_SHIPPING ?? 5) || 5
+const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0)
+const shipping = subtotal <= 0 ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING)
+const total = subtotal + shipping
+</script>
+
+@section('content')
+  <div class="mx-auto max-w-5xl px-6 py-12">
+
+    <h1 class="text-4xl font-bold tracking-tight text-stone-900">Your cart</h1>
+    <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }} ready to ship.</p>
+
+    @if (items.length === 0)
+      <div class="mt-12 rounded-3xl border border-dashed border-stone-300 p-12 text-center">
+        <p class="text-stone-500">Your cart is empty.</p>
+        <a href="/products" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Browse the shop</a>
+      </div>
+    @else
+      <div class="mt-10 grid lg:grid-cols-[2fr_1fr] gap-12 items-start">
+
+        <div class="space-y-4">
+          @foreach (items as item)
+            <div class="flex gap-4 rounded-2xl bg-stone-50 border border-stone-200 p-4">
+              <a href="/products/{{ item.slug }}" class="block w-24 h-24 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0">
+                <img src="{{ item.image }}" alt="{{ item.name }}" class="h-full w-full object-cover">
+              </a>
+              <div class="flex-1 flex flex-col">
+                <a href="/products/{{ item.slug }}" class="font-semibold text-stone-900 hover:underline">{{ item.name }}</a>
+                <p class="text-xs text-stone-500 mt-0.5">{{ item.weight }}</p>
+                <div class="mt-auto flex items-end justify-between">
+                  <form action="/api/cart/update" method="POST" class="flex items-center gap-2 text-sm">
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <input type="number" name="quantity" min="0" max="99" value="{{ item.qty }}" class="w-16 rounded-full border border-stone-300 px-3 py-1.5 text-center focus:outline-none focus:border-stone-900">
+                    <button type="submit" class="text-xs font-medium text-stone-500 hover:text-stone-900 underline-offset-2 hover:underline">Update</button>
+                  </form>
+                  <p class="font-semibold text-stone-900">${{ item.lineTotal.toFixed(2) }}</p>
+                </div>
+              </div>
+            </div>
+          @endforeach
+        </div>
+
+        <OrderSummary
+          subtotal="{{ subtotal }}"
+          shipping="{{ shipping }}"
+          total="{{ total }}"
+          ctaHref="/checkout/contact"
+          ctaLabel="Checkout"
+          secondaryHref="/products"
+          secondaryLabel="Keep shopping"
+          sticky="{{ true }}"
+        />
+
+      </div>
+    @endif
+  </div>
+@endsection

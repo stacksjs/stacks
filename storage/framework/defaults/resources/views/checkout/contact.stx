@@ -1,0 +1,83 @@
+@extends('layouts/storefront')
+
+@section('title', 'Checkout — Contact')
+
+<script server>
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+const token = (typeof requestContext !== 'undefined') ? requestContext.cookie('stacks_cart') : null
+let items = []
+let cart = null
+
+if (token) {
+  cart = db.query(`SELECT * FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(token)
+  if (cart) {
+    items = db.query(`
+      SELECT product_name, quantity, total_price
+      FROM cart_items WHERE cart_id = ?1 ORDER BY id ASC
+    `).all(cart.id).map((row) => ({
+      name: row.product_name,
+      qty: Number(row.quantity),
+      lineTotal: Number(row.total_price),
+    }))
+  }
+}
+
+const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
+const shipping = subtotal === 0 ? 0 : (subtotal >= 40 ? 0 : 5)
+const total = subtotal + shipping
+
+const prefilledEmail = cart?.email || ''
+</script>
+
+@section('content')
+  <div class="mx-auto max-w-5xl px-6 py-12">
+    <CheckoutSteps current="contact" />
+
+    @if (items.length === 0)
+      <div class="rounded-3xl border border-dashed border-stone-300 p-12 text-center">
+        <p class="text-stone-500">Your cart is empty.</p>
+        <a href="/products" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Browse the shop</a>
+      </div>
+    @else
+      <div class="grid md:grid-cols-[1fr_360px] gap-10 items-start">
+        <div>
+          <h1 class="text-3xl font-bold tracking-tight text-stone-900">Contact</h1>
+          <p class="mt-2 text-stone-600">We'll send your receipt and tracking here.</p>
+
+          <form action="/api/checkout/contact" method="POST" class="mt-8 space-y-5">
+            <div>
+              <label class="text-xs font-semibold uppercase tracking-wider text-stone-500">Email</label>
+              <input
+                type="email"
+                name="email"
+                required
+                autocomplete="email"
+                value="{{ prefilledEmail }}"
+                class="mt-1 w-full rounded-2xl border border-stone-300 px-4 py-3 text-sm focus:outline-none focus:border-stone-900"
+              >
+            </div>
+            <div class="flex items-center justify-between gap-4">
+              <a href="/cart" class="text-sm text-stone-500 hover:text-stone-900">← Back to cart</a>
+              <button type="submit" class="rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors">
+                Continue to shipping
+              </button>
+            </div>
+          </form>
+        </div>
+
+        <OrderSummary
+          items="{{ items }}"
+          subtotal="{{ subtotal }}"
+          shipping="{{ shipping }}"
+          total="{{ total }}"
+          showItems="{{ true }}"
+        />
+      </div>
+    @endif
+  </div>
+@endsection

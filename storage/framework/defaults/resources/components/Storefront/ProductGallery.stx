@@ -1,0 +1,58 @@
+<script>
+interface ProductGalleryProps {
+  images: string[]
+  alt?: string
+}
+
+const {
+  images = [],
+  alt = '',
+} = defineProps<ProductGalleryProps>()
+
+const safeImages = images.length > 0 ? images : ['']
+</script>
+
+<div class="space-y-4">
+  <!-- Hero image -->
+  <div class="aspect-square rounded-3xl overflow-hidden bg-stone-100">
+    <img
+      src="{{ safeImages[0] }}"
+      alt="{{ alt }}"
+      data-stx-gallery-main
+      class="h-full w-full object-cover"
+    >
+  </div>
+
+  @if (safeImages.length > 1)
+    <!-- Thumbnails. Clicking swaps the hero src — vanilla DOM is fine
+         here because this is a self-contained image switcher with no
+         server round-trip. -->
+    <div class="grid grid-cols-4 gap-3">
+      @foreach (safeImages as img, i)
+        <button
+          type="button"
+          data-stx-gallery-thumb="{{ img }}"
+          class="aspect-square rounded-xl overflow-hidden bg-stone-100 border-2 {{ i === 0 ? 'border-stone-900' : 'border-transparent' }} hover:border-stone-900 transition-colors"
+          aria-label="View image {{ i + 1 }}"
+        >
+          <img src="{{ img }}" alt="" class="h-full w-full object-cover">
+        </button>
+      @endforeach
+    </div>
+  @endif
+</div>
+
+<script data-stx-scoped>
+const main = document.querySelector('[data-stx-gallery-main]')
+const thumbs = document.querySelectorAll('[data-stx-gallery-thumb]')
+thumbs.forEach((thumb) => {
+  thumb.addEventListener('click', () => {
+    const src = thumb.getAttribute('data-stx-gallery-thumb')
+    if (src && main) main.setAttribute('src', src)
+    thumbs.forEach(t => t.classList.remove('border-stone-900'))
+    thumbs.forEach(t => t.classList.add('border-transparent'))
+    thumb.classList.remove('border-transparent')
+    thumb.classList.add('border-stone-900')
+  })
+})
+</script>

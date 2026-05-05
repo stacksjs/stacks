@@ -1,0 +1,50 @@
+<script>
+interface QuantitySelectorProps {
+  name?: string
+  value?: number
+  min?: number
+  max?: number
+  className?: string
+}
+
+const {
+  name = 'quantity',
+  value = 1,
+  min = 1,
+  max = 99,
+  className = '',
+} = defineProps<QuantitySelectorProps>()
+</script>
+
+<div class="flex items-center rounded-full border border-stone-300 overflow-hidden {{ className }}" data-stx-qty>
+  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 transition-colors" data-stx-qty-dec aria-label="Decrease quantity">−</button>
+  <input
+    name="{{ name }}"
+    value="{{ value }}"
+    type="number"
+    min="{{ min }}"
+    max="{{ max }}"
+    class="w-12 text-center bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+  >
+  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 transition-colors" data-stx-qty-inc aria-label="Increase quantity">+</button>
+</div>
+
+<script data-stx-scoped>
+document.querySelectorAll('[data-stx-qty]').forEach((wrap) => {
+  const input = wrap.querySelector('input[type="number"]')
+  const dec = wrap.querySelector('[data-stx-qty-dec]')
+  const inc = wrap.querySelector('[data-stx-qty-inc]')
+  const min = Number(input?.getAttribute('min') ?? 1)
+  const max = Number(input?.getAttribute('max') ?? 99)
+  dec?.addEventListener('click', () => {
+    if (!input) return
+    const next = Math.max(min, Number(input.value || 0) - 1)
+    input.value = String(next)
+  })
+  inc?.addEventListener('click', () => {
+    if (!input) return
+    const next = Math.min(max, Number(input.value || 0) + 1)
+    input.value = String(next)
+  })
+})
+</script>

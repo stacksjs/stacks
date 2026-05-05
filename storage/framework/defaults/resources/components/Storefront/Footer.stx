@@ -1,0 +1,73 @@
+<script>
+interface FooterColumn {
+  title: string
+  links: { href: string, label: string }[]
+}
+
+interface FooterProps {
+  brandName?: string
+  brandMark?: string
+  tagline?: string
+  columns?: FooterColumn[]
+  byline?: string
+  techByline?: string
+}
+
+const {
+  brandName = 'Stacks Store',
+  brandMark = 's.',
+  tagline = 'One ingredient. Nothing else. Real food for real animals.',
+  columns = [
+    {
+      title: 'Shop',
+      links: [
+        { href: '/products', label: 'All treats' },
+        { href: '/cart', label: 'Cart' },
+      ],
+    },
+    {
+      title: 'Brand',
+      links: [
+        { href: '/about', label: 'Our standard' },
+        { href: '/about#sourcing', label: 'Sourcing' },
+        { href: '/about#testing', label: 'Testing' },
+      ],
+    },
+    {
+      title: 'Help',
+      links: [
+        { href: '/contact', label: 'Contact' },
+        { href: '/faq', label: 'FAQ' },
+        { href: '/shipping', label: 'Shipping & returns' },
+      ],
+    },
+  ],
+  byline = `© ${new Date().getFullYear()} Stacks Store. All rights reserved.`,
+  techByline = 'Built on Stacks · Bun · TypeScript · STX',
+} = defineProps<FooterProps>()
+</script>
+
+<footer class="mt-24 border-t border-stone-200 bg-stone-100">
+  <div class="mx-auto max-w-6xl px-6 py-12 grid grid-cols-2 md:grid-cols-4 gap-8 text-sm">
+    <div class="col-span-2 md:col-span-1">
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-stone-50 font-bold text-sm">{{ brandMark }}</span>
+      <p class="mt-3 text-stone-600 leading-relaxed">{{ tagline }}</p>
+    </div>
+    @foreach (columns as col)
+      <div>
+        <p class="font-semibold mb-3 text-stone-900">{{ col.title }}</p>
+        <ul class="space-y-2 text-stone-600">
+          @foreach (col.links as link)
+            <li><a href="{{ link.href }}" class="hover:text-stone-900">{{ link.label }}</a></li>
+          @endforeach
+        </ul>
+      </div>
+    @endforeach
+  </div>
+  <div class="border-t border-stone-200">
+    <div class="mx-auto max-w-6xl px-6 py-6 flex flex-col md:flex-row items-center justify-between text-xs text-stone-500">
+      <p>{{ byline }}</p>
+      <p class="mt-2 md:mt-0">{{ techByline }}</p>
+    </div>
+  </div>
+</footer>

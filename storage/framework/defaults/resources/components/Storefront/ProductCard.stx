@@ -1,0 +1,48 @@
+<script>
+interface ProductCardProps {
+  slug: string
+  name: string
+  price: number
+  image: string
+  ingredient?: string
+  weight?: string
+  badge?: string
+  speciesLabel?: string
+}
+
+const {
+  slug,
+  name,
+  price,
+  image,
+  ingredient = '',
+  weight = '',
+  badge = '',
+  speciesLabel = '',
+} = defineProps<ProductCardProps>()
+</script>
+
+<a href="/products/{{ slug }}" class="group block bg-stone-50 rounded-2xl overflow-hidden border border-stone-200 hover:border-stone-900 transition-colors">
+  <div class="relative aspect-square overflow-hidden bg-stone-200">
+    <img src="{{ image }}" alt="{{ name }}" class="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500">
+    @if (badge)
+      <span class="absolute top-3 left-3 rounded-full bg-stone-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-stone-900">{{ badge }}</span>
+    @endif
+  </div>
+  <div class="p-4">
+    <div class="flex items-center justify-between">
+      <span class="text-[10px] font-semibold uppercase tracking-wider text-stone-500">{{ speciesLabel }}</span>
+      @if (weight)
+        <span class="text-xs text-stone-500">{{ weight }}</span>
+      @endif
+    </div>
+    <h3 class="mt-2 font-semibold text-stone-900 leading-snug">{{ name }}</h3>
+    @if (ingredient)
+      <p class="mt-1 text-xs text-stone-500">{{ ingredient }}</p>
+    @endif
+    <div class="mt-3 flex items-center justify-between">
+      <p class="font-bold text-stone-900">${{ price.toFixed(2) }}</p>
+      <span class="text-xs font-medium text-stone-500 group-hover:text-stone-900">View →</span>
+    </div>
+  </div>
+</a>

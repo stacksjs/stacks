@@ -1,0 +1,135 @@
+<script>
+/**
+ * Slide-in cart drawer.
+ *
+ * Server-rendered closed by default. The storefront's add-to-cart button
+ * triggers an XHR POST to `/api/cart/add`; on a 200 the drawer's contents
+ * are refreshed (via `/api/cart`) and the drawer slides in. We use small
+ * vanilla DOM for the open/close because stx signals can't reach across
+ * the layout slot in this case — the data-stx-* hooks below are the
+ * agreed-upon interface other components use to drive it.
+ */
+</script>
+
+<div data-stx-cart-drawer class="fixed inset-0 z-50 pointer-events-none">
+  <!-- Backdrop -->
+  <div data-stx-cart-backdrop class="absolute inset-0 bg-stone-900/40 opacity-0 transition-opacity duration-200"></div>
+
+  <!-- Panel -->
+  <aside data-stx-cart-panel class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-stone-50 shadow-2xl translate-x-full transition-transform duration-300 ease-out flex flex-col">
+    <header class="flex items-center justify-between p-6 border-b border-stone-200">
+      <h2 class="font-bold text-lg text-stone-900">Your bowl</h2>
+      <button type="button" data-stx-cart-close class="text-stone-500 hover:text-stone-900" aria-label="Close cart">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
+      </button>
+    </header>
+
+    <div data-stx-cart-body class="flex-1 overflow-y-auto p-6 space-y-4">
+      <p class="text-sm text-stone-500 text-center py-12" data-stx-cart-empty>Your bowl is empty.</p>
+      <ul data-stx-cart-list class="hidden space-y-4"></ul>
+    </div>
+
+    <footer data-stx-cart-footer class="hidden border-t border-stone-200 p-6 space-y-4">
+      <div class="flex justify-between text-sm"><span class="text-stone-600">Subtotal</span><span class="font-bold text-stone-900" data-stx-cart-subtotal>$0.00</span></div>
+      <a href="/cart" class="block w-full rounded-full border border-stone-300 px-6 py-3 text-center text-sm font-semibold text-stone-900 hover:border-stone-900 transition-colors">View cart</a>
+      <a href="/checkout/contact" class="block w-full rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-center text-sm font-semibold hover:bg-stone-800 transition-colors">Checkout</a>
+    </footer>
+  </aside>
+</div>
+
+<script data-stx-scoped>
+;(() => {
+  const root = document.querySelector('[data-stx-cart-drawer]')
+  if (!root) return
+  const backdrop = root.querySelector('[data-stx-cart-backdrop]')
+  const panel = root.querySelector('[data-stx-cart-panel]')
+  const close = root.querySelector('[data-stx-cart-close]')
+  const list = root.querySelector('[data-stx-cart-list]')
+  const empty = root.querySelector('[data-stx-cart-empty]')
+  const footer = root.querySelector('[data-stx-cart-footer]')
+  const subtotalEl = root.querySelector('[data-stx-cart-subtotal]')
+
+  function open() {
+    root.style.pointerEvents = 'auto'
+    backdrop.style.opacity = '1'
+    panel.style.transform = 'translateX(0)'
+  }
+  function shut() {
+    root.style.pointerEvents = 'none'
+    backdrop.style.opacity = '0'
+    panel.style.transform = 'translateX(100%)'
+  }
+
+  backdrop?.addEventListener('click', shut)
+  close?.addEventListener('click', shut)
+
+  function render(items, subtotal) {
+    if (!list || !empty || !footer) return
+    if (!items || items.length === 0) {
+      list.classList.add('hidden')
+      empty.classList.remove('hidden')
+      footer.classList.add('hidden')
+      return
+    }
+    empty.classList.add('hidden')
+    list.classList.remove('hidden')
+    footer.classList.remove('hidden')
+    list.innerHTML = items.map((it) => `
+      <li class="flex gap-3 items-start">
+        <a href="/products/${it.slug}" class="block w-16 h-16 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0">
+          <img src="${it.image || ''}" alt="${it.name}" class="h-full w-full object-cover">
+        </a>
+        <div class="flex-1 min-w-0">
+          <p class="font-semibold text-sm text-stone-900 truncate">${it.name}</p>
+          <p class="text-xs text-stone-500 mt-0.5">Qty ${it.qty} · $${(it.price).toFixed(2)}</p>
+        </div>
+        <p class="font-semibold text-sm text-stone-900">$${(it.lineTotal).toFixed(2)}</p>
+      </li>
+    `).join('')
+    if (subtotalEl) subtotalEl.textContent = `$${Number(subtotal || 0).toFixed(2)}`
+  }
+
+  async function refresh() {
+    try {
+      const res = await fetch('/api/cart', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+      if (!res.ok) return
+      const data = await res.json()
+      render(data.items || [], data.subtotal || 0)
+      // Bump the header cart count too — the badge re-uses this number.
+      const badge = document.querySelector('[data-stx-cart-count]')
+      if (badge) badge.textContent = String((data.items || []).reduce((s, i) => s + i.qty, 0))
+    } catch { /* leave existing render in place */ }
+  }
+
+  // Public hooks for other components to call.
+  window.stxCart = {
+    open: () => { open(); refresh() },
+    shut,
+    refresh,
+  }
+
+  // Wire up any [data-stx-add-to-cart] buttons on the page. They submit
+  // the host <form> via XHR so we can pop the drawer instead of doing
+  // a full-page redirect.
+  document.querySelectorAll('[data-stx-add-to-cart]').forEach((btn) => {
+    btn.addEventListener('click', async (e) => {
+      const form = btn.closest('form')
+      if (!form) return
+      e.preventDefault()
+      const fd = new FormData(form)
+      try {
+        const res = await fetch(form.action || '/api/cart/add', {
+          method: form.method || 'POST',
+          body: fd,
+          credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+        })
+        if (res.ok) window.stxCart.open()
+        else form.submit() // fall back to plain post on error
+      } catch {
+        form.submit()
+      }
+    })
+  })
+})()
+</script>

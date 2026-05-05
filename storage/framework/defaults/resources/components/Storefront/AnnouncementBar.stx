@@ -1,0 +1,17 @@
+<script>
+interface AnnouncementBarProps {
+  message?: string
+  className?: string
+}
+
+const {
+  message = 'Free shipping on orders over $40 · Vet-formulated · Made in the USA',
+  className = '',
+} = defineProps<AnnouncementBarProps>()
+</script>
+
+<div class="bg-stone-900 text-stone-100 text-xs {{ className }}">
+  <div class="mx-auto max-w-6xl px-6 py-2 text-center tracking-wide">
+    {{ message }}
+  </div>
+</div>

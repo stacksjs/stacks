@@ -1,0 +1,102 @@
+@extends('layouts/storefront')
+
+@section('title', 'Order confirmed')
+
+<script server>
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
+const db = new Database(dbPath, { readonly: true })
+
+const orderId = Number((typeof id !== 'undefined' && id) || 0)
+
+const order = orderId
+  ? db.query(`
+      SELECT o.*, c.name AS customer_name, c.email AS customer_email
+      FROM orders o
+      LEFT JOIN customers c ON c.id = o.customer_id
+      WHERE o.id = ?1
+    `).get(orderId)
+  : null
+
+const items = order
+  ? db.query(`
+      SELECT oi.quantity, oi.price, p.name, p.image_url, p.slug, p.weight_grams
+      FROM order_items oi
+      LEFT JOIN products p ON p.id = oi.product_id
+      WHERE oi.order_id = ?1
+      ORDER BY oi.id ASC
+    `).all(order.id).map((row) => ({
+      name: row.name,
+      slug: row.slug,
+      image: row.image_url,
+      weight: row.weight_grams ? `${row.weight_grams}g` : '',
+      qty: Number(row.quantity),
+      price: Number(row.price),
+      lineTotal: Number(row.quantity) * Number(row.price),
+    }))
+  : []
+
+const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
+const shipping = order ? Number(order.delivery_fee || 0) : 0
+const total = order ? Number(order.total_amount || 0) : 0
+</script>
+
+@section('content')
+  <div class="mx-auto max-w-3xl px-6 py-16">
+
+    @if (!order)
+      <div class="text-center py-16">
+        <h1 class="text-3xl font-bold tracking-tight text-stone-900">Order not found</h1>
+        <p class="mt-3 text-stone-600">We couldn't find that order. Try the shop instead.</p>
+        <a href="/products" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Back to the shop</a>
+      </div>
+    @else
+      <div class="text-center">
+        <div class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
+        </div>
+        <p class="mt-5 text-xs uppercase tracking-wider text-stone-500 font-medium">Order #{{ order.id }}</p>
+        <h1 class="mt-2 text-4xl font-bold tracking-tight text-stone-900">Order confirmed.</h1>
+        <p class="mt-3 text-stone-600">Thanks, {{ order.customer_name }}. We sent a receipt to {{ order.customer_email }}.</p>
+      </div>
+
+      <div class="mt-10 rounded-3xl border border-stone-200 p-6 md:p-8">
+        <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold">Items</p>
+        <ul class="mt-4 divide-y divide-stone-200">
+          @foreach (items as item)
+            <li class="py-4 flex gap-4 items-center">
+              <div class="w-16 h-16 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0">
+                <img src="{{ item.image }}" alt="{{ item.name }}" class="h-full w-full object-cover">
+              </div>
+              <div class="flex-1">
+                <p class="font-semibold text-stone-900">{{ item.name }}</p>
+                <p class="text-xs text-stone-500">{{ item.weight }} · qty {{ item.qty }}</p>
+              </div>
+              <p class="font-semibold text-stone-900">${{ item.lineTotal.toFixed(2) }}</p>
+            </li>
+          @endforeach
+        </ul>
+
+        <hr class="my-6 border-stone-200">
+
+        <dl class="space-y-2 text-sm">
+          <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">${{ subtotal.toFixed(2) }}</dd></div>
+          <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}` }}</dd></div>
+          <div class="flex justify-between text-base pt-2 border-t border-stone-200"><dt class="font-semibold text-stone-900">Total</dt><dd class="font-bold text-stone-900">${{ total.toFixed(2) }}</dd></div>
+        </dl>
+
+        <div class="mt-6 rounded-xl bg-stone-100 p-4 text-sm">
+          <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold">Ship to</p>
+          <p class="mt-1 text-stone-900 whitespace-pre-line">{{ order.delivery_address }}</p>
+        </div>
+      </div>
+
+      <div class="mt-8 text-center">
+        <a href="/products" class="inline-flex rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-stone-900 hover:border-stone-900">Keep shopping</a>
+      </div>
+    @endif
+
+  </div>
+@endsection

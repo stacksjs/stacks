@@ -1,0 +1,67 @@
+<script server>
+/**
+ * Default storefront layout.
+ *
+ * Pages do `@extends('layouts/storefront')` and the framework wires in
+ * the announcement bar, sticky header (with live cart-count badge),
+ * footer, and slide-in cart drawer. Branding can be overridden by the
+ * page via section helpers — see the @section('header_brand') /
+ * @section('footer_columns') hooks below — or by shadowing this layout
+ * at `resources/views/layouts/storefront.stx` in the project.
+ *
+ * The cart count is read from the storefront's session cookie so the
+ * badge is correct on first paint, before any client-side JS runs.
+ */
+
+const Database = require('bun:sqlite').Database
+const path = require('path')
+
+const dbPath = path.resolve(process.cwd(), process.env.DB_DATABASE_PATH || 'database/stacks.sqlite')
+
+let cartCount = 0
+try {
+  const sessionToken = (typeof requestContext !== 'undefined') ? requestContext.cookie('stacks_cart') : null
+  if (sessionToken) {
+    const db = new Database(dbPath, { readonly: true })
+    const cart = db.query(`SELECT total_items FROM carts WHERE session_token = ?1 AND status = 'active' LIMIT 1`).get(sessionToken)
+    if (cart && cart.total_items)
+      cartCount = Number(cart.total_items) || 0
+    db.close()
+  }
+}
+catch { /* schema not migrated yet, or db missing — render an empty header */ }
+</script>
+
+<!DOCTYPE html>
+<html lang="en" class="bg-stone-50 text-stone-900">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>@yield('title', 'Stacks Store')</title>
+  <meta name="description" content="@yield('description', 'A storefront powered by Stacks.')">
+</head>
+<body class="bg-stone-50 text-stone-900 font-serif antialiased">
+
+  <AnnouncementBar />
+
+  @hasSection('header')
+    @yield('header')
+  @else
+    <Header cartCount="{{ cartCount }}" />
+  @endif
+
+  <main>
+    @yield('content')
+  </main>
+
+  @hasSection('footer')
+    @yield('footer')
+  @else
+    <Footer />
+  @endif
+
+  <CartDrawer />
+
+  @stack('scripts')
+</body>
+</html>
