@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface SelectProps {
   value?: string
   options?: any[]

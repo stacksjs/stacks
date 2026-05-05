@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface AvatarProps {
   src?: string
   alt?: string

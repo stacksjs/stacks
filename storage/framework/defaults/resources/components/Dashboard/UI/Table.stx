@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface TableProps {
   columns?: any[]
   data?: any[]

@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface InputProps {
   value?: string
   type?: 'text' | 'email' | 'password' | 'number' | 'tel' | 'url' | 'search'

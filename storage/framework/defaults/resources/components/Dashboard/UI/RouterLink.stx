@@ -1,0 +1,31 @@
+<script server>
+/**
+ * RouterLink — bridge component for templates that use Vue Router-style
+ * `<RouterLink to="…">` syntax. The dashboard is server-rendered MPA, so
+ * there's no actual client router; this just maps the `to` prop to a
+ * standard `href` and forwards the rest. Keeps existing pages from
+ * breaking with `[Error loading component: 'router-link']` while we
+ * migrate them off the syntax.
+ *
+ * `replace` is accepted for parity with Vue's RouterLink; it has no
+ * effect under MPA navigation but makes drop-in usage error-free.
+ */
+interface RouterLinkProps {
+  to?: string
+  href?: string
+  replace?: boolean
+  target?: string
+  rel?: string
+}
+
+const { to = '', href = '', target = '', rel = '' } = defineProps<RouterLinkProps>()
+const finalHref = href || to
+const finalRel = rel || (target === '_blank' ? 'noopener' : '')
+</script>
+<a
+  href="{{ finalHref }}"
+  @if(target) target="{{ target }}" @endif
+  @if(finalRel) rel="{{ finalRel }}" @endif
+>
+  <slot />
+</a>

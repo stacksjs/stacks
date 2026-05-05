@@ -13,6 +13,7 @@ definePageMeta({
  */
 import Card from '../../../components/Dashboard/UI/Card.stx'
 import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
+import RouterLink from '../../../components/Dashboard/UI/RouterLink.stx'
 
 let analyticsCards = [
   { name: 'Web Analytics', description: 'Page views, sessions, and user behavior', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },

@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface TabsProps {
   tabs?: any[]
   activeTab?: string

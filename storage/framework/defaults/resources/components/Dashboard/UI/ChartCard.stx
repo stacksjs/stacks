@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface ChartCardProps {
   title?: string
   subtitle?: string

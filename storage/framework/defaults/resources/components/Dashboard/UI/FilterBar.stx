@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface FilterBarProps {
   searchPlaceholder?: string
   searchValue?: string

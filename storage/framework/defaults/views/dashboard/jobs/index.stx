@@ -12,6 +12,7 @@ import Badge from '../../../components/Dashboard/UI/Badge.stx'
 import Button from '../../../components/Dashboard/UI/Button.stx'
 import StatsCard from '../../../components/Dashboard/UI/StatsCard.stx'
 import Select from '../../../components/Dashboard/UI/Select.stx'
+import RouterLink from '../../../components/Dashboard/UI/RouterLink.stx'
 
 interface Job {
   id: string

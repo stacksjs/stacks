@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface ConfirmDialogProps {
   isOpen?: boolean
   title?: string

@@ -1,4 +1,11 @@
-<script>
+<script server>
+// `<script server>` (not bare `<script>`) so the function declarations and
+// const bindings below — `getBreadcrumb`, `isActiveRoute`, `getUser`,
+// `getNotificationCount`, `defaultUser` — get extracted into this
+// component's render context. Without `server` STX treats the script as
+// client-only and the template's `@foreach(getBreadcrumb(currentPath || '/')
+// as crumb)` evaluates against an empty context, producing
+// `[Foreach Error]: getBreadcrumb is not iterable` on every navigation.
 interface NavbarModernProps {
   currentPath?: string
   user?: Record<string, any>

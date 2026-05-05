@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface TextareaProps {
   value?: string
   label?: string

@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface QuickLinksProps {
   title?: string
   links?: any[]

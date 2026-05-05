@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface WindowControlsProps {
   variant?: 'macos' | 'windows'
   size?: 'sm' | 'md' | 'lg'

@@ -1,4 +1,4 @@
-<script>
+<script server>
 interface ActivityTableProps {
   activities?: any[]
   title?: string
