@@ -3,8 +3,392 @@
 @section('content')
 <script server>
 definePageMeta({
-  middleware: ['auth']
+  middleware: ['auth'],
 })
+</script>
+
+@title('Dashboard - Marketing Waitlist')
+<main>
+  <div class="px-6 py-6 sm:px-6 lg:px-8">
+    <div class="mx-auto max-w-7xl">
+      <div class="sm:flex sm:items-center sm:justify-between">
+        <div>
+          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Waitlist</h1>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Manage your product waitlist and notify customers when products become available</p>
+        </div>
+        <div class="flex mt-4 space-x-3 sm:mt-0">
+          <button type="button" @click="openAddEntryModal()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
+            <div class="mr-1 h-5 w-5 i-hugeicons-plus-sign"></div>
+            Add to waitlist
+          </button>
+          <button type="button" @click="exportWaitlist()" class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
+            <div class="mr-1 h-5 w-5 i-hugeicons-download-01"></div>
+            Export
+          </button>
+        </div>
+      </div>
+
+      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Waitlist</dt>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalEntries() }}</dd>
+          <dd class="flex items-center mt-2 text-blue-600 text-sm dark:text-blue-400">
+            <div class="mr-1 h-4 w-4 i-hugeicons-hourglass"></div>
+            <span>{{ waitingEntries() }} waiting</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Notified</dt>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ notifiedEntries() }}</dd>
+          <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
+            <div class="mr-1 h-4 w-4 i-hugeicons-notification-square"></div>
+            <span>Customers notified</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Purchased</dt>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ purchasedEntries() }}</dd>
+          <dd class="flex items-center mt-2 text-purple-600 text-sm dark:text-purple-400">
+            <div class="mr-1 h-4 w-4 i-hugeicons-shopping-cart-02"></div>
+            <span>Completed purchases</span>
+          </dd>
+        </div>
+
+        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Conversion Rate</dt>
+          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ conversionRate() }}%</dd>
+          <dd class="flex items-center mt-2 text-sm text-yellow-600 dark:text-yellow-400">
+            <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
+            <span>Purchase rate</span>
+          </dd>
+        </div>
+      </dl>
+
+      <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
+        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="p-6">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Waitlist Entries</h3>
+            <div class="mt-2 h-80">
+              <canvas id="waitlist_trend_chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="p-6">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Order Quantities</h3>
+            <div class="mt-2 h-80">
+              <canvas id="waitlist_product_chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="p-6">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Source Distribution</h3>
+            <div class="mt-2 h-80">
+              <canvas id="waitlist_source_chart"></canvas>
+            </div>
+          </div>
+        </div>
+
+        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+          <div class="p-6">
+            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Current Status</h3>
+            <div class="mt-2 h-80">
+              <canvas id="waitlist_status_chart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
+        <div class="relative max-w-sm">
+          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+          </div>
+          <input x-model="searchQuery" type="text" placeholder="Search waitlist..." class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset" />
+        </div>
+
+        <div class="flex flex-col gap-4 sm:flex-row">
+          <select x-model="partySizeFilter" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
+            <option value="all">All Party Sizes</option>
+            <option value="1-2">1-2 People</option>
+            <option value="3-4">3-4 People</option>
+            <option value="5-6">5-6 People</option>
+            <option value="7+">7+ People</option>
+          </select>
+
+          <select x-model="statusFilter" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
+            <option value="all">All Statuses</option>
+            <option value="Waiting">Waiting</option>
+            <option value="Notified">Notified</option>
+            <option value="Purchased">Purchased</option>
+            <option value="Cancelled">Cancelled</option>
+          </select>
+
+          <select x-model="sourceFilter" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
+            <option value="all">All Sources</option>
+            <option value="Website">Website</option>
+            <option value="Mobile App">Mobile App</option>
+            <option value="In-Store">In-Store</option>
+            <option value="Social Media">Social Media</option>
+            <option value="Email Campaign">Email Campaign</option>
+            <option value="Referral">Referral</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
+        <span class="mr-2">Sort by:</span>
+        <button @click="toggleSort('name')" class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300 {{ sortBy() === 'name' ? 'font-semibold text-blue-600 dark:text-blue-400' : '' }}">
+          Name
+          <span :show="sortBy() === 'name'" class="ml-1">
+            <div :show="sortOrder() === 'asc'" class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+            <div :show="sortOrder() === 'desc'" class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+          </span>
+        </button>
+        <button @click="toggleSort('dateAdded')" class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300 {{ sortBy() === 'dateAdded' ? 'font-semibold text-blue-600 dark:text-blue-400' : '' }}">
+          Date Added
+          <span :show="sortBy() === 'dateAdded'" class="ml-1">
+            <div :show="sortOrder() === 'asc'" class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+            <div :show="sortOrder() === 'desc'" class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+          </span>
+        </button>
+        <button @click="toggleSort('quantity')" class="flex items-center hover:text-gray-700 dark:hover:text-gray-300 {{ sortBy() === 'quantity' ? 'font-semibold text-blue-600 dark:text-blue-400' : '' }}">
+          Quantity
+          <span :show="sortBy() === 'quantity'" class="ml-1">
+            <div :show="sortOrder() === 'asc'" class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
+            <div :show="sortOrder() === 'desc'" class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
+          </span>
+        </button>
+      </div>
+
+      <div :show="hasSelection" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center">
+            <span class="font-medium text-blue-700 text-sm dark:text-blue-300">{{ selectedCount() }} parties selected</span>
+          </div>
+          <div class="flex space-x-3">
+            <button @click="openNotificationModal()" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
+              <div class="mr-1 h-4 w-4 i-hugeicons-notification-square"></div>
+              Send Updates
+            </button>
+            <button @click="bulkChangeStatus('Notified')" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-green-600 hover:bg-green-500 rounded-md shadow-sm">
+              <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
+              Mark as Notified
+            </button>
+            <button @click="bulkChangeStatus('Purchased')" class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-purple-600 hover:bg-purple-500 rounded-md shadow-sm">
+              <div class="mr-1 h-4 w-4 i-hugeicons-shopping-cart-02"></div>
+              Mark as Purchased
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+        <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-900">
+            <tr>
+              <th scope="col" class="relative pl-4 pr-3 py-3.5 sm:pl-6">
+                <input type="checkbox" @change="toggleSelectAll()" {{ selectAll() ? 'checked' : '' }} class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
+              </th>
+              <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">Customer Details</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Quantity</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Date Added</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Source</th>
+              <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6"><span class="sr-only">Actions</span></th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+            <tr :show="hasNoEntries" class="text-center">
+              <td colspan="7" class="py-10 text-gray-500 dark:text-neutral-400">No entries in the waitlist.</td>
+            </tr>
+            @foreach(paginatedEntries() as entry)
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                  <input type="checkbox" @change="toggleEntrySelection({{ entry.id }})" {{ isSelected(entry.id) ? 'checked' : '' }} class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
+                </td>
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                  <div class="flex items-center">
+                    <div>
+                      <div class="font-medium text-gray-900 dark:text-white">{{ entry.name }} ({{ entry.quantity }} {{ entry.quantity === 1 ? 'unit' : 'units' }})</div>
+                      <div class="text-gray-500 dark:text-neutral-400">{{ entry.phone || entry.email }}</div>
+                    </div>
+                  </div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <div class="font-medium text-gray-900 dark:text-white">{{ entry.quantity }}</div>
+                </td>
+                <td class="px-3 py-4 text-sm whitespace-nowrap">
+                  <span class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full {{ getStatusClass(entry.status) }}">{{ entry.status }}</span>
+                </td>
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(entry.dateAdded) }}</td>
+                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ entry.source }}</td>
+                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
+                  <div class="flex justify-end space-x-2">
+                    <button @click="openEditEntryModal({{ entry.id }})" class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors">
+                      <div class="h-5 w-5 i-hugeicons-edit-01"></div>
+                      <span class="sr-only">Edit</span>
+                    </button>
+                    <button :show="{{ entry.status === 'Waiting' ? 'true' : 'false' }}" @click="markAsNotified({{ entry.id }})" class="text-gray-400 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors">
+                      <div class="h-5 w-5 i-hugeicons-notification-square"></div>
+                      <span class="sr-only">Notify</span>
+                    </button>
+                    <button :show="{{ entry.status === 'Notified' ? 'true' : 'false' }}" @click="markAsPurchased({{ entry.id }})" class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 transition-colors">
+                      <div class="h-5 w-5 i-hugeicons-shopping-cart-02"></div>
+                      <span class="sr-only">Purchase</span>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            @endforeach
+          </tbody>
+        </table>
+      </div>
+
+      <div class="flex items-center justify-between mt-5">
+        <div class="flex sm:hidden flex-1 justify-between">
+          <button @click="prevPage()" class="{{ currentPage() === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white">Previous</button>
+          <button @click="nextPage()" class="{{ currentPage() === totalPages() ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white">Next</button>
+        </div>
+        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
+          <div>
+            <p class="text-gray-700 text-sm dark:text-neutral-300">
+              Showing <span class="font-medium">{{ rangeStart() }}</span> to <span class="font-medium">{{ rangeEnd() }}</span> of <span class="font-medium">{{ totalFiltered() }}</span> results
+            </p>
+          </div>
+          <div>
+            <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
+              <button @click="goToPage(currentPage() - 1)" class="{{ currentPage() === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600">
+                <span class="sr-only">Previous</span>
+                <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
+              </button>
+              @foreach(pageNumbers() as page)
+                <button @click="goToPage({{ page }})" class="{{ page === currentPage() ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600' : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700' }} focus:z-20">{{ page }}</button>
+              @endforeach
+              <button @click="goToPage(currentPage() + 1)" class="{{ currentPage() === totalPages() ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600">
+                <span class="sr-only">Next</span>
+                <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
+              </button>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Add/Edit Entry Modal -->
+  <div :show="showEntryModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeEntryModal()"></div>
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div>
+          <div class="mt-3 sm:mt-5 text-center">
+            <h3 class="font-semibold leading-6 text-gray-900 text-lg dark:text-white">{{ entryModalTitle() }}</h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">{{ entryModalDescription() }}</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 sm:mt-6">
+          <form @submit.prevent="saveEntry()">
+            <div class="grid gap-x-4 gap-y-6 grid-cols-1 sm:grid-cols-6">
+              <div class="sm:col-span-3">
+                <label for="name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Name</label>
+                <div class="mt-1">
+                  <input id="name" x-model="entryName" type="text" required class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
+                </div>
+              </div>
+
+              <div class="sm:col-span-3">
+                <label for="email" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Email</label>
+                <div class="mt-1">
+                  <input id="email" x-model="entryEmail" type="email" required class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
+                </div>
+              </div>
+
+              <div class="sm:col-span-3">
+                <label for="phone" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Phone (optional)</label>
+                <div class="mt-1">
+                  <input id="phone" x-model="entryPhone" type="tel" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
+                </div>
+              </div>
+
+              <div class="sm:col-span-3">
+                <label for="quantity" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Party Size</label>
+                <div class="mt-1">
+                  <input id="quantity" x-model.number="entryQuantity" type="number" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
+                </div>
+              </div>
+
+              <div class="sm:col-span-3">
+                <label for="notificationPreference" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Notification Preference</label>
+                <div class="mt-1">
+                  <select id="notificationPreference" x-model="entryNotificationPreference" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm">
+                    <option value="sms">sms</option>
+                    <option value="email">email</option>
+                    <option value="both">both</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="sm:col-span-3">
+                <label for="source" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Source</label>
+                <div class="mt-1">
+                  <input id="source" x-model="entrySource" type="text" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
+                </div>
+              </div>
+
+              <div class="sm:col-span-6">
+                <label for="notes" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Notes (optional)</label>
+                <div class="mt-1">
+                  <textarea id="notes" x-model="entryNotes" rows="3" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"></textarea>
+                </div>
+              </div>
+            </div>
+
+            <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
+              <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">{{ entryModalSubmitLabel() }}</button>
+              <button type="button" @click="closeEntryModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Notification Modal -->
+  <div :show="showNotificationModal" class="fixed inset-0 overflow-y-auto z-10">
+    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
+      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeNotificationModal()"></div>
+      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
+        <div>
+          <div class="mt-3 sm:mt-5 text-center">
+            <h3 class="font-semibold leading-6 text-gray-900 text-lg dark:text-white">Send Notification</h3>
+            <div class="mt-2">
+              <p class="text-gray-500 text-sm dark:text-neutral-400">Subject:</p>
+              <input x-model="notificationSubject" type="text" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm" />
+              <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Message:</p>
+              <textarea x-model="notificationMessage" rows="3" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-5 sm:mt-6">
+          <button @click="sendNotifications()" class="inline-flex justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Send Notification</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<script client>
+import { useChart } from '../../composables'
 
 interface WaitlistEntry {
   id: number
@@ -23,1541 +407,551 @@ interface WaitlistEntry {
   source: string
 }
 
-interface Product {
-  id: number
-  name: string
-  slug: string
-  count: number
-}
+interface ChartLike { destroy: () => void, update: () => void, data: { labels: string[], datasets: Array<{ data: number[] }> } }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
-const statuses = ['all', 'Waiting', 'Notified', 'Purchased', 'Cancelled']
 const sources = ['all', 'Website', 'Mobile App', 'In-Store', 'Social Media', 'Email Campaign', 'Referral']
-const notificationPreferences = ['sms', 'email', 'both']
-const tablePreferences = []
+const statuses = ['all', 'Waiting', 'Notified', 'Purchased', 'Cancelled']
 
-function calculateEstimatedWait(partySize) {
-  const baseWait = 15
-  const queueFactor = waitlistEntries.filter(e => e.status === 'Waiting').length * 5
-  const partySizeFactor = Math.ceil(partySize / 2) * 5
-  return baseWait + queueFactor + partySizeFactor
-}
+const waitlistEntries = state<WaitlistEntry[]>([
+  { id: 1, name: 'John Smith', email: 'john.smith@example.com', phone: '+1 (555) 123-4567', productId: 1, quantity: 4, notificationPreference: 'sms', notes: 'Interested in bulk purchase', status: 'Waiting', dateAdded: '2024-01-10', notified: false, priority: 2, lastNotified: null, source: 'Website' },
+  { id: 2, name: 'Emily Johnson', email: 'emily.j@example.com', phone: '+1 (555) 987-6543', productId: 2, quantity: 2, notificationPreference: 'email', notes: null, status: 'Waiting', dateAdded: '2024-01-12', notified: false, priority: 1, lastNotified: null, source: 'Website' },
+  { id: 3, name: 'Michael Brown', email: 'michael.b@example.com', phone: null, productId: 3, quantity: 3, notificationPreference: 'both', notes: 'VIP customer, notify immediately when available', status: 'Purchased', dateAdded: '2024-01-15', notified: true, priority: 3, lastNotified: '2024-01-15T12:30:00', source: 'Mobile App' },
+  { id: 4, name: 'Sarah Wilson', email: 'sarah.w@example.com', phone: '+1 (555) 456-7890', productId: 4, quantity: 2, notificationPreference: 'sms', notes: 'Wants to be notified when back in stock', status: 'Waiting', dateAdded: '2024-01-18', notified: false, priority: 2, lastNotified: null, source: 'Website' },
+  { id: 5, name: 'David Lee', email: 'david.l@example.com', phone: '+1 (555) 234-5678', productId: 5, quantity: 3, notificationPreference: 'email', notes: 'Requested notification via SMS', status: 'Purchased', dateAdded: '2024-01-20', notified: true, priority: 2, lastNotified: '2024-01-20T12:30:00', source: 'Mobile App' },
+  { id: 6, name: 'Jennifer Martinez', email: 'jennifer.m@example.com', phone: null, productId: 6, quantity: 2, notificationPreference: 'both', notes: null, status: 'Waiting', dateAdded: '2024-01-22', notified: false, priority: 1, lastNotified: null, source: 'Website' },
+  { id: 7, name: 'Robert Taylor', email: 'robert.t@example.com', phone: '+1 (555) 876-5432', productId: 7, quantity: 4, notificationPreference: 'sms', notes: 'Wants to purchase multiple units when available', status: 'Waiting', dateAdded: '2024-01-25', notified: false, priority: 3, lastNotified: null, source: 'Website' },
+  { id: 8, name: 'Lisa Anderson', email: 'lisa.a@example.com', phone: '+1 (555) 345-6789', productId: 8, quantity: 2, notificationPreference: 'email', notes: null, status: 'Purchased', dateAdded: '2024-01-28', notified: true, priority: 2, lastNotified: '2024-01-28T12:30:00', source: 'Website' },
+])
 
-function updateQueuePositions() {
-  return
-}
-
-async function sendSMSNotification(entry, message) {
-  // TODO: implement SMS notification via API
-}
-
-async function notifyCustomer(entry, message) {
-  if (entry.notificationPreference === 'sms' || entry.notificationPreference === 'both') {
-    await sendSMSNotification(entry, message)
-  }
-  if (entry.notificationPreference === 'email' || entry.notificationPreference === 'both') {
-    // TODO: implement email notification via API
-  }
-  entry.lastNotified = new Date().toISOString()
-  entry.notified = true
-}
-
-function waitTimeStats() {
-  const waitingEntries = waitlistEntries.filter(e => e.status === 'Waiting')
-  return {
-    totalWaiting: waitingEntries.length,
-    averageQuantity: Math.round(waitingEntries.reduce((acc, curr) => acc + curr.quantity, 0) / (waitingEntries.length || 1))
-  }
-}
-
-let waitlistEntries = [
-  {
-    id: 1,
-    name: 'John Smith',
-    email: 'john.smith@example.com',
-    phone: '+1 (555) 123-4567',
-    productId: 1,
-    quantity: 4,
-    notificationPreference: 'sms',
-    notes: 'Interested in bulk purchase',
-    status: 'Waiting',
-    dateAdded: '2024-01-10',
-    notified: false,
-    priority: 2,
-    lastNotified: null,
-    source: 'Website'
-  },
-  {
-    id: 2,
-    name: 'Emily Johnson',
-    email: 'emily.j@example.com',
-    phone: '+1 (555) 987-6543',
-    productId: 2,
-    quantity: 2,
-    notificationPreference: 'email',
-    notes: null,
-    status: 'Waiting',
-    dateAdded: '2024-01-12',
-    notified: false,
-    priority: 1,
-    lastNotified: null,
-    source: 'Website'
-  },
-  {
-    id: 3,
-    name: 'Michael Brown',
-    email: 'michael.b@example.com',
-    phone: null,
-    productId: 3,
-    quantity: 3,
-    notificationPreference: 'both',
-    notes: 'VIP customer, notify immediately when available',
-    status: 'Purchased',
-    dateAdded: '2024-01-15',
-    notified: true,
-    priority: 3,
-    lastNotified: '2024-01-15T12:30:00',
-    source: 'Mobile App'
-  },
-  {
-    id: 4,
-    name: 'Sarah Wilson',
-    email: 'sarah.w@example.com',
-    phone: '+1 (555) 456-7890',
-    productId: 4,
-    quantity: 2,
-    notificationPreference: 'sms',
-    notes: 'Wants to be notified when back in stock',
-    status: 'Waiting',
-    dateAdded: '2024-01-18',
-    notified: false,
-    priority: 2,
-    lastNotified: null,
-    source: 'Website'
-  },
-  {
-    id: 5,
-    name: 'David Lee',
-    email: 'david.l@example.com',
-    phone: '+1 (555) 234-5678',
-    productId: 5,
-    quantity: 3,
-    notificationPreference: 'email',
-    notes: 'Requested notification via SMS',
-    status: 'Purchased',
-    dateAdded: '2024-01-20',
-    notified: true,
-    priority: 2,
-    lastNotified: '2024-01-20T12:30:00',
-    source: 'Mobile App'
-  },
-  {
-    id: 6,
-    name: 'Jennifer Martinez',
-    email: 'jennifer.m@example.com',
-    phone: null,
-    productId: 6,
-    quantity: 2,
-    notificationPreference: 'both',
-    notes: null,
-    status: 'Waiting',
-    dateAdded: '2024-01-22',
-    notified: false,
-    priority: 1,
-    lastNotified: null,
-    source: 'Website'
-  },
-  {
-    id: 7,
-    name: 'Robert Taylor',
-    email: 'robert.t@example.com',
-    phone: '+1 (555) 876-5432',
-    productId: 7,
-    quantity: 4,
-    notificationPreference: 'sms',
-    notes: 'Wants to purchase multiple units when available',
-    status: 'Waiting',
-    dateAdded: '2024-01-25',
-    notified: false,
-    priority: 3,
-    lastNotified: null,
-    source: 'Website'
-  },
-  {
-    id: 8,
-    name: 'Lisa Anderson',
-    email: 'lisa.a@example.com',
-    phone: '+1 (555) 345-6789',
-    productId: 8,
-    quantity: 2,
-    notificationPreference: 'email',
-    notes: null,
-    status: 'Purchased',
-    dateAdded: '2024-01-28',
-    notified: true,
-    priority: 2,
-    lastNotified: '2024-01-28T12:30:00',
-    source: 'Website'
-  }
-]
-
-function products() {
-  const productMap = new Map()
-
-  waitlistEntries.forEach(entry => {
-    const count = productMap.get(entry.name) || 0
-    productMap.set(entry.name, count + 1)
-  }
-
-  return Array.from(productMap.entries()).map(([name, count], index) => ({
-    id: index + 1,
-    name,
-    slug: name.toLowerCase().replace(/\s+/g, '-'),
-    count
-  }))
-}
-
-let searchQuery = ''
-let statusFilter = 'all'
-let partySizeFilter = 'all'
-let tablePreferenceFilter = 'all'
-
-function filteredEntries() {
-  return waitlistEntries.filter(entry => {
-    const matchesSearch = searchQuery === '' ||
-      entry.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (entry.phone && entry.phone.includes(searchQuery)) ||
-      entry.email.toLowerCase().includes(searchQuery.toLowerCase())
-
-    let matchesQuantity = true
-    if (partySizeFilter !== 'all') {
-      const [minStr, maxStr] = partySizeFilter.split('-')
-      if (!minStr) return false
-      const min = parseInt(minStr)
-      if (maxStr) {
-        const max = parseInt(maxStr)
-        matchesQuantity = entry.quantity >= min && entry.quantity <= max
-      } else {
-        matchesQuantity = entry.quantity >= min
-      )}
-    )}
-
-    const matchesStatus = statusFilter === 'all' || entry.status === statusFilter
-    const matchesSource = sourceFilter === 'all' || entry.source === sourceFilter
-
-    return matchesSearch && matchesQuantity && matchesStatus && matchesSource
-  )}
-)}
-
-let sortBy = 'dateAdded'
-let sortOrder = 'asc'
-
-function toggleSort(field) {
-  if (sortBy === field) {
-    sortOrder = sortOrder === 'asc' ? 'desc' : 'asc'
-  } else {
-    sortBy = field
-    sortOrder = 'asc'
-  }
-}
-
-function sortedEntries() {
-  return [...filteredEntries].sort((a, b) => {
-    if (sortBy === 'name') {
-      return sortOrder === 'asc'
-        ? a.name.localeCompare(b.name)
-        : b.name.localeCompare(a.name)
-    )}
-    if (sortBy === 'dateAdded') {
-      return sortOrder === 'asc'
-        ? new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
-        : new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
-    )}
-    if (sortBy === 'quantity') {
-      return sortOrder === 'asc'
-        ? a.quantity - b.quantity
-        : b.quantity - a.quantity
-    )}
-    return 0
-  )}
-)}
+const searchQuery = state('')
+const statusFilter = state('all')
+const partySizeFilter = state('all')
+const sourceFilter = state('all')
+const sortBy = state('dateAdded')
+const sortOrder = state<'asc' | 'desc'>('asc')
 
 const itemsPerPage = 10
-let currentPage = 1
+const currentPage = state(1)
 
-function paginatedEntries() {
-  const start = (currentPage - 1) * itemsPerPage
-  const end = start + itemsPerPage
-  return sortedEntries.slice(start, end)
-}
+const showEntryModal = state(false)
+const isEditMode = state(false)
+const editingEntryId = state<number | null>(null)
 
-function totalPages() { return Math.ceil(sortedEntries.length / itemsPerPage) }
+const entryName = state('')
+const entryEmail = state('')
+const entryPhone = state('')
+const entryQuantity = state(2)
+const entryNotificationPreference = state<'sms' | 'email' | 'both'>('sms')
+const entrySource = state('Website')
+const entryNotes = state('')
+const entryPriority = state(1)
 
-function nextPage() {
-  if (currentPage < totalPages) {
-    currentPage++
-  }
-}
+const showNotificationModal = state(false)
+const notificationSubject = state('Product Now Available')
+const notificationMessage = state('Good news! The product you were waiting for is now available for purchase.')
 
-function prevPage() {
-  if (currentPage > 1) {
-    currentPage--
-  }
-}
+const selectedEntries = state<number[]>([])
+const selectAll = state(false)
 
-function goToPage(page) {
-  if (page >= 1 && page <= totalPages) {
-    currentPage = page
-  }
-}
+const trendData = state<Array<{ date: string, count: number }>>(generateTrendData())
 
-const getStatusClass = (status) => {
+let charts: ChartLike[] = []
+
+const totalEntries = derived(() => waitlistEntries().length)
+const waitingEntries = derived(() => waitlistEntries().filter(e => e.status === 'Waiting').length)
+const notifiedEntries = derived(() => waitlistEntries().filter(e => e.status === 'Notified').length)
+const purchasedEntries = derived(() => waitlistEntries().filter(e => e.status === 'Purchased').length)
+const conversionRate = derived(() => {
+  const total = totalEntries()
+  return total > 0 ? Math.round((purchasedEntries() / total) * 100) : 0
+})
+
+const filteredEntries = derived(() => {
+  const list = waitlistEntries()
+  const q = searchQuery().toLowerCase()
+  const sf = statusFilter()
+  const pf = partySizeFilter()
+  const srcF = sourceFilter()
+  return list.filter((entry) => {
+    const matchesSearch = q === ''
+      || entry.name.toLowerCase().includes(q)
+      || (entry.phone !== null && entry.phone.includes(searchQuery()))
+      || entry.email.toLowerCase().includes(q)
+
+    let matchesQuantity = true
+    if (pf !== 'all') {
+      const [minStr, maxStr] = pf.split('-')
+      if (!minStr) {
+        matchesQuantity = false
+      }
+      else {
+        const min = Number.parseInt(minStr, 10)
+        if (maxStr) {
+          const max = Number.parseInt(maxStr, 10)
+          matchesQuantity = entry.quantity >= min && entry.quantity <= max
+        }
+        else {
+          matchesQuantity = entry.quantity >= min
+        }
+      }
+    }
+
+    const matchesStatus = sf === 'all' || entry.status === sf
+    const matchesSource = srcF === 'all' || entry.source === srcF
+    return matchesSearch && matchesQuantity && matchesStatus && matchesSource
+  })
+})
+
+const sortedEntries = derived(() => {
+  const list = [...filteredEntries()]
+  const sb = sortBy()
+  const so = sortOrder()
+  return list.sort((a, b) => {
+    if (sb === 'name')
+      return so === 'asc' ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
+    if (sb === 'dateAdded')
+      return so === 'asc'
+        ? new Date(a.dateAdded).getTime() - new Date(b.dateAdded).getTime()
+        : new Date(b.dateAdded).getTime() - new Date(a.dateAdded).getTime()
+    if (sb === 'quantity')
+      return so === 'asc' ? a.quantity - b.quantity : b.quantity - a.quantity
+    return 0
+  })
+})
+
+const paginatedEntries = derived(() => {
+  const start = (currentPage() - 1) * itemsPerPage
+  return sortedEntries().slice(start, start + itemsPerPage)
+})
+
+const totalPages = derived(() => Math.max(1, Math.ceil(sortedEntries().length / itemsPerPage)))
+const pageNumbers = derived(() => Array.from({ length: totalPages() }, (_, i) => i + 1))
+const totalFiltered = derived(() => filteredEntries().length)
+const rangeStart = derived(() => totalFiltered() === 0 ? 0 : (currentPage() - 1) * itemsPerPage + 1)
+const rangeEnd = derived(() => Math.min(currentPage() * itemsPerPage, totalFiltered()))
+const hasNoEntries = derived(() => paginatedEntries().length === 0)
+const hasSelection = derived(() => selectedEntries().length > 0)
+const selectedCount = derived(() => selectedEntries().length)
+
+function entryModalTitle(): string { return isEditMode() ? 'Edit Waitlist Entry' : 'Add to Waitlist' }
+function entryModalDescription(): string { return isEditMode() ? 'Update the details for this waitlist entry.' : 'Fill in the details to add a new customer to the waitlist.' }
+function entryModalSubmitLabel(): string { return isEditMode() ? 'Save Changes' : 'Add to Waitlist' }
+
+function isSelected(id: number): boolean { return selectedEntries().includes(id) }
+
+function getStatusClass(status: string): string {
   switch (status) {
-    case 'Waiting':
-      return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
-    case 'Notified':
-      return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
-    case 'Purchased':
-      return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
-    case 'Cancelled':
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
-    default:
-      return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
+    case 'Waiting': return 'bg-blue-50 text-blue-700 ring-1 ring-inset ring-blue-600/20 dark:bg-blue-900/30 dark:text-blue-400'
+    case 'Notified': return 'bg-green-50 text-green-700 ring-1 ring-inset ring-green-600/20 dark:bg-green-900/30 dark:text-green-400'
+    case 'Purchased': return 'bg-purple-50 text-purple-700 ring-1 ring-inset ring-purple-600/20 dark:bg-purple-900/30 dark:text-purple-400'
+    default: return 'bg-gray-50 text-gray-700 ring-1 ring-inset ring-gray-600/20 dark:bg-neutral-900/30 dark:text-neutral-400'
   }
 }
 
-const getPriorityClass = (priority) => {
-  switch (priority) {
-    case 3:
-      return 'text-red-600 dark:text-red-400 font-semibold'
-    case 2:
-      return 'text-yellow-600 dark:text-yellow-400'
-    case 1:
-      return 'text-blue-600 dark:text-blue-400'
-    default:
-      return 'text-gray-600 dark:text-neutral-400'
+function formatDate(date: string): string {
+  return new Date(date).toLocaleDateString()
+}
+
+function toggleSort(field: string): void {
+  if (sortBy() === field)
+    sortOrder.set(sortOrder() === 'asc' ? 'desc' : 'asc')
+  else {
+    sortBy.set(field)
+    sortOrder.set('asc')
   }
 }
 
-let showEntryModal = false
-let isEditMode = false
-let currentEntry = null
-
-function totalEntries() { return waitlistEntries.length }
-function waitingEntries() { return waitlistEntries.filter(e => e.status === 'Waiting' }.length)
-function notifiedEntries() { return waitlistEntries.filter(e => e.status === 'Notified' }.length)
-function purchasedEntries() { return waitlistEntries.filter(e => e.status === 'Purchased' }.length)
-function conversionRate() {
-  const total = totalEntries
-  const purchased = purchasedEntries
-  return total > 0 ? Math.round((purchased / total) * 100) : 0
+function nextPage(): void {
+  if (currentPage() < totalPages())
+    currentPage.update(p => p + 1)
 }
 
-let entryName = ''
-let entryEmail = ''
-let entryPhone = null
-let entryQuantity = 2
-let entryNotificationPreference = 'sms'
-let entrySource = 'Website'
-let entryNotes = null
-let entryPriority = 1
-
-let sourceFilter = 'all'
-
-function openAddEntryModal() {
-  isEditMode = false
-
-  entryName = ''
-  entryEmail = ''
-  entryPhone = ''
-  entryQuantity = 2
-  entryNotificationPreference = 'sms'
-  entrySource = 'Website'
-  entryNotes = ''
-  entryPriority = 1
-
-  showEntryModal = true
+function prevPage(): void {
+  if (currentPage() > 1)
+    currentPage.update(p => p - 1)
 }
 
-function openEditEntryModal(entry) {
-  isEditMode = true
-  currentEntry = { ...entry }
-
-  entryName = entry.name
-  entryEmail = entry.email
-  entryPhone = entry.phone
-  entryQuantity = entry.quantity
-  entryNotificationPreference = entry.notificationPreference
-  entrySource = entry.source
-  entryNotes = entry.notes
-  entryPriority = entry.priority
-
-  showEntryModal = true
+function goToPage(page: number): void {
+  if (page >= 1 && page <= totalPages())
+    currentPage.set(page)
 }
 
-function saveEntry() {
+function resetForm(): void {
+  entryName.set('')
+  entryEmail.set('')
+  entryPhone.set('')
+  entryQuantity.set(2)
+  entryNotificationPreference.set('sms')
+  entrySource.set('Website')
+  entryNotes.set('')
+  entryPriority.set(1)
+}
+
+function openAddEntryModal(): void {
+  isEditMode.set(false)
+  editingEntryId.set(null)
+  resetForm()
+  showEntryModal.set(true)
+}
+
+function openEditEntryModal(id: number): void {
+  const target = waitlistEntries().find(e => e.id === id)
+  if (!target)
+    return
+  isEditMode.set(true)
+  editingEntryId.set(id)
+  entryName.set(target.name)
+  entryEmail.set(target.email)
+  entryPhone.set(target.phone ?? '')
+  entryQuantity.set(target.quantity)
+  entryNotificationPreference.set(target.notificationPreference)
+  entrySource.set(target.source)
+  entryNotes.set(target.notes ?? '')
+  entryPriority.set(target.priority)
+  showEntryModal.set(true)
+}
+
+function closeEntryModal(): void {
+  showEntryModal.set(false)
+  editingEntryId.set(null)
+}
+
+function saveEntry(): void {
   const now = new Date()
   const formattedDate = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`
-  const entry = {
-    id: isEditMode && currentEntry ? currentEntry.id : Math.max(0, ...waitlistEntries.map(e => e.id)) + 1,
-    name: entryName,
-    email: entryEmail,
-    phone: entryPhone || null,
+  const editId = editingEntryId()
+  const list = waitlistEntries()
+  const id = isEditMode() && editId !== null ? editId : Math.max(0, ...list.map(e => e.id)) + 1
+  const entry: WaitlistEntry = {
+    id,
+    name: entryName(),
+    email: entryEmail(),
+    phone: entryPhone() || null,
     productId: Math.floor(Math.random() * 1000),
-    quantity: entryQuantity,
-    notificationPreference: entryNotificationPreference,
-    notes: entryNotes || null,
+    quantity: entryQuantity(),
+    notificationPreference: entryNotificationPreference(),
+    notes: entryNotes() || null,
     status: 'Waiting',
     dateAdded: formattedDate,
     notified: false,
-    priority: entryPriority,
+    priority: entryPriority(),
     lastNotified: null,
-    source: entrySource
+    source: entrySource(),
   }
 
-  if (isEditMode && currentEntry) {
-    const index = waitlistEntries.findIndex(e => e.id === currentEntry.id)
-    if (index !== -1) {
-      waitlistEntries[index] = entry
-    }
-  } else {
-    waitlistEntries.push(entry)
-  }
+  if (isEditMode() && editId !== null)
+    waitlistEntries.set(list.map(e => e.id === editId ? entry : e))
+  else
+    waitlistEntries.set([...list, entry])
 
-  notifyCustomer(entry, `Thanks for joining the waitlist! We'll notify you when the product becomes available.`)
-  showEntryModal = false
+  closeEntryModal()
+  refreshCharts()
 }
 
-function deleteEntry(entryId) {
-  if (confirm('Are you sure you want to delete this waitlist entry?')) {
-    const index = waitlistEntries.findIndex(e => e.id === entryId)
-    if (index !== -1) {
-      waitlistEntries.splice(index, 1)
-    }
-  }
+function deleteEntry(id: number): void {
+  // eslint-disable-next-line no-alert
+  if (!confirm('Are you sure you want to delete this waitlist entry?'))
+    return
+  waitlistEntries.set(waitlistEntries().filter(e => e.id !== id))
+  refreshCharts()
 }
 
-function markAsNotified(entryId) {
-  const entry = waitlistEntries.find(e => e.id === entryId)
-  if (entry) {
-    entry.status = 'Notified'
-  }
+function markAsNotified(id: number): void {
+  waitlistEntries.set(waitlistEntries().map(e => e.id === id ? { ...e, status: 'Notified', notified: true } : e))
+  refreshCharts()
 }
 
-function markAsPurchased(entryId) {
-  const entry = waitlistEntries.find(e => e.id === entryId)
-  if (entry) {
-    entry.status = 'Purchased'
-  }
+function markAsPurchased(id: number): void {
+  waitlistEntries.set(waitlistEntries().map(e => e.id === id ? { ...e, status: 'Purchased' } : e))
+  refreshCharts()
 }
 
-let showNotificationModal = false
-let notificationSubject = 'Product Now Available'
-let notificationMessage = 'Good news! The product you were waiting for is now available for purchase.'
-let selectedEntries = []
-let selectAll = false
-
-function toggleSelectAll() {
-  selectAll = !selectAll
-  if (selectAll) {
-    selectedEntries = paginatedEntries.map(entry => entry.id)
-  } else {
-    selectedEntries = []
-  }
+function toggleSelectAll(): void {
+  const next = !selectAll()
+  selectAll.set(next)
+  if (next)
+    selectedEntries.set(paginatedEntries().map(entry => entry.id))
+  else
+    selectedEntries.set([])
 }
 
-function toggleEntrySelection(entryId) {
-  const index = selectedEntries.indexOf(entryId)
-  if (index === -1) {
-    selectedEntries.push(entryId)
-  } else {
-    selectedEntries.splice(index, 1)
-  }
+function toggleEntrySelection(id: number): void {
+  const list = selectedEntries()
+  if (list.includes(id))
+    selectedEntries.set(list.filter(x => x !== id))
+  else
+    selectedEntries.set([...list, id])
 
-  selectAll = paginatedEntries.length > 0 &&
-    paginatedEntries.every(entry => selectedEntries.includes(entry.id))
+  const visible = paginatedEntries()
+  selectAll.set(visible.length > 0 && visible.every(entry => selectedEntries().includes(entry.id)))
 }
 
-function openNotificationModal() {
-  if (selectedEntries.length === 0) {
+function openNotificationModal(): void {
+  if (selectedEntries().length === 0) {
+    // eslint-disable-next-line no-alert
     alert('Please select at least one waitlist entry to notify')
     return
   }
-
-  notificationSubject = 'Product Now Available'
-  notificationMessage = 'Good news! The product you were waiting for is now available for purchase.'
-  showNotificationModal = true
+  notificationSubject.set('Product Now Available')
+  notificationMessage.set('Good news! The product you were waiting for is now available for purchase.')
+  showNotificationModal.set(true)
 }
 
-function sendNotifications() {
-  waitlistEntries.forEach(entry => {
-    if (selectedEntries.includes(entry.id)) {
-      entry.notified = true
-      entry.status = 'Notified'
-    }
-  }
-
-  selectedEntries = []
-  selectAll = false
-  showNotificationModal = false
-
-  alert(`Notifications sent to ${selectedEntries.length} customers`)
+function closeNotificationModal(): void {
+  showNotificationModal.set(false)
 }
 
-function exportWaitlist() {
+function sendNotifications(): void {
+  const ids = new Set(selectedEntries())
+  waitlistEntries.set(waitlistEntries().map(e => ids.has(e.id) ? { ...e, notified: true, status: 'Notified' } : e))
+  const count = selectedEntries().length
+  selectedEntries.set([])
+  selectAll.set(false)
+  showNotificationModal.set(false)
+  // eslint-disable-next-line no-alert
+  alert(`Notifications sent to ${count} customers`)
+  refreshCharts()
+}
+
+function exportWaitlist(): void {
+  // eslint-disable-next-line no-alert
   alert('Waitlist data exported successfully')
 }
 
-function bulkChangeStatus(status) {
-  if (selectedEntries.length === 0) {
+function bulkChangeStatus(status: string): void {
+  if (selectedEntries().length === 0) {
+    // eslint-disable-next-line no-alert
     alert('Please select at least one waitlist entry')
     return
   }
-
-  waitlistEntries.forEach(entry => {
-    if (selectedEntries.includes(entry.id)) {
-      entry.status = status
-      if (status === 'Notified') {
-        entry.notified = true
-      }
-    }
-  }
-
-  selectedEntries = []
-  selectAll = false
+  const ids = new Set(selectedEntries())
+  waitlistEntries.set(waitlistEntries().map((e) => {
+    if (!ids.has(e.id))
+      return e
+    if (status === 'Notified')
+      return { ...e, status, notified: true }
+    return { ...e, status }
+  }))
+  selectedEntries.set([])
+  selectAll.set(false)
+  refreshCharts()
 }
 
-function bulkDelete() {
-  if (selectedEntries.length === 0) {
+function bulkDelete(): void {
+  if (selectedEntries().length === 0) {
+    // eslint-disable-next-line no-alert
     alert('Please select at least one waitlist entry')
     return
   }
-
-  if (confirm(`Are you sure you want to delete ${selectedEntries.length} waitlist entries?`)) {
-    waitlistEntries = waitlistEntries.filter(entry => !selectedEntries.includes(entry.id))
-
-    selectedEntries = []
-    selectAll = false
-  }
+  // eslint-disable-next-line no-alert
+  if (!confirm(`Are you sure you want to delete ${selectedEntries().length} waitlist entries?`))
+    return
+  const ids = new Set(selectedEntries())
+  waitlistEntries.set(waitlistEntries().filter(e => !ids.has(e.id)))
+  selectedEntries.set([])
+  selectAll.set(false)
+  refreshCharts()
 }
 
-let productChartRef = null
-let sourceChartRef = null
-let statusChartRef = null
-let trendChartRef = null
-
-let productChart = null
-let sourceChart = null
-let statusChart = null
-let trendChart = null
-
-const generateTrendData = () => {
-  const data = []
+function generateTrendData(): Array<{ date: string, count: number }> {
+  const data: Array<{ date: string, count: number }> = []
   const today = new Date()
   for (let i = 29; i >= 0; i--) {
-    const date = new Date(today)
-    date.setDate(date.getDate() - i)
-    data.push({
-      date: date.toISOString().split('T')[0],
-      count: Math.floor(Math.random() * 5)
-    }
+    const d = new Date(today)
+    d.setDate(d.getDate() - i)
+    data.push({ date: d.toISOString().split('T')[0] ?? '', count: Math.floor(Math.random() * 5) })
   }
   return data
 }
 
-let trendData = generateTrendData()
-
 const chartColors = {
-  blue: {
-    fill: 'rgba(59, 130, 246, 0.2)',
-    stroke: 'rgba(59, 130, 246, 1)',
-    point: 'rgba(59, 130, 246, 1)',
-  },
-  green: {
-    fill: 'rgba(16, 185, 129, 0.2)',
-    stroke: 'rgba(16, 185, 129, 1)',
-    point: 'rgba(16, 185, 129, 1)',
-  },
-  purple: {
-    fill: 'rgba(139, 92, 246, 0.2)',
-    stroke: 'rgba(139, 92, 246, 1)',
-    point: 'rgba(139, 92, 246, 1)',
-  },
-  yellow: {
-    fill: 'rgba(245, 158, 11, 0.2)',
-    stroke: 'rgba(245, 158, 11, 1)',
-    point: 'rgba(245, 158, 11, 1)',
-  },
-  red: {
-    fill: 'rgba(239, 68, 68, 0.2)',
-    stroke: 'rgba(239, 68, 68, 1)',
-    point: 'rgba(239, 68, 68, 1)',
-  },
+  blue: { fill: 'rgba(59, 130, 246, 0.2)', stroke: 'rgba(59, 130, 246, 1)', point: 'rgba(59, 130, 246, 1)' },
+  green: { fill: 'rgba(16, 185, 129, 0.2)', stroke: 'rgba(16, 185, 129, 1)', point: 'rgba(16, 185, 129, 1)' },
+  purple: { fill: 'rgba(139, 92, 246, 0.2)', stroke: 'rgba(139, 92, 246, 1)', point: 'rgba(139, 92, 246, 1)' },
+  yellow: { fill: 'rgba(245, 158, 11, 0.2)', stroke: 'rgba(245, 158, 11, 1)', point: 'rgba(245, 158, 11, 1)' },
+  red: { fill: 'rgba(239, 68, 68, 0.2)', stroke: 'rgba(239, 68, 68, 1)', point: 'rgba(239, 68, 68, 1)' },
 }
 
 const baseChartOptions = {
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
-    legend: {
-      display: true,
-      position: 'bottom',
-      labels: {
-        usePointStyle: true,
-        padding: 20,
-        font: {
-          size: 12
-        }
-      }
-    },
-    title: {
-      display: true,
-      font: {
-        size: 16,
-        weight: 'bold'
-      },
-      padding: {
-        top: 10,
-        bottom: 20
-      }
-    }
-  }
+    legend: { display: true, position: 'bottom', labels: { usePointStyle: true, padding: 20, font: { size: 12 } } },
+    title: { display: false },
+  },
 }
 
 const baseChartOptionsWithScales = {
   ...baseChartOptions,
   scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        display: true,
-        color: 'rgba(0, 0, 0, 0.05)',
-      },
-      ticks: {
-        precision: 0
-      }
-    },
-    x: {
-      grid: {
-        display: false
-      }
-    }
+    y: { beginAtZero: true, grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' }, ticks: { precision: 0 } },
+    x: { grid: { display: false } },
+  },
+}
+
+function partySizeCounts(): number[] {
+  const list = waitlistEntries()
+  return [1, 2, 3, 4, 5, 6, 7].map((size) => {
+    if (size === 7)
+      return list.filter(e => e.quantity >= 7).length
+    return list.filter(e => e.quantity === size).length
+  })
+}
+
+function partySizeLabels(): string[] {
+  return [1, 2, 3, 4, 5, 6, '7+'].map(size => `${size} ${size === 1 ? 'unit' : 'units'}`)
+}
+
+function sourceCounts(): number[] {
+  const list = waitlistEntries()
+  return sources.slice(1).map(source => list.filter(e => e.source === source).length)
+}
+
+function statusCounts(): number[] {
+  const list = waitlistEntries()
+  return statuses.slice(1).map(status => list.filter(e => e.status === status).length)
+}
+
+function refreshCharts(): void {
+  if (charts.length !== 4)
+    return
+  const [trend, product, source, status] = charts
+  if (trend) {
+    trend.data.labels = trendData().map(d => d.date)
+    if (trend.data.datasets[0])
+      trend.data.datasets[0].data = trendData().map(d => d.count)
+    trend.update()
+  }
+  if (product) {
+    product.data.labels = partySizeLabels()
+    if (product.data.datasets[0])
+      product.data.datasets[0].data = partySizeCounts()
+    product.update()
+  }
+  if (source) {
+    source.data.labels = sources.slice(1)
+    if (source.data.datasets[0])
+      source.data.datasets[0].data = sourceCounts()
+    source.update()
+  }
+  if (status) {
+    status.data.labels = statuses.slice(1)
+    if (status.data.datasets[0])
+      status.data.datasets[0].data = statusCounts()
+    status.update()
   }
 }
 
-function initProductChart() {
-  if (!productChartRef) return
+onMount(async () => {
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
 
-  const ctx = productChartRef.getContext('2d')
-  if (!ctx) return
+  const trend = useChart({
+    Chart: Ctor,
+    id: 'waitlist_trend_chart',
+    type: 'line',
+    data: {
+      labels: trendData().map(d => d.date),
+      datasets: [{
+        label: 'New Waitlist Entries',
+        data: trendData().map(d => d.count),
+        backgroundColor: chartColors.blue.fill,
+        borderColor: chartColors.blue.stroke,
+        borderWidth: 2,
+        pointBackgroundColor: chartColors.blue.point,
+        tension: 0.4,
+        fill: true,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+      }],
+    },
+    options: {
+      ...baseChartOptionsWithScales,
+      plugins: { legend: { display: false }, title: { display: false } },
+    },
+  })
 
-  const partySizes = [1, 2, 3, 4, 5, 6, '7+']
-  const partySizeCounts = partySizes.map(size => {
-    if (size === '7+') {
-      return waitlistEntries.filter(entry => entry.quantity >= 7).length
-    }
-    return waitlistEntries.filter(entry => entry.quantity === size).length
-  }
-
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
-  gradient.addColorStop(0, chartColors.blue.fill)
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0.05)')
-
-  productChart = new Chart(ctx, {
+  const product = useChart({
+    Chart: Ctor,
+    id: 'waitlist_product_chart',
     type: 'bar',
     data: {
-      labels: partySizes.map(size => `${size} ${size === 1 ? 'unit' : 'units'}`),
+      labels: partySizeLabels(),
       datasets: [{
         label: 'Number of Orders',
-        data: partySizeCounts,
-        backgroundColor: gradient,
+        data: partySizeCounts(),
+        backgroundColor: chartColors.blue.fill,
         borderColor: chartColors.blue.stroke,
         borderWidth: 2,
         borderRadius: 6,
         maxBarThickness: 60,
-        barPercentage: 0.7
-      }]
+        barPercentage: 0.7,
+      }],
     },
     options: {
       ...baseChartOptionsWithScales,
-      plugins: {
-        legend: {
-          display: false
-        },
-        title: {
-          display: false
-        }
-      }
-    }
-  }
-}
+      plugins: { legend: { display: false }, title: { display: false } },
+    },
+  })
 
-function initSourceChart() {
-  if (!sourceChartRef) return
-
-  const ctx = sourceChartRef.getContext('2d')
-  if (!ctx) return
-
-  const sourceLabels = sources.slice(1)
-  const sourceCounts = sourceLabels.map(source =>
-    waitlistEntries.filter(entry =>
-      entry.source ? entry.source === source : false
-    ).length
-  )
-
-  sourceChart = new Chart(ctx, {
+  const source = useChart({
+    Chart: Ctor,
+    id: 'waitlist_source_chart',
     type: 'doughnut',
     data: {
-      labels: sourceLabels,
+      labels: sources.slice(1),
       datasets: [{
-        data: sourceCounts,
-        backgroundColor: [
-          chartColors.blue.fill,
-          chartColors.green.fill,
-          chartColors.purple.fill,
-          chartColors.yellow.fill,
-          chartColors.red.fill
-        ],
-        borderColor: [
-          chartColors.blue.stroke,
-          chartColors.green.stroke,
-          chartColors.purple.stroke,
-          chartColors.yellow.stroke,
-          chartColors.red.stroke
-        ],
+        data: sourceCounts(),
+        backgroundColor: [chartColors.blue.fill, chartColors.green.fill, chartColors.purple.fill, chartColors.yellow.fill, chartColors.red.fill],
+        borderColor: [chartColors.blue.stroke, chartColors.green.stroke, chartColors.purple.stroke, chartColors.yellow.stroke, chartColors.red.stroke],
         borderWidth: 2,
         hoverOffset: 4,
-        spacing: 2
-      }]
+        spacing: 2,
+      }],
     },
     options: {
       ...baseChartOptions,
       cutout: '75%',
-      scales: {
-        x: { display: false },
-        y: { display: false }
-      },
       plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            usePointStyle: true,
-            padding: 20,
-            font: {
-              size: 11
-            }
-          }
-        },
-        title: {
-          display: false
-        }
-      }
-    }
-  }
-}
-
-function initTrendChart() {
-  if (!trendChartRef) return
-
-  const ctx = trendChartRef.getContext('2d')
-  if (!ctx) return
-
-  const gradient = ctx.createLinearGradient(0, 0, 0, 400)
-  gradient.addColorStop(0, chartColors.blue.fill)
-  gradient.addColorStop(1, 'rgba(59, 130, 246, 0)')
-
-  trendChart = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: trendData.map(d => d.date),
-      datasets: [{
-        label: 'New Waitlist Entries',
-        data: trendData.map(d => d.count),
-        backgroundColor: gradient,
-        borderColor: chartColors.blue.stroke,
-        borderWidth: 2,
-        pointBackgroundColor: chartColors.blue.point,
-        pointBorderColor: '#fff',
-        pointHoverBackgroundColor: '#fff',
-        pointHoverBorderColor: chartColors.blue.stroke,
-        tension: 0.4,
-        fill: true,
-        pointRadius: 4,
-        pointHoverRadius: 6
-      }]
+        legend: { position: 'right', labels: { usePointStyle: true, padding: 20, font: { size: 11 } } },
+        title: { display: false },
+      },
     },
-    options: {
-      ...baseChartOptionsWithScales,
-      plugins: {
-        legend: {
-          display: false
-        },
-        title: {
-          display: false
-        }
-      },
-      scales: {
-        x: {
-          grid: {
-            display: false
-          },
-          ticks: {
-            maxRotation: 0,
-            autoSkip: true,
-            maxTicksLimit: 7
-          }
-        },
-        y: {
-          beginAtZero: true,
-          grid: {
-            color: 'rgba(0, 0, 0, 0.05)',
-          },
-          ticks: {
-            precision: 0,
-            maxTicksLimit: 5
-          }
-        }
-      }
-    }
-  }
-}
+  })
 
-function initStatusChart() {
-  if (!statusChartRef) return
-
-  const ctx = statusChartRef.getContext('2d')
-  if (!ctx) return
-
-  const statusLabels = statuses.slice(1)
-  const statusData = statusLabels.map(status =>
-    waitlistEntries.filter(entry => entry.status === status).length
-  )
-
-  statusChart = new Chart(ctx, {
+  const status = useChart({
+    Chart: Ctor,
+    id: 'waitlist_status_chart',
     type: 'pie',
     data: {
-      labels: statusLabels,
+      labels: statuses.slice(1),
       datasets: [{
-        data: statusData,
-        backgroundColor: [
-          chartColors.blue.fill,
-          chartColors.green.fill,
-          chartColors.purple.fill,
-          chartColors.red.fill
-        ],
-        borderColor: [
-          chartColors.blue.stroke,
-          chartColors.green.stroke,
-          chartColors.purple.stroke,
-          chartColors.red.stroke
-        ],
+        data: statusCounts(),
+        backgroundColor: [chartColors.blue.fill, chartColors.green.fill, chartColors.purple.fill, chartColors.red.fill],
+        borderColor: [chartColors.blue.stroke, chartColors.green.stroke, chartColors.purple.stroke, chartColors.red.stroke],
         borderWidth: 2,
         hoverOffset: 4,
-        spacing: 2
-      }]
+        spacing: 2,
+      }],
     },
     options: {
       ...baseChartOptions,
-      scales: {
-        x: { display: false },
-        y: { display: false }
-      },
       plugins: {
-        legend: {
-          position: 'right',
-          labels: {
-            usePointStyle: true,
-            padding: 20,
-            font: {
-              size: 11
-            }
-          }
-        },
-        title: {
-          display: false
-        }
-      }
-    }
-  }
-}
+        legend: { position: 'right', labels: { usePointStyle: true, padding: 20, font: { size: 11 } } },
+        title: { display: false },
+      },
+    },
+  })
 
-function updateCharts() {
-  if (productChart && productChart.data) {
-    const chart = productChart
-    const partySizes = [1, 2, 3, 4, 5, 6, '7+']
-    const partySizeCounts = partySizes.map(size => {
-      if (size === '7+') {
-        return waitlistEntries.filter(entry => entry.quantity >= 7).length
-      }
-      return waitlistEntries.filter(entry => entry.quantity === size).length
-    }
+  charts = [trend.instance, product.instance, source.instance, status.instance].filter((c): c is ChartLike => c !== null)
+})
 
-    chart.data.labels = partySizes.map(size => `${size} ${size === 1 ? 'unit' : 'units'}`)
-    if (chart.data.datasets?.[0]) {
-      chart.data.datasets[0].data = partySizeCounts
-    }
-    chart.update()
-  }
-
-  if (sourceChart && sourceChart.data) {
-    const chart = sourceChart
-    const sourceLabels = sources.slice(1)
-    chart.data.labels = sourceLabels
-    if (chart.data.datasets?.[0]) {
-      chart.data.datasets[0].data = sourceLabels.map(source =>
-        waitlistEntries.filter(entry =>
-          entry.source ? entry.source === source : false
-        ).length
-      )
-    }
-    chart.update()
-  }
-
-  if (statusChart && statusChart.data) {
-    const chart = statusChart
-    const statusLabels = statuses.slice(1)
-    chart.data.labels = statusLabels
-    if (chart.data.datasets?.[0]) {
-      chart.data.datasets[0].data = statusLabels.map(status =>
-        waitlistEntries.filter(entry => entry.status === status).length
-      )
-    }
-    chart.update()
-  }
-
-  if (trendChart && trendChart.data) {
-    const chart = trendChart
-    const dates = trendData.map(d => d.date)
-    chart.data.labels = dates
-    if (chart.data.datasets?.[0]) {
-      chart.data.datasets[0].data = trendData.map(d => d.count)
-    }
-    chart.update()
-  }
-}
-
-</script>
-
-@title('Dashboard - Marketing Waitlist')
-<main>
-  <div class="px-6 py-6 sm:px-6 lg:px-8">
-    <div class="mx-auto max-w-7xl">
-      <div class="sm:flex sm:items-center sm:justify-between">
-        <div>
-          <h1 class="font-semibold text-2xl text-gray-900 dark:text-white">Waitlist</h1>
-          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">
-            Manage your product waitlist and notify customers when products become available
-          </p>
-        </div>
-        <div class="flex mt-4 space-x-3 sm:mt-0">
-          <button
-            type="button"
-            onclick="openAddEntryModal"
-            class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-          >
-            <div class="mr-1 h-5 w-5 i-hugeicons-plus-sign"></div>
-            Add to waitlist
-          </button>
-          <button
-            type="button"
-            onclick="exportWaitlist"
-            class="inline-flex items-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-800 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-          >
-            <div class="mr-1 h-5 w-5 i-hugeicons-download-01"></div>
-            Export
-          </button>
-        </div>
-      </div>
-
-      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
-        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Waitlist</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">
-            {{ totalEntries }}
-          </dd>
-          <dd class="flex items-center mt-2 text-blue-600 text-sm dark:text-blue-400">
-            <div class="mr-1 h-4 w-4 i-hugeicons-hourglass"></div>
-            <span>{{ waitingEntries }} waiting</span>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Notified</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ notifiedEntries }}</dd>
-          <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-            <div class="mr-1 h-4 w-4 i-hugeicons-notification-square"></div>
-            <span>Customers notified</span>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Purchased</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ purchasedEntries }}</dd>
-          <dd class="flex items-center mt-2 text-purple-600 text-sm dark:text-purple-400">
-            <div class="mr-1 h-4 w-4 i-hugeicons-shopping-cart-02"></div>
-            <span>Completed purchases</span>
-          </dd>
-        </div>
-
-        <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Conversion Rate</dt>
-          <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">
-            {{ conversionRate }}%
-          </dd>
-          <dd class="flex items-center mt-2 text-sm text-yellow-600 dark:text-yellow-400">
-            <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-            <span>Purchase rate</span>
-          </dd>
-        </div>
-      </dl>
-
-      <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
-        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <div class="p-6">
-            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Waitlist Entries</h3>
-            <div class="mt-2 h-80">
-              <canvas ref="trendChartRef"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <div class="p-6">
-            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Order Quantities</h3>
-            <div class="mt-2 h-80">
-              <canvas ref="productChartRef"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <div class="p-6">
-            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Source Distribution</h3>
-            <div class="mt-2 h-80">
-              <canvas ref="sourceChartRef"></canvas>
-            </div>
-          </div>
-        </div>
-
-        <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-          <div class="p-6">
-            <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Current Status</h3>
-            <div class="mt-2 h-80">
-              <canvas ref="statusChartRef"></canvas>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
-        <div class="relative max-w-sm">
-          <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-            <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
-          </div>
-          <input
-            value="{{ searchQuery }}"
-            type="text"
-            class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-            placeholder="Search waitlist..."
-          />
-        </div>
-
-        <div class="flex flex-col gap-4 sm:flex-row">
-          <select
-            value="{{ partySizeFilter }}"
-            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-          >
-            <option value="all">All Party Sizes</option>
-            <option value="1-2">1-2 People</option>
-            <option value="3-4">3-4 People</option>
-            <option value="5-6">5-6 People</option>
-            <option value="7+">7+ People</option>
-          </select>
-
-          <select
-            value="{{ statusFilter }}"
-            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-          >
-            <option value="all">All Statuses</option>
-            @foreach(statuses.slice(1) as status)
-              <option value="{{ status }}">
-                {{ status }}
-              </option>
-            @endforeach
-          </select>
-
-          <select
-            value="{{ tablePreferenceFilter }}"
-            class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
-          >
-            <option value="all">All Table Types</option>
-            @foreach(tablePreferences.slice(1) as preference)
-              <option value="{{ preference }}">
-                {{ preference }}
-              </option>
-            @endforeach
-          </select>
-        </div>
-      </div>
-
-      <div class="flex items-center mt-4 text-gray-500 text-sm dark:text-neutral-400">
-        <span class="mr-2">Sort by:</span>
-        <button
-          onclick="toggleSort('name')"
-          class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
-          class="text-blue-600 'font-semibold 'name' { {{ } }} === sortBy dark:text-blue-400':"
-        >
-          Name
-          @if(sortBy === 'name')
-            <span class="ml-1">
-              @if(sortOrder === 'asc')
-                <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
-              @else
-                <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
-              @endif
-            </span>
-          @endif
-        </button>
-        <button
-          onclick="toggleSort('dateAdded')"
-          class="flex items-center mr-3 hover:text-gray-700 dark:hover:text-gray-300"
-          class="text-blue-600 'dateAdded' 'font-semibold { {{ } }} === sortBy dark:text-blue-400':"
-        >
-          Date Added
-          @if(sortBy === 'dateAdded')
-            <span class="ml-1">
-              @if(sortOrder === 'asc')
-                <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
-              @else
-                <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
-              @endif
-            </span>
-          @endif
-        </button>
-        <button
-          onclick="toggleSort('quantity')"
-          class="flex items-center hover:text-gray-700 dark:hover:text-gray-300"
-          class="text-blue-600 'font-semibold 'quantity' { {{ } }} === sortBy dark:text-blue-400':"
-        >
-          Quantity
-          @if(sortBy === 'quantity')
-            <span class="ml-1">
-              @if(sortOrder === 'asc')
-                <div class="h-4 w-4 i-hugeicons-arrow-up-01"></div>
-              @else
-                <div class="h-4 w-4 i-hugeicons-arrow-down-02"></div>
-              @endif
-            </span>
-          @endif
-        </button>
-      </div>
-
-      @if(selectedEntries.length > 0)
-        <div class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/30 rounded-md">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center">
-              <span class="font-medium text-blue-700 text-sm dark:text-blue-300">{{ selectedEntries.length }} parties selected</span>
-            </div>
-            <div class="flex space-x-3">
-              <button
-                onclick="openNotificationModal"
-                class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm"
-              >
-                <div class="mr-1 h-4 w-4 i-hugeicons-notification-square"></div>
-                Send Updates
-              </button>
-              <button
-                onclick="bulkChangeStatus('Notified')"
-                class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-green-600 hover:bg-green-500 rounded-md shadow-sm"
-              >
-                <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
-                Mark as Notified
-              </button>
-              <button
-                onclick="bulkChangeStatus('Purchased')"
-                class="inline-flex items-center px-3 py-2 font-semibold text-sm text-white bg-purple-600 hover:bg-purple-500 rounded-md shadow-sm"
-              >
-                <div class="mr-1 h-4 w-4 i-hugeicons-shopping-cart-02"></div>
-                Mark as Purchased
-              </button>
-            </div>
-          </div>
-        </div>
-      @endif
-
-      <div class="overflow-hidden mt-6 ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
-        <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-700">
-          <thead class="bg-gray-50 dark:bg-neutral-900">
-            <tr>
-              <th scope="col" class="relative pl-4 pr-3 py-3.5 sm:pl-6">
-                <input
-                  type="checkbox"
-                  checked="{{ selectAll }}"
-                  onchange="toggleSelectAll"
-                  class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
-                />
-              </th>
-              <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-white">
-                Customer Details
-              </th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
-                Quantity
-              </th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
-                Status
-              </th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
-                Date Added
-              </th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">
-                Source
-              </th>
-              <th scope="col" class="relative pl-3 pr-4 py-3.5 sm:pr-6">
-                <span class="sr-only">Actions</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-            @if(paginatedEntries.length === 0)
-              <tr class="text-center">
-                <td colspan="7" class="py-10 text-gray-500 dark:text-neutral-400">
-                  No entries in the waitlist.
-                </td>
-              </tr>
-            @endif
-            @foreach(paginatedEntries() as entry)
-              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
-                  <input
-                    type="checkbox"
-                    checked="{{ selectedEntries.includes(entry.id) }}"
-                    onchange="toggleEntrySelection(entry.id)"
-                    class="h-4 w-4 text-blue-600 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600"
-                  />
-                </td>
-                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
-                  <div class="flex items-center">
-                    <div>
-                      <div class="font-medium text-gray-900 dark:text-white">
-                        {{ entry.name }} ({{ entry.quantity }} {{ entry.quantity === 1 ? 'unit' : 'units' }})
-                      </div>
-                      <div class="text-gray-500 dark:text-neutral-400">
-                        {{ entry.phone || entry.email }}
-                      </div>
-                    </div>
-                  </div>
-                </td>
-                <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <div class="font-medium text-gray-900 dark:text-white">
-                    {{ entry.quantity }}
-                  </div>
-                </td>
-                <td class="px-3 py-4 text-sm whitespace-nowrap">
-                  <span class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full {{ getStatusClass(entry.status) }}">
-                    {{ entry.status }}
-                  </span>
-                </td>
-                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
-                  {{ new Date(entry.dateAdded).toLocaleDateString() }}
-                </td>
-                <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">
-                  {{ entry.source }}
-                </td>
-                <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
-                  <div class="flex justify-end space-x-2">
-                    <button
-                      onclick="openEditEntryModal(entry)"
-                      class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300 transition-colors"
-                    >
-                      <div class="h-5 w-5 i-hugeicons-edit-01"></div>
-                      <span class="sr-only">Edit</span>
-                    </button>
-                    @if(entry.status === 'Waiting')
-                      <button
-                        onclick="markAsNotified(entry.id)"
-                        class="text-gray-400 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300 transition-colors"
-                      >
-                        <div class="h-5 w-5 i-hugeicons-notification-square"></div>
-                        <span class="sr-only">Notify</span>
-                      </button>
-                    @endif
-                    @if(entry.status === 'Notified')
-                      <button
-                        onclick="markAsPurchased(entry.id)"
-                        class="text-gray-400 dark:text-purple-400 hover:text-purple-900 dark:hover:text-purple-300 transition-colors"
-                      >
-                        <div class="h-5 w-5 i-hugeicons-shopping-cart-02"></div>
-                        <span class="sr-only">Purchase</span>
-                      </button>
-                    @endif
-                  </div>
-                </td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-
-      <div class="flex items-center justify-between mt-5">
-        <div class="flex sm:hidden flex-1 justify-between">
-          <button
-            onclick="prevPage"
-            disabled="{{ currentPage === 1 }}"
-            class="{{ currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-          >
-            Previous
-          </button>
-          <button
-            onclick="nextPage"
-            disabled="{{ currentPage === totalPages }}"
-            class="{{ currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative ml-3 inline-flex items-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 dark:border-neutral-600 dark:bg-neutral-800 dark:text-white"
-          >
-            Next
-          </button>
-        </div>
-        <div class="hidden sm:flex sm:flex-1 sm:items-center sm:justify-between">
-          <div>
-            <p class="text-gray-700 text-sm dark:text-neutral-300">
-              Showing <span class="font-medium">{{ (currentPage - 1) * itemsPerPage + 1 }}</span> to
-              <span class="font-medium">{{ Math.min(currentPage * itemsPerPage, filteredEntries.length) }}</span> of
-              <span class="font-medium">{{ filteredEntries.length }}</span> results
-            </p>
-          </div>
-          <div>
-            <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate" aria-label="Pagination">
-              <button
-                onclick="goToPage(currentPage - 1)"
-                disabled="{{ currentPage === 1 }}"
-                class="{{ currentPage === 1 ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-l-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
-              >
-                <span class="sr-only">Previous</span>
-                <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
-              </button>
-              @foreach(totalPages() as page)
-                <button
-                  onclick="goToPage(page)"
-                  class="{{ page === currentPage
-                      ? 'relative z-10 inline-flex items-center bg-blue-600 px-4 py-2 text-sm font-semibold text-white focus:z-20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-blue-600'
-                      : 'relative inline-flex items-center px-4 py-2 text-sm font-semibold text-gray-900 ring-1 ring-inset ring-gray-300 hover:bg-gray-50 focus:z-20 focus:outline-offset-0 dark:text-white dark:ring-neutral-600 dark:hover:bg-neutral-700' }} focus:z-20"
-                >
-                  {{ page }}
-                </button>
-              @endforeach
-              <button
-                onclick="goToPage(currentPage + 1)"
-                disabled="{{ currentPage === totalPages }}"
-                class="{{ currentPage === totalPages ? 'cursor-not-allowed opacity-50' : 'hover:bg-gray-50 dark:hover:bg-neutral-700' }} relative inline-flex items-center rounded-r-md px-2 py-2 text-gray-400 ring-1 ring-inset ring-gray-300 dark:ring-neutral-600"
-              >
-                <span class="sr-only">Next</span>
-                <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
-              </button>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  @if(showEntryModal)
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-          <div>
-            <div class="mt-3 sm:mt-5 text-center">
-              <h3 class="font-semibold leading-6 text-gray-900 text-lg dark:text-white">
-                {{ isEditMode ? 'Edit Waitlist Entry' : 'Add to Waitlist' }}
-              </h3>
-              <div class="mt-2">
-                <p class="text-gray-500 text-sm dark:text-neutral-400">
-                  {{ isEditMode ? 'Update the details for this waitlist entry.' : 'Fill in the details to add a new customer to the waitlist.' }}
-                </p>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-5 sm:mt-6">
-            <form onsubmit="saveEntry; return false">
-              <div class="grid gap-x-4 gap-y-6 grid-cols-1 sm:grid-cols-6">
-                <div class="sm:col-span-3">
-                  <label for="name" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Name
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      id="name"
-                      value="{{ entryName }}"
-                      type="text"
-                      required
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div class="sm:col-span-3">
-                  <label for="email" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Email
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      id="email"
-                      value="{{ entryEmail }}"
-                      type="email"
-                      required
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div class="sm:col-span-3">
-                  <label for="phone" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Phone (optional)
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      id="phone"
-                      value="{{ entryPhone }}"
-                      type="tel"
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div class="sm:col-span-3">
-                  <label for="quantity" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Party Size
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      id="quantity"
-                      value="{{ entryQuantity }}"
-                      type="number"
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div class="sm:col-span-3">
-                  <label for="notificationPreference" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Notification Preference
-                  </label>
-                  <div class="mt-1">
-                    <select
-                      id="notificationPreference"
-                      value="{{ entryNotificationPreference }}"
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    >
-                      @foreach(notificationPreferences as preference)
-                        <option value="{{ preference }}">
-                          {{ preference }}
-                        </option>
-                      @endforeach
-                    </select>
-                  </div>
-                </div>
-
-                <div class="sm:col-span-3">
-                  <label for="source" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Source
-                  </label>
-                  <div class="mt-1">
-                    <input
-                      id="source"
-                      value="{{ entrySource }}"
-                      type="text"
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    />
-                  </div>
-                </div>
-
-                <div class="sm:col-span-6">
-                  <label for="notes" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">
-                    Notes (optional)
-                  </label>
-                  <div class="mt-1">
-                    <textarea
-                      id="notes"
-                      value="{{ entryNotes }}"
-                      rows="3"
-                      class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                    ></textarea>
-                  </div>
-                </div>
-              </div>
-
-              <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-                <button
-                  type="submit"
-                  class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-                >
-                  {{ isEditMode ? 'Save Changes' : 'Add to Waitlist' }}
-                </button>
-                <button
-                  type="button"
-                  onclick="showEntryModal = false"
-                  class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm"
-                >
-                  Cancel
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  @endif
-
-  @if(showNotificationModal)
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-          <div>
-            <div class="mt-3 sm:mt-5 text-center">
-              <h3 class="font-semibold leading-6 text-gray-900 text-lg dark:text-white">
-                Send Notification
-              </h3>
-              <div class="mt-2">
-                <p class="text-gray-500 text-sm dark:text-neutral-400">
-                  Subject:
-                </p>
-                <input
-                  value="{{ notificationSubject }}"
-                  type="text"
-                  class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                />
-                <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">
-                  Message:
-                </p>
-                <textarea
-                  value="{{ notificationMessage }}"
-                  rows="3"
-                  class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm"
-                ></textarea>
-              </div>
-            </div>
-          </div>
-
-          <div class="mt-5 sm:mt-6">
-            <button
-              onclick="sendNotifications"
-              class="inline-flex justify-center px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm"
-            >
-              Send Notification
-            </button>
-          </div>
-        </div>
-      </div>
-    </div>
-  @endif
-</main>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-initProductChart()
-initSourceChart()
-initStatusChart()
-initTrendChart()
+onDestroy(() => {
+  charts.forEach(c => c.destroy())
+  charts = []
+})
 </script>
 
 @endsection
