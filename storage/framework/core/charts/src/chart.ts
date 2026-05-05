@@ -1,4 +1,6 @@
 import type { ChartConfig, ChartData, ChartDataset, ChartOptions, ChartType, TooltipCallbackContext } from './types'
+import { scaleBand, scaleLinear } from '@ts-charts/scale'
+import { arc as d3Arc, pie as d3Pie } from '@ts-charts/shape'
 import { paletteColor, withAlpha } from './colors'
 import { formatTick, niceTicks } from './ticks'
 
@@ -318,17 +320,29 @@ export class Chart {
     this.ctx.restore()
   }
 
+  /**
+   * X-axis pixel mapping. We delegate the math to `@ts-charts/scale`'s
+   * `scaleLinear` so categorical points distribute evenly across the plot
+   * the same way d3-scale would, including the degenerate single-point
+   * case (collapses to plot center).
+   */
   private scaleX(plot: Box, count: number, i: number): number {
     if (count <= 1)
       return plot.x + plot.w / 2
-    return plot.x + (plot.w * i) / (count - 1)
+    const s = scaleLinear().domain([0, count - 1]).range([plot.x, plot.x + plot.w])
+    return s(i) as number
   }
 
+  /**
+   * Y-axis pixel mapping built on `@ts-charts/scale`'s `scaleLinear`.
+   * Inverts the canvas Y axis by giving the larger pixel value to the
+   * smaller domain value, so the visual direction matches an SVG plot.
+   */
   private scaleY(plot: Box, axis: AxisLayout, value: number): number {
-    const range = axis.max - axis.min
-    if (range === 0)
+    if (axis.max === axis.min)
       return plot.y + plot.h / 2
-    return plot.y + plot.h - ((value - axis.min) / range) * plot.h
+    const s = scaleLinear().domain([axis.min, axis.max]).range([plot.y + plot.h, plot.y])
+    return s(value) as number
   }
 
   private drawLines(plot: Box, labels: string[], datasets: ChartDataset[], yAxis: AxisLayout, yAxis1: AxisLayout | null): void {
@@ -407,11 +421,18 @@ export class Chart {
 
     const cfg = this.options.scales?.y
     const stacked = !!cfg?.stacked
-    const groupWidth = (plot.w / count) * 0.7
+
+    // Use `@ts-charts/scale`'s `scaleBand` to compute the per-category
+    // band so the bar group width and gutter respect the same 0.3
+    // padding ratio d3-scale uses by default. Each band is then split
+    // among datasets in unstacked mode.
+    const indices = Array.from({ length: count }, (_, i) => i)
+    const xBand = scaleBand<number>().domain(indices).range([plot.x, plot.x + plot.w]).paddingInner(0.3)
+    const groupWidth = xBand.bandwidth() as number
     const barWidth = stacked ? groupWidth : groupWidth / Math.max(1, datasets.length)
 
     for (let i = 0; i < count; i++) {
-      const cx = this.scaleX(plot, count > 1 ? count : 2, i) - groupWidth / 2
+      const cx = xBand(i) as number
       let posStack = 0
       let negStack = 0
 
@@ -502,25 +523,38 @@ export class Chart {
       : (this.type === 'doughnut' ? 0.6 : 0)
     const inner = radius * cutoutPct
 
-    let start = -Math.PI / 2
-    ds.data.forEach((value, i) => {
-      const slice = (value / total) * Math.PI * 2
-      const end = start + slice
+    // Layout each slice via d3-shape's `pie()` generator (from
+    // `@ts-charts/shape`). The generator handles ordering, value
+    // normalisation, and the start/end angle math we used to inline.
+    // We then render with `arc()` against the canvas context so the
+    // existing canvas-only API stays unchanged from the caller's POV.
+    const pieLayout = (d3Pie() as any)
+      .value((d: number) => Math.max(0, d || 0))
+      .startAngle(-Math.PI / 2)
+      .endAngle(-Math.PI / 2 + Math.PI * 2)
+      .sort(null)
+    const slices = pieLayout(ds.data) as Array<{ startAngle: number, endAngle: number, value: number, index: number }>
+    void total
+
+    const slicePath = (d3Arc() as any)
+      .innerRadius(inner)
+      .outerRadius(radius)
+
+    this.ctx.save()
+    this.ctx.translate(cx, cy)
+    for (const s of slices) {
+      const i = s.index
+      const value = ds.data[i] ?? 0
       const color = Array.isArray(ds.backgroundColor)
         ? ds.backgroundColor[i] ?? paletteColor(i)
         : (typeof ds.backgroundColor === 'string' ? ds.backgroundColor : paletteColor(i))
 
       this.ctx.beginPath()
-      this.ctx.moveTo(cx + Math.cos(start) * inner, cy + Math.sin(start) * inner)
-      this.ctx.arc(cx, cy, radius, start, end)
-      if (inner > 0)
-        this.ctx.arc(cx, cy, inner, end, start, true)
-      else this.ctx.lineTo(cx, cy)
-      this.ctx.closePath()
+      slicePath.context(this.ctx)(s)
       this.ctx.fillStyle = color
       this.ctx.fill()
 
-      const mid = (start + end) / 2
+      const mid = (s.startAngle + s.endAngle) / 2 - Math.PI / 2
       const hitR = (radius + inner) / 2
       this.hitItems.push({
         datasetIndex: 0,
@@ -530,9 +564,11 @@ export class Chart {
         label: labels[i] ?? String(i),
         value,
       })
-
-      start = end
-    })
+    }
+    this.ctx.restore()
+    // Reset the path's bound context so the generator instance doesn't
+    // hold a reference to a destroyed canvas across re-renders.
+    slicePath.context(null)
   }
 
   // ---------- legend ---------- //

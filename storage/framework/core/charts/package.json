@@ -49,8 +49,9 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
+    "@ts-charts/format": "^0.2.0",
     "@ts-charts/scale": "^0.2.0",
-    "@ts-charts/format": "^0.2.0"
+    "@ts-charts/shape": "^0.2.0"
   },
   "devDependencies": {
     "better-dx": "^0.2.12"
