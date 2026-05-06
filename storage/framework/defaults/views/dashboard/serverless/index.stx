@@ -119,6 +119,16 @@ function linkTypeBadge(type: string): string {
       </div>
     </dl>
 
+    <div class="mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+      <div class="p-6">
+        <div class="flex items-center justify-between mb-4">
+          <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Service topology</h4>
+          <p class="text-gray-500 text-xs dark:text-neutral-400">Drag nodes · scroll to zoom</p>
+        </div>
+        <div id="serverless_topology" class="h-[500px] w-full bg-neutral-50 dark:bg-neutral-800 rounded-lg"></div>
+      </div>
+    </div>
+
     <div class="mt-8 space-y-8">
       @foreach(servicesByType as group)
         <div>
@@ -331,6 +341,135 @@ function linkTypeBadge(type: string): string {
     default: return `${base} bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200`
   }
 }
+
+function linkColor(type: string): string {
+  switch (type) {
+    case 'triggers': return '#FF4F8B'
+    case 'uses': return '#4053D6'
+    case 'connects': return '#569A31'
+    case 'processes': return '#FFC300'
+    case 'protects': return '#A166FF'
+    default: return '#6B7280'
+  }
+}
+
+let topologyCleanup: (() => void) | null = null
+
+async function renderTopology() {
+  const container = document.getElementById('serverless_topology')
+  if (!container)
+    return
+  topologyCleanup?.()
+  container.innerHTML = ''
+
+  const d3 = await import('d3')
+  const width = container.clientWidth || 800
+  const height = container.clientHeight || 500
+
+  type SimNode = Service & { x?: number, y?: number, fx?: number | null, fy?: number | null }
+  type SimLink = { source: string | SimNode, target: string | SimNode, type: string }
+
+  const nodes: SimNode[] = servicesData.map(s => ({ ...s }))
+  const links: SimLink[] = linksData.map(l => ({ source: l.source, target: l.target, type: l.type }))
+
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .attr('style', 'max-width: 100%; height: auto;')
+
+  const zoomGroup = svg.append('g')
+  const zoom = d3.zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.3, 3])
+    .on('zoom', (event) => {
+      zoomGroup.attr('transform', event.transform.toString())
+    })
+  svg.call(zoom as any)
+
+  const link = zoomGroup.append('g')
+    .attr('stroke-opacity', 0.7)
+    .selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('stroke', d => linkColor(d.type))
+    .attr('stroke-width', 2)
+
+  const node = zoomGroup.append('g')
+    .selectAll<SVGGElement, SimNode>('g')
+    .data(nodes)
+    .join('g')
+    .attr('cursor', 'pointer')
+    .on('click', (_event, d) => selectService(d.id))
+
+  node.append('circle')
+    .attr('r', 26)
+    .attr('fill', '#1E293B')
+    .attr('stroke', d => d.color)
+    .attr('stroke-width', 3)
+
+  node.append('circle')
+    .attr('r', 18)
+    .attr('fill', d => d.color)
+    .attr('fill-opacity', 0.85)
+
+  node.append('text')
+    .text(d => d.name)
+    .attr('text-anchor', 'middle')
+    .attr('dy', 44)
+    .attr('fill', 'currentColor')
+    .attr('font-size', '11px')
+    .attr('font-weight', '500')
+    .attr('class', 'text-gray-700 dark:text-neutral-200')
+    .attr('pointer-events', 'none')
+
+  const drag = d3.drag<SVGGElement, SimNode>()
+    .on('start', (event, d) => {
+      if (!event.active)
+        simulation.alphaTarget(0.3).restart()
+      d.fx = d.x
+      d.fy = d.y
+    })
+    .on('drag', (event, d) => {
+      d.fx = event.x
+      d.fy = event.y
+    })
+    .on('end', (event, d) => {
+      if (!event.active)
+        simulation.alphaTarget(0)
+      d.fx = null
+      d.fy = null
+    })
+  node.call(drag as any)
+
+  const simulation = d3.forceSimulation<SimNode>(nodes)
+    .force('link', d3.forceLink<SimNode, SimLink>(links).id(d => d.id).distance(140))
+    .force('charge', d3.forceManyBody().strength(-450))
+    .force('center', d3.forceCenter(width / 2, height / 2))
+    .force('collide', d3.forceCollide<SimNode>().radius(40))
+    .on('tick', () => {
+      link
+        .attr('x1', d => (d.source as SimNode).x ?? 0)
+        .attr('y1', d => (d.source as SimNode).y ?? 0)
+        .attr('x2', d => (d.target as SimNode).x ?? 0)
+        .attr('y2', d => (d.target as SimNode).y ?? 0)
+      node.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`)
+    })
+
+  topologyCleanup = () => {
+    simulation.stop()
+    container.innerHTML = ''
+  }
+}
+
+onMount(() => {
+  void renderTopology()
+})
+
+onDestroy(() => {
+  topologyCleanup?.()
+  topologyCleanup = null
+})
 </script>
 
 @endsection

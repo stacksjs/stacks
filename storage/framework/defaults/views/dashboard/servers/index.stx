@@ -119,6 +119,12 @@ function typeBadgeClass(type: string): string {
             </div>
           </div>
         </div>
+
+        <div class="flex items-center justify-between mt-6 mb-3">
+          <h5 class="font-medium text-sm text-gray-900 dark:text-neutral-100">Topology</h5>
+          <p class="text-gray-500 text-xs dark:text-neutral-400">Drag nodes · scroll to zoom</p>
+        </div>
+        <div id="servers_topology" class="h-[420px] w-full bg-neutral-50 dark:bg-neutral-800 rounded-lg"></div>
       </div>
     </div>
 
@@ -360,6 +366,139 @@ function typeBadgeClassFor(type: string): string {
 function serverEditHref(key: string): string {
   return `/servers/${key}`
 }
+
+function nodeFill(type: 'dns' | 'lb' | 'app' | 'worker' | 'cache' | 'database' | 'search' | 'web'): { ring: string, fill: string } {
+  switch (type) {
+    case 'dns': return { ring: '#EC4899', fill: '#FCE7F3' }
+    case 'lb': return { ring: '#3B82F6', fill: '#DBEAFE' }
+    case 'app': return { ring: '#10B981', fill: '#D1FAE5' }
+    case 'worker': return { ring: '#F59E0B', fill: '#FEF3C7' }
+    case 'cache': return { ring: '#A855F7', fill: '#F3E8FF' }
+    case 'database': return { ring: '#22C55E', fill: '#DCFCE7' }
+    case 'search': return { ring: '#6366F1', fill: '#E0E7FF' }
+    default: return { ring: '#6B7280', fill: '#F3F4F6' }
+  }
+}
+
+let topologyCleanup: (() => void) | null = null
+
+interface TopoNode { id: string, type: 'dns' | 'lb' | 'app' | 'worker' | 'cache' | 'database' | 'search' | 'web', label: string, key?: string, x?: number, y?: number, fx?: number | null, fy?: number | null }
+interface TopoLink { source: string | TopoNode, target: string | TopoNode }
+
+async function renderTopology() {
+  const container = document.getElementById('servers_topology')
+  if (!container)
+    return
+  topologyCleanup?.()
+  container.innerHTML = ''
+
+  const d3 = await import('d3')
+  const width = container.clientWidth || 800
+  const height = container.clientHeight || 420
+
+  const nodes: TopoNode[] = [
+    { id: 'dns', type: 'dns', label: 'DNS' },
+    { id: 'lb', type: 'lb', label: 'Load balancer' },
+    ...serversData.map(s => ({ id: s.key, type: s.type as TopoNode['type'], label: s.name, key: s.key })),
+  ]
+  const links: TopoLink[] = [
+    { source: 'dns', target: 'lb' },
+    ...serversData.map(s => ({ source: 'lb', target: s.key })),
+  ]
+
+  const svg = d3.select(container)
+    .append('svg')
+    .attr('width', width)
+    .attr('height', height)
+    .attr('viewBox', [0, 0, width, height])
+    .attr('style', 'max-width: 100%; height: auto;')
+
+  const zoomGroup = svg.append('g')
+  const zoom = d3.zoom<SVGSVGElement, unknown>()
+    .scaleExtent([0.3, 3])
+    .on('zoom', event => zoomGroup.attr('transform', event.transform.toString()))
+  svg.call(zoom as any)
+
+  const link = zoomGroup.append('g')
+    .attr('stroke', '#94A3B8')
+    .attr('stroke-opacity', 0.5)
+    .attr('stroke-dasharray', '4,4')
+    .selectAll('line')
+    .data(links)
+    .join('line')
+    .attr('stroke-width', 2)
+
+  const node = zoomGroup.append('g')
+    .selectAll<SVGGElement, TopoNode>('g')
+    .data(nodes)
+    .join('g')
+    .attr('cursor', d => d.key ? 'pointer' : 'default')
+    .on('click', (_event, d) => {
+      if (d.key)
+        selectServer(d.key)
+    })
+
+  node.append('circle')
+    .attr('r', 26)
+    .attr('fill', d => nodeFill(d.type).fill)
+    .attr('stroke', d => nodeFill(d.type).ring)
+    .attr('stroke-width', 3)
+
+  node.append('text')
+    .text(d => d.label.length > 14 ? `${d.label.slice(0, 12)}…` : d.label)
+    .attr('text-anchor', 'middle')
+    .attr('dy', 44)
+    .attr('fill', 'currentColor')
+    .attr('font-size', '11px')
+    .attr('font-weight', '500')
+    .attr('class', 'text-gray-700 dark:text-neutral-200')
+    .attr('pointer-events', 'none')
+
+  const drag = d3.drag<SVGGElement, TopoNode>()
+    .on('start', (event, d) => {
+      if (!event.active)
+        simulation.alphaTarget(0.3).restart()
+      d.fx = d.x
+      d.fy = d.y
+    })
+    .on('drag', (event, d) => { d.fx = event.x; d.fy = event.y })
+    .on('end', (event, d) => {
+      if (!event.active)
+        simulation.alphaTarget(0)
+      d.fx = null
+      d.fy = null
+    })
+  node.call(drag as any)
+
+  const simulation = d3.forceSimulation<TopoNode>(nodes)
+    .force('link', d3.forceLink<TopoNode, TopoLink>(links).id(d => d.id).distance(120).strength(1))
+    .force('charge', d3.forceManyBody().strength(-380))
+    .force('x', d3.forceX<TopoNode>(d => d.type === 'dns' ? width * 0.15 : d.type === 'lb' ? width * 0.4 : width * 0.75).strength(0.6))
+    .force('y', d3.forceY<TopoNode>(height / 2).strength(0.15))
+    .force('collide', d3.forceCollide<TopoNode>().radius(38))
+    .on('tick', () => {
+      link
+        .attr('x1', d => (d.source as TopoNode).x ?? 0)
+        .attr('y1', d => (d.source as TopoNode).y ?? 0)
+        .attr('x2', d => (d.target as TopoNode).x ?? 0)
+        .attr('y2', d => (d.target as TopoNode).y ?? 0)
+      node.attr('transform', d => `translate(${d.x ?? 0},${d.y ?? 0})`)
+    })
+
+  topologyCleanup = () => {
+    simulation.stop()
+    container.innerHTML = ''
+  }
+}
+
+onMount(() => {
+  void renderTopology()
+})
+
+onDestroy(() => {
+  topologyCleanup?.()
+  topologyCleanup = null
+})
 </script>
 
 @endsection
