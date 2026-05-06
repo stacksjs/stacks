@@ -12,22 +12,22 @@ const {
 const safeImages = images.length > 0 ? images : ['']
 </script>
 
-<div class="space-y-4">
+<div class="space-y-4" data-stx-gallery>
   <!-- Hero image -->
-  <div class="aspect-square rounded-3xl overflow-hidden bg-stone-100">
+  <div class="aspect-square overflow-hidden bg-stone-100 rounded-3xl">
     <img
       src="{{ safeImages[0] }}"
       alt="{{ alt }}"
       data-stx-gallery-main
-      class="h-full w-full object-cover"
+      class="object-cover h-full w-full"
     >
   </div>
 
   @if (safeImages.length > 1)
     <!-- Thumbnails. Clicking swaps the hero src — vanilla DOM is fine
-         here because this is a self-contained image switcher with no
-         server round-trip. -->
-    <div class="grid grid-cols-4 gap-3">
+        here because this is a self-contained image switcher with no
+        server round-trip. -->
+    <div class="grid gap-3 grid-cols-4">
       @foreach (safeImages as img, i)
         <button
           type="button"
@@ -35,7 +35,7 @@ const safeImages = images.length > 0 ? images : ['']
           class="aspect-square rounded-xl overflow-hidden bg-stone-100 border-2 {{ i === 0 ? 'border-stone-900' : 'border-transparent' }} hover:border-stone-900 transition-colors"
           aria-label="View image {{ i + 1 }}"
         >
-          <img src="{{ img }}" alt="" class="h-full w-full object-cover">
+          <img src="{{ img }}" alt="" class="object-cover h-full w-full">
         </button>
       @endforeach
     </div>
@@ -43,16 +43,33 @@ const safeImages = images.length > 0 ? images : ['']
 </div>
 
 <script data-stx-scoped>
-const main = document.querySelector('[data-stx-gallery-main]')
-const thumbs = document.querySelectorAll('[data-stx-gallery-thumb]')
-thumbs.forEach((thumb) => {
-  thumb.addEventListener('click', () => {
+;(() => {
+  // Document-delegated listener: scoping per-thumb scope to its own
+  // [data-stx-gallery] container fixes two prior issues —
+  //   1. Multiple galleries on a page (e.g. recommended-products carousel)
+  //      previously all targeted the first <img data-stx-gallery-main>,
+  //      so clicking a thumb in gallery B updated gallery A's hero.
+  //   2. SPA fragment swaps re-injected the scoped script and stacked
+  //      a duplicate listener on every existing thumb.
+  if (window.__stxGalleryWired) return
+  window.__stxGalleryWired = true
+
+  document.addEventListener('click', (e) => {
+    const target = e.target instanceof Element ? e.target : null
+    if (!target) return
+    const thumb = target.closest('[data-stx-gallery-thumb]')
+    if (!thumb) return
+    const gallery = thumb.closest('[data-stx-gallery]')
+    if (!gallery) return
+    const main = gallery.querySelector('[data-stx-gallery-main]')
     const src = thumb.getAttribute('data-stx-gallery-thumb')
     if (src && main) main.setAttribute('src', src)
-    thumbs.forEach(t => t.classList.remove('border-stone-900'))
-    thumbs.forEach(t => t.classList.add('border-transparent'))
+    gallery.querySelectorAll('[data-stx-gallery-thumb]').forEach((t) => {
+      t.classList.remove('border-stone-900')
+      t.classList.add('border-transparent')
+    })
     thumb.classList.remove('border-transparent')
     thumb.classList.add('border-stone-900')
   })
-})
+})()
 </script>

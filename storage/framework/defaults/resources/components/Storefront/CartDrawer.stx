@@ -11,57 +11,106 @@
  */
 </script>
 
-<div data-stx-cart-drawer class="fixed inset-0 z-50 pointer-events-none">
+<div data-stx-cart-drawer class="fixed inset-0 z-50 pointer-events-none" aria-hidden="true">
   <!-- Backdrop -->
-  <div data-stx-cart-backdrop class="absolute inset-0 bg-stone-900/40 opacity-0 transition-opacity duration-200"></div>
+  <div
+    data-stx-cart-backdrop
+    class="absolute inset-0 bg-stone-900/40 opacity-0 duration-300 ease-out transition-opacity"
+    style="will-change: opacity"
+  ></div>
 
-  <!-- Panel -->
-  <aside data-stx-cart-panel class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-stone-50 shadow-2xl translate-x-full transition-transform duration-300 ease-out flex flex-col">
+  <!-- Panel — translate3d + will-change promote it to its own GPU layer so
+      the slide-in doesn't re-paint the underlying header / content layers
+      and cause the perceived flicker on neighboring elements. -->
+  <aside
+    data-stx-cart-panel
+    class="flex absolute bottom-0 right-0 top-0 flex-col max-w-md w-full bg-stone-50 shadow-2xl duration-300 ease-out transition-transform"
+    style="transform: translate3d(100%, 0, 0); will-change: transform"
+    role="dialog"
+    aria-modal="true"
+    aria-label="Cart"
+    tabindex="-1"
+  >
     <header class="flex items-center justify-between p-6 border-b border-stone-200">
       <h2 class="font-bold text-lg text-stone-900">Your bowl</h2>
-      <button type="button" data-stx-cart-close class="text-stone-500 hover:text-stone-900" aria-label="Close cart">
+      <button type="button" data-stx-cart-close class="text-stone-500 focus-visible:text-stone-900 hover:text-stone-900 focus-visible:outline-none" aria-label="Close cart">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" /></svg>
       </button>
     </header>
 
-    <div data-stx-cart-body class="flex-1 overflow-y-auto p-6 space-y-4">
-      <p class="text-sm text-stone-500 text-center py-12" data-stx-cart-empty>Your bowl is empty.</p>
+    <div data-stx-cart-body class="overflow-y-auto flex-1 p-6 space-y-4">
+      <p class="py-12 text-center text-sm text-stone-500" data-stx-cart-empty>Your bowl is empty.</p>
       <ul data-stx-cart-list class="hidden space-y-4"></ul>
     </div>
 
-    <footer data-stx-cart-footer class="hidden border-t border-stone-200 p-6 space-y-4">
+    <footer data-stx-cart-footer class="hidden p-6 space-y-4 border-stone-200 border-t">
       <div class="flex justify-between text-sm"><span class="text-stone-600">Subtotal</span><span class="font-bold text-stone-900" data-stx-cart-subtotal>$0.00</span></div>
-      <a href="/cart" class="block w-full rounded-full border border-stone-300 px-6 py-3 text-center text-sm font-semibold text-stone-900 hover:border-stone-900 transition-colors">View cart</a>
-      <a href="/checkout/contact" class="block w-full rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-center text-sm font-semibold hover:bg-stone-800 transition-colors">Checkout</a>
+      <a href="/cart" class="block px-6 py-3 w-full font-semibold text-center text-sm text-stone-900 border border-stone-300 rounded-full hover:border-stone-900 transition-colors">View cart</a>
+      <a href="/checkout/contact" class="block px-6 py-3 w-full font-semibold text-center text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full transition-colors">Checkout</a>
     </footer>
   </aside>
 </div>
 
 <script data-stx-scoped>
 ;(() => {
+  // Idempotency guard. SPA fragment swaps re-inject scoped scripts when
+  // the cart link is followed; without this, every navigation stacked
+  // another set of click listeners on [data-stx-add-to-cart] buttons,
+  // and a single click would fire two/three/N XHRs — the user-visible
+  // tell was a brief flicker as the drawer opened, refreshed, then
+  // refreshed again from the duplicate handlers.
+  if (window.__stxCartWired) return
+  window.__stxCartWired = true
+
   const root = document.querySelector('[data-stx-cart-drawer]')
   if (!root) return
   const backdrop = root.querySelector('[data-stx-cart-backdrop]')
   const panel = root.querySelector('[data-stx-cart-panel]')
-  const close = root.querySelector('[data-stx-cart-close]')
+  const closeBtn = root.querySelector('[data-stx-cart-close]')
   const list = root.querySelector('[data-stx-cart-list]')
   const empty = root.querySelector('[data-stx-cart-empty]')
   const footer = root.querySelector('[data-stx-cart-footer]')
   const subtotalEl = root.querySelector('[data-stx-cart-subtotal]')
 
+  // Reserve the scrollbar gutter on <html> so locking page scroll while
+  // the drawer is open doesn't cause the page width to jump (~17px on
+  // platforms with overlay scrollbars off). This was the visible flicker
+  // on neighboring elements when the drawer slid in: the page reflowed
+  // because the scrollbar disappeared.
+  document.documentElement.style.scrollbarGutter = 'stable'
+
+  let lastFocus = null
+
   function open() {
+    lastFocus = document.activeElement
     root.style.pointerEvents = 'auto'
+    root.setAttribute('aria-hidden', 'false')
     backdrop.style.opacity = '1'
-    panel.style.transform = 'translateX(0)'
+    panel.style.transform = 'translate3d(0, 0, 0)'
+    document.body.style.overflow = 'hidden'
+    // Move focus into the panel so Esc + Tab work as expected.
+    requestAnimationFrame(() => { panel.focus({ preventScroll: true }) })
   }
   function shut() {
     root.style.pointerEvents = 'none'
+    root.setAttribute('aria-hidden', 'true')
     backdrop.style.opacity = '0'
-    panel.style.transform = 'translateX(100%)'
+    panel.style.transform = 'translate3d(100%, 0, 0)'
+    document.body.style.overflow = ''
+    if (lastFocus && typeof lastFocus.focus === 'function') {
+      try { lastFocus.focus({ preventScroll: true }) } catch { /* element gone */ }
+    }
   }
 
   backdrop?.addEventListener('click', shut)
-  close?.addEventListener('click', shut)
+  closeBtn?.addEventListener('click', shut)
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && root.getAttribute('aria-hidden') === 'false') shut()
+  })
+
+  function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c])
+  }
 
   function render(items, subtotal) {
     if (!list || !empty || !footer) return
@@ -74,31 +123,56 @@
     empty.classList.add('hidden')
     list.classList.remove('hidden')
     footer.classList.remove('hidden')
-    list.innerHTML = items.map((it) => `
-      <li class="flex gap-3 items-start">
-        <a href="/products/${it.slug}" class="block w-16 h-16 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0">
-          <img src="${it.image || ''}" alt="${it.name}" class="h-full w-full object-cover">
-        </a>
-        <div class="flex-1 min-w-0">
-          <p class="font-semibold text-sm text-stone-900 truncate">${it.name}</p>
-          <p class="text-xs text-stone-500 mt-0.5">Qty ${it.qty} · $${(it.price).toFixed(2)}</p>
-        </div>
-        <p class="font-semibold text-sm text-stone-900">$${(it.lineTotal).toFixed(2)}</p>
-      </li>
-    `).join('')
-    if (subtotalEl) subtotalEl.textContent = `$${Number(subtotal || 0).toFixed(2)}`
+    list.innerHTML = items.map((it) => {
+      const slug = escapeHtml(it.slug || '')
+      const name = escapeHtml(it.name || '')
+      const image = escapeHtml(it.image || '')
+      const qty = Number(it.qty) || 0
+      const price = Number(it.price) || 0
+      const lineTotal = Number(it.lineTotal) || 0
+      return [
+        '<li class="flex gap-3 items-start">',
+        '  <a href="/products/' + slug + '" class="block overflow-hidden flex-shrink-0 h-16 w-16 bg-stone-200 rounded-xl">',
+        '    <img src="' + image + '" alt="' + name + '" class="object-cover h-full w-full">',
+        '  </a>',
+        '  <div class="flex-1 min-w-0">',
+        '    <p class="font-semibold text-sm text-stone-900 truncate">' + name + '</p>',
+        '    <p class="mt-0.5 text-stone-500 text-xs">Qty ' + qty + ' · $' + price.toFixed(2) + '</p>',
+        '  </div>',
+        '  <p class="font-semibold text-sm text-stone-900">$' + lineTotal.toFixed(2) + '</p>',
+        '</li>',
+      ].join('')
+    }).join('')
+    if (subtotalEl) subtotalEl.textContent = '$' + (Number(subtotal) || 0).toFixed(2)
   }
 
+  let inflightRefresh = null
   async function refresh() {
-    try {
-      const res = await fetch('/api/cart', { credentials: 'same-origin', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
-      if (!res.ok) return
-      const data = await res.json()
-      render(data.items || [], data.subtotal || 0)
-      // Bump the header cart count too — the badge re-uses this number.
-      const badge = document.querySelector('[data-stx-cart-count]')
-      if (badge) badge.textContent = String((data.items || []).reduce((s, i) => s + i.qty, 0))
-    } catch { /* leave existing render in place */ }
+    // Coalesce concurrent refreshes — if a click fires two refresh() in a
+    // row (e.g. add-to-cart + open both call refresh), they reuse the
+    // same network request and the drawer doesn't briefly toggle between
+    // empty and populated.
+    if (inflightRefresh) return inflightRefresh
+    inflightRefresh = (async () => {
+      try {
+        const res = await fetch('/api/cart', {
+          credentials: 'same-origin',
+          headers: { 'X-Requested-With': 'XMLHttpRequest' },
+        })
+        if (!res.ok) return
+        const data = await res.json()
+        render(data.items || [], data.subtotal || 0)
+        const badge = document.querySelector('[data-stx-cart-count]')
+        if (badge) {
+          const total = (data.items || []).reduce((s, i) => s + (Number(i.qty) || 0), 0)
+          badge.textContent = String(total)
+          badge.classList.toggle('hidden', total === 0)
+        }
+      }
+      catch { /* leave existing render in place */ }
+      finally { inflightRefresh = null }
+    })()
+    return inflightRefresh
   }
 
   // Public hooks for other components to call.
@@ -108,28 +182,36 @@
     refresh,
   }
 
-  // Wire up any [data-stx-add-to-cart] buttons on the page. They submit
-  // the host <form> via XHR so we can pop the drawer instead of doing
-  // a full-page redirect.
-  document.querySelectorAll('[data-stx-add-to-cart]').forEach((btn) => {
-    btn.addEventListener('click', async (e) => {
-      const form = btn.closest('form')
-      if (!form) return
-      e.preventDefault()
-      const fd = new FormData(form)
-      try {
-        const res = await fetch(form.action || '/api/cart/add', {
-          method: form.method || 'POST',
-          body: fd,
-          credentials: 'same-origin',
-          headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
-        })
-        if (res.ok) window.stxCart.open()
-        else form.submit() // fall back to plain post on error
-      } catch {
-        form.submit()
+  // Wire any add-to-cart submit buttons via a single document-level
+  // delegated listener. Compared to attaching per-button listeners, this:
+  //   - Stays correct when the catalog page fragment swaps in new
+  //     [data-stx-add-to-cart] buttons.
+  //   - Can't double-fire if the scoped script runs more than once (the
+  //     guard at the top is the primary defense; this is belt-and-braces).
+  document.addEventListener('click', async (e) => {
+    const target = e.target instanceof Element ? e.target : null
+    if (!target) return
+    const btn = target.closest('[data-stx-add-to-cart]')
+    if (!btn) return
+    const form = btn.closest('form')
+    if (!form) return
+    e.preventDefault()
+    const fd = new FormData(form)
+    btn.setAttribute('aria-busy', 'true')
+    try {
+      const res = await fetch(form.action || '/api/cart/add', {
+        method: form.method || 'POST',
+        body: fd,
+        credentials: 'same-origin',
+        headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+      })
+      if (res.ok) {
+        await refresh()
+        open()
       }
-    })
+      else { form.submit() }
+    } catch { form.submit() }
+    finally { btn.removeAttribute('aria-busy') }
   })
 })()
 </script>

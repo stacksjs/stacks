@@ -16,35 +16,82 @@ const {
 } = defineProps<QuantitySelectorProps>()
 </script>
 
-<div class="flex items-center rounded-full border border-stone-300 overflow-hidden {{ className }}" data-stx-qty>
-  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 transition-colors" data-stx-qty-dec aria-label="Decrease quantity">−</button>
+<div
+  class="flex items-center rounded-full border border-stone-300 overflow-hidden {{ className }}"
+  data-stx-qty
+  data-min="{{ min }}"
+  data-max="{{ max }}"
+>
+  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 focus-visible:bg-stone-100 focus-visible:outline-none transition-colors" data-stx-qty-dec aria-label="Decrease quantity">−</button>
   <input
     name="{{ name }}"
     value="{{ value }}"
     type="number"
     min="{{ min }}"
     max="{{ max }}"
-    class="w-12 text-center bg-transparent focus:outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+    class="w-12 text-center bg-transparent focus:outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none [appearance:textfield]"
   >
-  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 transition-colors" data-stx-qty-inc aria-label="Increase quantity">+</button>
+  <button type="button" class="px-4 py-3 text-stone-500 hover:text-stone-900 focus-visible:bg-stone-100 focus-visible:outline-none transition-colors" data-stx-qty-inc aria-label="Increase quantity">+</button>
 </div>
 
 <script data-stx-scoped>
-document.querySelectorAll('[data-stx-qty]').forEach((wrap) => {
-  const input = wrap.querySelector('input[type="number"]')
-  const dec = wrap.querySelector('[data-stx-qty-dec]')
-  const inc = wrap.querySelector('[data-stx-qty-inc]')
-  const min = Number(input?.getAttribute('min') ?? 1)
-  const max = Number(input?.getAttribute('max') ?? 99)
-  dec?.addEventListener('click', () => {
+;(() => {
+  // Delegate one document-level click handler so:
+  //   1. Repeated SSR'd <script data-stx-scoped> blocks (one per
+  //      QuantitySelector instance) don't stack listeners on the same
+  //      buttons. Without delegation, two QuantitySelectors on a page
+  //      = two listeners per button = doubled increments per click.
+  //   2. SPA fragment swaps that re-inject our scoped script don't
+  //      keep multiplying handlers; the guard below early-returns.
+  if (window.__stxQtyWired) return
+  window.__stxQtyWired = true
+
+  // Default min/max chosen to match the component's defineProps fallbacks.
+  // STX SSR doesn't reliably propagate defineProps default values into
+  // template attribute interpolation, so the rendered HTML can carry
+  // empty `min=""` / `max=""` attributes. Number("") is 0, so without
+  // these fallbacks Math.min(0, qty+1) capped every increment at 0 and
+  // the +/- buttons appeared dead. Read either the data-* on the wrapper
+  // or the input attribute, whichever is non-empty.
+  function bound(wrap, kind, fallback) {
+    const fromData = wrap.getAttribute('data-' + kind)
+    if (fromData && fromData.trim() !== '') {
+      const n = Number(fromData)
+      if (Number.isFinite(n)) return n
+    }
+    const input = wrap.querySelector('input[type="number"]')
+    const fromAttr = input && input.getAttribute(kind)
+    if (fromAttr && fromAttr.trim() !== '') {
+      const n = Number(fromAttr)
+      if (Number.isFinite(n)) return n
+    }
+    return fallback
+  }
+
+  function step(wrap, delta) {
+    const input = wrap.querySelector('input[type="number"]')
     if (!input) return
-    const next = Math.max(min, Number(input.value || 0) - 1)
+    const min = bound(wrap, 'min', 1)
+    const max = bound(wrap, 'max', 99)
+    const current = Number(input.value)
+    const seed = Number.isFinite(current) ? current : min
+    const next = Math.max(min, Math.min(max, seed + delta))
+    if (next === seed) return
     input.value = String(next)
+    input.dispatchEvent(new Event('input', { bubbles: true }))
+    input.dispatchEvent(new Event('change', { bubbles: true }))
+  }
+
+  document.addEventListener('click', (e) => {
+    const target = e.target instanceof Element ? e.target : null
+    if (!target) return
+    const dec = target.closest('[data-stx-qty-dec]')
+    const inc = target.closest('[data-stx-qty-inc]')
+    if (!dec && !inc) return
+    const wrap = (dec || inc).closest('[data-stx-qty]')
+    if (!wrap) return
+    e.preventDefault()
+    step(wrap, dec ? -1 : 1)
   })
-  inc?.addEventListener('click', () => {
-    if (!input) return
-    const next = Math.min(max, Number(input.value || 0) + 1)
-    input.value = String(next)
-  })
-})
+})()
 </script>
