@@ -489,63 +489,82 @@ if (verbose) {
 console.log()
 /* eslint-enable no-console */
 
-// Import @craft-native/ts dynamically — its static import triggers bun-router
-// config loading which prints warnings before our console.log override is active.
-const { createApp } = await import('@craft-native/ts')
-
-// Resolve the dock icon. Userland gets first crack at customizing via
-// `resources/assets/images/app-icon.png` in the project; if absent, fall
-// back to the framework's bundled placeholder so the dock never shows the
-// generic "no icon" silhouette. PNG is fine — NSImage decodes it directly.
-const userIconPath = projectPath('resources/assets/images/app-icon.png')
-const defaultIconPath = storagePath('framework/defaults/resources/assets/images/app-icon.png')
-// eslint-disable-next-line ts/no-top-level-await
-const appIconPath = (await Bun.file(userIconPath).exists())
-  ? userIconPath
-  : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
-
-// Native sidebar mode: Craft renders a real NSOutlineView populated
-// from `sidebarConfig`. The web sidebar self-hides via the layout's
-// `?native-sidebar=1` URL signal, so users only ever see one nav.
-//
-// If `sidebarConfig` round-tripping ever breaks again (Craft fell back
-// to its Finder placeholder before because the config didn't survive
-// argv/file passing), set `nativeSidebar: false` and the web sidebar
-// stays visible — see the layout for the matching detection logic.
-const app = createApp({
-  url: initialUrl,
-  quiet: !verbose,
-  window: {
-    title: 'Stacks Dashboard',
-    width: 1400,
-    height: 900,
-    titlebarHidden: true,
-    nativeSidebar: true,
-    sidebarWidth: 240,
-    sidebarConfig,
-    ...(appIconPath && { icon: appIconPath }),
-  },
-})
-
-// Clean up on exit
-process.on('SIGINT', () => {
-  app.close()
-  process.exit(0)
-})
-process.on('SIGTERM', () => {
-  app.close()
-  process.exit(0)
-})
-
+// Import @craft-native/ts dynamically. Its static import triggers bun-router
+// config loading which prints warnings before our console.log override is
+// active. We also let it be missing — the native window is a nicety, not a
+// requirement; the dashboard runs fine as a plain web server in that case.
+let createApp: ((opts: any) => { show: () => Promise<void>, close: () => void }) | null = null
 try {
-  await app.show()
-  process.exit(0)
+  ;({ createApp } = await import('@craft-native/ts'))
 }
-catch (err: any) {
-  const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
-  // eslint-disable-next-line no-console
-  console.log(`  ${dim('Dashboard available at:')} ${cyan(fallbackUrl)}\n`)
+catch {
+  // @craft-native/ts isn't installed (or its native bindings failed to
+  // load on this platform). Fall through to web-only mode below.
+}
 
-  // Keep the process running since we're serving via STX
+if (createApp) {
+  // Resolve the dock icon. Userland gets first crack at customizing via
+  // `resources/assets/images/app-icon.png` in the project; if absent, fall
+  // back to the framework's bundled placeholder so the dock never shows the
+  // generic "no icon" silhouette. PNG is fine — NSImage decodes it directly.
+  const userIconPath = projectPath('resources/assets/images/app-icon.png')
+  const defaultIconPath = storagePath('framework/defaults/resources/assets/images/app-icon.png')
+  // eslint-disable-next-line ts/no-top-level-await
+  const appIconPath = (await Bun.file(userIconPath).exists())
+    ? userIconPath
+    : (await Bun.file(defaultIconPath).exists()) ? defaultIconPath : undefined
+
+  // Native sidebar mode: Craft renders a real NSOutlineView populated
+  // from `sidebarConfig`. The web sidebar self-hides via the layout's
+  // `?native-sidebar=1` URL signal, so users only ever see one nav.
+  //
+  // If `sidebarConfig` round-tripping ever breaks again (Craft fell back
+  // to its Finder placeholder before because the config didn't survive
+  // argv/file passing), set `nativeSidebar: false` and the web sidebar
+  // stays visible — see the layout for the matching detection logic.
+  const app = createApp({
+    url: initialUrl,
+    quiet: !verbose,
+    window: {
+      title: 'Stacks Dashboard',
+      width: 1400,
+      height: 900,
+      titlebarHidden: true,
+      nativeSidebar: true,
+      sidebarWidth: 240,
+      sidebarConfig,
+      ...(appIconPath && { icon: appIconPath }),
+    },
+  })
+
+  // Clean up on exit
+  process.on('SIGINT', () => {
+    app.close()
+    process.exit(0)
+  })
+  process.on('SIGTERM', () => {
+    app.close()
+    process.exit(0)
+  })
+
+  try {
+    await app.show()
+    process.exit(0)
+  }
+  catch {
+    const fallbackUrl = dashboardHttpsUrl || dashboardLocalUrl
+    // eslint-disable-next-line no-console
+    console.log(`  ${dim('Dashboard available at:')} ${cyan(fallbackUrl)}\n`)
+
+    // Keep the process running since we're serving via STX
+    await new Promise(() => {})
+  }
+}
+else {
+  // No native window — keep the HTTP server alive so the dashboard is
+  // reachable via the URLs printed in the banner above. SIGINT/SIGTERM
+  // exit cleanly without a window to close.
+  process.on('SIGINT', () => process.exit(0))
+  process.on('SIGTERM', () => process.exit(0))
   await new Promise(() => {})
 }
