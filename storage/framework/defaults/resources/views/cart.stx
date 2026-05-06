@@ -18,21 +18,27 @@ if (token) {
   if (cart) {
     items = db.query(`
       SELECT ci.id, ci.quantity, ci.unit_price, ci.total_price, ci.product_name,
-             ci.product_image, ci.product_sku, p.weight_grams
+            ci.product_image, ci.product_sku, p.weight_grams
       FROM cart_items ci
       LEFT JOIN products p ON p.slug = ci.product_sku
       WHERE ci.cart_id = ?1
       ORDER BY ci.id ASC
-    `).all(cart.id).map((row) => ({
-      id: row.id,
-      slug: row.product_sku,
-      name: row.product_name,
-      weight: row.weight_grams ? `${row.weight_grams}g` : '',
-      qty: Number(row.quantity),
-      price: Number(row.unit_price),
-      lineTotal: Number(row.total_price),
-      image: row.product_image,
-    }))
+    `).all(cart.id).map((row) => {
+      const qty = Number(row.quantity)
+      const price = Number(row.unit_price)
+      const lineTotal = Number(row.total_price)
+      return {
+        id: row.id,
+        slug: row.product_sku,
+        name: row.product_name,
+        weight: row.weight_grams ? `${row.weight_grams}g` : '',
+        qty,
+        priceLabel: `$${price.toFixed(2)}`,
+        lineTotal,
+        lineTotalLabel: `$${lineTotal.toFixed(2)}`,
+        image: row.product_image,
+      }
+    })
   }
 }
 
@@ -46,67 +52,78 @@ const FLAT_SHIPPING = Number(process.env.STOREFRONT_FLAT_SHIPPING ?? 5) || 5
 const subtotal = items.reduce((sum, i) => sum + i.lineTotal, 0)
 const shipping = subtotal <= 0 ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING)
 const total = subtotal + shipping
+const remainingForFree = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
+
+// Pre-format every numeric so the OrderSummary component template doesn't
+// have to call .toFixed() on a defineProps local — STX's SSR pass doesn't
+// reliably expose those locals, so callers do the formatting.
+const subtotalLabel = `$${subtotal.toFixed(2)}`
+const shippingLabel = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`
+const totalLabel = `$${total.toFixed(2)}`
+const freeShippingNote = (shipping > 0 && remainingForFree > 0)
+  ? `Add $${remainingForFree.toFixed(2)} more for free shipping.`
+  : ''
 </script>
 
 @section('content')
-  <div class="mx-auto max-w-5xl px-6 py-12">
+  <div class="mx-auto px-6 py-12 max-w-5xl">
 
-    <p class="text-xs uppercase tracking-wider text-stone-500 font-medium">Your bowl</p>
-    <h1 class="mt-2 text-4xl font-bold tracking-tight text-stone-900">Cart</h1>
+    <p class="font-medium text-stone-500 text-xs tracking-wider uppercase">Your bowl</p>
+    <h1 class="mt-2 font-bold text-4xl text-stone-900 tracking-tight">Cart</h1>
     <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }}{{ items.length > 0 ? ' ready to ship' : '' }}.</p>
 
     @if (items.length === 0)
-      <div class="mt-12 rounded-3xl border border-dashed border-stone-300 bg-stone-50 p-12 md:p-16 text-center">
-        <div class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+      <div class="mt-12 p-12 md:p-16 text-center bg-stone-50 border border-dashed border-stone-300 rounded-3xl">
+        <div class="inline-flex items-center justify-center mx-auto h-14 w-14 bg-stone-100 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-stone-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c.51 0 .956-.343 1.087-.835l1.872-7.024A1.125 1.125 0 0019.797 5.25H5.106M7.5 14.25L5.106 5.25M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
         </div>
-        <p class="mt-5 text-base text-stone-700 font-medium">Your cart is empty.</p>
+        <p class="mt-5 font-medium text-base text-stone-700">Your cart is empty.</p>
         <p class="mt-1 text-sm text-stone-500">Pick a treat and we'll start your bowl.</p>
-        <a href="/products" class="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50">
+        <a href="/products" class="inline-flex gap-2 items-center mt-6 px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 focus-visible:ring-stone-900 transition-colors">
           Browse the shop
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
         </a>
       </div>
     @else
-      <div class="mt-10 grid lg:grid-cols-[2fr_1fr] gap-10 lg:gap-12 items-start">
+      <div class="grid gap-10 items-start lg:gap-12 lg:grid-cols-[2fr_1fr] mt-10">
 
         <div class="space-y-4">
           @foreach (items as item)
-            <article class="flex gap-4 rounded-2xl bg-stone-50 border border-stone-200 p-4 hover:border-stone-300 transition-colors">
+            <article class="flex gap-4 p-4 bg-stone-50 border border-stone-200 rounded-2xl hover:border-stone-300 transition-colors">
               <a
                 href="/products/{{ item.slug }}"
-                class="block w-24 h-24 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50"
+                class="block overflow-hidden flex-shrink-0 h-24 w-24 bg-stone-200 rounded-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 focus-visible:ring-stone-900"
                 aria-label="View {{ item.name }}"
               >
-                <img src="{{ item.image }}" alt="" class="h-full w-full object-cover">
+                <img src="{{ item.image }}" alt="" class="object-cover h-full w-full">
               </a>
-              <div class="flex-1 flex flex-col min-w-0">
-                <div class="flex items-start justify-between gap-3">
+              <div class="flex flex-1 flex-col min-w-0">
+                <div class="flex gap-3 items-start justify-between">
                   <div class="min-w-0">
-                    <a href="/products/{{ item.slug }}" class="font-semibold text-stone-900 hover:underline truncate block">{{ item.name }}</a>
+                    <a href="/products/{{ item.slug }}" class="block font-semibold text-stone-900 truncate hover:underline">{{ item.name }}</a>
                     @if (item.weight)
-                      <p class="text-xs text-stone-500 mt-0.5">{{ item.weight }} · ${{ item.price.toFixed(2) }} each</p>
+                      <p class="mt-0.5 text-stone-500 text-xs">{{ item.weight }} · {{ item.priceLabel }} each</p>
                     @else
-                      <p class="text-xs text-stone-500 mt-0.5">${{ item.price.toFixed(2) }} each</p>
+                      <p class="mt-0.5 text-stone-500 text-xs">{{ item.priceLabel }} each</p>
                     @endif
                   </div>
-                  <p class="font-semibold text-stone-900 whitespace-nowrap">${{ item.lineTotal.toFixed(2) }}</p>
+                  <p class="font-semibold text-stone-900 whitespace-nowrap">{{ item.lineTotalLabel }}</p>
                 </div>
-                <div class="mt-auto flex items-end justify-between gap-3 pt-3">
-                  <form action="/api/cart/update" method="POST" class="inline-flex items-center rounded-full border border-stone-300 overflow-hidden" data-cart-row>
+                <div class="flex gap-3 items-end justify-between mt-auto pt-3">
+                  <form action="/api/cart/update" method="POST" class="inline-flex overflow-hidden items-center border border-stone-300 rounded-full" data-cart-row>
                     <input type="hidden" name="item_id" value="{{ item.id }}">
-                    <button type="submit" name="quantity" value="{{ item.qty - 1 }}" class="px-3 py-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors focus-visible:outline-none focus-visible:bg-stone-100" aria-label="Decrease quantity">
+                    <button type="submit" name="quantity" value="{{ item.qty - 1 }}" class="px-3 py-1.5 text-stone-600 hover:text-stone-900 focus-visible:bg-stone-100 hover:bg-stone-100 focus-visible:outline-none transition-colors" aria-label="Decrease quantity">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
                     </button>
-                    <span class="px-2 min-w-[1.5rem] text-center text-sm font-semibold text-stone-900 tabular-nums">{{ item.qty }}</span>
-                    <button type="submit" name="quantity" value="{{ item.qty + 1 }}" class="px-3 py-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors focus-visible:outline-none focus-visible:bg-stone-100" aria-label="Increase quantity">
+                    <span class="px-2 min-w-[1.5rem] font-semibold tabular-nums text-center text-sm text-stone-900">{{ item.qty }}</span>
+                    <button type="submit" name="quantity" value="{{ item.qty + 1 }}" class="px-3 py-1.5 text-stone-600 hover:text-stone-900 focus-visible:bg-stone-100 hover:bg-stone-100 focus-visible:outline-none transition-colors" aria-label="Increase quantity">
                       <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/></svg>
                     </button>
                   </form>
                   <form action="/api/cart/update" method="POST">
                     <input type="hidden" name="item_id" value="{{ item.id }}">
                     <input type="hidden" name="quantity" value="0">
-                    <button type="submit" class="text-xs font-medium text-stone-500 hover:text-stone-900 underline-offset-4 hover:underline transition-colors focus-visible:outline-none focus-visible:text-stone-900 focus-visible:underline" aria-label="Remove {{ item.name }}">Remove</button>
+                    <button type="submit" class="font-medium text-stone-500 text-xs underline-offset-4 focus-visible:text-stone-900 focus-visible:underline hover:text-stone-900 hover:underline focus-visible:outline-none transition-colors" aria-label="Remove {{ item.name }}">Remove</button>
                   </form>
                 </div>
               </div>
@@ -115,9 +132,10 @@ const total = subtotal + shipping
         </div>
 
         <OrderSummary
-          subtotal="{{ subtotal }}"
-          shipping="{{ shipping }}"
-          total="{{ total }}"
+          subtotalLabel="{{ subtotalLabel }}"
+          shippingLabel="{{ shippingLabel }}"
+          totalLabel="{{ totalLabel }}"
+          freeShippingNote="{{ freeShippingNote }}"
           ctaHref="/checkout/contact"
           ctaLabel="Checkout"
           secondaryHref="/products"

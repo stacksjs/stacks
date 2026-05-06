@@ -19,11 +19,16 @@ if (token) {
     items = db.query(`
       SELECT product_name, quantity, total_price
       FROM cart_items WHERE cart_id = ?1 ORDER BY id ASC
-    `).all(cart.id).map((row) => ({
-      name: row.product_name,
-      qty: Number(row.quantity),
-      lineTotal: Number(row.total_price),
-    }))
+    `).all(cart.id).map((row) => {
+      const qty = Number(row.quantity)
+      const lineTotal = Number(row.total_price)
+      return {
+        name: row.product_name,
+        qty,
+        lineTotal,
+        lineTotalLabel: `$${lineTotal.toFixed(2)}`,
+      }
+    })
   }
 }
 
@@ -32,6 +37,14 @@ const FLAT_SHIPPING = Number(process.env.STOREFRONT_FLAT_SHIPPING ?? 5) || 5
 const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
 const shipping = subtotal <= 0 ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING)
 const total = subtotal + shipping
+const remainingForFree = Math.max(0, FREE_SHIPPING_THRESHOLD - subtotal)
+
+const subtotalLabel = `$${subtotal.toFixed(2)}`
+const shippingLabel = shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}`
+const totalLabel = `$${total.toFixed(2)}`
+const freeShippingNote = (shipping > 0 && remainingForFree > 0)
+  ? `Add $${remainingForFree.toFixed(2)} more for free shipping.`
+  : ''
 
 const ready = !!cart?.email && !!cart?.shipping_name && !!cart?.shipping_address
 </script>
@@ -81,7 +94,7 @@ const ready = !!cart?.email && !!cart?.shipping_name && !!cart?.shipping_address
             <div class="flex items-center justify-between gap-4 pt-2">
               <a href="/checkout/shipping" class="text-sm text-stone-500 hover:text-stone-900">← Back</a>
               <button type="submit" class="rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors">
-                Place order — ${{ total.toFixed(2) }}
+                Place order — {{ totalLabel }}
               </button>
             </div>
           </form>
@@ -89,9 +102,10 @@ const ready = !!cart?.email && !!cart?.shipping_name && !!cart?.shipping_address
 
         <OrderSummary
           :items="items"
-          subtotal="{{ subtotal }}"
-          shipping="{{ shipping }}"
-          total="{{ total }}"
+          subtotalLabel="{{ subtotalLabel }}"
+          shippingLabel="{{ shippingLabel }}"
+          totalLabel="{{ totalLabel }}"
+          freeShippingNote="{{ freeShippingNote }}"
           :showItems="true"
         />
       </div>
