@@ -23,25 +23,43 @@ const {
 </script>
 
 <header class="border-b border-stone-200 bg-stone-50/95 backdrop-blur sticky top-0 z-30">
-  <div class="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between">
-    <a href="/" class="flex items-center gap-2 group">
-      <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-stone-50 font-bold text-sm">{{ brandMark }}</span>
+  <div class="mx-auto max-w-6xl px-6 py-5 flex items-center justify-between gap-6">
+    <a
+      href="/"
+      data-stx-link
+      data-stx-exact-active-class="!text-stone-900"
+      class="flex items-center gap-2 group rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50"
+      aria-label="{{ brandName }} — home"
+    >
+      <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-stone-50 font-bold text-sm transition-transform group-hover:scale-105">{{ brandMark }}</span>
       <span class="font-bold text-xl tracking-tight">{{ brandName }}</span>
     </a>
 
-    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-stone-700">
+    <nav class="hidden md:flex items-center gap-8 text-sm font-medium text-stone-600" data-stx-nav>
       @foreach (links as link)
-        <a href="{{ link.href }}" class="hover:text-stone-900 transition-colors">{{ link.label }}</a>
+        <a
+          href="{{ link.href }}"
+          data-stx-link
+          data-stx-active-class="text-stone-900"
+          class="relative transition-colors hover:text-stone-900 focus-visible:outline-none focus-visible:text-stone-900 [&.text-stone-900]:after:content-[''] [&.text-stone-900]:after:absolute [&.text-stone-900]:after:left-0 [&.text-stone-900]:after:right-0 [&.text-stone-900]:after:-bottom-2 [&.text-stone-900]:after:h-0.5 [&.text-stone-900]:after:bg-stone-900 [&.text-stone-900]:after:rounded-full"
+        >{{ link.label }}</a>
       @endforeach
     </nav>
 
     <div class="flex items-center gap-3">
-      <a href="/cart" class="relative inline-flex items-center gap-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-medium hover:border-stone-900 transition-colors">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c.51 0 .956-.343 1.087-.835l1.872-7.024A1.125 1.125 0 0019.797 5.25H5.106M7.5 14.25L5.106 5.25M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
-        Cart
-        @if (cartCount > 0)
-          <span class="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-stone-900 text-[10px] font-bold text-stone-50">{{ cartCount }}</span>
-        @endif
+      <a
+        href="/cart"
+        data-stx-link
+        data-stx-active-class="border-stone-900 text-stone-900"
+        class="relative inline-flex items-center gap-2 rounded-full border border-stone-300 px-4 py-2 text-sm font-medium text-stone-700 hover:border-stone-900 hover:text-stone-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50"
+        aria-label="View cart"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c.51 0 .956-.343 1.087-.835l1.872-7.024A1.125 1.125 0 0019.797 5.25H5.106M7.5 14.25L5.106 5.25M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
+        <span>Cart</span>
+        <span
+          data-stx-cart-count
+          class="inline-flex items-center justify-center h-5 min-w-[20px] px-1.5 rounded-full bg-stone-900 text-[10px] font-bold text-stone-50 {{ cartCount > 0 ? '' : 'hidden' }}"
+        >{{ cartCount }}</span>
       </a>
     </div>
   </div>

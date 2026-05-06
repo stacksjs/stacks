@@ -47,7 +47,7 @@ catch { /* schema not migrated yet, or db missing — render an empty header */ 
   @hasSection('header')
     @yield('header')
   @else
-    <Header cartCount="{{ cartCount }}" />
+    <Header :cartCount="cartCount" />
   @endif
 
   <main>

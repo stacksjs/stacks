@@ -2,7 +2,7 @@
 interface ProductCardProps {
   slug: string
   name: string
-  price: number
+  price: number | string
   image: string
   ingredient?: string
   weight?: string
@@ -10,16 +10,20 @@ interface ProductCardProps {
   speciesLabel?: string
 }
 
+const props = defineProps<ProductCardProps>()
 const {
   slug,
   name,
-  price,
   image,
   ingredient = '',
   weight = '',
   badge = '',
   speciesLabel = '',
-} = defineProps<ProductCardProps>()
+} = props
+// STX `{{ }}` interpolation passes everything as a string at the
+// component boundary, so `price.toFixed(2)` throws on real props
+// even though the type says `number`. Coerce defensively.
+const priceNumber = Number(props.price) || 0
 </script>
 
 <a href="/products/{{ slug }}" class="group block bg-stone-50 rounded-2xl overflow-hidden border border-stone-200 hover:border-stone-900 transition-colors">
@@ -41,7 +45,7 @@ const {
       <p class="mt-1 text-xs text-stone-500">{{ ingredient }}</p>
     @endif
     <div class="mt-3 flex items-center justify-between">
-      <p class="font-bold text-stone-900">${{ price.toFixed(2) }}</p>
+      <p class="font-bold text-stone-900">${{ priceNumber.toFixed(2) }}</p>
       <span class="text-xs font-medium text-stone-500 group-hover:text-stone-900">View →</span>
     </div>
   </div>

@@ -19,12 +19,16 @@ interface OrderSummaryProps {
   sticky?: boolean
 }
 
+const envThreshold = typeof process !== 'undefined'
+  ? Number(process.env.STOREFRONT_FREE_SHIPPING_THRESHOLD ?? 40) || 40
+  : 40
+
 const {
   items = [],
   subtotal,
   shipping,
   total,
-  freeShippingThreshold = 40,
+  freeShippingThreshold = envThreshold,
   showItems = false,
   ctaHref = '',
   ctaLabel = '',
@@ -69,9 +73,9 @@ const remainingForFree = Math.max(0, freeShippingThreshold - subtotal)
   </div>
 
   @if (ctaHref && ctaLabel)
-    <a href="{{ ctaHref }}" class="mt-6 block w-full rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-center text-sm font-semibold hover:bg-stone-800 transition-colors">{{ ctaLabel }}</a>
+    <a href="{{ ctaHref }}" class="mt-6 block w-full rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-center text-sm font-semibold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50">{{ ctaLabel }}</a>
   @endif
   @if (secondaryHref && secondaryLabel)
-    <a href="{{ secondaryHref }}" class="mt-3 block w-full rounded-full border border-stone-300 px-6 py-3 text-center text-sm font-semibold text-stone-900 hover:border-stone-900 transition-colors">{{ secondaryLabel }}</a>
+    <a href="{{ secondaryHref }}" class="mt-3 block w-full rounded-full border border-stone-300 px-6 py-3 text-center text-sm font-semibold text-stone-900 hover:border-stone-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50">{{ secondaryLabel }}</a>
   @endif
 </aside>

@@ -51,36 +51,66 @@ const total = subtotal + shipping
 @section('content')
   <div class="mx-auto max-w-5xl px-6 py-12">
 
-    <h1 class="text-4xl font-bold tracking-tight text-stone-900">Your cart</h1>
-    <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }} ready to ship.</p>
+    <p class="text-xs uppercase tracking-wider text-stone-500 font-medium">Your bowl</p>
+    <h1 class="mt-2 text-4xl font-bold tracking-tight text-stone-900">Cart</h1>
+    <p class="mt-2 text-stone-600">{{ items.length }} item{{ items.length === 1 ? '' : 's' }}{{ items.length > 0 ? ' ready to ship' : '' }}.</p>
 
     @if (items.length === 0)
-      <div class="mt-12 rounded-3xl border border-dashed border-stone-300 p-12 text-center">
-        <p class="text-stone-500">Your cart is empty.</p>
-        <a href="/products" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Browse the shop</a>
+      <div class="mt-12 rounded-3xl border border-dashed border-stone-300 bg-stone-50 p-12 md:p-16 text-center">
+        <div class="mx-auto inline-flex h-14 w-14 items-center justify-center rounded-full bg-stone-100">
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-stone-400" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M2.25 3h1.386c.51 0 .955.343 1.087.835l.383 1.437M7.5 14.25a3 3 0 00-3 3h15.75m-12.75-3h11.218c.51 0 .956-.343 1.087-.835l1.872-7.024A1.125 1.125 0 0019.797 5.25H5.106M7.5 14.25L5.106 5.25M6 20.25a.75.75 0 11-1.5 0 .75.75 0 011.5 0zm12.75 0a.75.75 0 11-1.5 0 .75.75 0 011.5 0z" /></svg>
+        </div>
+        <p class="mt-5 text-base text-stone-700 font-medium">Your cart is empty.</p>
+        <p class="mt-1 text-sm text-stone-500">Pick a treat and we'll start your bowl.</p>
+        <a href="/products" class="mt-6 inline-flex items-center gap-2 rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50">
+          Browse the shop
+          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+        </a>
       </div>
     @else
-      <div class="mt-10 grid lg:grid-cols-[2fr_1fr] gap-12 items-start">
+      <div class="mt-10 grid lg:grid-cols-[2fr_1fr] gap-10 lg:gap-12 items-start">
 
         <div class="space-y-4">
           @foreach (items as item)
-            <div class="flex gap-4 rounded-2xl bg-stone-50 border border-stone-200 p-4">
-              <a href="/products/{{ item.slug }}" class="block w-24 h-24 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0">
-                <img src="{{ item.image }}" alt="{{ item.name }}" class="h-full w-full object-cover">
+            <article class="flex gap-4 rounded-2xl bg-stone-50 border border-stone-200 p-4 hover:border-stone-300 transition-colors">
+              <a
+                href="/products/{{ item.slug }}"
+                class="block w-24 h-24 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50"
+                aria-label="View {{ item.name }}"
+              >
+                <img src="{{ item.image }}" alt="" class="h-full w-full object-cover">
               </a>
-              <div class="flex-1 flex flex-col">
-                <a href="/products/{{ item.slug }}" class="font-semibold text-stone-900 hover:underline">{{ item.name }}</a>
-                <p class="text-xs text-stone-500 mt-0.5">{{ item.weight }}</p>
-                <div class="mt-auto flex items-end justify-between">
-                  <form action="/api/cart/update" method="POST" class="flex items-center gap-2 text-sm">
+              <div class="flex-1 flex flex-col min-w-0">
+                <div class="flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <a href="/products/{{ item.slug }}" class="font-semibold text-stone-900 hover:underline truncate block">{{ item.name }}</a>
+                    @if (item.weight)
+                      <p class="text-xs text-stone-500 mt-0.5">{{ item.weight }} · ${{ item.price.toFixed(2) }} each</p>
+                    @else
+                      <p class="text-xs text-stone-500 mt-0.5">${{ item.price.toFixed(2) }} each</p>
+                    @endif
+                  </div>
+                  <p class="font-semibold text-stone-900 whitespace-nowrap">${{ item.lineTotal.toFixed(2) }}</p>
+                </div>
+                <div class="mt-auto flex items-end justify-between gap-3 pt-3">
+                  <form action="/api/cart/update" method="POST" class="inline-flex items-center rounded-full border border-stone-300 overflow-hidden" data-cart-row>
                     <input type="hidden" name="item_id" value="{{ item.id }}">
-                    <input type="number" name="quantity" min="0" max="99" value="{{ item.qty }}" class="w-16 rounded-full border border-stone-300 px-3 py-1.5 text-center focus:outline-none focus:border-stone-900">
-                    <button type="submit" class="text-xs font-medium text-stone-500 hover:text-stone-900 underline-offset-2 hover:underline">Update</button>
+                    <button type="submit" name="quantity" value="{{ item.qty - 1 }}" class="px-3 py-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors focus-visible:outline-none focus-visible:bg-stone-100" aria-label="Decrease quantity">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14"/></svg>
+                    </button>
+                    <span class="px-2 min-w-[1.5rem] text-center text-sm font-semibold text-stone-900 tabular-nums">{{ item.qty }}</span>
+                    <button type="submit" name="quantity" value="{{ item.qty + 1 }}" class="px-3 py-1.5 text-stone-600 hover:bg-stone-100 hover:text-stone-900 transition-colors focus-visible:outline-none focus-visible:bg-stone-100" aria-label="Increase quantity">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke-width="2.5" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M12 5v14m-7-7h14"/></svg>
+                    </button>
                   </form>
-                  <p class="font-semibold text-stone-900">${{ item.lineTotal.toFixed(2) }}</p>
+                  <form action="/api/cart/update" method="POST">
+                    <input type="hidden" name="item_id" value="{{ item.id }}">
+                    <input type="hidden" name="quantity" value="0">
+                    <button type="submit" class="text-xs font-medium text-stone-500 hover:text-stone-900 underline-offset-4 hover:underline transition-colors focus-visible:outline-none focus-visible:text-stone-900 focus-visible:underline" aria-label="Remove {{ item.name }}">Remove</button>
+                  </form>
                 </div>
               </div>
-            </div>
+            </article>
           @endforeach
         </div>
 
@@ -92,7 +122,7 @@ const total = subtotal + shipping
           ctaLabel="Checkout"
           secondaryHref="/products"
           secondaryLabel="Keep shopping"
-          sticky="{{ true }}"
+          :sticky="true"
         />
 
       </div>

@@ -27,8 +27,10 @@ if (token) {
   }
 }
 
+const FREE_SHIPPING_THRESHOLD = Number(process.env.STOREFRONT_FREE_SHIPPING_THRESHOLD ?? 40) || 40
+const FLAT_SHIPPING = Number(process.env.STOREFRONT_FLAT_SHIPPING ?? 5) || 5
 const subtotal = items.reduce((s, i) => s + i.lineTotal, 0)
-const shipping = subtotal === 0 ? 0 : (subtotal >= 40 ? 0 : 5)
+const shipping = subtotal <= 0 ? 0 : (subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : FLAT_SHIPPING)
 const total = subtotal + shipping
 
 const ready = !!cart?.email && !!cart?.shipping_name && !!cart?.shipping_address
@@ -86,11 +88,11 @@ const ready = !!cart?.email && !!cart?.shipping_name && !!cart?.shipping_address
         </div>
 
         <OrderSummary
-          items="{{ items }}"
+          :items="items"
           subtotal="{{ subtotal }}"
           shipping="{{ shipping }}"
           total="{{ total }}"
-          showItems="{{ true }}"
+          :showItems="true"
         />
       </div>
     @endif
