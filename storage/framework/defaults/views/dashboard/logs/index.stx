@@ -1,79 +1,233 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
+@title('Dashboard - Logs')
+<div class="p-6 space-y-6">
+  <PageHeader title="System Logs" description="A list of all system logs. Monitor system activities and events in real-time." />
+
+  <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
+    <div class="p-6">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Log Volume</h3>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Distribution of log types over time</p>
+        </div>
+        <select x-model="timeRange" class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
+          <option value="day">Last 24 Hours</option>
+          <option value="week">Last 7 Days</option>
+          <option value="month">Last 30 Days</option>
+          <option value="year">Last Year</option>
+        </select>
+      </div>
+      <div class="relative h-[300px]">
+        <div :show="isLoading()" class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
+          <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
+        </div>
+        <canvas id="logs_volume_chart"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <div class="flow-root mt-8">
+    <div class="mb-6 space-y-4">
+      <div class="flex flex-wrap gap-4 items-center">
+        <div class="flex-1 min-w-[200px]">
+          <input x-model="searchTerm" type="text" placeholder="Search logs..." class="px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-700 border border-gray-300 dark:border-neutral-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+        </div>
+
+        <select x-model="sourceFilter" class="px-4 py-2 min-w-[140px] text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 rounded-lg">
+          <option value="all">All Sources</option>
+          <option value="cli">CLI</option>
+          <option value="file">File</option>
+          <option value="system">System</option>
+          <option value="mail">Mail</option>
+          <option value="notification">Notification</option>
+        </select>
+
+        <select x-model="logTypeFilter" class="px-4 py-2 min-w-[140px] text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 rounded-lg">
+          <option value="all">All Types</option>
+          <option value="info">Info</option>
+          <option value="success">Success</option>
+          <option value="warning">Warning</option>
+          <option value="error">Error</option>
+          <option value="mail">Mail</option>
+        </select>
+
+        <button @click="toggleAutoRefresh()" class="{{ autoRefreshClass() }}">
+          <i class="h-4 w-4 i-hugeicons-refresh {{ autoRefresh() ? 'animate-spin' : '' }}" aria-hidden="true"></i>
+          {{ autoRefresh() ? 'Auto-refreshing' : 'Auto-refresh' }}
+        </button>
+
+        <button :show="hasActiveFilters()" @click="resetFilters()" class="flex gap-2 items-center px-4 py-2 text-gray-700 dark:text-neutral-200 bg-gray-100 dark:bg-neutral-700 hover:bg-gray-200 dark:hover:bg-neutral-600 rounded-lg">
+          <i class="h-4 w-4 i-hugeicons-cancel-01" aria-hidden="true"></i>
+          Reset Filters
+        </button>
+      </div>
+
+      <div class="flex flex-wrap gap-2">
+        <template :for="project in projectsList">
+          <button @click="toggleProject(project.id)" class="{{ projectButtonClassFor(project.id) }}">
+            {{ project.name }}
+            <span :show="isProjectSelected(project.id)" class="ml-2 text-xs">×</span>
+          </button>
+        </template>
+      </div>
+    </div>
+
+    <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
+      <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
+        <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+          <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+            <thead class="bg-gray-50 dark:bg-neutral-700/50">
+              <tr>
+                <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Timestamp</th>
+                <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Type</th>
+                <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Source</th>
+                <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Message</th>
+                <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Project</th>
+                <th class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase">Details</th>
+              </tr>
+            </thead>
+            <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+              <template :for="log in paginatedLogs()">
+                <tr @click="selectLog(log.id)" class="{{ logRowClass(log) }}">
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="text-gray-900 text-sm dark:text-neutral-100">
+                      <i class="mr-2 h-4 w-4 text-gray-400 i-hugeicons-clock-01" aria-hidden="true"></i>
+                      {{ formatTime(log.timestamp) }}
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <div class="flex items-center">
+                      <i :class="logIconClass(log.type)" aria-hidden="true"></i>
+                    </div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span class="inline-flex px-2 font-semibold leading-5 text-blue-800 text-xs bg-blue-100 dark:bg-blue-900 dark:text-blue-100 rounded-full">{{ log.source }}</span>
+                  </td>
+                  <td class="px-6 py-4">
+                    <div class="text-gray-900 text-sm dark:text-neutral-100">{{ log.message }}</div>
+                    <div :if="log.email" class="mt-1 text-gray-500 text-xs truncate dark:text-neutral-400">{{ log.email?.subject }}</div>
+                  </td>
+                  <td class="px-6 py-4 whitespace-nowrap">
+                    <span :if="log.project" :class="projectBadgeClassFor(log.project)">{{ projectName(log.project) }}</span>
+                  </td>
+                  <td class="px-6 py-4 text-right whitespace-nowrap">
+                    <button class="text-gray-400 hover:text-blue-500 duration-150 transition-colors">
+                      <i class="h-5 w-5 i-hugeicons-view" aria-hidden="true"></i>
+                    </button>
+                  </td>
+                </tr>
+              </template>
+              <tr :show="paginatedLogs().length === 0">
+                <td colspan="6" class="px-6 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No logs match your filters.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <div class="flex items-center justify-between mt-4">
+      <div class="flex items-center">
+        <span class="text-gray-700 text-sm dark:text-neutral-400">
+          Showing <span class="font-medium">{{ paginatedLogs().length }}</span> of <span class="font-medium">{{ totalItems() }}</span> results
+        </span>
+      </div>
+      <div class="flex items-center space-x-2">
+        <select x-model="itemsPerPage" class="px-2 py-1 text-sm dark:text-neutral-100 dark:bg-neutral-700 border border-gray-300 dark:border-neutral-600 rounded-md">
+          <option value="10">10 per page</option>
+          <option value="25">25 per page</option>
+          <option value="50">50 per page</option>
+          <option value="100">100 per page</option>
+        </select>
+
+        <div class="flex items-center space-x-1">
+          <button @click="prevPage()" :disabled="currentPage() === 1" class="px-2 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-neutral-700">
+            <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true"></i>
+          </button>
+
+          <template :for="page in visiblePages()">
+            <button @click="goToPage(page)" class="{{ pageButtonClass(page) }}">{{ page }}</button>
+          </template>
+
+          <span :show="totalPages() > 5" class="px-2 text-gray-500 dark:text-neutral-400">...</span>
+
+          <button :show="totalPages() > 5" @click="goToPage(totalPages())" class="{{ pageButtonClass(totalPages()) }}">{{ totalPages() }}</button>
+
+          <button @click="nextPage()" :disabled="currentPage() >= totalPages() || totalPages() === 0" class="px-2 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-neutral-700">
+            <i class="h-4 w-4 i-hugeicons-arrow-right-01" aria-hidden="true"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div :show="selectedLog() !== null" @click.self="closeModal()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+        <div class="flex items-center justify-between mb-4">
+          <h3 class="font-semibold text-lg text-gray-900 dark:text-neutral-100">Log Details</h3>
+          <button @click="closeModal()" class="text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200">
+            <i class="h-5 w-5 i-hugeicons-cancel-01" aria-hidden="true"></i>
+          </button>
+        </div>
+        <div class="space-y-4">
+          <div>
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Timestamp</label>
+            <p class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ formatDateTime(selectedLog()?.timestamp) }}</p>
+          </div>
+          <div>
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Type</label>
+            <div class="flex items-center mt-1">
+              <i :class="selectedLogIconClass()" aria-hidden="true"></i>
+              <span class="ml-2 capitalize text-gray-900 text-sm dark:text-neutral-100">{{ selectedLog()?.type }}</span>
+            </div>
+          </div>
+          <div>
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Source</label>
+            <p class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ selectedLog()?.source }}</p>
+          </div>
+          <div>
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Project</label>
+            <p class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ selectedProjectName() }}</p>
+          </div>
+          <div>
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Message</label>
+            <p class="mt-1 text-gray-900 text-sm dark:text-neutral-100">{{ selectedLog()?.message }}</p>
+          </div>
+
+          <div :if="selectedLog()?.metadata?.command" class="mt-4">
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Command</label>
+            <div class="mt-2 p-3 font-mono text-sm bg-gray-50 dark:bg-neutral-900 dark:text-neutral-100 rounded-md">{{ selectedLog()?.metadata?.command }}</div>
+          </div>
+
+          <div>
+            <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Metadata</label>
+            <pre class="overflow-x-auto mt-1 p-3 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-900 rounded">{{ selectedMetadataJson() }}</pre>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
 interface Log {
   id: string
   timestamp: string
   type: 'info' | 'error' | 'success' | 'warning' | 'mail'
   source: 'CLI' | 'File' | 'System' | 'Mail' | 'Notification'
   message: string
-  metadata: Record<string, any>
+  metadata: Record<string, unknown>
   project?: string
-  email?: EmailMetadata
+  email?: { subject?: string, sender?: string, recipient?: string }
 }
 
-interface EmailMetadata {
-  subject: string
-  sender: string
-  recipient: string
-  messageId?: string
-  size?: string
-  provider?: string
-  attachments?: Attachment[]
-  bounceInfo?: BounceInfo
-  authResults?: AuthResults
-  userInteraction?: UserInteraction
-}
+interface Project { id: string, name: string, color: string }
 
-interface Attachment {
-  name: string
-  type: string
-  size: string
-}
+interface ChartLike { destroy: () => void, update: () => void, data: { labels: string[], datasets: Array<{ label?: string, data: number[], borderColor?: string, backgroundColor?: string, fill?: boolean }> } }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
-interface BounceInfo {
-  reason: string
-  code: string
-  timestamp: string
-}
-
-interface AuthResults {
-  spf: 'pass' | 'fail' | 'neutral'
-  dkim: 'pass' | 'fail' | 'neutral'
-  dmarc: 'pass' | 'fail' | 'neutral'
-}
-
-interface UserInteraction {
-  opened: boolean
-  openedAt?: string
-  clicked: boolean
-  clickedAt?: string
-  links?: string[]
-}
-
-interface Project {
-  id: string
-  name: string
-  color: string
-}
-
-// Add pagination
-let currentPage = 1
-let itemsPerPage = 10
-let totalItems = 0
-
-let logs = []
-let filter = 'all'
-let searchTerm = ''
-let autoRefresh = true
-let selectedLog = null
-let selectedProjects = []
-let isLoading = false
-let logTypeFilter = 'all'
-
-// Sample projects
-const projects: Project[] = [
+const projectsList: Project[] = [
   { id: 'stacks', name: 'Stacks', color: 'blue' },
   { id: 'rpx', name: 'rpx', color: 'purple' },
   { id: 'tlsx', name: 'tlsx', color: 'green' },
@@ -82,886 +236,304 @@ const projects: Project[] = [
   { id: 'vite-plugin-local', name: 'vite-plugin-local', color: 'amber' },
 ]
 
-// Updated sample logs with project information and CLI samples
+const now = Date.now()
 const sampleLogs: Log[] = [
-  {
-    id: '1',
-    timestamp: new Date().toISOString(),
-    type: 'info',
-    source: 'CLI',
-    message: 'buddy build started',
-    metadata: { user: 'chris@stacksjs.com', command: 'buddy build' },
-    project: 'stacks'
-  },
-  {
-    id: '2',
-    timestamp: new Date(Date.now() - 5000).toISOString(),
-    type: 'error',
-    source: 'File',
-    message: 'Failed to compile component',
-    metadata: { file: './components/Header.vue', line: 42 },
-    project: 'rpx'
-  },
-  {
-    id: '3',
-    timestamp: new Date(Date.now() - 15000).toISOString(),
-    type: 'success',
-    source: 'System',
-    message: 'Production deployment successful',
-    metadata: {
-      deployment_id: 'dep_abc123',
-      environment: 'production',
-      branch: 'main',
-      commit: '7829abc',
-      duration: '45s'
-    },
-    project: 'stacks'
-  },
-  {
-    id: '4',
-    timestamp: new Date(Date.now() - 60000).toISOString(),
-    type: 'info',
-    source: 'CLI',
-    message: 'Starting database migration',
-    metadata: {
-      migration: 'create_users_table',
-      database: 'production',
-      user: 'deploy@stacksjs.com',
-      command: 'buddy db:migrate'
-    },
-    project: 'stacks'
-  },
-  {
-    id: '5',
-    timestamp: new Date(Date.now() - 120000).toISOString(),
-    type: 'error',
-    source: 'System',
-    message: 'Failed to connect to Redis cache',
-    metadata: {
-      error: 'Connection timeout',
-      host: 'redis.internal',
-      port: 6379,
-      attempt: 3
-    },
-    project: 'stacks'
-  },
-  {
-    id: '6',
-    timestamp: new Date(Date.now() - 180000).toISOString(),
-    type: 'success',
-    source: 'CLI',
-    message: 'Assets compiled successfully',
-    metadata: {
-      duration: '12.5s',
-      assets: ['main.js', 'vendor.js', 'app.css'],
-      size: '2.3MB',
-      command: 'buddy build --production'
-    },
-    project: 'stacks'
-  },
-  {
-    id: '7',
-    timestamp: new Date(Date.now() - 240000).toISOString(),
-    type: 'info',
-    source: 'System',
-    message: 'Auto-scaling triggered',
-    metadata: {
-      reason: 'High CPU usage',
-      current_instances: 3,
-      target_instances: 5,
-      region: 'us-east-1'
-    },
-    project: 'stacks'
-  },
-  {
-    id: '8',
-    timestamp: new Date(Date.now() - 300000).toISOString(),
-    type: 'success',
-    source: 'CLI',
-    message: 'Configuration cache cleared',
-    metadata: {
-      triggered_by: 'deployment',
-      cache_size: '156KB',
-      duration: '0.8s',
-      command: 'buddy config:clear'
-    },
-    project: 'stacks'
-  },
-  {
-    id: '9',
-    timestamp: new Date(Date.now() - 360000).toISOString(),
-    type: 'info',
-    source: 'CLI',
-    message: 'Running test suite',
-    metadata: {
-      suite: 'Integration Tests',
-      total_tests: 156,
-      parallel: true,
-      ci: true,
-      command: 'buddy test --suite=integration'
-    },
-    project: 'stacks'
-  },
-  {
-    id: '10',
-    timestamp: new Date(Date.now() - 420000).toISOString(),
-    type: 'error',
-    source: 'System',
-    message: 'SSL certificate expiring soon',
-    metadata: {
-      domain: 'api.stacksjs.com',
-      expires_in: '7 days',
-      certificate_id: 'cert_xyz789'
-    },
-    project: 'stacks'
-  }
+  { id: '1', timestamp: new Date(now).toISOString(), type: 'info', source: 'CLI', message: 'buddy build started', metadata: { user: 'chris@stacksjs.com', command: 'buddy build' }, project: 'stacks' },
+  { id: '2', timestamp: new Date(now - 5000).toISOString(), type: 'error', source: 'File', message: 'Failed to compile component', metadata: { file: './components/Header.vue', line: 42 }, project: 'rpx' },
+  { id: '3', timestamp: new Date(now - 15000).toISOString(), type: 'success', source: 'System', message: 'Production deployment successful', metadata: { deployment_id: 'dep_abc123', environment: 'production', branch: 'main', commit: '7829abc', duration: '45s' }, project: 'stacks' },
+  { id: '4', timestamp: new Date(now - 60000).toISOString(), type: 'info', source: 'CLI', message: 'Starting database migration', metadata: { migration: 'create_users_table', database: 'production', user: 'deploy@stacksjs.com', command: 'buddy db:migrate' }, project: 'stacks' },
+  { id: '5', timestamp: new Date(now - 120000).toISOString(), type: 'error', source: 'System', message: 'Failed to connect to Redis cache', metadata: { error: 'Connection timeout', host: 'redis.internal', port: 6379, attempt: 3 }, project: 'stacks' },
+  { id: '6', timestamp: new Date(now - 180000).toISOString(), type: 'success', source: 'CLI', message: 'Assets compiled successfully', metadata: { duration: '12.5s', assets: ['main.js', 'vendor.js', 'app.css'], size: '2.3MB', command: 'buddy build --production' }, project: 'stacks' },
+  { id: '7', timestamp: new Date(now - 240000).toISOString(), type: 'info', source: 'System', message: 'Auto-scaling triggered', metadata: { reason: 'High CPU usage', current_instances: 3, target_instances: 5, region: 'us-east-1' }, project: 'stacks' },
+  { id: '8', timestamp: new Date(now - 300000).toISOString(), type: 'success', source: 'CLI', message: 'Configuration cache cleared', metadata: { triggered_by: 'deployment', cache_size: '156KB', duration: '0.8s', command: 'buddy config:clear' }, project: 'stacks' },
+  { id: '9', timestamp: new Date(now - 360000).toISOString(), type: 'info', source: 'CLI', message: 'Running test suite', metadata: { suite: 'Integration Tests', total_tests: 156, parallel: true, ci: true, command: 'buddy test --suite=integration' }, project: 'stacks' },
+  { id: '10', timestamp: new Date(now - 420000).toISOString(), type: 'error', source: 'System', message: 'SSL certificate expiring soon', metadata: { domain: 'api.stacksjs.com', expires_in: '7 days', certificate_id: 'cert_xyz789' }, project: 'stacks' },
 ]
 
-function filteredLogs() {
-  return logs.filter(log => {
-    const matchesSearch = log.message.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (log.email?.subject?.toLowerCase().includes(searchTerm.toLowerCase())) ||
-      (log.email?.recipient?.toLowerCase().includes(searchTerm.toLowerCase()));
+const logs = state<Log[]>(sampleLogs)
+const currentPage = state(1)
+const itemsPerPage = state('10')
+const sourceFilter = state('all')
+const logTypeFilter = state('all')
+const searchTerm = state('')
+const autoRefresh = state(true)
+const selectedLogId = state<string | null>(null)
+const selectedProjects = state<string[]>([])
+const isLoading = state(false)
+const timeRange = state('day')
 
-    const matchesSource = filter === 'all' || log.source.toLowerCase() === filter.toLowerCase();
+const itemsPerPageNum = derived(() => Number.parseInt(itemsPerPage(), 10) || 10)
 
-    const matchesType = logTypeFilter === 'all' || log.type === logTypeFilter;
+const filteredLogs = derived(() => {
+  const q = searchTerm().toLowerCase()
+  const src = sourceFilter()
+  const type = logTypeFilter()
+  const projs = selectedProjects()
+  return logs()
+    .filter((log) => {
+      const matchesSearch = !q
+        || log.message.toLowerCase().includes(q)
+        || (log.email?.subject?.toLowerCase().includes(q) ?? false)
+        || (log.email?.recipient?.toLowerCase().includes(q) ?? false)
+      const matchesSource = src === 'all' || log.source.toLowerCase() === src.toLowerCase()
+      const matchesType = type === 'all' || log.type === type
+      const matchesProject = projs.length === 0 || (log.project !== undefined && projs.includes(log.project))
+      return matchesSearch && matchesSource && matchesProject && matchesType
+    })
+    .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
+})
 
-    const matchesProject = selectedProjects.length === 0 ||
-      (log.project && selectedProjects.includes(log.project));
+const totalItems = derived(() => filteredLogs().length)
+const totalPages = derived(() => Math.max(1, Math.ceil(totalItems() / itemsPerPageNum())))
 
-    return matchesSearch && matchesSource && matchesProject && matchesType;
-  }).sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
-});
+const paginatedLogs = derived(() => {
+  const start = (currentPage() - 1) * itemsPerPageNum()
+  return filteredLogs().slice(start, start + itemsPerPageNum())
+})
 
-// Add pagination computed properties
-function paginatedLogs() {
-  const startIndex = (currentPage - 1) * itemsPerPage;
-  const endIndex = startIndex + itemsPerPage;
-  totalItems = filteredLogs.length;
-  return filteredLogs.slice(startIndex, endIndex);
-});
+const visiblePages = derived(() => {
+  const max = Math.min(5, totalPages())
+  return Array.from({ length: max }, (_, i) => i + 1)
+})
 
-function totalPages() {
-  return Math.ceil(totalItems / itemsPerPage);
-});
+const selectedLog = derived(() => logs().find(l => l.id === selectedLogId()) ?? null)
 
-// Add pagination methods
-const goToPage = (page: number) => {
-  if (page >= 1 && page <= totalPages) {
-    currentPage = page;
-  }
-};
+const selectedProjectName = derived(() => {
+  const log = selectedLog()
+  if (!log?.project)
+    return 'N/A'
+  return projectsList.find(p => p.id === log.project)?.name ?? log.project
+})
 
-const nextPage = () => {
-  if (currentPage < totalPages) {
-    currentPage++;
-  }
-};
+const selectedMetadataJson = derived(() => {
+  const log = selectedLog()
+  return log ? JSON.stringify(log.metadata, null, 2) : ''
+})
 
-const prevPage = () => {
-  if (currentPage > 1) {
-    currentPage--;
-  }
-};
+const hasActiveFilters = derived(() =>
+  searchTerm() !== '' || sourceFilter() !== 'all' || logTypeFilter() !== 'all' || selectedProjects().length > 0,
+)
 
-const resetFilters = () => {
-  searchTerm = '';
-  filter = 'all';
-  logTypeFilter = 'all';
-  selectedProjects = [];
-  currentPage = 1;
-};
+effect(() => {
+  if (currentPage() > totalPages())
+    currentPage.set(totalPages())
+})
 
-const getProjectClasses = (projectId: string): { bg: string, text: string, ring: string } => {
-  switch (projectId) {
-    case 'stacks':
-      return { bg: 'bg-blue-100', text: 'text-blue-800', ring: 'ring-blue-500' }
-    case 'rpx':
-      return { bg: 'bg-purple-100', text: 'text-purple-800', ring: 'ring-purple-500' }
-    case 'tlsx':
-      return { bg: 'bg-green-100', text: 'text-green-800', ring: 'ring-green-500' }
-    case 'dtsx':
-      return { bg: 'bg-indigo-100', text: 'text-indigo-800', ring: 'ring-indigo-500' }
-    case 'ts-collect':
-      return { bg: 'bg-rose-100', text: 'text-rose-800', ring: 'ring-rose-500' }
-    case 'vite-plugin-local':
-      return { bg: 'bg-amber-100', text: 'text-amber-800', ring: 'ring-amber-500' }
-    default:
-      return { bg: 'bg-gray-100', text: 'text-gray-800', ring: 'ring-gray-500' }
+effect(() => {
+  filteredLogs()
+  currentPage.set(1)
+})
+
+function formatTime(ts: string) {
+  return new Date(ts).toLocaleTimeString()
+}
+
+function formatDateTime(ts: string | undefined) {
+  return ts ? new Date(ts).toLocaleString() : ''
+}
+
+function projectName(id: string | undefined) {
+  if (!id)
+    return ''
+  return projectsList.find(p => p.id === id)?.name ?? id
+}
+
+function isProjectSelected(id: string) {
+  return selectedProjects().includes(id)
+}
+
+function toggleProject(id: string) {
+  const current = selectedProjects()
+  selectedProjects.set(current.includes(id) ? current.filter(p => p !== id) : [...current, id])
+}
+
+function projectButtonClassFor(id: string) {
+  const base = 'inline-flex items-center px-3 py-1 font-medium text-sm rounded-full transition-colors'
+  const palette = projectPalette(id)
+  if (selectedProjects().includes(id))
+    return `${base} ${palette.bg} ${palette.text} ring-2 ${palette.ring}`
+  return `${base} bg-gray-100 dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-200 dark:hover:bg-neutral-600`
+}
+
+function projectBadgeClassFor(id: string | undefined) {
+  const base = 'inline-flex px-2 font-semibold leading-5 text-xs rounded-full'
+  if (!id)
+    return base
+  const palette = projectPalette(id)
+  return `${base} ${palette.bg} ${palette.text}`
+}
+
+function projectPalette(id: string) {
+  switch (id) {
+    case 'stacks': return { bg: 'bg-blue-100 dark:bg-blue-900', text: 'text-blue-800 dark:text-blue-200', ring: 'ring-blue-500' }
+    case 'rpx': return { bg: 'bg-purple-100 dark:bg-purple-900', text: 'text-purple-800 dark:text-purple-200', ring: 'ring-purple-500' }
+    case 'tlsx': return { bg: 'bg-green-100 dark:bg-green-900', text: 'text-green-800 dark:text-green-200', ring: 'ring-green-500' }
+    case 'dtsx': return { bg: 'bg-indigo-100 dark:bg-indigo-900', text: 'text-indigo-800 dark:text-indigo-200', ring: 'ring-indigo-500' }
+    case 'ts-collect': return { bg: 'bg-rose-100 dark:bg-rose-900', text: 'text-rose-800 dark:text-rose-200', ring: 'ring-rose-500' }
+    case 'vite-plugin-local': return { bg: 'bg-amber-100 dark:bg-amber-900', text: 'text-amber-800 dark:text-amber-200', ring: 'ring-amber-500' }
+    default: return { bg: 'bg-gray-100 dark:bg-neutral-700', text: 'text-gray-800 dark:text-neutral-200', ring: 'ring-gray-500' }
   }
 }
 
-const toggleProject = (projectId: string) => {
-  const index = selectedProjects.indexOf(projectId)
-  if (index === -1) {
-    selectedProjects.push(projectId)
-  } else {
-    selectedProjects.splice(index, 1)
+function logRowClass(log: Log) {
+  const base = 'hover:bg-gray-50 dark:hover:bg-neutral-700/50 cursor-pointer'
+  switch (log.type) {
+    case 'error': return `${base} bg-red-50/50 dark:bg-red-900/10`
+    case 'success': return `${base} bg-green-50/50 dark:bg-green-900/10`
+    case 'warning': return `${base} bg-amber-50/50 dark:bg-amber-900/10`
+    case 'mail': return `${base} bg-purple-50/50 dark:bg-purple-900/10`
+    default: return base
   }
 }
 
-const getLogIcon = (type: Log['type']) => {
+function logIconFor(type: Log['type']) {
   switch (type) {
-    case 'error':
-      return 'i-hugeicons-alert-02'
-    case 'info':
-      return 'i-hugeicons-information-circle'
-    case 'success':
-      return 'i-hugeicons-checkmark-circle-02'
-    case 'warning':
-      return 'i-hugeicons-alert-02'
-    case 'mail':
-      return 'i-hugeicons-mail-01'
-    default:
-      return 'i-hugeicons-computer-terminal-01'
+    case 'error': return 'i-hugeicons-alert-02'
+    case 'info': return 'i-hugeicons-information-circle'
+    case 'success': return 'i-hugeicons-checkmark-circle-02'
+    case 'warning': return 'i-hugeicons-alert-02'
+    case 'mail': return 'i-hugeicons-mail-01'
+    default: return 'i-hugeicons-computer-terminal-01'
   }
 }
 
-const getLogIconColor = (type: Log['type']) => {
+function logIconColorFor(type: Log['type']) {
   switch (type) {
-    case 'error':
-      return 'text-red-500'
-    case 'info':
-      return 'text-blue-500'
-    case 'success':
-      return 'text-green-500'
-    case 'warning':
-      return 'text-amber-500'
-    case 'mail':
-      return 'text-purple-500'
-    default:
-      return 'text-gray-500'
+    case 'error': return 'text-red-500'
+    case 'info': return 'text-blue-500'
+    case 'success': return 'text-green-500'
+    case 'warning': return 'text-amber-500'
+    case 'mail': return 'text-purple-500'
+    default: return 'text-gray-500'
   }
 }
 
-const getLogRowClass = (type: Log['type']) => {
-  switch (type) {
-    case 'error':
-      return 'bg-red-50 bg-opacity-50'
-    case 'success':
-      return 'bg-green-50 bg-opacity-50'
-    case 'warning':
-      return 'bg-amber-50 bg-opacity-50'
-    case 'mail':
-      return 'bg-purple-50 bg-opacity-50'
-    default:
-      return ''
+function logIconClass(type: Log['type']) {
+  return `h-5 w-5 ${logIconFor(type)} ${logIconColorFor(type)}`
+}
+
+const selectedLogIconClass = derived(() => {
+  const log = selectedLog()
+  if (!log)
+    return ''
+  return `h-5 w-5 ${logIconFor(log.type)} ${logIconColorFor(log.type)}`
+})
+
+const autoRefreshClass = derived(() => {
+  const base = 'flex gap-2 items-center px-4 py-2 rounded-lg'
+  return autoRefresh()
+    ? `${base} bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-200`
+    : `${base} bg-gray-100 text-gray-700 dark:bg-neutral-700 dark:text-neutral-200`
+})
+
+function pageButtonClass(page: number) {
+  const base = 'px-3 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded-md'
+  return page === currentPage()
+    ? `${base} bg-blue-600 text-white border-blue-600`
+    : `${base} hover:bg-gray-100 dark:hover:bg-neutral-700 text-gray-900 dark:text-neutral-100`
+}
+
+function selectLog(id: string) {
+  selectedLogId.set(id)
+}
+
+function closeModal() {
+  selectedLogId.set(null)
+}
+
+function goToPage(p: number) {
+  if (p >= 1 && p <= totalPages())
+    currentPage.set(p)
+}
+
+function nextPage() {
+  if (currentPage() < totalPages())
+    currentPage.set(currentPage() + 1)
+}
+
+function prevPage() {
+  if (currentPage() > 1)
+    currentPage.set(currentPage() - 1)
+}
+
+function resetFilters() {
+  searchTerm.set('')
+  sourceFilter.set('all')
+  logTypeFilter.set('all')
+  selectedProjects.set([])
+  currentPage.set(1)
+}
+
+let refreshHandle: ReturnType<typeof setInterval> | null = null
+
+function startAutoRefresh() {
+  if (refreshHandle)
+    return
+  refreshHandle = setInterval(() => {
+    // placeholder: in real usage this would refetch logs
+  }, 2000)
+}
+
+function stopAutoRefresh() {
+  if (refreshHandle) {
+    clearInterval(refreshHandle)
+    refreshHandle = null
   }
 }
 
-let refreshInterval: number | undefined
-
-onUnmounted(() => {
-  stopAutoRefresh()
-}
-
-const startAutoRefresh = () => {
-  if (autoRefresh) {
-    refreshInterval = window.setInterval(() => {
-      // In reality, this would fetch new logs
-      // fetchNewLogs()
-    }, 2000)
-  }
-}
-
-const stopAutoRefresh = () => {
-  if (refreshInterval) {
-    clearInterval(refreshInterval)
-    refreshInterval = undefined
-  }
-}
-
-const toggleAutoRefresh = () => {
-  autoRefresh = !autoRefresh
-  if (autoRefresh) {
+function toggleAutoRefresh() {
+  const next = !autoRefresh()
+  autoRefresh.set(next)
+  if (next)
     startAutoRefresh()
-  } else {
+  else
     stopAutoRefresh()
-  }
 }
 
-// Chart options
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      position: 'top' as const,
-      align: 'end' as const,
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-        boxWidth: 12,
-        padding: 15,
-      },
-    },
-    tooltip: {
-      mode: 'index' as const,
-      intersect: false,
-    },
-  },
-}
-
-// Generate mock log volume data
-const getLogVolumeData = () => {
+function buildVolumeData() {
   const labels = Array.from({ length: 24 }, (_, i) => `${i}:00`)
   return {
     labels,
     datasets: [
-      {
-        label: 'Info',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 50),
-        borderColor: 'rgb(59, 130, 246)', // Blue
-        backgroundColor: 'rgba(59, 130, 246, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Error',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 20)),
-        borderColor: 'rgb(239, 68, 68)', // Red
-        backgroundColor: 'rgba(239, 68, 68, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Success',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 40) + 20),
-        borderColor: 'rgb(16, 185, 129)', // Green
-        backgroundColor: 'rgba(16, 185, 129, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Mail',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 60) + 30),
-        borderColor: 'rgb(139, 92, 246)', // Purple
-        backgroundColor: 'rgba(139, 92, 246, 0.1)',
-        fill: true,
-      },
-      {
-        label: 'Warning',
-        data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 5),
-        borderColor: 'rgb(245, 158, 11)', // Amber
-        backgroundColor: 'rgba(245, 158, 11, 0.1)',
-        fill: true,
-      }
+      { label: 'Info', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 100) + 50), borderColor: 'rgb(59, 130, 246)', backgroundColor: 'rgba(59, 130, 246, 0.1)', fill: true },
+      { label: 'Error', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 20)), borderColor: 'rgb(239, 68, 68)', backgroundColor: 'rgba(239, 68, 68, 0.1)', fill: true },
+      { label: 'Success', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 40) + 20), borderColor: 'rgb(16, 185, 129)', backgroundColor: 'rgba(16, 185, 129, 0.1)', fill: true },
+      { label: 'Mail', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 60) + 30), borderColor: 'rgb(139, 92, 246)', backgroundColor: 'rgba(139, 92, 246, 0.1)', fill: true },
+      { label: 'Warning', data: Array.from({ length: 24 }, () => Math.floor(Math.random() * 15) + 5), borderColor: 'rgb(245, 158, 11)', backgroundColor: 'rgba(245, 158, 11, 0.1)', fill: true },
     ],
   }
 }
 
-let logVolumeData = getLogVolumeData()
-
-// Add timeRange ref
-let timeRange = 'day'
-
-</script>
-
-@title('Dashboard - Logs')
-<div class="p-6 space-y-6">
-
-  <PageHeader title="System Logs" description="A list of all system logs. Monitor system activities and events in real-time." />
-
-    <!-- Log Volume Chart -->
-    <div class="bg-white dark:bg-neutral-700 rounded-lg shadow">
-      <div class="p-6">
-        <div class="flex items-center justify-between mb-6">
-          <div>
-            <h3 class="font-medium text-base text-gray-900 dark:text-neutral-100">Log Volume</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Distribution of log types over time</p>
-          </div>
-          <select
-            value="{{ timeRange }}"
-            class="pl-3 pr-8 py-1.5 h-9 text-gray-900 text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-600 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600"
-          >
-            <option value="day">Last 24 Hours</option>
-            <option value="week">Last 7 Days</option>
-            <option value="month">Last 30 Days</option>
-            <option value="year">Last Year</option>
-          </select>
-        </div>
-        <div class="relative h-[300px]">
-          @if(isLoading)
-            <div class="flex absolute inset-0 z-10 items-center justify-center bg-opacity-75 bg-white dark:bg-neutral-700 dark:bg-opacity-75">
-              <div class="h-8 w-8 border-b-2 border-blue-500 rounded-full animate-spin"></div>
-            </div>
-          @endif
-          <canvas id="chart_1"></canvas>
-        </div>
-      </div>
-    </div>
-
-    <!-- Control Panel -->
-    <div class="flow-root mt-8">
-      <div class="mb-6 space-y-4">
-        <div class="flex flex-wrap gap-4 items-center">
-          <div class="flex-1 min-w-[200px]">
-            <input
-              value="{{ searchTerm }}"
-              type="text"
-              placeholder="Search logs..."
-              class="px-4 py-2 w-full border rounded-lg"
-            >
-          </div>
-
-          <select
-            value="{{ filter }}"
-            class="px-4 py-2 min-w-[140px] bg-white dark:bg-neutral-800 border rounded-lg"
-          >
-            <option value="all">All Sources</option>
-            <option value="cli">CLI</option>
-            <option value="file">File</option>
-            <option value="system">System</option>
-            <option value="mail">Mail</option>
-            <option value="notification">Notification</option>
-          </select>
-
-          <select
-            value="{{ logTypeFilter }}"
-            class="px-4 py-2 min-w-[140px] bg-white dark:bg-neutral-800 border rounded-lg"
-          >
-            <option value="all">All Types</option>
-            <option value="info">Info</option>
-            <option value="success">Success</option>
-            <option value="warning">Warning</option>
-            <option value="error">Error</option>
-            <option value="mail">Mail</option>
-          </select>
-
-          <button
-            class="flex gap-2 items-center px-4 py-2 rounded-lg {{ autoRefresh ? 'bg-blue-100 text-blue-700' : 'bg-gray-100 text-gray-700' }}"
-            onclick="toggleAutoRefresh"
-          >
-            <i
-              class="h-4 w-4 i-hugeicons-refresh {{ autoRefresh ? 'animate-spin' : '' }}"
-              aria-hidden="true"
-            />
-            {{ autoRefresh ? 'Auto-refreshing' : 'Auto-refresh' }}
-          </button>
-
-          @if(searchTerm || filter !== 'all' || logTypeFilter !== 'all' || selectedProjects.length > 0)
-            <button
-              class="flex gap-2 items-center px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg"
-              onclick="resetFilters"
-            >
-              <i class="h-4 w-4 i-hugeicons-cancel-01" aria-hidden="true" />
-              Reset Filters
-            </button>
-          @endif
-        </div>
-
-        <div class="flex flex-wrap gap-2">
-          @foreach(projects as project)
-            <button
-              onclick="toggleProject(project.id)"
-              class="inline-flex items-center px-3 py-1 font-medium text-sm rounded-full transition-colors"
-              class="text-gray-700 hover:bg-gray-200' ring-2' selectedProjects.includes(project.id) : ? ' ' ' 'bg-gray-100 + + + getProjectClasses(project.id).bg getProjectClasses(project.id).text"
-            >
-              {{ project.name }}
-              @if(selectedProjects.includes(project.id))
-                <span class="ml-2 text-xs">×</span>
-              @endif
-            </button>
-          @endforeach
-        </div>
-      </div>
-
-      <div class="overflow-x-auto -mx-4 -my-2 sm:-mx-6 lg:-mx-8">
-        <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
-          <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
-            <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-              <thead class="bg-gray-50 dark:bg-neutral-700/50">
-                <tr>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Timestamp</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Type</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Source</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Message</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase">Project</th>
-                  <th class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase">Details</th>
-                </tr>
-              </thead>
-              <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
-                @foreach(paginatedLogs() as log)
-                  <tr
-                    class="hover:bg-gray-50 cursor-pointer {{ }} getLogRowClass(log.type)"
-                    onclick="selectedLog = log"
-                  >
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="text-gray-900 text-sm">
-                        <i
-                          class="mr-2 h-4 w-4 text-gray-400 i-hugeicons-clock-01"
-                          aria-hidden="true"
-                        />
-                        {{ new Date(log.timestamp).toLocaleTimeString() }}
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <div class="flex items-center">
-                        <i
-                          class="h-5 w-5 {{ {{ }} }} getLogIcon(log.type) getLogIconColor(log.type)"
-                          aria-hidden="true"
-                        />
-                      </div>
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="inline-flex px-2 font-semibold leading-5 text-blue-800 text-xs bg-blue-100 rounded-full">
-                        {{ log.source }}
-                      </span>
-                    </td>
-                    <td class="px-6 py-4">
-                      <div class="text-gray-900 text-sm">{{ log.message }}</div>
-                      @if(log.email)
-                        <div class="mt-1 text-gray-500 text-xs truncate">
-                          {{ log.email.subject }}
-                        </div>
-                      @endif
-                    </td>
-                    <td class="px-6 py-4 whitespace-nowrap">
-                      @if(log.project)
-                        <span
-                          class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full"
-                          class="{{ {{ }} }} getProjectClasses(log.project).bg getProjectClasses(log.project).text"
-                        >
-                          {{ projects.find(p => p.id === log.project)?.name }}
-                        </span>
-                      @endif
-                    </td>
-                    <td class="px-6 py-4 text-right whitespace-nowrap">
-                      <button class="text-gray-400 hover:text-blue-500 duration-150 transition-colors">
-                        <i class="h-5 w-5 i-hugeicons-view" aria-hidden="true" />
-                      </button>
-                    </td>
-                  </tr>
-                @endforeach
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-
-      <!-- Pagination Controls -->
-      <div class="flex items-center justify-between mt-4">
-        <div class="flex items-center">
-          <span class="text-gray-700 text-sm dark:text-neutral-400">
-            Showing <span class="font-medium">{{ paginatedLogs.length }}</span> of <span class="font-medium">{{ totalItems }}</span> results
-          </span>
-        </div>
-        <div class="flex items-center space-x-2">
-          <select
-            value="{{ itemsPerPage }}"
-            class="px-2 py-1 text-sm border rounded-md"
-            onchange="currentPage = 1"
-          >
-            <option value="{{ 10 }}">10 per page</option>
-            <option value="{{ 25 }}">25 per page</option>
-            <option value="{{ 50 }}">50 per page</option>
-            <option value="{{ 100 }}">100 per page</option>
-          </select>
-
-          <div class="flex items-center space-x-1">
-            <button
-              onclick="prevPage"
-              disabled="{{ currentPage === 1 }}"
-              class="px-2 py-1 text-sm border rounded-md"
-              class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === 1 currentPage"
-            >
-              <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true" />
-            </button>
-
-            @foreach(Math.min(5, totalPages as page))
-              <button
-                onclick="goToPage(page)"
-                class="px-3 py-1 text-sm border rounded-md"
-                class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage page"
-              >
-                {{ page }}
-              </button>
-            @endforeach
-
-            @if(totalPages > 5)
-              <span class="px-2">...</span>
-            @endif
-
-            @if(totalPages > 5)
-              <button
-                onclick="goToPage(totalPages)"
-                class="px-3 py-1 text-sm border rounded-md"
-                class="text-white' 'hover:bg-gray-100' : ? 'bg-blue-600 === currentPage totalPages"
-              >
-                {{ totalPages }}
-              </button>
-            @endif
-
-            <button
-              onclick="nextPage"
-              disabled="{{ currentPage === totalPages || totalPages === 0 }}"
-              class="px-2 py-1 text-sm border rounded-md"
-              class="'hover:bg-gray-100' cursor-not-allowed' : ? 'opacity-50 === === || 0 currentPage totalPages totalPages"
-            >
-              <i class="h-4 w-4 i-hugeicons-arrow-right-01" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-      </div>
-
-      <Teleport to="body">
-        @if(selectedLog)
-          <div
-            class="flex fixed inset-0 items-center justify-center p-4 bg-black bg-opacity-50"
-            @click.self="selectedLog = null"
-          >
-            <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg">
-              <div class="flex items-center justify-between mb-4">
-                <h3 class="font-semibold text-lg">Log Details</h3>
-                <button
-                  onclick="selectedLog = null"
-                  class="text-gray-500 hover:text-gray-700"
-                >
-                  <i
-                    class="h-5 w-5 i-hugeicons-cancel-01"
-                    aria-hidden="true"
-                  />
-                </button>
-              </div>
-              <div class="space-y-4">
-                <div>
-                  <label class="block font-medium text-gray-700 text-sm">Timestamp</label>
-                  <p class="mt-1 text-gray-900 text-sm">
-                    {{ new Date(selectedLog.timestamp).toLocaleString() }}
-                  </p>
-                </div>
-                <div>
-                  <label class="block font-medium text-gray-700 text-sm">Type</label>
-                  <div class="flex items-center mt-1">
-                    <i
-                      class="mr-2 h-5 w-5 {{ {{ }} }} getLogIcon(selectedLog.type) getLogIconColor(selectedLog.type)"
-                      aria-hidden="true"
-                    />
-                    <span class="capitalize text-gray-900 text-sm">{{ selectedLog.type }}</span>
-                  </div>
-                </div>
-                <div>
-                  <label class="block font-medium text-gray-700 text-sm">Source</label>
-                  <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.source }}</p>
-                </div>
-                <div>
-                  <label class="block font-medium text-gray-700 text-sm">Project</label>
-                  <p class="mt-1 text-gray-900 text-sm">
-                    {{ projects.find(p => p.id === selectedLog?.project)?.name || 'N/A' }}
-                  </p>
-                </div>
-                <div>
-                  <label class="block font-medium text-gray-700 text-sm">Message</label>
-                  <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.message }}</p>
-                </div>
-
-                <!-- Email-specific details -->
-                @if(selectedLog.email)
-                  <div class="pt-4 border-gray-200 border-t">
-                    <h4 class="mb-3 font-medium text-base text-gray-900">Email Details</h4>
-
-                    <div class="grid gap-4 grid-cols-1 md:grid-cols-2">
-                      <div>
-                        <label class="block font-medium text-gray-700 text-sm">Subject</label>
-                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.subject }}</p>
-                      </div>
-
-                      <div>
-                        <label class="block font-medium text-gray-700 text-sm">Provider</label>
-                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.provider || 'N/A' }}</p>
-                      </div>
-
-                      <div>
-                        <label class="block font-medium text-gray-700 text-sm">Sender</label>
-                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.sender }}</p>
-                      </div>
-
-                      <div>
-                        <label class="block font-medium text-gray-700 text-sm">Recipient</label>
-                        <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.recipient }}</p>
-                      </div>
-
-                      @if(selectedLog.email.messageId)
-                        <div>
-                          <label class="block font-medium text-gray-700 text-sm">Message ID</label>
-                          <p class="mt-1 font-mono text-gray-900 text-sm">{{ selectedLog.email.messageId }}</p>
-                        </div>
-                      @endif
-
-                      @if(selectedLog.email.size)
-                        <div>
-                          <label class="block font-medium text-gray-700 text-sm">Size</label>
-                          <p class="mt-1 text-gray-900 text-sm">{{ selectedLog.email.size }}</p>
-                        </div>
-                      @endif
-                    </div>
-
-                    <!-- Attachments -->
-                    @if(selectedLog.email.attachments && selectedLog.email.attachments.length > 0)
-                      <div class="mt-4">
-                        <label class="block font-medium text-gray-700 text-sm">Attachments</label>
-                        <div class="flex flex-wrap gap-2 mt-2">
-                          @foreach(attachment, index in selectedLog.email.attachments)
-                            <div
-                              class="inline-flex items-center px-3 py-1 font-medium text-gray-800 text-sm bg-gray-100 rounded-full"
-                            >
-                              <i class="mr-1 h-4 w-4 i-hugeicons-attachment-01" aria-hidden="true" />
-                              {{ attachment.name }} ({{ attachment.size }})
-                            </div>
-                          @endforeach
-                        </div>
-                      </div>
-                    @endif
-
-                    <!-- Authentication Results -->
-                    @if(selectedLog.email.authResults)
-                      <div class="mt-4">
-                        <label class="block font-medium text-gray-700 text-sm">Authentication Results</label>
-                        <div class="grid gap-2 grid-cols-3 mt-2">
-                          <div class="px-3 py-1 font-medium text-gray-800' text-green-800' text-red-800' text-sm rounded-md selectedLog.email.authResults.spf selectedLog.email.authResults.spf : : ? ? 'bg-gray-100 'bg-green-100 'bg-red-100 'fail' 'pass' {{ }} === ==="
-                          >
-                            SPF: {{ selectedLog.email.authResults.spf }}
-                          </div>
-                          <div class="px-3 py-1 font-medium text-gray-800' text-green-800' text-red-800' text-sm rounded-md selectedLog.email.authResults.dkim selectedLog.email.authResults.dkim : : ? ? 'bg-gray-100 'bg-green-100 'bg-red-100 'fail' 'pass' {{ }} === ==="
-                          >
-                            DKIM: {{ selectedLog.email.authResults.dkim }}
-                          </div>
-                          <div class="px-3 py-1 font-medium text-gray-800' text-green-800' text-red-800' text-sm rounded-md selectedLog.email.authResults.dmarc selectedLog.email.authResults.dmarc : : ? ? 'bg-gray-100 'bg-green-100 'bg-red-100 'fail' 'pass' {{ }} === ==="
-                          >
-                            DMARC: {{ selectedLog.email.authResults.dmarc }}
-                          </div>
-                        </div>
-                      </div>
-                    @endif
-
-                    <!-- Bounce Info -->
-                    @if(selectedLog.email.bounceInfo)
-                      <div class="mt-4">
-                        <label class="block font-medium text-gray-700 text-sm">Bounce Information</label>
-                        <div class="mt-2 p-3 bg-red-50 rounded-md">
-                          <p class="font-medium text-red-800 text-sm">{{ selectedLog.email.bounceInfo.reason }}</p>
-                          <p class="mt-1 text-red-700 text-xs">Code: {{ selectedLog.email.bounceInfo.code }}</p>
-                          <p class="text-red-700 text-xs">Time: {{ new Date(selectedLog.email.bounceInfo.timestamp).toLocaleString() }}</p>
-                        </div>
-                      </div>
-                    @endif
-
-                    <!-- User Interaction -->
-                    @if(selectedLog.email.userInteraction)
-                      <div class="mt-4">
-                        <label class="block font-medium text-gray-700 text-sm">User Interaction</label>
-                        <div class="grid gap-2 grid-cols-1 md:grid-cols-2 mt-2">
-                          <div class="p-2 bg-gray-50 rounded-md">
-                            <div class="flex items-center">
-                              <i
-                                class="mr-2 h-5 w-5 text-green-500' text-red-500' selectedLog.email.userInteraction.opened : ? 'i-hugeicons-cancel-circle 'i-hugeicons-checkmark-circle-02 {{ }}"
-                                aria-hidden="true"
-                              />
-                              <span class="font-medium text-sm">{{ selectedLog.email.userInteraction.opened ? 'Opened' : 'Not opened' }}</span>
-                            </div>
-                            @if(selectedLog.email.userInteraction.openedAt)
-                              <p class="ml-7 mt-1 text-gray-500 text-xs">
-                                {{ new Date(selectedLog.email.userInteraction.openedAt).toLocaleString() }}
-                              </p>
-                            @endif
-                          </div>
-
-                          <div class="p-2 bg-gray-50 rounded-md">
-                            <div class="flex items-center">
-                              <i
-                                class="mr-2 h-5 w-5 text-green-500' text-red-500' selectedLog.email.userInteraction.clicked : ? 'i-hugeicons-cancel-01-circle 'i-hugeicons-checkmark-circle-02 {{ }}"
-                                aria-hidden="true"
-                              />
-                              <span class="font-medium text-sm">{{ selectedLog.email.userInteraction.clicked ? 'Clicked' : 'No clicks' }}</span>
-                            </div>
-                            @if(selectedLog.email.userInteraction.clickedAt)
-                              <p class="ml-7 mt-1 text-gray-500 text-xs">
-                                {{ new Date(selectedLog.email.userInteraction.clickedAt).toLocaleString() }}
-                              </p>
-                            @endif
-                          </div>
-                        </div>
-
-                        @if(selectedLog.email.userInteraction.links && selectedLog.email.userInteraction.links.length > 0)
-                          <div class="mt-2">
-                            <p class="font-medium text-gray-700 text-xs">Clicked links:</p>
-                            <ul class="mt-1 pl-7 list-disc">
-                              @foreach(link, index in selectedLog.email.userInteraction.links)
-                                <li class="text-blue-600 text-xs">
-                                  {{ link }}
-                                </li>
-                              @endforeach
-                            </ul>
-                          </div>
-                        @endif
-                      </div>
-                    @endif
-
-                    <!-- CLI Command -->
-                    @if(selectedLog.source === 'CLI' && selectedLog.metadata?.command)
-                      <div class="mt-4">
-                        <label class="block font-medium text-gray-700 text-sm">Command</label>
-                        <div class="mt-2 p-3 font-mono text-sm bg-gray-50 rounded-md">
-                          {{ selectedLog.metadata.command }}
-                        </div>
-                      </div>
-                    @endif
-                  </div>
-                @endif
-
-                <div>
-                  <label class="block font-medium text-gray-700 text-sm">Metadata</label>
-                  <pre class="overflow-x-auto mt-1 p-3 text-gray-900 text-sm bg-gray-50 rounded">{{ JSON.stringify(selectedLog.metadata, null, 2) }}</pre>
-                </div>
-              </div>
-            </div>
-          </div>
-        @endif
-      </Teleport>
-    </div>
-</div>
-<script client>
-const { Chart, registerables } = await import('@stacksjs/charts')
-Chart.register(...registerables)
-
-const chart_1_ctx = document.getElementById('chart_1')
-if (chart_1_ctx) {
-  new Chart(chart_1_ctx, {
-    type: 'line',
-    data: logVolumeData,
-    options: chartOptions,
-  })
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: { beginAtZero: true, grid: { color: 'rgba(200, 200, 200, 0.1)' }, ticks: { color: 'rgb(156, 163, 175)', font: { family: "'JetBrains Mono', monospace" } } },
+    x: { grid: { display: false }, ticks: { color: 'rgb(156, 163, 175)', font: { family: "'JetBrains Mono', monospace" } } },
+  },
+  plugins: {
+    legend: { display: true, position: 'top', align: 'end', labels: { color: 'rgb(156, 163, 175)', font: { family: "'JetBrains Mono', monospace" }, boxWidth: 12, padding: 15 } },
+    tooltip: { mode: 'index', intersect: false },
+  },
+  elements: { line: { tension: 0.4 } },
 }
 
+let chartHandle: ChartLike | null = null
+
 onMount(async () => {
-  logs = sampleLogs
-  startAutoRefresh()
+  const { Chart, registerables } = await import('@stacksjs/charts')
+  Chart.register(...registerables)
+  const Ctor = Chart as unknown as ChartCtor
+  const handle = useChart({ Chart: Ctor, id: 'logs_volume_chart', type: 'line', data: buildVolumeData(), options: chartOptions })
+  chartHandle = handle.instance as ChartLike | null
+  if (autoRefresh())
+    startAutoRefresh()
+})
+
+onDestroy(() => {
+  stopAutoRefresh()
+  chartHandle?.destroy()
+  chartHandle = null
 })
 </script>
 
