@@ -279,6 +279,14 @@ export interface NewAccessToken {
   readonly accessToken: PersonalAccessToken
   /** The plain text token */
   readonly plainTextToken: AuthToken
+  /**
+   * Plain text refresh token paired with the access token. Single-use:
+   * exchanging it for a new access token also rotates this refresh
+   * value. Omitted when the caller passed `withRefreshToken: false`.
+   */
+  readonly refreshToken?: string
+  /** Access-token expiry in seconds (OAuth2 `expires_in` shape) */
+  readonly expiresIn?: number
 }
 
 /**

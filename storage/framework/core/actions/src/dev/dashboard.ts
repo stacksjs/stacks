@@ -1,5 +1,5 @@
 import process from 'node:process'
-import { readFileSync, writeFileSync } from 'node:fs'
+import { existsSync, readFileSync, writeFileSync } from 'node:fs'
 import { bold, cyan, dim, green } from '@stacksjs/cli'
 import { projectPath, storagePath } from '@stacksjs/path'
 import { buildDashboardUrl, buildManifest, buildSidebarConfig, discoverModels, findAvailablePort, waitForServer } from './dashboard-utils'
@@ -489,16 +489,20 @@ if (verbose) {
 console.log()
 /* eslint-enable no-console */
 
-// Import @craft-native/ts dynamically. Its static import triggers bun-router
+// Import @stacksjs/ts-craft dynamically. Its static import triggers bun-router
 // config loading which prints warnings before our console.log override is
 // active. We also let it be missing — the native window is a nicety, not a
 // requirement; the dashboard runs fine as a plain web server in that case.
+//
+// (Was previously imported as `@craft-native/ts` which is a stale package
+// name — the actual published package is `@stacksjs/ts-craft`, which exports
+// `createApp` with the same shape.)
 let createApp: ((opts: any) => { show: () => Promise<void>, close: () => void }) | null = null
 try {
-  ;({ createApp } = await import('@craft-native/ts'))
+  ;({ createApp } = await import('@stacksjs/ts-craft'))
 }
 catch {
-  // @craft-native/ts isn't installed (or its native bindings failed to
+  // @stacksjs/ts-craft isn't installed (or its native bindings failed to
   // load on this platform). Fall through to web-only mode below.
 }
 
@@ -522,9 +526,29 @@ if (createApp) {
   // to its Finder placeholder before because the config didn't survive
   // argv/file passing), set `nativeSidebar: false` and the web sidebar
   // stays visible — see the layout for the matching detection logic.
+  // ts-craft@0.0.2's `findCraftBinary()` only looks at a few cwd-relative
+  // paths (packages/zig/zig-out/bin/craft etc.) and then falls back to
+  // `'craft'` from PATH. The fallback resolves to the ts-craft CLI shim,
+  // not the actual native binary, so spawn never produces a window.
+  //
+  // Honour `CRAFT_BIN` (matching the newer @craft-native/craft contract)
+  // and probe a couple of known monorepo locations relative to this
+  // checkout so the local `~/Documents/Projects/craft` clone Just Works
+  // without requiring an env var.
+  const craftBinaryPath = (() => {
+    const explicit = process.env.CRAFT_BIN
+    if (explicit && existsSync(explicit))
+      return explicit
+    const homeRel = `${process.env.HOME}/Documents/Projects/craft/packages/zig/zig-out/bin/craft`
+    if (existsSync(homeRel))
+      return homeRel
+    return undefined
+  })()
+
   const app = createApp({
     url: initialUrl,
     quiet: !verbose,
+    ...(craftBinaryPath && { craftPath: craftBinaryPath }),
     window: {
       title: 'Stacks Dashboard',
       width: 1400,

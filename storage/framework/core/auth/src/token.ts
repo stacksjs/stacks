@@ -145,9 +145,16 @@ export class TokenManager {
 
   /**
    * Generate a JWT-like token with embedded metadata
-   * Contains user ID, timestamps, and random signature for security
+   * Contains user ID, timestamps, and random signature for security.
+   *
+   * @param userId - User ID to embed in the `sub` claim
+   * @param expiresInSeconds - JWT expiry; defaults to 1 hour to match the
+   *   short-lived access-token contract from `config.auth.tokenExpiry`.
+   *   The previous 30-day default was a non-recoverable bearer-token
+   *   model; callers should pass the resolved access-token TTL so the
+   *   JWT `exp` claim matches the DB row's `expires_at`.
    */
-  static generateJWT(userId: number): string {
+  static generateJWT(userId: number, expiresInSeconds: number = 60 * 60): string {
     const appKey = process.env.APP_KEY
     if (!appKey) {
       throw new Error('APP_KEY is not set. JWT tokens cannot be generated without a secure application key.')
@@ -158,10 +165,11 @@ export class TokenManager {
       typ: 'JWT',
     }
 
+    const nowSeconds = Math.floor(Date.now() / 1000)
     const payload = {
       sub: userId,
-      iat: Math.floor(Date.now() / 1000),
-      exp: Math.floor(Date.now() / 1000) + (60 * 60 * 24 * 30), // 30 days
+      iat: nowSeconds,
+      exp: nowSeconds + expiresInSeconds,
       jti: randomBytes(16).toString('hex'),
     }
 

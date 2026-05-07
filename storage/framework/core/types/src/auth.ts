@@ -49,9 +49,16 @@ export interface AuthOptions {
   password: string
 
   /**
-   * The token expiry time in milliseconds
+   * The access-token expiry time in milliseconds. Defaults to 1 hour —
+   * the matching refresh token below covers the longer-lived window.
    */
   tokenExpiry: number
+
+  /**
+   * The refresh-token expiry time in milliseconds. Defaults to 30 days.
+   * Refresh tokens are single-use and rotate on every refresh exchange.
+   */
+  refreshTokenExpiry?: number
 
   /**
    * The token rotation time in hours

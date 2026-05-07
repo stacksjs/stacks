@@ -14,7 +14,7 @@ import { HttpError } from '@stacksjs/error-handling'
 import { formatDate, User } from '@stacksjs/orm'
 import { request } from '@stacksjs/router'
 import { Buffer } from 'node:buffer'
-import { createHash, timingSafeEqual } from 'node:crypto'
+import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { log } from '@stacksjs/logging'
 import { RateLimiter } from './rate-limiter'
@@ -215,39 +215,66 @@ export class Auth {
   /**
    * Login and return user with token
    * Similar to Laravel's Auth::login() + token creation
+   *
+   * Returns both an access token and a paired refresh token (unless the
+   * caller opts out via `options.withRefreshToken: false`). The access
+   * token has the standard short-lived expiry; the refresh token is
+   * single-use and rotates on every `/auth/refresh` exchange.
    */
-  public static async login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<{ user: UserModel, token: AuthToken } | null> {
+  public static async login(credentials: AuthCredentials, options?: TokenCreateOptions): Promise<
+    { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
+  > {
     const isValid = await this.attempt(credentials)
     if (!isValid || !this.authUser)
       return null
 
-    const { plainTextToken } = await this.createTokenForUser(this.authUser, options)
-    return { user: this.authUser, token: plainTextToken }
+    const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(this.authUser, options)
+    return { user: this.authUser, token: plainTextToken, refreshToken, expiresIn }
   }
 
   /**
    * Login a user directly without credentials
    * Similar to Laravel's Auth::loginUsingId()
    */
-  public static async loginUsingId(userId: number, options?: TokenCreateOptions): Promise<{ user: UserModel, token: AuthToken } | null> {
+  public static async loginUsingId(userId: number, options?: TokenCreateOptions): Promise<
+    { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
+  > {
     const user = await User.find(userId)
     if (!user)
       return null
 
     this.authUser = user
-    const { plainTextToken } = await this.createTokenForUser(user, options)
-    return { user, token: plainTextToken }
+    const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(user, options)
+    return { user, token: plainTextToken, refreshToken, expiresIn }
   }
 
   /**
    * Logout the current user
    * Similar to Laravel's Auth::logout()
+   *
+   * Revokes the current access token AND its paired refresh token so a
+   * leaked-but-not-yet-rotated refresh can't be used to mint a new
+   * access token after the user has signed out.
    */
   public static async logout(): Promise<void> {
     const bearerToken = this.getBearerToken()
 
-    if (bearerToken)
+    if (bearerToken) {
+      const parsed = this.parseToken(bearerToken)
+      if (parsed) {
+        const clientSecret = await this.getClientSecret()
+        const decryptedId = await decrypt(parsed.encryptedId, clientSecret).catch(() => null)
+        if (decryptedId) {
+          // Revoke any refresh tokens linked to this access token before
+          // we revoke the access row itself.
+          await db.updateTable('oauth_refresh_tokens')
+            .set({ revoked: true })
+            .where('access_token_id', '=', Number(decryptedId))
+            .execute()
+        }
+      }
       await this.revokeToken(bearerToken)
+    }
 
     this.authUser = undefined
     this.currentToken = undefined
@@ -317,6 +344,14 @@ export class Auth {
   /**
    * Create a new personal access token for a user
    * Similar to Laravel Passport's $user->createToken()
+   *
+   * Default behaviour issues both an access token (1h) and a paired
+   * refresh token (30d). Pass `options.withRefreshToken: false` to opt
+   * out — useful for one-shot machine tokens that should never be
+   * refreshed. Expiry windows come from `config.auth.tokenExpiry` and
+   * `config.auth.refreshTokenExpiry` unless overridden via
+   * `options.expiresInMinutes` / `options.refreshExpiresInDays` /
+   * `options.expiresAt`.
    */
   public static async createTokenForUser(
     user: UserModel,
@@ -326,13 +361,20 @@ export class Auth {
     const clientSecret = await this.getClientSecret()
 
     const name = options?.name ?? config.auth.defaultTokenName ?? 'auth-token'
-    const abilities = options?.abilities ?? config.auth.defaultAbilities ?? ['*']
+    const abilities = options?.abilities ?? options?.scopes ?? config.auth.defaultAbilities ?? ['*']
 
-    // Generate a JWT-like token with embedded metadata
-    const token = TokenManager.generateJWT(user.id)
+    // Resolve access-token TTL. Precedence: explicit options.expiresAt
+    // → options.expiresInMinutes → config default (1h).
+    const accessTtlMs = options?.expiresInMinutes !== undefined
+      ? options.expiresInMinutes * 60 * 1000
+      : (config.auth.tokenExpiry ?? 60 * 60 * 1000)
+    const expiresAt = options?.expiresAt ?? new Date(Date.now() + accessTtlMs)
 
-    // Set token expiry
-    const expiresAt = options?.expiresAt ?? new Date(Date.now() + (config.auth.tokenExpiry ?? 30 * 24 * 60 * 60 * 1000))
+    // Generate a JWT-like token with embedded metadata. Use the resolved
+    // expiry so the JWT's `exp` claim matches the DB row instead of
+    // hard-coding 30 days as before.
+    const expiresInSeconds = Math.max(1, Math.floor((expiresAt.getTime() - Date.now()) / 1000))
+    const token = TokenManager.generateJWT(user.id, expiresInSeconds)
 
     // Hash the token before storing — only the hash is persisted
     const hashedToken = hashToken(token)
@@ -382,7 +424,33 @@ export class Auth {
       plainTextToken,
     }
 
-    return { accessToken, plainTextToken }
+    // Issue a paired refresh token unless explicitly opted out. Stored
+    // hashed against the access-token id; rotated on every refresh
+    // exchange via /auth/refresh (see RefreshTokenAction + tokens.ts).
+    let refreshTokenPlain: string | undefined
+    if (options?.withRefreshToken !== false) {
+      const refreshTtlDays = options?.refreshExpiresInDays
+        ?? Math.max(1, Math.round((config.auth.refreshTokenExpiry ?? 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)))
+      refreshTokenPlain = randomBytes(40).toString('hex')
+      const hashedRefresh = hashToken(refreshTokenPlain)
+      const refreshExpiresAt = new Date(Date.now() + refreshTtlDays * 24 * 60 * 60 * 1000)
+
+      await db.insertInto('oauth_refresh_tokens')
+        .values({
+          access_token_id: insertId,
+          token: hashedRefresh,
+          revoked: false,
+          expires_at: formatDate(refreshExpiresAt),
+        })
+        .execute()
+    }
+
+    return {
+      accessToken,
+      plainTextToken,
+      refreshToken: refreshTokenPlain,
+      expiresIn: expiresInSeconds,
+    }
   }
 
   /**
@@ -757,8 +825,12 @@ export class Auth {
     if (!accessToken || accessToken.token !== plainToken)
       return null
 
-    // Generate new JWT token
-    const newToken = TokenManager.generateJWT(accessToken.user_id as number)
+    // Generate new JWT token. Match the expiry to the row's existing
+    // expires_at (rotation extends a token's freshness window without
+    // pushing past its original lifetime).
+    const expiresAtMs = accessToken.expires_at ? new Date(String(accessToken.expires_at)).getTime() : Date.now() + (config.auth.tokenExpiry ?? 60 * 60 * 1000)
+    const expiresInSeconds = Math.max(1, Math.floor((expiresAtMs - Date.now()) / 1000))
+    const newToken = TokenManager.generateJWT(accessToken.user_id as number, expiresInSeconds)
 
     // Update the token
     await db.updateTable('oauth_access_tokens')

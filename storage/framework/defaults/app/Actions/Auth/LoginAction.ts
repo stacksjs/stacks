@@ -25,7 +25,20 @@ export default new Action({
     if (result) {
       const user = result.user
 
+      // OAuth2-compatible payload. Clients should:
+      //   - Send `Authorization: Bearer <access_token>` for API calls.
+      //   - Cache the access token for at most `expires_in` seconds.
+      //   - Exchange `refresh_token` at /auth/refresh when the access
+      //     token nears expiry. The refresh token is single-use; the
+      //     refresh response returns a new pair (rotation).
+      // The legacy `token` field is kept for backward compatibility
+      // with clients that haven't been updated yet — it shadows
+      // `access_token` and will be removed in a future major.
       return response.json({
+        access_token: result.token,
+        refresh_token: result.refreshToken,
+        token_type: 'Bearer',
+        expires_in: result.expiresIn,
         token: result.token,
         user: {
           id: user?.id,

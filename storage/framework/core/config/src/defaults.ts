@@ -65,7 +65,11 @@ export const defaults: StacksOptions = {
     username: 'email',
     password: 'password',
     defaultTokenName: 'auth-token',
-    tokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
+    // Short-lived access token (1 hour). Pair with the refresh token below
+    // for a standard "rotate-on-refresh" flow. A non-expiring (or 30-day)
+    // bearer token has no recovery path if it leaks — see #1839.
+    tokenExpiry: 60 * 60 * 1000, // 1 hour
+    refreshTokenExpiry: 30 * 24 * 60 * 60 * 1000, // 30 days
     defaultAbilities: ['*'],
   },
 

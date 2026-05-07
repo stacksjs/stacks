@@ -1,5 +1,7 @@
 import { describe, expect, test } from 'bun:test'
+import { Buffer } from 'node:buffer'
 import { createHash, randomBytes } from 'node:crypto'
+import process from 'node:process'
 
 // Import real token functions - for DB-dependent functions we test signatures
 const {
@@ -12,6 +14,11 @@ const {
   tokenCanAny,
   tokenAbilities,
 } = await import('../src/tokens')
+
+// JWT-expiry regression tests for #1839 live in `jwt-expiry.test.ts` in
+// this directory. They run as a standalone test file because they
+// don't share the DB-stack imports the rest of this file already pulls
+// in (and which can't always boot in a unit-only test environment).
 
 // ---------------------------------------------------------------------------
 // Tests - Pure utility functions (no DB needed)
@@ -137,3 +144,4 @@ describe('Token scope checking', () => {
     expect(typeof tokenAbilities).toBe('function')
   })
 })
+
