@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { readCartCookie } from '../../Storefront/CartCookie'
 
 const CART_COOKIE = 'stacks_cart'
 
@@ -23,7 +24,7 @@ export default new Action({
     if (!name || !address || !city || !state || !zip)
       return response.json({ error: 'All shipping fields are required.' }, { status: 422 })
 
-    const token = request.cookies?.get?.(CART_COOKIE)
+    const token = readCartCookie(request, CART_COOKIE)
     if (!token)
       return response.json({ error: 'Your cart is empty.' }, { status: 400 })
 

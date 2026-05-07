@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { readCartCookie } from '../../Storefront/CartCookie'
 
 const CART_COOKIE = 'stacks_cart'
 
@@ -15,7 +16,10 @@ export default new Action({
   method: 'GET',
 
   async handle(request: any) {
-    const token = request.cookies?.get?.(CART_COOKIE)
+    // Verify HMAC; tampered cookies behave the same as no cookie at
+    // all — return an empty cart shell instead of looking up the
+    // forged token. Legacy unsigned tokens parse through.
+    const token = readCartCookie(request, CART_COOKIE)
     if (!token)
       return response.json({ items: [], subtotal: 0, total_items: 0 })
 

@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
 import { randomUUIDv7 } from 'bun'
+import { readCartCookie, writeCartCookie } from '../../Storefront/CartCookie'
 
 const CART_COOKIE = 'stacks_cart'
 const COOKIE_OPTS = {
@@ -45,7 +46,11 @@ export default new Action({
     if (!product)
       return response.json({ error: `Product "${slug}" not found` }, { status: 404 })
 
-    let token = request.cookies?.get?.(CART_COOKIE) || null
+    // readCartCookie verifies the HMAC; tampered cookies return null
+    // and the action falls through to the "create new cart" branch as
+    // if no cookie were present. Legacy unsigned tokens are accepted
+    // once and re-signed on the next write below.
+    let token = readCartCookie(request, CART_COOKIE)
     let cart = token
       ? await (db as any).selectFrom('carts').where('session_token', '=', token).selectAll().executeTakeFirst()
       : null
@@ -73,7 +78,13 @@ export default new Action({
         .where('session_token', '=', token)
         .selectAll()
         .executeTakeFirst()
-      request.cookies?.set?.(CART_COOKIE, token, COOKIE_OPTS)
+      writeCartCookie(request, CART_COOKIE, token, COOKIE_OPTS)
+    }
+    else if (!(request.cookies?.get?.(CART_COOKIE) ?? '').includes('.')) {
+      // Re-sign legacy carts opportunistically so the next request
+      // round-trips with the HMAC variant. Cheap — one cookie set per
+      // legacy shopper, then never again.
+      writeCartCookie(request, CART_COOKIE, token!, COOKIE_OPTS)
     }
 
     // Look for an existing line for the same product to bump quantity.

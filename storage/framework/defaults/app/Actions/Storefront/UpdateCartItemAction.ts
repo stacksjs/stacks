@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { readCartCookie } from '../../Storefront/CartCookie'
 
 const CART_COOKIE = 'stacks_cart'
 
@@ -18,7 +19,9 @@ export default new Action({
     const itemId = Number(request.get('item_id') ?? 0)
     const quantity = Math.max(0, Math.min(99, Number(request.get('quantity') ?? 1)))
 
-    const token = request.cookies?.get?.(CART_COOKIE)
+    // HMAC-verified cookie. Tampered tokens look like "no cookie" so
+    // an attacker can't probe for the existence of arbitrary carts.
+    const token = readCartCookie(request, CART_COOKIE)
     if (!token)
       return response.json({ error: 'No active cart' }, { status: 400 })
 

@@ -1,6 +1,9 @@
 import { Action } from '@stacksjs/actions'
+import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { response } from '@stacksjs/router'
+import { sendOrderConfirmation } from '../../Mail/OrderConfirmation'
+import { readCartCookie } from '../../Storefront/CartCookie'
 import { totalsFor } from './_shipping'
 
 const CART_COOKIE = 'stacks_cart'
@@ -24,7 +27,7 @@ export default new Action({
   method: 'POST',
 
   async handle(request: any) {
-    const token = request.cookies?.get?.(CART_COOKIE)
+    const token = readCartCookie(request, CART_COOKIE)
     if (!token)
       return response.json({ error: 'Your cart is empty.' }, { status: 400 })
 
@@ -147,6 +150,34 @@ export default new Action({
       .execute()
 
     request.cookies?.delete?.(CART_COOKIE, { path: '/' })
+
+    // Fire the receipt email asynchronously so a mailer hiccup
+    // never fails an otherwise-good checkout. The customer can still
+    // see their order on the post-checkout page even if the email
+    // never lands.
+    const baseUrl = (() => {
+      let raw = process.env.APP_URL || config.app.url || ''
+      if (raw && !/^https?:\/\//i.test(raw)) raw = `https://${raw}`
+      return raw.replace(/\/$/, '')
+    })()
+    sendOrderConfirmation({
+      to: cart.email,
+      orderId: order.id,
+      customerName: cart.shipping_name || customer.name,
+      items: items.map((row: any) => ({
+        name: row.product_name,
+        qty: Number(row.quantity),
+        lineTotal: Number(row.total_price || 0),
+      })),
+      subtotal,
+      shipping,
+      total,
+      shippingAddress: fullAddress,
+      orderUrl: `${baseUrl}/orders/${order.id}`,
+    }).catch((err: unknown) => {
+      const message = err instanceof Error ? err.message : String(err)
+      console.error(`[PlaceOrderAction] order receipt email failed for order #${order.id}:`, message)
+    })
 
     const wantsHtml = (request.headers?.get?.('accept') || '').includes('text/html')
     const xhr = request.headers?.get?.('x-requested-with') === 'XMLHttpRequest'
