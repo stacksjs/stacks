@@ -5,9 +5,11 @@ export {
 } from './destroy'
 
 // Functions from fetch.ts
+export type { TopProductRow } from './fetch'
 export {
   fetchAll,
   fetchById,
+  fetchTopProducts,
 } from './fetch'
 
 // Functions from store.ts

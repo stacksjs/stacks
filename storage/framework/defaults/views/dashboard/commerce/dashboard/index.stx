@@ -2,7 +2,7 @@
 
 @section('content')
 <script server>
-import { orders, payments } from '@stacksjs/commerce'
+import { orders, payments, products as productsModule } from '@stacksjs/commerce'
 
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 
@@ -24,11 +24,20 @@ let recentOrders: Array<{
   total: string
   status: string
 }> = []
+let topProducts: Array<{
+  id: number
+  name: string
+  unitsSold: string
+  revenue: string
+  inventoryClass: string
+  inventoryLabel: string
+}> = []
 
 try {
-  const [paymentStats, orderStats] = await Promise.all([
+  const [paymentStats, orderStats, topProductRows] = await Promise.all([
     payments.fetchPaymentStats(30),
     orders.fetchStats(),
+    productsModule.items.fetchTopProducts(5),
   ])
 
   const formatUSD = (n: number) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -49,17 +58,32 @@ try {
     total: formatUSD(Number(o.total_amount) || 0),
     status: String(o.status || 'pending'),
   }))
+
+  // Inventory tier thresholds are intentionally simple — high (≥50),
+  // medium (10–49), low (<10). When inventory tracking gets a proper
+  // low-stock-threshold per product, switch to that signal.
+  const inventoryTier = (n: number) => {
+    if (n >= 50) return { cls: 'text-green-600 dark:text-green-400', label: 'In stock' }
+    if (n >= 10) return { cls: 'text-yellow-600 dark:text-yellow-400', label: 'Low' }
+    return { cls: 'text-red-600 dark:text-red-400', label: 'Critical' }
+  }
+
+  topProducts = topProductRows.map((p) => {
+    const tier = inventoryTier(p.inventory_count)
+    return {
+      id: p.id,
+      name: p.name,
+      unitsSold: p.units_sold.toLocaleString('en-US'),
+      revenue: formatUSD(p.revenue),
+      inventoryClass: tier.cls,
+      inventoryLabel: `${p.inventory_count.toLocaleString('en-US')} • ${tier.label}`,
+    }
+  })
 }
 catch {
   // DB unavailable / query failed — render zeros rather than fake numbers.
   // Empty-state UX is better than confidently-wrong numbers.
 }
-
-// TODO(commerce-dashboard-tile-2): Top products by units sold needs an
-// order_items × products aggregation (sum of quantity grouped by
-// product, ordered desc, top N). Until that helper exists, this table
-// is intentionally hidden in the template below — surfacing zeros
-// would imply we have no products, which is misleading.
 
 // TODO(commerce-dashboard-tile-3): Conversion rate needs a session/visit
 // counter (orders ÷ unique_sessions). We don't track sessions in this
@@ -188,9 +212,44 @@ function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix
           </div>
         </div>
 
-        <!-- Top Selling Products — hidden until order_items × products aggregation
-             lands (see TODO at the top of this file). The previous version listed
-             products by descending price, which is misleading. -->
+        <!-- Top Selling Products — by units sold over all time, joined back to
+             current product info. Empty state shows when there are no orders yet. -->
+        <div class="mt-8">
+          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+            <div class="px-4 py-5 sm:px-6">
+              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Selling Products</h3>
+              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Ranked by units sold across all orders.</p>
+            </div>
+            <div class="border-gray-200 border-t dark:border-neutral-700">
+              @if(topProducts.length === 0)
+                <div class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+                  No sales recorded yet.
+                </div>
+              @else
+                <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+                  <thead class="bg-gray-50 dark:bg-neutral-700">
+                    <tr>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Product</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Units Sold</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Revenue</th>
+                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Inventory</th>
+                    </tr>
+                  </thead>
+                  <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+                    @foreach(topProducts as product)
+                      <tr>
+                        <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ product.name }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.unitsSold }}</td>
+                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.revenue }}</td>
+                        <td class="px-6 py-4 text-sm whitespace-nowrap {{ product.inventoryClass }}">{{ product.inventoryLabel }}</td>
+                      </tr>
+                    @endforeach
+                  </tbody>
+                </table>
+              @endif
+            </div>
+          </div>
+        </div>
 
 
         <!-- Recent Orders -->

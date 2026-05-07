@@ -1,5 +1,5 @@
 type ProductJsonResponse = ModelRow<typeof Product>
-import { db } from '@stacksjs/database'
+import { db, sql } from '@stacksjs/database'
 
 /**
  * Fetch a product item by ID
@@ -219,6 +219,63 @@ export async function getProductsByPriceRange(minPrice: number, maxPrice: number
       throw new TypeError(`Failed to get products by price range: ${error.message}`)
     }
 
+    throw error
+  }
+}
+
+/**
+ * Top-selling products by units sold.
+ *
+ * Aggregates `order_items` (the line-item table — each row is one
+ * product on one order) grouping by product, summing quantity for the
+ * "units sold" rank and the line-item revenue (price × quantity) for
+ * the revenue side. Joins back to `products` so we can return the
+ * product name + current inventory inline; if a product was deleted
+ * after sales were recorded, that row is skipped (INNER JOIN).
+ *
+ * Revenue uses the price stored on `order_items` (price-at-sale)
+ * rather than the current `products.price`, so historical numbers
+ * stay correct even when prices change.
+ */
+export interface TopProductRow {
+  id: number
+  name: string
+  units_sold: number
+  revenue: number
+  inventory_count: number
+}
+
+export async function fetchTopProducts(limit: number = 5): Promise<TopProductRow[]> {
+  try {
+    const rows = await db
+      .selectFrom('order_items')
+      .innerJoin('products', 'products.id', 'order_items.product_id')
+      .select([
+        'products.id as id',
+        'products.name as name',
+        'products.inventory_count as inventory_count',
+        ((eb: any) => eb.fn.sum('order_items.quantity').as('units_sold')) as any,
+        // Multiply line-item price × quantity inline. Falls back to the
+        // current product price if order_items.price is null (older data).
+        sql<number>`SUM(COALESCE(order_items.price, products.price) * order_items.quantity)`.as('revenue') as any,
+      ])
+      .groupBy(['products.id', 'products.name', 'products.inventory_count'])
+      .orderBy('units_sold', 'desc')
+      .limit(limit)
+      .execute()
+
+    return rows.map((r: any) => ({
+      id: Number(r.id),
+      name: String(r.name ?? 'Unnamed product'),
+      units_sold: Number(r.units_sold ?? 0),
+      revenue: Number(r.revenue ?? 0),
+      inventory_count: Number(r.inventory_count ?? 0),
+    }))
+  }
+  catch (error) {
+    if (error instanceof Error) {
+      throw new TypeError(`Failed to fetch top products: ${error.message}`)
+    }
     throw error
   }
 }
