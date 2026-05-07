@@ -59,6 +59,11 @@ route.group({ prefix: '/password' }, () => {
 // the action layer — than with a token check the form can't satisfy.
 route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe').skipCsrf()
 route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
+// RFC 8058 one-click endpoint. Mailbox providers (Gmail, Yahoo, Outlook)
+// POST here with body `List-Unsubscribe=One-Click` when the user clicks
+// the inbox-native unsubscribe affordance — the request never carries a
+// CSRF token because the mailbox provider isn't in our session, so skip.
+route.post('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe.oneclick').skipCsrf()
 
 // Public contact form. CSRF skipped for the same reason as the
 // subscribe endpoint — the form renders without JS — and the outbound
@@ -331,25 +336,31 @@ route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
   route.patch('/products/{id}', 'Actions/Commerce/Product/ProductUpdateAction')
   route.delete('/products/{id}', 'Actions/Commerce/Product/ProductDestroyAction')
 
+  // Product subresources nested under /products/* to match the
+  // frontend composables (defaults/functions/commerce/products/*.ts).
   route.get('/products/{productId}/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
-  route.get('/variants/{id}', 'Actions/Commerce/Product/ProductVariantShowAction')
-  route.post('/variants', 'Actions/Commerce/Product/ProductVariantStoreAction')
-  route.patch('/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction')
-  route.delete('/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction')
+  route.get('/products/variants', 'Actions/Commerce/Product/ProductVariantIndexAction')
+  route.get('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantShowAction')
+  route.post('/products/variants', 'Actions/Commerce/Product/ProductVariantStoreAction')
+  route.patch('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantUpdateAction')
+  route.delete('/products/variants/{id}', 'Actions/Commerce/Product/ProductVariantDestroyAction')
 
-  route.get('/units', 'Actions/Commerce/Product/ProductUnitIndexAction')
-  route.get('/units/{id}', 'Actions/Commerce/Product/ProductUnitShowAction')
-  route.post('/units', 'Actions/Commerce/Product/ProductUnitStoreAction')
-  route.delete('/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction')
+  route.get('/products/units', 'Actions/Commerce/Product/ProductUnitIndexAction')
+  route.get('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitShowAction')
+  route.post('/products/units', 'Actions/Commerce/Product/ProductUnitStoreAction')
+  route.delete('/products/units/{id}', 'Actions/Commerce/Product/ProductUnitDestroyAction')
 
   route.get('/product-categories', 'Actions/Commerce/Product/ProductCategoryIndexAction')
   route.post('/product-categories', 'Actions/Commerce/Product/ProductCategoryStoreAction')
 
-  route.get('/manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
-  route.get('/manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
-  route.post('/manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
-  route.patch('/manufacturers/{id}', 'Actions/Commerce/Product/ProductManufacturerUpdateAction')
-  route.delete('/manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction')
+  // Manufacturers — frontend composable hits `/commerce/product-manufacturers`,
+  // so the resource name is namespaced to disambiguate from any future
+  // standalone manufacturers concept.
+  route.get('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerIndexAction')
+  route.get('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerShowAction')
+  route.post('/product-manufacturers', 'Actions/Commerce/Product/ManufacturerStoreAction')
+  route.patch('/product-manufacturers/{id}', 'Actions/Commerce/Product/ProductManufacturerUpdateAction')
+  route.delete('/product-manufacturers/{id}', 'Actions/Commerce/Product/ManufacturerDestroyAction')
 
   route.get('/orders', 'Actions/Commerce/OrderIndexAction')
   route.get('/orders/{id}', 'Actions/Commerce/OrderShowAction')
@@ -384,10 +395,12 @@ route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
   route.patch('/tax-rates/{id}', 'Actions/Commerce/TaxRateUpdateAction')
   route.delete('/tax-rates/{id}', 'Actions/Commerce/TaxRateDestroyAction')
 
-  route.get('/reviews', 'Actions/Commerce/ReviewIndexAction')
-  route.get('/reviews/{id}', 'Actions/Commerce/ReviewShowAction')
-  route.post('/reviews', 'Actions/Commerce/ReviewStoreAction')
-  route.patch('/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction')
+  // Reviews are scoped to products — frontend composable hits
+  // `/commerce/products/reviews`, not `/commerce/reviews`.
+  route.get('/products/reviews', 'Actions/Commerce/ReviewIndexAction')
+  route.get('/products/reviews/{id}', 'Actions/Commerce/ReviewShowAction')
+  route.post('/products/reviews', 'Actions/Commerce/ReviewStoreAction')
+  route.patch('/products/reviews/{id}', 'Actions/Commerce/ReviewUpdateAction')
 
   route.get('/receipts', 'Actions/Commerce/ReceiptIndexAction')
   route.get('/receipts/{id}', 'Actions/Commerce/ReceiptShowAction')
@@ -429,30 +442,33 @@ route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
   route.post('/waitlist/restaurants', 'Actions/Commerce/WaitlistRestaurantStoreAction')
   route.patch('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantUpdateAction')
   route.delete('/waitlist/restaurants/{id}', 'Actions/Commerce/WaitlistRestaurantDestroyAction')
-})
 
-// ============================================================================
-// Shipping
-// ============================================================================
+  // ----------------------------------------------------------------
+  // Shipping (moved from a top-level /shipping group on 2026-05-08).
+  // The frontend composables (defaults/functions/commerce/shippings/*.ts)
+  // all expect these resources under /commerce/*, so the prior /shipping
+  // group was orphaned — every shipping/driver/license/digital call
+  // from the dashboard was 404ing. Resource names match the composable
+  // file names: shipping-methods/rates/zones, delivery-routes, drivers,
+  // digital-deliveries, license-keys.
+  // ----------------------------------------------------------------
+  route.get('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction')
+  route.get('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction')
+  route.post('/shipping-methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction')
+  route.patch('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction')
+  route.delete('/shipping-methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction')
 
-route.group({ prefix: '/shipping', middleware: 'auth' }, () => {
-  route.get('/methods', 'Actions/Commerce/Shipping/ShippingMethodIndexAction')
-  route.get('/methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodShowAction')
-  route.post('/methods', 'Actions/Commerce/Shipping/ShippingMethodStoreAction')
-  route.patch('/methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodUpdateAction')
-  route.delete('/methods/{id}', 'Actions/Commerce/Shipping/ShippingMethodDestroyAction')
+  route.get('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction')
+  route.get('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction')
+  route.post('/shipping-rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction')
+  route.patch('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction')
+  route.delete('/shipping-rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyAction')
 
-  route.get('/rates', 'Actions/Commerce/Shipping/ShippingRateIndexAction')
-  route.get('/rates/{id}', 'Actions/Commerce/Shipping/ShippingRateShowAction')
-  route.post('/rates', 'Actions/Commerce/Shipping/ShippingRateStoreAction')
-  route.patch('/rates/{id}', 'Actions/Commerce/Shipping/ShippingRateUpdateAction')
-  route.delete('/rates/{id}', 'Actions/Commerce/Shipping/ShippingRateDestroyAction')
-
-  route.get('/zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction')
-  route.get('/zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowAction')
-  route.post('/zones', 'Actions/Commerce/Shipping/ShippingZoneStoreAction')
-  route.patch('/zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateAction')
-  route.delete('/zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyAction')
+  route.get('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneIndexAction')
+  route.get('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneShowAction')
+  route.post('/shipping-zones', 'Actions/Commerce/Shipping/ShippingZoneStoreAction')
+  route.patch('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneUpdateAction')
+  route.delete('/shipping-zones/{id}', 'Actions/Commerce/Shipping/ShippingZoneDestroyAction')
 
   route.get('/delivery-routes', 'Actions/Commerce/Shipping/DeliveryRouteIndexAction')
   route.get('/delivery-routes/{id}', 'Actions/Commerce/Shipping/DeliveryRouteShowAction')
@@ -465,11 +481,12 @@ route.group({ prefix: '/shipping', middleware: 'auth' }, () => {
   route.post('/drivers', 'Actions/Commerce/Shipping/DriverStoreAction')
   route.patch('/drivers/{id}', 'Actions/Commerce/Shipping/DriverUpdateAction')
 
-  route.get('/digital', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')
-  route.get('/digital/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction')
-  route.post('/digital', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction')
-  route.patch('/digital/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction')
-  route.delete('/digital/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
+  // Renamed from `/digital` — frontend composable expects `/digital-deliveries`.
+  route.get('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryIndexAction')
+  route.get('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryShowAction')
+  route.post('/digital-deliveries', 'Actions/Commerce/Shipping/DigitalDeliveryStoreAction')
+  route.patch('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryUpdateAction')
+  route.delete('/digital-deliveries/{id}', 'Actions/Commerce/Shipping/DigitalDeliveryDestroyAction')
 
   route.get('/license-keys', 'Actions/Commerce/Shipping/LicenseKeyIndexAction')
   route.get('/license-keys/{id}', 'Actions/Commerce/Shipping/LicenseKeyShowAction')
