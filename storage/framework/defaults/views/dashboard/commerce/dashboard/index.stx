@@ -2,31 +2,104 @@
 
 @section('content')
 <script server>
+import { orders, payments } from '@stacksjs/commerce'
+
 const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 
-const topProducts = [
-  { id: 1, name: 'Premium Headphones', price: '$199.99', sales: 1245, stock: 78 },
-  { id: 2, name: 'Wireless Keyboard', price: '$89.99', sales: 987, stock: 124 },
-  { id: 3, name: 'Smart Watch', price: '$249.99', sales: 876, stock: 45 },
-  { id: 4, name: 'Bluetooth Speaker', price: '$129.99', sales: 765, stock: 92 },
-  { id: 5, name: 'USB-C Hub', price: '$59.99', sales: 654, stock: 210 },
-]
+// Live aggregates. The time-range select above is currently a UI-only
+// control — the queries below always look at the last 30 days. Wiring
+// the selector to re-query is a follow-up that needs a refresh path
+// (likely a dedicated endpoint + composable) since `<script server>`
+// only runs at render time.
+let revenueLabel = '$0.00'
+let revenueChange: { sign: '+' | '-', percent: string } | null = null
+let totalOrdersLabel = '0'
+let ordersChange: { sign: '+' | '-', percent: string } | null = null
+let avgOrderValueLabel = '$0.00'
+let avgChange: { sign: '+' | '-', percent: string } | null = null
+let recentOrders: Array<{
+  id: string
+  customer: string
+  date: string
+  total: string
+  status: string
+}> = []
 
-const recentOrders = [
-  { id: '#ORD-5432', customer: 'John Smith', date: '2023-12-01', total: '$349.97', status: 'Completed' },
-  { id: '#ORD-5431', customer: 'Sarah Johnson', date: '2023-12-01', total: '$129.99', status: 'Processing' },
-  { id: '#ORD-5430', customer: 'Michael Brown', date: '2023-11-30', total: '$459.98', status: 'Completed' },
-  { id: '#ORD-5429', customer: 'Emily Davis', date: '2023-11-30', total: '$89.99', status: 'Shipped' },
-  { id: '#ORD-5428', customer: 'David Wilson', date: '2023-11-29', total: '$199.99', status: 'Completed' },
-]
+try {
+  const [paymentStats, orderStats] = await Promise.all([
+    payments.fetchPaymentStats(30),
+    orders.fetchStats(),
+  ])
 
-function orderStatusClass(status) {
+  const formatUSD = (n: number) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+  const formatChange = (cmp?: { is_increase: boolean, percentage: number }) =>
+    cmp ? { sign: cmp.is_increase ? '+' as const : '-' as const, percent: Number(cmp.percentage).toFixed(1) } : null
+
+  revenueLabel = formatUSD(paymentStats.total_revenue)
+  revenueChange = formatChange(paymentStats.comparison?.revenue)
+  totalOrdersLabel = String(orderStats.total)
+  ordersChange = formatChange(paymentStats.comparison?.transactions)
+  avgOrderValueLabel = formatUSD(paymentStats.average_transaction)
+  avgChange = formatChange(paymentStats.comparison?.average)
+
+  recentOrders = (orderStats.recent ?? []).slice(0, 5).map((o: any) => ({
+    id: `#ORD-${String(o.id).padStart(4, '0')}`,
+    customer: o.customer_id ? `Customer ${o.customer_id}` : '—',
+    date: o.created_at ? new Date(o.created_at).toISOString().slice(0, 10) : '',
+    total: formatUSD(Number(o.total_amount) || 0),
+    status: String(o.status || 'pending'),
+  }))
+}
+catch {
+  // DB unavailable / query failed — render zeros rather than fake numbers.
+  // Empty-state UX is better than confidently-wrong numbers.
+}
+
+// TODO(commerce-dashboard-tile-2): Top products by units sold needs an
+// order_items × products aggregation (sum of quantity grouped by
+// product, ordered desc, top N). Until that helper exists, this table
+// is intentionally hidden in the template below — surfacing zeros
+// would imply we have no products, which is misleading.
+
+// TODO(commerce-dashboard-tile-3): Conversion rate needs a session/visit
+// counter (orders ÷ unique_sessions). We don't track sessions in this
+// repo yet — the tile renders a placeholder until ts-analytics or an
+// equivalent feeds in.
+
+// TODO(commerce-dashboard-charts): Revenue + Orders monthly charts are
+// still fed by static arrays in the client block. payments.fetchMonthly-
+// PaymentTrends() returns the right shape; orders.fetchDailyOrderTrends()
+// is the daily counterpart but currently returns an empty result. Wire
+// both once the daily helper is implemented.
+
+function orderStatusClass(status: string): string {
   switch (status) {
+    case 'completed':
     case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    case 'processing':
     case 'Processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+    case 'shipped':
     case 'Shipped': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
     default: return 'bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-300'
   }
+}
+
+function changeIcon(change: { sign: '+' | '-', percent: string } | null): string {
+  if (!change) return ''
+  return change.sign === '+' ? 'i-hugeicons-analytics-up' : 'i-hugeicons-analytics-down'
+}
+
+function changeClass(change: { sign: '+' | '-', percent: string } | null): string {
+  if (!change) return 'text-gray-500 dark:text-neutral-400'
+  return change.sign === '+'
+    ? 'text-green-600 dark:text-green-400'
+    : 'text-red-600 dark:text-red-400'
+}
+
+function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix: string): string {
+  if (!change) return ''
+  const direction = change.sign === '+' ? 'increase' : 'decrease'
+  return `${change.percent}% ${direction}${suffix ? ` ${suffix}` : ''}`
 }
 </script>
 
@@ -42,46 +115,59 @@ function orderStatusClass(status) {
           </template>
         </PageHeader>
 
-        <!-- Stats — currently canned numbers; wire to derived(orders) once a real source is plumbed in. -->
+        <!-- Stats — server-rendered from payments.fetchPaymentStats(30) + orders.fetchStats(). -->
         <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
           <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Revenue</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">$548,290</dd>
-            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-              <span>12.5% increase</span>
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Revenue (30d)</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ revenueLabel }}</dd>
+            <dd class="flex items-center mt-2 text-sm {{ changeClass(revenueChange) }}">
+              @if(revenueChange)
+                <div class="mr-1 h-4 w-4 {{ changeIcon(revenueChange) }}"></div>
+                <span>{{ changeLabel(revenueChange, 'vs prior 30d') }}</span>
+              @else
+                <span>—</span>
+              @endif
             </dd>
           </div>
 
           <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
             <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Orders</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">2,456</dd>
-            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-              <span>8.2% increase</span>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalOrdersLabel }}</dd>
+            <dd class="flex items-center mt-2 text-sm {{ changeClass(ordersChange) }}">
+              @if(ordersChange)
+                <div class="mr-1 h-4 w-4 {{ changeIcon(ordersChange) }}"></div>
+                <span>{{ changeLabel(ordersChange, 'vs prior 30d') }}</span>
+              @else
+                <span>—</span>
+              @endif
             </dd>
           </div>
 
           <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Average Order Value</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">$223.25</dd>
-            <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-              <span>3.7% increase</span>
+            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Average Order Value (30d)</dt>
+            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ avgOrderValueLabel }}</dd>
+            <dd class="flex items-center mt-2 text-sm {{ changeClass(avgChange) }}">
+              @if(avgChange)
+                <div class="mr-1 h-4 w-4 {{ changeIcon(avgChange) }}"></div>
+                <span>{{ changeLabel(avgChange, 'vs prior 30d') }}</span>
+              @else
+                <span>—</span>
+              @endif
             </dd>
           </div>
 
           <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
             <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Conversion Rate</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">3.6%</dd>
-            <dd class="flex items-center mt-2 text-red-600 text-sm dark:text-red-400">
-              <div class="mr-1 h-4 w-4 i-hugeicons-analytics-down"></div>
-              <span>0.8% decrease</span>
+            <dd class="mt-1 font-semibold text-3xl text-gray-400 tracking-tight dark:text-neutral-500">—</dd>
+            <dd class="flex items-center mt-2 text-gray-400 text-sm dark:text-neutral-500">
+              <span>session tracking pending</span>
             </dd>
           </div>
         </dl>
 
-        <!-- Charts -->
+        <!-- Charts — still fed by canned monthly arrays in the client block.
+             Wiring real data needs payments.fetchMonthlyPaymentTrends() and
+             a daily orders trend; tracked in the TODO at the top of this file. -->
         <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
           <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
@@ -102,36 +188,10 @@ function orderStatusClass(status) {
           </div>
         </div>
 
-        <!-- Top Products -->
-        <div class="mt-8">
-          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <div class="px-4 py-5 sm:px-6">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Selling Products</h3>
-            </div>
-            <div class="border-gray-200 border-t dark:border-neutral-700">
-              <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-                <thead class="bg-gray-50 dark:bg-neutral-700">
-                  <tr>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Product</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Price</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Sales</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Stock</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(topProducts as product)
-                    <tr>
-                      <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ product.name }}</td>
-                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.price }}</td>
-                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.sales }}</td>
-                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.stock }}</td>
-                    </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
+        <!-- Top Selling Products — hidden until order_items × products aggregation
+             lands (see TODO at the top of this file). The previous version listed
+             products by descending price, which is misleading. -->
+
 
         <!-- Recent Orders -->
         <div class="mt-8">
