@@ -32,12 +32,21 @@ let topProducts: Array<{
   inventoryClass: string
   inventoryLabel: string
 }> = []
+let chartData: {
+  revenue: { labels: string[], values: number[] }
+  orders: { labels: string[], values: number[] }
+} = {
+  revenue: { labels: [], values: [] },
+  orders: { labels: [], values: [] },
+}
 
 try {
-  const [paymentStats, orderStats, topProductRows] = await Promise.all([
+  const [paymentStats, orderStats, topProductRows, monthlyTrends, dailyTrends] = await Promise.all([
     payments.fetchPaymentStats(30),
     orders.fetchStats(),
     productsModule.items.fetchTopProducts(5),
+    payments.fetchMonthlyPaymentTrends(),
+    orders.fetchDailyOrderTrends(30),
   ])
 
   const formatUSD = (n: number) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
@@ -79,6 +88,24 @@ try {
       inventoryLabel: `${p.inventory_count.toLocaleString('en-US')} • ${tier.label}`,
     }
   })
+
+  // Monthly revenue (12 months back, ending current month) for the
+  // line chart. fetchMonthlyPaymentTrends returns an entry only for
+  // months that had completed payments — so a gap month doesn't show
+  // a zero. That's intentional: zero would look like a real dip.
+  chartData.revenue = {
+    labels: monthlyTrends.map(t => `${t.month} ${t.year}`),
+    values: monthlyTrends.map(t => Number(t.revenue) || 0),
+  }
+
+  // Daily order counts for the last 30 days. fetchDailyOrderTrends
+  // only returns days that have orders, so use a date label from
+  // the row directly. The chart is a bar chart — intentionally
+  // sparse rather than padded with 0s for the same reason as above.
+  chartData.orders = {
+    labels: dailyTrends.map(t => t.date),
+    values: dailyTrends.map(t => Number(t.order_count) || 0),
+  }
 }
 catch {
   // DB unavailable / query failed — render zeros rather than fake numbers.
@@ -89,12 +116,6 @@ catch {
 // counter (orders ÷ unique_sessions). We don't track sessions in this
 // repo yet — the tile renders a placeholder until ts-analytics or an
 // equivalent feeds in.
-
-// TODO(commerce-dashboard-charts): Revenue + Orders monthly charts are
-// still fed by static arrays in the client block. payments.fetchMonthly-
-// PaymentTrends() returns the right shape; orders.fetchDailyOrderTrends()
-// is the daily counterpart but currently returns an empty result. Wire
-// both once the daily helper is implemented.
 
 function orderStatusClass(status: string): string {
   switch (status) {
@@ -290,12 +311,28 @@ function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix
         </div>
       </div>
 </PageLayout>
+
+<!-- Server-rendered chart payload. Plain `<script>` (no `type="module"`,
+     no `application/json`) so stx interpolates inside it. `{!! ... !!}`
+     emits raw JSON; `{{ }}` would HTML-escape the quotes and break it. -->
+<script>
+window.__commerceChartData = {!! JSON.stringify(chartData) !!}
+</script>
+
 <script client>
 
 const timeRange = state<string>('Last 30 days')
 
+// Live chart payload provided by the server-render block above. Falls
+// back to empty arrays so the chart still mounts (and shows an empty
+// canvas) if something upstream failed.
+const live = (typeof window !== 'undefined' && window.__commerceChartData) || {
+  revenue: { labels: [], values: [] },
+  orders: { labels: [], values: [] },
+}
+
 const revenueData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  labels: live.revenue.labels,
   datasets: [{
     label: 'Revenue',
     backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -307,19 +344,19 @@ const revenueData = {
     pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
     fill: true,
     tension: 0.4,
-    data: [30000, 35000, 32000, 40000, 45000, 43000, 50000, 55000, 58000, 56000, 60000, 65000],
+    data: live.revenue.values,
   }],
 }
 
 const ordersData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
+  labels: live.orders.labels,
   datasets: [{
     label: 'Orders',
     backgroundColor: 'rgba(16, 185, 129, 0.8)',
     borderColor: 'rgba(16, 185, 129, 1)',
     borderWidth: 1,
     borderRadius: 4,
-    data: [120, 150, 140, 160, 180, 170, 190, 210, 230, 220, 240, 260],
+    data: live.orders.values,
   }],
 }
 
