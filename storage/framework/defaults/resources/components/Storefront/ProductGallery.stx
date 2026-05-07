@@ -20,12 +20,18 @@ const {
 </script>
 
 <div class="space-y-4" data-stx-gallery>
-  <!-- Hero image -->
+  <!-- Hero image — above the fold on every product detail page, so we
+      set fetchpriority=high and skip lazy. width/height locks the
+      aspect-square box so layout doesn't shift while it decodes. -->
   <div class="aspect-square overflow-hidden bg-stone-100 rounded-3xl">
     <img
       src="{{ image }}"
       alt="{{ alt }}"
       data-stx-gallery-main
+      width="900"
+      height="900"
+      fetchpriority="high"
+      decoding="async"
       class="object-cover h-full w-full"
     >
   </div>
