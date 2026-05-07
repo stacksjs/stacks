@@ -403,9 +403,14 @@ route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
 
   route.get('/payment-stats', 'Actions/Commerce/PaymentFetchStatsAction')
   route.get('/payment-trends', 'Actions/Commerce/PaymentMonthlyTrendsAction')
-  route.get('/commerce-payments', 'Actions/Commerce/PaymentIndexAction')
-  route.get('/commerce-payments/{id}', 'Actions/Commerce/PaymentShowAction')
-  route.post('/commerce-payments', 'Actions/Commerce/PaymentStoreAction')
+  // Renamed from `/commerce-payments` — that path was double-prefixed
+  // because this group already mounts under `/commerce`, so callers
+  // hitting `/api/commerce/payments` (which the frontend composable
+  // does — see defaults/functions/commerce/payments.ts) were 404ing.
+  route.get('/payments', 'Actions/Commerce/PaymentIndexAction')
+  route.get('/payments/{id}', 'Actions/Commerce/PaymentShowAction')
+  route.post('/payments', 'Actions/Commerce/PaymentStoreAction')
+  route.patch('/payments/{id}', 'Actions/Commerce/PaymentUpdateAction')
 
   route.get('/waitlist/products', 'Actions/Commerce/WaitlistProductIndexAction')
   route.get('/waitlist/products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')

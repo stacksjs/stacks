@@ -11,3 +11,6 @@ export {
 
 // Store operations - from store.ts
 export { store } from './store'
+
+// Update operations - from update.ts
+export { update } from './update'
