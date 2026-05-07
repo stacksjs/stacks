@@ -1,10 +1,10 @@
 import { db } from '@stacksjs/database'
 
 /**
- * Delete an order by ID
+ * Delete a payment by ID
  *
- * @param id The ID of the order to delete
- * @returns True if the order was deleted, false otherwise
+ * @param id The ID of the payment to delete
+ * @returns True if the payment was deleted, false otherwise
  */
 export async function destroy(id: number): Promise<boolean> {
   try {
@@ -19,7 +19,7 @@ export async function destroy(id: number): Promise<boolean> {
   }
   catch (error) {
     if (error instanceof Error) {
-      throw new TypeError(`Failed to delete order: ${error.message}`)
+      throw new TypeError(`Failed to delete payment: ${error.message}`)
     }
 
     throw error

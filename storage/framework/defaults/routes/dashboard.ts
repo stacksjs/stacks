@@ -411,6 +411,7 @@ route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
   route.get('/payments/{id}', 'Actions/Commerce/PaymentShowAction')
   route.post('/payments', 'Actions/Commerce/PaymentStoreAction')
   route.patch('/payments/{id}', 'Actions/Commerce/PaymentUpdateAction')
+  route.delete('/payments/{id}', 'Actions/Commerce/PaymentDestroyAction')
 
   route.get('/waitlist/products', 'Actions/Commerce/WaitlistProductIndexAction')
   route.get('/waitlist/products/analytics', 'Actions/Commerce/WaitlistProductAnalyticsAction')
