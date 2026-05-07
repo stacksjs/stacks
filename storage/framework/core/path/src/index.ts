@@ -887,6 +887,16 @@ export function notificationsPath(path?: string): string {
 }
 
 /**
+ * Returns the path to the `newsletter` directory within the core directory.
+ *
+ * @param path - The relative path to the file or directory within the `newsletter` directory.
+ * @returns The absolute path to the specified file or directory within the `newsletter` directory.
+ */
+export function newsletterPath(path?: string): string {
+  return corePath(`newsletter/${path || ''}`)
+}
+
+/**
  * Returns the path to the `orm` directory within the core directory.
  *
  * @param path - The relative path to the file or directory within the orm directory.
@@ -1463,6 +1473,7 @@ export interface Path {
   objectsPath: (path?: string) => string
   onboardingPath: (path?: string) => string
   notificationsPath: (path?: string) => string
+  newsletterPath: (path?: string) => string
   packageJsonPath: (type: LibraryType) => string
   viewsPath: (path?: string) => string
   pathPath: (path?: string) => string
@@ -1599,6 +1610,7 @@ export const path: Path = {
   objectsPath,
   onboardingPath,
   notificationsPath,
+  newsletterPath,
   packageJsonPath,
   viewsPath,
   pathPath,

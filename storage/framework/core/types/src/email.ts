@@ -350,6 +350,14 @@ export interface EmailMessage {
   text?: string
   /** Optional attachments */
   attachments?: EmailAttachment[]
+  /**
+   * Extra raw headers to inject into the outgoing envelope.
+   * Used by the newsletter package for `List-Unsubscribe` /
+   * `List-Unsubscribe-Post` (RFC 8058). Drivers that don't yet wire
+   * this through silently ignore — it never affects transactional
+   * sends.
+   */
+  headers?: Record<string, string>
   /** Optional callback after successful delivery */
   onSuccess?: () => Promise<{ message: string }> | { message: string }
   /** Optional callback after failed delivery */

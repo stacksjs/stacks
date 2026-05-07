@@ -108,7 +108,39 @@ async function startStxServer(): Promise<void> {
   const { listConfigFiles, readConfig, updateConfigKey } = await import(
     storagePath('framework/defaults/resources/functions/dashboard/config-io.ts')
   )
+  // Map a runtime bare specifier (used by client-side `await import('@stacksjs/...')`
+  // in dashboard pages) to the on-disk dist file we serve. The matching import
+  // map is injected by the dashboard layout — see
+  // `storage/framework/defaults/views/dashboard/layouts/default.stx`
+  // (`<script type="importmap">` near the top). The dashboard's own
+  // `stx.config.ts` would be the natural home for this, but `bun-plugin-stx`'s
+  // `serve()` autoloads config from `process.cwd()` (the project root), not
+  // the layouts dir, so the layout-level injection is what actually reaches
+  // the browser.
+  const depRoutes: Record<string, string> = {
+    '/__deps/charts.js': storagePath('framework/core/charts/dist/index.js'),
+  }
   const configRoutes: Record<string, (req: Request) => Response | Promise<Response>> = {
+    ...Object.fromEntries(
+      Object.entries(depRoutes).map(([url, file]) => [
+        url,
+        async () => {
+          const f = Bun.file(file)
+          if (!(await f.exists())) {
+            return new Response(
+              `// dependency dist missing: ${file}\n// rebuild with: cd ${file.replace(/\/dist\/[^/]+$/, '')} && bun build.ts`,
+              { status: 500, headers: { 'content-type': 'text/javascript; charset=utf-8' } },
+            )
+          }
+          return new Response(f, {
+            headers: {
+              'content-type': 'text/javascript; charset=utf-8',
+              'cache-control': 'no-cache',
+            },
+          })
+        },
+      ]),
+    ),
     '/api/config/list': async () => {
       try {
         return Response.json({ ok: true, files: listConfigFiles() })
@@ -545,6 +577,18 @@ if (createApp) {
     return undefined
   })()
 
+  // If we couldn't locate a real native binary, don't even attempt to spawn
+  // — ts-craft's `findCraftBinary()` PATH fallback resolves to its own CLI
+  // shim (the `craft` symlink that bun installs into ~/.bun/bin points back
+  // at @stacksjs/ts-craft's bin/cli.ts). That shim then re-receives our
+  // native-style flags (`--url ...`), clapp rejects them as unknown, and the
+  // user sees a noisy "ClappError: Unknown option --url" before the process
+  // exits. Skip native-window mode entirely instead and let the web fallback
+  // below handle it.
+  if (!craftBinaryPath) {
+    createApp = null
+  }
+
   const app = createApp({
     url: initialUrl,
     quiet: !verbose,
@@ -588,6 +632,15 @@ else {
   // No native window — keep the HTTP server alive so the dashboard is
   // reachable via the URLs printed in the banner above. SIGINT/SIGTERM
   // exit cleanly without a window to close.
+  //
+  // We get here in two cases:
+  //   1. `@stacksjs/ts-craft` failed to import (catch above set createApp = null)
+  //   2. We couldn't find a real native craft binary (CRAFT_BIN unset and the
+  //      `~/Documents/Projects/craft` checkout isn't present). In that case
+  //      we deliberately skipped native mode to avoid spawning the ts-craft
+  //      CLI shim with native-style flags (which would error on `--url`).
+  // eslint-disable-next-line no-console
+  console.log(`  ${dim('Native window unavailable. Set CRAFT_BIN to a craft binary, or open the URL above in a browser.')}\n`)
   process.on('SIGINT', () => process.exit(0))
   process.on('SIGTERM', () => process.exit(0))
   await new Promise(() => {})

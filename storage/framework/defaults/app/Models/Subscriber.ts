@@ -7,7 +7,7 @@ export default defineModel({
   primaryKey: 'id',
   autoIncrement: true,
   belongsTo: ['User'],
-  hasMany: ['SubscriberEmail'],
+  hasMany: ['SubscriberEmail', 'EmailListSubscriber', 'CampaignSend'],
 
   traits: {
     useUuid: true,
@@ -71,6 +71,19 @@ export default defineModel({
         },
       },
       factory: faker => faker.helpers.arrayElement(['homepage', 'blog', 'landing-page', 'api', 'import']),
+    },
+
+    // Set when the subscriber globally unsubscribes via the legacy
+    // /api/email/unsubscribe?token=<uuid> route. Per-list unsubscribe
+    // state (the modern flow) lives on `email_list_subscribers` so a
+    // user can drop "Weekly Digest" without losing transactional mail.
+    unsubscribedAt: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.timestamp(),
+      },
+      factory: () => null,
     },
   },
 } as const)

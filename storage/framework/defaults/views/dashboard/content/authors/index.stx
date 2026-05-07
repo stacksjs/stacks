@@ -125,7 +125,11 @@
 </div>
 
 <script client>
-import { useChart } from '../../composables'
+// `useChart` is exposed on `window` by the dashboard layout — see
+// `views/dashboard/layouts/default.stx`. Importing it relatively from
+// `../../composables` would force STX's client-script bundler down a path
+// that can't resolve relative imports from its temp dir, so we rely on
+// the layout's global instead.
 
 interface Author {
   id: number

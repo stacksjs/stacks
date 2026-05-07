@@ -1,9 +1,9 @@
 import { Action } from '@stacksjs/actions'
-import { Subscriber } from '@stacksjs/orm'
+import { EmailList, EmailListSubscriber, Subscriber } from '@stacksjs/orm'
 
 export default new Action({
   name: 'UnsubscribeAction',
-  description: 'Handle email unsubscription via token (subscriber UUID)',
+  description: 'Handle email unsubscription via token (subscriber UUID or per-list pivot UUID)',
   method: 'GET',
 
   async handle(request: RequestInstance) {
@@ -15,7 +15,40 @@ export default new Action({
       })
     }
 
+    // Two flavors of token can land here:
+    //   1. EmailListSubscriber.uuid → per-list (newsletter) unsubscribe.
+    //      We only flip this one row; other lists + transactional mail
+    //      keep flowing.
+    //   2. Subscriber.uuid → legacy global unsubscribe (drops every list).
+    //
+    // We try the per-list pivot first because it's the safer scope —
+    // if a recipient kept an old link around, we'd rather honor it as
+    // a single-list unsubscribe than nuke their entire subscription.
+    // UUIDs are universally unique so the lookups never collide.
     try {
+      const pivot = await EmailListSubscriber.where('uuid', token).first()
+
+      if (pivot) {
+        const subscriber = await Subscriber.find(pivot.subscriber_id)
+        const list = await EmailList.find(pivot.email_list_id)
+        const listName = list?.name ?? 'this list'
+
+        if (pivot.status === 'unsubscribed') {
+          return new Response(unsubscribePage('Already unsubscribed', `${subscriber?.email ?? 'You'} has already been unsubscribed from ${listName}.`, true), {
+            headers: { 'Content-Type': 'text/html' },
+          })
+        }
+
+        await pivot.update({
+          status: 'unsubscribed',
+          unsubscribed_at: new Date().toISOString(),
+        })
+
+        return new Response(unsubscribePage('Unsubscribed', `${subscriber?.email ?? 'You'} has been successfully unsubscribed from ${listName}. You will no longer receive emails from this list.`, true), {
+          headers: { 'Content-Type': 'text/html' },
+        })
+      }
+
       const subscriber = await Subscriber.where('uuid', token).first()
 
       if (!subscriber) {
@@ -30,7 +63,6 @@ export default new Action({
         })
       }
 
-      // Update subscriber status
       await subscriber.update({
         status: 'unsubscribed',
         unsubscribed_at: new Date().toISOString(),

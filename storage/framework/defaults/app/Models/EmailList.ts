@@ -6,6 +6,7 @@ export default defineModel({
   table: 'email_lists',
   primaryKey: 'id',
   autoIncrement: true,
+  hasMany: ['EmailListSubscriber', 'Campaign', 'CampaignSend'],
 
   traits: {
     useUuid: true,
@@ -31,6 +32,16 @@ export default defineModel({
         'Beta Testers', 'Blog Subscribers', 'Marketing List',
         'Enterprise Leads', 'Event Attendees',
       ]),
+    },
+
+    slug: {
+      unique: true,
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(120),
+      },
+      factory: faker => faker.helpers.slugify(faker.lorem.words(2)).toLowerCase(),
     },
 
     description: {

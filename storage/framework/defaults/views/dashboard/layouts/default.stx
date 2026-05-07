@@ -1,3 +1,39 @@
+<style>
+/*
+ * Make every chart canvas fill its wrapper. @stacksjs/charts sizes its
+ * bitmap from `getBoundingClientRect()`, so without CSS dimensions the
+ * canvas stays at the intrinsic 300x150 default and the chart renders
+ * cropped (bar charts lose right-side bars; doughnuts overflow because
+ * the parent grid cell is sized but the canvas isn't).
+ */
+canvas[id$="_chart"] {
+  display: block;
+  width: 100% !important;
+  height: 100% !important;
+}
+</style>
+
+<script>
+// Dynamic import map injection. Pages do `await import('@stacksjs/charts')`
+// in their `<script client>` blocks, which the browser refuses to resolve
+// without an import map. Writing a literal `<script type="importmap">` here
+// would be the obvious fix, but STX's layout-script processor strips the
+// `type` attribute and wraps the body in an IIFE — destroying it. Instead
+// we inject the import map programmatically via DOM, synchronously, before
+// any page-level script (and therefore before any dynamic import) runs.
+// The matching `/__deps/charts.js` route lives in dev/dashboard.ts.
+;(function () {
+  if (typeof document === 'undefined') return
+  // SPA fragment swaps re-execute scripts — only install once.
+  if (document.querySelector('script[data-stx-importmap]')) return
+  var s = document.createElement('script')
+  s.type = 'importmap'
+  s.setAttribute('data-stx-importmap', '')
+  s.textContent = '{"imports":{"@stacksjs/charts":"/__deps/charts.js"}}'
+  ;(document.head || document.documentElement).prepend(s)
+})();
+</script>
+
 <script>
 // Dashboard-wide chart helpers exposed on window so feature pages can call
 // `useChart(...)` / `useCharts(...)` without importing the composables

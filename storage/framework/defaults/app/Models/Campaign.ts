@@ -6,6 +6,8 @@ export default defineModel({
   table: 'campaigns',
   primaryKey: 'id',
   autoIncrement: true,
+  belongsTo: ['EmailList'],
+  hasMany: ['CampaignSend'],
 
   traits: {
     useUuid: true,
@@ -56,10 +58,94 @@ export default defineModel({
       required: true,
       fillable: true,
       default: 'draft',
+      // Newsletter sends use 'sending' / 'sent' / 'cancelled' / 'failed'.
+      // The legacy multi-channel statuses (active / completed / archived)
+      // are kept for compatibility with non-email campaign types.
       validation: {
-        rule: schema.enum(['draft', 'scheduled', 'active', 'paused', 'completed', 'archived']),
+        rule: schema.enum([
+          'draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled', 'failed',
+          'active', 'completed', 'archived',
+        ]),
       },
-      factory: faker => faker.helpers.arrayElement(['draft', 'scheduled', 'active', 'completed', 'active']),
+      factory: faker => faker.helpers.arrayElement(['draft', 'scheduled', 'sent', 'sending', 'completed']),
+    },
+
+    // ── Email-specific fields (used when type === 'email') ────────────
+    // The newsletter pipeline writes these. Other campaign types
+    // (sms/push/social) leave them null.
+
+    subject: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: faker => faker.lorem.sentence(6),
+    },
+
+    template: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(255),
+      },
+      factory: faker => faker.helpers.arrayElement(['newsletter-default', 'product-update', 'promo']),
+    },
+
+    text: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string(),
+      },
+      factory: faker => faker.lorem.paragraphs(2),
+    },
+
+    fromName: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(100),
+      },
+      factory: faker => faker.company.name(),
+    },
+
+    fromAddress: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().email().max(255),
+      },
+      factory: faker => faker.internet.email(),
+    },
+
+    emailListId: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.number(),
+      },
+      factory: faker => faker.number.int({ min: 1, max: 8 }),
+    },
+
+    scheduledAt: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.timestamp(),
+      },
+      factory: (faker) => {
+        return faker.date.soon({ days: 14 }).toISOString().slice(0, 19).replace('T', ' ')
+      },
+    },
+
+    sentAt: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.timestamp(),
+      },
+      factory: () => null,
     },
 
     audienceSize: {
