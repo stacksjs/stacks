@@ -52,7 +52,12 @@ route.group({ prefix: '/password' }, () => {
 // Email
 // ============================================================================
 
-route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe')
+// CSRF is skipped for the same reason the storefront cart routes skip
+// it: the storefront's email-subscribe form is rendered in static HTML
+// without a CSRF token round-trip, and the abuse case (bots inflating
+// the subscriber list) is better handled with the rate limiter — at
+// the action layer — than with a token check the form can't satisfy.
+route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe').skipCsrf()
 route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
 
 // ============================================================================
@@ -79,6 +84,23 @@ route.post('/api/checkout/place', 'Actions/Storefront/PlaceOrderAction').skipCsr
 route.health()
 route.get('/install', 'Actions/InstallAction')
 route.get('/test-error', 'Actions/TestErrorAction')
+
+// ============================================================================
+// SEO — sitemap.xml + robots.txt
+//
+// Both are framework defaults so every Stacks app ships discoverable
+// out of the box. SitemapAction walks resources/views (skipping
+// dynamic [slug] / [...all] pages and private routes like /cart) and
+// fans the products table for product detail URLs. RobotsAction emits
+// safe defaults — Allow: / plus Disallow on cart/checkout/auth/dashboard.
+//
+// Apps with stricter rules can re-register either route in routes/api.ts
+// against their own action; user routes load before framework defaults
+// so the override wins.
+// ============================================================================
+
+route.get('/sitemap.xml', 'Actions/SitemapAction')
+route.get('/robots.txt', 'Actions/RobotsAction')
 
 // ============================================================================
 // AI

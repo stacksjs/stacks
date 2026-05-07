@@ -55,8 +55,6 @@ ${postUrls}
 ${categoryUrls}
 </urlset>`
 
-    return response.send(sitemap, 200, {
-      'Content-Type': 'application/xml; charset=utf-8',
-    })
+    return response.xml(sitemap)
   },
 })
