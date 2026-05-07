@@ -4,7 +4,7 @@ import { useStorage } from '@stacksjs/browser'
 // Create a persistent units array using VueUse's useStorage
 const units = useStorage<Units[]>('units', [])
 
-const baseURL = `${process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`}/api`
+const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
 // Basic fetch function to get all units
 async function fetchUnits(): Promise<Units[]> {

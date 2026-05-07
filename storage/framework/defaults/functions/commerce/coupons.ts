@@ -1,5 +1,6 @@
 import type { Coupons, NewCoupon } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../toasts'
 
 // Create a persistent coupons array using VueUse's useStorage
 const coupons = useStorage<Coupons[]>('coupons', [])
@@ -22,13 +23,12 @@ async function fetchCoupons() {
       return data
     }
     else {
-      console.error('Expected array of coupons but received:', typeof data)
+      pushToast('error', 'Couldn\'t load coupons', { detail: `Expected array but received ${typeof data}` })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching coupons:', error)
-    // Return the stored coupons if fetch fails
+    pushToast('error', 'Couldn\'t load coupons', { detail: String(error) })
     return coupons.value
   }
 }
@@ -49,14 +49,14 @@ async function createCoupon(coupon: Omit<Coupons, 'id'>) {
 
     const data = await response.json() as Coupons
     if (data) {
-      // Update both the storage and the reactive ref
       coupons.value = [...coupons.value, data]
+      pushToast('success', 'Coupon created')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error creating coupon:', error)
+    pushToast('error', 'Failed to create coupon', { detail: String(error) })
     return null
   }
 }
@@ -77,7 +77,6 @@ async function updateCoupon(id: number, coupon: NewCoupon) {
 
     const data = await response.json() as Coupons
     if (data) {
-      // Update both the storage and the reactive ref
       const index = coupons.value.findIndex(c => c.id === coupon.id)
       if (index !== -1) {
         coupons.value = [
@@ -86,12 +85,13 @@ async function updateCoupon(id: number, coupon: NewCoupon) {
           ...coupons.value.slice(index + 1),
         ]
       }
+      pushToast('success', 'Coupon updated')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error updating coupon:', error)
+    pushToast('error', 'Failed to update coupon', { detail: String(error) })
     return null
   }
 }
@@ -106,12 +106,12 @@ async function deleteCoupon(id: number) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    // Update both the storage and the reactive ref
     coupons.value = coupons.value.filter(c => c.id !== id)
+    pushToast('success', 'Coupon deleted')
     return true
   }
   catch (error) {
-    console.error('Error deleting coupon:', error)
+    pushToast('error', 'Failed to delete coupon', { detail: String(error) })
     return false
   }
 }

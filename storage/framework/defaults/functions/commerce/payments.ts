@@ -1,12 +1,12 @@
 import type { Payments } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../toasts'
 
 // Create a persistent payments array using VueUse's useStorage
 const payments = useStorage<Payments[]>('payments', [])
 
-const baseURL = `${process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`}/api`
+const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
-// Basic fetch function to get all payments
 async function fetchPayments(): Promise<Payments[]> {
   try {
     const response = await fetch(`${baseURL}/commerce/payments`)
@@ -20,13 +20,13 @@ async function fetchPayments(): Promise<Payments[]> {
       return data
     }
     else {
-      console.error('Expected array of payments but received:', typeof data)
+      pushToast('error', 'Couldn\'t load payments', { detail: `Expected array but received ${typeof data}` })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching payments:', error)
-    return []
+    pushToast('error', 'Couldn\'t load payments', { detail: String(error) })
+    return payments.value
   }
 }
 
@@ -34,9 +34,7 @@ async function createPayment(payment: Payments): Promise<Payments | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/payments`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payment),
     })
 
@@ -47,12 +45,13 @@ async function createPayment(payment: Payments): Promise<Payments | null> {
     const data = await response.json() as Payments
     if (data) {
       payments.value.push(data)
+      pushToast('success', 'Payment recorded')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error creating payment:', error)
+    pushToast('error', 'Failed to record payment', { detail: String(error) })
     return null
   }
 }
@@ -61,9 +60,7 @@ async function updatePayment(payment: Payments): Promise<Payments | null> {
   try {
     const response = await fetch(`${baseURL}/commerce/payments/${payment.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(payment),
     })
 
@@ -77,12 +74,13 @@ async function updatePayment(payment: Payments): Promise<Payments | null> {
       if (index !== -1) {
         payments.value[index] = data
       }
+      pushToast('success', 'Payment updated')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error updating payment:', error)
+    pushToast('error', 'Failed to update payment', { detail: String(error) })
     return null
   }
 }
@@ -101,16 +99,15 @@ async function deletePayment(id: number): Promise<boolean> {
     if (index !== -1) {
       payments.value.splice(index, 1)
     }
-
+    pushToast('success', 'Payment deleted')
     return true
   }
   catch (error) {
-    console.error('Error deleting payment:', error)
+    pushToast('error', 'Failed to delete payment', { detail: String(error) })
     return false
   }
 }
 
-// Export the composable
 export function usePayments() {
   return {
     payments,

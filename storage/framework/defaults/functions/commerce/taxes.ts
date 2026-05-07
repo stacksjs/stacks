@@ -1,12 +1,12 @@
 import type { TaxRates } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../toasts'
 
 // Create a persistent tax rates array using VueUse's useStorage
 const taxRates = useStorage<TaxRates[]>('taxRates', [])
 
-const baseURL = `${process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`}/api`
+const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT_API || '3008'}`
 
-// Basic fetch function to get all tax rates
 async function fetchTaxRates() {
   try {
     const response = await fetch(`${baseURL}/commerce/tax-rates`)
@@ -20,13 +20,13 @@ async function fetchTaxRates() {
       return data
     }
     else {
-      console.error('Expected array of tax rates but received:', typeof data)
+      pushToast('error', 'Couldn\'t load tax rates', { detail: `Expected array but received ${typeof data}` })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching tax rates:', error)
-    return []
+    pushToast('error', 'Couldn\'t load tax rates', { detail: String(error) })
+    return taxRates.value
   }
 }
 
@@ -34,9 +34,7 @@ async function createTaxRate(taxRate: TaxRates) {
   try {
     const response = await fetch(`${baseURL}/commerce/tax-rates`, {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taxRate),
     })
 
@@ -47,12 +45,13 @@ async function createTaxRate(taxRate: TaxRates) {
     const data = await response.json() as TaxRates
     if (data) {
       taxRates.value.push(data)
+      pushToast('success', 'Tax rate created')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error creating tax rate:', error)
+    pushToast('error', 'Failed to create tax rate', { detail: String(error) })
     return null
   }
 }
@@ -61,9 +60,7 @@ async function updateTaxRate(taxRate: TaxRates) {
   try {
     const response = await fetch(`${baseURL}/commerce/tax-rates/${taxRate.id}`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(taxRate),
     })
 
@@ -77,12 +74,13 @@ async function updateTaxRate(taxRate: TaxRates) {
       if (index !== -1) {
         taxRates.value[index] = data
       }
+      pushToast('success', 'Tax rate updated')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error updating tax rate:', error)
+    pushToast('error', 'Failed to update tax rate', { detail: String(error) })
     return null
   }
 }
@@ -101,16 +99,15 @@ async function deleteTaxRate(id: number) {
     if (index !== -1) {
       taxRates.value.splice(index, 1)
     }
-
+    pushToast('success', 'Tax rate deleted')
     return true
   }
   catch (error) {
-    console.error('Error deleting tax rate:', error)
+    pushToast('error', 'Failed to delete tax rate', { detail: String(error) })
     return false
   }
 }
 
-// Export the composable
 export function useTaxRates() {
   return {
     taxRates,

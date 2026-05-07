@@ -1,5 +1,6 @@
 import type { Customers } from '../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../toasts'
 
 // Create a persistent customers array using VueUse's useStorage
 const customers = useStorage<Customers[]>('customers', [])
@@ -21,13 +22,13 @@ async function fetchCustomers() {
       return data
     }
     else {
-      console.error('Expected array of customers but received:', typeof data)
+      pushToast('error', 'Couldn\'t load customers', { detail: `Expected array but received ${typeof data}` })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching customers:', error)
-    // Return the stored customers if fetch fails
+    pushToast('error', 'Couldn\'t load customers', { detail: String(error) })
+    // Fall back to whatever we already had cached
     return customers.value
   }
 }
@@ -48,14 +49,14 @@ async function createCustomer(customer: Omit<Customers, 'id'>) {
 
     const { data } = await response.json() as { data: Customers }
     if (data) {
-      // Update both the storage and the reactive ref
       customers.value = [...customers.value, data]
+      pushToast('success', 'Customer created')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error creating customer:', error)
+    pushToast('error', 'Failed to create customer', { detail: String(error) })
     return null
   }
 }
@@ -76,7 +77,6 @@ async function updateCustomer(customer: Customers) {
 
     const { data } = await response.json() as { data: Customers }
     if (data) {
-      // Update both the storage and the reactive ref
       const index = customers.value.findIndex(c => c.id === customer.id)
       if (index !== -1) {
         customers.value = [
@@ -85,12 +85,13 @@ async function updateCustomer(customer: Customers) {
           ...customers.value.slice(index + 1),
         ]
       }
+      pushToast('success', 'Customer updated')
       return data
     }
     return null
   }
   catch (error) {
-    console.error('Error updating customer:', error)
+    pushToast('error', 'Failed to update customer', { detail: String(error) })
     return null
   }
 }
@@ -105,12 +106,12 @@ async function deleteCustomer(id: number) {
       throw new Error(`HTTP error! status: ${response.status}`)
     }
 
-    // Update both the storage and the reactive ref
     customers.value = customers.value.filter(c => c.id !== id)
+    pushToast('success', 'Customer deleted')
     return true
   }
   catch (error) {
-    console.error('Error deleting customer:', error)
+    pushToast('error', 'Failed to delete customer', { detail: String(error) })
     return false
   }
 }

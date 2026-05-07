@@ -150,11 +150,57 @@ window.craft._sidebarSelectHandler = (event) => {
     navigate(url)
   }
 }
+
+// Global toast queue. Composables across the dashboard call
+// `pushToast(...)` (defined in defaults/functions/toasts.ts) when
+// network requests fail or succeed; that signal is rendered in the
+// fixed-position container below the <main> slot. Mounted in the
+// layout so every dashboard page picks it up without opting in.
+import { useToasts, dismissToast } from '../../../functions/toasts'
+const { toasts } = useToasts()
+
+const toastIconClass = (type) => ({
+  success: 'i-hugeicons-checkmark-circle-02 text-green-500 dark:text-green-400',
+  error: 'i-hugeicons-alert-02 text-red-500 dark:text-red-400',
+  warning: 'i-hugeicons-alert-circle text-yellow-500 dark:text-yellow-400',
+  info: 'i-hugeicons-information-circle text-blue-500 dark:text-blue-400',
+}[type] || 'i-hugeicons-information-circle text-gray-500 dark:text-neutral-400')
+
+const toastRingClass = (type) => ({
+  success: 'ring-green-500/20',
+  error: 'ring-red-500/30',
+  warning: 'ring-yellow-500/20',
+  info: 'ring-blue-500/20',
+}[type] || 'ring-black/5 dark:ring-white/10')
 </script>
 
 <main data-stx-content>
   @slot('content')
 </main>
+
+<!-- Global toast container. Top-right stack, newest at the bottom.
+     Pointer-events-none on the wrapper + auto on individual toasts so
+     surrounding UI stays clickable while a toast is up. -->
+<div class="fixed top-4 right-4 z-[60] flex flex-col gap-2 pointer-events-none max-w-sm w-full">
+  @foreach(toasts() as toast)
+    <div role="alert" aria-live="assertive" class="pointer-events-auto overflow-hidden bg-white dark:bg-neutral-800 ring-1 {{ toastRingClass(toast.type) }} rounded-lg shadow-lg">
+      <div class="p-4 flex items-start gap-3">
+        <div class="flex-shrink-0 h-5 w-5 mt-0.5 {{ toastIconClass(toast.type) }}"></div>
+        <div class="flex-1 min-w-0">
+          <p class="font-medium text-sm text-gray-900 dark:text-neutral-100">{{ toast.title }}</p>
+          @if(toast.detail)
+            <p class="mt-1 text-xs text-gray-500 dark:text-neutral-400 break-words">{{ toast.detail }}</p>
+          @endif
+        </div>
+        <button type="button" @click="dismissToast({{ toast.id }})" class="flex-shrink-0 text-gray-400 hover:text-gray-600 dark:hover:text-neutral-200" aria-label="Dismiss">
+          <svg class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+            <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+  @endforeach
+</div>
 
 <style>
 body {
