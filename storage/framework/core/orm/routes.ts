@@ -519,9 +519,33 @@ for (const [modelName, model] of Object.entries(models)) {
   const hiddenFields = getHiddenFields(model)
   const basePath = `/api/${uri}`
 
+  // Per-model middleware list, applied to every CRUD route this model
+  // generates. Honors the `useApi.middleware` field declared on the
+  // model trait (e.g. `middleware: ['auth']` for resources that should
+  // never be browsed anonymously). Without this, auto-generated REST
+  // routes are unauthenticated by default — fine for public catalog
+  // tables (products, posts), wrong for anything PII-shaped
+  // (subscribers, customers, orders).
+  const apiMiddleware: string[] = Array.isArray((apiConfig as any).middleware)
+    ? ((apiConfig as any).middleware as string[]).filter(m => typeof m === 'string' && m.length > 0)
+    : (typeof (apiConfig as any).middleware === 'string' && (apiConfig as any).middleware
+        ? [(apiConfig as any).middleware]
+        : [])
+
+  // Local helper: chain `.middleware()` for every entry in `apiMiddleware`.
+  // The chainable return value from `route.get/post/...` accepts one
+  // name per call, so we fold the list into successive calls.
+  const applyMiddleware = (chain: any): any => {
+    let r = chain
+    for (const name of apiMiddleware) {
+      if (r && typeof r.middleware === 'function') r = r.middleware(name)
+    }
+    return r
+  }
+
   // GET /api/{uri} — list all records (paginated, sortable)
   if (enabledRoutes.includes('index') && !routeExists('GET', basePath)) {
-    route.get(basePath, async (req: EnhancedRequest) => {
+    applyMiddleware(route.get(basePath, async (req: EnhancedRequest) => {
       try {
         const url = new URL(req.url)
         const page = Number.parseInt(url.searchParams.get('page') || '1', 10)
@@ -635,12 +659,12 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to fetch ${uri}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 
   // GET /api/{uri}/{id} — show single record
   if (enabledRoutes.includes('show') && !routeExists('GET', `${basePath}/{id}`)) {
-    route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
+    applyMiddleware(route.get(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId((req as any).params?.id)
 
@@ -701,12 +725,12 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to fetch ${modelName}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 
   // POST /api/{uri} — create record
   if (enabledRoutes.includes('store') && !routeExists('POST', basePath)) {
-    route.post(basePath, async (req: EnhancedRequest) => {
+    applyMiddleware(route.post(basePath, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
         // Belt-and-suspenders: drop hidden inputs FIRST so a curious client
@@ -776,7 +800,7 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to create ${modelName}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 
   // PUT/PATCH /api/{uri}/{id} — update record
@@ -871,17 +895,17 @@ for (const [modelName, model] of Object.entries(models)) {
     }
 
     if (!routeExists('PUT', `${basePath}/{id}`)) {
-      route.put(`${basePath}/{id}`, updateHandler)
+      applyMiddleware(route.put(`${basePath}/{id}`, updateHandler))
     }
     if (!routeExists('PATCH', `${basePath}/{id}`)) {
-      route.patch(`${basePath}/{id}`, updateHandler)
+      applyMiddleware(route.patch(`${basePath}/{id}`, updateHandler))
     }
   }
 
   // DELETE /api/{uri}/{id} — delete record (or soft-delete if model has useSoftDeletes).
   const usesSoftDeletes = !!model.traits?.useSoftDeletes
   if (enabledRoutes.includes('destroy') && !routeExists('DELETE', `${basePath}/{id}`)) {
-    route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
+    applyMiddleware(route.delete(`${basePath}/{id}`, async (req: EnhancedRequest) => {
       try {
         const id = coerceId((req as any).params?.id)
         if (id == null) {
@@ -928,13 +952,13 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to delete ${modelName}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 
   // POST /api/{uri}/bulk-delete — delete multiple records (also soft-aware,
   // also ownership-checked per row).
   if (enabledRoutes.includes('destroy') && !routeExists('POST', `${basePath}/bulk-delete`)) {
-    route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
+    applyMiddleware(route.post(`${basePath}/bulk-delete`, async (req: EnhancedRequest) => {
       try {
         const body = await getRequestBody(req)
         const ids = body?.ids
@@ -1004,7 +1028,7 @@ for (const [modelName, model] of Object.entries(models)) {
         }
         return jsonResponse({ error: `Failed to bulk delete ${uri}`, detail: String(err) }, 500)
       }
-    })
+    }))
   }
 }
 

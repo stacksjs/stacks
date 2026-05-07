@@ -14,6 +14,11 @@ export default defineModel({
     useApi: {
       uri: 'subscriber-emails',
       routes: ['index', 'show'],
+      // SubscriberEmail rows are PII (email + signup source). Without
+      // this gate, anyone can scrape the list at GET /api/subscriber-emails.
+      // Apps that genuinely want a public list (e.g. a transparency
+      // page) can override the model in `app/Models/`.
+      middleware: ['auth'],
     },
   },
 
