@@ -8,7 +8,7 @@ const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT
 
 // Basic fetch function to get all categories
 async function fetchCategorizables(): Promise<Categorizables[]> {
-  const { error, data } = await useFetch(`${baseURL}/cms/categorizables`).get().json()
+  const { error, data } = await useFetch(`${baseURL}/cms/categories`).get().json()
 
   const categorizableJson = data.value as Categorizables[]
   if (error.value) {
@@ -28,7 +28,7 @@ async function fetchCategorizables(): Promise<Categorizables[]> {
 }
 
 async function createCategorizable(categorizable: Partial<Categorizables>) {
-  const { error, data } = await useFetch(`${baseURL}/cms/categorizables`)
+  const { error, data } = await useFetch(`${baseURL}/cms/categories`)
     .post(JSON.stringify({
       ...categorizable,
       name: categorizable.name,
@@ -52,7 +52,7 @@ async function createCategorizable(categorizable: Partial<Categorizables>) {
 }
 
 async function updateCategorizable(id: number, categorizable: Partial<Categorizables>) {
-  const { error, data } = await useFetch(`${baseURL}/cms/categorizables/${id}`)
+  const { error, data } = await useFetch(`${baseURL}/cms/categories/${id}`)
     .patch(JSON.stringify({
       ...categorizable,
       name: categorizable.name,
@@ -78,7 +78,7 @@ async function updateCategorizable(id: number, categorizable: Partial<Categoriza
 }
 
 async function deleteCategorizable(id: number) {
-  const { error } = await useFetch(`${baseURL}/cms/categorizables/${id}`)
+  const { error } = await useFetch(`${baseURL}/cms/categories/${id}`)
     .delete()
     .json()
 

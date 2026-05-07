@@ -8,7 +8,7 @@ const baseURL = process.env.VITE_API_URL || `http://localhost:${process.env.PORT
 
 // Basic fetch function to get all tags
 async function fetchTaggables(): Promise<Taggables[]> {
-  const { error, data } = await useFetch(`${baseURL}/cms/taggables`).get().json()
+  const { error, data } = await useFetch(`${baseURL}/cms/tags`).get().json()
 
   const taggablesJson = data.value as Taggables[]
   if (error.value) {
@@ -34,7 +34,7 @@ async function createTaggable(taggable: Partial<Taggables>) {
     taggable_type: 'posts',
   }
 
-  const { error, data } = await useFetch(`${baseURL}/cms/taggables`)
+  const { error, data } = await useFetch(`${baseURL}/cms/tags`)
     .post(JSON.stringify(taggableData))
     .json()
 
@@ -52,7 +52,7 @@ async function createTaggable(taggable: Partial<Taggables>) {
 }
 
 async function updateTaggable(id: number, taggable: Partial<Taggables>) {
-  const { error, data } = await useFetch(`${baseURL}/cms/taggables/${id}`)
+  const { error, data } = await useFetch(`${baseURL}/cms/tags/${id}`)
     .patch(JSON.stringify(taggable))
     .json()
 
@@ -73,7 +73,7 @@ async function updateTaggable(id: number, taggable: Partial<Taggables>) {
 }
 
 async function deleteTaggable(id: number) {
-  const { error } = await useFetch(`${baseURL}/cms/taggables/${id}`)
+  const { error } = await useFetch(`${baseURL}/cms/tags/${id}`)
     .delete()
     .json()
 
