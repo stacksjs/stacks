@@ -1,5 +1,6 @@
 import type { Drivers, NewDriver } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent drivers array using VueUse's useStorage
 const drivers = useStorage<Drivers[]>('drivers', [])
@@ -20,12 +21,12 @@ async function fetchDrivers() {
       return data
     }
     else {
-      console.error('Expected array of drivers but received:', typeof data)
+      pushToast('error', 'Couldn\'t load drivers', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching drivers:', error)
+    pushToast('error', 'Error fetching drivers', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createDriver(driver: NewDriver) {
     return null
   }
   catch (error) {
-    console.error('Error creating driver:', error)
+    pushToast('error', 'Error creating driver', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateDriver(driver: Drivers) {
     return null
   }
   catch (error) {
-    console.error('Error updating driver:', error)
+    pushToast('error', 'Error updating driver', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteDriver(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting driver:', error)
+    pushToast('error', 'Error deleting driver', { detail: String(error) })
     return false
   }
 }

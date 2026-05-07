@@ -1,5 +1,6 @@
 import type { DeliveryRoutes, NewDeliveryRoute } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent delivery routes array using VueUse's useStorage
 const deliveryRoutes = useStorage<DeliveryRoutes[]>('deliveryRoutes', [])
@@ -20,12 +21,12 @@ async function fetchDeliveryRoutes() {
       return data
     }
     else {
-      console.error('Expected array of delivery routes but received:', typeof data)
+      pushToast('error', 'Couldn\'t load delivery routes', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching delivery routes:', error)
+    pushToast('error', 'Error fetching delivery routes', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createDeliveryRoute(deliveryRoute: NewDeliveryRoute) {
     return null
   }
   catch (error) {
-    console.error('Error creating delivery route:', error)
+    pushToast('error', 'Error creating delivery route', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateDeliveryRoute(deliveryRoute: DeliveryRoutes) {
     return null
   }
   catch (error) {
-    console.error('Error updating delivery route:', error)
+    pushToast('error', 'Error updating delivery route', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteDeliveryRoute(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting delivery route:', error)
+    pushToast('error', 'Error deleting delivery route', { detail: String(error) })
     return false
   }
 }

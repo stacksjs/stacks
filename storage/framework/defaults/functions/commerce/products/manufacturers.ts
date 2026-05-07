@@ -1,5 +1,6 @@
 import type { Manufacturers } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent manufacturers array using VueUse's useStorage
 const manufacturers = useStorage<Manufacturers[]>('manufacturers', [])
@@ -20,12 +21,12 @@ async function fetchManufacturers(): Promise<Manufacturers[]> {
       return data
     }
     else {
-      console.error('Expected array of manufacturers but received:', typeof data)
+      pushToast('error', 'Couldn\'t load manufacturers', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching manufacturers:', error)
+    pushToast('error', 'Error fetching manufacturers', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createManufacturer(manufacturer: Manufacturers): Promise<Manufact
     return null
   }
   catch (error) {
-    console.error('Error creating manufacturer:', error)
+    pushToast('error', 'Error creating manufacturer', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateManufacturer(manufacturer: Manufacturers): Promise<Manufact
     return null
   }
   catch (error) {
-    console.error('Error updating manufacturer:', error)
+    pushToast('error', 'Error updating manufacturer', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteManufacturer(id: number): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error deleting manufacturer:', error)
+    pushToast('error', 'Error deleting manufacturer', { detail: String(error) })
     return false
   }
 }

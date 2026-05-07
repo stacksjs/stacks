@@ -1,5 +1,6 @@
 import type { NewShippingMethod, ShippingMethods } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent shipping methods array using VueUse's useStorage
 const shippingMethods = useStorage<ShippingMethods[]>('shippingMethods', [])
@@ -20,12 +21,12 @@ async function fetchShippingMethods() {
       return data
     }
     else {
-      console.error('Expected array of shipping methods but received:', typeof data)
+      pushToast('error', 'Couldn\'t load shipping methods', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching shipping methods:', error)
+    pushToast('error', 'Error fetching shipping methods', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createShippingMethod(shippingMethod: NewShippingMethod) {
     return null
   }
   catch (error) {
-    console.error('Error creating shipping method:', error)
+    pushToast('error', 'Error creating shipping method', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateShippingMethod(shippingMethod: ShippingMethods) {
     return null
   }
   catch (error) {
-    console.error('Error updating shipping method:', error)
+    pushToast('error', 'Error updating shipping method', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteShippingMethod(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting shipping method:', error)
+    pushToast('error', 'Error deleting shipping method', { detail: String(error) })
     return false
   }
 }

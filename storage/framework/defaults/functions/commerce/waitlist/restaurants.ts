@@ -1,5 +1,6 @@
 import type { WaitlistRestaurant } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent waitlist restaurants array using VueUse's useStorage
 const waitlistRestaurants = useStorage<WaitlistRestaurant[]>('waitlist_restaurants', [])
@@ -20,12 +21,12 @@ async function fetchWaitlistRestaurants() {
       return data
     }
     else {
-      console.error('Expected array of waitlist restaurants but received:', typeof data)
+      pushToast('error', 'Couldn\'t load waitlist restaurants', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching waitlist restaurants:', error)
+    pushToast('error', 'Error fetching waitlist restaurants', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
     return null
   }
   catch (error) {
-    console.error('Error creating waitlist restaurant:', error)
+    pushToast('error', 'Error creating waitlist restaurant', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateWaitlistRestaurant(waitlistRestaurant: WaitlistRestaurant) 
     return null
   }
   catch (error) {
-    console.error('Error updating waitlist restaurant:', error)
+    pushToast('error', 'Error updating waitlist restaurant', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteWaitlistRestaurant(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting waitlist restaurant:', error)
+    pushToast('error', 'Error deleting waitlist restaurant', { detail: String(error) })
     return false
   }
 }

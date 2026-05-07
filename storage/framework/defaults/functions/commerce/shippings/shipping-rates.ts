@@ -1,5 +1,6 @@
 import type { NewShippingRate, ShippingRates } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent shipping rates array using VueUse's useStorage
 const shippingRates = useStorage<ShippingRates[]>('shippingRates', [])
@@ -21,7 +22,7 @@ async function fetchShippingRates() {
     return data
   }
   catch (error) {
-    console.error('Error fetching shipping rates:', error)
+    pushToast('error', 'Error fetching shipping rates', { detail: String(error) })
     return []
   }
 }
@@ -48,7 +49,7 @@ async function createShippingRate(shippingRate: NewShippingRate) {
     return null
   }
   catch (error) {
-    console.error('Error creating shipping rate:', error)
+    pushToast('error', 'Error creating shipping rate', { detail: String(error) })
     return null
   }
 }
@@ -78,7 +79,7 @@ async function updateShippingRate(shippingRate: ShippingRates) {
     return null
   }
   catch (error) {
-    console.error('Error updating shipping rate:', error)
+    pushToast('error', 'Error updating shipping rate', { detail: String(error) })
     return null
   }
 }
@@ -101,7 +102,7 @@ async function deleteShippingRate(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting shipping rate:', error)
+    pushToast('error', 'Error deleting shipping rate', { detail: String(error) })
     return false
   }
 }

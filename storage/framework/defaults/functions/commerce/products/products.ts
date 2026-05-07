@@ -1,5 +1,6 @@
 import type { Products } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent items array using VueUse's useStorage
 const products = useStorage<Products[]>('products', [])
@@ -20,12 +21,12 @@ async function fetchProducts(): Promise<Products[]> {
       return data
     }
     else {
-      console.error('Expected array of items but received:', typeof data)
+      pushToast('error', 'Couldn\'t load items', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching items:', error)
+    pushToast('error', 'Error fetching items', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createProduct(product: Products): Promise<Products | null> {
     return null
   }
   catch (error) {
-    console.error('Error creating item:', error)
+    pushToast('error', 'Error creating item', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateProduct(product: Products): Promise<Products | null> {
     return null
   }
   catch (error) {
-    console.error('Error updating product:', error)
+    pushToast('error', 'Error updating product', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteProduct(id: number): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error deleting product:', error)
+    pushToast('error', 'Error deleting product', { detail: String(error) })
     return false
   }
 }

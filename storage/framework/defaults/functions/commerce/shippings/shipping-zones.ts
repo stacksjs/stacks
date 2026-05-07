@@ -1,5 +1,6 @@
 import type { NewShippingZone, ShippingZones } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent shipping zones array using VueUse's useStorage
 const shippingZones = useStorage<ShippingZones[]>('shippingZones', [])
@@ -21,7 +22,7 @@ async function fetchShippingZones() {
     return data
   }
   catch (error) {
-    console.error('Error fetching shipping zones:', error)
+    pushToast('error', 'Error fetching shipping zones', { detail: String(error) })
     return []
   }
 }
@@ -48,7 +49,7 @@ async function createShippingZone(shippingZone: NewShippingZone) {
     return null
   }
   catch (error) {
-    console.error('Error creating shipping zone:', error)
+    pushToast('error', 'Error creating shipping zone', { detail: String(error) })
     return null
   }
 }
@@ -78,7 +79,7 @@ async function updateShippingZone(shippingZone: ShippingZones) {
     return null
   }
   catch (error) {
-    console.error('Error updating shipping zone:', error)
+    pushToast('error', 'Error updating shipping zone', { detail: String(error) })
     return null
   }
 }
@@ -101,7 +102,7 @@ async function deleteShippingZone(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting shipping zone:', error)
+    pushToast('error', 'Error deleting shipping zone', { detail: String(error) })
     return false
   }
 }

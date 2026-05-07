@@ -1,5 +1,6 @@
 import type { Reviews } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent reviews array using VueUse's useStorage
 const reviews = useStorage<Reviews[]>('reviews', [])
@@ -20,12 +21,12 @@ async function fetchReviews(): Promise<Reviews[]> {
       return data
     }
     else {
-      console.error('Expected array of reviews but received:', typeof data)
+      pushToast('error', 'Couldn\'t load reviews', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching reviews:', error)
+    pushToast('error', 'Error fetching reviews', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createReview(review: Reviews): Promise<Reviews | null> {
     return null
   }
   catch (error) {
-    console.error('Error creating review:', error)
+    pushToast('error', 'Error creating review', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateReview(review: Reviews): Promise<Reviews | null> {
     return null
   }
   catch (error) {
-    console.error('Error updating review:', error)
+    pushToast('error', 'Error updating review', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteReview(id: number): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error deleting review:', error)
+    pushToast('error', 'Error deleting review', { detail: String(error) })
     return false
   }
 }

@@ -1,5 +1,6 @@
 import type { ProductVariants } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent variants array using VueUse's useStorage
 const variants = useStorage<ProductVariants[]>('variants', [])
@@ -20,12 +21,12 @@ async function fetchVariants() {
       return data
     }
     else {
-      console.error('Expected array of variants but received:', typeof data)
+      pushToast('error', 'Couldn\'t load variants', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching variants:', error)
+    pushToast('error', 'Error fetching variants', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createVariant(variant: ProductVariants) {
     return null
   }
   catch (error) {
-    console.error('Error creating variant:', error)
+    pushToast('error', 'Error creating variant', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateVariant(variant: ProductVariants) {
     return null
   }
   catch (error) {
-    console.error('Error updating variant:', error)
+    pushToast('error', 'Error updating variant', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteVariant(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting variant:', error)
+    pushToast('error', 'Error deleting variant', { detail: String(error) })
     return false
   }
 }

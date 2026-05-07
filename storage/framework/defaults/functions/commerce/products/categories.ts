@@ -1,5 +1,6 @@
 import type { Categories } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent categories array using VueUse's useStorage
 const categories = useStorage<Categories[]>('categories', [])
@@ -20,12 +21,12 @@ async function fetchCategories(): Promise<Categories[]> {
       return data
     }
     else {
-      console.error('Expected array of categories but received:', typeof data)
+      pushToast('error', 'Couldn\'t load categories', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching categories:', error)
+    pushToast('error', 'Error fetching categories', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createCategory(category: Categories): Promise<Categories | null> 
     return null
   }
   catch (error) {
-    console.error('Error creating category:', error)
+    pushToast('error', 'Error creating category', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateCategory(category: Categories): Promise<Categories | null> 
     return null
   }
   catch (error) {
-    console.error('Error updating category:', error)
+    pushToast('error', 'Error updating category', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteCategory(id: number): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error deleting category:', error)
+    pushToast('error', 'Error deleting category', { detail: String(error) })
     return false
   }
 }

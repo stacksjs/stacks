@@ -1,5 +1,6 @@
 import type { LicenseKeys, NewLicenseKey } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent license keys array using VueUse's useStorage
 const licenseKeys = useStorage<LicenseKeys[]>('licenseKeys', [])
@@ -20,12 +21,12 @@ async function fetchLicenseKeys() {
       return data
     }
     else {
-      console.error('Expected array of license keys but received:', typeof data)
+      pushToast('error', 'Couldn\'t load license keys', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching license keys:', error)
+    pushToast('error', 'Error fetching license keys', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createLicenseKey(licenseKey: NewLicenseKey) {
     return null
   }
   catch (error) {
-    console.error('Error creating license key:', error)
+    pushToast('error', 'Error creating license key', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateLicenseKey(licenseKey: LicenseKeys) {
     return null
   }
   catch (error) {
-    console.error('Error updating license key:', error)
+    pushToast('error', 'Error updating license key', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteLicenseKey(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting license key:', error)
+    pushToast('error', 'Error deleting license key', { detail: String(error) })
     return false
   }
 }

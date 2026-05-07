@@ -1,5 +1,6 @@
 import type { Units } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent units array using VueUse's useStorage
 const units = useStorage<Units[]>('units', [])
@@ -20,12 +21,12 @@ async function fetchUnits(): Promise<Units[]> {
       return data
     }
     else {
-      console.error('Expected array of units but received:', typeof data)
+      pushToast('error', 'Couldn\'t load units', { detail: 'Server returned a non-array response' })
       return []
     }
   }
   catch (error) {
-    console.error('Error fetching units:', error)
+    pushToast('error', 'Error fetching units', { detail: String(error) })
     return []
   }
 }
@@ -52,7 +53,7 @@ async function createUnit(unit: Units): Promise<Units | null> {
     return null
   }
   catch (error) {
-    console.error('Error creating unit:', error)
+    pushToast('error', 'Error creating unit', { detail: String(error) })
     return null
   }
 }
@@ -82,7 +83,7 @@ async function updateUnit(unit: Units): Promise<Units | null> {
     return null
   }
   catch (error) {
-    console.error('Error updating unit:', error)
+    pushToast('error', 'Error updating unit', { detail: String(error) })
     return null
   }
 }
@@ -105,7 +106,7 @@ async function deleteUnit(id: number): Promise<boolean> {
     return true
   }
   catch (error) {
-    console.error('Error deleting unit:', error)
+    pushToast('error', 'Error deleting unit', { detail: String(error) })
     return false
   }
 }

@@ -1,5 +1,6 @@
 import type { DigitalDeliveries } from '../../../types/defaults'
 import { useStorage } from '@stacksjs/browser'
+import { pushToast } from '../../toasts'
 
 // Create a persistent digital deliveries array using VueUse's useStorage
 const digitalDeliveries = useStorage<DigitalDeliveries[]>('digitalDeliveries', [])
@@ -21,7 +22,7 @@ async function fetchDigitalDeliveries() {
     return data
   }
   catch (error) {
-    console.error('Error fetching digital deliveries:', error)
+    pushToast('error', 'Error fetching digital deliveries', { detail: String(error) })
     return []
   }
 }
@@ -48,7 +49,7 @@ async function createDigitalDelivery(digitalDelivery: Omit<DigitalDeliveries, 'i
     return null
   }
   catch (error) {
-    console.error('Error creating digital delivery:', error)
+    pushToast('error', 'Error creating digital delivery', { detail: String(error) })
     return null
   }
 }
@@ -78,7 +79,7 @@ async function updateDigitalDelivery(digitalDelivery: DigitalDeliveries) {
     return null
   }
   catch (error) {
-    console.error('Error updating digital delivery:', error)
+    pushToast('error', 'Error updating digital delivery', { detail: String(error) })
     return null
   }
 }
@@ -101,7 +102,7 @@ async function deleteDigitalDelivery(id: number) {
     return true
   }
   catch (error) {
-    console.error('Error deleting digital delivery:', error)
+    pushToast('error', 'Error deleting digital delivery', { detail: String(error) })
     return false
   }
 }
