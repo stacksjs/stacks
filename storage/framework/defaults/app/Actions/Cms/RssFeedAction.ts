@@ -47,8 +47,13 @@ export default new Action({
   </channel>
 </rss>`
 
-    return response.send(rssFeed, 200, {
-      'Content-Type': 'application/xml; charset=utf-8',
+    // `response.xml(content, status, headers)` — bun-router's positional
+    // factory API. Sets `Content-Type: application/xml` for us. The
+    // previous `response.send()` call doesn't exist on either the
+    // bun-router or stacks-router factory and was silently 500'ing
+    // every /blog/feed.xml hit.
+    return response.xml(rssFeed, 200, {
+      'Cache-Control': 'public, max-age=3600',
     })
   },
 })
