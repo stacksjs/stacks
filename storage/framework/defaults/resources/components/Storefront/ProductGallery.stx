@@ -1,41 +1,48 @@
 <script>
 interface ProductGalleryProps {
-  images: string[]
+  /** Pre-resolved URL for the hero image. STX SSR doesn't reliably
+   *  evaluate `images[0]` against a `defineProps` array at template-
+   *  render time, which left the rendered <img src=""> empty when we
+   *  tried to derive `mainImage = images[0]` inside the component.
+   *  Format at the call site, the way ProductCard takes priceLabel. */
+  image: string
+  /** Optional secondary images for thumbnails. The first thumb mirrors
+   *  the hero so we don't show the same picture twice. */
+  thumbs?: string[]
   alt?: string
 }
 
 const {
-  images = [],
+  image = '',
+  thumbs = [],
   alt = '',
 } = defineProps<ProductGalleryProps>()
-
-const safeImages = images.length > 0 ? images : ['']
 </script>
 
 <div class="space-y-4" data-stx-gallery>
   <!-- Hero image -->
   <div class="aspect-square overflow-hidden bg-stone-100 rounded-3xl">
     <img
-      src="{{ safeImages[0] }}"
+      src="{{ image }}"
       alt="{{ alt }}"
       data-stx-gallery-main
       class="object-cover h-full w-full"
     >
   </div>
 
-  @if (safeImages.length > 1)
+  @if (thumbs.length > 0)
     <!-- Thumbnails. Clicking swaps the hero src — vanilla DOM is fine
         here because this is a self-contained image switcher with no
         server round-trip. -->
     <div class="grid gap-3 grid-cols-4">
-      @foreach (safeImages as img, i)
+      @foreach (thumbs as thumb, i)
         <button
           type="button"
-          data-stx-gallery-thumb="{{ img }}"
+          data-stx-gallery-thumb="{{ thumb }}"
           class="aspect-square rounded-xl overflow-hidden bg-stone-100 border-2 {{ i === 0 ? 'border-stone-900' : 'border-transparent' }} hover:border-stone-900 transition-colors"
           aria-label="View image {{ i + 1 }}"
         >
-          <img src="{{ img }}" alt="" class="object-cover h-full w-full">
+          <img src="{{ thumb }}" alt="" class="object-cover h-full w-full">
         </button>
       @endforeach
     </div>
