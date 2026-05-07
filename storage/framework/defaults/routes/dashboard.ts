@@ -60,6 +60,12 @@ route.group({ prefix: '/password' }, () => {
 route.post('/api/email/subscribe', 'Actions/SubscriberEmailAction').name('email.subscribe').skipCsrf()
 route.get('/api/email/unsubscribe', 'Actions/UnsubscribeAction').name('email.unsubscribe')
 
+// Public contact form. CSRF skipped for the same reason as the
+// subscribe endpoint — the form renders without JS — and the outbound
+// mailer hop makes rate-limiting essential. Quota is enforced inside
+// the action itself.
+route.post('/api/contact', 'Actions/ContactAction').name('contact.send').skipCsrf()
+
 // ============================================================================
 // Storefront (anonymous cart + multi-step checkout)
 //
@@ -76,6 +82,12 @@ route.post('/api/cart/update', 'Actions/Storefront/UpdateCartItemAction').skipCs
 route.post('/api/checkout/contact', 'Actions/Storefront/CheckoutContactAction').skipCsrf()
 route.post('/api/checkout/shipping', 'Actions/Storefront/CheckoutShippingAction').skipCsrf()
 route.post('/api/checkout/place', 'Actions/Storefront/PlaceOrderAction').skipCsrf()
+
+// Buyer-submitted product review. Tied to a shipped order via
+// order_id + email match (the SubmitReviewAction verifies ownership
+// and stamps is_verified_purchase=1). Stored as is_approved=0 for
+// admin moderation through `/dashboard/commerce/reviews`.
+route.post('/api/reviews/submit', 'Actions/Storefront/SubmitReviewAction').skipCsrf()
 
 // ============================================================================
 // Health & System

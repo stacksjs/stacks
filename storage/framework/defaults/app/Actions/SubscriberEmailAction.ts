@@ -1,5 +1,6 @@
 import { Action } from '@stacksjs/actions'
 import { Subscriber, SubscriberEmail } from '@stacksjs/orm'
+import { rateLimit } from '@stacksjs/router'
 import { sendSubscriptionConfirmation } from '../Mail/SubscriptionConfirmation'
 
 export default new Action({
@@ -8,6 +9,12 @@ export default new Action({
   method: 'POST',
 
   async handle(request: RequestInstance) {
+    // Per-IP throttle. The endpoint is unauthenticated and skipCsrf'd so
+    // bots will find it; without this they can flood the subscribers
+    // table within minutes and burn through SES/SendGrid quota. 10/min
+    // is generous for a real human filling the same form repeatedly.
+    await rateLimit('email-subscribe', 10).per('minute')
+
     const email = request.get('email')
     const source = request.get('source') || 'homepage'
 
