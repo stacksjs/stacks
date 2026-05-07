@@ -57,6 +57,8 @@ const commandRegistry: Record<string, CommandLoader> = {
   'publish:model': { path: './commands/publish.ts', exportName: 'publish' },
   'publish:controller': { path: './commands/publish.ts', exportName: 'publish' },
   'publish:middleware': { path: './commands/publish.ts', exportName: 'publish' },
+  'publish:action': { path: './commands/publish.ts', exportName: 'publish' },
+  'publish:core': { path: './commands/publish.ts', exportName: 'publish' },
   'queue': { path: './commands/queue.ts', exportName: 'queue' },
   'release': { path: './commands/release.ts', exportName: 'release' },
   'route': { path: './commands/route.ts', exportName: 'route' },

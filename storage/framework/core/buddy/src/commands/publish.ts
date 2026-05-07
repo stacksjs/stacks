@@ -19,6 +19,7 @@ export function publish(buddy: CLI): void {
     model: 'Publish a default model from storage/framework/defaults/app/Models/ to app/Models/',
     controller: 'Publish a default controller from storage/framework/defaults/app/Controllers/ to app/Controllers/',
     middleware: 'Publish a default middleware from storage/framework/defaults/app/Middleware/ to app/Middleware/',
+    action: 'Publish a default action from storage/framework/defaults/app/Actions/ to app/Actions/',
     core: 'Publish a framework package source from node_modules/@stacksjs/<pkg>/ into storage/framework/core/<pkg>/ for editing',
     name: 'The name of the resource to publish (e.g. Cart, User)',
     pkg: 'The name of the framework package (e.g. router, orm, faker — without @stacksjs/ prefix)',
@@ -69,6 +70,20 @@ export function publish(buddy: CLI): void {
     })
 
   buddy
+    .command('publish:action <name>', descriptions.action)
+    .option('--force', descriptions.force, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (name: string, options: PublishOptions) => {
+      await publishResource({
+        kind: 'action',
+        name,
+        defaultsDir: path.frameworkPath('defaults/app/Actions'),
+        userDir: path.userActionsPath(),
+        force: !!options.force,
+      })
+    })
+
+  buddy
     .command('publish:core <pkg>', descriptions.core)
     .option('--force', descriptions.force, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
@@ -108,6 +123,13 @@ export function publish(buddy: CLI): void {
           userDir: path.userMiddlewarePath(),
           force: !!options.force,
         }),
+        action: () => publishResource({
+          kind: 'action',
+          name,
+          defaultsDir: path.frameworkPath('defaults/app/Actions'),
+          userDir: path.userActionsPath(),
+          force: !!options.force,
+        }),
         core: () => publishCorePackage(name, !!options.force),
       }
 
@@ -115,7 +137,7 @@ export function publish(buddy: CLI): void {
 
       if (!handler) {
         log.error(`Unknown publishable resource: ${italic(resource)}`)
-        log.info('Available: model, controller, middleware, core')
+        log.info('Available: model, controller, middleware, action, core')
         process.exit(ExitCode.FatalError)
       }
 
@@ -126,7 +148,7 @@ export function publish(buddy: CLI): void {
 }
 
 interface PublishContext {
-  kind: 'model' | 'controller' | 'middleware'
+  kind: 'model' | 'controller' | 'middleware' | 'action'
   name: string
   defaultsDir: string
   userDir: string
