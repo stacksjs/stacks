@@ -154,20 +154,43 @@ export const log: Log = {
     await logger.warn(message)
   },
 
-  error: async (err: string | Error | object | unknown, options?: LogErrorOptions) => {
-    const errorMessage = typeof err === 'string'
-      ? err
-      : err instanceof Error
-        ? err
-        : JSON.stringify(err)
+  error: async (err: string | Error | object | unknown, options?: LogErrorOptions | Error | unknown) => {
+    // The second positional has historically been LogErrorOptions, but
+    // every Stacks caller currently passes the *caught* error there
+    // (`log.error('[X] failed:', err)`) — and that variant was silently
+    // dropping the error because it isn't `LogErrorOptions`-shaped.
+    // Detect both shapes: if `options` is an Error or a non-options
+    // object, fold its message + stack into the printed line so action
+    // failures actually reach the dev console.
+    const looksLikeOptions = !!options
+      && typeof options === 'object'
+      && !(options instanceof Error)
+      && ('shouldExit' in (options as object) || 'silent' in (options as object) || 'message' in (options as object))
+
+    let prefix: string
+    if (typeof err === 'string') prefix = err
+    else if (err instanceof Error) prefix = err.stack || err.message
+    else prefix = JSON.stringify(err)
+
+    let suffix = ''
+    if (options !== undefined && !looksLikeOptions) {
+      if (options instanceof Error) suffix = options.stack || options.message
+      else if (typeof options === 'string') suffix = options
+      else {
+        try { suffix = JSON.stringify(options) }
+        catch { suffix = String(options) }
+      }
+    }
+
+    const errorMessage = suffix ? `${prefix} ${suffix}` : prefix
 
     const logger = await getLogger()
     await logger.error(errorMessage)
 
     // Only call handleError if explicitly requested (e.g., fatal errors)
     // Default behavior: log the error without killing the process
-    if (options?.shouldExit) {
-      handleError(err, options)
+    if (looksLikeOptions && (options as LogErrorOptions).shouldExit) {
+      handleError(err, options as LogErrorOptions)
     }
   },
 

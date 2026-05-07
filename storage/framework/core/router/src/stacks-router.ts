@@ -915,7 +915,15 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
         return formatResult(result)
       }
       catch (handleError) {
-        log.error(`[Router] Error in action.handle() for '${handlerPath}':`, handleError)
+        // Print the full stack so action failures are diagnosable.
+        // The previous form passed the error as the second arg, which
+        // log.error treated as `LogErrorOptions` and dropped — every
+        // 500 from an action looked like an empty `[Router] Error in
+        // action.handle() for 'X':` line with no detail.
+        const errMsg = handleError instanceof Error
+          ? (handleError.stack || handleError.message)
+          : String(handleError)
+        log.error(`[Router] Error in action.handle() for '${handlerPath}': ${errMsg}`)
         throw handleError
       }
     }
