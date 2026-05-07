@@ -98,6 +98,15 @@ export async function loadAutoImports() {
     '@stacksjs/auth',
     '@stacksjs/database',
     '@stacksjs/error-handling',
+    // Signal helpers (`state`, `derived`, `effect`) and browser-side
+    // composables (`useDark`, `usePreferredDark`, `useStorage`) need to
+    // land in globalThis before step 2 imports any file under
+    // resources/functions/ — counter.ts and dark.ts call those at
+    // module top level, so missing globals throw and leave the module
+    // in TDZ, surfacing later as `Cannot access 'count' before
+    // initialization` when the auto-imports barrel re-imports them.
+    '@stacksjs/stx',
+    '@stacksjs/browser',
   ]
 
   for (const pkg of stacksPackages) {

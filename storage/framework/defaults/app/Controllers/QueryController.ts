@@ -6,7 +6,7 @@ export default class QueryController extends Controller {
   /**
    * Get query statistics for the dashboard
    */
-  static async getStats() {
+  async getStats() {
     try {
       // Get the total number of queries
       const totalQueries = await db
@@ -75,7 +75,7 @@ export default class QueryController extends Controller {
   /**
    * Get a paginated list of recent queries
    */
-  static async getRecentQueries({
+  async getRecentQueries({
     page = 1,
     perPage = 10,
     connection = 'all',
@@ -151,7 +151,7 @@ export default class QueryController extends Controller {
   /**
    * Get a list of slow queries
    */
-  static async getSlowQueries({
+  async getSlowQueries({
     page = 1,
     perPage = 10,
     threshold = 0,
@@ -225,7 +225,7 @@ export default class QueryController extends Controller {
   /**
    * Get a single query by ID
    */
-  static async getQuery(id: number) {
+  async getQuery(id: number) {
     try {
       const query = await db
         .selectFrom('query_logs')
@@ -261,7 +261,7 @@ export default class QueryController extends Controller {
   /**
    * Get query timeline data for charts
    */
-  static async getQueryTimeline({
+  async getQueryTimeline({
     timeframe = 'day', // 'day', 'week', 'month'
     type = 'all',
   }) {
@@ -320,7 +320,7 @@ export default class QueryController extends Controller {
   /**
    * Get the most frequently run normalized queries
    */
-  static async getFrequentQueries(): Promise<Array<{
+  async getFrequentQueries(): Promise<Array<{
     normalized_query: string
     count: string | number | bigint
     avg_duration: string | number
@@ -351,7 +351,7 @@ export default class QueryController extends Controller {
   /**
    * Prune old query logs
    */
-  static async pruneQueryLogs() {
+  async pruneQueryLogs() {
     try {
       const retentionDays = config.database?.queryLogging?.retention || 7
 

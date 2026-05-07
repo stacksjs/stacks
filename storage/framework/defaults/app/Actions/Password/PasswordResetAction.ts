@@ -6,7 +6,6 @@ export default new Action({
   name: 'PasswordResetAction',
   description: 'Password Reset',
   method: 'POST',
-  model: PasswordResets,
   async handle(request) {
     const token = request.get('token')
     const password = request.get('password')

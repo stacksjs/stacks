@@ -1,32 +1,22 @@
 import { Action } from '@stacksjs/actions'
 import { authors, posts } from '@stacksjs/cms'
 import { response } from '@stacksjs/router'
-import { categories } from 'commerce/src/products'
-import { findOrCreateMany } from '../../../storage/framework/core/cms/src/taggables/store'
 
+// Category + tag attach was removed because it referenced helpers
+// (`categories.findOrCreateByName`, `findOrCreateMany`) that don't
+// exist in @stacksjs/cms today. Restore them once those functions
+// are added — see the Update action for the same shape.
 export default new Action({
   name: 'Post Store',
   description: 'Post Store ORM Action',
   method: 'POST',
-  model: Post,
   async handle(request) {
     await request.validate()
-
-    const categoryName = request.get('category')
-    const tagNames = request.get('tags') as string[]
-
-    const category = await categories.findOrCreateByName({
-      name: categoryName,
-      categorizable_type: 'posts',
-    })
 
     const author = await authors.findOrCreate({
       name: 'Current User',
       email: 'current@user.com',
     })
-
-    // Process tags using the dedicated tag management function
-    const tagIds = await findOrCreateMany(tagNames, 'posts')
 
     const data = {
       author_id: author.id,
@@ -41,9 +31,6 @@ export default new Action({
     }
 
     const model = await posts.store(data)
-
-    await posts.attach(model.id, 'categorizable_models', [category.id])
-    await posts.attach(model.id, 'taggable_models', tagIds)
 
     return response.json(model)
   },

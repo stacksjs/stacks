@@ -803,6 +803,22 @@ function assertSafeHandlerPath(handlerPath: string): void {
   }
 }
 
+// Cache `import(fullPath)` promises so two routes that point at the
+// same action file share one in-flight import. Without this, registering
+// the same handler in two route groups (e.g. PostIndexAction under both
+// /cms and /blog) causes two parallel imports of the same module — and
+// the second one races against the first's mid-evaluation state, which
+// Bun surfaces as `Cannot access 'default' before initialization`.
+const _moduleImportCache = new Map<string, Promise<any>>()
+function cachedImport(fullPath: string): Promise<any> {
+  let p = _moduleImportCache.get(fullPath)
+  if (!p) {
+    p = import(fullPath)
+    _moduleImportCache.set(fullPath, p)
+  }
+  return p
+}
+
 /**
  * Resolve a string handler to an actual handler function
  * Supports user overrides: checks user's app/ first, then falls back to defaults
@@ -824,7 +840,7 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
     const fullPath = await fileExists(userPath) ? userPath : defaultPath
 
     try {
-      const controller = await import(fullPath)
+      const controller = await cachedImport(fullPath)
 
       if (!controller.default || typeof controller.default !== 'function') {
         throw new Error(`Controller ${controllerPath} does not export a default class`)
@@ -872,7 +888,7 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
 
 
   try {
-    const actionModule = await import(fullPath)
+    const actionModule = await cachedImport(fullPath)
     const action = actionModule.default
 
     if (!action) {

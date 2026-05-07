@@ -2,6 +2,3 @@
 
 export { increment, count } from '../../../resources/functions/counter'
 export { isDark, toggleDark, preferredDark } from '../../../resources/functions/dark'
-export { parseGpx, parseJsonCoordinates, parseGpsData, generateSampleLoopGpx, generateSampleLoopJson, validateGpsDataForClaim } from '../../../resources/functions/gpx'
-export { haversineDistance, isClosedLoop, calculatePolygonArea, calculatePerimeter, simplifyTrack, pointInPolygon, lineIntersectsPolygon, routeIntersectsPolygon, getBoundingBox, parseBoundingBox, boundingBoxesOverlap, getCentroid, coordinatesToGeoJson, geoJsonToCoordinates, findLinePolygonIntersections, splitPolygonByRoute, generateLoopCoordinates } from '../../../resources/functions/geo'
-export type { Coordinate, GeoJsonPolygon } from '../../../resources/functions/geo'

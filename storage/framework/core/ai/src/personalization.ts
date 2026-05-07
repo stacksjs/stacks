@@ -177,8 +177,13 @@ Include ALL provided labels in allLabels with their confidence scores, sorted by
 
 /**
  * Generate an intelligent summary of text.
+ *
+ * Not exported as a bare top-level identifier because `text.ts` already
+ * exposes `summarize`, and `index.ts` re-exports both via `export *`.
+ * Reach this multi-provider variant through the `personalization`
+ * namespace export below: `personalization.summarize(...)`.
  */
-export async function summarize(
+async function summarize(
   text: string,
   options: SummaryOptions = {},
 ): Promise<AIResult> {

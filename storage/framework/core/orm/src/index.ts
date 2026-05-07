@@ -140,7 +140,9 @@ const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[]]> = [
 
   // Marketing
   ['Campaign', ['']],
+  ['CampaignSend', ['']],
   ['EmailList', ['']],
+  ['EmailListSubscriber', ['']],
   ['SocialPost', ['']],
 
   // Payments (top-level)
@@ -200,7 +202,9 @@ export const DeliveryRoute = _autoLoaded.DeliveryRoute
 export const Deployment = _autoLoaded.Deployment
 export const DigitalDelivery = _autoLoaded.DigitalDelivery
 export const Driver = _autoLoaded.Driver
+export const CampaignSend = _autoLoaded.CampaignSend
 export const EmailList = _autoLoaded.EmailList
+export const EmailListSubscriber = _autoLoaded.EmailListSubscriber
 export const ErrorModel = _autoLoaded.Error
 export const GiftCard = _autoLoaded.GiftCard
 export const LicenseKey = _autoLoaded.LicenseKey

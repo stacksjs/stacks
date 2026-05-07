@@ -387,6 +387,13 @@ export async function injectGlobalAutoImports(): Promise<void> {
     ['@stacksjs/notifications', ['notify', 'useNotification', 'useEmail', 'useSMS', 'useChat', 'useDatabase']],
     ['@stacksjs/realtime', ['emit', 'emitToUser', 'emitToUsers', 'createChannel', 'dispatchBroadcast']],
     ['@stacksjs/i18n', ['I18n', 'setLocale', 'getLocale']],
+    // `state`/`derived`/`effect` are stx signal helpers that userland
+    // resource files (resources/functions/counter.ts, dark.ts, etc.)
+    // call at module top-level. Without these injected globally,
+    // `export const count = state(0)` throws ReferenceError at the
+    // moment the auto-imports barrel evaluates the file.
+    ['@stacksjs/stx', ['state', 'derived', 'effect']],
+    ['@stacksjs/browser', ['useDark', 'usePreferredDark', 'useToggle', 'useStorage']],
   ]
 
   // Per-package timeout so a single misbehaving module (e.g. one that opens

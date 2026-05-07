@@ -5,11 +5,24 @@ import type {
   InvokeModelWithResponseStreamCommandOutput,
 } from '@stacksjs/ts-cloud/aws'
 import process from 'node:process'
-import { BedrockRuntimeClient } from '@stacksjs/ts-cloud/aws'
 
-export const client = new BedrockRuntimeClient(
-  process.env.REGION || 'us-east-1',
-)
+// Lazy-load the runtime BedrockRuntimeClient — see client-bedrock.ts
+// for the rationale (ts-cloud's /aws subpath ships types but not always
+// the JS bundle, and an eager top-level import takes the whole API
+// server down at boot).
+let _client: any | null = null
+async function getClient(): Promise<any> {
+  if (_client)
+    return _client
+  const mod: any = await import('@stacksjs/ts-cloud/aws')
+  if (!mod?.BedrockRuntimeClient) {
+    throw new Error(
+      '@stacksjs/ts-cloud/aws does not export BedrockRuntimeClient — rebuild ts-cloud or remove the AI dependency.',
+    )
+  }
+  _client = new mod.BedrockRuntimeClient(process.env.REGION || 'us-east-1')
+  return _client
+}
 
 /*
  * Invoke Model
@@ -18,7 +31,8 @@ export const client = new BedrockRuntimeClient(
  * @see https://docs.aws.amazon.com/AWSJavaScriptSDK/latest/AWS/BedrockRuntime.html#invokeModel-property
  */
 export async function invokeModel(params: InvokeModelCommandInput): Promise<InvokeModelCommandOutput> {
-  return client.invokeModel(params)
+  const c = await getClient()
+  return c.invokeModel(params)
 }
 
 /*
@@ -30,7 +44,8 @@ export async function invokeModel(params: InvokeModelCommandInput): Promise<Invo
 export async function invokeModelWithResponseStream(
   params: InvokeModelWithResponseStreamCommandInput,
 ): Promise<InvokeModelWithResponseStreamCommandOutput> {
-  return client.invokeModelWithResponseStream(params)
+  const c = await getClient()
+  return c.invokeModelWithResponseStream(params)
 }
 
 export type { InvokeModelCommandInput, InvokeModelWithResponseStreamCommandInput }

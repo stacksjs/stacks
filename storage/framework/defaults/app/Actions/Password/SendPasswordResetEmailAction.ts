@@ -9,7 +9,6 @@ export default new Action({
   name: 'SendPasswordResetEmailAction',
   description: 'Send Password Reset Email',
   method: 'POST',
-  model: PasswordResets,
   validations: {
     email: {
       rule: schema.string().email().required(),

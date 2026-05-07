@@ -7,9 +7,27 @@ import type {
   ListFoundationModelsCommandOutput,
 } from '@stacksjs/ts-cloud/aws'
 import process from 'node:process'
-import { BedrockClient } from '@stacksjs/ts-cloud/aws'
 
-const client = new BedrockClient(process.env.REGION || 'us-east-1')
+// Lazy-load the runtime BedrockClient. `@stacksjs/ts-cloud/aws` ships the
+// type declarations but the JS bundle for that subpath isn't always
+// present (we hit this on `bun install` from a registry where the package
+// hadn't published the /aws bundle). Importing eagerly with a top-level
+// `import { BedrockClient } from ...` crashes the entire API server at
+// boot. With this shim, modules that don't actually call the helpers
+// below load fine, and callers who do use Bedrock get a clear error.
+let _client: any | null = null
+async function getClient(): Promise<any> {
+  if (_client)
+    return _client
+  const mod: any = await import('@stacksjs/ts-cloud/aws')
+  if (!mod?.BedrockClient) {
+    throw new Error(
+      '@stacksjs/ts-cloud/aws does not export BedrockClient — rebuild ts-cloud or remove the AI dependency.',
+    )
+  }
+  _client = new mod.BedrockClient(process.env.REGION || 'us-east-1')
+  return _client
+}
 
 /*
  * Create Model Customization Job
@@ -20,8 +38,8 @@ const client = new BedrockClient(process.env.REGION || 'us-east-1')
 export async function createModelCustomizationJob(
   param: CreateModelCustomizationJobCommandInput,
 ): Promise<CreateModelCustomizationJobCommandOutput> {
-  const res = await client.createModelCustomizationJob(param)
-  return res
+  const client = await getClient()
+  return client.createModelCustomizationJob(param)
 }
 
 /*
@@ -33,8 +51,8 @@ export async function createModelCustomizationJob(
 export async function getModelCustomizationJob(
   params: GetModelCustomizationJobCommandInput,
 ): Promise<GetModelCustomizationJobCommandOutput> {
-  const res = await client.getModelCustomizationJob(params)
-  return res
+  const client = await getClient()
+  return client.getModelCustomizationJob(params)
 }
 
 /*
@@ -46,8 +64,8 @@ export async function getModelCustomizationJob(
 export async function listFoundationModels(
   params: ListFoundationModelsCommandInput,
 ): Promise<ListFoundationModelsCommandOutput> {
-  const res = await client.listFoundationModels(params)
-  return res
+  const client = await getClient()
+  return client.listFoundationModels(params)
 }
 
 export type {

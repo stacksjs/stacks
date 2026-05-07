@@ -6,7 +6,6 @@ export default new Action({
   name: 'VerifyResetTokenAction',
   description: 'Verify Password Reset Token',
   method: 'POST',
-  model: PasswordResets,
   async handle(request) {
     const token = request.get('token')
     const email = request.get('email')

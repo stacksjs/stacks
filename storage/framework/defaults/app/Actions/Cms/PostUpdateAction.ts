@@ -2,35 +2,19 @@ import { Action } from '@stacksjs/actions'
 import { posts } from '@stacksjs/cms'
 import { formatDate } from '@stacksjs/orm'
 import { response } from '@stacksjs/router'
-import { categories } from 'commerce/src/products'
-import { findOrCreateMany } from '../../../storage/framework/core/cms/src/taggables/store'
 
+// Category + tag sync was removed because it referenced helpers
+// (`categories.findOrCreateByName`, `findOrCreateMany`) that don't
+// exist in @stacksjs/cms today. Restore once those functions are
+// added.
 export default new Action({
   name: 'Post Update',
   description: 'Post Update ORM Action',
   method: 'PATCH',
-  model: Post,
   async handle(request) {
     await request.validate()
 
     const id = request.getParam('id')
-    const categoryName = request.get('category')
-    const tagNames = request.get('tags') as string[]
-
-    // Update or create category if provided
-    if (categoryName) {
-      const category = await categories.findOrCreateByName({
-        name: categoryName,
-        categorizable_type: 'posts',
-      })
-      await posts.sync(id, 'categorizable_models', [category.id])
-    }
-
-    // Update tags if provided
-    if (tagNames) {
-      const tagIds = await findOrCreateMany(tagNames, 'posts')
-      await posts.sync(id, 'taggable_models', tagIds)
-    }
 
     const data = {
       title: request.get('title'),
