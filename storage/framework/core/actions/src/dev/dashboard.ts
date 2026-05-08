@@ -96,8 +96,58 @@ async function safeCmsAll(db: any, table: string, orderBy = 'created_at'): Promi
   }
 }
 
-async function ensureCmsTaxonomyTables(db: any): Promise<void> {
+async function ensureColumn(db: any, table: string, column: string, definition: string): Promise<void> {
   try {
+    await db.unsafe(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${definition}`).execute()
+  }
+  catch {
+    // SQLite reports duplicate-column errors here when the app already has
+    // generated CMS migrations. Other drivers may reject SQLite-flavored
+    // syntax; the normal write path will surface a JSON error in that case.
+  }
+}
+
+async function ensureCmsDashboardTables(db: any): Promise<void> {
+  try {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS "authors" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "name" TEXT,
+        "email" TEXT,
+        "user_id" INTEGER,
+        "created_at" TEXT not null default CURRENT_TIMESTAMP,
+        "updated_at" TEXT
+      )
+    `).execute()
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS "posts" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "title" TEXT,
+        "poster" TEXT,
+        "content" TEXT,
+        "excerpt" TEXT,
+        "views" REAL default 0,
+        "published_at" TEXT,
+        "status" TEXT default 'draft',
+        "is_featured" REAL,
+        "author_id" INTEGER,
+        "created_at" TEXT not null default CURRENT_TIMESTAMP,
+        "updated_at" TEXT
+      )
+    `).execute()
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS "pages" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "title" TEXT,
+        "template" TEXT,
+        "views" REAL default 0,
+        "published_at" TEXT,
+        "conversions" REAL default 0,
+        "author_id" INTEGER,
+        "created_at" TEXT not null default CURRENT_TIMESTAMP,
+        "updated_at" TEXT
+      )
+    `).execute()
     await db.unsafe(`
       CREATE TABLE IF NOT EXISTS "taggables" (
         "id" INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -123,6 +173,38 @@ async function ensureCmsTaxonomyTables(db: any): Promise<void> {
         "updated_at" TEXT
       )
     `).execute()
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS "comments" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "title" TEXT,
+        "body" TEXT,
+        "content" TEXT,
+        "status" TEXT default 'pending',
+        "author_name" TEXT,
+        "author_email" TEXT,
+        "post_title" TEXT,
+        "commentables_id" INTEGER,
+        "commentables_type" TEXT,
+        "ip_address" TEXT,
+        "user_agent" TEXT,
+        "is_approved" INTEGER default 0,
+        "approved_at" INTEGER,
+        "rejected_at" INTEGER,
+        "created_at" TEXT not null default CURRENT_TIMESTAMP,
+        "updated_at" TEXT
+      )
+    `).execute()
+
+    await Promise.all([
+      ensureColumn(db, 'comments', 'body', 'TEXT'),
+      ensureColumn(db, 'comments', 'content', 'TEXT'),
+      ensureColumn(db, 'comments', 'author_name', 'TEXT'),
+      ensureColumn(db, 'comments', 'author_email', 'TEXT'),
+      ensureColumn(db, 'comments', 'post_title', 'TEXT'),
+      ensureColumn(db, 'comments', 'ip_address', 'TEXT'),
+      ensureColumn(db, 'comments', 'user_agent', 'TEXT'),
+      ensureColumn(db, 'comments', 'is_approved', 'INTEGER default 0'),
+    ])
   }
   catch {
     // If a non-SQLite driver or permissions prevent eager creation, the
@@ -137,7 +219,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
 
   try {
     const { db } = await import('@stacksjs/database')
-    await ensureCmsTaxonomyTables(db)
+    await ensureCmsDashboardTables(db)
     const path = url.pathname.replace(/^\/api\/dashboard\/cms\/?/, '')
     const parts = path.split('/').filter(Boolean)
     const resource = parts[0] || ''
@@ -318,10 +400,22 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
       if (req.method === 'PATCH' && id) {
         const body = await cmsBody(req)
         const data: Record<string, any> = { updated_at: now }
-        for (const key of ['content', 'status', 'author_name', 'author_email']) {
+        if (body.content !== undefined) {
+          data.content = body.content
+          data.body = body.content
+        }
+        if (body.body !== undefined) {
+          data.content = body.body
+          data.body = body.body
+        }
+        for (const key of ['status', 'author_name', 'author_email', 'post_title']) {
           if (body[key] !== undefined)
             data[key] = body[key]
         }
+        if (data.status === 'approved')
+          data.is_approved = 1
+        if (data.status && data.status !== 'approved')
+          data.is_approved = 0
         await db.updateTable('comments').set(data).where('id', '=', id).execute()
         const comment = await db.selectFrom('comments').selectAll().where('id', '=', id).executeTakeFirst()
         if (!comment)

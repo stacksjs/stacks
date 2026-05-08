@@ -1,390 +1,171 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const timeRanges = [
-  { label: 'Today', value: 'today' },
-  { label: 'Last 7 days', value: '7days' },
-  { label: 'Last 30 days', value: '30days' },
-  { label: 'Last 90 days', value: '90days' },
-  { label: 'Last year', value: 'year' },
-  { label: 'All time', value: 'all' },
-]
-</script>
-
-<div class="p-6 space-y-6">
-  <div class="flex items-center justify-between">
-    <PageHeader title="Comments" description="Manage all your blog post comments" />
-    <div class="flex items-center gap-2">
-      <select x-model="selectedTimeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        @foreach(timeRanges as range)
-          <option value="{{ range.value }}">{{ range.label }}</option>
-        @endforeach
-      </select>
-    </div>
-  </div>
-
-  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Comments</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalComments }}</dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Approved</dt>
-      <dd class="mt-1 font-semibold text-3xl text-green-600 tracking-tight dark:text-green-400">{{ approvedCount }}</dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Pending</dt>
-      <dd class="mt-1 font-semibold text-3xl text-yellow-600 tracking-tight dark:text-yellow-400">{{ pendingCount }}</dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Spam</dt>
-      <dd class="mt-1 font-semibold text-3xl text-red-600 tracking-tight dark:text-red-400">{{ spamCount }}</dd>
-    </div>
-  </dl>
-
-  <div class="grid gap-5 grid-cols-1 lg:grid-cols-2">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Comments Over Time</h3>
-        <div class="mt-2 h-80"><canvas id="comments_over_time_chart"></canvas></div>
+<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Comments</h1>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Moderate reader comments from the CMS comments table.</p>
       </div>
-    </div>
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Comments by Status</h3>
-        <div class="mt-2 h-80"><canvas id="comments_status_chart"></canvas></div>
+      <div class="flex flex-wrap gap-2">
+        <select id="comment-status-filter" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+          <option value="">All statuses</option>
+          <option value="approved">Approved</option>
+          <option value="pending">Pending</option>
+          <option value="spam">Spam</option>
+          <option value="trash">Trash</option>
+        </select>
       </div>
-    </div>
-  </div>
+    </header>
 
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="relative max-w-sm">
-      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-        <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+    <section class="grid gap-4 md:grid-cols-4">
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Comments</p>
+        <p id="comment-total" class="mt-2 text-3xl font-semibold">0</p>
       </div>
-      <input x-model="searchQuery" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" placeholder="Search comments..." />
-    </div>
-    <div class="flex flex-col gap-2 sm:flex-row">
-      <select x-model="statusFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        <option value="all">All Statuses</option>
-        <option value="approved">Approved</option>
-        <option value="pending">Pending</option>
-        <option value="spam">Spam</option>
-      </select>
-      <select x-model="sortOrder" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        <option value="desc">Newest First</option>
-        <option value="asc">Oldest First</option>
-      </select>
-    </div>
-  </div>
-
-  <div :show="hasSelectedComments" class="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm">
-    <div class="flex items-center justify-between">
-      <span class="text-blue-800 text-sm dark:text-blue-300">{{ selectedCount }} comments selected</span>
-      <div class="flex gap-2">
-        <button @click="bulkUpdateStatus('approved')" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-green-700 text-sm dark:text-green-400 bg-white dark:bg-neutral-800 ring-1 ring-inset ring-green-300 rounded-md dark:ring-green-500/30 shadow-sm">Approve</button>
-        <button @click="bulkUpdateStatus('spam')" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-red-600 text-sm dark:text-red-400 bg-white dark:bg-neutral-800 ring-1 ring-inset ring-red-300 rounded-md dark:ring-red-500/30 shadow-sm">Mark Spam</button>
-        <button @click="confirmDeleteSelected()" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-red-600 text-sm dark:text-red-400 bg-white dark:bg-neutral-800 ring-1 ring-inset ring-red-300 rounded-md dark:ring-red-500/30 shadow-sm">
-          <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
-          Delete
-        </button>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Approved</p>
+        <p id="comment-approved" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
       </div>
-    </div>
-  </div>
-
-  <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-neutral-700 shadow">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-700/50">
-        <tr>
-          <th class="px-4 py-3.5">
-            <input type="checkbox" :checked="selectAll" @change="toggleSelectAll()" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-          </th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Author</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Comment</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Post</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Date</th>
-          <th class="relative px-4 py-3.5"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="comment in paginatedComments()">
-          <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-            <td class="px-4 py-4 whitespace-nowrap">
-              <input type="checkbox" :checked="isCommentSelected(comment.id)" @change="toggleCommentSelection(comment.id)" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="font-medium text-gray-900 text-sm dark:text-white">{{ comment.author }}</div>
-              <div class="text-gray-500 text-xs dark:text-neutral-400">{{ comment.email }}</div>
-            </td>
-            <td class="px-4 py-4">
-              <div class="max-w-md text-gray-700 text-sm dark:text-neutral-300">{{ truncateText(comment.content, 100) }}</div>
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="text-gray-500 text-sm dark:text-neutral-300">{{ comment.postTitle }}</div>
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <span class="{{ statusBadgeClass(comment.status) }}">{{ comment.status }}</span>
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(comment.createdAt) }}</div>
-            </td>
-            <td class="px-4 py-4 font-medium text-right text-sm whitespace-nowrap">
-              <div class="flex justify-end gap-2">
-                <button @click="updateCommentStatus(comment, 'approved')" class="text-gray-400 hover:text-green-600">
-                  <div class="h-5 w-5 i-hugeicons-checkmark-circle-02"></div>
-                </button>
-                <button @click="updateCommentStatus(comment, 'spam')" class="text-gray-400 hover:text-red-600">
-                  <div class="h-5 w-5 i-hugeicons-alert-02"></div>
-                </button>
-                <button @click="confirmDeleteComment(comment)" class="text-gray-400 hover:text-red-600">
-                  <div class="h-5 w-5 i-hugeicons-waste"></div>
-                </button>
-              </div>
-            </td>
-          </tr>
-        </template>
-        <tr :show="paginatedComments().length === 0">
-          <td colspan="7" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No comments found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div :show="totalPages() > 1" class="flex items-center justify-between">
-    <p class="text-gray-700 text-sm dark:text-neutral-300">Page {{ currentPage }} of {{ totalPages }}</p>
-    <nav class="inline-flex -space-x-px rounded-md shadow-sm">
-      <button @click="prevPage()" :disabled="currentPage() === 1" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 disabled:opacity-50">
-        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
-      </button>
-      <button @click="nextPage()" :disabled="currentPage() === totalPages()" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 disabled:opacity-50">
-        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
-      </button>
-    </nav>
-  </div>
-
-  <div :show="showDeleteModal" class="relative z-10">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">{{ selectedCount > 1 ? 'Delete Comments' : 'Delete Comment' }}</h3>
-          <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Are you sure? This action cannot be undone.</p>
-          <div class="sm:flex sm:flex-row-reverse mt-5">
-            <button @click="deleteSelectedComments()" class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md shadow-sm">Delete</button>
-            <button @click="closeDeleteModal()" class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-          </div>
-        </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Pending</p>
+        <p id="comment-pending" class="mt-2 text-3xl font-semibold text-amber-600 dark:text-amber-400">0</p>
       </div>
-    </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Spam</p>
+        <p id="comment-spam" class="mt-2 text-3xl font-semibold text-red-600 dark:text-red-400">0</p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div class="border-b border-neutral-200 p-4 dark:border-neutral-800">
+        <input id="comment-search" type="search" placeholder="Search comments..." class="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
+          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+            <tr>
+              <th class="px-4 py-3">Author</th>
+              <th class="px-4 py-3">Comment</th>
+              <th class="px-4 py-3">Post</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Created</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="comments-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+        </table>
+      </div>
+      <div id="comments-empty" class="hidden p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">No comments found.</div>
+    </section>
   </div>
 </div>
 
-<script client>
+<script>
+;(function () {
+  var api = '/api/dashboard/cms'
+  var comments = []
+  var table = document.getElementById('comments-table')
+  var empty = document.getElementById('comments-empty')
+  var search = document.getElementById('comment-search')
+  var statusFilter = document.getElementById('comment-status-filter')
 
-interface Comment {
-  id: number
-  content: string
-  author: string
-  email: string
-  postId: number
-  postTitle: string
-  status: 'approved' | 'pending' | 'spam'
-  createdAt: string
-}
-
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
-
-const initialComments: Comment[] = [
-  { id: 1, content: "This article was incredibly helpful! I've been struggling with this concept for weeks.", author: 'Jane Smith', email: 'jane.smith@example.com', postId: 1, postTitle: 'Getting Started with Vue 3', status: 'approved', createdAt: '2023-11-15T09:24:00' },
-  { id: 2, content: 'I disagree with some points in this article. The framework has evolved since this was written.', author: 'Michael Johnson', email: 'michael.j@example.com', postId: 1, postTitle: 'Getting Started with Vue 3', status: 'approved', createdAt: '2023-11-15T10:45:00' },
-  { id: 3, content: "Could you provide more examples of this implementation? I'm still confused.", author: 'Sarah Williams', email: 'sarah.w@example.com', postId: 2, postTitle: 'Advanced TypeScript Patterns', status: 'pending', createdAt: '2023-11-16T14:12:00' },
-  { id: 4, content: 'Check out my website for more information on this topic! www.spam-link.com', author: 'Spam Bot', email: 'spammer@example.com', postId: 3, postTitle: 'Building Responsive Layouts', status: 'spam', createdAt: '2023-11-16T15:30:00' },
-  { id: 5, content: "I've implemented this solution and it works perfectly. Thanks for sharing!", author: 'David Brown', email: 'david.b@example.com', postId: 2, postTitle: 'Advanced TypeScript Patterns', status: 'approved', createdAt: '2023-11-17T08:15:00' },
-  { id: 6, content: 'This is exactly what I needed to solve my problem. Great explanation!', author: 'Emily Chen', email: 'emily.c@example.com', postId: 4, postTitle: 'State Management in Modern Web Apps', status: 'approved', createdAt: '2023-11-17T11:42:00' },
-  { id: 7, content: 'I found a typo in the third paragraph.', author: 'Grammar Police', email: 'grammar@example.com', postId: 5, postTitle: 'CSS Grid vs Flexbox', status: 'approved', createdAt: '2023-11-18T09:05:00' },
-  { id: 8, content: 'Buy cheap products now! Discount code: SPAM123', author: 'Marketing Spammer', email: 'spam@example.com', postId: 6, postTitle: 'JavaScript Performance Tips', status: 'spam', createdAt: '2023-11-18T16:20:00' },
-  { id: 9, content: 'Have you considered exploring the new features in the beta release?', author: 'Tech Enthusiast', email: 'tech@example.com', postId: 7, postTitle: 'The Future of Web Development', status: 'pending', createdAt: '2023-11-19T10:30:00' },
-  { id: 10, content: "I'm having trouble with the code in step 4. Could you clarify?", author: 'Beginner Coder', email: 'newbie@example.com', postId: 8, postTitle: 'Building Your First API', status: 'pending', createdAt: '2023-11-19T14:50:00' },
-  { id: 11, content: 'Your explanation of closures finally made it click for me. Thank you!', author: 'Grateful Reader', email: 'grateful@example.com', postId: 9, postTitle: 'Understanding JavaScript Closures', status: 'approved', createdAt: '2023-11-20T08:25:00' },
-  { id: 12, content: "I've been following your blog for years and this is one of your best articles yet.", author: 'Loyal Fan', email: 'loyal@example.com', postId: 10, postTitle: 'Optimizing React Applications', status: 'approved', createdAt: '2023-11-20T13:15:00' },
-]
-
-const comments = state<Comment[]>(initialComments)
-const selectedTimeRange = state('30days')
-const searchQuery = state('')
-const sortOrder = state<'asc' | 'desc'>('desc')
-const statusFilter = state<'all' | 'approved' | 'pending' | 'spam'>('all')
-const itemsPerPage = state(10)
-const currentPage = state(1)
-const showDeleteModal = state(false)
-const commentToDelete = state<Comment | null>(null)
-const selectedCommentIds = state<number[]>([])
-const selectAll = state(false)
-
-const filteredComments = derived(() => {
-  let result = [...comments()]
-  if (statusFilter() !== 'all')
-    result = result.filter(c => c.status === statusFilter())
-  const q = searchQuery().toLowerCase()
-  if (q) {
-    result = result.filter(c =>
-      c.content.toLowerCase().includes(q)
-      || c.author.toLowerCase().includes(q)
-      || c.email.toLowerCase().includes(q)
-      || c.postTitle.toLowerCase().includes(q),
-    )
+  function $(id) { return document.getElementById(id) }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
+    })
   }
-  result.sort((a, b) => {
-    const ad = new Date(a.createdAt).getTime()
-    const bd = new Date(b.createdAt).getTime()
-    return sortOrder() === 'asc' ? ad - bd : bd - ad
+  function formatDate(value) {
+    if (!value) return '-'
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(value))
+  }
+  function truncate(value, max) {
+    value = String(value || '')
+    return value.length > max ? value.slice(0, max) + '...' : value
+  }
+  function normalize(row) {
+    return {
+      id: row.id,
+      content: row.content || row.body || '',
+      authorName: row.author_name || row.authorName || row.author || '',
+      authorEmail: row.author_email || row.authorEmail || row.email || '',
+      postTitle: row.post_title || row.postTitle || row.title || '',
+      status: row.status || (row.is_approved || row.isApproved ? 'approved' : 'pending'),
+      createdAt: row.created_at || row.createdAt || '',
+    }
+  }
+  function statusClass(status) {
+    if (status === 'approved') return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+    if (status === 'spam' || status === 'trash') return 'bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-200'
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+  }
+  function render() {
+    var q = search.value.toLowerCase()
+    var status = statusFilter.value
+    var rows = comments.filter(function (comment) {
+      var haystack = [comment.content, comment.authorName, comment.authorEmail, comment.postTitle, comment.status].join(' ').toLowerCase()
+      return (!status || comment.status === status) && (!q || haystack.indexOf(q) !== -1)
+    })
+    $('comment-total').textContent = String(comments.length)
+    $('comment-approved').textContent = String(comments.filter(function (c) { return c.status === 'approved' }).length)
+    $('comment-pending').textContent = String(comments.filter(function (c) { return c.status === 'pending' }).length)
+    $('comment-spam').textContent = String(comments.filter(function (c) { return c.status === 'spam' }).length)
+    empty.classList.toggle('hidden', rows.length > 0)
+    table.innerHTML = rows.map(function (comment) {
+      return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
+        '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(comment.authorName) + '</div><div class="text-xs text-neutral-500">' + escapeHtml(comment.authorEmail) + '</div></td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(truncate(comment.content, 120)) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(comment.postTitle || '-') + '</td>' +
+        '<td class="px-4 py-3"><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium ' + statusClass(comment.status) + '">' + escapeHtml(comment.status) + '</span></td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + formatDate(comment.createdAt) + '</td>' +
+        '<td class="px-4 py-3 text-right"><div class="flex justify-end gap-1">' +
+          '<button type="button" data-action="approved" data-id="' + comment.id + '" class="rounded p-2 text-green-600 hover:bg-green-50 dark:text-green-400 dark:hover:bg-green-950/40"><span class="block h-4 w-4 i-hugeicons-checkmark-circle-02"></span></button>' +
+          '<button type="button" data-action="spam" data-id="' + comment.id + '" class="rounded p-2 text-amber-600 hover:bg-amber-50 dark:text-amber-400 dark:hover:bg-amber-950/40"><span class="block h-4 w-4 i-hugeicons-alert-02"></span></button>' +
+          '<button type="button" data-action="delete" data-id="' + comment.id + '" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"><span class="block h-4 w-4 i-hugeicons-waste"></span></button>' +
+        '</div></td>' +
+      '</tr>'
+    }).join('')
+  }
+  async function load() {
+    var res = await fetch(api)
+    var json = await res.json()
+    comments = Array.isArray(json.comments) ? json.comments.map(normalize) : []
+    render()
+  }
+  async function updateStatus(id, status) {
+    var res = await fetch(api + '/comments/' + id, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ status: status }),
+    })
+    if (!res.ok) {
+      alert((await res.json()).error || 'Could not update comment')
+      return
+    }
+    await load()
+  }
+  async function deleteComment(id) {
+    if (!confirm('Delete this comment?')) return
+    var res = await fetch(api + '/comments/' + id, { method: 'DELETE' })
+    if (!res.ok) {
+      alert((await res.json()).error || 'Could not delete comment')
+      return
+    }
+    await load()
+  }
+  table.addEventListener('click', function (event) {
+    var button = event.target.closest('button[data-action]')
+    if (!button) return
+    if (button.dataset.action === 'delete') deleteComment(button.dataset.id)
+    else updateStatus(button.dataset.id, button.dataset.action)
   })
-  return result
-})
-
-const totalPages = derived(() => Math.max(1, Math.ceil(filteredComments().length / itemsPerPage())))
-const paginatedComments = derived(() => {
-  const start = (currentPage() - 1) * itemsPerPage()
-  return filteredComments().slice(start, start + itemsPerPage())
-})
-
-const totalComments = derived(() => comments().length)
-const approvedCount = derived(() => comments().filter(c => c.status === 'approved').length)
-const pendingCount = derived(() => comments().filter(c => c.status === 'pending').length)
-const spamCount = derived(() => comments().filter(c => c.status === 'spam').length)
-const hasSelectedComments = derived(() => selectedCommentIds().length > 0)
-const selectedCount = derived(() => selectedCommentIds().length)
-
-function isCommentSelected(id: number) {
-  return selectedCommentIds().includes(id)
-}
-
-function statusBadgeClass(status: Comment['status']) {
-  const base = 'inline-flex items-center px-2 py-0.5 font-medium text-xs rounded-full'
-  switch (status) {
-    case 'approved': return `${base} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`
-    case 'pending': return `${base} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`
-    case 'spam': return `${base} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`
-  }
-}
-
-function formatDate(dateString: string) {
-  return new Intl.DateTimeFormat('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }).format(new Date(dateString))
-}
-
-function truncateText(text: string, max: number) {
-  if (text.length <= max)
-    return text
-  return `${text.substring(0, max)}...`
-}
-
-function toggleSelectAll() {
-  const next = !selectAll()
-  selectAll.set(next)
-  selectedCommentIds.set(next ? paginatedComments().map(c => c.id) : [])
-}
-
-function toggleCommentSelection(id: number) {
-  const list = selectedCommentIds()
-  selectedCommentIds.set(list.includes(id) ? list.filter(x => x !== id) : [...list, id])
-}
-
-function updateCommentStatus(comment: Comment, status: Comment['status']) {
-  comments.set(comments().map(c => c.id === comment.id ? { ...c, status } : c))
-}
-
-function bulkUpdateStatus(status: Comment['status']) {
-  const ids = selectedCommentIds()
-  comments.set(comments().map(c => ids.includes(c.id) ? { ...c, status } : c))
-  selectedCommentIds.set([])
-}
-
-function confirmDeleteComment(comment: Comment) {
-  commentToDelete.set(comment)
-  selectedCommentIds.set([])
-  showDeleteModal.set(true)
-}
-
-function confirmDeleteSelected() {
-  showDeleteModal.set(true)
-}
-
-function closeDeleteModal() {
-  showDeleteModal.set(false)
-  commentToDelete.set(null)
-}
-
-function deleteSelectedComments() {
-  if (selectedCommentIds().length > 0) {
-    const ids = selectedCommentIds()
-    comments.set(comments().filter(c => !ids.includes(c.id)))
-    selectedCommentIds.set([])
-  }
-  else {
-    const target = commentToDelete()
-    if (target)
-      comments.set(comments().filter(c => c.id !== target.id))
-  }
-  closeDeleteModal()
-}
-
-function nextPage() {
-  if (currentPage() < totalPages())
-    currentPage.set(currentPage() + 1)
-}
-
-function prevPage() {
-  if (currentPage() > 1)
-    currentPage.set(currentPage() - 1)
-}
-
-let chartHandles: ChartLike[] = []
-
-onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
-  Chart.register(...registerables)
-  const Ctor = Chart as unknown as ChartCtor
-
-  const lineOptions = { responsive: true, maintainAspectRatio: false, scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }, plugins: { legend: { position: 'top' } } }
-  const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'top' } } }
-
-  const handles: Array<ChartLike | null> = [
-    useChart({
-      Chart: Ctor,
-      id: 'comments_over_time_chart',
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{ label: 'Total Comments', backgroundColor: 'rgba(75, 192, 192, 0.2)', borderColor: 'rgba(75, 192, 192, 1)', borderWidth: 2, data: [8, 12, 15, 10, 18, 22, 16, 14, 20, 25, 30, 28], tension: 0.4 }],
-      },
-      options: lineOptions,
-    }) as ChartLike | null,
-    useChart({
-      Chart: Ctor,
-      id: 'comments_status_chart',
-      type: 'doughnut',
-      data: {
-        labels: ['Approved', 'Pending', 'Spam'],
-        datasets: [{
-          backgroundColor: ['rgba(54, 162, 235, 0.6)', 'rgba(255, 206, 86, 0.6)', 'rgba(255, 99, 132, 0.6)'],
-          borderColor: ['rgba(54, 162, 235, 1)', 'rgba(255, 206, 86, 1)', 'rgba(255, 99, 132, 1)'],
-          borderWidth: 1,
-          data: [approvedCount(), pendingCount(), spamCount()],
-        }],
-      },
-      options: doughnutOptions,
-    }) as ChartLike | null,
-  ]
-  chartHandles = handles.filter((h): h is ChartLike => h !== null)
-})
-
-onDestroy(() => {
-  chartHandles.forEach(h => h.destroy())
-  chartHandles = []
-})
+  search.addEventListener('input', render)
+  statusFilter.addEventListener('change', render)
+  load()
+})()
 </script>
 
 @endsection
