@@ -222,10 +222,28 @@ export function dev(buddy: CLI): void {
   buddy
     .command('dev:api', descriptions.api)
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--no-watch-types', 'Skip the model/config type-regeneration watcher', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: DevOptions) => {
+    .action(async (options: DevOptions & { watchTypes?: boolean }) => {
+      const a = await actions()
 
-      await (await actions()).runApiDevServer(options)
+      // Spawn the model/config watcher as a sidecar. Fire-and-forget:
+      // `watchTypes()` returns a promise that only resolves on SIGINT,
+      // so awaiting would block the dev server from booting. When the
+      // user Ctrl-C's `dev:api`, the SIGINT handler inside watchTypes
+      // tears down its fs.watch listeners and the dev server exits in
+      // parallel — no orphan listeners, no zombie process.
+      //
+      // Default-on; pass `--no-watch-types` to skip (e.g. when running
+      // a separate `generate:types --watch` in another terminal and
+      // you don't want two regen passes per save).
+      if (options.watchTypes !== false) {
+        a.watchTypes(options as any).catch((err: unknown) => {
+          log.warn('[dev:api] type watcher exited:', err as any)
+        })
+      }
+
+      await a.runApiDevServer(options)
     })
 
   // buddy

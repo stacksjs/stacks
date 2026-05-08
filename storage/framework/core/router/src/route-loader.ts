@@ -59,26 +59,32 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
 }
 
 /**
- * Load framework default routes from storage/framework/defaults/routes/.
+ * Load framework default routes via `storage/framework/defaults/bootstrap.ts`.
+ *
+ * The bootstrap file is the single source of truth for which framework
+ * packages participate in route registration. It either imports each
+ * package (whose own entry calls `route.register(...)` on import — the
+ * service-provider pattern competing frameworks use to let packages
+ * self-wire at boot) or registers routes files directly via
+ * `route.register(...)`. Adding a new framework package = add a line
+ * to bootstrap.ts; the loader stays untouched.
+ *
  * Resolved through @stacksjs/path so the same import works whether this
- * package runs from the workspace (`storage/framework/core/router/`) or
- * from `node_modules/@stacksjs/router/` — the relative-path version
- * `../../../defaults/routes/dashboard` only ever resolved under the
- * workspace layout.
+ * package runs from the workspace or from `node_modules/@stacksjs/router/`.
  */
 async function loadFrameworkRoutes(): Promise<void> {
   try {
     const { frameworkPath } = await import('@stacksjs/path')
-    const dashboardRoutesPath = frameworkPath('defaults/routes/dashboard.ts')
-    if (await Bun.file(dashboardRoutesPath).exists()) {
-      await import(dashboardRoutesPath)
+    const bootstrapPath = frameworkPath('defaults/bootstrap.ts')
+    if (await Bun.file(bootstrapPath).exists()) {
+      await import(bootstrapPath)
     }
   }
   catch (error) {
-    // Framework routes are optional — don't crash if they don't exist
+    // Framework bootstrap is optional — don't crash if it doesn't exist
     const message = error instanceof Error ? error.message : String(error)
     if (!message.includes('Cannot find module') && !message.includes('MODULE_NOT_FOUND')) {
-      console.error(`[Routes] Failed to load framework routes: ${message}`)
+      console.error(`[Routes] Failed to load framework bootstrap: ${message}`)
     }
   }
 }
