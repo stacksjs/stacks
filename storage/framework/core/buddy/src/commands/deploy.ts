@@ -1,12 +1,12 @@
 import type { CLI, DeployOptions } from '@stacksjs/types'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs'
 import { homedir } from 'node:os'
 import { join } from 'node:path'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { italic, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
 import { app, email as emailConfig, cloud as cloudConfig } from '@stacksjs/config'
-import { addDomain, hasUserDomainBeenAddedToCloud } from '@stacksjs/dns'
+import { addDomain, hasUserDomainBeenAddedToCloud } from '../../../dns/src/drivers/aws'
 import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
@@ -24,6 +24,100 @@ const log = {
       console.log('🔍', ...args)
     }
   },
+}
+
+const MAIL_PACKAGE_DOMAIN = 'github.com/mail-os/mail'
+const MAIL_PACKAGE_SPEC = `${MAIL_PACKAGE_DOMAIN}@0.1.0`
+const MAIL_TARGET_PLATFORM = 'linux-x86_64'
+const MAIL_BINARY_NAMES = ['mail', 'mail-x86_64-linux', 'mail-x86_64-linux-gnu']
+
+function collectMatchingFiles(root: string, names: string[], maxDepth = 8): string[] {
+  const nameSet = new Set(names)
+  const matches: string[] = []
+
+  if (!existsSync(root)) return matches
+
+  function walk(dir: string, depth: number): void {
+    if (depth > maxDepth) return
+
+    for (const entry of readdirSync(dir)) {
+      if (entry === '.git' || entry === 'node_modules') continue
+
+      const fullPath = join(dir, entry)
+      const stat = statSync(fullPath)
+      if (stat.isDirectory()) {
+        walk(fullPath, depth + 1)
+      } else if (stat.isFile() && nameSet.has(entry)) {
+        matches.push(fullPath)
+      }
+    }
+  }
+
+  walk(root, 0)
+  return matches
+}
+
+function isElfBinary(filePath: string): boolean {
+  const header = readFileSync(filePath).slice(0, 4)
+  return header[0] === 0x7f && header[1] === 0x45 && header[2] === 0x4c && header[3] === 0x46
+}
+
+function resolvePantryInstallCommand(): { command: string, args: string[] } {
+  const localPantryCli = join(homedir(), 'Code', 'Tools', 'pantry', 'packages', 'ts-pantry', 'bin', 'cli.ts')
+  if (existsSync(localPantryCli)) {
+    return { command: 'bun', args: [localPantryCli] }
+  }
+
+  const projectPantry = p.projectPath('pantry/.bin/pantry')
+  if (existsSync(projectPantry)) {
+    return { command: projectPantry, args: [] }
+  }
+
+  const globalPantry = join(homedir(), '.local', 'share', 'pantry', 'global', 'bin', 'pantry')
+  if (existsSync(globalPantry)) {
+    return { command: globalPantry, args: [] }
+  }
+
+  return { command: 'pantry', args: [] }
+}
+
+async function installMailBinaryWithPantry(): Promise<void> {
+  const { execFileSync } = await import('node:child_process')
+  const pantry = resolvePantryInstallCommand()
+
+  execFileSync(pantry.command, [
+    ...pantry.args,
+    'install',
+    MAIL_PACKAGE_SPEC,
+    '--install-dir',
+    p.projectPath('pantry'),
+    '--platform',
+    MAIL_TARGET_PLATFORM,
+    '--quiet',
+  ], {
+    cwd: p.projectPath(),
+    stdio: process.argv.includes('--verbose') || process.argv.includes('-v') ? 'inherit' : 'pipe',
+    env: process.env,
+  })
+}
+
+async function findPantryMailBinary(): Promise<string | null> {
+  const directCandidates = [
+    ...MAIL_BINARY_NAMES.map(name => p.projectPath(`pantry/.bin/${name}`)),
+    ...MAIL_BINARY_NAMES.map(name => join(homedir(), '.local', 'share', 'pantry', 'global', 'bin', name)),
+  ]
+
+  for (const candidate of directCandidates) {
+    if (existsSync(candidate) && isElfBinary(candidate)) return candidate
+  }
+
+  for (const root of [p.projectPath('pantry'), join(homedir(), '.local', 'share', 'pantry')]) {
+    for (const candidate of collectMatchingFiles(root, MAIL_BINARY_NAMES)) {
+      if (isElfBinary(candidate)) return candidate
+    }
+  }
+
+  return null
 }
 
 async function ensureDeployPrerequisites(verbose = false): Promise<void> {
@@ -358,7 +452,7 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
 
 /**
  * Upload mail server binary/source to S3
- * For 'server' mode: uploads the Linux x86_64 binary from ts-smtp-server package
+ * For 'server' mode: uploads the Linux x86_64 binary installed by Pantry
  * For 'serverless' mode: uploads the TypeScript server code
  */
 async function uploadMailServerToS3(bucketName: string, region: string, mode: string): Promise<void> {
@@ -393,17 +487,15 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
       return
     }
 
-    // Server mode: try to find and upload the Linux x86_64 binary from ts-smtp-server
+    // Server mode: install and upload the Linux x86_64 binary from Pantry.
     let binaryUploaded = false
 
     try {
-      // Try to import from ts-smtp-server package (installed via bun link)
-      // @ts-ignore - ts-smtp-server may not be installed
-      const { getLinuxBinaryPath, getSourcePath } = await import('ts-smtp-server')
+      await installMailBinaryWithPantry()
 
-      const linuxBinaryPath = getLinuxBinaryPath('x86_64')
-      if (linuxBinaryPath && existsSync(linuxBinaryPath)) {
-        log.info(`Uploading Linux binary from ts-smtp-server: ${linuxBinaryPath}`)
+      const linuxBinaryPath = await findPantryMailBinary()
+      if (linuxBinaryPath && existsSync(linuxBinaryPath) && isElfBinary(linuxBinaryPath)) {
+        log.info(`Uploading Pantry mail binary: ${linuxBinaryPath}`)
         const binaryContent = readFileSync(linuxBinaryPath)
         await s3Client.putObject({
           bucket: bucketName,
@@ -414,80 +506,13 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
         log.success('Uploaded Linux x86_64 mail server binary to S3')
         binaryUploaded = true
       }
-
-      // Also upload source tarball as fallback
-      const sourcePath = getSourcePath()
-      if (existsSync(sourcePath)) {
-        log.info('Uploading source tarball as fallback...')
-        const { execSync } = await import('child_process')
-        const tarballPath = '/tmp/mail-server-source.tar.gz'
-        execSync(`tar -czf ${tarballPath} -C "${sourcePath}" --exclude='.git' --exclude='zig-out' --exclude='zig-cache' --exclude='.zig-cache' .`, { stdio: 'inherit' })
-        const tarballContent = readFileSync(tarballPath)
-        await s3Client.putObject({
-          bucket: bucketName,
-          key: 'mail-server/source.tar.gz',
-          body: tarballContent,
-          contentType: 'application/gzip',
-        })
-        log.success('Uploaded source tarball to S3')
-      }
     }
-    catch {
-      // ts-smtp-server not linked — fall back to well-known paths
-      log.debug('ts-smtp-server package not found, trying well-known paths...')
-
-      const wellKnownPaths = [
-        join(homedir(), 'Code', 'Libraries', 'mail'),
-        join(homedir(), 'Code', 'mail'),
-      ]
-
-      for (const zigPath of wellKnownPaths) {
-        if (!existsSync(zigPath))
-          continue
-
-        log.info(`Found mail server source at ${zigPath}`)
-
-        // Look for pre-built Linux binary in the package bin/ or zig-out/
-        const binaryPaths = [
-          join(zigPath, 'packages', 'ts-smtp-server', 'bin', 'smtp-server-x86_64-linux'),
-          join(zigPath, 'zig-out', 'bin', 'x86_64-linux', 'smtp-server-x86_64-linux'),
-        ]
-
-        for (const binaryPath of binaryPaths) {
-          if (existsSync(binaryPath)) {
-            log.info(`Uploading Linux binary from ${binaryPath}`)
-            const binaryContent = readFileSync(binaryPath)
-            await s3Client.putObject({
-              bucket: bucketName,
-              key: 'mail-server/smtp-server',
-              body: binaryContent,
-              contentType: 'application/octet-stream',
-            })
-            log.success('Uploaded Linux x86_64 mail server binary to S3')
-            binaryUploaded = true
-            break
-          }
-        }
-
-        // Upload source tarball
-        const { execSync } = await import('child_process')
-        const tarballPath = '/tmp/mail-server-source.tar.gz'
-        execSync(`tar -czf ${tarballPath} -C "${zigPath}" --exclude='.git' --exclude='zig-out' --exclude='zig-cache' --exclude='.zig-cache' .`, { stdio: 'inherit' })
-        const tarballContent = readFileSync(tarballPath)
-        await s3Client.putObject({
-          bucket: bucketName,
-          key: 'mail-server/source.tar.gz',
-          body: tarballContent,
-          contentType: 'application/gzip',
-        })
-        log.success('Uploaded source tarball to S3')
-        break
-      }
+    catch (error: any) {
+      log.debug(`Pantry mail install failed: ${error.message}`)
     }
 
     if (!binaryUploaded) {
-      log.warn('No pre-built Linux binary found. The server will build from source on first boot (this takes longer).')
-      log.info('To pre-build: cd ~/Code/Libraries/mail/packages/ts-smtp-server && bun run build:linux-x64')
+      log.warn(`No Pantry-provided ${MAIL_TARGET_PLATFORM} mail binary found. Release ${MAIL_PACKAGE_DOMAIN}, then run the Pantry binary sync for that package.`)
     }
   }
   catch (uploadErr: any) {

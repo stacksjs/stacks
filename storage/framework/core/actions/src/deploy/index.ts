@@ -17,8 +17,114 @@ const log = {
   error: (...args: any[]) => console.error('✗', ...args),
 }
 
+const MAIL_PACKAGE_DOMAIN = 'github.com/mail-os/mail'
+const MAIL_PACKAGE_SPEC = `${MAIL_PACKAGE_DOMAIN}@0.1.0`
+const MAIL_TARGET_PLATFORM = 'linux-x86_64'
+const MAIL_BINARY_NAMES = ['mail', 'mail-x86_64-linux', 'mail-x86_64-linux-gnu']
+
 // Check if verbose mode is enabled via CLI args
 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
+
+async function collectMatchingFiles(root: string, names: string[], maxDepth = 8): Promise<string[]> {
+  const { existsSync, readdirSync, statSync } = await import('node:fs')
+  const { join, basename } = await import('node:path')
+  const nameSet = new Set(names)
+  const matches: string[] = []
+
+  if (!existsSync(root)) return matches
+
+  function walk(dir: string, depth: number): void {
+    if (depth > maxDepth) return
+
+    for (const entry of readdirSync(dir)) {
+      if (entry === '.git' || entry === 'node_modules') continue
+
+      const fullPath = join(dir, entry)
+      const stat = statSync(fullPath)
+      if (stat.isDirectory()) {
+        walk(fullPath, depth + 1)
+      } else if (stat.isFile() && nameSet.has(basename(fullPath))) {
+        matches.push(fullPath)
+      }
+    }
+  }
+
+  walk(root, 0)
+  return matches
+}
+
+async function isElfBinary(filePath: string): Promise<boolean> {
+  const { readFileSync } = await import('node:fs')
+  const header = readFileSync(filePath).slice(0, 4)
+  return header[0] === 0x7f && header[1] === 0x45 && header[2] === 0x4c && header[3] === 0x46
+}
+
+async function resolvePantryInstallCommand(): Promise<{ command: string, args: string[] }> {
+  const { existsSync } = await import('node:fs')
+  const localPantryCli = `${process.env.HOME}/Code/Tools/pantry/packages/ts-pantry/bin/cli.ts`
+  if (existsSync(localPantryCli)) {
+    return { command: 'bun', args: [localPantryCli] }
+  }
+
+  const projectPantry = p.projectPath('pantry/.bin/pantry')
+  if (existsSync(projectPantry)) {
+    return { command: projectPantry, args: [] }
+  }
+
+  const globalPantry = `${process.env.HOME}/.local/share/pantry/global/bin/pantry`
+  if (existsSync(globalPantry)) {
+    return { command: globalPantry, args: [] }
+  }
+
+  return { command: 'pantry', args: [] }
+}
+
+async function installMailBinaryWithPantry(): Promise<void> {
+  const { execFileSync } = await import('node:child_process')
+  const installDir = p.projectPath('pantry')
+  const pantry = await resolvePantryInstallCommand()
+
+  execFileSync(pantry.command, [
+    ...pantry.args,
+    'install',
+    MAIL_PACKAGE_SPEC,
+    '--install-dir',
+    installDir,
+    '--platform',
+    MAIL_TARGET_PLATFORM,
+    '--quiet',
+  ], {
+    cwd: p.projectPath(),
+    stdio: isVerbose ? 'inherit' : 'pipe',
+    env: process.env,
+  })
+}
+
+async function findPantryMailBinary(): Promise<string | null> {
+  const { existsSync } = await import('node:fs')
+  const { join } = await import('node:path')
+  const pantryRoots = [
+    p.projectPath('pantry'),
+    `${process.env.HOME}/.local/share/pantry`,
+  ]
+  const directCandidates = [
+    ...MAIL_BINARY_NAMES.map(name => p.projectPath(`pantry/.bin/${name}`)),
+    ...MAIL_BINARY_NAMES.map(name => join(`${process.env.HOME}/.local/share/pantry/global/bin`, name)),
+  ]
+
+  for (const candidate of directCandidates) {
+    if (existsSync(candidate) && await isElfBinary(candidate)) return candidate
+  }
+
+  for (const root of pantryRoots) {
+    const candidates = await collectMatchingFiles(root, MAIL_BINARY_NAMES)
+    for (const candidate of candidates) {
+      if (await isElfBinary(candidate)) return candidate
+    }
+  }
+
+  return null
+}
 
 const MIME_TYPES: Record<string, string> = {
   '.html': 'text/html',
@@ -123,18 +229,25 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
   const docsSpinner = spinner('Building documentation with BunPress...')
   docsSpinner.start()
   try {
-    // Try to run bunpress from node_modules/.bin or linked package
-    // Note: bunpress outputs to .bunpress subdirectory within outdir
-    await runCommand('bunx @stacksjs/bunpress build --dir ./docs --outdir ./dist/docs', {
+    const localBunpressCli = `${process.env.HOME}/Code/Tools/bunpress/packages/bunpress/bin/cli.ts`
+    const hasLocalBunpress = await Bun.file(localBunpressCli).exists()
+    const command = hasLocalBunpress
+      ? `bun ${localBunpressCli} build --dir ${docsDir} --outdir ${p.projectPath('dist/docs')}`
+      : 'bunx @stacksjs/bunpress build --dir ./docs --outdir ./dist/docs'
+
+    // Prefer the developer checkout in ~/Code/Tools/bunpress so deploys use
+    // the same docs engine being worked on locally. BunPress writes into a
+    // .bunpress subdirectory within the configured outdir.
+    await runCommand(command, {
       cwd: p.projectPath(),
       quiet: !isVerbose,
     })
-    docsSpinner.succeed('Documentation built with BunPress')
+    docsSpinner.succeed(`Documentation built with BunPress${hasLocalBunpress ? ' (local checkout)' : ''}`)
   } catch (docsError: any) {
     // BunPress might not be installed - skip gracefully
     docsSpinner.stop()
     console.log(`⚠ Documentation build skipped: ${docsError.message}`)
-    if (isVerbose) log.debug('To build docs manually: cd ~/Code/bunpress && bun bin/cli.ts build --dir /path/to/docs --outdir /path/to/dist/docs')
+    if (isVerbose) log.debug('To build docs manually: cd ~/Code/Tools/bunpress && bun packages/bunpress/bin/cli.ts build --dir /path/to/docs --outdir /path/to/dist/docs')
   }
 } else if (docsDistExists) {
   if (isVerbose) log.debug('Pre-built docs found at dist/docs/.bunpress, skipping build')
@@ -807,7 +920,6 @@ fi`,
         const { readFileSync: readSmtpFile, existsSync: smtpFileExists } = await import('node:fs')
         const { resolve: resolvePath, join: joinPath } = await import('node:path')
         const { execSync } = await import('node:child_process')
-        const { homedir } = await import('node:os')
 
         const s3 = new S3Client(region)
         const awsClient = new AWSClient()
@@ -885,36 +997,19 @@ fi`,
           const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
 
           if (mailServerMode === 'server') {
-            // Server mode: Deploy the Zig binary
+            // Server mode: deploy the Pantry-provided Linux binary.
             if (isVerbose) log.debug('Deploying Zig mail server binary...')
 
-            // Find the Linux binary from ts-smtp-server or well-known paths
-            let linuxBinaryPath: string | null = null
             try {
-              // @ts-ignore - ts-smtp-server may not be installed
-              const { getLinuxBinaryPath } = await import('ts-smtp-server')
-              linuxBinaryPath = getLinuxBinaryPath('x86_64')
-            } catch {
-              // ts-smtp-server not linked, check well-known paths
-              const wellKnownPaths = [
-                joinPath(homedir(), 'Code', 'Libraries', 'mail', 'packages', 'ts-smtp-server', 'bin', 'smtp-server-x86_64-linux'),
-                joinPath(homedir(), 'Code', 'Libraries', 'mail', 'zig-out', 'bin', 'smtp-server'),
-                joinPath(homedir(), 'Code', 'mail', 'zig-out', 'bin', 'smtp-server'),
-              ]
-              for (const p of wellKnownPaths) {
-                if (smtpFileExists(p)) {
-                  linuxBinaryPath = p
-                  break
-                }
-              }
+              await installMailBinaryWithPantry()
+            } catch (error: any) {
+              if (isVerbose) log.debug(`  Pantry mail install failed: ${error.message}`)
             }
 
+            const linuxBinaryPath = await findPantryMailBinary()
             if (linuxBinaryPath && smtpFileExists(linuxBinaryPath)) {
-              // Verify it's an ELF binary
-              const header = readSmtpFile(linuxBinaryPath).slice(0, 4)
-              const isElf = header[0] === 0x7f && header[1] === 0x45 && header[2] === 0x4c && header[3] === 0x46
-              if (!isElf) {
-                smtpSpinner.fail('Linux binary is not a valid ELF file. Run: cd ~/Code/Libraries/mail && zig build -Dtarget=x86_64-linux-gnu -Doptimize=ReleaseFast')
+              if (!await isElfBinary(linuxBinaryPath)) {
+                smtpSpinner.fail(`Pantry installed ${MAIL_PACKAGE_DOMAIN}, but the ${MAIL_TARGET_PLATFORM} binary is not an ELF file.`)
                 throw new Error('Linux binary is not a valid ELF file')
               }
 
@@ -1057,7 +1152,7 @@ SVCEOF`,
                 smtpSpinner.fail('Failed to send SSM command for mail server')
               }
             } else {
-              smtpSpinner.fail('No Linux x86_64 binary found. Run: cd ~/Code/Libraries/mail && zig build -Dtarget=x86_64-linux-gnu -Doptimize=ReleaseFast')
+              smtpSpinner.fail(`No Pantry-provided ${MAIL_TARGET_PLATFORM} mail binary found. Release ${MAIL_PACKAGE_DOMAIN}, then run the Pantry binary sync for that package.`)
             }
           } else {
             // Serverless mode: Deploy the TypeScript SMTP proxy (existing behavior)
