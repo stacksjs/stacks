@@ -1,0 +1,26 @@
+-- #1839 — Auth: bearer tokens never expire — add expiry + rotation
+--
+-- Revoke every existing access + refresh token at the moment we ship
+-- the short-lived (1h) access + refresh-token rotation model. Up until
+-- now stacks-issued bearer tokens lived for 30 days with no refresh
+-- path; if any of them have leaked, there has been no recovery
+-- mechanism short of dropping these tables by hand. This migration
+-- makes the cutover explicit and forces every existing client to
+-- re-authenticate on its next request — which then issues a token
+-- under the new model.
+--
+-- The migration is intentionally a hard wipe rather than a
+-- conditional `expires_at > NOW + 24h` filter because:
+--   1. At deploy time every row in these tables is legacy by
+--      definition (the new code paths haven't run yet).
+--   2. A hard wipe is portable across SQLite, Postgres and MySQL
+--      without driver-specific date arithmetic in this SQL file.
+--   3. There is no half-measure for this fix — leaving tokens that
+--      were issued under the old contract in place would leave the
+--      same leak/rotation gap the issue is trying to close.
+--
+-- Refresh tokens go first because of the FK to oauth_access_tokens
+-- (no ON DELETE CASCADE in the original schema — see the
+-- create-oauth_refresh_tokens migration).
+DELETE FROM oauth_refresh_tokens;
+DELETE FROM oauth_access_tokens;

@@ -1,148 +1,21 @@
-import type { AuthToken } from '@stacksjs/types'
 export type { AuthToken } from '@stacksjs/types'
 import { Buffer } from 'node:buffer'
 import { createHmac, randomBytes } from 'node:crypto'
 import process from 'node:process'
-import { db, sql } from '@stacksjs/database'
-import { HttpError } from '@stacksjs/error-handling'
 
-/** Type-safe helper to brand a plain string as an AuthToken */
-function toAuthToken(value: string): AuthToken {
-  return value as AuthToken
-}
-
+/**
+ * `TokenManager` used to expose `createAccessToken` / `validateToken` /
+ * `rotateToken` / `revokeToken` static methods that hardcoded a 30-day
+ * `expires_at`, bypassed `config.auth.tokenExpiry`, and compared raw
+ * tokens against DB-stored hashes (i.e. broken). They had no callers —
+ * the real path lives on `Auth` (see authentication.ts) and respects
+ * the configured 1-hour expiry plus the refresh-token rotation
+ * landed for #1839. Removed entirely so the trap can't fire.
+ *
+ * `generateJWT` is the one piece worth keeping — `Auth.createTokenForUser`
+ * and `Auth.rotateToken` both use it to mint the JWT body.
+ */
 export class TokenManager {
-  /**
-   * Resolve the OAuth client id used to scope newly-issued personal-access
-   * tokens. Defaults to `1` (the personal-access client seeded by the
-   * default migrations) but pulls from the OAUTH_CLIENT_ID env var when
-   * set. Throws a clear error if the resolved client id doesn't actually
-   * exist in the database — the previous code blindly inserted with
-   * `oauth_client_id: 1` and surfaced a confusing FK violation when the
-   * client hadn't been seeded yet.
-   */
-  private static async resolveClientId(): Promise<number> {
-    const fromEnv = Number(process.env.OAUTH_CLIENT_ID)
-    const candidate = Number.isFinite(fromEnv) && fromEnv > 0 ? fromEnv : 1
-    try {
-      const exists = await db.selectFrom('oauth_clients')
-        .where('id', '=', candidate)
-        .select(['id'])
-        .executeTakeFirst()
-      if (exists) return candidate
-    }
-    catch {
-      // oauth_clients table may not exist yet on first migrate — fall back to
-      // the candidate id so the FK error (if any) surfaces with a clear path.
-      return candidate
-    }
-    throw new HttpError(
-      500,
-      `OAuth client id=${candidate} does not exist. Run \`./buddy migrate\` (or seed an oauth_clients row) before issuing tokens.`,
-    )
-  }
-
-  static async createAccessToken(user: { id: number }): Promise<AuthToken> {
-    const token = randomBytes(40).toString('hex')
-    const clientId = await this.resolveClientId()
-
-    const result = await db.insertInto('oauth_access_tokens')
-      .values({
-        oauth_client_id: clientId,
-        user_id: user.id,
-        token,
-        name: 'auth-token',
-        scopes: JSON.stringify(['read', 'write', 'admin']),
-        revoked: false,
-        expires_at: sql`${new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString()}`,
-        created_at: sql`${new Date().toISOString()}`,
-        updated_at: sql`${new Date().toISOString()}`,
-      })
-      .executeTakeFirst()
-
-    if (!result?.insertId)
-      throw new HttpError(500, 'Failed to create access token')
-
-    return toAuthToken(token)
-  }
-
-  static async validateToken(token: string): Promise<boolean> {
-    const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('token', '=', token)
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!accessToken)
-      return false
-
-    // Check if token is expired
-    if (accessToken.expires_at && new Date(String(accessToken.expires_at)) < new Date()) {
-      // Automatically delete expired tokens
-      await db.deleteFrom('oauth_access_tokens')
-        .where('id', '=', accessToken.id)
-        .execute()
-      return false
-    }
-
-    // Check if token is revoked
-    if (accessToken.revoked)
-      return false
-
-    // Rotate token if it's been used for more than 24 hours
-    const lastUsed = accessToken.updated_at ? new Date(String(accessToken.updated_at)) : new Date()
-    const now = new Date()
-    const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
-
-    if (hoursSinceLastUse >= 24) {
-      await this.rotateToken(token)
-    }
-    else {
-      // Update last used timestamp
-      await db.updateTable('oauth_access_tokens')
-        .set({
-          updated_at: sql`${now.toISOString()}`,
-        })
-        .where('id', '=', accessToken.id)
-        .execute()
-    }
-
-    return true
-  }
-
-  static async rotateToken(oldToken: string): Promise<AuthToken | null> {
-    const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('token', '=', oldToken)
-      .selectAll()
-      .executeTakeFirst()
-
-    if (!accessToken)
-      return null
-
-    // Generate new token
-    const newToken = randomBytes(40).toString('hex')
-
-    // Update the token
-    await db.updateTable('oauth_access_tokens')
-      .set({
-        token: newToken,
-        updated_at: sql`${new Date().toISOString()}`,
-      })
-      .where('id', '=', accessToken.id)
-      .execute()
-
-    return toAuthToken(newToken)
-  }
-
-  static async revokeToken(token: string): Promise<void> {
-    await db.updateTable('oauth_access_tokens')
-      .set({
-        revoked: true,
-        updated_at: sql`${new Date().toISOString()}`,
-      })
-      .where('token', '=', token)
-      .execute()
-  }
-
   /**
    * Generate a JWT-like token with embedded metadata
    * Contains user ID, timestamps, and random signature for security.

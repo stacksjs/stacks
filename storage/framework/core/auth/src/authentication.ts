@@ -822,7 +822,22 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!accessToken || accessToken.token !== plainToken)
+    if (!accessToken)
+      return null
+
+    // The DB stores the *hashed* token (see createTokenForUser line ~380);
+    // the previous direct `!== plainToken` comparison could never match,
+    // so rotateToken silently returned null on every call. Hash + use a
+    // timing-safe compare to mirror validateToken's contract.
+    const hashedPlainToken = hashToken(plainToken)
+    const storedHash = String(accessToken.token)
+    if (hashedPlainToken.length !== storedHash.length)
+      return null
+    const tokenMatches = timingSafeEqual(
+      Buffer.from(hashedPlainToken, 'utf-8'),
+      Buffer.from(storedHash, 'utf-8'),
+    )
+    if (!tokenMatches)
       return null
 
     // Generate new JWT token. Match the expiry to the row's existing
@@ -832,10 +847,11 @@ export class Auth {
     const expiresInSeconds = Math.max(1, Math.floor((expiresAtMs - Date.now()) / 1000))
     const newToken = TokenManager.generateJWT(accessToken.user_id as number, expiresInSeconds)
 
-    // Update the token
+    // Update the token (store the *hash*, never the plaintext JWT — the
+    // raw JWT is only ever returned to the caller, never persisted).
     await db.updateTable('oauth_access_tokens')
       .set({
-        token: newToken,
+        token: hashToken(newToken),
         updated_at: formatDate(new Date()),
       })
       .where('id', '=', accessToken.id)
