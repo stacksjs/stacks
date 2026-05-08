@@ -92,6 +92,21 @@ export async function exec(command: string | string[], options?: CliOptions): Pr
   if (exited === ExitCode.Success)
     return ok(proc)
 
+  // Signal-induced exits during shutdown (parent receives SIGINT / SIGTERM
+  // and propagates to children, or the user backgrounds with `&` and runs
+  // `kill %1`) are not actionable failures — they're the expected end of
+  // a dev-server lifetime. `handleError` always console.errors the
+  // message, so calling it on shutdown floods the terminal with
+  // `Failed to execute command: bun --watch …/api.ts`-style noise that
+  // looks like a crash. Return a quiet Err instead so callers' catch
+  // chains still fire but the user doesn't see false alarms.
+  // `proc.signalCode` is e.g. 'SIGTERM'; `proc.exitCode === null` covers
+  // the case where the child died without setting an exit code.
+  const sig = (proc as unknown as { signalCode?: string | null }).signalCode
+  if (sig === 'SIGTERM' || sig === 'SIGINT' || sig === 'SIGKILL' || (proc.exitCode === null && exited !== ExitCode.Success)) {
+    return err(new Error(`Command terminated by ${sig ?? 'signal'}: ${cmd.join(' ')}`))
+  }
+
   return err(handleError(`Failed to execute command: ${italic(cmd.join(' '))} in ${italic(cwd)}`, options))
 }
 
