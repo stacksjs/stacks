@@ -54,7 +54,11 @@ export { default as PaymentProduct } from '../defaults/app/Models/PaymentProduct
 export { default as PaymentTransaction } from '../defaults/app/Models/PaymentTransaction'
 export { default as Websocket } from '../defaults/app/Models/realtime/Websocket'
 export { default as Release } from '../defaults/app/Models/Release'
-export { default as Request } from '../defaults/app/Models/Request'
+// Renamed from `Request` for the same reason as `ErrorModel` — exporting
+// it as `Request` shadows the global `Request` constructor and breaks
+// every `request instanceof Request` check in the framework's error
+// handler + router.
+export { default as RequestModel } from '../defaults/app/Models/Request'
 export { default as SocialPost } from '../defaults/app/Models/SocialPost'
 export { default as Subscriber } from '../defaults/app/Models/Subscriber'
 export { default as SubscriberEmail } from '../defaults/app/Models/SubscriberEmail'
