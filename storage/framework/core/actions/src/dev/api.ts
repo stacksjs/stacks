@@ -111,15 +111,23 @@ route.use((async (request: any, next: any) => {
 // Import routes
 await route.importRoutes()
 
-// Start server (URL shown by unified dev output). Surface EADDRINUSE with a
-// clear message — without this, the process exits with a stack trace that
-// mentions `bun.serve` and `os` errno, which sends users hunting for the
-// wrong cause when the actual fix is "another buddy dev is still running".
+// Start server. Surface EADDRINUSE with a clear message — without this,
+// the process exits with a stack trace that mentions `bun.serve` and
+// `os` errno, which sends users hunting for the wrong cause when the
+// actual fix is "another buddy dev is still running".
+//
+// `route.serve` resolves once the server is listening, so the banner
+// below only prints when the URL is actually reachable. The unified
+// `./buddy dev` runner prints its own combined banner; this one is for
+// `./buddy dev:api` invoked standalone.
 try {
   await route.serve({
     port,
     hostname: '127.0.0.1',
   })
+  // Most terminals turn `http://localhost:3008` into a click-through
+  // link; the leading newline gives the previous output room to breathe.
+  console.log(`\n  ➜  API server ready: http://localhost:${port}\n`)
 }
 catch (err: any) {
   const code = err?.code || err?.errno
