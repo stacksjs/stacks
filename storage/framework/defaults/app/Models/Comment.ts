@@ -49,6 +49,15 @@ export default defineModel({
       factory: faker => faker.lorem.paragraph(),
     },
 
+    body: {
+      required: false,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(2000),
+      },
+      factory: faker => faker.lorem.paragraph(),
+    },
+
     postTitle: {
       required: false,
       fillable: true,

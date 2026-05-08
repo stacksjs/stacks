@@ -96,122 +96,6 @@ async function safeCmsAll(db: any, table: string, orderBy = 'created_at'): Promi
   }
 }
 
-async function ensureColumn(db: any, table: string, column: string, definition: string): Promise<void> {
-  try {
-    await db.unsafe(`ALTER TABLE "${table}" ADD COLUMN "${column}" ${definition}`).execute()
-  }
-  catch {
-    // SQLite reports duplicate-column errors here when the app already has
-    // generated CMS migrations. Other drivers may reject SQLite-flavored
-    // syntax; the normal write path will surface a JSON error in that case.
-  }
-}
-
-async function ensureCmsDashboardTables(db: any): Promise<void> {
-  try {
-    await db.unsafe(`
-      CREATE TABLE IF NOT EXISTS "authors" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "name" TEXT,
-        "email" TEXT,
-        "user_id" INTEGER,
-        "created_at" TEXT not null default CURRENT_TIMESTAMP,
-        "updated_at" TEXT
-      )
-    `).execute()
-    await db.unsafe(`
-      CREATE TABLE IF NOT EXISTS "posts" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "title" TEXT,
-        "poster" TEXT,
-        "content" TEXT,
-        "excerpt" TEXT,
-        "views" REAL default 0,
-        "published_at" TEXT,
-        "status" TEXT default 'draft',
-        "is_featured" REAL,
-        "author_id" INTEGER,
-        "created_at" TEXT not null default CURRENT_TIMESTAMP,
-        "updated_at" TEXT
-      )
-    `).execute()
-    await db.unsafe(`
-      CREATE TABLE IF NOT EXISTS "pages" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "title" TEXT,
-        "template" TEXT,
-        "views" REAL default 0,
-        "published_at" TEXT,
-        "conversions" REAL default 0,
-        "author_id" INTEGER,
-        "created_at" TEXT not null default CURRENT_TIMESTAMP,
-        "updated_at" TEXT
-      )
-    `).execute()
-    await db.unsafe(`
-      CREATE TABLE IF NOT EXISTS "taggables" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "name" TEXT,
-        "slug" TEXT,
-        "description" TEXT,
-        "is_active" INTEGER default 1,
-        "taggable_id" INTEGER,
-        "taggable_type" TEXT,
-        "created_at" TEXT not null default CURRENT_TIMESTAMP,
-        "updated_at" TEXT
-      )
-    `).execute()
-    await db.unsafe(`
-      CREATE TABLE IF NOT EXISTS "categorizables" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "name" TEXT,
-        "slug" TEXT,
-        "description" TEXT,
-        "is_active" INTEGER default 1,
-        "categorizable_type" TEXT,
-        "created_at" TEXT not null default CURRENT_TIMESTAMP,
-        "updated_at" TEXT
-      )
-    `).execute()
-    await db.unsafe(`
-      CREATE TABLE IF NOT EXISTS "comments" (
-        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
-        "title" TEXT,
-        "body" TEXT,
-        "content" TEXT,
-        "status" TEXT default 'pending',
-        "author_name" TEXT,
-        "author_email" TEXT,
-        "post_title" TEXT,
-        "commentables_id" INTEGER,
-        "commentables_type" TEXT,
-        "ip_address" TEXT,
-        "user_agent" TEXT,
-        "is_approved" INTEGER default 0,
-        "approved_at" INTEGER,
-        "rejected_at" INTEGER,
-        "created_at" TEXT not null default CURRENT_TIMESTAMP,
-        "updated_at" TEXT
-      )
-    `).execute()
-
-    await Promise.all([
-      ensureColumn(db, 'comments', 'body', 'TEXT'),
-      ensureColumn(db, 'comments', 'content', 'TEXT'),
-      ensureColumn(db, 'comments', 'author_name', 'TEXT'),
-      ensureColumn(db, 'comments', 'author_email', 'TEXT'),
-      ensureColumn(db, 'comments', 'post_title', 'TEXT'),
-      ensureColumn(db, 'comments', 'ip_address', 'TEXT'),
-      ensureColumn(db, 'comments', 'user_agent', 'TEXT'),
-      ensureColumn(db, 'comments', 'is_approved', 'INTEGER default 0'),
-    ])
-  }
-  catch {
-    // If a non-SQLite driver or permissions prevent eager creation, the
-    // normal query path below still returns a clear JSON error for writes.
-  }
-}
-
 async function dashboardCmsApi(req: Request): Promise<Response | null> {
   const url = new URL(req.url)
   if (!url.pathname.startsWith('/api/dashboard/cms'))
@@ -219,7 +103,6 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
 
   try {
     const { db } = await import('@stacksjs/database')
-    await ensureCmsDashboardTables(db)
     const path = url.pathname.replace(/^\/api\/dashboard\/cms\/?/, '')
     const parts = path.split('/').filter(Boolean)
     const resource = parts[0] || ''
@@ -231,8 +114,8 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
         safeCmsAll(db, 'posts'),
         safeCmsAll(db, 'pages'),
         safeCmsAll(db, 'authors'),
-        safeCmsAll(db, 'categorizables'),
-        safeCmsAll(db, 'taggables'),
+        safeCmsAll(db, 'categories'),
+        safeCmsAll(db, 'tags'),
         safeCmsAll(db, 'comments'),
       ])
 
@@ -308,8 +191,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
     }
 
     if (resource === 'tags' || resource === 'categories') {
-      const table = resource === 'tags' ? 'taggables' : 'categorizables'
-      const typeColumn = resource === 'tags' ? 'taggable_type' : 'categorizable_type'
+      const table = resource
 
       if (req.method === 'POST') {
         const body = await cmsBody(req)
@@ -317,15 +199,21 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
         if (!name)
           return cmsJson({ ok: false, error: 'Name is required' }, { status: 422 })
 
-        let row = await db.insertInto(table).values({
+        const values: Record<string, any> = {
           name,
           slug: String(body.slug || cmsSlug(name)),
           description: String(body.description || ''),
-          is_active: body.is_active === undefined ? true : Boolean(body.is_active),
-          [typeColumn]: 'posts',
           created_at: now,
           updated_at: now,
-        }).returningAll().executeTakeFirst()
+        }
+        if (resource === 'categories')
+          values.is_active = body.is_active === undefined ? true : Boolean(body.is_active)
+        if (resource === 'tags') {
+          values.post_count = Number(body.post_count || 0)
+          values.color = String(body.color || '')
+        }
+
+        let row = await db.insertInto(table).values(values).returningAll().executeTakeFirst()
         if (!row || row.id == null) {
           row = await db.selectFrom(table).selectAll().where('name', '=', name).orderBy('id', 'desc').executeTakeFirst()
         }

@@ -86,6 +86,11 @@ function configureQueryBuilder(): void {
   resetConnection()
 }
 
+function prepareMigrationModelsDir(): { modelsDir: string, skip: boolean } {
+  const userModelsDir = path.userModelsPath()
+  return { modelsDir: userModelsDir, skip: !existsSync(userModelsDir) }
+}
+
 /**
  * SQLite compatibility preprocessing for migrations.
  *
@@ -544,8 +549,12 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
 
-    const modelsDir = path.userModelsPath()
     const dialect = getDialect()
+    const { modelsDir, skip } = prepareMigrationModelsDir()
+    if (skip) {
+      log.info('No app/Models directory found; using committed framework migrations')
+      return ok('Migrations generated')
+    }
 
     log.debug(`[migration] Generating migrations for dialect: ${dialect}, models: ${modelsDir}`)
     const result = await qbGenerateMigration(modelsDir, { dialect })
@@ -676,8 +685,12 @@ export async function generateMigrations2(): Promise<Result<string, Error>> {
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
 
-    const modelsDir = path.userModelsPath()
     const dialect = getDialect()
+    const { modelsDir, skip } = prepareMigrationModelsDir()
+    if (skip) {
+      log.info('No app/Models directory found; using committed framework migrations')
+      return ok('Migrations generated')
+    }
 
     await qbGenerateMigration(modelsDir, { dialect, full: true })
 

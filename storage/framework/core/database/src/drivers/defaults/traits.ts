@@ -339,7 +339,7 @@ export async function createCommentablesTable(options: {
   votable?: boolean
   requiresAuth?: boolean
 } = {}): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('commentables')
+  const hasBeenMigrated = await hasMigrationBeenCreated('comments')
 
   if (hasBeenMigrated)
     return
@@ -352,9 +352,16 @@ export async function createCommentablesTable(options: {
   migrationContent += `    .addColumn('id', 'integer', col => col.primaryKey().autoIncrement())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('content', 'text')\n`
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('${options.requiresApproval ? 'pending' : 'approved'}'))\n`
+  migrationContent += `    .addColumn('author_name', 'varchar(100)')\n`
+  migrationContent += `    .addColumn('author_email', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('post_title', 'varchar(255)')\n`
   migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
+  migrationContent += `    .addColumn('ip_address', 'varchar(45)')\n`
+  migrationContent += `    .addColumn('user_agent', 'varchar(500)')\n`
+  migrationContent += `    .addColumn('is_approved', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
 
@@ -388,7 +395,7 @@ export async function createCommentablesTable(options: {
 
 // PostgreSQL version
 export async function createPostgresCommentsTable(): Promise<void> {
-  const hasBeenMigrated = await hasMigrationBeenCreated('commentables')
+  const hasBeenMigrated = await hasMigrationBeenCreated('comments')
 
   if (hasBeenMigrated)
     return
@@ -401,9 +408,16 @@ export async function createPostgresCommentsTable(): Promise<void> {
   migrationContent += `    .addColumn('id', 'serial', col => col.primaryKey())\n`
   migrationContent += `    .addColumn('title', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('body', 'text', col => col.notNull())\n`
+  migrationContent += `    .addColumn('content', 'text')\n`
   migrationContent += `    .addColumn('commentables_id', 'integer', col => col.notNull())\n`
   migrationContent += `    .addColumn('commentables_type', 'varchar(255)', col => col.notNull())\n`
   migrationContent += `    .addColumn('status', 'varchar(50)', col => col.notNull().defaultTo('pending'))\n`
+  migrationContent += `    .addColumn('author_name', 'varchar(100)')\n`
+  migrationContent += `    .addColumn('author_email', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('post_title', 'varchar(255)')\n`
+  migrationContent += `    .addColumn('ip_address', 'varchar(45)')\n`
+  migrationContent += `    .addColumn('user_agent', 'varchar(500)')\n`
+  migrationContent += `    .addColumn('is_approved', 'integer', col => col.defaultTo(0))\n`
   migrationContent += `    .addColumn('approved_at', 'integer')\n`
   migrationContent += `    .addColumn('rejected_at', 'integer')\n`
   migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
