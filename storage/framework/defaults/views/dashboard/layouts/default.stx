@@ -77,13 +77,13 @@ canvas[id$="_chart"] {
 // Craft native sidebar integration
 // Maps sidebar itemIds to STX page routes for SPA navigation
 const sidebarRoutes = {
-  'home': '/home',
-  'dependencies': '/home/dependencies',
-  'services': '/home/services',
-  'components': '/library/components',
-  'functions': '/library/functions',
-  'releases': '/library/releases',
-  'packages': '/library/packages',
+  'home': '/',
+  'dependencies': '/dependencies',
+  'services': '/health',
+  'components': '/components',
+  'functions': '/functions',
+  'releases': '/releases',
+  'packages': '/packages',
   'content-dashboard': '/content/dashboard',
   'files': '/content/files',
   'pages': '/content/pages',
@@ -93,16 +93,16 @@ const sidebarRoutes = {
   'comments': '/content/comments',
   'authors': '/content/authors',
   'seo': '/content/seo',
-  'deployments': '/app/deployments',
-  'requests': '/app/requests',
-  'realtime': '/app/realtime',
-  'actions': '/app/actions',
-  'commands': '/app/commands',
-  'queue': '/app/queue',
-  'jobs': '/app/jobs',
-  'inbox': '/app/inbox',
-  'queries': '/app/queries',
-  'notifications': '/app/notifications',
+  'deployments': '/deployments',
+  'requests': '/requests',
+  'realtime': '/realtime',
+  'actions': '/actions',
+  'commands': '/commands',
+  'queue': '/queue',
+  'jobs': '/jobs',
+  'inbox': '/inbox',
+  'queries': '/queries',
+  'notifications': '/notifications/dashboard',
   'data-dashboard': '/data/dashboard',
   'activity': '/data/activity',
   'users': '/data/users',
@@ -125,27 +125,27 @@ const sidebarRoutes = {
   'analytics-web': '/analytics/web',
   'analytics-blog': '/analytics/blog',
   'analytics-goals': '/analytics/goals',
-  'analytics-commerce': '/analytics/commerce',
-  'analytics-sales': '/analytics/sales',
+  'analytics-commerce': '/analytics/commerce/web',
+  'analytics-sales': '/analytics/commerce/sales',
   'analytics-marketing': '/analytics/marketing',
-  'cloud': '/management/cloud',
-  'servers': '/management/servers',
-  'serverless': '/management/serverless',
-  'dns': '/management/dns',
+  'cloud': '/cloud',
+  'servers': '/servers',
+  'serverless': '/serverless',
+  'dns': '/dns',
   'permissions': '/management/permissions',
-  'mailboxes': '/management/mailboxes',
-  'logs': '/management/logs',
-  'buddy': '/utilities/buddy',
-  'environment': '/utilities/environment',
-  'access-tokens': '/utilities/access-tokens',
-  'settings': '/utilities/settings',
+  'mailboxes': '/mailboxes',
+  'logs': '/logs',
+  'buddy': '/buddy',
+  'environment': '/environment',
+  'access-tokens': '/access-tokens',
+  'settings': '/settings/billing',
 }
 
 // Handle Craft native sidebar selection events
 window.craft = window.craft || {}
 window.craft._sidebarSelectHandler = (event) => {
   const url = sidebarRoutes[event.itemId]
-    || (event.itemId && event.itemId.startsWith('model-') ? '/data/' + event.itemId.slice(6) : null)
+    || (event.itemId && event.itemId.startsWith('model-') ? '/models/' + event.itemId.slice(6) : null)
   if (url) {
     navigate(url)
   }

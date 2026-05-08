@@ -1,304 +1,257 @@
 @extends('layouts/default')
 
 @section('content')
-<div class="p-6 space-y-6">
-
-  <PageHeader title="Posts" description="Manage all your blog posts">
-    <template #actions>
-      <Button variant="primary" @click="openNewPostModal()">
-        <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
-        New Post
-      </Button>
-    </template>
-  </PageHeader>
-
-  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-    <StatsCard title="Total Posts" :value="totalPostsLabel" :subtitle="totalPostsSubtitle" icon="i-hugeicons-quill-write-02" iconBg="primary" />
-    <StatsCard title="Total Views" :value="totalViewsLabel" :trend="12" trendLabel="avg per post" icon="i-hugeicons-analytics-up" iconBg="success" />
-    <StatsCard title="Total Comments" :value="totalCommentsLabel" :trend="8" trendLabel="avg per post" icon="i-hugeicons-comment-01" iconBg="warning" />
-    <StatsCard title="Top Author" :value="topAuthorName" :subtitle="topAuthorSubtitle" icon="i-hugeicons-user-star-02" iconBg="info" />
-  </div>
-
-  <div class="grid gap-6 grid-cols-1 lg:grid-cols-3">
-    <div class="lg:col-span-2">
-      <ChartCard title="Post Views" height="320px">
-        <canvas id="posts_views_chart"></canvas>
-      </ChartCard>
-    </div>
-    <ChartCard title="Category Distribution" height="320px">
-      <canvas id="posts_category_chart"></canvas>
-    </ChartCard>
-  </div>
-
-  <ChartCard title="Posts & Comments">
-    <canvas id="posts_comments_chart"></canvas>
-  </ChartCard>
-
-  <div class="bg-white dark:bg-neutral-800/90 border border-black/5 rounded-xl dark:border-white/5">
-    <div class="p-4 border-b border-neutral-200/60 dark:border-white/5">
-      <FilterBar searchPlaceholder="Search posts..." :searchValue="searchQuery">
-        <Select placeholder="All Categories" :options="categoryOptions" size="sm" />
-        <Select placeholder="All Statuses" :options="statusOptions" size="sm" />
-      </FilterBar>
-    </div>
-
-    <DataTable :columns="tableColumns" :data="paginatedPosts" emptyTitle="No posts found" emptyDescription="Try adjusting your search or filters" emptyIcon="i-hugeicons-quill-write-02">
-      @foreach(paginatedPosts() as post)
-        <tr class="hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-          <td class="px-4 py-3">
-            <div class="overflow-hidden h-14 w-24 bg-neutral-100 dark:bg-neutral-700 rounded">
-              <img src="{{ post.poster }}" alt="{{ post.title }}" class="object-cover h-full w-full" />
-            </div>
-          </td>
-          <td class="px-4 py-3">
-            <div class="font-medium text-[13px] text-neutral-900 dark:text-white">{{ post.title }}</div>
-            <div class="mt-0.5 max-w-sm text-[12px] text-neutral-500 truncate dark:text-neutral-400">{{ post.excerpt }}</div>
-            <div class="flex flex-wrap gap-1 mt-1.5">
-              @foreach(post.tags as tag)
-                <Badge variant="primary" size="xs">{{ tag }}</Badge>
-              @endforeach
-            </div>
-          </td>
-          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ post.author }}</td>
-          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ post.category }}</td>
-          <td class="px-4 py-3 text-[13px] text-neutral-600 dark:text-neutral-300">{{ post.views.toLocaleString() }}</td>
-          <td class="px-4 py-3 text-[12px] text-neutral-500 dark:text-neutral-400">{{ formatDate(post.published) }}</td>
-          <td class="px-4 py-3">
-            <Badge :variant="statusVariant(post.status)" size="sm">{{ post.status }}</Badge>
-          </td>
-          <td class="px-4 py-3">
-            <div class="flex gap-1 items-center">
-              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-view"></div></Button>
-              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 i-hugeicons-edit-01"></div></Button>
-              <Button variant="ghost" size="xs" iconOnly><div class="h-4 w-4 text-red-500 i-hugeicons-waste"></div></Button>
-            </div>
-          </td>
-        </tr>
-      @endforeach
-    </DataTable>
-
-    <div class="p-4 border-neutral-200/60 border-t dark:border-white/5">
-      <Pagination :currentPage="currentPage" :totalPages="totalPages" :totalItems="totalFiltered" :itemsPerPage="itemsPerPage" showItemsPerPage />
-    </div>
-  </div>
-
-  <Modal :isOpen="showNewPostModal" title="Create New Post" size="lg" data-new-post-modal>
-    <form class="space-y-4">
-      <Input label="Title" name="title" placeholder="Post title" required />
-      <Textarea label="Excerpt" name="excerpt" placeholder="Brief description" />
-      <div class="grid gap-4 grid-cols-2">
-        <Select label="Category" :options="newPostCategoryOptions" />
-        <Select label="Status" :options="newPostStatusOptions" />
+<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+  <div class="mx-auto flex max-w-7xl flex-col gap-6">
+    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Posts</h1>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Create, edit, publish, and remove content backed by the Stacks CMS tables.</p>
       </div>
-      <Input label="Tags" name="tags" placeholder="e.g. JavaScript, Web Development" hint="Comma separated" />
-      <Textarea label="Content" name="content" />
-      <div class="flex gap-2 justify-end pt-4 border-neutral-200 border-t dark:border-neutral-700">
-        <Button variant="secondary" @click="closeNewPostModal()" data-modal-close>Cancel</Button>
-        <Button variant="primary" type="submit">Create Post</Button>
+      <div class="flex flex-wrap gap-2">
+        <a href="/blog" target="_blank" class="inline-flex items-center gap-2 rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-white dark:border-neutral-700 dark:hover:bg-neutral-900">
+          <span class="i-hugeicons-view h-4 w-4"></span>
+          View Blog
+        </a>
+        <button id="new-post-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+          <span class="i-hugeicons-plus-sign h-4 w-4"></span>
+          New Post
+        </button>
       </div>
-    </form>
-  </Modal>
+    </header>
+
+    <section class="grid gap-4 md:grid-cols-4">
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Posts</p>
+        <p id="stat-total" class="mt-2 text-3xl font-semibold">0</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Published</p>
+        <p id="stat-published" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Drafts</p>
+        <p id="stat-drafts" class="mt-2 text-3xl font-semibold text-amber-600 dark:text-amber-400">0</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Views</p>
+        <p id="stat-views" class="mt-2 text-3xl font-semibold">0</p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div class="flex flex-col gap-3 border-b border-neutral-200 p-4 dark:border-neutral-800 md:flex-row md:items-center md:justify-between">
+        <div class="relative max-w-md flex-1">
+          <span class="i-hugeicons-search-01 pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-neutral-400"></span>
+          <input id="post-search" type="search" placeholder="Search posts..." class="w-full rounded-md border border-neutral-300 bg-white py-2 pl-9 pr-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+        </div>
+        <select id="post-status-filter" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+          <option value="">All statuses</option>
+          <option value="published">Published</option>
+          <option value="draft">Draft</option>
+          <option value="archived">Archived</option>
+        </select>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
+          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+            <tr>
+              <th class="px-4 py-3">Title</th>
+              <th class="px-4 py-3">Status</th>
+              <th class="px-4 py-3">Views</th>
+              <th class="px-4 py-3">Published</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="posts-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+        </table>
+      </div>
+
+      <div id="posts-empty" class="hidden p-10 text-center">
+        <div class="mx-auto h-10 w-10 text-neutral-400 i-hugeicons-quill-write-02"></div>
+        <h2 class="mt-3 text-sm font-semibold">No posts found</h2>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Create a draft to get the CMS moving.</p>
+      </div>
+    </section>
+  </div>
 </div>
 
-<script client>
+<dialog id="post-dialog" class="w-full max-w-3xl rounded-lg border border-neutral-200 bg-white p-0 text-neutral-950 shadow-xl backdrop:bg-black/40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
+  <form id="post-form" method="dialog" class="flex flex-col">
+    <div class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <h2 id="post-dialog-title" class="text-lg font-semibold">New Post</h2>
+      <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Markdown works well here; the public blog reads from the same content field.</p>
+    </div>
+    <div class="grid gap-4 p-5">
+      <input id="post-id" type="hidden" />
+      <label class="grid gap-1 text-sm font-medium">
+        Title
+        <input id="post-title" required class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+      </label>
+      <label class="grid gap-1 text-sm font-medium">
+        Excerpt
+        <textarea id="post-excerpt" rows="2" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950"></textarea>
+      </label>
+      <div class="grid gap-4 md:grid-cols-2">
+        <label class="grid gap-1 text-sm font-medium">
+          Status
+          <select id="post-status" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+            <option value="draft">Draft</option>
+            <option value="published">Published</option>
+            <option value="archived">Archived</option>
+          </select>
+        </label>
+        <label class="grid gap-1 text-sm font-medium">
+          Poster URL
+          <input id="post-poster" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+        </label>
+      </div>
+      <label class="grid gap-1 text-sm font-medium">
+        Content
+        <textarea id="post-content" rows="12" class="rounded-md border border-neutral-300 bg-white px-3 py-2 font-mono text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950"></textarea>
+      </label>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <button id="post-cancel" type="button" class="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium hover:bg-neutral-50 dark:border-neutral-700 dark:hover:bg-neutral-800">Cancel</button>
+      <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Save Post</button>
+    </div>
+  </form>
+</dialog>
 
-interface BlogPost {
-  id: number
-  title: string
-  excerpt: string
-  slug: string
-  category: string
-  tags: string[]
-  author: string
-  views: number
-  comments: number
-  published: string
-  status: string
-  featured: boolean
-  poster: string
-}
+<script>
+;(function () {
+  var api = '/api/dashboard/cms'
+  var posts = []
+  var table = document.getElementById('posts-table')
+  var empty = document.getElementById('posts-empty')
+  var dialog = document.getElementById('post-dialog')
+  var form = document.getElementById('post-form')
+  var search = document.getElementById('post-search')
+  var statusFilter = document.getElementById('post-status-filter')
 
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+  function $(id) { return document.getElementById(id) }
+  function text(value) { return value == null || value === '' ? '-' : String(value) }
+  function statusClass(status) {
+    if (status === 'published') return 'bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-200'
+    if (status === 'archived') return 'bg-neutral-200 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300'
+    return 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-200'
+  }
+  function fmtDate(value) {
+    if (!value) return '-'
+    var date = new Date(value)
+    if (Number.isNaN(date.getTime())) return String(value)
+    return date.toLocaleDateString()
+  }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
+    })
+  }
+  function filteredPosts() {
+    var q = (search.value || '').toLowerCase()
+    var s = statusFilter.value
+    return posts.filter(function (post) {
+      var haystack = [post.title, post.excerpt, post.content].join(' ').toLowerCase()
+      return (!q || haystack.indexOf(q) !== -1) && (!s || post.status === s)
+    })
+  }
+  function renderStats() {
+    var published = posts.filter(function (p) { return p.status === 'published' }).length
+    var drafts = posts.filter(function (p) { return p.status === 'draft' }).length
+    var views = posts.reduce(function (sum, p) { return sum + Number(p.views || 0) }, 0)
+    $('stat-total').textContent = String(posts.length)
+    $('stat-published').textContent = String(published)
+    $('stat-drafts').textContent = String(drafts)
+    $('stat-views').textContent = views.toLocaleString()
+  }
+  function render() {
+    renderStats()
+    var rows = filteredPosts()
+    empty.classList.toggle('hidden', rows.length > 0)
+    table.innerHTML = rows.map(function (post) {
+      return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
+        '<td class="px-4 py-3"><div class="font-medium">' + escapeHtml(post.title) + '</div><div class="mt-1 max-w-xl truncate text-xs text-neutral-500 dark:text-neutral-400">' + escapeHtml(post.excerpt || post.content || '') + '</div></td>' +
+        '<td class="px-4 py-3"><span class="inline-flex rounded-full px-2 py-0.5 text-xs font-medium ' + statusClass(post.status) + '">' + escapeHtml(post.status || 'draft') + '</span></td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + Number(post.views || 0).toLocaleString() + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + fmtDate(post.published_at || post.created_at) + '</td>' +
+        '<td class="px-4 py-3"><div class="flex justify-end gap-1">' +
+        '<button type="button" class="rounded p-2 hover:bg-neutral-100 dark:hover:bg-neutral-800" data-action="edit" data-id="' + post.id + '" title="Edit"><span class="block h-4 w-4 i-hugeicons-edit-01"></span></button>' +
+        '<button type="button" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40" data-action="delete" data-id="' + post.id + '" title="Delete"><span class="block h-4 w-4 i-hugeicons-waste"></span></button>' +
+        '</div></td>' +
+      '</tr>'
+    }).join('')
+  }
+  async function load() {
+    var res = await fetch(api)
+    var json = await res.json()
+    posts = Array.isArray(json.posts) ? json.posts : []
+    render()
+  }
+  function openPost(post) {
+    $('post-dialog-title').textContent = post ? 'Edit Post' : 'New Post'
+    $('post-id').value = post ? post.id : ''
+    $('post-title').value = post ? post.title || '' : ''
+    $('post-excerpt').value = post ? post.excerpt || '' : ''
+    $('post-status').value = post ? post.status || 'draft' : 'draft'
+    $('post-poster').value = post ? post.poster || '' : ''
+    $('post-content').value = post ? post.content || '' : ''
+    dialog.showModal()
+  }
+  async function savePost(event) {
+    event.preventDefault()
+    var id = $('post-id').value
+    var payload = {
+      title: $('post-title').value,
+      excerpt: $('post-excerpt').value,
+      status: $('post-status').value,
+      poster: $('post-poster').value,
+      content: $('post-content').value,
+    }
+    var res = await fetch(id ? api + '/posts/' + id : api + '/posts', {
+      method: id ? 'PATCH' : 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) {
+      var err = await res.json().catch(function () { return {} })
+      alert(err.error || 'Could not save post')
+      return
+    }
+    dialog.close()
+    await load()
+  }
+  async function deletePost(id) {
+    if (!confirm('Delete this post?')) return
+    var res = await fetch(api + '/posts/' + id, { method: 'DELETE' })
+    if (!res.ok) {
+      alert('Could not delete post')
+      return
+    }
+    await load()
+  }
 
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-
-const posts = state<BlogPost[]>([
-  { id: 1, title: '10 Tips for Better Code Quality', excerpt: 'Improve your code quality with these essential tips.', slug: '10-tips-for-better-code-quality', category: 'Tutorials', tags: ['Coding', 'Best Practices'], author: 'Jane Doe', views: 12450, comments: 78, published: '2023-12-01', status: 'Published', featured: true, poster: 'https://picsum.photos/seed/1/280/160' },
-  { id: 2, title: 'The Future of JavaScript Frameworks', excerpt: 'Exploring what\'s next for JS frameworks.', slug: 'future-of-javascript-frameworks', category: 'Technology', tags: ['JavaScript', 'Frameworks'], author: 'John Smith', views: 9870, comments: 124, published: '2023-11-28', status: 'Published', featured: true, poster: 'https://picsum.photos/seed/2/280/160' },
-  { id: 3, title: 'Getting Started with Vue 3', excerpt: 'A comprehensive guide to Vue 3 composition API.', slug: 'getting-started-with-vue-3', category: 'Tutorials', tags: ['Vue', 'JavaScript'], author: 'Jane Doe', views: 8760, comments: 45, published: '2023-11-25', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/3/280/160' },
-  { id: 4, title: 'Review: Latest MacBook Pro', excerpt: 'In-depth review for developers.', slug: 'review-latest-macbook-pro', category: 'Reviews', tags: ['Hardware', 'Apple'], author: 'Michael Brown', views: 7650, comments: 92, published: '2023-11-20', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/4/280/160' },
-  { id: 5, title: 'Understanding Web Accessibility', excerpt: 'Why accessibility matters and how to implement it.', slug: 'understanding-web-accessibility', category: 'Tutorials', tags: ['Accessibility', 'UX'], author: 'Emily Davis', views: 6540, comments: 31, published: '2023-11-15', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/5/280/160' },
-  { id: 6, title: 'Introduction to TypeScript', excerpt: 'Learn the basics of TypeScript.', slug: 'introduction-to-typescript', category: 'Tutorials', tags: ['TypeScript', 'JavaScript'], author: 'Jane Doe', views: 0, comments: 0, published: '', status: 'Draft', featured: false, poster: 'https://picsum.photos/seed/6/280/160' },
-  { id: 7, title: 'Building a REST API with Node.js', excerpt: 'Step-by-step guide to building REST APIs.', slug: 'building-rest-api-nodejs', category: 'Tutorials', tags: ['Node.js', 'API'], author: 'John Smith', views: 0, comments: 0, published: '', status: 'Draft', featured: false, poster: 'https://picsum.photos/seed/7/280/160' },
-  { id: 8, title: 'The Impact of AI on Software Development', excerpt: 'How AI is changing software development.', slug: 'ai-impact-software-development', category: 'Technology', tags: ['AI', 'Future Tech'], author: 'Michael Brown', views: 5430, comments: 67, published: '2023-11-10', status: 'Published', featured: false, poster: 'https://picsum.photos/seed/8/280/160' },
-])
-
-const statuses = ['All Statuses', 'Published', 'Draft', 'Scheduled', 'Archived']
-const categories = [
-  { id: 0, name: 'All Categories' },
-  { id: 1, name: 'Tutorials' },
-  { id: 2, name: 'Technology' },
-  { id: 3, name: 'Reviews' },
-]
-
-const searchQuery = state('')
-const selectedCategory = state('All Categories')
-const selectedStatus = state('All Statuses')
-const currentPage = state(1)
-const itemsPerPage = state(10)
-const showNewPostModal = state(false)
-
-const tableColumns = [
-  { key: 'poster', label: '' },
-  { key: 'title', label: 'Title' },
-  { key: 'author', label: 'Author' },
-  { key: 'category', label: 'Category' },
-  { key: 'views', label: 'Views' },
-  { key: 'published', label: 'Published' },
-  { key: 'status', label: 'Status' },
-  { key: 'actions', label: '' },
-]
-
-const categoryOptions = categories.map(c => ({ value: c.name, label: c.name }))
-const statusOptions = statuses.map(s => ({ value: s, label: s }))
-const newPostCategoryOptions = categories.filter(c => c.name !== 'All Categories').map(c => ({ value: c.name, label: c.name }))
-const newPostStatusOptions = ['Draft', 'Published', 'Scheduled'].map(s => ({ value: s, label: s }))
-
-const filteredPosts = derived(() => {
-  const list = posts()
-  const q = searchQuery().toLowerCase()
-  const cat = selectedCategory()
-  const status = selectedStatus()
-  return list.filter((p) => {
-    const matchesSearch = p.title.toLowerCase().includes(q) || p.author.toLowerCase().includes(q)
-    const matchesCategory = cat === 'All Categories' || p.category === cat
-    const matchesStatus = status === 'All Statuses' || p.status === status
-    return matchesSearch && matchesCategory && matchesStatus
+  document.getElementById('new-post-button').addEventListener('click', function () { openPost(null) })
+  document.getElementById('post-cancel').addEventListener('click', function () { dialog.close() })
+  form.addEventListener('submit', savePost)
+  search.addEventListener('input', render)
+  statusFilter.addEventListener('change', render)
+  table.addEventListener('click', function (event) {
+    var button = event.target.closest('button[data-action]')
+    if (!button) return
+    var id = Number(button.getAttribute('data-id'))
+    if (button.getAttribute('data-action') === 'edit')
+      openPost(posts.find(function (post) { return Number(post.id) === id }))
+    if (button.getAttribute('data-action') === 'delete')
+      deletePost(id)
   })
-})
 
-const paginatedPosts = derived(() => {
-  const start = (currentPage() - 1) * itemsPerPage()
-  return filteredPosts().slice(start, start + itemsPerPage())
-})
-
-const totalPages = derived(() => Math.max(1, Math.ceil(filteredPosts().length / itemsPerPage())))
-const totalFiltered = derived(() => filteredPosts().length)
-
-const publishedPosts = derived(() => posts().filter(p => p.status === 'Published'))
-const totalPostsLabel = derived(() => String(posts().length))
-const totalPostsSubtitle = derived(() => `${publishedPosts().length} published, ${posts().length - publishedPosts().length} drafts`)
-const totalViewsLabel = derived(() => publishedPosts().reduce((sum, p) => sum + p.views, 0).toLocaleString())
-const totalCommentsLabel = derived(() => String(publishedPosts().reduce((sum, p) => sum + p.comments, 0)))
-
-const topAuthor = derived(() => {
-  const counts: Record<string, number> = {}
-  posts().forEach((p) => { counts[p.author] = (counts[p.author] || 0) + 1 })
-  let top = { name: 'None', count: 0 }
-  for (const [author, count] of Object.entries(counts)) {
-    if (count > top.count)
-      top = { name: author, count }
-  }
-  return top
-})
-
-const topAuthorName = derived(() => topAuthor().name)
-const topAuthorSubtitle = derived(() => `${topAuthor().count} posts`)
-
-const categoryChartData = derived(() => {
-  const counts: Record<string, number> = {}
-  posts().forEach((p) => { if (p.category) counts[p.category] = (counts[p.category] || 0) + 1 })
-  return {
-    labels: Object.keys(counts),
-    datasets: [{
-      data: Object.values(counts),
-      backgroundColor: ['rgba(59,130,246,0.8)', 'rgba(16,185,129,0.8)', 'rgba(245,158,11,0.8)', 'rgba(239,68,68,0.8)'],
-      borderWidth: 0,
-    }],
-  }
-})
-
-const viewsChartData = {
-  labels: months,
-  datasets: [{
-    label: 'Post Views',
-    backgroundColor: 'rgba(59, 130, 246, 0.2)',
-    borderColor: 'rgba(59, 130, 246, 1)',
-    borderWidth: 2,
-    fill: true,
-    tension: 0.4,
-    data: [2500, 3200, 2800, 3600, 4100, 3800, 4500, 5200, 5800, 5400, 6200, 6800],
-  }],
-}
-
-const postsCommentsChartData = {
-  labels: months,
-  datasets: [
-    { label: 'Posts Published', backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 4, data: [4, 6, 5, 7, 8, 6, 9, 10, 12, 9, 11, 14] },
-    { label: 'Comments', backgroundColor: 'rgba(245, 158, 11, 0.8)', borderRadius: 4, data: [35, 42, 38, 45, 52, 48, 56, 62, 68, 58, 72, 78] },
-  ],
-}
-
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-  scales: {
-    y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } },
-    x: { grid: { display: false } },
-  },
-}
-
-const doughnutChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: true, position: 'bottom' } },
-}
-
-let chartHandles: Array<{ destroy: () => void }> = []
-
-function formatDate(dateString: string): string {
-  if (!dateString)
-    return 'Not published'
-  return new Date(dateString).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
-}
-
-function statusVariant(status: string): string {
-  if (status === 'Published')
-    return 'success'
-  if (status === 'Draft')
-    return 'warning'
-  if (status === 'Scheduled')
-    return 'primary'
-  return 'default'
-}
-
-function openNewPostModal(): void {
-  showNewPostModal.set(true)
-}
-
-function closeNewPostModal(): void {
-  showNewPostModal.set(false)
-}
-
-onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
-  Chart.register(...registerables)
-  const Ctor = Chart as unknown as ChartCtor
-
-  const handles = [
-    useChart({ Chart: Ctor, id: 'posts_views_chart', type: 'line', data: viewsChartData, options: chartOptions }),
-    useChart({ Chart: Ctor, id: 'posts_category_chart', type: 'doughnut', data: categoryChartData(), options: doughnutChartOptions }),
-    useChart({ Chart: Ctor, id: 'posts_comments_chart', type: 'bar', data: postsCommentsChartData, options: chartOptions }),
-  ]
-  chartHandles = handles.map(h => h.instance).filter((c): c is ChartLike => c !== null)
-})
-
-onDestroy(() => {
-  chartHandles.forEach(c => c.destroy())
-  chartHandles = []
-})
+  load().catch(function (error) {
+    empty.classList.remove('hidden')
+    empty.querySelector('p').textContent = error.message || 'Unable to load CMS posts.'
+  })
+})()
 </script>
 
 @endsection

@@ -1,459 +1,147 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
-</script>
-
-<div class="p-6 space-y-6">
-  <div class="flex items-center justify-between">
-    <PageHeader title="Tags" description="Manage all your blog tags" />
-    <button @click="openNewTagModal()" class="inline-flex items-center gap-2 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
-      <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
-      New Tag
-    </button>
-  </div>
-
-  <div class="flex items-center justify-between mt-4">
-    <p class="text-gray-500 text-sm dark:text-neutral-400">Overview of your blog tags</p>
-    <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-      @foreach(timeRanges as range)
-        <option value="{{ range }}">{{ range }}</option>
-      @endforeach
-    </select>
-  </div>
-
-  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Tags</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalTags }}</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>{{ newestTagName }} added recently</span>
-      </dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Posts</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPosts }}</dd>
-      <dd class="flex items-center mt-2 text-gray-500 text-sm dark:text-neutral-400">
-        <span>{{ avgPostsPerTag }} avg per tag</span>
-      </dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Top Tag</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ topTagName }}</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>{{ topTagCount }} posts ({{ topTagPercentage }}%)</span>
-      </dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Least Used Tag</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ leastTagName }}</dd>
-      <dd class="flex items-center mt-2 text-gray-500 text-sm dark:text-neutral-400">
-        <span>{{ leastTagCount }} posts</span>
-      </dd>
-    </div>
-  </dl>
-
-  <div class="grid gap-5 grid-cols-1 lg:grid-cols-3 mt-8">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Tag Growth</h3>
-        <div class="mt-2 h-80"><canvas id="tag_growth_chart"></canvas></div>
+<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+  <div class="mx-auto flex max-w-6xl flex-col gap-6">
+    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Tags</h1>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Manage the tags used by blog posts and markdown content.</p>
       </div>
-    </div>
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Posts per Tag</h3>
-        <div class="mt-2 h-80"><canvas id="tag_posts_chart"></canvas></div>
-      </div>
-    </div>
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Tag Distribution</h3>
-        <div class="mt-2 h-80"><canvas id="tag_distribution_chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8">
-    <div class="relative max-w-sm">
-      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-        <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
-      </div>
-      <input x-model="searchQuery" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset" placeholder="Search tags..." />
-    </div>
-
-    <div class="flex flex-col gap-4 sm:flex-row">
-      <select x-model="sortBy" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-        <option value="name">Sort by Name</option>
-        <option value="postCount">Sort by Post Count</option>
-        <option value="created_at">Sort by Created Date</option>
-      </select>
-      <select x-model="sortOrder" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-      <select x-model="itemsPerPage" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-        <option value="5">5 per page</option>
-        <option value="10">10 per page</option>
-        <option value="25">25 per page</option>
-        <option value="50">50 per page</option>
-      </select>
-    </div>
-  </div>
-
-  <div :show="hasSelectedTags" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center">
-        <div class="mr-2 h-5 w-5 text-blue-400 i-hugeicons-checkmark-circle-02"></div>
-        <span class="text-blue-800 text-sm dark:text-blue-300">{{ selectedCount }} tags selected</span>
-      </div>
-      <button @click="confirmDeleteSelected()" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-red-600 text-sm dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 ring-1 ring-inset ring-red-300 rounded-md dark:ring-red-500/30 shadow-sm">
-        <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
-        Delete Selected
+      <button id="new-tag-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+        <span class="i-hugeicons-plus-sign h-4 w-4"></span>
+        New Tag
       </button>
-    </div>
-  </div>
+    </header>
 
-  <div class="flow-root mt-6">
-    <div class="sm:flex sm:items-center sm:justify-between mb-4">
-      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">All Tags</h3>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">A list of all blog tags.</p>
-    </div>
-    <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-neutral-700 shadow">
-      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-        <thead class="bg-gray-50 dark:bg-neutral-700/50">
-          <tr>
-            <th class="relative px-4 py-3.5 sm:px-6">
-              <input type="checkbox" :checked="selectAll" @change="toggleSelectAll()" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-            </th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Name</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Description</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Slug</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Posts</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Created</th>
-            <th class="relative px-4 py-3.5"><span class="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="tag in paginatedTags()">
-            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-              <td class="relative px-4 py-4 sm:px-6 whitespace-nowrap">
-                <input type="checkbox" :checked="isTagSelected(tag.id)" @change="toggleTagSelection(tag.id)" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900 text-sm dark:text-white">{{ tag.name }}</div>
-              </td>
-              <td class="px-4 py-4">
-                <div class="max-w-xs text-gray-500 text-sm truncate dark:text-neutral-300">{{ tag.description }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-gray-500 text-sm dark:text-neutral-300">{{ tag.slug }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-gray-500 text-sm dark:text-neutral-300">{{ tag.postCount }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-gray-500 text-sm dark:text-neutral-300">{{ tag.created_at }}</div>
-              </td>
-              <td class="px-4 py-4 font-medium text-right text-sm whitespace-nowrap">
-                <div class="flex justify-end space-x-2">
-                  <button class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                    <div class="h-5 w-5 i-hugeicons-edit-01"></div>
-                  </button>
-                  <button @click="confirmDeleteTag(tag)" class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                    <div class="h-5 w-5 i-hugeicons-waste"></div>
-                  </button>
-                </div>
-              </td>
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Tags</p>
+        <p id="tag-total" class="mt-2 text-3xl font-semibold">0</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Newest</p>
+        <p id="tag-newest" class="mt-2 truncate text-2xl font-semibold">-</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Active</p>
+        <p id="tag-active" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div class="border-b border-neutral-200 p-4 dark:border-neutral-800">
+        <input id="tag-search" type="search" placeholder="Search tags..." class="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
+          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+            <tr>
+              <th class="px-4 py-3">Name</th>
+              <th class="px-4 py-3">Slug</th>
+              <th class="px-4 py-3">Description</th>
+              <th class="px-4 py-3 text-right">Actions</th>
             </tr>
-          </template>
-          <tr :show="paginatedTags().length === 0">
-            <td colspan="7" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No tags found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div :show="totalPages() > 1" class="flex items-center justify-between mt-6">
-    <p class="text-gray-700 text-sm dark:text-neutral-300">
-      Showing {{ pageStart }} to {{ pageEnd }} of {{ totalFiltered }} results
-    </p>
-    <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate">
-      <button @click="prevPage()" :disabled="currentPage() === 1" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed">
-        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
-      </button>
-      <button @click="nextPage()" :disabled="currentPage() === totalPages()" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed">
-        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
-      </button>
-    </nav>
-  </div>
-
-  <div :show="showNewTagModal" class="relative z-10">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">New Tag</h3>
-          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create a new tag for your blog posts.</p>
-          <div class="mt-5 space-y-4">
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Name</label>
-              <input x-model="newTagName" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="e.g. JavaScript" />
-            </div>
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Slug</label>
-              <input x-model="newTagSlug" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="e.g. javascript" />
-            </div>
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Description</label>
-              <textarea x-model="newTagDescription" rows="3" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="Describe this tag..."></textarea>
-            </div>
-          </div>
-          <div class="sm:grid sm:gap-3 sm:grid-cols-2 mt-5 sm:mt-6">
-            <button type="button" @click="closeNewTagModal()" class="inline-flex justify-center px-3 py-2 sm:col-start-1 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-            <button type="button" @click="createTag()" :disabled="!newTagName()" class="inline-flex justify-center px-3 py-2 sm:col-start-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 shadow-sm">Create</button>
-          </div>
-        </div>
+          </thead>
+          <tbody id="tags-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+        </table>
       </div>
-    </div>
-  </div>
-
-  <div :show="showDeleteModal" class="relative z-10">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">{{ selectedCount > 1 ? 'Delete Tags' : 'Delete Tag' }}</h3>
-          <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Are you sure? This action cannot be undone.</p>
-          <div class="sm:flex sm:flex-row-reverse mt-5">
-            <button type="button" @click="deleteSelectedTags()" class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md shadow-sm">Delete</button>
-            <button type="button" @click="closeDeleteModal()" class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <div id="tags-empty" class="hidden p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">No tags found.</div>
+    </section>
   </div>
 </div>
 
-<script client>
+<dialog id="tag-dialog" class="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-0 text-neutral-950 shadow-xl backdrop:bg-black/40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
+  <form id="tag-form" method="dialog">
+    <div class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <h2 class="text-lg font-semibold">New Tag</h2>
+    </div>
+    <div class="grid gap-4 p-5">
+      <label class="grid gap-1 text-sm font-medium">Name <input id="tag-name" required class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
+      <label class="grid gap-1 text-sm font-medium">Slug <input id="tag-slug" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
+      <label class="grid gap-1 text-sm font-medium">Description <textarea id="tag-description" rows="3" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"></textarea></label>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <button id="tag-cancel" type="button" class="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium dark:border-neutral-700">Cancel</button>
+      <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Create Tag</button>
+    </div>
+  </form>
+</dialog>
 
-interface Tag {
-  id: number
-  name: string
-  description: string
-  slug: string
-  postCount: number
-  created_at: string
-}
-
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const palette = [
-  'rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)',
-  'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(236, 72, 153, 0.8)',
-  'rgba(75, 85, 99, 0.8)', 'rgba(14, 165, 233, 0.8)', 'rgba(168, 85, 247, 0.8)',
-  'rgba(249, 115, 22, 0.8)', 'rgba(234, 88, 12, 0.8)', 'rgba(217, 119, 6, 0.8)',
-]
-
-const tags = state<Tag[]>([])
-const timeRange = state('Last 30 days')
-const searchQuery = state('')
-const sortBy = state('postCount')
-const sortOrder = state('desc')
-const itemsPerPage = state(10)
-const currentPage = state(1)
-const showNewTagModal = state(false)
-const showDeleteModal = state(false)
-const newTagName = state('')
-const newTagSlug = state('')
-const newTagDescription = state('')
-const selectedTagIds = state<number[]>([])
-const selectAll = state(false)
-const tagToDelete = state<Tag | null>(null)
-
-const filteredTags = derived(() => {
-  let result = [...tags()]
-  const q = searchQuery().toLowerCase()
-  if (q) {
-    result = result.filter(t =>
-      t.name.toLowerCase().includes(q) || (t.description ?? '').toLowerCase().includes(q),
-    )
+<script>
+;(function () {
+  var api = '/api/dashboard/cms'
+  var tags = []
+  var table = document.getElementById('tags-table')
+  var empty = document.getElementById('tags-empty')
+  var dialog = document.getElementById('tag-dialog')
+  var search = document.getElementById('tag-search')
+  function $(id) { return document.getElementById(id) }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
+    })
   }
-  result.sort((a, b) => {
-    const field = sortBy() as keyof Tag
-    let av: unknown = a[field]
-    let bv: unknown = b[field]
-    if (typeof av === 'string' && typeof bv === 'string') {
-      av = av.toLowerCase()
-      bv = bv.toLowerCase()
-    }
-    if (sortOrder() === 'asc')
-      return (av as number | string) > (bv as number | string) ? 1 : -1
-    return (av as number | string) < (bv as number | string) ? 1 : -1
+  function slug(value) {
+    return String(value || '').trim().toLowerCase().replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  }
+  function render() {
+    var q = search.value.toLowerCase()
+    var rows = tags.filter(function (tag) {
+      return !q || [tag.name, tag.slug, tag.description].join(' ').toLowerCase().indexOf(q) !== -1
+    })
+    $('tag-total').textContent = String(tags.length)
+    $('tag-active').textContent = String(tags.filter(function (t) { return t.is_active !== false && t.is_active !== 0 }).length)
+    $('tag-newest').textContent = tags[0] ? tags[0].name : '-'
+    empty.classList.toggle('hidden', rows.length > 0)
+    table.innerHTML = rows.map(function (tag) {
+      return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
+        '<td class="px-4 py-3 font-medium">' + escapeHtml(tag.name) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(tag.slug) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(tag.description) + '</td>' +
+        '<td class="px-4 py-3 text-right"><button type="button" data-id="' + tag.id + '" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"><span class="block h-4 w-4 i-hugeicons-waste"></span></button></td>' +
+      '</tr>'
+    }).join('')
+  }
+  async function load() {
+    var res = await fetch(api)
+    var json = await res.json()
+    tags = Array.isArray(json.tags) ? json.tags : []
+    render()
+  }
+  document.getElementById('new-tag-button').addEventListener('click', function () {
+    $('tag-name').value = ''
+    $('tag-slug').value = ''
+    $('tag-description').value = ''
+    dialog.showModal()
   })
-  return result
-})
-
-const totalPages = derived(() => Math.max(1, Math.ceil(filteredTags().length / Number(itemsPerPage()))))
-const totalFiltered = derived(() => filteredTags().length)
-const paginatedTags = derived(() => {
-  const per = Number(itemsPerPage())
-  const start = (currentPage() - 1) * per
-  return filteredTags().slice(start, start + per)
-})
-const pageStart = derived(() => (currentPage() - 1) * Number(itemsPerPage()) + 1)
-const pageEnd = derived(() => Math.min(currentPage() * Number(itemsPerPage()), filteredTags().length))
-
-const totalTags = derived(() => tags().length)
-const totalPosts = derived(() => tags().reduce((s, t) => s + t.postCount, 0))
-const avgPostsPerTag = derived(() => totalTags() > 0 ? (totalPosts() / totalTags()).toFixed(1) : '0.0')
-const topTag = derived(() => tags().reduce((top, t) => t.postCount > top.postCount ? t : top, { name: 'None', postCount: 0 } as Tag))
-const leastTag = derived(() => tags().reduce((least, t) => t.postCount < least.postCount ? t : least, tags()[0] ?? { name: 'None', postCount: 0 } as Tag))
-const newestTag = derived(() => tags().reduce((newest, t) => new Date(t.created_at).getTime() > new Date(newest.created_at ?? '').getTime() ? t : newest, tags()[0] ?? { name: 'None', created_at: '' } as Tag))
-
-const topTagName = derived(() => topTag().name)
-const topTagCount = derived(() => topTag().postCount)
-const topTagPercentage = derived(() => totalPosts() > 0 ? ((topTag().postCount / totalPosts()) * 100).toFixed(1) : '0.0')
-const leastTagName = derived(() => leastTag().name)
-const leastTagCount = derived(() => leastTag().postCount)
-const newestTagName = derived(() => newestTag().name)
-const selectedCount = derived(() => selectedTagIds().length)
-const hasSelectedTags = derived(() => selectedTagIds().length > 0)
-
-function isTagSelected(id: number) {
-  return selectedTagIds().includes(id)
-}
-
-function toggleSelectAll() {
-  const next = !selectAll()
-  selectAll.set(next)
-  selectedTagIds.set(next ? paginatedTags().map(t => t.id) : [])
-}
-
-function toggleTagSelection(id: number) {
-  const list = selectedTagIds()
-  selectedTagIds.set(list.includes(id) ? list.filter(x => x !== id) : [...list, id])
-}
-
-function openNewTagModal() {
-  newTagName.set('')
-  newTagSlug.set('')
-  newTagDescription.set('')
-  showNewTagModal.set(true)
-}
-
-function closeNewTagModal() {
-  showNewTagModal.set(false)
-}
-
-function createTag() {
-  if (!newTagName())
-    return
-  const slug = newTagSlug() || newTagName().toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-')
-  const newId = (tags()[tags().length - 1]?.id ?? 0) + 1
-  tags.set([
-    ...tags(),
-    {
-      id: newId,
-      name: newTagName(),
-      slug,
-      description: newTagDescription(),
-      postCount: 0,
-      created_at: new Date().toISOString().slice(0, 10),
-    },
-  ])
-  closeNewTagModal()
-}
-
-function confirmDeleteTag(tag: Tag) {
-  tagToDelete.set(tag)
-  selectedTagIds.set([])
-  showDeleteModal.set(true)
-}
-
-function confirmDeleteSelected() {
-  showDeleteModal.set(true)
-}
-
-function closeDeleteModal() {
-  showDeleteModal.set(false)
-  tagToDelete.set(null)
-}
-
-function deleteSelectedTags() {
-  if (selectedTagIds().length > 0) {
-    const ids = selectedTagIds()
-    tags.set(tags().filter(t => !ids.includes(t.id)))
-    selectedTagIds.set([])
-  }
-  else {
-    const target = tagToDelete()
-    if (target)
-      tags.set(tags().filter(t => t.id !== target.id))
-  }
-  closeDeleteModal()
-}
-
-function nextPage() {
-  if (currentPage() < totalPages())
-    currentPage.set(currentPage() + 1)
-}
-
-function prevPage() {
-  if (currentPage() > 1)
-    currentPage.set(currentPage() - 1)
-}
-
-let chartHandles: ChartLike[] = []
-
-onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
-  Chart.register(...registerables)
-  const Ctor = Chart as unknown as ChartCtor
-
-  const lineOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } } }
-  const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }
-
-  const list = tags()
-  const labels = list.map(t => t.name)
-  const data = list.map(t => t.postCount)
-
-  const handles: Array<ChartLike | null> = [
-    useChart({
-      Chart: Ctor,
-      id: 'tag_growth_chart',
-      type: 'line',
-      data: { labels: months, datasets: [{ label: 'Tags', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, fill: true, tension: 0.4, data: [5, 6, 7, 8, 8, 9, 10, 10, 11, 11, 12, 12] }] },
-      options: lineOptions,
-    }) as ChartLike | null,
-    useChart({
-      Chart: Ctor,
-      id: 'tag_posts_chart',
-      type: 'bar',
-      data: { labels, datasets: [{ label: 'Posts', backgroundColor: 'rgba(16, 185, 129, 0.8)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 4, data }] },
-      options: lineOptions,
-    }) as ChartLike | null,
-    useChart({
-      Chart: Ctor,
-      id: 'tag_distribution_chart',
-      type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: palette.slice(0, labels.length), borderWidth: 0 }] },
-      options: doughnutOptions,
-    }) as ChartLike | null,
-  ]
-  chartHandles = handles.filter((h): h is ChartLike => h !== null)
-})
-
-onDestroy(() => {
-  chartHandles.forEach(h => h.destroy())
-  chartHandles = []
-})
+  $('tag-cancel').addEventListener('click', function () { dialog.close() })
+  $('tag-name').addEventListener('input', function () {
+    if (!$('tag-slug').dataset.touched) $('tag-slug').value = slug($('tag-name').value)
+  })
+  $('tag-slug').addEventListener('input', function () { $('tag-slug').dataset.touched = '1' })
+  document.getElementById('tag-form').addEventListener('submit', async function (event) {
+    event.preventDefault()
+    var res = await fetch(api + '/tags', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: $('tag-name').value, slug: $('tag-slug').value, description: $('tag-description').value }),
+    })
+    if (!res.ok) return alert('Could not create tag')
+    dialog.close()
+    await load()
+  })
+  table.addEventListener('click', async function (event) {
+    var button = event.target.closest('button[data-id]')
+    if (!button || !confirm('Delete this tag?')) return
+    var res = await fetch(api + '/tags/' + button.getAttribute('data-id'), { method: 'DELETE' })
+    if (!res.ok) return alert('Could not delete tag')
+    await load()
+  })
+  search.addEventListener('input', render)
+  load()
+})()
 </script>
 
 @endsection

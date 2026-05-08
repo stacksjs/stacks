@@ -1,289 +1,152 @@
 @extends('layouts/default')
 
 @section('content')
-<div class="p-6 space-y-6">
-  <div class="flex items-center justify-between">
-    <PageHeader title="Pages" description="Manage your site's static pages" />
-    <button @click="openNewPageModal()" class="inline-flex items-center gap-2 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
-      <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
-      New Page
-    </button>
-  </div>
-
-  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Total Pages</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 dark:text-white">{{ totalPages }}</dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Published</dt>
-      <dd class="mt-1 font-semibold text-3xl text-green-600 dark:text-green-400">{{ publishedCount }}</dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Drafts</dt>
-      <dd class="mt-1 font-semibold text-3xl text-yellow-600 dark:text-yellow-400">{{ draftCount }}</dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm dark:text-neutral-300">Total Views</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 dark:text-white">{{ totalViewsLabel }}</dd>
-    </div>
-  </dl>
-
-  <div class="grid gap-5 grid-cols-1 lg:grid-cols-2">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Page Views Over Time</h3>
-        <div class="mt-2 h-80"><canvas id="pages_views_chart"></canvas></div>
+<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+  <div class="mx-auto flex max-w-6xl flex-col gap-6">
+    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Pages</h1>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Manage static CMS pages alongside your blog content.</p>
       </div>
-    </div>
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Pages</h3>
-        <div class="mt-2 h-80"><canvas id="pages_top_chart"></canvas></div>
-      </div>
-    </div>
-  </div>
+      <button id="new-page-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+        <span class="i-hugeicons-plus-sign h-4 w-4"></span>
+        New Page
+      </button>
+    </header>
 
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-    <div class="relative max-w-sm">
-      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-        <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Pages</p>
+        <p id="page-total" class="mt-2 text-3xl font-semibold">0</p>
       </div>
-      <input x-model="searchQuery" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" placeholder="Search pages..." />
-    </div>
-    <select x-model="statusFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-      <option value="all">All Statuses</option>
-      <option value="Published">Published</option>
-      <option value="Draft">Draft</option>
-      <option value="Scheduled">Scheduled</option>
-    </select>
-  </div>
-
-  <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-neutral-700 shadow">
-    <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-      <thead class="bg-gray-50 dark:bg-neutral-700/50">
-        <tr>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Title</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Slug</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Template</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Author</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-white">Views</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Status</th>
-          <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Published</th>
-          <th class="relative px-4 py-3.5"><span class="sr-only">Actions</span></th>
-        </tr>
-      </thead>
-      <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-        <template :for="page in filteredPages()">
-          <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-            <td class="px-4 py-4 whitespace-nowrap">
-              <div class="flex items-center gap-2">
-                <div class="font-medium text-gray-900 text-sm dark:text-white">{{ page.title }}</div>
-                <span :show="page.isHomepage" class="inline-flex items-center px-2 py-0.5 font-medium text-blue-800 text-xs bg-blue-100 dark:bg-blue-900 dark:text-blue-200 rounded">Home</span>
-              </div>
-            </td>
-            <td class="px-4 py-4 whitespace-nowrap"><div class="text-gray-500 text-sm dark:text-neutral-300">/{{ page.slug }}</div></td>
-            <td class="px-4 py-4 whitespace-nowrap"><div class="text-gray-500 text-sm dark:text-neutral-300">{{ page.template }}</div></td>
-            <td class="px-4 py-4 whitespace-nowrap"><div class="text-gray-500 text-sm dark:text-neutral-300">{{ page.author }}</div></td>
-            <td class="px-4 py-4 text-right whitespace-nowrap"><div class="text-gray-500 text-sm dark:text-neutral-300">{{ formatNumber(page.views) }}</div></td>
-            <td class="px-4 py-4 whitespace-nowrap"><span class="{{ statusBadgeClass(page.status) }}">{{ page.status }}</span></td>
-            <td class="px-4 py-4 whitespace-nowrap"><div class="text-gray-500 text-sm dark:text-neutral-300">{{ page.published }}</div></td>
-            <td class="px-4 py-4 font-medium text-right text-sm whitespace-nowrap">
-              <div class="flex justify-end gap-2">
-                <button class="text-gray-400 hover:text-blue-600"><div class="h-5 w-5 i-hugeicons-edit-01"></div></button>
-                <button @click="confirmDelete(page)" class="text-gray-400 hover:text-red-600"><div class="h-5 w-5 i-hugeicons-waste"></div></button>
-              </div>
-            </td>
-          </tr>
-        </template>
-        <tr :show="filteredPages().length === 0">
-          <td colspan="8" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No pages found.</td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-
-  <div :show="showNewPageModal" class="relative z-10">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">New Page</h3>
-          <div class="mt-4 space-y-4">
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Title</label>
-              <input x-model="newPageTitle" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="e.g. About" />
-            </div>
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Slug</label>
-              <input x-model="newPageSlug" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="e.g. about" />
-            </div>
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Template</label>
-              <select x-model="newPageTemplate" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm">
-                <option value="Default">Default</option>
-                <option value="Landing">Landing</option>
-                <option value="Sidebar">Sidebar</option>
-              </select>
-            </div>
-          </div>
-          <div class="sm:grid sm:gap-3 sm:grid-cols-2 mt-5">
-            <button @click="closeNewPageModal()" class="inline-flex justify-center px-3 py-2 sm:col-start-1 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-            <button @click="createPage()" :disabled="!newPageTitle()" class="inline-flex justify-center px-3 py-2 sm:col-start-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 shadow-sm">Create</button>
-          </div>
-        </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Views</p>
+        <p id="page-views" class="mt-2 text-3xl font-semibold">0</p>
       </div>
-    </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Newest</p>
+        <p id="page-newest" class="mt-2 truncate text-2xl font-semibold">-</p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div class="border-b border-neutral-200 p-4 dark:border-neutral-800">
+        <input id="page-search" type="search" placeholder="Search pages..." class="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
+          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+            <tr>
+              <th class="px-4 py-3">Title</th>
+              <th class="px-4 py-3">Template</th>
+              <th class="px-4 py-3">Views</th>
+              <th class="px-4 py-3">Published</th>
+              <th class="px-4 py-3 text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="pages-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+        </table>
+      </div>
+      <div id="pages-empty" class="hidden p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">No pages found.</div>
+    </section>
   </div>
 </div>
 
-<script client>
-// `useChart` is exposed on `window` by the dashboard layout — see
-// `views/dashboard/layouts/default.stx`. Importing it relatively from
-// `../../composables` would force STX's client-script bundler down a path
-// that can't resolve relative imports from its temp dir, so we rely on
-// the layout's global instead.
+<dialog id="page-dialog" class="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-0 text-neutral-950 shadow-xl backdrop:bg-black/40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
+  <form id="page-form" method="dialog">
+    <div class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <h2 class="text-lg font-semibold">New Page</h2>
+    </div>
+    <div class="grid gap-4 p-5">
+      <label class="grid gap-1 text-sm font-medium">Title <input id="page-title" required class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
+      <label class="grid gap-1 text-sm font-medium">Template
+        <select id="page-template" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950">
+          <option value="default">Default</option>
+          <option value="landing">Landing</option>
+          <option value="blog">Blog</option>
+          <option value="contact">Contact</option>
+        </select>
+      </label>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <button id="page-cancel" type="button" class="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium dark:border-neutral-700">Cancel</button>
+      <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Create Page</button>
+    </div>
+  </form>
+</dialog>
 
-interface Page {
-  id: number
-  title: string
-  slug: string
-  template: string
-  author: string
-  views: number
-  conversions: number
-  published: string
-  status: 'Published' | 'Draft' | 'Scheduled'
-  isHomepage: boolean
-}
-
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
-
-const initialPages: Page[] = [
-  { id: 1, title: 'Home', slug: 'home', template: 'Default', author: 'Jane Doe', views: 24500, conversions: 520, published: '2023-10-15', status: 'Published', isHomepage: true },
-  { id: 2, title: 'About', slug: 'about', template: 'Default', author: 'John Smith', views: 8120, conversions: 90, published: '2023-10-20', status: 'Published', isHomepage: false },
-  { id: 3, title: 'Pricing', slug: 'pricing', template: 'Landing', author: 'Jane Doe', views: 12440, conversions: 310, published: '2023-11-01', status: 'Published', isHomepage: false },
-  { id: 4, title: 'Contact', slug: 'contact', template: 'Default', author: 'Jane Doe', views: 5410, conversions: 180, published: '2023-11-05', status: 'Published', isHomepage: false },
-  { id: 5, title: 'Privacy Policy', slug: 'privacy', template: 'Sidebar', author: 'John Smith', views: 1240, conversions: 0, published: '2023-09-15', status: 'Published', isHomepage: false },
-  { id: 6, title: 'Terms of Service', slug: 'terms', template: 'Sidebar', author: 'John Smith', views: 980, conversions: 0, published: '2023-09-15', status: 'Published', isHomepage: false },
-  { id: 7, title: 'Beta Landing', slug: 'beta', template: 'Landing', author: 'Jane Doe', views: 0, conversions: 0, published: '', status: 'Draft', isHomepage: false },
-  { id: 8, title: 'Holiday Sale', slug: 'holiday-sale', template: 'Landing', author: 'Jane Doe', views: 0, conversions: 0, published: '2024-12-01', status: 'Scheduled', isHomepage: false },
-]
-
-const pages = state<Page[]>(initialPages)
-const searchQuery = state('')
-const statusFilter = state<'all' | 'Published' | 'Draft' | 'Scheduled'>('all')
-const showNewPageModal = state(false)
-const newPageTitle = state('')
-const newPageSlug = state('')
-const newPageTemplate = state('Default')
-
-const filteredPages = derived(() => {
-  let list = [...pages()]
-  if (statusFilter() !== 'all')
-    list = list.filter(p => p.status === statusFilter())
-  const q = searchQuery().toLowerCase()
-  if (q)
-    list = list.filter(p => p.title.toLowerCase().includes(q) || p.slug.toLowerCase().includes(q))
-  return list
-})
-
-const totalPages = derived(() => pages().length)
-const publishedCount = derived(() => pages().filter(p => p.status === 'Published').length)
-const draftCount = derived(() => pages().filter(p => p.status === 'Draft').length)
-const totalViews = derived(() => pages().reduce((s, p) => s + p.views, 0))
-const totalViewsLabel = derived(() => formatNumber(totalViews()))
-
-function formatNumber(n: number) {
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
-
-function statusBadgeClass(status: Page['status']) {
-  const base = 'inline-flex items-center px-2 py-0.5 font-medium text-xs rounded-full'
-  switch (status) {
-    case 'Published': return `${base} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`
-    case 'Draft': return `${base} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`
-    case 'Scheduled': return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200`
+<script>
+;(function () {
+  var api = '/api/dashboard/cms'
+  var pages = []
+  var table = document.getElementById('pages-table')
+  var empty = document.getElementById('pages-empty')
+  var dialog = document.getElementById('page-dialog')
+  var search = document.getElementById('page-search')
+  function $(id) { return document.getElementById(id) }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
+    })
   }
-}
-
-function openNewPageModal() {
-  newPageTitle.set('')
-  newPageSlug.set('')
-  newPageTemplate.set('Default')
-  showNewPageModal.set(true)
-}
-
-function closeNewPageModal() {
-  showNewPageModal.set(false)
-}
-
-function createPage() {
-  if (!newPageTitle())
-    return
-  const newId = (pages()[pages().length - 1]?.id ?? 0) + 1
-  const slug = newPageSlug() || newPageTitle().toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-')
-  pages.set([...pages(), {
-    id: newId,
-    title: newPageTitle(),
-    slug,
-    template: newPageTemplate(),
-    author: 'Me',
-    views: 0,
-    conversions: 0,
-    published: '',
-    status: 'Draft',
-    isHomepage: false,
-  }])
-  closeNewPageModal()
-}
-
-function confirmDelete(page: Page) {
-  if (window.confirm(`Delete ${page.title}?`))
-    pages.set(pages().filter(p => p.id !== page.id))
-}
-
-let chartHandles: ChartLike[] = []
-
-onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
-  Chart.register(...registerables)
-  const Ctor = Chart as unknown as ChartCtor
-
-  const chartOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } } }
-
-  const top = [...pages()].sort((a, b) => b.views - a.views).slice(0, 5)
-
-  const handles: Array<ChartLike | null> = [
-    useChart({
-      Chart: Ctor,
-      id: 'pages_views_chart',
-      type: 'line',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-        datasets: [{ label: 'Page Views', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, fill: true, tension: 0.4, data: [3200, 4100, 3800, 4500, 5200, 5800, 5400, 6200, 6800, 7400, 8100, 8800] }],
-      },
-      options: chartOptions,
-    }) as ChartLike | null,
-    useChart({
-      Chart: Ctor,
-      id: 'pages_top_chart',
-      type: 'bar',
-      data: {
-        labels: top.map(p => p.title),
-        datasets: [{ label: 'Views', backgroundColor: 'rgba(16, 185, 129, 0.8)', borderRadius: 4, data: top.map(p => p.views) }],
-      },
-      options: chartOptions,
-    }) as ChartLike | null,
-  ]
-  chartHandles = handles.filter((h): h is ChartLike => h !== null)
-})
-
-onDestroy(() => {
-  chartHandles.forEach(h => h.destroy())
-  chartHandles = []
-})
+  function fmtDate(value) {
+    if (!value) return '-'
+    var date = new Date(value)
+    return Number.isNaN(date.getTime()) ? String(value) : date.toLocaleDateString()
+  }
+  function render() {
+    var q = search.value.toLowerCase()
+    var rows = pages.filter(function (page) {
+      return !q || [page.title, page.template].join(' ').toLowerCase().indexOf(q) !== -1
+    })
+    $('page-total').textContent = String(pages.length)
+    $('page-views').textContent = pages.reduce(function (sum, p) { return sum + Number(p.views || 0) }, 0).toLocaleString()
+    $('page-newest').textContent = pages[0] ? pages[0].title : '-'
+    empty.classList.toggle('hidden', rows.length > 0)
+    table.innerHTML = rows.map(function (page) {
+      return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
+        '<td class="px-4 py-3 font-medium">' + escapeHtml(page.title) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(page.template) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + Number(page.views || 0).toLocaleString() + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + fmtDate(page.published_at || page.created_at) + '</td>' +
+        '<td class="px-4 py-3 text-right"><button type="button" data-id="' + page.id + '" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"><span class="block h-4 w-4 i-hugeicons-waste"></span></button></td>' +
+      '</tr>'
+    }).join('')
+  }
+  async function load() {
+    var res = await fetch(api)
+    var json = await res.json()
+    pages = Array.isArray(json.pages) ? json.pages : []
+    render()
+  }
+  document.getElementById('new-page-button').addEventListener('click', function () {
+    $('page-title').value = ''
+    $('page-template').value = 'default'
+    dialog.showModal()
+  })
+  $('page-cancel').addEventListener('click', function () { dialog.close() })
+  document.getElementById('page-form').addEventListener('submit', async function (event) {
+    event.preventDefault()
+    var res = await fetch(api + '/pages', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ title: $('page-title').value, template: $('page-template').value }),
+    })
+    if (!res.ok) return alert('Could not create page')
+    dialog.close()
+    await load()
+  })
+  table.addEventListener('click', async function (event) {
+    var button = event.target.closest('button[data-id]')
+    if (!button || !confirm('Delete this page?')) return
+    var res = await fetch(api + '/pages/' + button.getAttribute('data-id'), { method: 'DELETE' })
+    if (!res.ok) return alert('Could not delete page')
+    await load()
+  })
+  search.addEventListener('input', render)
+  load()
+})()
 </script>
 
 @endsection

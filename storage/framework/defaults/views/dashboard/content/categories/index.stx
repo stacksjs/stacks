@@ -1,464 +1,147 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
-</script>
-
-<div class="p-6 space-y-6">
-  <div class="flex items-center justify-between">
-    <PageHeader title="Categories" description="Manage all your blog categories" />
-    <button @click="openNewCategoryModal()" class="inline-flex items-center gap-2 px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">
-      <div class="h-4 w-4 i-hugeicons-plus-sign"></div>
-      New Category
-    </button>
-  </div>
-
-  <div class="flex items-center justify-between mt-4">
-    <p class="text-gray-500 text-sm dark:text-neutral-400">Overview of your blog categories</p>
-    <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-      @foreach(timeRanges as range)
-        <option value="{{ range }}">{{ range }}</option>
-      @endforeach
-    </select>
-  </div>
-
-  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Categories</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalCategories }}</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>{{ newestCategoryName }} added recently</span>
-      </dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Posts</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalPosts }}</dd>
-      <dd class="flex items-center mt-2 text-gray-500 text-sm dark:text-neutral-400">
-        <span>{{ avgPostsPerCategory }} avg per category</span>
-      </dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Top Category</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ topCategoryName }}</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>{{ topCategoryCount }} posts ({{ topCategoryPercentage }}%)</span>
-      </dd>
-    </div>
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Least Used Category</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ leastCategoryName }}</dd>
-      <dd class="flex items-center mt-2 text-gray-500 text-sm dark:text-neutral-400">
-        <span>{{ leastCategoryCount }} posts</span>
-      </dd>
-    </div>
-  </dl>
-
-  <div class="grid gap-5 grid-cols-1 lg:grid-cols-3 mt-8">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Category Growth</h3>
-        <div class="mt-2 h-80"><canvas id="category_growth_chart"></canvas></div>
+<div class="min-h-screen bg-neutral-50 p-6 text-neutral-950 dark:bg-neutral-950 dark:text-neutral-100">
+  <div class="mx-auto flex max-w-6xl flex-col gap-6">
+    <header class="flex flex-col gap-4 border-b border-neutral-200 pb-5 dark:border-neutral-800 md:flex-row md:items-end md:justify-between">
+      <div>
+        <p class="text-xs font-semibold uppercase tracking-wide text-blue-600 dark:text-blue-400">CMS</p>
+        <h1 class="mt-1 text-2xl font-semibold tracking-tight">Categories</h1>
+        <p class="mt-1 text-sm text-neutral-500 dark:text-neutral-400">Organize posts and markdown content into public blog categories.</p>
       </div>
-    </div>
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Posts per Category</h3>
-        <div class="mt-2 h-80"><canvas id="category_posts_chart"></canvas></div>
-      </div>
-    </div>
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Category Distribution</h3>
-        <div class="mt-2 h-80"><canvas id="category_distribution_chart"></canvas></div>
-      </div>
-    </div>
-  </div>
-
-  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8">
-    <div class="relative max-w-sm">
-      <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-        <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
-      </div>
-      <input x-model="searchQuery" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:placeholder:text-neutral-500 dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset" placeholder="Search categories..." />
-    </div>
-
-    <div class="flex flex-col gap-4 sm:flex-row">
-      <select x-model="sortBy" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-        <option value="name">Sort by Name</option>
-        <option value="postCount">Sort by Post Count</option>
-        <option value="created_at">Sort by Created Date</option>
-      </select>
-      <select x-model="sortOrder" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-        <option value="asc">Ascending</option>
-        <option value="desc">Descending</option>
-      </select>
-      <select x-model="itemsPerPage" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset">
-        <option value="5">5 per page</option>
-        <option value="10">10 per page</option>
-        <option value="25">25 per page</option>
-        <option value="50">50 per page</option>
-      </select>
-    </div>
-  </div>
-
-  <div :show="hasSelectedCategories" class="mt-4 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm">
-    <div class="flex items-center justify-between">
-      <div class="flex items-center">
-        <div class="mr-2 h-5 w-5 text-blue-400 i-hugeicons-checkmark-circle-02"></div>
-        <span class="text-blue-800 text-sm dark:text-blue-300">{{ selectedCount }} categories selected</span>
-      </div>
-      <button @click="confirmDeleteSelected()" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-red-600 text-sm dark:text-red-400 bg-white dark:bg-neutral-800 hover:bg-red-50 dark:hover:bg-red-500/10 ring-1 ring-inset ring-red-300 rounded-md dark:ring-red-500/30 shadow-sm">
-        <div class="mr-1 h-4 w-4 i-hugeicons-waste"></div>
-        Delete Selected
+      <button id="new-category-button" type="button" class="inline-flex items-center gap-2 rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-blue-500">
+        <span class="i-hugeicons-plus-sign h-4 w-4"></span>
+        New Category
       </button>
-    </div>
-  </div>
+    </header>
 
-  <div class="flow-root mt-6">
-    <div class="sm:flex sm:items-center sm:justify-between mb-4">
-      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">All Categories</h3>
-      <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">A list of all blog categories.</p>
-    </div>
-    <div class="overflow-x-auto border border-gray-200 rounded-lg dark:border-neutral-700 shadow">
-      <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-        <thead class="bg-gray-50 dark:bg-neutral-700/50">
-          <tr>
-            <th class="relative px-4 py-3.5 sm:px-6">
-              <input type="checkbox" :checked="selectAll" @change="toggleSelectAll()" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-            </th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Name</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Description</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Slug</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Posts</th>
-            <th class="px-4 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-white">Created</th>
-            <th class="relative px-4 py-3.5"><span class="sr-only">Actions</span></th>
-          </tr>
-        </thead>
-        <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-          <template :for="category in paginatedCategories()">
-            <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
-              <td class="relative px-4 py-4 sm:px-6 whitespace-nowrap">
-                <input type="checkbox" :checked="isCategorySelected(category.id)" @change="toggleCategorySelection(category.id)" class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="font-medium text-gray-900 text-sm dark:text-white">{{ category.name }}</div>
-              </td>
-              <td class="px-4 py-4">
-                <div class="max-w-xs text-gray-500 text-sm truncate dark:text-neutral-300">{{ category.description }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-gray-500 text-sm dark:text-neutral-300">{{ category.slug }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-gray-500 text-sm dark:text-neutral-300">{{ category.postCount }}</div>
-              </td>
-              <td class="px-4 py-4 whitespace-nowrap">
-                <div class="text-gray-500 text-sm dark:text-neutral-300">{{ category.created_at }}</div>
-              </td>
-              <td class="px-4 py-4 font-medium text-right text-sm whitespace-nowrap">
-                <div class="flex justify-end space-x-2">
-                  <button @click="openEditModal(category)" class="text-gray-400 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">
-                    <div class="h-5 w-5 i-hugeicons-edit-01"></div>
-                  </button>
-                  <button @click="confirmDeleteCategory(category)" class="text-gray-400 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">
-                    <div class="h-5 w-5 i-hugeicons-waste"></div>
-                  </button>
-                </div>
-              </td>
+    <section class="grid gap-4 md:grid-cols-3">
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Total Categories</p>
+        <p id="category-total" class="mt-2 text-3xl font-semibold">0</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Newest</p>
+        <p id="category-newest" class="mt-2 truncate text-2xl font-semibold">-</p>
+      </div>
+      <div class="rounded-lg border border-neutral-200 bg-white p-4 shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+        <p class="text-sm text-neutral-500 dark:text-neutral-400">Active</p>
+        <p id="category-active" class="mt-2 text-3xl font-semibold text-green-600 dark:text-green-400">0</p>
+      </div>
+    </section>
+
+    <section class="rounded-lg border border-neutral-200 bg-white shadow-sm dark:border-neutral-800 dark:bg-neutral-900">
+      <div class="border-b border-neutral-200 p-4 dark:border-neutral-800">
+        <input id="category-search" type="search" placeholder="Search categories..." class="w-full max-w-md rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-500/20 dark:border-neutral-700 dark:bg-neutral-950" />
+      </div>
+      <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-neutral-200 text-sm dark:divide-neutral-800">
+          <thead class="bg-neutral-50 text-left text-xs font-semibold uppercase text-neutral-500 dark:bg-neutral-900 dark:text-neutral-400">
+            <tr>
+              <th class="px-4 py-3">Name</th>
+              <th class="px-4 py-3">Slug</th>
+              <th class="px-4 py-3">Description</th>
+              <th class="px-4 py-3 text-right">Actions</th>
             </tr>
-          </template>
-          <tr :show="paginatedCategories().length === 0">
-            <td colspan="7" class="px-4 py-8 text-center text-gray-500 text-sm dark:text-neutral-400">No categories found.</td>
-          </tr>
-        </tbody>
-      </table>
-    </div>
-  </div>
-
-  <div :show="totalPages() > 1" class="flex items-center justify-between mt-6">
-    <p class="text-gray-700 text-sm dark:text-neutral-300">
-      Showing {{ pageStart }} to {{ pageEnd }} of {{ totalFiltered }} results
-    </p>
-    <nav class="inline-flex -space-x-px rounded-md shadow-sm isolate">
-      <button @click="prevPage()" :disabled="currentPage() === 1" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-l-md dark:ring-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed">
-        <div class="h-5 w-5 i-hugeicons-arrow-left-01"></div>
-      </button>
-      <button @click="nextPage()" :disabled="currentPage() === totalPages()" class="inline-flex relative items-center px-2 py-2 text-gray-400 dark:text-neutral-500 hover:bg-gray-50 dark:hover:bg-neutral-700 ring-1 ring-gray-300 ring-inset rounded-r-md dark:ring-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed">
-        <div class="h-5 w-5 i-hugeicons-arrow-right-01"></div>
-      </button>
-    </nav>
-  </div>
-
-  <div :show="showNewCategoryModal" class="relative z-10">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">New Category</h3>
-          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Create a new category for your blog posts.</p>
-          <div class="mt-5 space-y-4">
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Name</label>
-              <input x-model="newCategoryName" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="e.g. Technology" />
-            </div>
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Slug</label>
-              <input x-model="newCategorySlug" type="text" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="e.g. technology" />
-              <p class="mt-1 text-gray-500 text-xs dark:text-neutral-400">Leave empty to generate from name.</p>
-            </div>
-            <div>
-              <label class="block font-medium text-gray-900 text-sm dark:text-white">Description</label>
-              <textarea x-model="newCategoryDescription" rows="3" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm" placeholder="Describe this category..."></textarea>
-            </div>
-          </div>
-          <div class="sm:grid sm:gap-3 sm:grid-cols-2 mt-5 sm:mt-6">
-            <button type="button" @click="closeNewCategoryModal()" class="inline-flex justify-center px-3 py-2 sm:col-start-1 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-            <button type="button" @click="createCategory()" :disabled="!newCategoryName()" class="inline-flex justify-center px-3 py-2 sm:col-start-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 shadow-sm">Create</button>
-          </div>
-        </div>
+          </thead>
+          <tbody id="categories-table" class="divide-y divide-neutral-200 dark:divide-neutral-800"></tbody>
+        </table>
       </div>
-    </div>
-  </div>
-
-  <div :show="showDeleteModal" class="relative z-10">
-    <div class="fixed inset-0 bg-gray-500 bg-opacity-75 dark:bg-neutral-900 dark:bg-opacity-75"></div>
-    <div class="fixed inset-0 overflow-y-auto z-10">
-      <div class="flex items-end justify-center sm:items-center p-4 min-h-full">
-        <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:p-6 sm:max-w-lg sm:w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">{{ selectedCount > 1 ? 'Delete Categories' : 'Delete Category' }}</h3>
-          <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Are you sure? This action cannot be undone.</p>
-          <div class="sm:flex sm:flex-row-reverse mt-5">
-            <button type="button" @click="deleteSelectedCategories()" class="inline-flex justify-center px-3 py-2 sm:ml-3 w-full sm:w-auto font-semibold text-sm text-white bg-red-600 hover:bg-red-500 rounded-md shadow-sm">Delete</button>
-            <button type="button" @click="closeDeleteModal()" class="inline-flex justify-center mt-3 px-3 py-2 sm:mt-0 w-full sm:w-auto font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-          </div>
-        </div>
-      </div>
-    </div>
+      <div id="categories-empty" class="hidden p-10 text-center text-sm text-neutral-500 dark:text-neutral-400">No categories found.</div>
+    </section>
   </div>
 </div>
 
-<script client>
+<dialog id="category-dialog" class="w-full max-w-lg rounded-lg border border-neutral-200 bg-white p-0 text-neutral-950 shadow-xl backdrop:bg-black/40 dark:border-neutral-800 dark:bg-neutral-900 dark:text-neutral-100">
+  <form id="category-form" method="dialog">
+    <div class="border-b border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <h2 class="text-lg font-semibold">New Category</h2>
+    </div>
+    <div class="grid gap-4 p-5">
+      <label class="grid gap-1 text-sm font-medium">Name <input id="category-name" required class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
+      <label class="grid gap-1 text-sm font-medium">Slug <input id="category-slug" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950" /></label>
+      <label class="grid gap-1 text-sm font-medium">Description <textarea id="category-description" rows="3" class="rounded-md border border-neutral-300 bg-white px-3 py-2 text-sm dark:border-neutral-700 dark:bg-neutral-950"></textarea></label>
+    </div>
+    <div class="flex justify-end gap-2 border-t border-neutral-200 px-5 py-4 dark:border-neutral-800">
+      <button id="category-cancel" type="button" class="rounded-md border border-neutral-300 px-3 py-2 text-sm font-medium dark:border-neutral-700">Cancel</button>
+      <button type="submit" class="rounded-md bg-blue-600 px-3 py-2 text-sm font-semibold text-white hover:bg-blue-500">Create Category</button>
+    </div>
+  </form>
+</dialog>
 
-interface Category {
-  id: number
-  name: string
-  description: string
-  slug: string
-  postCount: number
-  created_at: string
-}
-
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
-
-const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-const palette = [
-  'rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)',
-  'rgba(239, 68, 68, 0.8)', 'rgba(139, 92, 246, 0.8)', 'rgba(236, 72, 153, 0.8)',
-  'rgba(75, 85, 99, 0.8)', 'rgba(14, 165, 233, 0.8)', 'rgba(168, 85, 247, 0.8)',
-  'rgba(249, 115, 22, 0.8)', 'rgba(234, 88, 12, 0.8)', 'rgba(217, 119, 6, 0.8)',
-]
-
-const categories = state<Category[]>([])
-const timeRange = state('Last 30 days')
-const searchQuery = state('')
-const sortBy = state('postCount')
-const sortOrder = state('desc')
-const itemsPerPage = state(10)
-const currentPage = state(1)
-const showNewCategoryModal = state(false)
-const showDeleteModal = state(false)
-const newCategoryName = state('')
-const newCategorySlug = state('')
-const newCategoryDescription = state('')
-const selectedCategoryIds = state<number[]>([])
-const selectAll = state(false)
-const categoryToDelete = state<Category | null>(null)
-
-const filteredCategories = derived(() => {
-  let result = [...categories()]
-  const q = searchQuery().toLowerCase()
-  if (q) {
-    result = result.filter(c =>
-      c.name.toLowerCase().includes(q) || (c.description ?? '').toLowerCase().includes(q),
-    )
+<script>
+;(function () {
+  var api = '/api/dashboard/cms'
+  var categories = []
+  var table = document.getElementById('categories-table')
+  var empty = document.getElementById('categories-empty')
+  var dialog = document.getElementById('category-dialog')
+  var search = document.getElementById('category-search')
+  function $(id) { return document.getElementById(id) }
+  function escapeHtml(value) {
+    return String(value || '').replace(/[&<>"']/g, function (ch) {
+      return ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch]
+    })
   }
-  result.sort((a, b) => {
-    const field = sortBy() as keyof Category
-    let av: unknown = a[field]
-    let bv: unknown = b[field]
-    if (typeof av === 'string' && typeof bv === 'string') {
-      av = av.toLowerCase()
-      bv = bv.toLowerCase()
-    }
-    if (sortOrder() === 'asc')
-      return (av as number | string) > (bv as number | string) ? 1 : -1
-    return (av as number | string) < (bv as number | string) ? 1 : -1
+  function slug(value) {
+    return String(value || '').trim().toLowerCase().replace(/['"]/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '')
+  }
+  function render() {
+    var q = search.value.toLowerCase()
+    var rows = categories.filter(function (category) {
+      return !q || [category.name, category.slug, category.description].join(' ').toLowerCase().indexOf(q) !== -1
+    })
+    $('category-total').textContent = String(categories.length)
+    $('category-active').textContent = String(categories.filter(function (c) { return c.is_active !== false && c.is_active !== 0 }).length)
+    $('category-newest').textContent = categories[0] ? categories[0].name : '-'
+    empty.classList.toggle('hidden', rows.length > 0)
+    table.innerHTML = rows.map(function (category) {
+      return '<tr class="hover:bg-neutral-50 dark:hover:bg-neutral-950/70">' +
+        '<td class="px-4 py-3 font-medium">' + escapeHtml(category.name) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(category.slug) + '</td>' +
+        '<td class="px-4 py-3 text-neutral-600 dark:text-neutral-300">' + escapeHtml(category.description) + '</td>' +
+        '<td class="px-4 py-3 text-right"><button type="button" data-id="' + category.id + '" class="rounded p-2 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-950/40"><span class="block h-4 w-4 i-hugeicons-waste"></span></button></td>' +
+      '</tr>'
+    }).join('')
+  }
+  async function load() {
+    var res = await fetch(api)
+    var json = await res.json()
+    categories = Array.isArray(json.categories) ? json.categories : []
+    render()
+  }
+  document.getElementById('new-category-button').addEventListener('click', function () {
+    $('category-name').value = ''
+    $('category-slug').value = ''
+    $('category-description').value = ''
+    dialog.showModal()
   })
-  return result
-})
-
-const totalPages = derived(() => Math.max(1, Math.ceil(filteredCategories().length / Number(itemsPerPage()))))
-const totalFiltered = derived(() => filteredCategories().length)
-const paginatedCategories = derived(() => {
-  const per = Number(itemsPerPage())
-  const start = (currentPage() - 1) * per
-  return filteredCategories().slice(start, start + per)
-})
-const pageStart = derived(() => (currentPage() - 1) * Number(itemsPerPage()) + 1)
-const pageEnd = derived(() => Math.min(currentPage() * Number(itemsPerPage()), filteredCategories().length))
-
-const totalCategories = derived(() => categories().length)
-const totalPosts = derived(() => categories().reduce((s, c) => s + c.postCount, 0))
-const avgPostsPerCategory = derived(() => totalCategories() > 0 ? (totalPosts() / totalCategories()).toFixed(1) : '0.0')
-const topCategory = derived(() => categories().reduce((top, c) => c.postCount > top.postCount ? c : top, { name: 'None', postCount: 0 } as Category))
-const leastCategory = derived(() => categories().reduce((least, c) => c.postCount < least.postCount ? c : least, categories()[0] ?? { name: 'None', postCount: 0 } as Category))
-const newestCategory = derived(() => categories().reduce((newest, c) => new Date(c.created_at).getTime() > new Date(newest.created_at ?? '').getTime() ? c : newest, categories()[0] ?? { name: 'None', created_at: '' } as Category))
-
-const topCategoryName = derived(() => topCategory().name)
-const topCategoryCount = derived(() => topCategory().postCount)
-const topCategoryPercentage = derived(() => totalPosts() > 0 ? ((topCategory().postCount / totalPosts()) * 100).toFixed(1) : '0.0')
-const leastCategoryName = derived(() => leastCategory().name)
-const leastCategoryCount = derived(() => leastCategory().postCount)
-const newestCategoryName = derived(() => newestCategory().name)
-const selectedCount = derived(() => selectedCategoryIds().length)
-const hasSelectedCategories = derived(() => selectedCategoryIds().length > 0)
-
-function isCategorySelected(id: number) {
-  return selectedCategoryIds().includes(id)
-}
-
-function toggleSelectAll() {
-  const next = !selectAll()
-  selectAll.set(next)
-  selectedCategoryIds.set(next ? paginatedCategories().map(c => c.id) : [])
-}
-
-function toggleCategorySelection(id: number) {
-  const list = selectedCategoryIds()
-  selectedCategoryIds.set(list.includes(id) ? list.filter(x => x !== id) : [...list, id])
-}
-
-function openNewCategoryModal() {
-  newCategoryName.set('')
-  newCategorySlug.set('')
-  newCategoryDescription.set('')
-  showNewCategoryModal.set(true)
-}
-
-function closeNewCategoryModal() {
-  showNewCategoryModal.set(false)
-}
-
-function createCategory() {
-  if (!newCategoryName())
-    return
-  const slug = newCategorySlug() || newCategoryName().toLowerCase().replace(/[^\w\s]/gi, '').replace(/\s+/g, '-')
-  const newId = (categories()[categories().length - 1]?.id ?? 0) + 1
-  categories.set([
-    ...categories(),
-    {
-      id: newId,
-      name: newCategoryName(),
-      slug,
-      description: newCategoryDescription(),
-      postCount: 0,
-      created_at: new Date().toISOString().slice(0, 10),
-    },
-  ])
-  closeNewCategoryModal()
-}
-
-function openEditModal(_c: Category) {
-  // Edit modal kept simple: TODO wire full edit form
-}
-
-function confirmDeleteCategory(category: Category) {
-  categoryToDelete.set(category)
-  selectedCategoryIds.set([])
-  showDeleteModal.set(true)
-}
-
-function confirmDeleteSelected() {
-  showDeleteModal.set(true)
-}
-
-function closeDeleteModal() {
-  showDeleteModal.set(false)
-  categoryToDelete.set(null)
-}
-
-function deleteSelectedCategories() {
-  if (selectedCategoryIds().length > 0) {
-    const ids = selectedCategoryIds()
-    categories.set(categories().filter(c => !ids.includes(c.id)))
-    selectedCategoryIds.set([])
-  }
-  else {
-    const target = categoryToDelete()
-    if (target)
-      categories.set(categories().filter(c => c.id !== target.id))
-  }
-  closeDeleteModal()
-}
-
-function nextPage() {
-  if (currentPage() < totalPages())
-    currentPage.set(currentPage() + 1)
-}
-
-function prevPage() {
-  if (currentPage() > 1)
-    currentPage.set(currentPage() - 1)
-}
-
-let chartHandles: ChartLike[] = []
-
-onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
-  Chart.register(...registerables)
-  const Ctor = Chart as unknown as ChartCtor
-
-  const lineOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, grid: { color: 'rgba(0, 0, 0, 0.05)' } }, x: { grid: { display: false } } } }
-  const doughnutOptions = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: true, position: 'bottom' } } }
-
-  const list = categories()
-  const labels = list.map(c => c.name)
-  const data = list.map(c => c.postCount)
-
-  const handles: Array<ChartLike | null> = [
-    useChart({
-      Chart: Ctor,
-      id: 'category_growth_chart',
-      type: 'line',
-      data: { labels: months, datasets: [{ label: 'Categories', backgroundColor: 'rgba(59, 130, 246, 0.2)', borderColor: 'rgba(59, 130, 246, 1)', borderWidth: 2, fill: true, tension: 0.4, data: [5, 6, 7, 8, 8, 9, 10, 10, 11, 11, 12, 12] }] },
-      options: lineOptions,
-    }) as ChartLike | null,
-    useChart({
-      Chart: Ctor,
-      id: 'category_posts_chart',
-      type: 'bar',
-      data: { labels, datasets: [{ label: 'Posts', backgroundColor: 'rgba(16, 185, 129, 0.8)', borderColor: 'rgba(16, 185, 129, 1)', borderWidth: 1, borderRadius: 4, data }] },
-      options: lineOptions,
-    }) as ChartLike | null,
-    useChart({
-      Chart: Ctor,
-      id: 'category_distribution_chart',
-      type: 'doughnut',
-      data: { labels, datasets: [{ data, backgroundColor: palette.slice(0, labels.length), borderWidth: 0 }] },
-      options: doughnutOptions,
-    }) as ChartLike | null,
-  ]
-  chartHandles = handles.filter((h): h is ChartLike => h !== null)
-})
-
-onDestroy(() => {
-  chartHandles.forEach(h => h.destroy())
-  chartHandles = []
-})
+  $('category-cancel').addEventListener('click', function () { dialog.close() })
+  $('category-name').addEventListener('input', function () {
+    if (!$('category-slug').dataset.touched) $('category-slug').value = slug($('category-name').value)
+  })
+  $('category-slug').addEventListener('input', function () { $('category-slug').dataset.touched = '1' })
+  document.getElementById('category-form').addEventListener('submit', async function (event) {
+    event.preventDefault()
+    var res = await fetch(api + '/categories', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({ name: $('category-name').value, slug: $('category-slug').value, description: $('category-description').value }),
+    })
+    if (!res.ok) return alert('Could not create category')
+    dialog.close()
+    await load()
+  })
+  table.addEventListener('click', async function (event) {
+    var button = event.target.closest('button[data-id]')
+    if (!button || !confirm('Delete this category?')) return
+    var res = await fetch(api + '/categories/' + button.getAttribute('data-id'), { method: 'DELETE' })
+    if (!res.ok) return alert('Could not delete category')
+    await load()
+  })
+  search.addEventListener('input', render)
+  load()
+})()
 </script>
 
 @endsection

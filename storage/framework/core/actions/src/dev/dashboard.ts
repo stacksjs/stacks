@@ -50,6 +50,299 @@ function restoreConsole(): void {
   }
 }
 
+function cmsJson(data: unknown, init: ResponseInit = {}): Response {
+  const headers = new Headers(init.headers)
+  headers.set('content-type', 'application/json; charset=utf-8')
+  headers.set('cache-control', 'no-store')
+
+  return new Response(JSON.stringify(data), { ...init, headers })
+}
+
+function cmsSlug(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .replace(/['"]/g, '')
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+}
+
+async function cmsBody(req: Request): Promise<Record<string, any>> {
+  if (req.method === 'GET' || req.method === 'HEAD')
+    return {}
+
+  const type = req.headers.get('content-type') || ''
+  if (type.includes('application/json'))
+    return await req.json().catch(() => ({}))
+
+  if (type.includes('form')) {
+    const form = await req.formData()
+    return Object.fromEntries(form.entries())
+  }
+
+  return {}
+}
+
+async function safeCmsAll(db: any, table: string, orderBy = 'created_at'): Promise<any[]> {
+  try {
+    let query = db.selectFrom(table).selectAll()
+    if (orderBy)
+      query = query.orderBy(orderBy, 'desc')
+
+    return await query.execute()
+  }
+  catch {
+    return []
+  }
+}
+
+async function ensureCmsTaxonomyTables(db: any): Promise<void> {
+  try {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS "taggables" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "name" TEXT,
+        "slug" TEXT,
+        "description" TEXT,
+        "is_active" INTEGER default 1,
+        "taggable_id" INTEGER,
+        "taggable_type" TEXT,
+        "created_at" TEXT not null default CURRENT_TIMESTAMP,
+        "updated_at" TEXT
+      )
+    `).execute()
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS "categorizables" (
+        "id" INTEGER PRIMARY KEY AUTOINCREMENT,
+        "name" TEXT,
+        "slug" TEXT,
+        "description" TEXT,
+        "is_active" INTEGER default 1,
+        "categorizable_type" TEXT,
+        "created_at" TEXT not null default CURRENT_TIMESTAMP,
+        "updated_at" TEXT
+      )
+    `).execute()
+  }
+  catch {
+    // If a non-SQLite driver or permissions prevent eager creation, the
+    // normal query path below still returns a clear JSON error for writes.
+  }
+}
+
+async function dashboardCmsApi(req: Request): Promise<Response | null> {
+  const url = new URL(req.url)
+  if (!url.pathname.startsWith('/api/dashboard/cms'))
+    return null
+
+  try {
+    const { db } = await import('@stacksjs/database')
+    await ensureCmsTaxonomyTables(db)
+    const path = url.pathname.replace(/^\/api\/dashboard\/cms\/?/, '')
+    const parts = path.split('/').filter(Boolean)
+    const resource = parts[0] || ''
+    const id = parts[1] ? Number(parts[1]) : undefined
+    const now = new Date().toISOString().slice(0, 19).replace('T', ' ')
+
+    if (req.method === 'GET' && !resource) {
+      const [posts, pages, authors, categories, tags, comments] = await Promise.all([
+        safeCmsAll(db, 'posts'),
+        safeCmsAll(db, 'pages'),
+        safeCmsAll(db, 'authors'),
+        safeCmsAll(db, 'categorizables'),
+        safeCmsAll(db, 'taggables'),
+        safeCmsAll(db, 'comments'),
+      ])
+
+      return cmsJson({
+        ok: true,
+        posts,
+        pages,
+        authors,
+        categories,
+        tags,
+        comments,
+        stats: {
+          posts: posts.length,
+          publishedPosts: posts.filter((p: any) => p.status === 'published').length,
+          draftPosts: posts.filter((p: any) => p.status === 'draft').length,
+          pages: pages.length,
+          categories: categories.length,
+          tags: tags.length,
+          comments: comments.length,
+        },
+      })
+    }
+
+    if (resource === 'posts') {
+      if (req.method === 'POST') {
+        const body = await cmsBody(req)
+        const title = String(body.title || '').trim()
+        if (!title)
+          return cmsJson({ ok: false, error: 'Title is required' }, { status: 422 })
+
+        let post = await db.insertInto('posts').values({
+          title,
+          poster: String(body.poster || ''),
+          content: String(body.content || body.body || ''),
+          excerpt: String(body.excerpt || ''),
+          views: Number(body.views || 0),
+          published_at: body.status === 'published' ? now : (body.published_at || null),
+          status: String(body.status || 'draft').toLowerCase(),
+          is_featured: body.is_featured ? 1 : 0,
+          author_id: body.author_id ? Number(body.author_id) : null,
+          created_at: now,
+          updated_at: now,
+        }).returningAll().executeTakeFirst()
+        if (!post || post.id == null) {
+          post = await db.selectFrom('posts').selectAll().where('title', '=', title).orderBy('id', 'desc').executeTakeFirst()
+        }
+
+        return cmsJson({ ok: true, post }, { status: 201 })
+      }
+
+      if (req.method === 'PATCH' && id) {
+        const body = await cmsBody(req)
+        const data: Record<string, any> = { updated_at: now }
+        for (const key of ['title', 'poster', 'content', 'excerpt', 'status', 'published_at']) {
+          if (body[key] !== undefined)
+            data[key] = key === 'status' ? String(body[key]).toLowerCase() : body[key]
+        }
+        if (body.views !== undefined) data.views = Number(body.views)
+        if (body.is_featured !== undefined) data.is_featured = body.is_featured ? 1 : 0
+
+        await db.updateTable('posts').set(data).where('id', '=', id).execute()
+        const post = await db.selectFrom('posts').selectAll().where('id', '=', id).executeTakeFirst()
+        if (!post)
+          return cmsJson({ ok: false, error: 'Post not found' }, { status: 404 })
+
+        return cmsJson({ ok: true, post })
+      }
+
+      if (req.method === 'DELETE' && id) {
+        await db.deleteFrom('posts').where('id', '=', id).execute()
+        return cmsJson({ ok: true })
+      }
+    }
+
+    if (resource === 'tags' || resource === 'categories') {
+      const table = resource === 'tags' ? 'taggables' : 'categorizables'
+      const typeColumn = resource === 'tags' ? 'taggable_type' : 'categorizable_type'
+
+      if (req.method === 'POST') {
+        const body = await cmsBody(req)
+        const name = String(body.name || '').trim()
+        if (!name)
+          return cmsJson({ ok: false, error: 'Name is required' }, { status: 422 })
+
+        let row = await db.insertInto(table).values({
+          name,
+          slug: String(body.slug || cmsSlug(name)),
+          description: String(body.description || ''),
+          is_active: body.is_active === undefined ? true : Boolean(body.is_active),
+          [typeColumn]: 'posts',
+          created_at: now,
+          updated_at: now,
+        }).returningAll().executeTakeFirst()
+        if (!row || row.id == null) {
+          row = await db.selectFrom(table).selectAll().where('name', '=', name).orderBy('id', 'desc').executeTakeFirst()
+        }
+
+        return cmsJson({ ok: true, [resource === 'categories' ? 'category' : 'tag']: row }, { status: 201 })
+      }
+
+      if (req.method === 'DELETE' && id) {
+        await db.deleteFrom(table).where('id', '=', id).execute()
+        return cmsJson({ ok: true })
+      }
+    }
+
+    if (resource === 'pages') {
+      if (req.method === 'POST') {
+        const body = await cmsBody(req)
+        const title = String(body.title || '').trim()
+        if (!title)
+          return cmsJson({ ok: false, error: 'Title is required' }, { status: 422 })
+
+        let page = await db.insertInto('pages').values({
+          title,
+          template: String(body.template || 'default'),
+          views: 0,
+          conversions: 0,
+          published_at: body.status === 'published' ? now : null,
+          author_id: body.author_id ? Number(body.author_id) : null,
+          created_at: now,
+          updated_at: now,
+        }).returningAll().executeTakeFirst()
+        if (!page || page.id == null) {
+          page = await db.selectFrom('pages').selectAll().where('title', '=', title).orderBy('id', 'desc').executeTakeFirst()
+        }
+
+        return cmsJson({ ok: true, page }, { status: 201 })
+      }
+
+      if (req.method === 'DELETE' && id) {
+        await db.deleteFrom('pages').where('id', '=', id).execute()
+        return cmsJson({ ok: true })
+      }
+    }
+
+    if (resource === 'authors') {
+      if (req.method === 'POST') {
+        const body = await cmsBody(req)
+        const name = String(body.name || '').trim()
+        const email = String(body.email || '').trim()
+        if (!name || !email)
+          return cmsJson({ ok: false, error: 'Name and email are required' }, { status: 422 })
+
+        let author = await db.insertInto('authors').values({
+          name,
+          email,
+          created_at: now,
+          updated_at: now,
+        }).returningAll().executeTakeFirst()
+        if (!author || author.id == null) {
+          author = await db.selectFrom('authors').selectAll().where('email', '=', email).orderBy('id', 'desc').executeTakeFirst()
+        }
+
+        return cmsJson({ ok: true, author }, { status: 201 })
+      }
+
+      if (req.method === 'DELETE' && id) {
+        await db.deleteFrom('authors').where('id', '=', id).execute()
+        return cmsJson({ ok: true })
+      }
+    }
+
+    if (resource === 'comments') {
+      if (req.method === 'PATCH' && id) {
+        const body = await cmsBody(req)
+        const data: Record<string, any> = { updated_at: now }
+        for (const key of ['content', 'status', 'author_name', 'author_email']) {
+          if (body[key] !== undefined)
+            data[key] = body[key]
+        }
+        await db.updateTable('comments').set(data).where('id', '=', id).execute()
+        const comment = await db.selectFrom('comments').selectAll().where('id', '=', id).executeTakeFirst()
+        if (!comment)
+          return cmsJson({ ok: false, error: 'Comment not found' }, { status: 404 })
+
+        return cmsJson({ ok: true, comment })
+      }
+
+      if (req.method === 'DELETE' && id) {
+        await db.deleteFrom('comments').where('id', '=', id).execute()
+        return cmsJson({ ok: true })
+      }
+    }
+
+    return cmsJson({ ok: false, error: 'CMS endpoint not found' }, { status: 404 })
+  }
+  catch (error) {
+    return cmsJson({ ok: false, error: (error as Error)?.message || String(error) }, { status: 500 })
+  }
+}
+
 async function startStxServer(): Promise<void> {
   // Preload @stacksjs/orm before the STX server starts. The orm package's
   // top-level evaluation walks every framework default model file, exports
@@ -260,6 +553,7 @@ async function startStxServer(): Promise<void> {
     partialsDir: dashboardPath,
     quiet: true,
     routes: configRoutes,
+    onRequest: dashboardCmsApi,
     auth: false,
     ...(stxModule && { stxModule }),
   } as any)
@@ -587,6 +881,12 @@ if (createApp) {
   // below handle it.
   if (!craftBinaryPath) {
     createApp = null
+  }
+
+  if (!createApp) {
+    // eslint-disable-next-line no-console
+    console.log(`  ${dim('Native window unavailable. Set CRAFT_BIN to a craft binary, or open the URL above in a browser.')}\n`)
+    await new Promise(() => {})
   }
 
   const app = createApp({
