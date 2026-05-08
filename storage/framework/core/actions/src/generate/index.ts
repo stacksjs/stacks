@@ -107,7 +107,16 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
 
   if (result.isErr) {
     log.error('There was an error generating your types.', result.error)
-    process.exit(ExitCode.FatalError)
+    // `generateTypes` is invoked both from the user-facing
+    // `buddy generate:types` command (where exiting non-zero is the
+    // right behaviour for CI scripts) AND from `watchTypes` running as
+    // a sidecar inside `dev:api`. In the watch case, killing the
+    // parent process here also kills the dev server — surfacing as
+    // `Failed to execute command: bun --watch ...` and forcing a
+    // restart. Throw instead, and let the caller decide whether the
+    // failure is fatal: the CLI catches and exits, the watcher
+    // catches and stays alive for the next file change.
+    throw result.error instanceof Error ? result.error : new Error(String(result.error))
   }
 
   log.success('Types were generated successfully')
@@ -135,6 +144,26 @@ export async function generateTypes(options?: GeneratorOptions): Promise<void> {
  * non-blocking (sidecar use, like `dev:api`).
  */
 export async function watchTypes(options?: GeneratorOptions): Promise<void> {
+  // Cheap pre-check: if `generate:types` isn't defined in the framework
+  // package.json we will fail every single time a watched file changes
+  // (models, config, migrations). Without this short-circuit each save
+  // produced a stacktrace; before the in-line throw fix, it killed the
+  // parent dev server outright. Bail with a clear warning and let the
+  // dev server keep running.
+  try {
+    const manifestPath = `${frameworkPath()}/package.json`
+    const text = fs.existsSync(manifestPath) ? fs.readFileSync(manifestPath, 'utf-8') : ''
+    const manifest = text ? JSON.parse(text) : {}
+    if (!manifest?.scripts?.['generate:types']) {
+      log.warn('[generate:types --watch] no `generate:types` script in framework package.json — type regeneration disabled. dev:api will keep running, but type definitions won\'t auto-refresh on model/config changes.')
+      return
+    }
+  }
+  catch {
+    // If we can't read the manifest, fall through and let the watcher
+    // run; the per-trigger try/catch below will surface the failure.
+  }
+
   const watched = [
     projectPath('app/Models'),
     storagePath('framework/defaults/app/Models'),
