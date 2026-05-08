@@ -291,6 +291,12 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
   const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
+  // Dashboard is opt-in. It boots a separate stx-serve process + a craft
+  // window when ts-craft is installed, both of which are heavyweight and
+  // unnecessary for most app development sessions. Use
+  // `STACKS_DEV_DASHBOARD=1 ./buddy dev` (or `./buddy dev:dashboard` to
+  // run it standalone) when you actually want the dashboard up.
+  const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
   const hasCustomDomain = appUrl && appUrl !== 'localhost' && !appUrl.includes('localhost:')
   const domain = hasCustomDomain ? appUrl.replace(/^https?:\/\//, '') : null
   const apiDomain = domain ? `api.${domain}` : null
@@ -310,12 +316,16 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
   console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
   console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
-  console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
+  if (includeDashboard) {
+    console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
+  }
   if (options.verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
+    if (includeDashboard) {
+      console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
+    }
   }
   console.log()
 
@@ -382,7 +392,7 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
     { name: 'Frontend', port: frontendPort },
     { name: 'API', port: apiPort },
     { name: 'Docs', port: docsPort },
-    { name: 'Dashboard', port: dashboardPort },
+    ...(includeDashboard ? [{ name: 'Dashboard', port: dashboardPort }] : []),
   ]
   const readinessTimeoutMs = 30000
   let readyAnnounced = false
@@ -401,10 +411,11 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
         console.log(`  ${dim(summary)}\n`)
       }
       // Print the registered API routes once the API server reports
-      // ready. Helps new contributors orient themselves without grepping
-      // `app/Routes.ts`. Hidden behind STACKS_PRINT_ROUTES=0 for users
-      // who find it too chatty.
-      if (process.env.STACKS_PRINT_ROUTES !== '0') {
+      // ready. Hidden by default — the table is long (~250 routes once
+      // the framework defaults register) and dominates the dev banner.
+      // Opt in with `STACKS_PRINT_ROUTES=1` when you actually want to
+      // grep through it from the terminal.
+      if (process.env.STACKS_PRINT_ROUTES === '1') {
         await printRegisteredRoutes(apiPort).catch(() => { /* best effort */ })
       }
     })
@@ -423,10 +434,12 @@ export async function startDevelopmentServer(options: DevOptions, startTime?: nu
       if (options.verbose)
         log.error(`Docs: ${error}`)
     }),
-    a.runDashboardDevServer(quietOpts).catch((error) => {
-      if (options.verbose)
-        log.error(`Dashboard: ${error}`)
-    }),
+    includeDashboard
+      ? a.runDashboardDevServer(quietOpts).catch((error) => {
+        if (options.verbose)
+          log.error(`Dashboard: ${error}`)
+      })
+      : Promise.resolve(),
     hasCustomDomain
       ? startReverseProxy(options).catch((error) => {
         if (options.verbose)
@@ -529,6 +542,12 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
   const sslBasePath = `${process.env.HOME}/.stacks/ssl`
   const verbose = options.verbose ?? false
 
+  // Mirror the dashboard opt-in from startDevelopmentServer — when the
+  // dashboard isn't being launched, don't ask rpx to issue a cert for
+  // its subdomain (the proxy entry would just point at a port nothing
+  // is bound to).
+  const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
+
   try {
     const { startProxies } = await import('@stacksjs/rpx')
 
@@ -543,7 +562,9 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
         { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
         { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
         { from: `localhost:${docsPort}`, to: docsDomain, cleanUrls: false },
-        { from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false },
+        ...(includeDashboard
+          ? [{ from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false }]
+          : []),
       ],
       https: {
         basePath: sslBasePath,
