@@ -68,7 +68,7 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.2.13",
+    "@stacksjs/ts-cloud": "^0.2.14",
     "@stacksjs/ts-craft": "^0.0.2",
     "@types/d3": "^7.4.3",
     "d3": "^7.9.0",

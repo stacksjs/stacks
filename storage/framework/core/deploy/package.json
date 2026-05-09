@@ -12,6 +12,6 @@
     }
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.2.13"
+    "@stacksjs/ts-cloud": "^0.2.14"
   }
 }
