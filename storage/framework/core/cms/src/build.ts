@@ -501,6 +501,61 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     }
     .hero p { color: var(--text-light); font-size: 1.05rem; max-width: 540px; margin: 0 auto; font-weight: 700; }
 
+    /* Park stamps */
+    .stamp-trail {
+      display: flex;
+      gap: 0.85rem;
+      align-items: stretch;
+      margin: 0 0 1rem;
+      padding: 0.15rem 0.1rem 0.45rem;
+      overflow-x: auto;
+      overscroll-behavior-x: contain;
+      scrollbar-width: thin;
+      scrollbar-color: var(--border) transparent;
+    }
+    .stamp-print {
+      position: relative;
+      flex: 1 0 7.5rem;
+      min-width: 7.5rem;
+      max-width: 9rem;
+      display: block;
+      padding: 0.55rem;
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      background:
+        linear-gradient(180deg, rgba(255, 250, 240, 0.06), transparent),
+        var(--paper);
+      box-shadow: var(--shadow);
+      transform: rotate(var(--tilt, -1deg));
+      transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+    }
+    .stamp-print:nth-child(2) { --tilt: 1deg; }
+    .stamp-print:nth-child(3) { --tilt: -0.4deg; }
+    .stamp-print:nth-child(4) { --tilt: 0.8deg; }
+    .stamp-print:hover {
+      border-color: var(--post-hover-border);
+      box-shadow: 0 20px 42px -26px rgba(0, 0, 0, 0.8);
+      transform: translateY(-2px) rotate(0deg);
+    }
+    .stamp-print img {
+      display: block;
+      width: 100%;
+      aspect-ratio: 1;
+      object-fit: contain;
+      border-radius: 5px;
+      background: #fff8ea;
+      padding: 0.7rem;
+    }
+    .stamp-print span {
+      display: block;
+      margin-top: 0.45rem;
+      color: var(--text-lighter);
+      font-size: 0.68rem;
+      font-weight: 800;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
     /* Post list */
     .post-list { list-style: none; }
     .post-item {
@@ -753,6 +808,18 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       .park-emblem { width: 76px; height: 76px; }
       .hero h1 { font-size: 1.5rem; }
       .hero::after { height: 38%; background-size: 180% auto; }
+      .stamp-trail {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.65rem;
+        margin-bottom: 1.1rem;
+        overflow: visible;
+        padding-inline: 0;
+      }
+      .stamp-print {
+        min-width: 0;
+        max-width: none;
+      }
       .newsletter-card { grid-template-columns: 1fr; padding: 1.25rem; }
       .newsletter-card::after { width: 240px; opacity: 0.2; }
       .newsletter-form { flex-direction: column; align-items: stretch; }
@@ -804,6 +871,22 @@ function generateNewsletterCapture(source = 'blog-static'): string {
         <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
         <button type="submit">Subscribe</button>
       </form>
+    </section>`
+}
+
+function generateParkStampTrail(): string {
+  const stamps = [
+    ['Grove', '/assets/images/blog-sign-tree.svg'],
+    ['Campfire', '/assets/images/blog-sign-campfire.svg'],
+    ['Trail', '/assets/images/blog-sign-hiker.svg'],
+    ['Forest', '/assets/images/blog-sign-tree-badge.svg'],
+  ]
+
+  return `<section class="stamp-trail" aria-label="National park field guide stamps">
+      ${stamps.map(([name, src]) => `<div class="stamp-print" aria-label="${escapeHtml(name)} field guide stamp">
+        <img src="${escapeHtml(src)}" alt="${escapeHtml(name)} park stamp" decoding="async" fetchpriority="high">
+        <span>${escapeHtml(name)}</span>
+      </div>`).join('\n')}
     </section>`
 }
 
@@ -916,6 +999,7 @@ function generateIndexPage(posts: PostRow[], config: BlogConfig, authors: Map<nu
   const content = `
     ${hero}
     ${page === 1 ? generateNewsletterCapture() : ''}
+    ${page === 1 ? generateParkStampTrail() : ''}
     <ul class="post-list">
       ${postCards}
     </ul>
