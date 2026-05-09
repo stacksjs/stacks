@@ -213,6 +213,105 @@ async function withS3Retry<T>(fn: () => Promise<T>, label = 's3 operation'): Pro
   throw new Error(`${label} failed after ${maxRetries + 1} attempts`) // unreachable but satisfies TS
 }
 
+function normalizeArray<T>(value: T | T[] | undefined): T[] {
+  if (!value) return []
+  return Array.isArray(value) ? value : [value]
+}
+
+function buildCloudFrontXmlElement(name: string, value: any, indent = ''): string {
+  if (value === null || value === undefined) return ''
+  if (typeof value === 'boolean') return `${indent}<${name}>${value}</${name}>\n`
+  if (typeof value === 'number' || typeof value === 'string') return `${indent}<${name}>${value}</${name}>\n`
+  if (Array.isArray(value)) return value.map(item => buildCloudFrontXmlElement(name, item, indent)).join('')
+  if (typeof value === 'object') {
+    if (name.startsWith('@_') || name === '?xml') return ''
+
+    let children = ''
+    for (const [key, val] of Object.entries(value)) {
+      if (!key.startsWith('@_') && key !== '#text') {
+        children += buildCloudFrontXmlElement(key, val, `${indent}  `)
+      }
+    }
+
+    if (value['#text'] !== undefined) return `${indent}<${name}>${value['#text']}</${name}>\n`
+    return `${indent}<${name}>\n${children}${indent}</${name}>\n`
+  }
+
+  return ''
+}
+
+function buildCloudFrontDistributionConfigXml(config: Record<string, any>): string {
+  return `<?xml version="1.0" encoding="UTF-8"?>\n<DistributionConfig xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/">\n${Object.entries(config)
+    .filter(([key]) => !key.startsWith('@_'))
+    .map(([key, val]) => buildCloudFrontXmlElement(key, val, '  '))
+    .join('')}</DistributionConfig>\n`
+}
+
+async function ensureSecurityGroupPort(ec2: any, securityGroupId: string | undefined, port: number): Promise<void> {
+  if (!securityGroupId) return
+
+  const securityGroups = await ec2.describeSecurityGroups({ GroupIds: [securityGroupId] })
+  const permissions = securityGroups?.SecurityGroups?.[0]?.IpPermissions || []
+  const alreadyOpen = permissions.some((permission: any) => {
+    return permission.IpProtocol === 'tcp'
+      && Number(permission.FromPort) <= port
+      && Number(permission.ToPort) >= port
+      && normalizeArray(permission.IpRanges).some((range: any) => range.CidrIp === '0.0.0.0/0')
+  })
+
+  if (alreadyOpen) return
+
+  try {
+    await ec2.authorizeSecurityGroupIngress({
+      GroupId: securityGroupId,
+      IpPermissions: [{
+        IpProtocol: 'tcp',
+        FromPort: port,
+        ToPort: port,
+        IpRanges: [{ CidrIp: '0.0.0.0/0', Description: `Stacks API port ${port}` }],
+      }],
+    })
+  } catch (error: any) {
+    if (!String(error?.message || '').includes('InvalidPermission.Duplicate')) throw error
+  }
+}
+
+async function ensureCloudFrontApiOriginPort(awsClient: any, distributionId: string | undefined, port: number): Promise<void> {
+  if (!distributionId) return
+
+  const getResult = await awsClient.request({
+    service: 'cloudfront',
+    region: 'us-east-1',
+    method: 'GET',
+    path: `/2020-05-31/distribution/${distributionId}/config`,
+    returnHeaders: true,
+  })
+
+  const etag = getResult.headers?.etag || getResult.headers?.ETag || ''
+  const currentConfig = getResult.body?.DistributionConfig || getResult.DistributionConfig || getResult.body
+  if (!etag || !currentConfig?.Origins?.Items) return
+
+  const origins = normalizeArray(currentConfig.Origins.Items.Origin)
+  const apiOrigin = origins.find((origin: any) => String(origin.Id || '').includes('-api'))
+  if (!apiOrigin?.CustomOriginConfig) return
+
+  if (Number(apiOrigin.CustomOriginConfig.HTTPPort) === port) return
+
+  apiOrigin.CustomOriginConfig.HTTPPort = port
+
+  await awsClient.request({
+    service: 'cloudfront',
+    region: 'us-east-1',
+    method: 'PUT',
+    path: `/2020-05-31/distribution/${distributionId}/config`,
+    body: buildCloudFrontDistributionConfigXml(currentConfig),
+    headers: {
+      'Content-Type': 'application/xml',
+      'If-Match': etag,
+    },
+  })
+}
+
 // Build framework - show output so user knows it's working
 const frameworkBuildSpinner = spinner('Building framework...')
 frameworkBuildSpinner.start()
@@ -661,6 +760,7 @@ try {
       const stackName = `${projectName}-cloud`
       const outputs = await cf.getStackOutputs(stackName)
       const bucketName = outputs.FrontendBucketName
+      const apiServerPort = Number(config.ports?.api || 3008)
 
       // Find the EC2 instance ID from stack outputs
       let instanceId: string | undefined
@@ -671,11 +771,27 @@ try {
         }
       }
 
+      let securityGroupId: string | undefined
+      if (instanceId) {
+        const { EC2Client } = await import('@stacksjs/ts-cloud') as any
+        const ec2 = new EC2Client(region)
+        const instanceData = await ec2.describeInstances({
+          Filters: [{ Name: 'instance-id', Values: [instanceId] }],
+        })
+        const securityGroups = instanceData?.Reservations?.[0]?.Instances?.[0]?.SecurityGroups
+        securityGroupId = securityGroups?.[0]?.GroupId
+
+        await ensureSecurityGroupPort(ec2, securityGroupId, apiServerPort)
+      }
+
       if (!instanceId || !bucketName) {
         serverDeploySpinner.stop()
         if (!instanceId) console.log('⚠ No EC2 instance found in stack outputs, skipping server deploy')
         if (!bucketName) console.log('⚠ No S3 bucket found for staging server artifacts')
       } else {
+        const publicDistributionId = outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
+        await ensureCloudFrontApiOriginPort(awsClient, publicDistributionId, apiServerPort)
+
         // Upload ts-cloud dist to S3 for EC2 to download
         const tsCloudDistPath = resolve(p.projectPath('node_modules/@stacksjs/ts-cloud/dist/index.js'))
         if (serverFileExists(tsCloudDistPath)) {
@@ -704,11 +820,27 @@ db.run(\`CREATE TABLE IF NOT EXISTS subscribers (
 
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
-  "Access-Control-Allow-Methods": "POST, OPTIONS",
+  "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
   "Access-Control-Allow-Headers": "Content-Type",
 };
 
 const ses = new SESClient("${region}");
+
+async function readBody(req) {
+  const contentType = req.headers.get("content-type") || "";
+
+  if (contentType.includes("application/json")) {
+    return await req.json();
+  }
+
+  if (contentType.includes("application/x-www-form-urlencoded") || contentType.includes("multipart/form-data")) {
+    const form = await req.formData();
+    return Object.fromEntries(form.entries());
+  }
+
+  const text = await req.text();
+  return Object.fromEntries(new URLSearchParams(text));
+}
 
 async function sendWelcomeEmail(email) {
   try {
@@ -741,7 +873,7 @@ async function sendWelcomeEmail(email) {
 }
 
 const server = Bun.serve({
-  port: 80,
+  port: ${apiServerPort},
   hostname: "0.0.0.0",
   async fetch(req) {
     const url = new URL(req.url);
@@ -756,7 +888,7 @@ const server = Bun.serve({
 
     if (url.pathname === "/api/email/subscribe" && req.method === "POST") {
       try {
-        const body = await req.json();
+        const body = await readBody(req);
         const email = (body.email || "").trim().toLowerCase();
         if (!email || !email.includes("@")) {
           return Response.json(
@@ -814,9 +946,8 @@ console.log(\`Stacks API server running on port \${server.port}\`);
           // Download deployment artifacts from S3
           `aws s3 cp s3://${bucketName}/_deploy/ts-cloud-dist.js /var/www/api/ts-cloud-dist.js`,
           `aws s3 cp s3://${bucketName}/_deploy/server.ts /var/www/api/server.ts`,
-          // Create systemd service if it doesn't exist (first-time setup)
-          `if [ ! -f /etc/systemd/system/stacks-api.service ]; then
-cat > /etc/systemd/system/stacks-api.service << 'SERVICEFILE'
+          // Always write the service file so deploys can fix stale ExecStart/port assumptions.
+          `cat > /etc/systemd/system/stacks-api.service << 'SERVICEFILE'
 [Unit]
 Description=Stacks Bun API Server
 After=network.target
@@ -833,11 +964,13 @@ Environment=NODE_ENV=production
 WantedBy=multi-user.target
 SERVICEFILE
 systemctl daemon-reload
-systemctl enable stacks-api
-fi`,
+systemctl enable stacks-api`,
           // Restart the API server
+          'systemctl reset-failed stacks-api || true',
           'systemctl restart stacks-api',
-          'echo "API server deployed and restarted"',
+          `for i in $(seq 1 20); do curl -fsS http://127.0.0.1:${apiServerPort}/api/health && break; sleep 1; done`,
+          `curl -fsS http://127.0.0.1:${apiServerPort}/api/health`,
+          `echo "API server deployed and restarted on port ${apiServerPort}"`,
         ].join(' && ')
 
         // Call SSM SendCommand via AWSClient
