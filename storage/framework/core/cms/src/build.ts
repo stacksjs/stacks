@@ -1,7 +1,6 @@
 import type { BlogConfig } from '../../../../config/blog'
 import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { db } from '@stacksjs/database'
 import { path as p } from '@stacksjs/path'
 
 export interface BuildBlogOptions {
@@ -150,7 +149,7 @@ function renderMarkdownish(text: string): string {
 function blogFontFaces(fontPath = '/assets/fonts/nps'): string {
   return `@font-face {
       font-family: 'NPS 2026';
-      src: url('${fontPath}/NPS_2026-variable.woff2') format('woff2-variations');
+      src: url('${fontPath}/NPS_2026-variable.woff2') format('woff2');
       font-weight: 100 900;
       font-style: normal;
       font-display: swap;
@@ -183,6 +182,78 @@ function copyBlogFonts(outDir: string): void {
     if (file.endsWith('.woff2'))
       copyFileSync(join(sourceDir, file), join(targetDir, file))
   }
+}
+
+function sqliteDatabasePath(): string {
+  const configuredPath = process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
+  return configuredPath.startsWith('/') ? configuredPath : p.projectPath(configuredPath)
+}
+
+function shouldUseLocalSqlite(): boolean {
+  return (process.env.DB_CONNECTION || 'sqlite') === 'sqlite' && existsSync(sqliteDatabasePath())
+}
+
+async function queryLocalSqlite<T>(sql: string): Promise<T[] | null> {
+  if (!shouldUseLocalSqlite())
+    return null
+
+  const { Database } = await import('bun:sqlite')
+  const sqlite = new Database(sqliteDatabasePath(), { readonly: true })
+
+  try {
+    return sqlite.query(sql).all() as T[]
+  } finally {
+    sqlite.close()
+  }
+}
+
+async function withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+  let timeout: ReturnType<typeof setTimeout> | undefined
+  try {
+    return await Promise.race([
+      promise,
+      new Promise<T>((_, reject) => {
+        timeout = setTimeout(() => reject(new Error(`CMS database query timed out after ${ms}ms`)), ms)
+      }),
+    ])
+  } finally {
+    if (timeout)
+      clearTimeout(timeout)
+  }
+}
+
+async function fetchPublishedPosts(): Promise<PostRow[]> {
+  const sqlitePosts = await queryLocalSqlite<PostRow>(
+    'select * from posts where status = \'published\' order by published_at desc',
+  )
+  if (sqlitePosts)
+    return sqlitePosts
+
+  const { db } = await import('@stacksjs/database')
+  return await withTimeout(
+    db
+      .selectFrom('posts')
+      .where('status', '=', 'published')
+      .orderBy('published_at', 'desc')
+      .selectAll()
+      .execute() as Promise<PostRow[]>,
+    3000,
+  )
+}
+
+async function fetchAuthors(): Promise<AuthorRow[]> {
+  const sqliteAuthors = await queryLocalSqlite<AuthorRow>('select * from authors order by created_at desc')
+  if (sqliteAuthors)
+    return sqliteAuthors
+
+  const { db } = await import('@stacksjs/database')
+  return await withTimeout(
+    db
+      .selectFrom('authors')
+      .selectAll()
+      .execute() as Promise<AuthorRow[]>,
+    3000,
+  )
 }
 
 function generateLayout(config: BlogConfig, title: string, content: string, _options?: { isPost?: boolean }): string {
@@ -905,12 +976,7 @@ export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
   let posts: PostRow[]
   let usedDefaults = false
   try {
-    const dbPosts = await db
-      .selectFrom('posts')
-      .where('status', '=', 'published')
-      .orderBy('published_at', 'desc')
-      .selectAll()
-      .execute() as unknown as PostRow[]
+    const dbPosts = await fetchPublishedPosts()
 
     // If DB posts have no slugs or are faker data, merge with defaults
     const hasRealContent = dbPosts.some(p => p.slug && p.slug !== 'null' && !p.title.endsWith('.'))
@@ -933,10 +999,7 @@ export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
   // Fetch authors
   const authors = new Map<number, AuthorRow>()
   try {
-    const authorRows = await db
-      .selectFrom('authors')
-      .selectAll()
-      .execute() as unknown as AuthorRow[]
+    const authorRows = await fetchAuthors()
     for (const author of authorRows) {
       authors.set(author.id, author)
     }

@@ -1,4 +1,5 @@
 import type { Subprocess } from '@stacksjs/types'
+import { existsSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import { runCommand, spinner } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
@@ -257,8 +258,14 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
 
 // Build blog static site
 const blogDistExists = storage.hasFiles(p.projectPath('dist/blog'))
-const blogFontAssetsExist = storage.hasFiles(p.projectPath('dist/blog/assets/fonts/nps'))
-if (!blogDistExists || !blogFontAssetsExist) {
+const blogFontAssetsExist = [
+  'NPS_2026-variable.woff2',
+  'SequoiaSans-Regular.woff2',
+  'RedwoodSerif-Regular.woff2',
+].every(file => existsSync(p.projectPath(`dist/blog/assets/fonts/nps/${file}`)))
+const blogHtmlUsesCurrentFontFormat = existsSync(p.projectPath('dist/blog/index.html'))
+  && !readFileSync(p.projectPath('dist/blog/index.html'), 'utf8').includes('woff2-variations')
+if (!blogDistExists || !blogFontAssetsExist || !blogHtmlUsesCurrentFontFormat) {
   const blogBuildSpinner = spinner('Building blog...')
   blogBuildSpinner.start()
   try {

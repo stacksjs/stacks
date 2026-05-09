@@ -83,13 +83,125 @@ async function cmsBody(req: Request): Promise<Record<string, any>> {
   return {}
 }
 
-async function safeCmsAll(db: any, table: string, orderBy = 'created_at'): Promise<any[]> {
-  try {
-    let query = db.selectFrom(table).selectAll()
-    if (orderBy)
-      query = query.orderBy(orderBy, 'desc')
+const cmsTableColumns: Record<string, string[]> = {
+  posts: ['title', 'poster', 'content', 'excerpt', 'views', 'published_at', 'status', 'is_featured', 'author_id', 'created_at', 'updated_at'],
+  pages: ['title', 'template', 'views', 'published_at', 'conversions', 'author_id', 'created_at', 'updated_at'],
+  authors: ['name', 'email', 'user_id', 'created_at', 'updated_at'],
+  categories: ['name', 'description', 'slug', 'image_url', 'is_active', 'parent_category_id', 'display_order', 'created_at', 'updated_at'],
+  tags: ['name', 'slug', 'description', 'post_count', 'color', 'created_at', 'updated_at'],
+  comments: ['title', 'body', 'content', 'status', 'author_name', 'author_email', 'post_title', 'is_approved', 'approved_at', 'rejected_at', 'updated_at'],
+}
 
-    return await query.execute()
+interface CmsStore {
+  all: (table: string, orderBy?: string) => Promise<any[]>
+  insert: (table: string, values: Record<string, any>) => Promise<any | undefined>
+  update: (table: string, id: number, values: Record<string, any>) => Promise<any | undefined>
+  delete: (table: string, id: number) => Promise<void>
+  find: (table: string, id: number) => Promise<any | undefined>
+  close?: () => void
+}
+
+function cmsDatabasePath(): string {
+  const configuredPath = process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
+  return configuredPath.startsWith('/') ? configuredPath : projectPath(configuredPath)
+}
+
+function cmsQuoteIdentifier(value: string): string {
+  if (!/^[a-z_][a-z0-9_]*$/i.test(value))
+    throw new Error(`Invalid CMS database identifier: ${value}`)
+
+  return `"${value.replace(/"/g, '""')}"`
+}
+
+function cmsValuesForTable(table: string, values: Record<string, any>): Record<string, any> {
+  const columns = cmsTableColumns[table]
+  if (!columns)
+    throw new Error(`Unsupported CMS table: ${table}`)
+
+  return Object.fromEntries(
+    Object.entries(values).filter(([key, value]) => columns.includes(key) && value !== undefined),
+  )
+}
+
+async function createSqliteCmsStore(): Promise<CmsStore | undefined> {
+  if ((process.env.DB_CONNECTION || 'sqlite') !== 'sqlite' || !existsSync(cmsDatabasePath()))
+    return undefined
+
+  const { Database } = await import('bun:sqlite')
+  const sqlite = new Database(cmsDatabasePath())
+
+  async function find(table: string, id: number): Promise<any | undefined> {
+    return sqlite.query(`select * from ${cmsQuoteIdentifier(table)} where id = ? limit 1`).get(id) as any
+  }
+
+  return {
+    async all(table, orderBy = 'created_at') {
+      return sqlite.query(`select * from ${cmsQuoteIdentifier(table)} order by ${cmsQuoteIdentifier(orderBy)} desc`).all() as any[]
+    },
+    async insert(table, values) {
+      const safeValues = cmsValuesForTable(table, values)
+      const columns = Object.keys(safeValues)
+      const placeholders = columns.map(() => '?').join(', ')
+      const sql = `insert into ${cmsQuoteIdentifier(table)} (${columns.map(cmsQuoteIdentifier).join(', ')}) values (${placeholders})`
+      const result = sqlite.query(sql).run(...columns.map(column => safeValues[column])) as { lastInsertRowid?: number | bigint }
+      return await find(table, Number(result.lastInsertRowid))
+    },
+    async update(table, id, values) {
+      const safeValues = cmsValuesForTable(table, values)
+      const columns = Object.keys(safeValues)
+      if (columns.length) {
+        const assignments = columns.map(column => `${cmsQuoteIdentifier(column)} = ?`).join(', ')
+        sqlite.query(`update ${cmsQuoteIdentifier(table)} set ${assignments} where id = ?`).run(...columns.map(column => safeValues[column]), id)
+      }
+      return await find(table, id)
+    },
+    async delete(table, id) {
+      sqlite.query(`delete from ${cmsQuoteIdentifier(table)} where id = ?`).run(id)
+    },
+    find,
+    close() {
+      sqlite.close()
+    },
+  }
+}
+
+async function createCmsStore(): Promise<CmsStore> {
+  const sqliteStore = await createSqliteCmsStore()
+  if (sqliteStore)
+    return sqliteStore
+
+  const { db } = await import('@stacksjs/database')
+  return {
+    async all(table, orderBy = 'created_at') {
+      let query = db.selectFrom(table).selectAll()
+      if (orderBy)
+        query = query.orderBy(orderBy, 'desc')
+      return await query.execute()
+    },
+    async insert(table, values) {
+      let row = await db.insertInto(table).values(values).returningAll().executeTakeFirst()
+      if (!row || row.id == null) {
+        const lookup = values.email ? ['email', values.email] : values.name ? ['name', values.name] : ['title', values.title]
+        row = await db.selectFrom(table).selectAll().where(lookup[0], '=', lookup[1]).orderBy('id', 'desc').executeTakeFirst()
+      }
+      return row
+    },
+    async update(table, id, values) {
+      await db.updateTable(table).set(values).where('id', '=', id).execute()
+      return await db.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst()
+    },
+    async delete(table, id) {
+      await db.deleteFrom(table).where('id', '=', id).execute()
+    },
+    async find(table, id) {
+      return await db.selectFrom(table).selectAll().where('id', '=', id).executeTakeFirst()
+    },
+  }
+}
+
+async function safeCmsAll(store: CmsStore, table: string, orderBy = 'created_at'): Promise<any[]> {
+  try {
+    return await store.all(table, orderBy)
   }
   catch {
     return []
@@ -101,8 +213,9 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
   if (!url.pathname.startsWith('/api/dashboard/cms'))
     return null
 
+  let store: CmsStore | undefined
   try {
-    const { db } = await import('@stacksjs/database')
+    store = await createCmsStore()
     const path = url.pathname.replace(/^\/api\/dashboard\/cms\/?/, '')
     const parts = path.split('/').filter(Boolean)
     const resource = parts[0] || ''
@@ -111,12 +224,12 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
 
     if (req.method === 'GET' && !resource) {
       const [posts, pages, authors, categories, tags, comments] = await Promise.all([
-        safeCmsAll(db, 'posts'),
-        safeCmsAll(db, 'pages'),
-        safeCmsAll(db, 'authors'),
-        safeCmsAll(db, 'categories'),
-        safeCmsAll(db, 'tags'),
-        safeCmsAll(db, 'comments'),
+        safeCmsAll(store, 'posts'),
+        safeCmsAll(store, 'pages'),
+        safeCmsAll(store, 'authors'),
+        safeCmsAll(store, 'categories'),
+        safeCmsAll(store, 'tags'),
+        safeCmsAll(store, 'comments'),
       ])
 
       return cmsJson({
@@ -146,7 +259,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
         if (!title)
           return cmsJson({ ok: false, error: 'Title is required' }, { status: 422 })
 
-        let post = await db.insertInto('posts').values({
+        const post = await store.insert('posts', {
           title,
           poster: String(body.poster || ''),
           content: String(body.content || body.body || ''),
@@ -158,10 +271,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
           author_id: body.author_id ? Number(body.author_id) : null,
           created_at: now,
           updated_at: now,
-        }).returningAll().executeTakeFirst()
-        if (!post || post.id == null) {
-          post = await db.selectFrom('posts').selectAll().where('title', '=', title).orderBy('id', 'desc').executeTakeFirst()
-        }
+        })
 
         return cmsJson({ ok: true, post }, { status: 201 })
       }
@@ -176,8 +286,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
         if (body.views !== undefined) data.views = Number(body.views)
         if (body.is_featured !== undefined) data.is_featured = body.is_featured ? 1 : 0
 
-        await db.updateTable('posts').set(data).where('id', '=', id).execute()
-        const post = await db.selectFrom('posts').selectAll().where('id', '=', id).executeTakeFirst()
+        const post = await store.update('posts', id, data)
         if (!post)
           return cmsJson({ ok: false, error: 'Post not found' }, { status: 404 })
 
@@ -185,7 +294,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
       }
 
       if (req.method === 'DELETE' && id) {
-        await db.deleteFrom('posts').where('id', '=', id).execute()
+        await store.delete('posts', id)
         return cmsJson({ ok: true })
       }
     }
@@ -213,16 +322,31 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
           values.color = String(body.color || '')
         }
 
-        let row = await db.insertInto(table).values(values).returningAll().executeTakeFirst()
-        if (!row || row.id == null) {
-          row = await db.selectFrom(table).selectAll().where('name', '=', name).orderBy('id', 'desc').executeTakeFirst()
-        }
+        const row = await store.insert(table, values)
 
         return cmsJson({ ok: true, [resource === 'categories' ? 'category' : 'tag']: row }, { status: 201 })
       }
 
+      if (req.method === 'PATCH' && id) {
+        const body = await cmsBody(req)
+        const data: Record<string, any> = { updated_at: now }
+        for (const key of ['name', 'slug', 'description', 'color', 'image_url', 'parent_category_id']) {
+          if (body[key] !== undefined)
+            data[key] = body[key]
+        }
+        if (body.post_count !== undefined) data.post_count = Number(body.post_count)
+        if (body.display_order !== undefined) data.display_order = Number(body.display_order)
+        if (body.is_active !== undefined) data.is_active = body.is_active ? 1 : 0
+
+        const row = await store.update(table, id, data)
+        if (!row)
+          return cmsJson({ ok: false, error: `${resource === 'categories' ? 'Category' : 'Tag'} not found` }, { status: 404 })
+
+        return cmsJson({ ok: true, [resource === 'categories' ? 'category' : 'tag']: row })
+      }
+
       if (req.method === 'DELETE' && id) {
-        await db.deleteFrom(table).where('id', '=', id).execute()
+        await store.delete(table, id)
         return cmsJson({ ok: true })
       }
     }
@@ -234,7 +358,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
         if (!title)
           return cmsJson({ ok: false, error: 'Title is required' }, { status: 422 })
 
-        let page = await db.insertInto('pages').values({
+        const page = await store.insert('pages', {
           title,
           template: String(body.template || 'default'),
           views: 0,
@@ -243,16 +367,31 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
           author_id: body.author_id ? Number(body.author_id) : null,
           created_at: now,
           updated_at: now,
-        }).returningAll().executeTakeFirst()
-        if (!page || page.id == null) {
-          page = await db.selectFrom('pages').selectAll().where('title', '=', title).orderBy('id', 'desc').executeTakeFirst()
-        }
+        })
 
         return cmsJson({ ok: true, page }, { status: 201 })
       }
 
+      if (req.method === 'PATCH' && id) {
+        const body = await cmsBody(req)
+        const data: Record<string, any> = { updated_at: now }
+        for (const key of ['title', 'template', 'published_at']) {
+          if (body[key] !== undefined)
+            data[key] = body[key]
+        }
+        if (body.views !== undefined) data.views = Number(body.views)
+        if (body.conversions !== undefined) data.conversions = Number(body.conversions)
+        if (body.author_id !== undefined) data.author_id = body.author_id ? Number(body.author_id) : null
+
+        const page = await store.update('pages', id, data)
+        if (!page)
+          return cmsJson({ ok: false, error: 'Page not found' }, { status: 404 })
+
+        return cmsJson({ ok: true, page })
+      }
+
       if (req.method === 'DELETE' && id) {
-        await db.deleteFrom('pages').where('id', '=', id).execute()
+        await store.delete('pages', id)
         return cmsJson({ ok: true })
       }
     }
@@ -265,21 +404,34 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
         if (!name || !email)
           return cmsJson({ ok: false, error: 'Name and email are required' }, { status: 422 })
 
-        let author = await db.insertInto('authors').values({
+        const author = await store.insert('authors', {
           name,
           email,
           created_at: now,
           updated_at: now,
-        }).returningAll().executeTakeFirst()
-        if (!author || author.id == null) {
-          author = await db.selectFrom('authors').selectAll().where('email', '=', email).orderBy('id', 'desc').executeTakeFirst()
-        }
+        })
 
         return cmsJson({ ok: true, author }, { status: 201 })
       }
 
+      if (req.method === 'PATCH' && id) {
+        const body = await cmsBody(req)
+        const data: Record<string, any> = { updated_at: now }
+        for (const key of ['name', 'email']) {
+          if (body[key] !== undefined)
+            data[key] = body[key]
+        }
+        if (body.user_id !== undefined) data.user_id = body.user_id ? Number(body.user_id) : null
+
+        const author = await store.update('authors', id, data)
+        if (!author)
+          return cmsJson({ ok: false, error: 'Author not found' }, { status: 404 })
+
+        return cmsJson({ ok: true, author })
+      }
+
       if (req.method === 'DELETE' && id) {
-        await db.deleteFrom('authors').where('id', '=', id).execute()
+        await store.delete('authors', id)
         return cmsJson({ ok: true })
       }
     }
@@ -304,8 +456,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
           data.is_approved = 1
         if (data.status && data.status !== 'approved')
           data.is_approved = 0
-        await db.updateTable('comments').set(data).where('id', '=', id).execute()
-        const comment = await db.selectFrom('comments').selectAll().where('id', '=', id).executeTakeFirst()
+        const comment = await store.update('comments', id, data)
         if (!comment)
           return cmsJson({ ok: false, error: 'Comment not found' }, { status: 404 })
 
@@ -313,7 +464,7 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
       }
 
       if (req.method === 'DELETE' && id) {
-        await db.deleteFrom('comments').where('id', '=', id).execute()
+        await store.delete('comments', id)
         return cmsJson({ ok: true })
       }
     }
@@ -322,6 +473,8 @@ async function dashboardCmsApi(req: Request): Promise<Response | null> {
   }
   catch (error) {
     return cmsJson({ ok: false, error: (error as Error)?.message || String(error) }, { status: 500 })
+  } finally {
+    store?.close?.()
   }
 }
 

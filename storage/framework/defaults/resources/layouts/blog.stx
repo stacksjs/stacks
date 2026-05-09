@@ -9,7 +9,7 @@
   <style>
     @font-face {
       font-family: 'NPS 2026';
-      src: url('/assets/fonts/nps/NPS_2026-variable.woff2') format('woff2-variations');
+      src: url('/assets/fonts/nps/NPS_2026-variable.woff2') format('woff2');
       font-weight: 100 900;
       font-style: normal;
       font-display: swap;

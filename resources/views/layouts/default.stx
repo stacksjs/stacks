@@ -1,9 +1,5 @@
-<div class="flex flex-col items-center justify-center px-6 py-12 min-h-screen">
-  <div class="max-w-4xl w-full">
-    @yield('content')
-  </div>
+@yield('content')
 
-  @yield('footer')
-</div>
+@yield('footer')
 
 @stack('scripts')
