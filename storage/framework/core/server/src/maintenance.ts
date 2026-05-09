@@ -309,13 +309,19 @@ export function maintenanceHtml(payload: MaintenancePayload): string {
       font-family: "Switchback";
       src: url("/assets/fonts/nps/Switchback-Regular.woff2") format("woff2");
     }
+    @font-face {
+      font-display: swap;
+      font-family: "NPS 2026";
+      font-weight: 100 900;
+      src: url("/assets/fonts/nps/NPS_2026-variable.woff2") format("woff2");
+    }
     * {
       margin: 0;
       padding: 0;
       box-sizing: border-box;
     }
     body {
-      font-family: "Campmate Script", ui-serif, Georgia, serif;
+      font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
       min-height: 100vh;
       display: flex;
       align-items: center;
@@ -383,14 +389,17 @@ export function maintenanceHtml(payload: MaintenancePayload): string {
       z-index: 1;
       max-width: 560px;
       color: rgba(255, 247, 225, .84);
-      font-size: 1.55rem;
-      line-height: 1.2;
+      font-size: 1.08rem;
+      line-height: 1.65;
     }
     .lead {
       margin-top: 1.25rem;
       color: #b8d9cf;
-      font-size: 2rem;
-      line-height: 1.05;
+      font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
+      font-size: 1.22rem;
+      font-weight: 850;
+      line-height: 1.3;
+      text-transform: uppercase;
     }
     .message {
       margin-top: .75rem;

@@ -62,6 +62,22 @@ const workflowSteps = [
         src: url("/assets/fonts/nps/Switchback-Regular.woff2") format("woff2");
       }
 
+      @font-face {
+        font-display: swap;
+        font-family: "NPS 2026";
+        font-style: normal;
+        font-weight: 100 900;
+        src: url("/assets/fonts/nps/NPS_2026-variable.woff2") format("woff2");
+      }
+
+      @font-face {
+        font-display: swap;
+        font-family: "Redwood Serif";
+        font-style: normal;
+        font-weight: 400;
+        src: url("/assets/fonts/nps/RedwoodSerif-Regular.woff2") format("woff2");
+      }
+
       :root {
         color-scheme: dark;
         --ranger: #0d1e16;
@@ -95,7 +111,7 @@ const workflowSteps = [
         margin: 0;
         overflow-x: hidden;
         color: var(--cream);
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
+        font-family: "Switchback", ui-sans-serif, system-ui, sans-serif;
         background:
           radial-gradient(circle at 18% 16%, rgba(223, 154, 47, 0.2), transparent 24rem),
           radial-gradient(circle at 88% 6%, rgba(127, 184, 174, 0.2), transparent 28rem),
@@ -197,19 +213,22 @@ const workflowSteps = [
       }
 
       .mode-lead {
-        max-width: 580px;
+        max-width: 760px;
         margin: 1.5rem 0 0;
         color: var(--sky);
-        font-size: clamp(1.9rem, 4vw, 3.2rem);
-        line-height: 1.02;
+        font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-size: clamp(1.35rem, 2.5vw, 2rem);
+        font-weight: 850;
+        line-height: 1.32;
+        text-transform: uppercase;
       }
 
       .mode-copy {
         max-width: 580px;
         margin: 1rem 0 0;
         color: rgba(255, 247, 225, 0.78);
-        font-size: 1.65rem;
-        line-height: 1.22;
+        font-size: 1.08rem;
+        line-height: 1.65;
       }
 
       .mode-note {
@@ -328,21 +347,22 @@ const workflowSteps = [
       }
 
       .hero-headline {
-        max-width: 560px;
+        max-width: 650px;
         margin: 0;
         color: var(--sky);
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
-        font-size: clamp(3.1rem, 6vw, 5.6rem);
-        font-weight: 400;
-        line-height: 0.9;
+        font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
+        font-size: clamp(1.8rem, 3.2vw, 3rem);
+        font-weight: 850;
+        line-height: 1.22;
+        text-transform: uppercase;
       }
 
       .hero-copy {
         max-width: 680px;
         margin: 1.3rem 0 0;
         color: rgba(255, 247, 225, 0.82);
-        font-size: 1.8rem;
-        line-height: 1.16;
+        font-size: 1.18rem;
+        line-height: 1.7;
       }
 
       .hero-actions {
@@ -582,18 +602,18 @@ const workflowSteps = [
       .section-title {
         margin: 0;
         color: var(--cream);
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
-        font-size: clamp(3.5rem, 8vw, 6.4rem);
+        font-family: "Redwood Serif", Georgia, ui-serif, serif;
+        font-size: clamp(2rem, 4.6vw, 4.2rem);
         font-weight: 400;
-        line-height: 0.88;
+        line-height: 1.04;
         overflow-wrap: anywhere;
       }
 
       .section-copy {
         margin: 0;
         color: rgba(255, 247, 225, 0.72);
-        font-size: 1.62rem;
-        line-height: 1.2;
+        font-size: 1.04rem;
+        line-height: 1.7;
       }
 
       .area-grid {
@@ -640,10 +660,10 @@ const workflowSteps = [
       .signup-panel h2 {
         margin: 0;
         color: var(--cream);
-        font-family: "Campmate Script", ui-serif, Georgia, serif;
-        font-size: 2rem;
+        font-family: "Redwood Serif", Georgia, ui-serif, serif;
+        font-size: 1.45rem;
         font-weight: 400;
-        line-height: 1.35;
+        line-height: 1.18;
       }
 
       .area-card p,
@@ -651,8 +671,8 @@ const workflowSteps = [
       .deploy-panel p,
       .signup-panel p {
         color: rgba(255, 247, 225, 0.7);
-        font-size: 1.48rem;
-        line-height: 1.2;
+        font-size: 1rem;
+        line-height: 1.65;
       }
 
       .cms-panel {
@@ -845,7 +865,7 @@ const workflowSteps = [
         }
 
         .hero-headline {
-          font-size: clamp(2rem, 9vw, 2.65rem);
+          font-size: clamp(1.45rem, 7vw, 2.2rem);
         }
 
         .hero-copy {
@@ -902,8 +922,8 @@ const workflowSteps = [
         }
 
         .section-title {
-          font-size: clamp(3rem, 14vw, 4.25rem);
-          line-height: 0.9;
+          font-size: clamp(1.85rem, 9vw, 2.7rem);
+          line-height: 1.05;
         }
 
         .signup-panel form {
