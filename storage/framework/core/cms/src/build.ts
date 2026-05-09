@@ -148,9 +148,9 @@ function renderMarkdownish(text: string): string {
 
 function blogFontFaces(fontPath = '/assets/fonts/nps'): string {
   return `@font-face {
-      font-family: 'NPS 2026';
-      src: url('${fontPath}/NPS_2026-variable.woff2') format('woff2');
-      font-weight: 100 900;
+      font-family: 'Campmate Script';
+      src: url('${fontPath}/CampmateScript-Regular.woff2') format('woff2');
+      font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
@@ -282,7 +282,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       --border: #e5e7eb;
       --max-width: 740px;
       --radius: 8px;
-      --font-display: 'NPS 2026', 'Sequoia Sans', system-ui, sans-serif;
+      --font-display: 'Campmate Script', 'Sequoia Sans', system-ui, sans-serif;
       --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
       --font-serif: 'Redwood Serif', Georgia, serif;
     }

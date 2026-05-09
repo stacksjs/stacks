@@ -87,9 +87,9 @@ function formatDate(dateStr) {
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/api/blog/feed.xml">
   <style>
     @font-face {
-      font-family: 'NPS 2026';
-      src: url('/assets/fonts/nps/NPS_2026-variable.woff2') format('woff2');
-      font-weight: 100 900;
+      font-family: 'Campmate Script';
+      src: url('/assets/fonts/nps/CampmateScript-Regular.woff2') format('woff2');
+      font-weight: 400;
       font-style: normal;
       font-display: swap;
     }
@@ -118,7 +118,7 @@ function formatDate(dateStr) {
       --color-primary: #3b82f6;
       --color-primary-hover: #2563eb;
       --color-border: #e2e8f0;
-      --font-display: 'NPS 2026', 'Sequoia Sans', system-ui, sans-serif;
+      --font-display: 'Campmate Script', 'Sequoia Sans', system-ui, sans-serif;
       --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-serif: 'Redwood Serif', Georgia, serif;
     }

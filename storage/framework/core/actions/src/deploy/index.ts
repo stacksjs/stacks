@@ -259,7 +259,7 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
 // Build blog static site
 const blogDistExists = storage.hasFiles(p.projectPath('dist/blog'))
 const blogFontAssetsExist = [
-  'NPS_2026-variable.woff2',
+  'CampmateScript-Regular.woff2',
   'SequoiaSans-Regular.woff2',
   'RedwoodSerif-Regular.woff2',
 ].every(file => existsSync(p.projectPath(`dist/blog/assets/fonts/nps/${file}`)))

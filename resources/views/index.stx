@@ -1,6 +1,6 @@
 @extends('layouts/default')
 
-@section('title', 'Stacks - Modern web application framework')
+@section('title', 'Stacks — Build modern web applications')
 
 @include('theme')
 
@@ -8,30 +8,30 @@
 const appName = 'Stacks'
 const appVersion = '0.1.0'
 
-const trails = [
+const features = [
   {
-    title: 'Docs',
-    kicker: 'Field guide',
-    description: 'Guides, APIs, and framework notes for building with Stacks.',
-    url: '/docs',
-  },
-  {
-    title: 'Blog',
-    kicker: 'Dispatches',
-    description: 'CMS-powered updates, release notes, and essays from the trail.',
-    url: 'https://blog.stacksjs.com',
-  },
-  {
-    title: 'Dashboard',
-    kicker: 'Ranger station',
-    description: 'Manage your app, CMS resources, content, and operations.',
-    url: '/dashboard',
+    title: 'Documentation',
+    description: 'Explore our comprehensive guides and API references to get the most out of Stacks.',
+    url: 'https://stacksjs.org/docs',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>',
   },
   {
     title: 'GitHub',
-    kicker: 'Source map',
-    description: 'Explore the framework, file issues, and follow the work.',
+    description: 'View the source code, report issues, and contribute to the Stacks ecosystem.',
     url: 'https://github.com/stacksjs/stacks',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>',
+  },
+  {
+    title: 'Discord',
+    description: 'Join our community of developers. Get help, share ideas, and stay up to date.',
+    url: 'https://discord.gg/stacksjs',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>',
+  },
+  {
+    title: 'Dashboard',
+    description: 'Manage your application with the built-in admin dashboard and developer tools.',
+    url: '/dashboard',
+    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
   },
 ]
 </script>
@@ -40,656 +40,75 @@ const trails = [
   <style>
     @font-face {
       font-display: swap;
-      font-family: "NPS 2026";
-      font-style: normal;
-      font-weight: 100 900;
-      src: url("/assets/fonts/nps/NPS_2026-variable.woff2") format("woff2");
-    }
-
-    @font-face {
-      font-display: swap;
-      font-family: "Sequoia Sans";
+      font-family: "Campmate Script";
       font-style: normal;
       font-weight: 400;
-      src: url("/assets/fonts/nps/SequoiaSans-Regular.woff2") format("woff2");
+      src: url("/assets/fonts/nps/CampmateScript-Regular.woff2") format("woff2");
     }
 
-    @font-face {
-      font-display: swap;
-      font-family: "Redwood Serif";
-      font-style: normal;
+    .title-font {
+      font-family: "Campmate Script", ui-serif, Georgia, serif;
       font-weight: 400;
-      src: url("/assets/fonts/nps/RedwoodSerif-Regular.woff2") format("woff2");
-    }
-
-    :root {
-      --park-ink: #17352b;
-      --park-ridge: #214f3d;
-      --park-canopy: #2f6b4f;
-      --park-meadow: #7fa16c;
-      --park-sky: #d9edf0;
-      --park-mist: #f4f1df;
-      --park-trail: #a86432;
-      --park-gold: #e1ac3f;
-      --park-paper: #fffaf0;
-      --park-border: rgba(23, 53, 43, 0.18);
-    }
-
-    html {
-      background: var(--park-ink);
-    }
-
-    body {
-      background: var(--park-paper);
-      color: var(--park-ink);
-      font-family: "Sequoia Sans", "NPS 2026", system-ui, sans-serif;
-      margin: 0;
-      min-width: 320px;
-    }
-
-    .park-site {
-      background:
-        linear-gradient(180deg, rgba(217, 237, 240, 0.95) 0%, rgba(255, 250, 240, 0.92) 48%, #f8f1dc 100%);
-      min-height: 100vh;
-      overflow: hidden;
-    }
-
-    .park-nav {
-      align-items: center;
-      display: flex;
-      gap: 24px;
-      justify-content: space-between;
-      margin: 0 auto;
-      max-width: 1180px;
-      padding: 22px clamp(18px, 4vw, 42px);
-      position: relative;
-      z-index: 2;
-    }
-
-    .park-brand {
-      align-items: center;
-      color: var(--park-ink);
-      display: inline-flex;
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: clamp(1.3rem, 2.8vw, 2rem);
-      font-weight: 760;
-      gap: 12px;
-      text-decoration: none;
-    }
-
-    .park-badge {
-      align-items: center;
-      background: var(--park-ridge);
-      border: 2px solid rgba(255, 250, 240, 0.8);
-      border-radius: 8px;
-      box-shadow: 0 10px 24px rgba(23, 53, 43, 0.18);
-      color: var(--park-paper);
-      display: inline-flex;
-      height: 46px;
-      justify-content: center;
-      outline: 2px solid var(--park-ridge);
-      width: 46px;
-    }
-
-    .park-links {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      justify-content: flex-end;
-    }
-
-    .park-links a {
-      border: 1px solid transparent;
-      border-radius: 999px;
-      color: rgba(23, 53, 43, 0.78);
-      font-size: 0.9rem;
-      font-weight: 700;
-      padding: 9px 13px;
-      text-decoration: none;
-    }
-
-    .park-links a:hover {
-      background: rgba(255, 250, 240, 0.68);
-      border-color: var(--park-border);
-      color: var(--park-ink);
-    }
-
-    .park-hero {
-      display: grid;
-      gap: clamp(28px, 6vw, 72px);
-      grid-template-columns: minmax(0, 0.94fr) minmax(320px, 1.06fr);
-      margin: 0 auto;
-      max-width: 1180px;
-      min-height: min(780px, calc(100vh - 92px));
-      padding: clamp(26px, 5vw, 62px) clamp(18px, 4vw, 42px) clamp(56px, 8vw, 96px);
-      position: relative;
-      z-index: 1;
-    }
-
-    .park-copy {
-      align-self: center;
-      max-width: 620px;
-    }
-
-    .park-eyebrow {
-      align-items: center;
-      color: var(--park-ridge);
-      display: inline-flex;
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: 0.88rem;
-      font-weight: 780;
-      gap: 10px;
-      letter-spacing: 0;
-      margin-bottom: 18px;
-      text-transform: uppercase;
-    }
-
-    .park-eyebrow::before {
-      background: var(--park-gold);
-      border: 2px solid var(--park-ridge);
-      border-radius: 999px;
-      content: "";
-      height: 12px;
-      width: 12px;
-    }
-
-    .park-copy h1 {
-      color: var(--park-ink);
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: clamp(4.4rem, 13vw, 11rem);
-      font-weight: 860;
-      line-height: 0.82;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
-    .park-copy p {
-      color: rgba(23, 53, 43, 0.82);
-      font-family: "Redwood Serif", Georgia, serif;
-      font-size: clamp(1.22rem, 2.6vw, 1.78rem);
-      line-height: 1.35;
-      margin: 28px 0 0;
-      max-width: 620px;
-    }
-
-    .park-actions {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-top: 32px;
-    }
-
-    .park-button {
-      align-items: center;
-      border-radius: 8px;
-      display: inline-flex;
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: 1rem;
-      font-weight: 760;
-      gap: 10px;
-      min-height: 46px;
-      padding: 12px 18px;
-      text-decoration: none;
-    }
-
-    .park-button.primary {
-      background: var(--park-ridge);
-      border: 1px solid var(--park-ridge);
-      box-shadow: 0 14px 26px rgba(23, 53, 43, 0.22);
-      color: var(--park-paper);
-    }
-
-    .park-button.secondary {
-      background: rgba(255, 250, 240, 0.72);
-      border: 1px solid var(--park-border);
-      color: var(--park-ink);
-    }
-
-    .park-button:hover {
-      transform: translateY(-1px);
-    }
-
-    .park-meta {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 24px;
-    }
-
-    .park-meta span {
-      background: rgba(255, 250, 240, 0.74);
-      border: 1px solid var(--park-border);
-      border-radius: 999px;
-      color: rgba(23, 53, 43, 0.78);
-      font-size: 0.82rem;
-      font-weight: 800;
-      padding: 7px 11px;
-    }
-
-    .park-vista {
-      align-self: center;
-      aspect-ratio: 1.08;
-      background:
-        linear-gradient(180deg, rgba(255, 250, 240, 0.2), rgba(255, 250, 240, 0.72)),
-        var(--park-sky);
-      border: 1px solid rgba(23, 53, 43, 0.22);
-      border-radius: 8px;
-      box-shadow: 0 28px 70px rgba(23, 53, 43, 0.25);
-      min-height: 360px;
-      overflow: hidden;
-      position: relative;
-    }
-
-    .park-vista svg {
-      display: block;
-      height: 100%;
-      width: 100%;
-    }
-
-    .trail-ribbon {
-      background: var(--park-trail);
-      border-radius: 999px;
-      bottom: 24px;
-      color: var(--park-paper);
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: 0.86rem;
-      font-weight: 820;
-      left: 24px;
-      padding: 8px 12px;
-      position: absolute;
-    }
-
-    .trail-section {
-      background:
-        linear-gradient(180deg, rgba(248, 241, 220, 0) 0%, rgba(248, 241, 220, 1) 16%),
-        #f8f1dc;
-      padding: clamp(38px, 7vw, 78px) clamp(18px, 4vw, 42px) clamp(54px, 8vw, 92px);
-    }
-
-    .trail-inner {
-      margin: 0 auto;
-      max-width: 1180px;
-    }
-
-    .section-head {
-      align-items: end;
-      display: flex;
-      gap: 24px;
-      justify-content: space-between;
-      margin-bottom: 24px;
-    }
-
-    .section-head h2 {
-      color: var(--park-ink);
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: clamp(2rem, 4vw, 4.2rem);
-      font-weight: 830;
-      line-height: 0.94;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
-    .section-head p {
-      color: rgba(23, 53, 43, 0.72);
-      font-size: 1rem;
-      line-height: 1.55;
-      margin: 0;
-      max-width: 420px;
-    }
-
-    .trail-grid {
-      display: grid;
-      gap: 14px;
-      grid-template-columns: repeat(4, minmax(0, 1fr));
-    }
-
-    .trail-card {
-      background: rgba(255, 250, 240, 0.72);
-      border: 1px solid var(--park-border);
-      border-radius: 8px;
-      color: var(--park-ink);
-      min-height: 230px;
-      padding: 22px;
-      position: relative;
-      text-decoration: none;
-      transition: transform 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
-    }
-
-    .trail-card:hover {
-      border-color: rgba(23, 53, 43, 0.36);
-      box-shadow: 0 18px 36px rgba(23, 53, 43, 0.12);
-      transform: translateY(-2px);
-    }
-
-    .trail-card small {
-      color: var(--park-trail);
-      display: block;
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: 0.78rem;
-      font-weight: 820;
-      margin-bottom: 16px;
-      text-transform: uppercase;
-    }
-
-    .trail-card strong {
-      display: block;
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: clamp(1.45rem, 2vw, 2.05rem);
-      font-weight: 820;
-      line-height: 1;
-      margin-bottom: 13px;
-      text-transform: uppercase;
-    }
-
-    .trail-card p {
-      color: rgba(23, 53, 43, 0.74);
-      font-size: 0.96rem;
-      line-height: 1.48;
-      margin: 0;
-    }
-
-    .trail-card svg {
-      bottom: 18px;
-      color: var(--park-canopy);
-      height: 24px;
-      position: absolute;
-      right: 18px;
-      width: 24px;
-    }
-
-    .dispatch {
-      align-items: center;
-      background:
-        linear-gradient(135deg, rgba(33, 79, 61, 0.96), rgba(23, 53, 43, 0.98));
-      border-radius: 8px;
-      color: var(--park-paper);
-      display: grid;
-      gap: 24px;
-      grid-template-columns: minmax(0, 0.92fr) minmax(320px, 0.68fr);
-      margin-top: 16px;
-      padding: clamp(24px, 5vw, 42px);
-    }
-
-    .dispatch h2 {
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: clamp(1.9rem, 4vw, 3.7rem);
-      font-weight: 820;
-      line-height: 0.96;
-      margin: 0;
-      text-transform: uppercase;
-    }
-
-    .dispatch p {
-      color: rgba(255, 250, 240, 0.76);
-      font-size: 1rem;
-      line-height: 1.55;
-      margin: 13px 0 0;
-      max-width: 560px;
-    }
-
-    .dispatch form {
-      display: grid;
-      gap: 10px;
-      grid-template-columns: minmax(0, 1fr) auto;
-    }
-
-    .dispatch input {
-      background: rgba(255, 250, 240, 0.95);
-      border: 1px solid rgba(255, 250, 240, 0.28);
-      border-radius: 8px;
-      color: var(--park-ink);
-      font: inherit;
-      min-height: 48px;
-      min-width: 0;
-      padding: 0 14px;
-    }
-
-    .dispatch button {
-      background: var(--park-gold);
-      border: 1px solid rgba(255, 250, 240, 0.36);
-      border-radius: 8px;
-      color: var(--park-ink);
-      cursor: pointer;
-      font-family: "NPS 2026", "Sequoia Sans", sans-serif;
-      font-size: 0.95rem;
-      font-weight: 820;
-      min-height: 48px;
-      padding: 0 17px;
-    }
-
-    .park-footer {
-      background: #17352b;
-      color: rgba(255, 250, 240, 0.74);
-      font-size: 0.92rem;
-      padding: 28px clamp(18px, 4vw, 42px);
-    }
-
-    .park-footer div {
-      align-items: center;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: space-between;
-      margin: 0 auto;
-      max-width: 1180px;
-    }
-
-    .park-footer a {
-      color: var(--park-paper);
-      text-decoration: none;
-    }
-
-    @media (max-width: 920px) {
-      .park-nav {
-        align-items: flex-start;
-        flex-direction: column;
-      }
-
-      .park-links {
-        justify-content: flex-start;
-      }
-
-      .park-hero {
-        grid-template-columns: 1fr;
-        min-height: auto;
-      }
-
-      .park-vista {
-        min-height: 300px;
-      }
-
-      .section-head,
-      .dispatch {
-        align-items: stretch;
-        grid-template-columns: 1fr;
-      }
-
-      .section-head {
-        flex-direction: column;
-      }
-
-      .trail-grid {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-      }
-    }
-
-    @media (max-width: 600px) {
-      .park-links {
-        gap: 4px;
-      }
-
-      .park-links a {
-        padding: 8px 10px;
-      }
-
-      .park-copy h1 {
-        font-size: clamp(3.5rem, 22vw, 5.8rem);
-      }
-
-      .park-actions {
-        align-items: stretch;
-        flex-direction: column;
-      }
-
-      .park-button,
-      .dispatch button {
-        justify-content: center;
-        width: 100%;
-      }
-
-      .trail-grid,
-      .dispatch form {
-        grid-template-columns: 1fr;
-      }
-
-      .trail-card {
-        min-height: 190px;
-      }
     }
   </style>
 
-  <main class="park-site">
-    <nav class="park-nav" aria-label="Primary navigation">
-      <a class="park-brand" href="/">
-        <span class="park-badge" aria-hidden="true">
-          <svg xmlns="http://www.w3.org/2000/svg" width="26" height="26" fill="none" viewBox="0 0 26 26">
-            <path fill="currentColor" d="m13 2 10 19H3L13 2Zm0 6.4-4.7 9h9.4L13 8.4Z"/>
-          </svg>
-        </span>
-        <span>{{ appName }}</span>
+  <!-- Header -->
+  <div class="mb-12 text-center">
+    <div class="inline-flex gap-3 items-center mb-6">
+      <div class="h-12 w-12 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg shadow-indigo-500/25 shadow-lg rotate-45"></div>
+      <span class="title-font text-5xl text-neutral-900 tracking-tight dark:text-white">{{ appName }}</span>
+    </div>
+    <p class="mx-auto max-w-xl leading-relaxed text-lg">
+      Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
+    </p>
+    <div class="flex gap-3 items-center justify-center mt-4">
+      <span class="px-4 py-1.5 font-semibold text-amber-600 text-sm dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 rounded-full dark:border-amber-500/20">Alpha Coming Soon</span>
+      <span class="px-3 py-1 font-medium text-indigo-500 text-xs dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 rounded-full dark:border-indigo-500/20">v{{ appVersion }}</span>
+    </div>
+  </div>
+
+  <!-- Feature Cards -->
+  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mb-12">
+    @foreach (features as feature)
+      <a href="{{ feature.url }}" class="block p-6 bg-white/50 dark:bg-neutral-900/50 border border-neutral-200 rounded-xl dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all group hover:-translate-y-0.5" target="_blank" rel="noopener noreferrer">
+        <div class="flex gap-3 items-center mb-3">
+          <span class="text-indigo-500 dark:text-indigo-400">{!! feature.icon !!}</span>
+          <span class="font-semibold text-base text-neutral-900 dark:text-neutral-100">{{ feature.title }}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="ml-auto h-4 w-4 text-neutral-400 group-hover:text-indigo-500 transition-all group-hover:translate-x-1"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+        </div>
+        <p class="leading-relaxed text-sm">{{ feature.description }}</p>
       </a>
+    @endforeach
+  </div>
 
-      <div class="park-links">
-        <a href="/docs">Docs</a>
-        <a href="https://blog.stacksjs.com">Blog</a>
-        <a href="/dashboard">Dashboard</a>
-        <a href="https://github.com/stacksjs/stacks">GitHub</a>
-      </div>
-    </nav>
-
-    <section class="park-hero" aria-labelledby="park-title">
-      <div class="park-copy">
-        <span class="park-eyebrow">Framework alpha / v{{ appVersion }}</span>
-        <h1 id="park-title">Stacks</h1>
-        <p>
-          A modern TypeScript framework for applications, docs, content, APIs, and deploys that should feel as dependable as a well-marked trail.
-        </p>
-
-        <div class="park-actions">
-          <a class="park-button primary" href="/docs">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 18 18" aria-hidden="true">
-              <path fill="currentColor" d="M2.3 2.1h4.2c1 0 1.8.3 2.5.9.7-.6 1.5-.9 2.5-.9h4.2v12.8h-4.6c-.6 0-1.1.2-1.5.6l-.6.5-.6-.5c-.4-.4-.9-.6-1.5-.6H2.3V2.1Zm5.1 10.8c.4 0 .8.1 1.1.2V4.9c-.5-.5-1.1-.8-2-.8H4.3v8.8h3.1Zm3.2 0h3.1V4.1h-2.2c-.9 0-1.5.3-2 .8v8.2c.3-.1.7-.2 1.1-.2Z"/>
-            </svg>
-            Read the docs
-          </a>
-          <a class="park-button secondary" href="/dashboard">
-            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none" viewBox="0 0 18 18" aria-hidden="true">
-              <path fill="currentColor" d="M3 3h5v5H3V3Zm7 0h5v5h-5V3ZM3 10h5v5H3v-5Zm7 0h5v5h-5v-5Z"/>
-            </svg>
-            Open dashboard
-          </a>
-        </div>
-
-        <div class="park-meta" aria-label="Project status">
-          <span>Marketing site</span>
-          <span>Docs</span>
-          <span>CMS</span>
-          <span>Deploys</span>
-        </div>
-      </div>
-
-      <div class="park-vista" aria-hidden="true">
-        <svg viewBox="0 0 640 590" role="img">
-          <defs>
-            <linearGradient id="sky" x1="0" x2="0" y1="0" y2="1">
-              <stop offset="0%" stop-color="#cfeaf2"/>
-              <stop offset="62%" stop-color="#f7e9b6"/>
-              <stop offset="100%" stop-color="#f5ddb0"/>
-            </linearGradient>
-            <linearGradient id="river" x1="0" x2="1" y1="0" y2="1">
-              <stop offset="0%" stop-color="#9fd8d5"/>
-              <stop offset="100%" stop-color="#3e8b7d"/>
-            </linearGradient>
-          </defs>
-          <rect width="640" height="590" fill="url(#sky)"/>
-          <circle cx="496" cy="118" r="54" fill="#e1ac3f"/>
-          <path fill="#d8b667" d="M0 296 100 188l94 72 96-138 82 112 68-74 200 158v272H0V296Z"/>
-          <path fill="#315f47" d="M0 342 104 236l105 83 75-88 92 110 83-126 181 159v216H0V342Z"/>
-          <path fill="#214f3d" d="M0 407c53-51 100-70 142-58 64 19 95 55 161 31 66-25 91-74 151-61 51 11 98 61 186 66v205H0V407Z"/>
-          <path fill="#7fa16c" d="M0 450c75-37 143-44 204-21 64 24 97 61 162 45 79-19 132-63 274-25v141H0V450Z"/>
-          <path fill="#e6d5a1" d="M274 590c-3-72 12-122 45-151 28-24 48-49 60-76 10 43-8 86-54 128-30 28-45 61-45 99h-6Z"/>
-          <path fill="url(#river)" d="M356 590c-6-44 7-80 38-109 35-32 51-68 47-107 46 48 47 93 3 136-29 29-43 56-41 80h-47Z"/>
-          <path fill="#17352b" d="M0 505c73 4 128 18 164 43 25 17 62 31 110 42H0v-85Zm640 0c-82 4-142 19-180 45-24 16-58 30-104 40h284v-85Z"/>
-          <g fill="#17352b" opacity=".85">
-            <path d="M95 415h16v83H95z"/>
-            <path d="m103 332 45 92H58l45-92Z"/>
-            <path d="M154 425h14v72h-14z"/>
-            <path d="m161 355 39 79h-78l39-79Z"/>
-            <path d="M516 407h17v92h-17z"/>
-            <path d="m525 315 50 102H475l50-102Z"/>
-            <path d="M464 435h13v63h-13z"/>
-            <path d="m471 376 34 67h-68l34-67Z"/>
-          </g>
-        </svg>
-        <span class="trail-ribbon">Cascade route</span>
-      </div>
-    </section>
-
-    <section class="trail-section" aria-labelledby="trail-title">
-      <div class="trail-inner">
-        <div class="section-head">
-          <h2 id="trail-title">Trailheads</h2>
-          <p>Everything points back into the same Stacks system: the marketing site, docs, CMS, and dashboard all travel together.</p>
-        </div>
-
-        <div class="trail-grid">
-          @foreach (trails as trail)
-            <a class="trail-card" href="{{ trail.url }}">
-              <small>{{ trail.kicker }}</small>
-              <strong>{{ trail.title }}</strong>
-              <p>{{ trail.description }}</p>
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" aria-hidden="true">
-                <path fill="currentColor" d="M13.7 4.3 21.4 12l-7.7 7.7-1.4-1.4 5.3-5.3H2v-2h15.6l-5.3-5.3 1.4-1.4Z"/>
-              </svg>
-            </a>
-          @endforeach
-        </div>
-
-        <div class="dispatch">
-          <div>
-            <h2>Ranger dispatch</h2>
-            <p>Get the launch note, framework updates, and the occasional field report from the Stacks trail.</p>
-          </div>
-
-          <form action="/api/email/subscribe" method="POST">
-            <input
-              type="email"
-              name="email"
-              placeholder="you@example.com"
-              required
-            >
-            <button type="submit">Subscribe</button>
-          </form>
-        </div>
-      </div>
-    </section>
-  </main>
+  <!-- Subscribe Section -->
+  <div class="mb-12 p-8 text-center bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 rounded-2xl dark:border-neutral-800">
+    <h2 class="mb-2 font-semibold text-neutral-900 text-xl dark:text-white">Stay in the loop</h2>
+    <p class="mb-6 text-sm">Get notified when we launch and receive updates on new features.</p>
+    <form class="flex gap-2 mx-auto max-w-md" action="/api/email/subscribe" method="POST">
+      <input
+        type="email"
+        name="email"
+        class="flex-1 placeholder-neutral-400 px-4 py-2.5 text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-200 rounded-lg dark:border-neutral-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
+        placeholder="you@example.com"
+        required
+      >
+      <button type="submit" class="px-6 py-2.5 font-semibold text-sm text-white bg-indigo-500 hover:bg-indigo-400 rounded-lg transition-colors">
+        Subscribe
+      </button>
+    </form>
+    <p class="mt-3 text-neutral-400 text-xs">No spam, unsubscribe at any time.</p>
+  </div>
 @endsection
 
 @section('footer')
-  <footer class="park-footer">
-    <div>
-      <span>Stacks v{{ appVersion }}</span>
-      <span>
-        <a href="/docs">Docs</a>
-        /
-        <a href="https://blog.stacksjs.com">Blog</a>
-        /
-        <a href="https://github.com/stacksjs/stacks">GitHub</a>
-      </span>
+  <div class="pt-8 text-center border-neutral-200 border-t dark:border-neutral-800">
+    <div class="flex gap-2 items-center justify-center text-sm">
+      <a href="https://bun.sh" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">Bun</a>
+      <span class="text-neutral-300 dark:text-neutral-700">/</span>
+      <a href="https://www.typescriptlang.org" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">TypeScript</a>
+      <span class="text-neutral-300 dark:text-neutral-700">/</span>
+      <a href="https://github.com/stacksjs/stx" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">STX</a>
     </div>
-  </footer>
+  </div>
 @endsection
