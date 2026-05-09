@@ -1,6 +1,6 @@
 type PostJsonResponse = ModelRow<typeof Post>
 type PostUpdate = UpdateModelData<typeof Post>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 
 /**
  * Update a post
@@ -10,6 +10,7 @@ import { db } from '@stacksjs/database'
  * @returns The updated post record
  */
 export async function update(id: number, data: Partial<PostUpdate>): Promise<PostJsonResponse> {
+  const db = await getDb()
   try {
     if (data.title !== undefined && typeof data.title === 'string' && data.title.trim() === '') {
       throw new Error('Post title cannot be empty')

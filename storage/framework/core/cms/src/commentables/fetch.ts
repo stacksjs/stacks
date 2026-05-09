@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 export interface Commentable {
@@ -28,6 +28,7 @@ export async function fetchComments(options: {
   limit?: number
   offset?: number
 } = {}): Promise<Commentable[]> {
+  const db = await getDb()
   let query = db.selectFrom('commentables') as any
 
   if (options.status)
@@ -49,6 +50,7 @@ export async function fetchComments(options: {
 }
 
 export async function fetchCommentById(id: number): Promise<Commentable | undefined> {
+  const db = await getDb()
   return db
     .selectFrom('commentables')
     .where('id', '=', id)
@@ -61,6 +63,7 @@ export async function fetchCommentsByCommentables(
   commentables_type: string,
   options: { status?: Commentable['status'], limit?: number, offset?: number } = {},
 ): Promise<Commentable[]> {
+  const db = await getDb()
   let query = db
     .selectFrom('commentables')
     .where('commentables_id', '=', commentables_id)
@@ -85,6 +88,7 @@ export async function fetchCommentsByCommentables(
  * @returns The count of comments within the specified time period
  */
 export async function fetchCommentCountByPeriod(days: number): Promise<number> {
+  const db = await getDb()
   try {
     const result = await db
       .selectFrom('commentables')
@@ -103,6 +107,7 @@ export async function fetchCommentCountByPeriod(days: number): Promise<number> {
 }
 
 export async function fetchCommentsByStatus(status: CommentStatus, options: { limit?: number, offset?: number } = {}): Promise<Commentable[]> {
+  const db = await getDb()
   try {
     let query = db
       .selectFrom('commentables')
@@ -126,6 +131,7 @@ export async function fetchCommentsByStatus(status: CommentStatus, options: { li
 }
 
 export async function calculateApprovalRate(): Promise<{ approved: number, total: number, rate: number }> {
+  const db = await getDb()
   try {
     const [approvedCount, totalCount] = await Promise.all([
       db
@@ -168,6 +174,7 @@ export interface DateRange {
 }
 
 export async function fetchPostsWithMostComments(dateRange: DateRange, options: { limit?: number } = {}): Promise<PostWithCommentCount[]> {
+  const db = await getDb()
   try {
     let query = db
       .selectFrom('posts')
@@ -231,6 +238,7 @@ export interface DonutGraphData {
 }
 
 export async function fetchStatusDistributionDonut(dateRange: DateRange): Promise<DonutGraphData> {
+  const db = await getDb()
   try {
     const results = await db
       .selectFrom('commentables')
@@ -268,6 +276,7 @@ export interface LineGraphData {
 }
 
 export async function fetchMonthlyCommentCounts(dateRange: DateRange): Promise<LineGraphData> {
+  const db = await getDb()
   try {
     const results = await db
       .selectFrom('commentables')

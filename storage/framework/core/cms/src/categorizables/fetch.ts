@@ -1,11 +1,12 @@
 import type { CategorizableTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { slugify } from 'ts-slug'
 
 /**
  * Fetch a category by ID
  */
 export async function fetchById(id: number): Promise<CategorizableTable | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('categorizables')
     .where('id', '=', id)
@@ -18,6 +19,7 @@ export async function fetchById(id: number): Promise<CategorizableTable | undefi
  * Fetch all categories
  */
 export async function fetchAll(): Promise<CategorizableTable[]> {
+  const db = await getDb()
   return await db.selectFrom('categorizables').selectAll().execute() as unknown as CategorizableTable[]
 }
 
@@ -25,6 +27,7 @@ export async function fetchAll(): Promise<CategorizableTable[]> {
  * Fetch categories by name
  */
 export async function fetchByName(name: string): Promise<CategorizableTable[]> {
+  const db = await getDb()
   return await db
     .selectFrom('categorizables')
     .where('name', '=', name)
@@ -37,6 +40,7 @@ export async function fetchByName(name: string): Promise<CategorizableTable[]> {
  * Fetch category by slug
  */
 export async function fetchBySlug(slug: string): Promise<CategorizableTable | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('categorizables')
     .where('slug', '=', slug)
@@ -49,6 +53,7 @@ export async function fetchBySlug(slug: string): Promise<CategorizableTable | un
  * Fetch categories with posts
  */
 export async function fetchWithPosts(id: number): Promise<CategorizableTable | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('categorizables')
     .where('id', '=', id)
@@ -70,6 +75,7 @@ export async function firstOrCreate(
   categorizableType: string,
   description?: string,
 ): Promise<CategorizableTable> {
+  const db = await getDb()
   try {
     // First try to find the category by name
     const existingCategory = await db

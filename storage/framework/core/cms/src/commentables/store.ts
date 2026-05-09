@@ -1,5 +1,5 @@
 import type { CommentablesTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 
 export interface CreateCommentInput {
   title: string
@@ -15,6 +15,7 @@ export interface UpdateCommentInput {
 }
 
 export async function createComment(data: CreateCommentInput): Promise<CommentablesTable> {
+  const db = await getDb()
   const now = new Date()
 
   const commentData = {
@@ -37,6 +38,7 @@ export async function updateComment(
   id: number,
   input: UpdateCommentInput,
 ): Promise<CommentablesTable> {
+  const db = await getDb()
   return db
     .updateTable('commentables')
     .set({
@@ -49,6 +51,7 @@ export async function updateComment(
 }
 
 export async function approveComment(id: number): Promise<CommentablesTable> {
+  const db = await getDb()
   return db
     .updateTable('commentables')
     .set({
@@ -62,6 +65,7 @@ export async function approveComment(id: number): Promise<CommentablesTable> {
 }
 
 export async function rejectComment(id: number): Promise<CommentablesTable> {
+  const db = await getDb()
   return db
     .updateTable('commentables')
     .set({
@@ -75,6 +79,7 @@ export async function rejectComment(id: number): Promise<CommentablesTable> {
 }
 
 export async function deleteComment(id: number): Promise<void> {
+  const db = await getDb()
   await db
     .deleteFrom('commentables')
     .where('id', '=', id)
@@ -100,6 +105,7 @@ interface CommentStore {
  * @returns The newly created comment record
  */
 export async function store(data: CommentStore): Promise<CommentablesTable> {
+  const db = await getDb()
   try {
     if (!data.title || data.title.trim() === '') {
       throw new Error('Comment title is required')

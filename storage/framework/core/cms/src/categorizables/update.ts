@@ -1,5 +1,5 @@
 import type { CategorizableTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { slugify } from 'ts-slug'
 
 interface UpdateCategoryData {
@@ -18,6 +18,7 @@ interface UpdateCategoryData {
  * @returns The updated category record
  */
 export async function update(data: UpdateCategoryData): Promise<CategorizableTable> {
+  const db = await getDb()
   try {
     const id = data.id
 

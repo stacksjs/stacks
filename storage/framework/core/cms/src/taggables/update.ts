@@ -1,5 +1,5 @@
 import type { TaggableTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { uniqueSlug } from '@stacksjs/slug'
 
 interface UpdateTagData {
@@ -20,6 +20,7 @@ interface UpdateTagData {
  * @returns The updated tag record
  */
 export async function update(data: UpdateTagData): Promise<TaggableTable> {
+  const db = await getDb()
   try {
     const id = data.id
 

@@ -1,10 +1,11 @@
 type PostJsonResponse = ModelRow<typeof Post>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 
 /**
  * Fetch a post by ID
  */
 export async function fetchById(id: number): Promise<PostJsonResponse | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('posts')
     .where('id', '=', id)
@@ -16,6 +17,7 @@ export async function fetchById(id: number): Promise<PostJsonResponse | undefine
  * Fetch all posts
  */
 export async function fetchAll(): Promise<PostJsonResponse[]> {
+  const db = await getDb()
   return await db.selectFrom('posts').selectAll().execute() as PostJsonResponse[]
 }
 
@@ -23,6 +25,7 @@ export async function fetchAll(): Promise<PostJsonResponse[]> {
  * Fetch posts by status
  */
 export async function fetchByStatus(status: 'published' | 'draft' | 'archived'): Promise<PostJsonResponse[]> {
+  const db = await getDb()
   return await db
     .selectFrom('posts')
     .where('status', '=', status)
@@ -34,6 +37,7 @@ export async function fetchByStatus(status: 'published' | 'draft' | 'archived'):
  * Fetch posts by category
  */
 export async function fetchByCategory(category: string): Promise<PostJsonResponse[]> {
+  const db = await getDb()
   return await db
     .selectFrom('posts')
     .where('category', '=', category)
@@ -45,6 +49,7 @@ export async function fetchByCategory(category: string): Promise<PostJsonRespons
  * Fetch posts by author
  */
 export async function fetchByAuthor(author: string): Promise<PostJsonResponse[]> {
+  const db = await getDb()
   return await db
     .selectFrom('posts')
     .where('author', '=', author)
@@ -56,6 +61,7 @@ export async function fetchByAuthor(author: string): Promise<PostJsonResponse[]>
  * Fetch posts with minimum views
  */
 export async function fetchByMinViews(minViews: number): Promise<PostJsonResponse[]> {
+  const db = await getDb()
   return await db
     .selectFrom('posts')
     .where('views', '>=', minViews)
@@ -67,6 +73,7 @@ export async function fetchByMinViews(minViews: number): Promise<PostJsonRespons
  * Fetch posts published after a specific date
  */
 export async function fetchPublishedAfter(timestamp: number): Promise<PostJsonResponse[]> {
+  const db = await getDb()
   return await db
     .selectFrom('posts')
     .where('published_at', '>', timestamp)

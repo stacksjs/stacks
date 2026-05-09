@@ -1,6 +1,6 @@
 type PageJsonResponse = ModelRow<typeof Page>
 type NewPage = NewModelData<typeof Page>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 /**
@@ -10,6 +10,7 @@ import { formatDate } from '@stacksjs/orm'
  * @returns The created page record
  */
 export async function store(data: NewPage): Promise<PageJsonResponse> {
+  const db = await getDb()
   try {
     const pageData = {
       author_id: data.author_id,

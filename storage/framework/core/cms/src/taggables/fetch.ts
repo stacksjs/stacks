@@ -1,5 +1,5 @@
 import type { TaggableTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { findOrCreate } from './store'
 
 /**
@@ -9,6 +9,7 @@ import { findOrCreate } from './store'
  * @returns The tag record if found
  */
 export async function fetchTagById(id: number): Promise<TaggableTable | undefined> {
+  const db = await getDb()
   try {
     const result = await db
       .selectFrom('taggables')
@@ -37,6 +38,7 @@ export async function fetchTagById(id: number): Promise<TaggableTable | undefine
  * @returns An array of tag records
  */
 export async function fetchTags(): Promise<TaggableTable[]> {
+  const db = await getDb()
   try {
     return await db
       .selectFrom('taggables')
@@ -89,6 +91,7 @@ export async function firstOrCreate(
  * @returns The count of tagged posts
  */
 export async function countTaggedPosts(taggableType: string): Promise<number> {
+  const db = await getDb()
   try {
     const result = await db
       .selectFrom('taggable_models')
@@ -112,6 +115,7 @@ export async function countTaggedPosts(taggableType: string): Promise<number> {
  * @returns The total count of tags
  */
 export async function countTotalTags(): Promise<number> {
+  const db = await getDb()
   try {
     const result = await db
       .selectFrom('taggables')
@@ -135,6 +139,7 @@ export async function countTotalTags(): Promise<number> {
  * @returns The most used tag name and its count
  */
 export async function findMostUsedTag(taggableType?: string): Promise<{ name: string, count: number } | null> {
+  const db = await getDb()
   try {
     let query = db
       .selectFrom('taggable_models')
@@ -175,6 +180,7 @@ export async function findMostUsedTag(taggableType?: string): Promise<{ name: st
  * @returns The least used tag name and its count
  */
 export async function findLeastUsedTag(): Promise<{ name: string, count: number } | null> {
+  const db = await getDb()
   try {
     const result = await (db
       .selectFrom('taggable_models')
@@ -210,6 +216,7 @@ export async function findLeastUsedTag(): Promise<{ name: string, count: number 
  * @returns Array of tags with their post counts
  */
 export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, postCount: number }>> {
+  const db = await getDb()
   try {
     const result = await (db
       .selectFrom('taggables')
@@ -242,6 +249,7 @@ export async function fetchTagsWithPostCounts(): Promise<Array<{ name: string, p
  * @returns Array of tags with their counts and percentages
  */
 export async function fetchTagDistribution(): Promise<Array<{ name: string, count: number, percentage: number }>> {
+  const db = await getDb()
   try {
     const result = await (db
       .selectFrom('taggables')

@@ -1,5 +1,5 @@
 import type { CommentablesTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 interface CommentUpdate {
@@ -22,6 +22,7 @@ interface CommentUpdate {
  * @returns The updated comment record
  */
 export async function update(id: number, data: CommentUpdate): Promise<CommentablesTable | undefined> {
+  const db = await getDb()
   try {
     if (data.title !== undefined && data.title.trim() === '') {
       throw new Error('Comment title cannot be empty')

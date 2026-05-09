@@ -1,7 +1,7 @@
 type PostJsonResponse = ModelRow<typeof Post>
 type NewPost = NewModelData<typeof Post>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 export const POST_STATUS_DRAFT = 'Draft'
@@ -15,6 +15,7 @@ export const POST_STATUS_ARCHIVED = 'Archived'
  * @returns The created post record
  */
 export async function store(data: NewPost & { body?: string, category?: string }): Promise<PostJsonResponse & { body?: string, category?: string }> {
+  const db = await getDb()
   try {
     if (!data.title || (typeof data.title === 'string' && data.title.trim() === '')) {
       throw new Error('Post title is required')
@@ -71,6 +72,7 @@ export async function attach(
   tableName: 'categorizable_models' | 'taggable_models',
   ids: number[],
 ): Promise<void> {
+  const db = await getDb()
   try {
     // Get the foreign key names based on the table name
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'
@@ -115,6 +117,7 @@ export async function detach(
   tableName: 'categorizable_models' | 'taggable_models',
   ids?: number[],
 ): Promise<void> {
+  const db = await getDb()
   try {
     // Get the foreign key names based on the table name
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'
@@ -154,6 +157,7 @@ export async function sync(
   tableName: 'categorizable_models' | 'taggable_models',
   ids: number[],
 ): Promise<void> {
+  const db = await getDb()
   try {
     // Get the foreign key names based on the table name
     const postForeignKey = tableName === 'categorizable_models' ? 'categorizable_id' : 'taggable_id'

@@ -1,6 +1,6 @@
 type AuthorJsonResponse = ModelRow<typeof Author>
 type NewAuthor = NewModelData<typeof Author>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 /**
@@ -11,6 +11,7 @@ import { formatDate } from '@stacksjs/orm'
  * @returns The updated author record
  */
 export async function update(id: number, data: Partial<NewAuthor>): Promise<AuthorJsonResponse | undefined> {
+  const db = await getDb()
   try {
     const updateData = {
       ...data,

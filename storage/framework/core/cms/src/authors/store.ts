@@ -1,7 +1,7 @@
 type AuthorJsonResponse = ModelRow<typeof Author>
 type NewAuthor = NewModelData<typeof Author>
 import { randomUUIDv7 } from 'bun'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 interface AuthorData {
@@ -15,6 +15,7 @@ interface AuthorData {
  * @returns The found or created author record
  */
 export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse> {
+  const db = await getDb()
   try {
     // First, try to find an existing author by email or name
     const existingAuthor = await db
@@ -93,6 +94,7 @@ export async function findOrCreate(data: AuthorData): Promise<AuthorJsonResponse
  * @returns The found or created author record
  */
 export async function store(data: NewAuthor): Promise<AuthorJsonResponse> {
+  const db = await getDb()
   try {
     // First, try to find an existing author by email or name
     const existingAuthor = await db

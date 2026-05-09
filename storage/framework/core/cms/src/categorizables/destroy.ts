@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { fetchById } from './fetch'
 
 /**
@@ -8,6 +8,7 @@ import { fetchById } from './fetch'
  * @returns True if the deletion was successful, false otherwise
  */
 export async function destroy(id: number): Promise<boolean> {
+  const db = await getDb()
   try {
     // First check if the category exists
     const category = await fetchById(id)
@@ -40,6 +41,7 @@ export async function destroy(id: number): Promise<boolean> {
  * @returns Number of categories successfully deleted
  */
 export async function bulkDestroy(ids: number[]): Promise<number> {
+  const db = await getDb()
   if (!ids.length)
     return 0
 

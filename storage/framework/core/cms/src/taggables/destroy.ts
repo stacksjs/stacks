@@ -1,4 +1,4 @@
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 
 /**
  * Delete a tag by its ID
@@ -7,6 +7,7 @@ import { db } from '@stacksjs/database'
  * @returns void
  */
 export async function destroy(id: number): Promise<void> {
+  const db = await getDb()
   // First check if the tag exists
   const tag = await db
     .selectFrom('taggables')
@@ -31,6 +32,7 @@ export async function destroy(id: number): Promise<void> {
  * @returns void
  */
 export async function bulkDestroy(ids: number[]): Promise<void> {
+  const db = await getDb()
   try {
     await db
       .deleteFrom('taggables')

@@ -337,7 +337,7 @@ describe('dashboard-utils', () => {
       const modelItems = dataSection.items.filter(i => i.id.startsWith('model-'))
       expect(modelItems.length).toBe(2)
       expect(modelItems.find(i => i.id === 'model-widget')!.label).toBe('Widget')
-      expect(modelItems.find(i => i.id === 'model-widget')!.url).toBe('http://localhost:3456/pages/data/widget')
+      expect(modelItems.find(i => i.id === 'model-widget')!.url).toBe('http://localhost:3456/pages/models/widget')
       expect(modelItems.find(i => i.id === 'model-gadget')).toBeDefined()
     })
 
@@ -358,10 +358,9 @@ describe('dashboard-utils', () => {
       expect(commerceModelIds).toContain('model-cart')
 
       // Even though Cart visually lives under Commerce, its URL must point
-      // at /data/<id> — there is no /commerce/[model] catch-all, so any
-      // other route would 404.
+      // at /models/<id> — that's the dashboard's dynamic ORM viewer.
       const cartItem = commerceSection.items.find(i => i.id === 'model-cart')!
-      expect(cartItem.url).toBe('http://localhost:3456/pages/data/cart')
+      expect(cartItem.url).toBe('http://localhost:3456/pages/models/cart')
     })
 
     it('should drop the commerce section when disabled', () => {
@@ -403,7 +402,7 @@ describe('dashboard-utils', () => {
       const config = buildSidebarConfig('http://localhost:3456/pages', [])
 
       const library = config.sections.find(s => s.id === 'library')!
-      expect(library.items.length).toBe(3)
+      expect(library.items.length).toBe(2)
 
       const commerce = config.sections.find(s => s.id === 'commerce')!
       expect(commerce.items.length).toBe(9)
@@ -416,7 +415,7 @@ describe('dashboard-utils', () => {
   describe('buildDashboardUrl', () => {
     it('should include native-sidebar parameter', () => {
       const url = buildDashboardUrl(3456)
-      expect(url).toBe('http://localhost:3456/app?native-sidebar=1')
+      expect(url).toBe('http://localhost:3456/?native-sidebar=1')
     })
 
     it('should use the specified port', () => {
@@ -424,9 +423,9 @@ describe('dashboard-utils', () => {
       expect(url).toContain(':8080/')
     })
 
-    it('should always include /app path', () => {
+    it('should open the dashboard root path', () => {
       const url = buildDashboardUrl(3456)
-      expect(url).toContain('/app?')
+      expect(url).toContain('/?native-sidebar=1')
     })
   })
 

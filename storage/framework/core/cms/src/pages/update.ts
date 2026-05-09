@@ -1,6 +1,6 @@
 type PageJsonResponse = ModelRow<typeof Page>
 type PageUpdate = UpdateModelData<typeof Page>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { formatDate } from '@stacksjs/orm'
 
 /**
@@ -11,6 +11,7 @@ import { formatDate } from '@stacksjs/orm'
  * @returns The updated page record
  */
 export async function update(id: number, data: Partial<PageUpdate>): Promise<PageJsonResponse> {
+  const db = await getDb()
   try {
     const updateData = {
       ...data,

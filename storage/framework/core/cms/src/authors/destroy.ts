@@ -1,5 +1,5 @@
 type AuthorJsonResponse = ModelRow<typeof Author>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 
 /**
  * Delete an author by ID
@@ -8,6 +8,7 @@ import { db } from '@stacksjs/database'
  * @returns The deleted author record
  */
 export async function destroy(id: number): Promise<AuthorJsonResponse> {
+  const db = await getDb()
   try {
     const result = await db
       .deleteFrom('authors')
@@ -36,6 +37,7 @@ export async function destroy(id: number): Promise<AuthorJsonResponse> {
  * @returns The number of deleted authors
  */
 export async function destroyMany(ids: number[]): Promise<number> {
+  const db = await getDb()
   try {
     const result = await db
       .deleteFrom('authors')

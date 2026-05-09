@@ -1,5 +1,5 @@
 import type { TaggableTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { slugify } from 'ts-slug'
 
 interface TagData {
@@ -35,6 +35,7 @@ export async function findOrCreateMany(names: string[], taggableType: string): P
  * @returns The found or created tag
  */
 export async function findOrCreate(data: TagData): Promise<TaggableTable> {
+  const db = await getDb()
   try {
     // Try to find existing tag
     const existingTag = await db
@@ -64,6 +65,7 @@ export async function findOrCreate(data: TagData): Promise<TaggableTable> {
  * @returns The newly created tag record
  */
 export async function store(data: TagData): Promise<TaggableTable> {
+  const db = await getDb()
   try {
     if (!data.name || data.name.trim() === '') {
       throw new Error('Tag name is required')

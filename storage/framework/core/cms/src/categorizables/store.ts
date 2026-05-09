@@ -1,5 +1,5 @@
 import type { CategorizableModelsTable, CategorizableTable } from '@stacksjs/orm'
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 import { slugify } from 'ts-slug'
 
 interface CategoryData {
@@ -21,6 +21,7 @@ interface CategorizableModelData {
  * @returns The created category record
  */
 export async function store(data: CategoryData): Promise<CategorizableTable> {
+  const db = await getDb()
   try {
     if (!data.name || data.name.trim() === '') {
       throw new Error('Category name is required')
@@ -64,6 +65,7 @@ export async function store(data: CategoryData): Promise<CategorizableTable> {
  * @returns The created categorizable model record
  */
 export async function storeCategorizableModel(data: CategorizableModelData): Promise<CategorizableModelsTable> {
+  const db = await getDb()
   try {
     const modelData = {
       category_id: data.category_id,
@@ -96,6 +98,7 @@ export async function storeCategorizableModel(data: CategorizableModelData): Pro
  * @returns Array of created category records
  */
 export async function bulkStore(data: CategoryData[]): Promise<CategorizableTable[]> {
+  const db = await getDb()
   try {
     // Start a transaction to ensure all inserts succeed or fail together
     const results = await db.transaction(async (trx: any) => {

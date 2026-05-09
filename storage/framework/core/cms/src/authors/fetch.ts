@@ -1,10 +1,11 @@
 type AuthorJsonResponse = ModelRow<typeof Author>
-import { db } from '@stacksjs/database'
+import { getDb } from '../database'
 
 /**
  * Fetch an author by ID
  */
 export async function fetchById(id: number): Promise<AuthorJsonResponse | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('authors')
     .where('id', '=', id)
@@ -16,6 +17,7 @@ export async function fetchById(id: number): Promise<AuthorJsonResponse | undefi
  * Fetch all authors
  */
 export async function fetchAll(): Promise<AuthorJsonResponse[]> {
+  const db = await getDb()
   return await db.selectFrom('authors').selectAll().execute() as AuthorJsonResponse[]
 }
 
@@ -23,6 +25,7 @@ export async function fetchAll(): Promise<AuthorJsonResponse[]> {
  * Fetch authors by name
  */
 export async function findByName(name: string): Promise<AuthorJsonResponse | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('authors')
     .where('name', '=', name)
@@ -34,6 +37,7 @@ export async function findByName(name: string): Promise<AuthorJsonResponse | und
  * Fetch authors by email
  */
 export async function findByEmail(email: string): Promise<AuthorJsonResponse | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('authors')
     .where('email', '=', email)
@@ -45,6 +49,7 @@ export async function findByEmail(email: string): Promise<AuthorJsonResponse | u
  * Fetch author by UUID
  */
 export async function findByUuid(uuid: string): Promise<AuthorJsonResponse | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('authors')
     .where('uuid', '=', uuid)
@@ -56,6 +61,7 @@ export async function findByUuid(uuid: string): Promise<AuthorJsonResponse | und
  * Fetch authors by user ID
  */
 export async function findByUserId(userId: number): Promise<AuthorJsonResponse | undefined> {
+  const db = await getDb()
   return await db
     .selectFrom('authors')
     .where('user_id', '=', userId)
