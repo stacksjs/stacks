@@ -1,7 +1,8 @@
 import type { BlogConfig } from '../../../../config/blog'
-import { mkdirSync, writeFileSync } from 'node:fs'
+import { copyFileSync, existsSync, mkdirSync, readdirSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { db } from '@stacksjs/database'
+import { path as p } from '@stacksjs/path'
 
 export interface BuildBlogOptions {
   config: BlogConfig
@@ -146,6 +147,44 @@ function renderMarkdownish(text: string): string {
   return result.join('\n').replace(/<\/ul>\n<ul>/g, '\n')
 }
 
+function blogFontFaces(fontPath = '/assets/fonts/nps'): string {
+  return `@font-face {
+      font-family: 'NPS 2026';
+      src: url('${fontPath}/NPS_2026-variable.woff2') format('woff2-variations');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Sequoia Sans';
+      src: url('${fontPath}/SequoiaSans-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Redwood Serif';
+      src: url('${fontPath}/RedwoodSerif-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }`
+}
+
+function copyBlogFonts(outDir: string): void {
+  const sourceDir = p.frameworkPath('defaults/resources/assets/fonts/nps')
+  if (!existsSync(sourceDir))
+    return
+
+  const targetDir = join(outDir, 'assets', 'fonts', 'nps')
+  ensureDir(targetDir)
+
+  for (const file of readdirSync(sourceDir)) {
+    if (file.endsWith('.woff2'))
+      copyFileSync(join(sourceDir, file), join(targetDir, file))
+  }
+}
+
 function generateLayout(config: BlogConfig, title: string, content: string, _options?: { isPost?: boolean }): string {
   const pageTitle = title === config.title ? config.title : `${escapeHtml(title)} | ${escapeHtml(config.title)}`
 
@@ -157,10 +196,9 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
   <title>${pageTitle}</title>
   <meta name="description" content="${escapeHtml(config.description)}">
   <link rel="alternate" type="application/rss+xml" title="${escapeHtml(config.title)}" href="/feed.xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
+    ${blogFontFaces()}
+
     :root {
       --primary: ${config.theme.primaryColor};
       --primary-soft: ${config.theme.primaryColor}1a;
@@ -173,6 +211,9 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       --border: #e5e7eb;
       --max-width: 740px;
       --radius: 8px;
+      --font-display: 'NPS 2026', 'Sequoia Sans', system-ui, sans-serif;
+      --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      --font-serif: 'Redwood Serif', Georgia, serif;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -188,7 +229,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
-      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      font-family: var(--font-sans);
       background: var(--bg);
       color: var(--text);
       line-height: 1.7;
@@ -211,8 +252,9 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       z-index: 10;
     }
     .header .site-title {
+      font-family: var(--font-display);
       font-size: 1.125rem;
-      font-weight: 700;
+      font-weight: 750;
       color: var(--text);
       display: flex;
       align-items: center;
@@ -234,9 +276,9 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       margin-bottom: 0.5rem;
     }
     .hero h1 {
+      font-family: var(--font-display);
       font-size: 2rem;
-      font-weight: 800;
-      letter-spacing: -0.02em;
+      font-weight: 850;
       margin-bottom: 0.5rem;
     }
     .hero p { color: var(--text-light); font-size: 1.05rem; max-width: 500px; margin: 0 auto; }
@@ -257,7 +299,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       border-radius: 4px;
       margin-bottom: 0.5rem;
     }
-    .post-title { font-size: 1.375rem; font-weight: 700; margin-bottom: 0.4rem; letter-spacing: -0.01em; }
+    .post-title { font-family: var(--font-display); font-size: 1.375rem; font-weight: 750; margin-bottom: 0.4rem; }
     .post-title a { color: var(--text); }
     .post-title a:hover { color: var(--primary); opacity: 1; }
     .post-meta { color: var(--text-lighter); font-size: 0.8125rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
@@ -284,7 +326,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     .back-link { display: inline-flex; align-items: center; gap: 0.35rem; color: var(--text-light); font-size: 0.875rem; font-weight: 500; margin-bottom: 1.5rem; }
     .back-link:hover { color: var(--primary); }
     .post-header { margin-bottom: 2rem; }
-    .post-header h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 0.75rem; line-height: 1.25; letter-spacing: -0.025em; }
+    .post-header h1 { font-family: var(--font-display); font-size: 2.25rem; font-weight: 850; margin-bottom: 0.75rem; line-height: 1.25; }
     .post-poster { width: 100%; border-radius: 12px; margin-bottom: 2rem; aspect-ratio: 16/9; object-fit: cover; }
     .author-info { display: flex; align-items: center; gap: 0.75rem; margin-top: 1rem; }
     .author-avatar { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; }
@@ -292,10 +334,10 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     .author-bio { color: var(--text-light); font-size: 0.8125rem; }
 
     /* Post content */
-    .post-content { line-height: 1.8; font-size: 1.0625rem; }
+    .post-content { font-family: var(--font-serif); line-height: 1.8; font-size: 1.0625rem; }
     .post-content p { margin-bottom: 1.5rem; }
-    .post-content h2 { margin-top: 2.5rem; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 700; letter-spacing: -0.01em; }
-    .post-content h3 { margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1.25rem; font-weight: 600; }
+    .post-content h2 { font-family: var(--font-sans); margin-top: 2.5rem; margin-bottom: 0.75rem; font-size: 1.5rem; font-weight: 700; }
+    .post-content h3 { font-family: var(--font-sans); margin-top: 2rem; margin-bottom: 0.5rem; font-size: 1.25rem; font-weight: 600; }
     .post-content img { max-width: 100%; border-radius: var(--radius); margin: 1.5rem 0; }
     .post-content pre { background: var(--bg-soft); padding: 1.25rem; border-radius: var(--radius); overflow-x: auto; margin: 1.5rem 0; border: 1px solid var(--border); font-size: 0.875rem; }
     .post-content code { font-family: 'Fira Code', 'JetBrains Mono', monospace; font-size: 0.875em; }
@@ -857,6 +899,7 @@ export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
   // Ensure output directory
   ensureDir(outDir)
   ensureDir(join(outDir, 'posts'))
+  copyBlogFonts(outDir)
 
   // Fetch published posts from database
   let posts: PostRow[]

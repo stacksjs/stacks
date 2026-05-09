@@ -80,8 +80,9 @@ try {
   }
 
   .page-header h1 {
+    font-family: var(--font-display);
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 850;
     margin-bottom: 0.5rem;
   }
 
@@ -130,8 +131,9 @@ try {
   }
 
   .category-name {
+    font-family: var(--font-display);
     font-size: 1.25rem;
-    font-weight: 600;
+    font-weight: 750;
     color: var(--color-text);
     margin-bottom: 0.5rem;
   }

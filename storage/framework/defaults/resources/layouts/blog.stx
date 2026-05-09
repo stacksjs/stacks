@@ -6,10 +6,29 @@
   <title>{{ title || 'Blog' }} | Stacks Blog</title>
   <meta name="description" content="{{ description || 'A modern blog powered by Stacks' }}">
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/api/blog/feed.xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'NPS 2026';
+      src: url('/assets/fonts/nps/NPS_2026-variable.woff2') format('woff2-variations');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Sequoia Sans';
+      src: url('/assets/fonts/nps/SequoiaSans-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Redwood Serif';
+      src: url('/assets/fonts/nps/RedwoodSerif-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -20,8 +39,9 @@
       --color-primary: #3b82f6;
       --color-primary-hover: #2563eb;
       --color-border: #e2e8f0;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-serif: 'Merriweather', Georgia, serif;
+      --font-display: 'NPS 2026', 'Sequoia Sans', system-ui, sans-serif;
+      --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Redwood Serif', Georgia, serif;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -74,8 +94,9 @@
     }
 
     .blog-logo {
+      font-family: var(--font-display);
       font-size: 1.5rem;
-      font-weight: 700;
+      font-weight: 750;
       color: var(--color-text);
     }
 

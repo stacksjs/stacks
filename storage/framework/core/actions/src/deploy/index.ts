@@ -257,7 +257,8 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
 
 // Build blog static site
 const blogDistExists = storage.hasFiles(p.projectPath('dist/blog'))
-if (!blogDistExists) {
+const blogFontAssetsExist = storage.hasFiles(p.projectPath('dist/blog/assets/fonts/nps'))
+if (!blogDistExists || !blogFontAssetsExist) {
   const blogBuildSpinner = spinner('Building blog...')
   blogBuildSpinner.start()
   try {

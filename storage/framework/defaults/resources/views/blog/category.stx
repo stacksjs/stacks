@@ -194,8 +194,9 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
   }
 
   .category-title {
+    font-family: var(--font-display);
     font-size: 2.5rem;
-    font-weight: 700;
+    font-weight: 850;
     margin-bottom: 0.75rem;
   }
 
@@ -262,8 +263,9 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
   }
 
   .post-title {
+    font-family: var(--font-display);
     font-size: 1.125rem;
-    font-weight: 600;
+    font-weight: 750;
     color: var(--color-text);
     display: block;
     margin-bottom: 0.5rem;

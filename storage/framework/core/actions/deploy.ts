@@ -398,6 +398,7 @@ const server = Bun.serve({
       // For /assets/* URLs, also check resources/assets directory
       if (pathname.startsWith('/assets/')) {
         assetPaths.push('./resources' + pathname)
+        assetPaths.push('./storage/framework/defaults/resources' + pathname)
       }
 
       for (const assetPath of assetPaths) {

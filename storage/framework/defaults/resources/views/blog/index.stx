@@ -85,10 +85,29 @@ function formatDate(dateStr) {
   <title>Blog | Stacks</title>
   <meta name="description" content="A modern blog powered by Stacks">
   <link rel="alternate" type="application/rss+xml" title="RSS Feed" href="/api/blog/feed.xml">
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Merriweather:wght@400;700&display=swap" rel="stylesheet">
   <style>
+    @font-face {
+      font-family: 'NPS 2026';
+      src: url('/assets/fonts/nps/NPS_2026-variable.woff2') format('woff2-variations');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Sequoia Sans';
+      src: url('/assets/fonts/nps/SequoiaSans-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+    @font-face {
+      font-family: 'Redwood Serif';
+      src: url('/assets/fonts/nps/RedwoodSerif-Regular.woff2') format('woff2');
+      font-weight: 400;
+      font-style: normal;
+      font-display: swap;
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
@@ -99,8 +118,9 @@ function formatDate(dateStr) {
       --color-primary: #3b82f6;
       --color-primary-hover: #2563eb;
       --color-border: #e2e8f0;
-      --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-serif: 'Merriweather', Georgia, serif;
+      --font-display: 'NPS 2026', 'Sequoia Sans', system-ui, sans-serif;
+      --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+      --font-serif: 'Redwood Serif', Georgia, serif;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -137,7 +157,7 @@ function formatDate(dateStr) {
     }
 
     .blog-header .container { display: flex; align-items: center; justify-content: space-between; }
-    .blog-logo { font-size: 1.5rem; font-weight: 700; color: var(--color-text); }
+    .blog-logo { font-family: var(--font-display); font-size: 1.5rem; font-weight: 750; color: var(--color-text); }
     .blog-nav { display: flex; gap: 2rem; align-items: center; }
     .blog-nav a { color: var(--color-text-secondary); font-weight: 500; font-size: 0.9375rem; transition: color 0.2s; }
     .blog-nav a:hover { color: var(--color-text); }
@@ -155,7 +175,7 @@ function formatDate(dateStr) {
     .footer-copy { color: var(--color-text-secondary); font-size: 0.875rem; }
 
     /* Section titles */
-    .section-title { font-size: 1.25rem; font-weight: 600; margin-bottom: 1.5rem; color: var(--color-text); }
+    .section-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 750; margin-bottom: 1.5rem; color: var(--color-text); }
 
     /* Featured section */
     .featured-section { margin-bottom: 3rem; }
@@ -164,7 +184,7 @@ function formatDate(dateStr) {
     .featured-card:hover { transform: translateY(-2px); box-shadow: 0 10px 40px -10px rgba(0,0,0,0.1); }
     .featured-image img { width: 100%; height: 200px; object-fit: cover; }
     .featured-content { padding: 1.5rem; }
-    .featured-title { font-size: 1.25rem; font-weight: 600; color: var(--color-text); display: block; margin-bottom: 0.75rem; }
+    .featured-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 750; color: var(--color-text); display: block; margin-bottom: 0.75rem; }
     .featured-title:hover { color: var(--color-primary); }
     .featured-excerpt { color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 1rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
 
@@ -178,7 +198,7 @@ function formatDate(dateStr) {
     @media (max-width: 640px) { .post-card { grid-template-columns: 1fr; } }
     .post-thumbnail img { width: 100%; height: 140px; object-fit: cover; border-radius: 0.5rem; }
     .post-content { display: flex; flex-direction: column; justify-content: center; }
-    .post-title { font-size: 1.125rem; font-weight: 600; color: var(--color-text); margin-bottom: 0.5rem; line-height: 1.4; }
+    .post-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 750; color: var(--color-text); margin-bottom: 0.5rem; line-height: 1.4; }
     .post-title:hover { color: var(--color-primary); }
     .post-excerpt { color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .post-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--color-text-secondary); }
