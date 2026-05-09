@@ -4,8 +4,8 @@ const description = ''
 const image = ''
 </script>
 
-<article class="feature-card">
-  <div class="feature-art">
+<article class="area-card">
+  <div class="area-icon">
     <img src="{{ image }}" alt="">
   </div>
   <h3>{{ title }}</h3>

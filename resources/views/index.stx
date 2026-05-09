@@ -2,34 +2,36 @@
 const appName = 'Stacks'
 const appVersion = '0.1.0'
 
-const links = [
+const navLinks = [
+  { label: 'Platform', url: '#platform' },
+  { label: 'CMS', url: '#cms' },
+  { label: 'Deploy', url: '#deploy' },
   { label: 'Docs', url: 'https://docs.stacksjs.com' },
-  { label: 'Blog', url: 'https://blog.stacksjs.com' },
   { label: 'GitHub', url: 'https://github.com/stacksjs/stacks' },
 ]
 
-const features = [
+const productAreas = [
   {
-    title: 'Ship the whole trail',
-    description: 'Views, APIs, jobs, storage, mail, docs, and deploys live in one framework instead of a pile of side quests.',
-    image: '/assets/images/marketing-park-camp.svg',
-  },
-  {
-    title: 'Markdown-first publishing',
-    description: 'Build docs, blog posts, and CMS content with files that still feel good in Git, while the dashboard handles daily edits.',
+    title: 'Markdown CMS',
+    text: 'Posts, tags, authors, pages, and resources stay file-friendly while the dashboard gives editors a real workspace.',
     image: '/assets/images/marketing-park-lighthouse.svg',
   },
   {
-    title: 'One command to basecamp',
-    description: './buddy deploy builds the app, docs, blog, CMS, infrastructure, and public assets into one production route.',
+    title: 'Typed app backend',
+    text: 'Models generate migrations, API routes, validation, and dashboard surfaces without turning every feature into plumbing.',
+    image: '/assets/images/marketing-park-camp.svg',
+  },
+  {
+    title: 'One production trail',
+    text: './buddy deploy ships the app, docs, blog, CMS API, mail, assets, and cloud infrastructure together.',
     image: '/assets/images/marketing-park-wing.svg',
   },
 ]
 
-const waypoints = [
-  { label: 'CMS', text: 'Posts, tags, pages, authors, and media through first-party APIs.' },
-  { label: 'Docs', text: 'Markdown docs powered by Bunpress and deployed with the stack.' },
-  { label: 'Cloud', text: 'Infrastructure, migrations, mail, and app services from Buddy.' },
+const workflowSteps = [
+  { label: '01', title: 'Model content', text: 'Define posts, pages, authors, tags, and custom resources once.' },
+  { label: '02', title: 'Edit in dashboard', text: 'Use the local dashboard for CMS work without leaving the framework.' },
+  { label: '03', title: 'Publish everywhere', text: 'Deploy marketing, docs, blog, APIs, and infrastructure with Buddy.' },
 ]
 </script>
 
@@ -38,8 +40,8 @@ const waypoints = [
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Stacks is a full-stack TypeScript framework for building apps, APIs, CMS content, docs, and cloud infrastructure.">
-    <title>Stacks - Full-stack framework for modern products</title>
+    <meta name="description" content="Stacks is a full-stack TypeScript framework for building marketing sites, Markdown CMS content, docs, APIs, and cloud infrastructure.">
+    <title>Stacks - TypeScript framework for content, apps, and cloud</title>
     <style>
       @font-face {
         font-display: swap;
@@ -67,23 +69,28 @@ const waypoints = [
 
       :root {
         color-scheme: dark;
-        --ink: #102218;
-        --pine: #173c26;
-        --pine-2: #245d3b;
-        --fern: #9ebb7a;
-        --river: #7fb1a8;
-        --cream: #fff3d6;
-        --paper: #f7e8bf;
-        --gold: #d9962f;
-        --rust: #9b5631;
-        --line: rgba(255, 243, 214, 0.2);
-        --shadow: 0 26px 80px rgba(0, 0, 0, 0.36);
+        --ranger: #0d1e16;
+        --pine: #163824;
+        --canopy: #275f3c;
+        --moss: #aac47d;
+        --paper: #fff0c8;
+        --cream: #fff7e1;
+        --river: #7fb8ae;
+        --sky: #b8d9cf;
+        --gold: #df9a2f;
+        --clay: #a85f35;
+        --line: rgba(255, 240, 200, 0.2);
+        --line-strong: rgba(255, 240, 200, 0.34);
+        --shadow: 0 30px 80px rgba(0, 0, 0, 0.36);
       }
 
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
 
       html {
-        background: var(--ink);
+        background: var(--ranger);
+        overflow-x: hidden;
         scroll-behavior: smooth;
       }
 
@@ -92,13 +99,12 @@ const waypoints = [
         min-height: 100vh;
         margin: 0;
         overflow-x: hidden;
-        overflow-y: auto;
         color: var(--cream);
         font-family: "NPS", ui-sans-serif, system-ui, sans-serif;
         background:
-          radial-gradient(circle at 12% 10%, rgba(217, 150, 47, 0.18), transparent 26rem),
-          radial-gradient(circle at 84% 0%, rgba(127, 177, 168, 0.16), transparent 28rem),
-          linear-gradient(180deg, #0e1f17 0%, #143321 50%, #0f2118 100%);
+          radial-gradient(circle at 18% 16%, rgba(223, 154, 47, 0.2), transparent 24rem),
+          radial-gradient(circle at 88% 6%, rgba(127, 184, 174, 0.2), transparent 28rem),
+          linear-gradient(180deg, #0c1e15 0%, #10271b 48%, #0d1b14 100%);
       }
 
       body::before {
@@ -113,18 +119,21 @@ const waypoints = [
 
       body::after {
         position: fixed;
-        right: -10vw;
-        bottom: -18vh;
+        inset: auto 0 0;
         z-index: -1;
-        width: min(58vw, 760px);
-        aspect-ratio: 1;
+        height: min(34vh, 24rem);
         content: "";
-        background: url("/assets/images/marketing-park-geyser.svg") center / contain no-repeat;
-        filter: invert(84%) sepia(21%) saturate(394%) hue-rotate(20deg) brightness(94%);
-        opacity: 0.06;
+        background:
+          linear-gradient(180deg, transparent 0%, rgba(13, 30, 22, 0.64) 46%, rgba(13, 30, 22, 0.94) 100%),
+          url("/assets/images/park-ridge.svg") center bottom / cover no-repeat;
+        opacity: 0.25;
+        pointer-events: none;
       }
 
-      a { color: inherit; text-decoration: none; }
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
 
       .site-shell {
         width: min(1180px, calc(100% - 40px));
@@ -134,9 +143,9 @@ const waypoints = [
       .site-nav {
         position: sticky;
         top: 0;
-        z-index: 20;
+        z-index: 30;
         border-bottom: 1px solid var(--line);
-        background: rgba(16, 34, 24, 0.84);
+        background: rgba(13, 30, 22, 0.9);
         backdrop-filter: blur(18px);
       }
 
@@ -144,7 +153,8 @@ const waypoints = [
         display: flex;
         align-items: center;
         justify-content: space-between;
-        min-height: 68px;
+        min-height: 70px;
+        gap: 1rem;
       }
 
       .brand {
@@ -158,22 +168,22 @@ const waypoints = [
         display: grid;
         flex: 0 0 auto;
         place-items: center;
-        width: 38px;
-        height: 38px;
+        width: 40px;
+        height: 40px;
         border: 2px solid var(--gold);
-        border-radius: 8px;
+        border-radius: 7px;
         color: var(--gold);
-        font-weight: 900;
+        font-weight: 950;
       }
 
       .brand-name,
-      .display-font {
+      .script-title {
         font-family: "Campmate Script", ui-serif, Georgia, serif;
         font-weight: 400;
       }
 
       .brand-name {
-        font-size: 1.65rem;
+        font-size: 1.55rem;
         line-height: 1;
       }
 
@@ -181,62 +191,65 @@ const waypoints = [
         display: flex;
         gap: 1rem;
         align-items: center;
-        font-size: 0.78rem;
-        font-weight: 850;
-        letter-spacing: 0;
+        color: rgba(255, 247, 225, 0.78);
+        font-size: 0.74rem;
+        font-weight: 900;
         text-transform: uppercase;
       }
 
-      .nav-links a {
-        color: rgba(255, 243, 214, 0.82);
-      }
-
       .nav-links a:hover,
-      .trail-link:hover {
+      .footer-link:hover {
         color: var(--gold);
       }
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+        grid-template-columns: minmax(0, 0.98fr) minmax(360px, 1.02fr);
         gap: clamp(2rem, 5vw, 5rem);
         align-items: center;
-        padding: 5rem 0 4rem;
+        padding: clamp(2rem, 4vw, 3rem) 0 clamp(1.5rem, 3vw, 2rem);
       }
 
-      .eyebrow {
+      .kicker {
         display: inline-flex;
-        gap: 0.5rem;
+        gap: 0.55rem;
         align-items: center;
         margin-bottom: 1rem;
-        color: var(--fern);
+        color: var(--moss);
         font-size: 0.78rem;
-        font-weight: 900;
+        font-weight: 950;
         text-transform: uppercase;
       }
 
-      .eyebrow::before {
-        width: 38px;
+      .kicker::before {
+        width: 42px;
         height: 2px;
         content: "";
         background: var(--gold);
       }
 
       .hero-title {
-        max-width: 10ch;
+        margin: 0 0 0.2rem;
+        color: var(--cream);
+        font-size: clamp(5.8rem, 12vw, 9.4rem);
+        line-height: 0.88;
+      }
+
+      .hero-headline {
+        max-width: 560px;
         margin: 0;
-        color: #fff7df;
-        font-size: clamp(6rem, 16vw, 12rem);
-        line-height: 0.9;
+        color: var(--sky);
+        font-size: clamp(2rem, 3.2vw, 3rem);
+        line-height: 1.06;
       }
 
       .hero-copy {
         max-width: 680px;
-        margin: 1.25rem 0 0;
-        color: rgba(255, 243, 214, 0.86);
+        margin: 1.3rem 0 0;
+        color: rgba(255, 247, 225, 0.82);
         font-family: "Switchback", "NPS", ui-sans-serif, system-ui, sans-serif;
-        font-size: 1.28rem;
-        line-height: 1.65;
+        font-size: 1.18rem;
+        line-height: 1.7;
       }
 
       .hero-actions {
@@ -252,18 +265,18 @@ const waypoints = [
         justify-content: center;
         min-height: 48px;
         padding: 0 1.1rem;
-        border: 1px solid rgba(255, 243, 214, 0.24);
+        border: 1px solid var(--line-strong);
         border-radius: 7px;
         color: var(--cream);
-        font-size: 0.82rem;
-        font-weight: 900;
+        font-size: 0.78rem;
+        font-weight: 950;
         text-transform: uppercase;
-        background: rgba(255, 243, 214, 0.06);
+        background: rgba(255, 247, 225, 0.06);
       }
 
       .button.primary {
         border-color: var(--gold);
-        color: #1a2b1f;
+        color: #102218;
         background: var(--gold);
       }
 
@@ -272,21 +285,47 @@ const waypoints = [
         box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
       }
 
-      .hero-card {
+      .hero-metrics {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 2rem;
+      }
+
+      .metric {
+        padding: 0.8rem;
+        border: 1px solid var(--line);
+        border-radius: 7px;
+        background: rgba(255, 247, 225, 0.045);
+      }
+
+      .metric strong {
+        display: block;
+        color: var(--gold);
+        font-size: 1.2rem;
+      }
+
+      .metric span {
+        color: rgba(255, 247, 225, 0.7);
+        font-size: 0.7rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .product-preview {
         position: relative;
-        min-height: 520px;
-        padding: clamp(1.25rem, 4vw, 2rem);
-        overflow: hidden;
-        border: 1px solid rgba(255, 243, 214, 0.22);
+        padding: 1rem;
+        border: 1px solid var(--line-strong);
         border-top: 5px solid var(--gold);
         border-radius: 8px;
         background:
-          linear-gradient(180deg, rgba(36, 93, 59, 0.86), rgba(20, 51, 33, 0.9)),
+          linear-gradient(180deg, rgba(39, 95, 60, 0.88), rgba(15, 42, 28, 0.94)),
           var(--pine);
         box-shadow: var(--shadow);
+        overflow: hidden;
       }
 
-      .hero-card::before {
+      .product-preview::before {
         position: absolute;
         inset: 0;
         content: "";
@@ -295,157 +334,324 @@ const waypoints = [
         opacity: 0.08;
       }
 
-      .park-poster {
+      .dashboard-shell {
         position: relative;
         display: grid;
-        place-items: center;
-        height: 100%;
-        min-height: 420px;
-        border: 1px solid rgba(255, 243, 214, 0.22);
-        border-radius: 6px;
-        background:
-          linear-gradient(180deg, rgba(255, 243, 214, 0.08), transparent 46%),
-          radial-gradient(circle at 50% 35%, rgba(217, 150, 47, 0.17), transparent 18rem);
+        grid-template-columns: 9.4rem minmax(0, 1fr);
+        min-height: 370px;
+        overflow: hidden;
+        border: 1px solid rgba(255, 247, 225, 0.2);
+        border-radius: 7px;
+        background: rgba(8, 23, 15, 0.82);
       }
 
-      .park-poster img {
-        width: min(74%, 340px);
-        filter: invert(95%) sepia(13%) saturate(766%) hue-rotate(330deg) brightness(104%);
+      .dashboard-side {
+        padding: 1rem;
+        border-right: 1px solid var(--line);
+        background: rgba(12, 31, 21, 0.86);
       }
 
-      .poster-label {
-        position: absolute;
-        right: 1rem;
-        bottom: 1rem;
-        left: 1rem;
+      .dashboard-logo {
         display: flex;
-        justify-content: space-between;
-        gap: 1rem;
-        color: rgba(255, 243, 214, 0.82);
-        font-size: 0.72rem;
+        gap: 0.65rem;
+        align-items: center;
+        margin-bottom: 1.2rem;
+        color: var(--cream);
+        font-size: 0.7rem;
+        font-weight: 950;
+        line-height: 1;
+        text-transform: uppercase;
+      }
+
+      .dashboard-logo img {
+        width: 34px;
+        height: 34px;
+        padding: 0.3rem;
+        border-radius: 6px;
+        background: var(--paper);
+      }
+
+      .side-pill {
+        display: block;
+        margin-bottom: 0.5rem;
+        padding: 0.62rem 0.7rem;
+        border: 1px solid transparent;
+        border-radius: 6px;
+        color: rgba(255, 247, 225, 0.66);
+        font-size: 0.66rem;
         font-weight: 900;
         text-transform: uppercase;
       }
 
+      .side-pill.active {
+        border-color: rgba(223, 154, 47, 0.46);
+        color: var(--cream);
+        background: rgba(223, 154, 47, 0.14);
+      }
+
+      .dashboard-main {
+        padding: 1rem;
+      }
+
+      .dashboard-top {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        align-items: start;
+        margin-bottom: 1rem;
+      }
+
+      .dashboard-top h2 {
+        margin: 0;
+        color: var(--cream);
+        font-size: 1.18rem;
+        line-height: 1.1;
+      }
+
+      .status-chip {
+        flex: 0 0 auto;
+        padding: 0.38rem 0.55rem;
+        border-radius: 999px;
+        color: #112117;
+        font-size: 0.58rem;
+        font-weight: 950;
+        text-transform: uppercase;
+        background: var(--moss);
+      }
+
+      .content-table {
+        display: grid;
+        gap: 0.55rem;
+      }
+
+      .content-row {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+        padding: 0.66rem;
+        border: 1px solid rgba(255, 247, 225, 0.13);
+        border-radius: 6px;
+        background: rgba(255, 247, 225, 0.05);
+      }
+
+      .content-row strong {
+        display: block;
+        color: var(--cream);
+        font-size: 0.88rem;
+      }
+
+      .content-row span {
+        color: rgba(255, 247, 225, 0.58);
+        font-size: 0.72rem;
+        font-weight: 800;
+      }
+
+      .row-state {
+        color: var(--gold);
+        font-size: 0.68rem;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .terminal-strip {
+        margin-top: 1rem;
+        padding: 0.72rem;
+        border: 1px solid rgba(127, 184, 174, 0.22);
+        border-radius: 6px;
+        color: #c8f5dd;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.74rem;
+        line-height: 1.5;
+        background: #07130d;
+        white-space: pre-wrap;
+      }
+
       .section {
-        padding: 4.5rem 0;
+        padding: 4.8rem 0;
+      }
+
+      .hero + .section {
+        padding-top: 1.2rem;
       }
 
       .section-heading {
-        max-width: 720px;
+        display: grid;
+        grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.7fr);
+        gap: 2rem;
+        align-items: end;
         margin-bottom: 1.5rem;
       }
 
-      .section-heading h2 {
+      .section-title {
         margin: 0;
-        color: #fff7df;
-        font-size: clamp(2rem, 6vw, 4.5rem);
-        line-height: 0.98;
+        color: var(--cream);
+        font-size: clamp(2.2rem, 6vw, 4.8rem);
+        line-height: 0.96;
+        text-transform: uppercase;
+        overflow-wrap: anywhere;
       }
 
-      .section-heading p {
-        margin: 1rem 0 0;
-        color: rgba(255, 243, 214, 0.76);
+      .section-copy {
+        margin: 0;
+        color: rgba(255, 247, 225, 0.72);
         font-family: "Switchback", "NPS", ui-sans-serif, system-ui, sans-serif;
-        font-size: 1.08rem;
+        font-size: 1.04rem;
         line-height: 1.7;
       }
 
-      .feature-grid {
+      .area-grid {
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 1rem;
       }
 
-      .feature-card,
-      .command-panel,
+      .area-card,
+      .cms-panel,
+      .deploy-panel,
       .signup-panel {
-        border: 1px solid rgba(255, 243, 214, 0.2);
+        border: 1px solid var(--line);
         border-radius: 8px;
-        background: rgba(11, 27, 19, 0.72);
+        background: rgba(8, 23, 15, 0.68);
         box-shadow: var(--shadow);
       }
 
-      .feature-card {
-        min-height: 320px;
+      .area-card {
+        min-height: 300px;
         padding: 1.25rem;
       }
 
-      .feature-art {
+      .area-icon {
         display: grid;
         place-items: center;
-        width: 86px;
-        height: 86px;
+        width: 78px;
+        height: 78px;
         margin-bottom: 1.25rem;
         border-radius: 7px;
         background: var(--paper);
       }
 
-      .feature-art img {
-        width: 62px;
-        height: 62px;
+      .area-icon img {
+        width: 54px;
+        height: 54px;
         object-fit: contain;
-        opacity: 0.88;
+        opacity: 0.86;
       }
 
-      .feature-card h3,
-      .command-panel h3,
+      .area-card h3,
+      .cms-panel h3,
+      .deploy-panel h3,
       .signup-panel h2 {
         margin: 0;
-        color: #fff7df;
-        font-size: 1.1rem;
+        color: var(--cream);
+        font-size: 1.08rem;
         line-height: 1.35;
       }
 
-      .feature-card p,
-      .waypoint p,
+      .area-card p,
+      .cms-panel p,
+      .deploy-panel p,
       .signup-panel p {
-        color: rgba(255, 243, 214, 0.72);
+        color: rgba(255, 247, 225, 0.7);
         line-height: 1.65;
       }
 
-      .command-panel {
+      .cms-panel {
         display: grid;
-        grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.05fr);
+        grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
         gap: 1.5rem;
+        padding: clamp(1.25rem, 4vw, 2rem);
+      }
+
+      .resource-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+      }
+
+      .resource {
+        padding: 1rem;
+        border: 1px solid rgba(255, 247, 225, 0.14);
+        border-radius: 7px;
+        background: rgba(255, 247, 225, 0.045);
+      }
+
+      .resource strong {
+        display: block;
+        color: var(--gold);
+        font-size: 0.72rem;
+        text-transform: uppercase;
+      }
+
+      .resource span {
+        display: block;
+        margin-top: 0.35rem;
+        color: rgba(255, 247, 225, 0.72);
+        line-height: 1.45;
+      }
+
+      .deploy-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+        gap: 1.25rem;
         padding: clamp(1.25rem, 4vw, 2rem);
         overflow: hidden;
       }
 
-      .terminal {
-        padding: 1rem;
-        overflow: hidden;
-        border: 1px solid rgba(255, 243, 214, 0.16);
-        border-radius: 7px;
-        background: #07140e;
-      }
-
-      .terminal code {
-        display: block;
-        color: #d6f0c1;
-        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-        font-size: 0.95rem;
-        line-height: 1.75;
-        white-space: pre-wrap;
-      }
-
-      .waypoints {
+      .route-list {
         display: grid;
-        gap: 0.85rem;
+        gap: 0.7rem;
+        margin-top: 1rem;
       }
 
-      .waypoint {
-        padding: 1rem;
-        border: 1px solid rgba(255, 243, 214, 0.14);
+      .route {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid rgba(255, 247, 225, 0.12);
+      }
+
+      .route span {
+        color: rgba(255, 247, 225, 0.66);
+      }
+
+      .route strong {
+        color: var(--river);
+      }
+
+      .workflow {
+        display: grid;
+        gap: 0.8rem;
+      }
+
+      .workflow-step {
+        display: grid;
+        grid-template-columns: 3.5rem minmax(0, 1fr);
+        gap: 0.9rem;
+        padding: 0.9rem;
+        border: 1px solid rgba(255, 247, 225, 0.14);
         border-radius: 7px;
-        background: rgba(255, 243, 214, 0.045);
+        background: rgba(255, 247, 225, 0.045);
       }
 
-      .waypoint strong {
-        display: block;
+      .workflow-step em {
         color: var(--gold);
-        font-size: 0.75rem;
-        text-transform: uppercase;
+        font-style: normal;
+        font-size: 1.2rem;
+        font-weight: 950;
+      }
+
+      .workflow-step strong {
+        display: block;
+        color: var(--cream);
+      }
+
+      .workflow-step span {
+        display: block;
+        margin-top: 0.3rem;
+        color: rgba(255, 247, 225, 0.66);
+        line-height: 1.45;
       }
 
       .signup-panel {
@@ -455,7 +661,7 @@ const waypoints = [
         align-items: center;
         padding: clamp(1.25rem, 4vw, 2rem);
         background:
-          linear-gradient(135deg, rgba(36, 93, 59, 0.94), rgba(23, 60, 38, 0.94)),
+          linear-gradient(135deg, rgba(39, 95, 60, 0.92), rgba(18, 50, 32, 0.96)),
           var(--pine);
       }
 
@@ -479,12 +685,12 @@ const waypoints = [
 
       input:focus {
         border-color: var(--gold);
-        outline: 3px solid rgba(217, 150, 47, 0.25);
+        outline: 3px solid rgba(223, 154, 47, 0.25);
       }
 
       .site-footer {
         padding: 2rem 0 3rem;
-        color: rgba(255, 243, 214, 0.64);
+        color: rgba(255, 247, 225, 0.64);
         font-size: 0.78rem;
         font-weight: 850;
         text-transform: uppercase;
@@ -498,28 +704,26 @@ const waypoints = [
         padding-top: 1.25rem;
       }
 
-      @media (max-width: 860px) {
+      @media (max-width: 920px) {
         .site-shell {
-          width: min(100% - 32px, 680px);
+          width: min(100% - 32px, 720px);
         }
 
         .nav-inner {
-          min-height: 62px;
+          min-height: 64px;
         }
 
         .nav-links {
           gap: 0.7rem;
-          font-size: 0.68rem;
-        }
-
-        .brand-name {
-          font-size: 1.3rem;
+          font-size: 0.66rem;
         }
 
         .hero,
-        .command-panel,
+        .section-heading,
+        .cms-panel,
+        .deploy-panel,
         .signup-panel {
-          grid-template-columns: 1fr;
+          grid-template-columns: minmax(0, 1fr);
         }
 
         .hero {
@@ -528,72 +732,114 @@ const waypoints = [
         }
 
         .hero-title {
-          font-size: clamp(5.3rem, 24vw, 8rem);
+          font-size: clamp(5.25rem, 24vw, 8rem);
+        }
+
+        .kicker {
+          font-size: 0.68rem;
+        }
+
+        .kicker::before {
+          width: 36px;
+        }
+
+        .hero-headline {
+          font-size: clamp(2rem, 9vw, 2.65rem);
         }
 
         .hero-copy {
-          font-size: 1.06rem;
+          font-size: 1.02rem;
           line-height: 1.55;
         }
 
         .hero-actions {
+          display: grid;
+          grid-template-columns: 1fr;
           gap: 0.6rem;
           margin-top: 1.25rem;
         }
 
         .button {
+          width: 100%;
           min-height: 44px;
           padding: 0 0.85rem;
-          font-size: 0.74rem;
+          font-size: 0.72rem;
         }
 
-        .hero-card {
+        .hero-metrics,
+        .area-grid,
+        .resource-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .hero-metrics,
+        .product-preview {
+          display: none;
+        }
+
+        .dashboard-shell {
+          grid-template-columns: 1fr;
           min-height: auto;
-          padding: 0.75rem;
         }
 
-        .park-poster {
-          min-height: 190px;
+        .dashboard-side {
+          border-right: 0;
+          border-bottom: 1px solid var(--line);
         }
 
-        .park-poster img {
-          width: min(58%, 220px);
-        }
-
-        .poster-label {
-          bottom: 0.6rem;
-          font-size: 0.62rem;
+        .side-pill {
+          display: inline-block;
+          margin: 0 0.35rem 0.45rem 0;
         }
 
         .section {
-          padding: 2.25rem 0;
+          padding: 2.75rem 0;
         }
 
-        .feature-grid {
-          grid-template-columns: 1fr;
+        .hero + .section {
+          padding-top: 7.5rem;
+        }
+
+        .section-title {
+          font-size: clamp(1.65rem, 6.4vw, 2.15rem);
+          line-height: 1.04;
         }
 
         .signup-panel form {
           flex-direction: column;
         }
-
-        .footer-inner {
-          flex-direction: column;
-        }
       }
 
-      @media (max-width: 520px) {
+      @media (max-width: 560px) {
         .nav-inner {
           flex-wrap: wrap;
           justify-content: center;
-          gap: 0.6rem;
-          padding: 0.75rem 0;
+          padding: 0.8rem 0;
         }
 
         .brand,
         .nav-links {
           width: 100%;
           justify-content: center;
+        }
+
+        .nav-links {
+          flex-wrap: wrap;
+        }
+
+        .product-preview {
+          padding: 0.7rem;
+        }
+
+        .dashboard-top,
+        .content-row,
+        .route {
+          grid-template-columns: 1fr;
+          flex-direction: column;
+        }
+
+        .terminal-strip {
+          font-size: 0.72rem;
         }
       }
     </style>
@@ -606,7 +852,7 @@ const waypoints = [
           <span class="brand-name">{{ appName }}</span>
         </a>
         <div class="nav-links" aria-label="Primary navigation">
-          @foreach (links as link)
+          @foreach (navLinks as link)
             <a href="{{ link.url }}">{{ link.label }}</a>
           @endforeach
         </div>
@@ -616,91 +862,141 @@ const waypoints = [
     <main>
       <section class="site-shell hero">
         <div>
-          <span class="eyebrow">Full-stack framework v{{ appVersion }}</span>
-          <h1 class="display-font hero-title">{{ appName }}</h1>
+          <span class="kicker">Full-stack framework v{{ appVersion }}</span>
+          <h1 class="script-title hero-title">{{ appName }}</h1>
+          <p class="hero-headline">Build. Publish. Deploy.</p>
           <p class="hero-copy">
-            A TypeScript framework for building the whole product: marketing pages, CMS content, documentation, APIs, background work, and cloud deploys from one trailhead.
+            Stacks is a TypeScript framework for teams that want a WordPress-grade publishing workflow, Markdown-first docs, generated APIs, and production infrastructure without stitching together vendors.
           </p>
           <div class="hero-actions">
-            <a class="button primary" href="https://docs.stacksjs.com">Read the field guide</a>
-            <a class="button" href="https://blog.stacksjs.com">Visit the blog</a>
+            <a class="button primary" href="https://docs.stacksjs.com">Read the docs</a>
+            <a class="button" href="#cms">See the CMS</a>
+          </div>
+          <div class="hero-metrics" aria-label="Stacks platform coverage">
+            <div class="metric"><strong>CMS</strong><span>Posts, pages, tags</span></div>
+            <div class="metric"><strong>Docs</strong><span>Markdown to site</span></div>
+            <div class="metric"><strong>Cloud</strong><span>Buddy deploy</span></div>
           </div>
         </div>
 
-        <aside class="hero-card" aria-label="National park inspired Stacks illustration">
-          <div class="park-poster">
-            <img src="/assets/images/marketing-park-camp.svg" alt="Minimal campsite line art">
-            <div class="poster-label">
-              <span>Build Camp</span>
-              <span>Buddy Deploy</span>
+        <aside class="product-preview" aria-label="Stacks dashboard preview">
+          <div class="dashboard-shell">
+            <div class="dashboard-side">
+              <div class="dashboard-logo">
+                <img src="/assets/images/marketing-park-camp.svg" alt="">
+                <span>CMS</span>
+              </div>
+              <span class="side-pill active">Content</span>
+              <span class="side-pill">Models</span>
+              <span class="side-pill">Docs</span>
+              <span class="side-pill">Deploys</span>
+              <span class="side-pill">Mail</span>
+            </div>
+            <div class="dashboard-main">
+              <div class="dashboard-top">
+                <div>
+                  <h2>CMS dashboard</h2>
+                  <p class="section-copy">Manage the full content system from the dashboard while models keep the API and migrations in sync.</p>
+                </div>
+                <span class="status-chip">Local</span>
+              </div>
+              <div class="content-table">
+                <div class="content-row">
+                  <div><strong>Introducing Stacks</strong><span>Post · stacks-team · Markdown</span></div>
+                  <span class="row-state">Published</span>
+                </div>
+                <div class="content-row">
+                  <div><strong>Deploying with Buddy</strong><span>Guide · docs + blog</span></div>
+                  <span class="row-state">Ready</span>
+                </div>
+                <div class="content-row">
+                  <div><strong>Framework Concepts</strong><span>Page · generated route</span></div>
+                  <span class="row-state">Draft</span>
+                </div>
+              </div>
+              <div class="terminal-strip">$ ./buddy dev --dashboard
+CMS API:      /api/cms/posts
+Dashboard:    /dashboard/content
+Docs:         /docs
+
+$ ./buddy deploy
+Marketing, docs, blog, CMS, API, mail, and cloud.</div>
             </div>
           </div>
         </aside>
       </section>
 
-      <section class="site-shell section" aria-labelledby="systems-heading">
+      <section id="platform" class="site-shell section" aria-labelledby="platform-heading">
         <div class="section-heading">
-          <span class="eyebrow">Trail systems</span>
-          <h2 id="systems-heading" class="display-font">Everything has a marked route.</h2>
-          <p>Stacks keeps the parts that usually drift apart connected: a view layer, content models, generated APIs, migrations, docs, cloud services, and deploys that know about each other.</p>
+          <div>
+            <span class="kicker">Platform</span>
+            <h2 id="platform-heading" class="section-title">A framework with the whole map.</h2>
+          </div>
+          <p class="section-copy">Instead of treating content, routes, background work, email, and deploys as separate campsites, Stacks keeps them inside one product system.</p>
         </div>
 
-        <div class="feature-grid">
-          @foreach (features as feature)
-            <article class="feature-card">
-              <div class="feature-art">
-                <img src="{{ feature.image }}" alt="">
+        <div class="area-grid">
+          @foreach (productAreas as area)
+            <article class="area-card">
+              <div class="area-icon">
+                <img src="{{ area.image }}" alt="">
               </div>
-              <h3>{{ feature.title }}</h3>
-              <p>{{ feature.description }}</p>
+              <h3>{{ area.title }}</h3>
+              <p>{{ area.text }}</p>
             </article>
           @endforeach
         </div>
       </section>
 
-      <section class="site-shell section" aria-labelledby="deploy-heading">
-        <div class="command-panel">
+      <section id="cms" class="site-shell section" aria-labelledby="cms-heading">
+        <div class="cms-panel">
           <div>
-            <span class="eyebrow">One trail map</span>
-            <h2 id="deploy-heading" class="display-font">Develop locally. Deploy the park.</h2>
-            <p class="hero-copy">Buddy is the command layer that ties frontend, dashboard, CMS, docs, blog, APIs, migrations, and infrastructure into one first-party workflow.</p>
+            <span class="kicker">CMS</span>
+            <h2 id="cms-heading" class="section-title">Content that feels local and edits like a product.</h2>
+            <p class="section-copy">Use Markdown and models as the source of truth, then let the dashboard manage the resources people actually touch.</p>
           </div>
-
-          <div class="terminal" aria-label="Buddy commands">
-            <code>$ ./buddy dev
-Views:      http://localhost:3000
-Dashboard:  http://localhost:3000/dashboard
-Docs:       http://localhost:3001
-
-$ ./buddy deploy
-Build app, docs, blog, CMS, API, mail, and cloud.</code>
+          <div class="resource-grid">
+            <div class="resource"><strong>Posts</strong><span>Markdown body, excerpt, author, tags, featured state.</span></div>
+            <div class="resource"><strong>Pages</strong><span>Structured site content with generated routes and APIs.</span></div>
+            <div class="resource"><strong>Taxonomy</strong><span>Tags, categories, relationships, and search-friendly metadata.</span></div>
+            <div class="resource"><strong>Media</strong><span>First-party storage hooks for images, attachments, and public assets.</span></div>
           </div>
         </div>
       </section>
 
-      <section class="site-shell section" aria-labelledby="cms-heading">
-        <div class="section-heading">
-          <span class="eyebrow">Basecamp dashboard</span>
-          <h2 id="cms-heading" class="display-font">CMS work belongs in the dashboard.</h2>
-          <p>Manage the resources that power the site without turning content into a separate platform. Models define the data shape, migrations keep it durable, and APIs expose it consistently.</p>
-        </div>
-
-        <div class="waypoints">
-          @foreach (waypoints as waypoint)
-            <div class="waypoint">
-              <strong>{{ waypoint.label }}</strong>
-              <p>{{ waypoint.text }}</p>
+      <section id="deploy" class="site-shell section" aria-labelledby="deploy-heading">
+        <div class="deploy-panel">
+          <div>
+            <span class="kicker">Deploy</span>
+            <h2 id="deploy-heading" class="section-title">One command, every surface.</h2>
+            <p class="section-copy">The same deploy path builds the marketing site, docs, blog, CMS API, application server, mail service, DNS, and static assets.</p>
+            <div class="route-list">
+              <div class="route"><span>Marketing</span><strong>stacksjs.com</strong></div>
+              <div class="route"><span>Docs</span><strong>docs.stacksjs.com</strong></div>
+              <div class="route"><span>Blog</span><strong>blog.stacksjs.com</strong></div>
+              <div class="route"><span>API</span><strong>stacksjs.com/api</strong></div>
             </div>
-          @endforeach
+          </div>
+          <div class="workflow">
+            @foreach (workflowSteps as step)
+              <div class="workflow-step">
+                <em>{{ step.label }}</em>
+                <div>
+                  <strong>{{ step.title }}</strong>
+                  <span>{{ step.text }}</span>
+                </div>
+              </div>
+            @endforeach
+          </div>
         </div>
       </section>
 
       <section class="site-shell section" aria-labelledby="signup-heading">
         <div class="signup-panel">
           <div>
-            <span class="eyebrow">Ranger notes</span>
-            <h2 id="signup-heading" class="display-font">Get Stacks updates by email.</h2>
-            <p>Release notes, field guides, and the occasional new trail marker.</p>
+            <span class="kicker">Field notes</span>
+            <h2 id="signup-heading" class="section-title">Follow the Stacks release trail.</h2>
+            <p>Framework updates, CMS improvements, and deployment notes by email.</p>
           </div>
           <form action="/api/email/subscribe" method="POST">
             <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
@@ -713,7 +1009,7 @@ Build app, docs, blog, CMS, API, mail, and cloud.</code>
     <footer class="site-shell site-footer">
       <div class="footer-inner">
         <span>© 2026 Stacks</span>
-        <a class="trail-link" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+        <a class="footer-link" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
       </div>
     </footer>
   </body>

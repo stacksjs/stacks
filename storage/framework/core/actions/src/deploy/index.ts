@@ -376,18 +376,13 @@ const blogFontAssetsExist = [
 const blogImageAssetsExist = [
   'topography.svg',
   'park-ridge.svg',
-  'river-trail.svg',
-  'blog-sign-tree.svg',
-  'blog-sign-campfire.svg',
-  'blog-sign-hiker.svg',
-  'blog-sign-tree-badge.svg',
 ].every(file => existsSync(p.projectPath(`dist/blog/assets/images/${file}`)))
 const blogIndexPath = p.projectPath('dist/blog/index.html')
 const blogIndexHtml = existsSync(blogIndexPath) ? readFileSync(blogIndexPath, 'utf8') : ''
 const blogHtmlUsesCurrentFontFormat = blogIndexHtml.length > 0 && !blogIndexHtml.includes('woff2-variations')
 const blogHtmlUsesCurrentParkTheme = blogIndexHtml.includes('--on-primary') && blogIndexHtml.includes('--newsletter-bg')
-const blogHtmlUsesCurrentParkImages = blogIndexHtml.includes('park-ridge.svg') && blogIndexHtml.includes('river-trail.svg')
-const blogHtmlUsesCurrentStampImages = blogIndexHtml.includes('blog-sign-tree.svg') && blogIndexHtml.includes('blog-sign-campfire.svg')
+const blogHtmlUsesCurrentParkImages = blogIndexHtml.includes('topography.svg') && blogIndexHtml.includes('park-ridge.svg')
+const blogHtmlOmitsRetiredDecorations = !blogIndexHtml.includes('stamp-trail') && !blogIndexHtml.includes('blog-sign-tree.svg')
 const blogBuilderPath = p.frameworkPath('core/cms/src/build.ts')
 const blogConfigPath = p.projectPath('config/blog.ts')
 const blogHtmlIsFresh = existsSync(blogIndexPath)
@@ -395,7 +390,7 @@ const blogHtmlIsFresh = existsSync(blogIndexPath)
     .filter(path => existsSync(path))
     .every(path => statSync(blogIndexPath).mtimeMs >= statSync(path).mtimeMs)
 
-if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat || !blogHtmlUsesCurrentParkTheme || !blogHtmlUsesCurrentParkImages || !blogHtmlUsesCurrentStampImages || !blogHtmlIsFresh) {
+if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat || !blogHtmlUsesCurrentParkTheme || !blogHtmlUsesCurrentParkImages || !blogHtmlOmitsRetiredDecorations || !blogHtmlIsFresh) {
   const blogBuildSpinner = spinner('Building blog...')
   blogBuildSpinner.start()
   try {
