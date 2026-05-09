@@ -373,11 +373,16 @@ const blogFontAssetsExist = [
   'SequoiaSans-Regular.woff2',
   'Switchback-Regular.woff2',
 ].every(file => existsSync(p.projectPath(`dist/blog/assets/fonts/nps/${file}`)))
-const blogImageAssetsExist = existsSync(p.projectPath('dist/blog/assets/images/topography.svg'))
+const blogImageAssetsExist = [
+  'topography.svg',
+  'park-ridge.svg',
+  'river-trail.svg',
+].every(file => existsSync(p.projectPath(`dist/blog/assets/images/${file}`)))
 const blogIndexPath = p.projectPath('dist/blog/index.html')
 const blogIndexHtml = existsSync(blogIndexPath) ? readFileSync(blogIndexPath, 'utf8') : ''
 const blogHtmlUsesCurrentFontFormat = blogIndexHtml.length > 0 && !blogIndexHtml.includes('woff2-variations')
 const blogHtmlUsesCurrentParkTheme = blogIndexHtml.includes('--on-primary') && blogIndexHtml.includes('--newsletter-bg')
+const blogHtmlUsesCurrentParkImages = blogIndexHtml.includes('park-ridge.svg') && blogIndexHtml.includes('river-trail.svg')
 const blogBuilderPath = p.frameworkPath('core/cms/src/build.ts')
 const blogConfigPath = p.projectPath('config/blog.ts')
 const blogHtmlIsFresh = existsSync(blogIndexPath)
@@ -385,7 +390,7 @@ const blogHtmlIsFresh = existsSync(blogIndexPath)
     .filter(path => existsSync(path))
     .every(path => statSync(blogIndexPath).mtimeMs >= statSync(path).mtimeMs)
 
-if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat || !blogHtmlUsesCurrentParkTheme || !blogHtmlIsFresh) {
+if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat || !blogHtmlUsesCurrentParkTheme || !blogHtmlUsesCurrentParkImages || !blogHtmlIsFresh) {
   const blogBuildSpinner = spinner('Building blog...')
   blogBuildSpinner.start()
   try {

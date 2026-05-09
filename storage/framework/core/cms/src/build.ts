@@ -193,7 +193,7 @@ function copyBlogImages(outDir: string): void {
   ensureDir(targetDir)
 
   for (const file of readdirSync(sourceDir)) {
-    if (file === 'topography.svg')
+    if (file.endsWith('.svg'))
       copyFileSync(join(sourceDir, file), join(targetDir, file))
   }
 }
@@ -295,6 +295,9 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       --accent-hover: #96621f;
       --accent-strong: #8b5316;
       --accent-soft: #f5dfb8;
+      --river: #4e8f88;
+      --river-soft: #cfe8db;
+      --canopy: #326d43;
       --post-hover-border: #b7792d;
       --newsletter-border: #6e8f5f;
       --newsletter-bg: #2d5938;
@@ -327,6 +330,9 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
         --accent-hover: #f0a846;
         --accent-strong: #f2b04f;
         --accent-soft: #ffe3ad;
+        --river: #6fb1a6;
+        --river-soft: #d9fff0;
+        --canopy: #4f8e55;
         --post-hover-border: #d58a2e;
         --newsletter-border: #6f955f;
         --newsletter-bg: #2f6840;
@@ -366,6 +372,21 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       opacity: 0.025;
       z-index: 0;
     }
+    body::after {
+      content: '';
+      position: fixed;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      height: min(42vh, 26rem);
+      pointer-events: none;
+      background-image: url('/assets/images/park-ridge.svg');
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      background-size: cover;
+      opacity: 0.12;
+      z-index: 0;
+    }
     body > * {
       position: relative;
       z-index: 1;
@@ -378,6 +399,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
           linear-gradient(180deg, #142018 0%, #101811 56%, #0d150f 100%);
       }
       body::before { opacity: 0.045; }
+      body::after { opacity: 0.2; }
     }
     a { color: var(--primary); text-decoration: none; transition: color 0.15s, opacity 0.15s, border-color 0.15s; }
     a:hover { color: var(--primary-hover); opacity: 1; }
@@ -410,7 +432,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       align-items: center;
       gap: 0.5rem;
     }
-    .header .site-title svg { height: 24px; width: 24px; color: var(--accent-soft); }
+    .header .site-title svg { height: 28px; width: 28px; color: var(--accent-soft); }
     .header nav { display: flex; align-items: center; gap: 1.25rem; }
     .header nav a { color: var(--on-primary-muted); font-size: 0.875rem; font-weight: 700; }
     .header nav a:hover { color: var(--on-primary); opacity: 1; }
@@ -440,8 +462,35 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       opacity: 0.045;
       pointer-events: none;
     }
+    .hero::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: -1px;
+      height: 46%;
+      background-image: url('/assets/images/park-ridge.svg');
+      background-position: center bottom;
+      background-repeat: no-repeat;
+      background-size: 110% auto;
+      opacity: 0.16;
+      pointer-events: none;
+    }
     .hero > * {
       position: relative;
+      z-index: 1;
+    }
+    .park-emblem {
+      width: 92px;
+      height: 92px;
+      margin: 0 auto 0.85rem;
+      color: var(--primary);
+      filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.18));
+    }
+    .park-emblem svg {
+      width: 100%;
+      height: 100%;
+      display: block;
     }
     .hero h1 {
       font-family: var(--font-display);
@@ -455,6 +504,8 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     /* Post list */
     .post-list { list-style: none; }
     .post-item {
+      position: relative;
+      overflow: hidden;
       padding: 1.5rem;
       border: 1px solid var(--border);
       border-left: 4px solid var(--primary);
@@ -463,6 +514,21 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       box-shadow: var(--shadow);
       margin-bottom: 1rem;
       transition: border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
+    }
+    .post-item::before {
+      content: '';
+      position: absolute;
+      top: 1rem;
+      right: 1rem;
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      background:
+        radial-gradient(circle at 50% 42%, transparent 0 28%, var(--accent-soft) 29% 31%, transparent 32%),
+        linear-gradient(135deg, transparent 0 44%, var(--river) 45% 51%, transparent 52%),
+        url('/assets/images/river-trail.svg') center / 135px auto no-repeat;
+      opacity: 0.16;
+      pointer-events: none;
     }
     .post-item:hover {
       border-color: var(--post-hover-border);
@@ -528,9 +594,24 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       opacity: 0.09;
       pointer-events: none;
     }
+    .newsletter-card::after {
+      content: '';
+      position: absolute;
+      right: -4rem;
+      bottom: -2.5rem;
+      width: min(360px, 48%);
+      aspect-ratio: 18 / 7;
+      background-image: url('/assets/images/river-trail.svg');
+      background-position: right bottom;
+      background-repeat: no-repeat;
+      background-size: contain;
+      opacity: 0.28;
+      pointer-events: none;
+    }
     .newsletter-content,
     .newsletter-form {
       position: relative;
+      z-index: 1;
     }
     .newsletter-eyebrow {
       color: var(--accent-soft);
@@ -561,24 +642,26 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     .newsletter-form input {
       min-width: 13rem;
       flex: 1;
-      height: 2.75rem;
+      height: 3rem;
       border: 1px solid rgba(255, 247, 231, 0.65);
       border-radius: 6px;
       background: #fff8ea;
       color: #263126;
       padding: 0 0.85rem;
       font: inherit;
+      line-height: normal;
       font-weight: 700;
     }
     .newsletter-form input::placeholder { color: #6b6f65; opacity: 1; }
     .newsletter-form button {
-      height: 2.75rem;
+      height: 3rem;
       border: 0;
       border-radius: 6px;
       background: var(--accent);
       color: #fff8ea;
       cursor: pointer;
       font: inherit;
+      line-height: normal;
       font-weight: 800;
       padding: 0 1rem;
       white-space: nowrap;
@@ -667,8 +750,11 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       .header .site-title svg { height: 18px; width: 18px; }
       .header nav { gap: 0.75rem; }
       .header nav a { font-size: 0.75rem; }
+      .park-emblem { width: 76px; height: 76px; }
       .hero h1 { font-size: 1.5rem; }
+      .hero::after { height: 38%; background-size: 180% auto; }
       .newsletter-card { grid-template-columns: 1fr; padding: 1.25rem; }
+      .newsletter-card::after { width: 240px; opacity: 0.2; }
       .newsletter-form { flex-direction: column; align-items: stretch; }
       .newsletter-form input,
       .newsletter-form button { width: 100%; }
@@ -681,7 +767,12 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
 <body>
   <header class="header">
     <a href="/" class="site-title">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+        <path d="M16 2.5 27.7 8v10.3c0 4.8-3.1 8.7-11.7 11.2C7.4 27 4.3 23.1 4.3 18.3V8L16 2.5Z" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
+        <path d="m8.7 19.2 5.2-6.6 3 3.8 2.3-2.8 4.2 5.6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M11.4 21.8c2.4-1 4.3-.9 6.2 0 1.5.7 2.8.8 4.7 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        <path d="M16 6.6v3.8M12.9 9.7h6.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+      </svg>
       ${escapeHtml(config.title)}
     </a>
     <nav>
@@ -809,6 +900,15 @@ function generateIndexPage(posts: PostRow[], config: BlogConfig, authors: Map<nu
 
   const hero = page === 1 ? `
     <div class="hero">
+      <div class="park-emblem" aria-hidden="true">
+        <svg viewBox="0 0 96 96" fill="none">
+          <path d="M48 6 82 22v30c0 18-11 30-34 38C25 82 14 70 14 52V22L48 6Z" fill="var(--primary)" stroke="var(--accent)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M24 58 41 36l10 13 8-10 14 19" stroke="var(--accent-soft)" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M29 69c8-5 15-5 23-1 6 3 12 3 20-1" stroke="var(--river-soft)" stroke-width="5" stroke-linecap="round"/>
+          <path d="M48 18v13M38 31h20" stroke="var(--accent-soft)" stroke-width="5" stroke-linecap="round"/>
+          <path d="m28 64 8-13 8 13H28ZM59 65l7-12 7 12H59Z" fill="var(--canopy)"/>
+        </svg>
+      </div>
       <h1>${escapeHtml(config.title)}</h1>
       <p>${escapeHtml(config.description)}</p>
     </div>` : ''
