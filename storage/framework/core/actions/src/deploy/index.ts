@@ -247,6 +247,17 @@ function buildCloudFrontDistributionConfigXml(config: Record<string, any>): stri
     .join('')}</DistributionConfig>\n`
 }
 
+function firewallOpenCommand(ports: number[]): string {
+  const uniquePorts = [...new Set(ports)]
+    .filter(port => Number.isFinite(port) && port > 0)
+    .sort((a, b) => a - b)
+
+  if (uniquePorts.length === 0) return 'true'
+
+  const args = uniquePorts.map(port => `--add-port=${port}/tcp`).join(' ')
+  return `if command -v firewall-cmd >/dev/null 2>&1; then firewall-cmd --permanent ${args} && firewall-cmd --reload; fi`
+}
+
 async function ensureSecurityGroupPort(ec2: any, securityGroupId: string | undefined, port: number): Promise<void> {
   if (!securityGroupId) return
 
@@ -946,6 +957,7 @@ console.log(\`Stacks API server running on port \${server.port}\`);
           // Download deployment artifacts from S3
           `aws s3 cp s3://${bucketName}/_deploy/ts-cloud-dist.js /var/www/api/ts-cloud-dist.js`,
           `aws s3 cp s3://${bucketName}/_deploy/server.ts /var/www/api/server.ts`,
+          firewallOpenCommand([apiServerPort]),
           // Always write the service file so deploys can fix stale ExecStart/port assumptions.
           `cat > /etc/systemd/system/stacks-api.service << 'SERVICEFILE'
 [Unit]
@@ -1098,6 +1110,8 @@ systemctl enable stacks-api`,
         }
 
         if (smtpInstanceId && smtpBucketName) {
+          const mailPorts = [25, 80, 110, 143, 465, 587, 993, 995]
+
           // Get the security group for the instance to open mail ports
           try {
             const instanceData = await ec2.describeInstances({
@@ -1113,7 +1127,6 @@ systemctl enable stacks-api`,
 
           // Open mail ports on the security group
           if (securityGroupId) {
-            const mailPorts = [25, 465, 587, 143, 993, 110, 995]
             for (const port of mailPorts) {
               try {
                 await ec2.authorizeSecurityGroupIngress({
@@ -1180,6 +1193,7 @@ systemctl enable stacks-api`,
                 'chmod +x /opt/smtp-server/smtp-server',
                 // Verify binary
                 'file /opt/smtp-server/smtp-server | grep -q ELF || { echo "Binary is not ELF"; exit 1; }',
+                firewallOpenCommand(mailPorts),
                 // Create environment configuration
                 // Note: TLS is disabled for now due to Zig TLS PEM parsing issue.
                 // SMTP_IO_MODE=epoll is required (io_uring causes issues under systemd).
@@ -1335,6 +1349,7 @@ await server.start();
                 'mkdir -p /var/www/smtp',
                 `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-server.js /var/www/smtp/smtp-server.js`,
                 `aws s3 cp s3://${smtpBucketName}/_deploy/smtp-entry.ts /var/www/smtp/smtp-entry.ts`,
+                firewallOpenCommand(mailPorts),
                 `if ! command -v certbot &> /dev/null; then dnf install -y certbot || yum install -y certbot || apt-get install -y certbot || true; fi`,
                 `if [ ! -d /etc/letsencrypt/live/mail.${domain} ]; then certbot certonly --standalone --non-interactive --agree-tos --email admin@${domain} -d mail.${domain} --http-01-port 80 || echo "Certbot failed"; fi`,
                 `cat > /etc/systemd/system/stacks-smtp.service << 'SERVICEFILE'
