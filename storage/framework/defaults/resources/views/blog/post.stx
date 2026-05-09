@@ -302,6 +302,12 @@ var pageDescription = post ? post.excerpt : ''
   .post-header {
     text-align: center;
     margin-bottom: 2.5rem;
+    padding: 2.5rem 2rem;
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--color-accent);
+    border-radius: 0.5rem;
+    background: var(--color-bg-secondary);
+    box-shadow: var(--color-shadow);
   }
 
   .post-categories {
@@ -312,7 +318,7 @@ var pageDescription = post ? post.excerpt : ''
   }
 
   .category-badge {
-    background: var(--color-primary);
+    background: var(--color-accent);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
@@ -375,8 +381,10 @@ var pageDescription = post ? post.excerpt : ''
   /* Featured image */
   .post-poster {
     margin: 0 -3rem 2.5rem;
-    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
     overflow: hidden;
+    box-shadow: var(--color-shadow);
   }
 
   @media (max-width: 640px) {
@@ -423,7 +431,7 @@ var pageDescription = post ? post.excerpt : ''
   }
 
   .post-content blockquote {
-    border-left: 4px solid var(--color-primary);
+    border-left: 4px solid var(--color-accent);
     padding-left: 1.5rem;
     margin: 2rem 0;
     font-style: italic;
@@ -431,7 +439,7 @@ var pageDescription = post ? post.excerpt : ''
   }
 
   .post-content pre {
-    background: var(--color-bg-secondary);
+    background: var(--color-bg-muted);
     padding: 1rem 1.5rem;
     border-radius: 0.5rem;
     overflow-x: auto;
@@ -441,7 +449,7 @@ var pageDescription = post ? post.excerpt : ''
   }
 
   .post-content code {
-    background: var(--color-bg-secondary);
+    background: var(--color-bg-muted);
     padding: 0.125rem 0.375rem;
     border-radius: 0.25rem;
     font-size: 0.875em;
@@ -489,7 +497,9 @@ var pageDescription = post ? post.excerpt : ''
     margin-top: 2rem;
     padding: 1.5rem;
     background: var(--color-bg-secondary);
-    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--color-shadow);
   }
 
   .share-label {
@@ -524,12 +534,12 @@ var pageDescription = post ? post.excerpt : ''
   }
 
   .share-btn.twitter {
-    background: #1DA1F2;
+    background: var(--color-primary);
     color: white;
   }
 
   .share-btn.linkedin {
-    background: #0A66C2;
+    background: var(--color-accent);
     color: white;
   }
 
@@ -555,7 +565,9 @@ var pageDescription = post ? post.excerpt : ''
     margin-bottom: 2rem;
     padding: 1.5rem;
     background: var(--color-bg-secondary);
-    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
+    box-shadow: var(--color-shadow);
   }
 
   .form-group {
@@ -614,8 +626,8 @@ var pageDescription = post ? post.excerpt : ''
   .comment-avatar {
     width: 2.5rem;
     height: 2.5rem;
-    background: var(--color-bg-secondary);
-    color: var(--color-text-secondary);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -659,7 +671,9 @@ var pageDescription = post ? post.excerpt : ''
   .related-section {
     margin-top: 4rem;
     padding: 3rem 0;
-    background: var(--color-bg-secondary);
+    background: var(--color-bg-muted);
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
   }
 
   .section-title {
@@ -675,10 +689,12 @@ var pageDescription = post ? post.excerpt : ''
   }
 
   .related-card {
-    background: var(--color-bg);
-    border-radius: 0.75rem;
+    background: var(--color-bg-secondary);
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
     overflow: hidden;
     transition: box-shadow 0.2s;
+    box-shadow: var(--color-shadow);
   }
 
   .related-card:hover {

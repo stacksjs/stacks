@@ -176,13 +176,17 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
   .category-header {
     text-align: center;
     margin-bottom: 3rem;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--color-border);
+    padding: 2.5rem 2rem;
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--color-accent);
+    border-radius: 0.5rem;
+    background: var(--color-bg-secondary);
+    box-shadow: var(--color-shadow);
   }
 
   .category-badge {
     display: inline-block;
-    background: var(--color-primary);
+    background: var(--color-accent);
     color: white;
     padding: 0.25rem 0.75rem;
     border-radius: 1rem;
@@ -242,14 +246,17 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
 
   .post-card {
     background: var(--color-bg-secondary);
-    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--color-primary);
+    border-radius: 0.5rem;
     overflow: hidden;
     transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: var(--color-shadow);
   }
 
   .post-card:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 30px -10px rgba(0,0,0,0.1);
+    box-shadow: 0 18px 38px -24px rgba(53,39,19,0.65);
   }
 
   .post-image img {
@@ -310,7 +317,10 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
   .sidebar-widget {
     background: var(--color-bg-secondary);
     padding: 1.5rem;
-    border-radius: 1rem;
+    border: 1px solid var(--color-border);
+    border-top: 4px solid var(--color-accent);
+    border-radius: 0.5rem;
+    box-shadow: var(--color-shadow);
   }
 
   .widget-title {
@@ -349,7 +359,8 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
   }
 
   .category-count {
-    background: var(--color-border);
+    background: var(--color-bg-muted);
+    color: var(--color-primary);
     padding: 0.125rem 0.5rem;
     border-radius: 1rem;
     font-size: 0.75rem;
@@ -361,7 +372,8 @@ var pageTitle = category ? category.name + ' - Category' : 'Category Not Found'
     gap: 0.5rem;
     padding: 0.75rem 1rem;
     background: var(--color-bg-secondary);
-    border-radius: 0.75rem;
+    border: 1px solid var(--color-border);
+    border-radius: 0.5rem;
     color: var(--color-text-secondary);
     font-weight: 500;
     transition: all 0.2s;

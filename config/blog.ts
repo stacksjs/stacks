@@ -31,7 +31,7 @@ const config: BlogConfig = {
     github: 'stacksjs/stacks',
   },
   theme: {
-    primaryColor: '#3451b2',
+    primaryColor: '#2f5d3a',
     logo: '/images/logos/logo-transparent.svg',
   },
 }

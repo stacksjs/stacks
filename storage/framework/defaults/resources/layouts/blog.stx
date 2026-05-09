@@ -32,13 +32,17 @@
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --color-bg: #ffffff;
-      --color-bg-secondary: #f8fafc;
-      --color-text: #1e293b;
-      --color-text-secondary: #64748b;
-      --color-primary: #3b82f6;
-      --color-primary-hover: #2563eb;
-      --color-border: #e2e8f0;
+      --color-bg: #f7f0e3;
+      --color-bg-secondary: #fffaf0;
+      --color-bg-muted: #efe4d1;
+      --color-text: #273128;
+      --color-text-secondary: #56624f;
+      --color-primary: #2f5d3a;
+      --color-primary-hover: #24472d;
+      --color-accent: #b7792d;
+      --color-accent-soft: #f5dfb8;
+      --color-border: #d5c5a6;
+      --color-shadow: 0 14px 32px -24px rgba(53, 39, 19, 0.55);
       --font-display: 'Campmate Script', 'Sequoia Sans', system-ui, sans-serif;
       --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       --font-serif: 'Switchback', Georgia, serif;
@@ -46,20 +50,29 @@
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --color-bg: #0f172a;
-        --color-bg-secondary: #1e293b;
-        --color-text: #f1f5f9;
-        --color-text-secondary: #94a3b8;
-        --color-border: #334155;
+        --color-bg: #172017;
+        --color-bg-secondary: #202a1f;
+        --color-bg-muted: #263323;
+        --color-text: #f3ead7;
+        --color-text-secondary: #c9bea6;
+        --color-border: #4b5a3e;
+        --color-shadow: 0 18px 40px -28px rgba(0, 0, 0, 0.9);
       }
     }
 
     body {
       font-family: var(--font-sans);
       background: var(--color-bg);
+      background-image: linear-gradient(180deg, rgba(255, 250, 240, 0.7), rgba(239, 228, 209, 0.48));
       color: var(--color-text);
       line-height: 1.6;
       min-height: 100vh;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      body {
+        background-image: linear-gradient(180deg, rgba(31, 42, 31, 0.95), rgba(23, 32, 23, 0.95));
+      }
     }
 
     a { color: var(--color-primary); text-decoration: none; }
@@ -79,12 +92,13 @@
 
     /* Header */
     .blog-header {
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 3px solid var(--color-accent);
       padding: 1.5rem 0;
       position: sticky;
       top: 0;
-      background: var(--color-bg);
+      background: var(--color-primary);
       z-index: 100;
+      box-shadow: 0 6px 18px -16px rgba(37, 29, 14, 0.8);
     }
 
     .blog-header .container {
@@ -97,7 +111,7 @@
       font-family: var(--font-display);
       font-size: 1.5rem;
       font-weight: 750;
-      color: var(--color-text);
+      color: var(--color-bg-secondary);
     }
 
     .blog-nav {
@@ -107,16 +121,16 @@
     }
 
     .blog-nav a {
-      color: var(--color-text-secondary);
+      color: #efe4d1;
       font-weight: 500;
       font-size: 0.9375rem;
       transition: color 0.2s;
     }
 
-    .blog-nav a:hover { color: var(--color-text); }
+    .blog-nav a:hover { color: var(--color-accent-soft); }
 
     .subscribe-btn {
-      background: var(--color-primary);
+      background: var(--color-accent);
       color: white !important;
       padding: 0.5rem 1rem;
       border-radius: 0.5rem;
@@ -124,16 +138,16 @@
       transition: background 0.2s;
     }
 
-    .subscribe-btn:hover { background: var(--color-primary-hover); }
+    .subscribe-btn:hover { background: #96621f; }
 
     /* Main content */
     main { padding: 3rem 0; min-height: calc(100vh - 200px); }
 
     /* Footer */
     .blog-footer {
-      border-top: 1px solid var(--color-border);
+      border-top: 3px solid var(--color-accent);
       padding: 3rem 0;
-      background: var(--color-bg-secondary);
+      background: var(--color-primary);
     }
 
     .blog-footer .container {
@@ -150,12 +164,12 @@
     }
 
     .footer-links a {
-      color: var(--color-text-secondary);
+      color: var(--color-accent-soft);
       font-size: 0.875rem;
     }
 
     .footer-copy {
-      color: var(--color-text-secondary);
+      color: #efe4d1;
       font-size: 0.875rem;
     }
 
@@ -167,6 +181,15 @@
     .mt-8 { margin-top: 2rem; }
     .mb-4 { margin-bottom: 1rem; }
     .mb-8 { margin-bottom: 2rem; }
+
+    @media (max-width: 640px) {
+      .blog-header { padding: 0.75rem 0; }
+      .blog-header .container { gap: 0.75rem; padding: 0 1rem; }
+      .blog-logo { font-size: 1rem; white-space: nowrap; }
+      .blog-nav { gap: 0.75rem; }
+      .blog-nav a { font-size: 0.75rem; }
+      .subscribe-btn { padding: 0.4rem 0.65rem; }
+    }
   </style>
 </head>
 <body>
