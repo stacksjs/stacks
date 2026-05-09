@@ -50,6 +50,7 @@ describe('server maintenance', () => {
     expect(hasValidBypassCookie({ stacks_maintenance_bypass: 'secret123' }, 'secret123')).toBe(true)
     expect(hasValidBypassCookie({ stacks_maintenance_bypass: 'wrong' }, 'secret123')).toBe(false)
     expect(hasValidBypassCookie({}, 'secret123')).toBe(false)
+    expect(hasValidBypassCookie({ stacks_coming_soon_bypass: 'secret123' }, 'secret123', 'coming-soon')).toBe(true)
   })
 
   test('isSecretPath matches secret URL path', async () => {
@@ -64,19 +65,58 @@ describe('server maintenance', () => {
     const html = maintenanceHtml({ time: Date.now(), message: 'Test maintenance' })
     expect(html).toContain('<!DOCTYPE html>')
     expect(html).toContain('Test maintenance')
-    expect(html).toContain('Under Maintenance')
+    expect(html).toContain('Trail Maintenance')
+    expect(html).toContain('park-ridge.svg')
+  })
+
+  test('maintenanceHtml supports coming soon mode', async () => {
+    const { maintenanceHtml } = await import('../src/maintenance')
+    const html = maintenanceHtml({ mode: 'coming-soon', time: Date.now(), message: 'Launching soon' })
+    expect(html).toContain('Opening Soon')
+    expect(html).toContain('Launching soon')
+    expect(html).toContain('Stacks basecamp')
+  })
+
+  test('activeSiteModePayload reads APP_COMING_SOON fallback', async () => {
+    const { activeSiteModePayload } = await import('../src/maintenance')
+    const previousMode = process.env.APP_COMING_SOON
+    const previousSecret = process.env.APP_COMING_SOON_SECRET
+
+    process.env.APP_COMING_SOON = 'true'
+    process.env.APP_COMING_SOON_SECRET = 'trailhead'
+
+    const payload = await activeSiteModePayload()
+    expect(payload?.mode).toBe('coming-soon')
+    expect(payload?.secret).toBe('trailhead')
+
+    if (previousMode === undefined)
+      delete process.env.APP_COMING_SOON
+    else
+      process.env.APP_COMING_SOON = previousMode
+
+    if (previousSecret === undefined)
+      delete process.env.APP_COMING_SOON_SECRET
+    else
+      process.env.APP_COMING_SOON_SECRET = previousSecret
   })
 
   test('maintenanceHtml includes retry info when provided', async () => {
     const { maintenanceHtml } = await import('../src/maintenance')
     const html = maintenanceHtml({ time: Date.now(), retry: 300 })
-    expect(html).toContain('approximately')
+    expect(html).toContain('Estimated reopening')
   })
 
   test('maintenanceResponse returns 503 by default', async () => {
     const { maintenanceResponse } = await import('../src/maintenance')
     const resp = maintenanceResponse({ time: Date.now() })
     expect(resp.status).toBe(503)
+    expect(resp.headers.get('Content-Type')).toContain('text/html')
+  })
+
+  test('siteModeResponse returns 200 for coming soon by default', async () => {
+    const { siteModeResponse } = await import('../src/maintenance')
+    const resp = siteModeResponse({ mode: 'coming-soon', time: Date.now() })
+    expect(resp.status).toBe(200)
     expect(resp.headers.get('Content-Type')).toContain('text/html')
   })
 
@@ -99,6 +139,7 @@ describe('server maintenance', () => {
     expect(cookie).toContain('stacks_maintenance_bypass=test-secret')
     expect(cookie).toContain('HttpOnly')
     expect(cookie).toContain('SameSite=Lax')
+    expect(bypassCookieValue('test-secret', 'coming-soon')).toContain('stacks_coming_soon_bypass=test-secret')
   })
 })
 

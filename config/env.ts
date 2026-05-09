@@ -78,6 +78,21 @@ export default {
     default: false,
   },
 
+  APP_MAINTENANCE_SECRET: {
+    validation: schema.string(),
+    default: '',
+  },
+
+  APP_COMING_SOON: {
+    validation: schema.boolean(),
+    default: false,
+  },
+
+  APP_COMING_SOON_SECRET: {
+    validation: schema.string(),
+    default: '',
+  },
+
   DEBUG: {
     validation: schema.boolean(),
     default: false,

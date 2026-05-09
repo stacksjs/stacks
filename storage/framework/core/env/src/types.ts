@@ -46,6 +46,9 @@ export interface StacksEnv {
   APP_URL: string | undefined
   APP_DOMAIN: string | undefined
   APP_MAINTENANCE: boolean | undefined
+  APP_MAINTENANCE_SECRET: string | undefined
+  APP_COMING_SOON: boolean | undefined
+  APP_COMING_SOON_SECRET: string | undefined
   APP_ROOT: string | undefined
   DEBUG: boolean | undefined
 

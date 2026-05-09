@@ -108,6 +108,8 @@ export const defaults: StacksOptions = {
     docMode: false,
     redirectUrls: [],
     maintenanceMode: false,
+    comingSoonMode: false,
+    comingSoonSecret: '',
   },
 
   cli: {

@@ -11,6 +11,9 @@ export const envKeys = [
   'APP_URL',
   'APP_DOMAIN',
   'APP_MAINTENANCE',
+  'APP_MAINTENANCE_SECRET',
+  'APP_COMING_SOON',
+  'APP_COMING_SOON_SECRET',
   'APP_ROOT',
   'DEBUG',
 

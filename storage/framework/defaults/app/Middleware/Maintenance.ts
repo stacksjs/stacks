@@ -19,24 +19,18 @@ export default new Middleware({
 
   async handle(request) {
     const {
-      isDownForMaintenance,
-      maintenancePayload,
-      maintenanceResponse,
+      activeSiteModePayload,
+      siteModeResponse,
       isAllowedIp,
       hasValidBypassCookie,
       isSecretPath,
       bypassCookieValue,
     } = await import('@stacksjs/server')
 
-    // Check if in maintenance mode
-    if (!(await isDownForMaintenance())) {
-      return // Not in maintenance, continue normally
-    }
-
-    const payload = await maintenancePayload()
+    const payload = await activeSiteModePayload()
 
     if (!payload) {
-      return // No payload, continue normally
+      return
     }
 
     // Get request info
@@ -52,7 +46,7 @@ export default new Middleware({
         status: 302,
         headers: {
           'Location': '/',
-          'Set-Cookie': bypassCookieValue(payload.secret),
+          'Set-Cookie': bypassCookieValue(payload.secret, payload.mode),
         },
       })
 
@@ -61,7 +55,7 @@ export default new Middleware({
     }
 
     // Check bypass conditions
-    const hasValidCookie = payload.secret && hasValidBypassCookie(cookies, payload.secret)
+    const hasValidCookie = payload.secret && hasValidBypassCookie(cookies, payload.secret, payload.mode)
     const isIpAllowed = isAllowedIp(ip, payload.allowed)
 
     if (hasValidCookie || isIpAllowed) {
@@ -69,7 +63,7 @@ export default new Middleware({
     }
 
     // No bypass - return maintenance response
-    throw maintenanceResponse(payload)
+    throw siteModeResponse(payload)
   },
 })
 

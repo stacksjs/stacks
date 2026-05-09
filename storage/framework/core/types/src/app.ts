@@ -84,6 +84,23 @@ export interface AppOptions {
   maintenanceMode: boolean
 
   /**
+   * **Coming Soon Mode**
+   *
+   * When enabled, public web requests can render a launch screen while
+   * optionally allowing preview access through a secret bypass.
+   *
+   * @default false
+   */
+  comingSoonMode?: boolean
+
+  /**
+   * **Coming Soon Secret**
+   *
+   * Optional preview token used to bypass coming soon mode.
+   */
+  comingSoonSecret?: string
+
+  /**
    * **Encryption Key**
    *
    * This key is used by the Stacks encrypter service and should be set to

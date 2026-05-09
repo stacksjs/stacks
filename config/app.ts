@@ -18,6 +18,8 @@ export default {
   key: env.APP_KEY,
 
   maintenanceMode: env.APP_MAINTENANCE ?? false,
+  comingSoonMode: env.APP_COMING_SOON ?? false,
+  comingSoonSecret: env.APP_COMING_SOON_SECRET ?? '',
   // docMode: true, // instead of example.com/docs, deploys example.com as main entry point for docs
   docMode: false,
 
