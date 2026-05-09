@@ -263,9 +263,10 @@ const blogFontAssetsExist = [
   'SequoiaSans-Regular.woff2',
   'Switchback-Regular.woff2',
 ].every(file => existsSync(p.projectPath(`dist/blog/assets/fonts/nps/${file}`)))
+const blogImageAssetsExist = existsSync(p.projectPath('dist/blog/assets/images/topography.svg'))
 const blogHtmlUsesCurrentFontFormat = existsSync(p.projectPath('dist/blog/index.html'))
   && !readFileSync(p.projectPath('dist/blog/index.html'), 'utf8').includes('woff2-variations')
-if (!blogDistExists || !blogFontAssetsExist || !blogHtmlUsesCurrentFontFormat) {
+if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat) {
   const blogBuildSpinner = spinner('Building blog...')
   blogBuildSpinner.start()
   try {

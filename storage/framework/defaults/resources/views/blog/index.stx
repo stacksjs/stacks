@@ -140,12 +140,28 @@ function formatDate(dateStr) {
     }
 
     body {
+      position: relative;
       font-family: var(--font-sans);
       background: var(--color-bg);
       background-image: linear-gradient(180deg, rgba(255, 250, 240, 0.7), rgba(239, 228, 209, 0.48));
       color: var(--color-text);
       line-height: 1.6;
       min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url('/assets/images/topography.svg');
+      background-size: 520px 520px;
+      background-repeat: repeat;
+      opacity: 0.025;
+      z-index: 0;
+    }
+    body > * {
+      position: relative;
+      z-index: 1;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -190,6 +206,43 @@ function formatDate(dateStr) {
 
     /* Section titles */
     .section-title { font-family: var(--font-display); font-size: 1.25rem; font-weight: 750; margin-bottom: 1.5rem; color: var(--color-text); }
+
+    /* Newsletter */
+    .newsletter-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+      gap: 1.5rem;
+      align-items: center;
+      padding: 1.5rem;
+      margin-bottom: 3rem;
+      border: 1px solid #23462b;
+      border-top: 4px solid var(--color-accent);
+      border-radius: 0.5rem;
+      background: var(--color-primary);
+      color: var(--color-bg-secondary);
+      box-shadow: var(--color-shadow);
+    }
+    .newsletter-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url('/assets/images/topography.svg');
+      background-size: 360px 360px;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .newsletter-content,
+    .newsletter-form { position: relative; }
+    .newsletter-eyebrow { color: var(--color-accent-soft); font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin-bottom: 0.35rem; }
+    .newsletter-card h2 { font-family: var(--font-display); font-size: 1.35rem; line-height: 1.2; margin-bottom: 0.4rem; }
+    .newsletter-card p { color: #efe4d1; font-family: var(--font-serif); font-size: 0.95rem; line-height: 1.55; }
+    .newsletter-form { display: flex; gap: 0.5rem; align-items: center; }
+    .newsletter-form input { min-width: 0; flex: 1; height: 2.75rem; border: 1px solid rgba(255, 250, 240, 0.4); border-radius: 6px; background: rgba(255, 250, 240, 0.96); color: var(--color-text); padding: 0 0.85rem; font: inherit; }
+    .newsletter-form input:focus { outline: 2px solid var(--color-accent-soft); outline-offset: 2px; }
+    .newsletter-form button { height: 2.75rem; border: 0; border-radius: 6px; background: var(--color-accent); color: white; cursor: pointer; font: inherit; font-weight: 700; padding: 0 1rem; white-space: nowrap; }
+    .newsletter-form button:hover { background: #96621f; }
 
     /* Featured section */
     .featured-section { margin-bottom: 3rem; }
@@ -247,6 +300,10 @@ function formatDate(dateStr) {
       .blog-logo { font-size: 1rem; white-space: nowrap; }
       .blog-nav { gap: 0.75rem; }
       .blog-nav a { font-size: 0.75rem; }
+      .newsletter-card { grid-template-columns: 1fr; padding: 1.25rem; }
+      .newsletter-form { flex-direction: column; align-items: stretch; }
+      .newsletter-form input,
+      .newsletter-form button { width: 100%; }
       .post-title { font-size: 1.05rem; }
     }
   </style>
@@ -290,6 +347,19 @@ function formatDate(dateStr) {
           </div>
         </section>
       @endif
+
+      <section id="newsletter" class="newsletter-card" aria-label="Subscribe to Stacks updates">
+        <div class="newsletter-content">
+          <div class="newsletter-eyebrow">Trail dispatch</div>
+          <h2>Get new Stacks notes by email</h2>
+          <p>Short framework updates, release notes, and field guides for building with Stacks.</p>
+        </div>
+        <form class="newsletter-form" action="/api/email/subscribe" method="POST">
+          <input type="hidden" name="source" value="blog-index">
+          <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+          <button type="submit">Subscribe</button>
+        </form>
+      </section>
 
       <div class="blog-grid">
         <section class="posts-section">
@@ -349,7 +419,8 @@ function formatDate(dateStr) {
           <div class="sidebar-widget subscribe-widget">
             <h3 class="widget-title">Stay Updated</h3>
             <p>Get the latest posts delivered to your inbox.</p>
-            <form class="subscribe-form" action="/api/blog/subscribe" method="POST">
+            <form class="subscribe-form" action="/api/email/subscribe" method="POST">
+              <input type="hidden" name="source" value="blog-sidebar">
               <input type="email" name="email" placeholder="your@email.com" required>
               <button type="submit">Subscribe</button>
             </form>

@@ -61,12 +61,28 @@
     }
 
     body {
+      position: relative;
       font-family: var(--font-sans);
       background: var(--color-bg);
       background-image: linear-gradient(180deg, rgba(255, 250, 240, 0.7), rgba(239, 228, 209, 0.48));
       color: var(--color-text);
       line-height: 1.6;
       min-height: 100vh;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url('/assets/images/topography.svg');
+      background-size: 520px 520px;
+      background-repeat: repeat;
+      opacity: 0.025;
+      z-index: 0;
+    }
+    body > * {
+      position: relative;
+      z-index: 1;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -200,7 +216,7 @@
         <a href="/blog">Articles</a>
         <a href="/blog/categories">Categories</a>
         <a href="/api/blog/feed.xml">RSS</a>
-        <a href="/blog/subscribe" class="subscribe-btn">Subscribe</a>
+        <a href="/blog#newsletter" class="subscribe-btn">Subscribe</a>
       </nav>
     </div>
   </header>

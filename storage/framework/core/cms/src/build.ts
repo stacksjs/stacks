@@ -184,6 +184,20 @@ function copyBlogFonts(outDir: string): void {
   }
 }
 
+function copyBlogImages(outDir: string): void {
+  const sourceDir = p.frameworkPath('defaults/resources/assets/images')
+  if (!existsSync(sourceDir))
+    return
+
+  const targetDir = join(outDir, 'assets', 'images')
+  ensureDir(targetDir)
+
+  for (const file of readdirSync(sourceDir)) {
+    if (file === 'topography.svg')
+      copyFileSync(join(sourceDir, file), join(targetDir, file))
+  }
+}
+
 function sqliteDatabasePath(): string {
   const configuredPath = process.env.DB_DATABASE_PATH || 'database/stacks.sqlite'
   return configuredPath.startsWith('/') ? configuredPath : p.projectPath(configuredPath)
@@ -308,12 +322,28 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     }
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
+      position: relative;
       font-family: var(--font-sans);
       background: var(--bg);
       background-image: linear-gradient(180deg, rgba(255, 250, 240, 0.7), rgba(239, 228, 209, 0.48));
       color: var(--text);
       line-height: 1.7;
       -webkit-font-smoothing: antialiased;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image: url('/assets/images/topography.svg');
+      background-size: 520px 520px;
+      background-repeat: repeat;
+      opacity: 0.025;
+      z-index: 0;
+    }
+    body > * {
+      position: relative;
+      z-index: 1;
     }
     @media (prefers-color-scheme: dark) {
       body {
@@ -355,6 +385,8 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
 
     /* Hero */
     .hero {
+      position: relative;
+      overflow: hidden;
       text-align: center;
       padding: 2.75rem 2rem 2.5rem;
       border: 1px solid var(--border);
@@ -363,6 +395,18 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       background: var(--paper);
       box-shadow: var(--shadow);
       margin-bottom: 1.5rem;
+    }
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url('/assets/images/topography.svg');
+      background-size: 420px 420px;
+      opacity: 0.035;
+      pointer-events: none;
+    }
+    .hero > * {
+      position: relative;
     }
     .hero h1 {
       font-family: var(--font-display);
@@ -404,6 +448,92 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     .post-excerpt { font-family: var(--font-serif); color: var(--text-light); line-height: 1.65; font-size: 0.9375rem; }
     .read-more { display: inline-block; margin-top: 0.75rem; font-size: 0.875rem; font-weight: 600; color: var(--accent); }
     .read-more:hover { color: var(--primary); }
+
+    /* Newsletter */
+    .newsletter-card {
+      position: relative;
+      overflow: hidden;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(260px, 0.75fr);
+      gap: 1.5rem;
+      align-items: center;
+      padding: 1.5rem;
+      margin: 0 0 1rem;
+      border: 1px solid #23462b;
+      border-top: 4px solid var(--accent);
+      border-radius: var(--radius);
+      background: var(--primary);
+      color: var(--paper);
+      box-shadow: var(--shadow);
+    }
+    .newsletter-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url('/assets/images/topography.svg');
+      background-size: 360px 360px;
+      opacity: 0.08;
+      pointer-events: none;
+    }
+    .newsletter-content,
+    .newsletter-form {
+      position: relative;
+    }
+    .newsletter-eyebrow {
+      color: var(--accent-soft);
+      font-size: 0.72rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      margin-bottom: 0.35rem;
+    }
+    .newsletter-card h2 {
+      font-family: var(--font-display);
+      font-size: 1.35rem;
+      line-height: 1.2;
+      margin-bottom: 0.4rem;
+    }
+    .newsletter-card p {
+      color: #efe4d1;
+      font-family: var(--font-serif);
+      font-size: 0.95rem;
+      line-height: 1.55;
+    }
+    .newsletter-form {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+    .newsletter-form input {
+      min-width: 0;
+      flex: 1;
+      height: 2.75rem;
+      border: 1px solid rgba(255, 250, 240, 0.4);
+      border-radius: 6px;
+      background: rgba(255, 250, 240, 0.96);
+      color: var(--text);
+      padding: 0 0.85rem;
+      font: inherit;
+    }
+    .newsletter-form input:focus {
+      outline: 2px solid var(--accent-soft);
+      outline-offset: 2px;
+    }
+    .newsletter-form button {
+      height: 2.75rem;
+      border: 0;
+      border-radius: 6px;
+      background: var(--accent);
+      color: white;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 700;
+      padding: 0 1rem;
+      white-space: nowrap;
+    }
+    .newsletter-form button:hover {
+      background: #96621f;
+    }
 
     /* Featured badge */
     .featured-badge {
@@ -486,6 +616,10 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       .header nav { gap: 0.75rem; }
       .header nav a { font-size: 0.75rem; }
       .hero h1 { font-size: 1.5rem; }
+      .newsletter-card { grid-template-columns: 1fr; padding: 1.25rem; }
+      .newsletter-form { flex-direction: column; align-items: stretch; }
+      .newsletter-form input,
+      .newsletter-form button { width: 100%; }
       .post-title { font-size: 1.15rem; }
       .post-header h1 { font-size: 1.75rem; }
       .container { padding: 1.5rem 1rem 3rem; }
@@ -513,6 +647,21 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
   </footer>
 </body>
 </html>`
+}
+
+function generateNewsletterCapture(source = 'blog-static'): string {
+  return `<section id="newsletter" class="newsletter-card" aria-label="Subscribe to Stacks updates">
+      <div class="newsletter-content">
+        <div class="newsletter-eyebrow">Trail dispatch</div>
+        <h2>Get new Stacks notes by email</h2>
+        <p>Short framework updates, release notes, and field guides for building with Stacks.</p>
+      </div>
+      <form class="newsletter-form" action="https://stacksjs.com/api/email/subscribe" method="POST">
+        <input type="hidden" name="source" value="${escapeHtml(source)}">
+        <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+        <button type="submit">Subscribe</button>
+      </form>
+    </section>`
 }
 
 function generatePostCard(post: PostRow, author?: AuthorRow): string {
@@ -614,6 +763,7 @@ function generateIndexPage(posts: PostRow[], config: BlogConfig, authors: Map<nu
 
   const content = `
     ${hero}
+    ${page === 1 ? generateNewsletterCapture() : ''}
     <ul class="post-list">
       ${postCards}
     </ul>
@@ -1009,6 +1159,7 @@ export async function buildBlogSite(options: BuildBlogOptions): Promise<void> {
   ensureDir(outDir)
   ensureDir(join(outDir, 'posts'))
   copyBlogFonts(outDir)
+  copyBlogImages(outDir)
 
   // Fetch published posts from database
   let posts: PostRow[]
