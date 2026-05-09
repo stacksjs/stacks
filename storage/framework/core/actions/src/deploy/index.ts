@@ -1,5 +1,5 @@
 import type { Subprocess } from '@stacksjs/types'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import process from 'node:process'
 import { runCommand, spinner } from '@stacksjs/cli'
 import { config } from '@stacksjs/config'
@@ -374,9 +374,18 @@ const blogFontAssetsExist = [
   'Switchback-Regular.woff2',
 ].every(file => existsSync(p.projectPath(`dist/blog/assets/fonts/nps/${file}`)))
 const blogImageAssetsExist = existsSync(p.projectPath('dist/blog/assets/images/topography.svg'))
-const blogHtmlUsesCurrentFontFormat = existsSync(p.projectPath('dist/blog/index.html'))
-  && !readFileSync(p.projectPath('dist/blog/index.html'), 'utf8').includes('woff2-variations')
-if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat) {
+const blogIndexPath = p.projectPath('dist/blog/index.html')
+const blogIndexHtml = existsSync(blogIndexPath) ? readFileSync(blogIndexPath, 'utf8') : ''
+const blogHtmlUsesCurrentFontFormat = blogIndexHtml.length > 0 && !blogIndexHtml.includes('woff2-variations')
+const blogHtmlUsesCurrentParkTheme = blogIndexHtml.includes('--on-primary') && blogIndexHtml.includes('--newsletter-bg')
+const blogBuilderPath = p.frameworkPath('core/cms/src/build.ts')
+const blogConfigPath = p.projectPath('config/blog.ts')
+const blogHtmlIsFresh = existsSync(blogIndexPath)
+  && [blogBuilderPath, blogConfigPath]
+    .filter(path => existsSync(path))
+    .every(path => statSync(blogIndexPath).mtimeMs >= statSync(path).mtimeMs)
+
+if (!blogDistExists || !blogFontAssetsExist || !blogImageAssetsExist || !blogHtmlUsesCurrentFontFormat || !blogHtmlUsesCurrentParkTheme || !blogHtmlIsFresh) {
   const blogBuildSpinner = spinner('Building blog...')
   blogBuildSpinner.start()
   try {
