@@ -747,7 +747,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     </a>
     <nav>
       <a href="/">Posts</a>
-      <a href="https://docs.stacksjs.com">Docs</a>
+      <a href="https://stacksjs.com/docs">Docs</a>
       ${config.enableRss ? '<a href="/feed.xml">RSS</a>' : ''}
       ${config.social.github ? `<a href="https://github.com/${config.social.github}" target="_blank" rel="noopener">GitHub</a>` : ''}
     </nav>
@@ -1054,7 +1054,7 @@ Subsequent deployments are incremental. Stacks detects what changed and only upd
 
 ## Try It Yourself
 
-If you have an AWS account, you can deploy a Stacks app in under 10 minutes. Check out our [deployment guide](https://docs.stacksjs.com/docs/bootcamp/deploy) to get started.`,
+If you have an AWS account, you can deploy a Stacks app in under 10 minutes. Check out our [deployment guide](https://stacksjs.com/docs/bootcamp/deploy) to get started.`,
       excerpt: 'Learn how Stacks makes cloud deployment as simple as running a single command. No Terraform, no CDK — just ./buddy deploy.',
       status: 'published',
       published_at: '2026-02-18T14:00:00.000Z',

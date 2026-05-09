@@ -1695,6 +1695,9 @@ SERVICEFILE`,
           if (isVerbose) log.debug('  Invalidating CloudFront cache for docs...')
           const { AWSClient } = await import('@stacksjs/ts-cloud') as any
           const client = new AWSClient()
+          const docsInvalidationPaths = docsOutputs.docsCloudFrontDistributionId
+            ? ['/*']
+            : ['/docs', '/docs/*']
           await client.request({
             service: 'cloudfront',
             region: 'us-east-1',
@@ -1707,9 +1710,9 @@ SERVICEFILE`,
 <InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/">
   <CallerReference>docs-${Date.now()}</CallerReference>
   <Paths>
-    <Quantity>1</Quantity>
+    <Quantity>${docsInvalidationPaths.length}</Quantity>
     <Items>
-      <Path>/*</Path>
+      ${docsInvalidationPaths.map(path => `<Path>${path}</Path>`).join('\n      ')}
     </Items>
   </Paths>
 </InvalidationBatch>`,
@@ -1759,11 +1762,14 @@ SERVICEFILE`,
         }, '', ['.DS_Store'])
 
         // Invalidate CloudFront cache for blog
-        const blogDistributionId = outputs.blogCloudFrontDistributionId
+        const blogDistributionId = outputs.blogCloudFrontDistributionId || outputs.publicCloudFrontDistributionId || outputs.CloudFrontDistributionId
         if (blogDistributionId) {
           if (isVerbose) log.debug('  Invalidating CloudFront cache for blog...')
           const { AWSClient: BlogAWSClient } = await import('@stacksjs/ts-cloud') as any
           const blogClient = new BlogAWSClient()
+          const blogInvalidationPaths = outputs.blogCloudFrontDistributionId
+            ? ['/*']
+            : ['/blog', '/blog/*']
           await blogClient.request({
             service: 'cloudfront',
             region: 'us-east-1',
@@ -1776,9 +1782,9 @@ SERVICEFILE`,
 <InvalidationBatch xmlns="http://cloudfront.amazonaws.com/doc/2020-05-31/">
   <CallerReference>blog-${Date.now()}</CallerReference>
   <Paths>
-    <Quantity>1</Quantity>
+    <Quantity>${blogInvalidationPaths.length}</Quantity>
     <Items>
-      <Path>/*</Path>
+      ${blogInvalidationPaths.map(path => `<Path>${path}</Path>`).join('\n      ')}
     </Items>
   </Paths>
 </InvalidationBatch>`,

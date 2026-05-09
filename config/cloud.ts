@@ -263,7 +263,7 @@ export const tsCloud: TsCloudConfig = {
     ssl: {
       enabled: true,
       provider: 'acm', // 'acm' | 'letsencrypt'
-      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com', 'docs.stacksjs.com', 'blog.stacksjs.com'],
+      domains: env.SSL_DOMAINS?.split(',') || ['stacksjs.com', 'www.stacksjs.com'],
       redirectHttp: true,
       // Let's Encrypt configuration (used when provider: 'letsencrypt' or loadBalancer.enabled: false)
       letsEncrypt: {
@@ -309,6 +309,7 @@ export const tsCloud: TsCloudConfig = {
         public: true,
         encryption: true,
         versioning: true,
+        path: '/docs',
         website: {
           indexDocument: 'index.html',
           errorDocument: '404.html',
@@ -318,6 +319,7 @@ export const tsCloud: TsCloudConfig = {
         public: true,
         encryption: true,
         versioning: true,
+        path: '/blog',
         website: {
           indexDocument: 'index.html',
           errorDocument: '404.html',

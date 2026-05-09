@@ -9,7 +9,8 @@ const navLinks = [
   { label: 'Platform', url: '#platform' },
   { label: 'CMS', url: '#cms' },
   { label: 'Deploy', url: '#deploy' },
-  { label: 'Docs', url: 'https://docs.stacksjs.com' },
+  { label: 'Docs', url: '/docs' },
+  { label: 'Blog', url: '/blog' },
   { label: 'GitHub', url: 'https://github.com/stacksjs/stacks' },
 ]
 
@@ -35,6 +36,31 @@ const workflowSteps = [
   { label: '01', title: 'Model content', text: 'Define posts, pages, authors, tags, and custom resources once.' },
   { label: '02', title: 'Edit in dashboard', text: 'Use the local dashboard for CMS work without leaving the framework.' },
   { label: '03', title: 'Publish everywhere', text: 'Deploy marketing, docs, blog, APIs, and infrastructure with Buddy.' },
+]
+
+const platformFeatures = [
+  { title: 'Routes and APIs', text: 'Build web routes, JSON resources, validation, OpenAPI, and server actions from one TypeScript framework.' },
+  { title: 'Models and migrations', text: 'Keep models, migrations, dashboard fields, API shape, and seed data moving together.' },
+  { title: 'Content collections', text: 'Posts, docs, pages, authors, tags, media, and custom CMS resources stay manageable from local files or the dashboard.' },
+  { title: 'Background work', text: 'Queues, schedules, mail, notifications, and events are first-class parts of the same application.' },
+  { title: 'Cloud generation', text: 'Generate AWS infrastructure from Stacks config, then deploy with the same Buddy workflow used locally.' },
+  { title: 'Local dashboard', text: './buddy dev --dashboard gives developers and editors a single place to work with CMS data and generated resources.' },
+]
+
+const cmsResources = [
+  { title: 'Posts', text: 'Markdown body, excerpt, author, tags, featured state, publication date, and generated CMS API.' },
+  { title: 'Pages', text: 'Structured site content with stable slugs, generated routes, and dashboard editing.' },
+  { title: 'Taxonomy', text: 'Tags, categories, relationships, search metadata, and editorial filters.' },
+  { title: 'Media', text: 'First-party storage hooks for images, attachments, public assets, and generated paths.' },
+  { title: 'Docs', text: 'BunPress-powered documentation published at /docs beside the product site.' },
+  { title: 'Blog', text: 'Nature-park styled posts, feed, sitemap, and newsletter capture published at /blog.' },
+]
+
+const stackLayers = [
+  { label: 'Frontend', value: 'STX views, layouts, components, assets' },
+  { label: 'Content', value: 'Markdown, models, resources, dashboard' },
+  { label: 'Backend', value: 'API routes, validation, auth, jobs, mail' },
+  { label: 'Cloud', value: 'S3, CloudFront, DNS, compute, storage' },
 ]
 </script>
 
@@ -342,8 +368,10 @@ const workflowSteps = [
       .hero-title {
         margin: 0 0 0.2rem;
         color: var(--cream);
-        font-size: clamp(5.8rem, 12vw, 9.4rem);
-        line-height: 0.88;
+        font-family: "Campmate Script", ui-serif, Georgia, serif;
+        font-size: clamp(5rem, 9vw, 7.2rem);
+        font-weight: 400;
+        line-height: 0.86;
       }
 
       .hero-headline {
@@ -351,9 +379,9 @@ const workflowSteps = [
         margin: 0;
         color: var(--sky);
         font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
-        font-size: clamp(1.8rem, 3.2vw, 3rem);
+        font-size: clamp(1.55rem, 2.45vw, 2.18rem);
         font-weight: 850;
-        line-height: 1.22;
+        line-height: 1.16;
         text-transform: uppercase;
       }
 
@@ -675,6 +703,80 @@ const workflowSteps = [
         line-height: 1.65;
       }
 
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 1rem;
+      }
+
+      .feature-item {
+        min-height: 178px;
+        padding: 1rem;
+        border: 1px solid rgba(255, 247, 225, 0.14);
+        border-radius: 7px;
+        background: rgba(255, 247, 225, 0.045);
+      }
+
+      .feature-item strong {
+        display: block;
+        color: var(--sky);
+        font-size: 0.76rem;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .feature-item span {
+        display: block;
+        margin-top: 0.55rem;
+        color: rgba(255, 247, 225, 0.72);
+        font-size: 0.95rem;
+        line-height: 1.58;
+      }
+
+      .stack-band {
+        display: grid;
+        grid-template-columns: minmax(0, 0.8fr) minmax(340px, 1.2fr);
+        gap: 1.5rem;
+        align-items: stretch;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        border: 1px solid var(--line);
+        border-top: 5px solid var(--gold);
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, rgba(17, 45, 30, 0.95), rgba(8, 23, 15, 0.92)),
+          var(--pine);
+        box-shadow: var(--shadow);
+      }
+
+      .stack-map {
+        display: grid;
+        gap: 0.75rem;
+      }
+
+      .stack-layer {
+        display: grid;
+        grid-template-columns: 7.2rem minmax(0, 1fr);
+        gap: 1rem;
+        align-items: center;
+        padding: 0.85rem;
+        border: 1px solid rgba(255, 247, 225, 0.14);
+        border-radius: 7px;
+        background: rgba(255, 247, 225, 0.05);
+      }
+
+      .stack-layer strong {
+        color: var(--gold);
+        font-size: 0.72rem;
+        font-weight: 950;
+        text-transform: uppercase;
+      }
+
+      .stack-layer span {
+        color: rgba(255, 247, 225, 0.78);
+        line-height: 1.45;
+      }
+
       .cms-panel {
         display: grid;
         grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
@@ -843,7 +945,8 @@ const workflowSteps = [
         .section-heading,
         .cms-panel,
         .deploy-panel,
-        .signup-panel {
+        .signup-panel,
+        .stack-band {
           grid-template-columns: minmax(0, 1fr);
         }
 
@@ -889,7 +992,8 @@ const workflowSteps = [
 
         .hero-metrics,
         .area-grid,
-        .resource-grid {
+        .resource-grid,
+        .feature-grid {
           grid-template-columns: 1fr;
         }
 
@@ -1000,12 +1104,12 @@ const workflowSteps = [
           <div>
             <span class="kicker">Full-stack framework v{{ appVersion }}</span>
             <h1 class="script-title hero-title">{{ appName }}</h1>
-            <p class="hero-headline">Build. Publish. Deploy.</p>
+            <p class="hero-headline">A trail system for TypeScript products.</p>
             <p class="hero-copy">
-              Stacks is a TypeScript framework for teams that want a WordPress-grade publishing workflow, Markdown-first docs, generated APIs, and production infrastructure without stitching together vendors.
+              Stacks brings the marketing site, Markdown docs, blog, CMS dashboard, generated APIs, background work, mail, and AWS infrastructure into one framework you can run locally and ship with Buddy.
             </p>
             <div class="hero-actions">
-              <a class="button primary" href="https://docs.stacksjs.com">Read the docs</a>
+              <a class="button primary" href="/docs">Read the docs</a>
               <a class="button" href="#cms">See the CMS</a>
             </div>
             <div class="hero-metrics" aria-label="Stacks platform coverage">
@@ -1082,6 +1186,33 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
             </article>
           @endforeach
         </div>
+
+        <div class="feature-grid">
+          @foreach (platformFeatures as feature)
+            <div class="feature-item">
+              <strong>{{ feature.title }}</strong>
+              <span>{{ feature.text }}</span>
+            </div>
+          @endforeach
+        </div>
+        </section>
+
+        <section class="site-shell section" aria-labelledby="stack-heading">
+        <div class="stack-band">
+          <div>
+            <span class="kicker">System</span>
+            <h2 id="stack-heading" class="section-title">One framework, one route through production.</h2>
+            <p class="section-copy">The core stays close to the app: STX views in resources, content resources in the CMS, APIs in the framework, and AWS rendered by ts-cloud.</p>
+          </div>
+          <div class="stack-map">
+            @foreach (stackLayers as layer)
+              <div class="stack-layer">
+                <strong>{{ layer.label }}</strong>
+                <span>{{ layer.value }}</span>
+              </div>
+            @endforeach
+          </div>
+        </div>
         </section>
 
         <section id="cms" class="site-shell section" aria-labelledby="cms-heading">
@@ -1092,10 +1223,9 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
             <p class="section-copy">Use Markdown and models as the source of truth, then let the dashboard manage the resources people actually touch.</p>
           </div>
           <div class="resource-grid">
-            <div class="resource"><strong>Posts</strong><span>Markdown body, excerpt, author, tags, featured state.</span></div>
-            <div class="resource"><strong>Pages</strong><span>Structured site content with generated routes and APIs.</span></div>
-            <div class="resource"><strong>Taxonomy</strong><span>Tags, categories, relationships, and search-friendly metadata.</span></div>
-            <div class="resource"><strong>Media</strong><span>First-party storage hooks for images, attachments, and public assets.</span></div>
+            @foreach (cmsResources as resource)
+              <div class="resource"><strong>{{ resource.title }}</strong><span>{{ resource.text }}</span></div>
+            @endforeach
           </div>
         </div>
         </section>
@@ -1108,9 +1238,10 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
             <p class="section-copy">The same deploy path builds the marketing site, docs, blog, CMS API, application server, mail service, DNS, and static assets.</p>
             <div class="route-list">
               <div class="route"><span>Marketing</span><strong>stacksjs.com</strong></div>
-              <div class="route"><span>Docs</span><strong>docs.stacksjs.com</strong></div>
-              <div class="route"><span>Blog</span><strong>blog.stacksjs.com</strong></div>
+              <div class="route"><span>Docs</span><strong>stacksjs.com/docs</strong></div>
+              <div class="route"><span>Blog</span><strong>stacksjs.com/blog</strong></div>
               <div class="route"><span>API</span><strong>stacksjs.com/api</strong></div>
+              <div class="route"><span>Dashboard</span><strong>stacksjs.com/dashboard</strong></div>
             </div>
           </div>
           <div class="workflow">
