@@ -1,114 +1,720 @@
-@extends('layouts/default')
-
-@section('title', 'Stacks — Build modern web applications')
-
-@include('theme')
-
 <script server>
 const appName = 'Stacks'
 const appVersion = '0.1.0'
 
+const links = [
+  { label: 'Docs', url: 'https://docs.stacksjs.com' },
+  { label: 'Blog', url: 'https://blog.stacksjs.com' },
+  { label: 'GitHub', url: 'https://github.com/stacksjs/stacks' },
+]
+
 const features = [
   {
-    title: 'Documentation',
-    description: 'Explore our comprehensive guides and API references to get the most out of Stacks.',
-    url: 'https://stacksjs.org/docs',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6.042A8.967 8.967 0 006 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 016 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 016-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0018 18a8.967 8.967 0 00-6 2.292m0-14.25v14.25" /></svg>',
+    title: 'Ship the whole trail',
+    description: 'Views, APIs, jobs, storage, mail, docs, and deploys live in one framework instead of a pile of side quests.',
+    image: '/assets/images/marketing-park-camp.svg',
   },
   {
-    title: 'GitHub',
-    description: 'View the source code, report issues, and contribute to the Stacks ecosystem.',
-    url: 'https://github.com/stacksjs/stacks',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M17.25 6.75L22.5 12l-5.25 5.25m-10.5 0L1.5 12l5.25-5.25m7.5-3l-4.5 16.5" /></svg>',
+    title: 'Markdown-first publishing',
+    description: 'Build docs, blog posts, and CMS content with files that still feel good in Git, while the dashboard handles daily edits.',
+    image: '/assets/images/marketing-park-lighthouse.svg',
   },
   {
-    title: 'Discord',
-    description: 'Join our community of developers. Get help, share ideas, and stay up to date.',
-    url: 'https://discord.gg/stacksjs',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M20.25 8.511c.884.284 1.5 1.128 1.5 2.097v4.286c0 1.136-.847 2.1-1.98 2.193-.34.027-.68.052-1.02.072v3.091l-3-3c-1.354 0-2.694-.055-4.02-.163a2.115 2.115 0 01-.825-.242m9.345-8.334a2.126 2.126 0 00-.476-.095 48.64 48.64 0 00-8.048 0c-1.131.094-1.976 1.057-1.976 2.192v4.286c0 .837.46 1.58 1.155 1.951m9.345-8.334V6.637c0-1.621-1.152-3.026-2.76-3.235A48.455 48.455 0 0011.25 3c-2.115 0-4.198.137-6.24.402-1.608.209-2.76 1.614-2.76 3.235v6.226c0 1.621 1.152 3.026 2.76 3.235.577.075 1.157.14 1.74.194V21l4.155-4.155" /></svg>',
+    title: 'One command to basecamp',
+    description: './buddy deploy builds the app, docs, blog, CMS, infrastructure, and public assets into one production route.',
+    image: '/assets/images/marketing-park-wing.svg',
   },
-  {
-    title: 'Dashboard',
-    description: 'Manage your application with the built-in admin dashboard and developer tools.',
-    url: '/dashboard',
-    icon: '<svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="h-6 w-6"><path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" /></svg>',
-  },
+]
+
+const waypoints = [
+  { label: 'CMS', text: 'Posts, tags, pages, authors, and media through first-party APIs.' },
+  { label: 'Docs', text: 'Markdown docs powered by Bunpress and deployed with the stack.' },
+  { label: 'Cloud', text: 'Infrastructure, migrations, mail, and app services from Buddy.' },
 ]
 </script>
 
-@section('content')
-  <style>
-    @font-face {
-      font-display: swap;
-      font-family: "Campmate Script";
-      font-style: normal;
-      font-weight: 400;
-      src: url("/assets/fonts/nps/CampmateScript-Regular.woff2") format("woff2");
-    }
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="Stacks is a full-stack TypeScript framework for building apps, APIs, CMS content, docs, and cloud infrastructure.">
+    <title>Stacks - Full-stack framework for modern products</title>
+    <style>
+      @font-face {
+        font-display: swap;
+        font-family: "Campmate Script";
+        font-style: normal;
+        font-weight: 400;
+        src: url("/assets/fonts/nps/CampmateScript-Regular.woff2") format("woff2");
+      }
 
-    .title-font {
-      font-family: "Campmate Script", ui-serif, Georgia, serif;
-      font-weight: 400;
-    }
-  </style>
+      @font-face {
+        font-display: swap;
+        font-family: "Switchback";
+        font-style: normal;
+        font-weight: 400;
+        src: url("/assets/fonts/nps/Switchback-Regular.woff2") format("woff2");
+      }
 
-  <!-- Header -->
-  <div class="mb-12 text-center">
-    <div class="inline-flex gap-3 items-center mb-6">
-      <div class="h-12 w-12 bg-gradient-to-br from-indigo-400 to-indigo-600 rounded-lg shadow-indigo-500/25 shadow-lg rotate-45"></div>
-      <span class="title-font text-5xl text-neutral-900 tracking-tight dark:text-white">{{ appName }}</span>
-    </div>
-    <p class="mx-auto max-w-xl leading-relaxed text-lg">
-      Build modern web applications, APIs, and cloud infrastructure with an elegant, type-safe framework.
-    </p>
-    <div class="flex gap-3 items-center justify-center mt-4">
-      <span class="px-4 py-1.5 font-semibold text-amber-600 text-sm dark:text-amber-400 bg-amber-50 dark:bg-amber-500/10 border border-amber-200 rounded-full dark:border-amber-500/20">Alpha Coming Soon</span>
-      <span class="px-3 py-1 font-medium text-indigo-500 text-xs dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-500/10 border border-indigo-200 rounded-full dark:border-indigo-500/20">v{{ appVersion }}</span>
-    </div>
-  </div>
+      @font-face {
+        font-display: swap;
+        font-family: "NPS";
+        font-style: normal;
+        font-weight: 100 900;
+        src: url("/assets/fonts/nps/NPS_2026-variable.woff2") format("woff2");
+      }
 
-  <!-- Feature Cards -->
-  <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 mb-12">
-    @foreach (features as feature)
-      <a href="{{ feature.url }}" class="block p-6 bg-white/50 dark:bg-neutral-900/50 border border-neutral-200 rounded-xl dark:border-neutral-800 hover:border-neutral-300 dark:hover:border-neutral-700 transition-all group hover:-translate-y-0.5" target="_blank" rel="noopener noreferrer">
-        <div class="flex gap-3 items-center mb-3">
-          <span class="text-indigo-500 dark:text-indigo-400">{!! feature.icon !!}</span>
-          <span class="font-semibold text-base text-neutral-900 dark:text-neutral-100">{{ feature.title }}</span>
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" class="ml-auto h-4 w-4 text-neutral-400 group-hover:text-indigo-500 transition-all group-hover:translate-x-1"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" /></svg>
+      :root {
+        color-scheme: dark;
+        --ink: #102218;
+        --pine: #173c26;
+        --pine-2: #245d3b;
+        --fern: #9ebb7a;
+        --river: #7fb1a8;
+        --cream: #fff3d6;
+        --paper: #f7e8bf;
+        --gold: #d9962f;
+        --rust: #9b5631;
+        --line: rgba(255, 243, 214, 0.2);
+        --shadow: 0 26px 80px rgba(0, 0, 0, 0.36);
+      }
+
+      * { box-sizing: border-box; }
+
+      html {
+        background: var(--ink);
+        scroll-behavior: smooth;
+      }
+
+      body {
+        min-width: 320px;
+        min-height: 100vh;
+        margin: 0;
+        overflow-x: hidden;
+        overflow-y: auto;
+        color: var(--cream);
+        font-family: "NPS", ui-sans-serif, system-ui, sans-serif;
+        background:
+          radial-gradient(circle at 12% 10%, rgba(217, 150, 47, 0.18), transparent 26rem),
+          radial-gradient(circle at 84% 0%, rgba(127, 177, 168, 0.16), transparent 28rem),
+          linear-gradient(180deg, #0e1f17 0%, #143321 50%, #0f2118 100%);
+      }
+
+      body::before {
+        position: fixed;
+        inset: 0;
+        z-index: -2;
+        content: "";
+        background-image: url("/assets/images/topography.svg");
+        background-size: 760px auto;
+        opacity: 0.045;
+      }
+
+      body::after {
+        position: fixed;
+        right: -10vw;
+        bottom: -18vh;
+        z-index: -1;
+        width: min(58vw, 760px);
+        aspect-ratio: 1;
+        content: "";
+        background: url("/assets/images/marketing-park-geyser.svg") center / contain no-repeat;
+        filter: invert(84%) sepia(21%) saturate(394%) hue-rotate(20deg) brightness(94%);
+        opacity: 0.06;
+      }
+
+      a { color: inherit; text-decoration: none; }
+
+      .site-shell {
+        width: min(1180px, calc(100% - 40px));
+        margin: 0 auto;
+      }
+
+      .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 20;
+        border-bottom: 1px solid var(--line);
+        background: rgba(16, 34, 24, 0.84);
+        backdrop-filter: blur(18px);
+      }
+
+      .nav-inner {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 68px;
+      }
+
+      .brand {
+        display: inline-flex;
+        gap: 0.75rem;
+        align-items: center;
+        min-width: 0;
+      }
+
+      .brand-mark {
+        display: grid;
+        flex: 0 0 auto;
+        place-items: center;
+        width: 38px;
+        height: 38px;
+        border: 2px solid var(--gold);
+        border-radius: 8px;
+        color: var(--gold);
+        font-weight: 900;
+      }
+
+      .brand-name,
+      .display-font {
+        font-family: "Campmate Script", ui-serif, Georgia, serif;
+        font-weight: 400;
+      }
+
+      .brand-name {
+        font-size: 1.65rem;
+        line-height: 1;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 1rem;
+        align-items: center;
+        font-size: 0.78rem;
+        font-weight: 850;
+        letter-spacing: 0;
+        text-transform: uppercase;
+      }
+
+      .nav-links a {
+        color: rgba(255, 243, 214, 0.82);
+      }
+
+      .nav-links a:hover,
+      .trail-link:hover {
+        color: var(--gold);
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.08fr) minmax(300px, 0.92fr);
+        gap: clamp(2rem, 5vw, 5rem);
+        align-items: center;
+        padding: 5rem 0 4rem;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        gap: 0.5rem;
+        align-items: center;
+        margin-bottom: 1rem;
+        color: var(--fern);
+        font-size: 0.78rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .eyebrow::before {
+        width: 38px;
+        height: 2px;
+        content: "";
+        background: var(--gold);
+      }
+
+      .hero-title {
+        max-width: 10ch;
+        margin: 0;
+        color: #fff7df;
+        font-size: clamp(6rem, 16vw, 12rem);
+        line-height: 0.9;
+      }
+
+      .hero-copy {
+        max-width: 680px;
+        margin: 1.25rem 0 0;
+        color: rgba(255, 243, 214, 0.86);
+        font-family: "Switchback", "NPS", ui-sans-serif, system-ui, sans-serif;
+        font-size: 1.28rem;
+        line-height: 1.65;
+      }
+
+      .hero-actions {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        margin-top: 2rem;
+      }
+
+      .button {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        min-height: 48px;
+        padding: 0 1.1rem;
+        border: 1px solid rgba(255, 243, 214, 0.24);
+        border-radius: 7px;
+        color: var(--cream);
+        font-size: 0.82rem;
+        font-weight: 900;
+        text-transform: uppercase;
+        background: rgba(255, 243, 214, 0.06);
+      }
+
+      .button.primary {
+        border-color: var(--gold);
+        color: #1a2b1f;
+        background: var(--gold);
+      }
+
+      .button:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 16px 34px rgba(0, 0, 0, 0.22);
+      }
+
+      .hero-card {
+        position: relative;
+        min-height: 520px;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        overflow: hidden;
+        border: 1px solid rgba(255, 243, 214, 0.22);
+        border-top: 5px solid var(--gold);
+        border-radius: 8px;
+        background:
+          linear-gradient(180deg, rgba(36, 93, 59, 0.86), rgba(20, 51, 33, 0.9)),
+          var(--pine);
+        box-shadow: var(--shadow);
+      }
+
+      .hero-card::before {
+        position: absolute;
+        inset: 0;
+        content: "";
+        background-image: url("/assets/images/topography.svg");
+        background-size: 520px auto;
+        opacity: 0.08;
+      }
+
+      .park-poster {
+        position: relative;
+        display: grid;
+        place-items: center;
+        height: 100%;
+        min-height: 420px;
+        border: 1px solid rgba(255, 243, 214, 0.22);
+        border-radius: 6px;
+        background:
+          linear-gradient(180deg, rgba(255, 243, 214, 0.08), transparent 46%),
+          radial-gradient(circle at 50% 35%, rgba(217, 150, 47, 0.17), transparent 18rem);
+      }
+
+      .park-poster img {
+        width: min(74%, 340px);
+        filter: invert(95%) sepia(13%) saturate(766%) hue-rotate(330deg) brightness(104%);
+      }
+
+      .poster-label {
+        position: absolute;
+        right: 1rem;
+        bottom: 1rem;
+        left: 1rem;
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        color: rgba(255, 243, 214, 0.82);
+        font-size: 0.72rem;
+        font-weight: 900;
+        text-transform: uppercase;
+      }
+
+      .section {
+        padding: 4.5rem 0;
+      }
+
+      .section-heading {
+        max-width: 720px;
+        margin-bottom: 1.5rem;
+      }
+
+      .section-heading h2 {
+        margin: 0;
+        color: #fff7df;
+        font-size: clamp(2rem, 6vw, 4.5rem);
+        line-height: 0.98;
+      }
+
+      .section-heading p {
+        margin: 1rem 0 0;
+        color: rgba(255, 243, 214, 0.76);
+        font-family: "Switchback", "NPS", ui-sans-serif, system-ui, sans-serif;
+        font-size: 1.08rem;
+        line-height: 1.7;
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 1rem;
+      }
+
+      .feature-card,
+      .command-panel,
+      .signup-panel {
+        border: 1px solid rgba(255, 243, 214, 0.2);
+        border-radius: 8px;
+        background: rgba(11, 27, 19, 0.72);
+        box-shadow: var(--shadow);
+      }
+
+      .feature-card {
+        min-height: 320px;
+        padding: 1.25rem;
+      }
+
+      .feature-art {
+        display: grid;
+        place-items: center;
+        width: 86px;
+        height: 86px;
+        margin-bottom: 1.25rem;
+        border-radius: 7px;
+        background: var(--paper);
+      }
+
+      .feature-art img {
+        width: 62px;
+        height: 62px;
+        object-fit: contain;
+        opacity: 0.88;
+      }
+
+      .feature-card h3,
+      .command-panel h3,
+      .signup-panel h2 {
+        margin: 0;
+        color: #fff7df;
+        font-size: 1.1rem;
+        line-height: 1.35;
+      }
+
+      .feature-card p,
+      .waypoint p,
+      .signup-panel p {
+        color: rgba(255, 243, 214, 0.72);
+        line-height: 1.65;
+      }
+
+      .command-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 0.95fr) minmax(300px, 1.05fr);
+        gap: 1.5rem;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        overflow: hidden;
+      }
+
+      .terminal {
+        padding: 1rem;
+        overflow: hidden;
+        border: 1px solid rgba(255, 243, 214, 0.16);
+        border-radius: 7px;
+        background: #07140e;
+      }
+
+      .terminal code {
+        display: block;
+        color: #d6f0c1;
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 0.95rem;
+        line-height: 1.75;
+        white-space: pre-wrap;
+      }
+
+      .waypoints {
+        display: grid;
+        gap: 0.85rem;
+      }
+
+      .waypoint {
+        padding: 1rem;
+        border: 1px solid rgba(255, 243, 214, 0.14);
+        border-radius: 7px;
+        background: rgba(255, 243, 214, 0.045);
+      }
+
+      .waypoint strong {
+        display: block;
+        color: var(--gold);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+      }
+
+      .signup-panel {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 1rem;
+        align-items: center;
+        padding: clamp(1.25rem, 4vw, 2rem);
+        background:
+          linear-gradient(135deg, rgba(36, 93, 59, 0.94), rgba(23, 60, 38, 0.94)),
+          var(--pine);
+      }
+
+      .signup-panel form {
+        display: flex;
+        gap: 0.75rem;
+        width: min(440px, 100%);
+      }
+
+      input {
+        width: 100%;
+        min-height: 48px;
+        padding: 0 0.9rem;
+        border: 1px solid rgba(16, 34, 24, 0.28);
+        border-radius: 7px;
+        color: #18261d;
+        font: inherit;
+        font-weight: 850;
+        background: var(--cream);
+      }
+
+      input:focus {
+        border-color: var(--gold);
+        outline: 3px solid rgba(217, 150, 47, 0.25);
+      }
+
+      .site-footer {
+        padding: 2rem 0 3rem;
+        color: rgba(255, 243, 214, 0.64);
+        font-size: 0.78rem;
+        font-weight: 850;
+        text-transform: uppercase;
+      }
+
+      .footer-inner {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        border-top: 1px solid var(--line);
+        padding-top: 1.25rem;
+      }
+
+      @media (max-width: 860px) {
+        .site-shell {
+          width: min(100% - 32px, 680px);
+        }
+
+        .nav-inner {
+          min-height: 62px;
+        }
+
+        .nav-links {
+          gap: 0.7rem;
+          font-size: 0.68rem;
+        }
+
+        .brand-name {
+          font-size: 1.3rem;
+        }
+
+        .hero,
+        .command-panel,
+        .signup-panel {
+          grid-template-columns: 1fr;
+        }
+
+        .hero {
+          gap: 1.5rem;
+          padding: 2rem 0 2.25rem;
+        }
+
+        .hero-title {
+          font-size: clamp(5.3rem, 24vw, 8rem);
+        }
+
+        .hero-copy {
+          font-size: 1.06rem;
+          line-height: 1.55;
+        }
+
+        .hero-actions {
+          gap: 0.6rem;
+          margin-top: 1.25rem;
+        }
+
+        .button {
+          min-height: 44px;
+          padding: 0 0.85rem;
+          font-size: 0.74rem;
+        }
+
+        .hero-card {
+          min-height: auto;
+          padding: 0.75rem;
+        }
+
+        .park-poster {
+          min-height: 190px;
+        }
+
+        .park-poster img {
+          width: min(58%, 220px);
+        }
+
+        .poster-label {
+          bottom: 0.6rem;
+          font-size: 0.62rem;
+        }
+
+        .section {
+          padding: 2.25rem 0;
+        }
+
+        .feature-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .signup-panel form {
+          flex-direction: column;
+        }
+
+        .footer-inner {
+          flex-direction: column;
+        }
+      }
+
+      @media (max-width: 520px) {
+        .nav-inner {
+          flex-wrap: wrap;
+          justify-content: center;
+          gap: 0.6rem;
+          padding: 0.75rem 0;
+        }
+
+        .brand,
+        .nav-links {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav class="site-nav">
+      <div class="site-shell nav-inner">
+        <a class="brand" href="/" aria-label="Stacks home">
+          <span class="brand-mark">S</span>
+          <span class="brand-name">{{ appName }}</span>
+        </a>
+        <div class="nav-links" aria-label="Primary navigation">
+          @foreach (links as link)
+            <a href="{{ link.url }}">{{ link.label }}</a>
+          @endforeach
         </div>
-        <p class="leading-relaxed text-sm">{{ feature.description }}</p>
-      </a>
-    @endforeach
-  </div>
+      </div>
+    </nav>
 
-  <!-- Subscribe Section -->
-  <div class="mb-12 p-8 text-center bg-neutral-50 dark:bg-neutral-900/50 border border-neutral-200 rounded-2xl dark:border-neutral-800">
-    <h2 class="mb-2 font-semibold text-neutral-900 text-xl dark:text-white">Stay in the loop</h2>
-    <p class="mb-6 text-sm">Get notified when we launch and receive updates on new features.</p>
-    <form class="flex gap-2 mx-auto max-w-md" action="/api/email/subscribe" method="POST">
-      <input
-        type="email"
-        name="email"
-        class="flex-1 placeholder-neutral-400 px-4 py-2.5 text-neutral-900 text-sm dark:text-white bg-white dark:bg-neutral-800 border border-neutral-200 rounded-lg dark:border-neutral-700 focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-500/40"
-        placeholder="you@example.com"
-        required
-      >
-      <button type="submit" class="px-6 py-2.5 font-semibold text-sm text-white bg-indigo-500 hover:bg-indigo-400 rounded-lg transition-colors">
-        Subscribe
-      </button>
-    </form>
-    <p class="mt-3 text-neutral-400 text-xs">No spam, unsubscribe at any time.</p>
-  </div>
-@endsection
+    <main>
+      <section class="site-shell hero">
+        <div>
+          <span class="eyebrow">Full-stack framework v{{ appVersion }}</span>
+          <h1 class="display-font hero-title">{{ appName }}</h1>
+          <p class="hero-copy">
+            A TypeScript framework for building the whole product: marketing pages, CMS content, documentation, APIs, background work, and cloud deploys from one trailhead.
+          </p>
+          <div class="hero-actions">
+            <a class="button primary" href="https://docs.stacksjs.com">Read the field guide</a>
+            <a class="button" href="https://blog.stacksjs.com">Visit the blog</a>
+          </div>
+        </div>
 
-@section('footer')
-  <div class="pt-8 text-center border-neutral-200 border-t dark:border-neutral-800">
-    <div class="flex gap-2 items-center justify-center text-sm">
-      <a href="https://bun.sh" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">Bun</a>
-      <span class="text-neutral-300 dark:text-neutral-700">/</span>
-      <a href="https://www.typescriptlang.org" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">TypeScript</a>
-      <span class="text-neutral-300 dark:text-neutral-700">/</span>
-      <a href="https://github.com/stacksjs/stx" class="hover:text-indigo-500 transition-colors" target="_blank" rel="noopener noreferrer">STX</a>
-    </div>
-  </div>
-@endsection
+        <aside class="hero-card" aria-label="National park inspired Stacks illustration">
+          <div class="park-poster">
+            <img src="/assets/images/marketing-park-camp.svg" alt="Minimal campsite line art">
+            <div class="poster-label">
+              <span>Build Camp</span>
+              <span>Buddy Deploy</span>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="site-shell section" aria-labelledby="systems-heading">
+        <div class="section-heading">
+          <span class="eyebrow">Trail systems</span>
+          <h2 id="systems-heading" class="display-font">Everything has a marked route.</h2>
+          <p>Stacks keeps the parts that usually drift apart connected: a view layer, content models, generated APIs, migrations, docs, cloud services, and deploys that know about each other.</p>
+        </div>
+
+        <div class="feature-grid">
+          @foreach (features as feature)
+            <article class="feature-card">
+              <div class="feature-art">
+                <img src="{{ feature.image }}" alt="">
+              </div>
+              <h3>{{ feature.title }}</h3>
+              <p>{{ feature.description }}</p>
+            </article>
+          @endforeach
+        </div>
+      </section>
+
+      <section class="site-shell section" aria-labelledby="deploy-heading">
+        <div class="command-panel">
+          <div>
+            <span class="eyebrow">One trail map</span>
+            <h2 id="deploy-heading" class="display-font">Develop locally. Deploy the park.</h2>
+            <p class="hero-copy">Buddy is the command layer that ties frontend, dashboard, CMS, docs, blog, APIs, migrations, and infrastructure into one first-party workflow.</p>
+          </div>
+
+          <div class="terminal" aria-label="Buddy commands">
+            <code>$ ./buddy dev
+Views:      http://localhost:3000
+Dashboard:  http://localhost:3000/dashboard
+Docs:       http://localhost:3001
+
+$ ./buddy deploy
+Build app, docs, blog, CMS, API, mail, and cloud.</code>
+          </div>
+        </div>
+      </section>
+
+      <section class="site-shell section" aria-labelledby="cms-heading">
+        <div class="section-heading">
+          <span class="eyebrow">Basecamp dashboard</span>
+          <h2 id="cms-heading" class="display-font">CMS work belongs in the dashboard.</h2>
+          <p>Manage the resources that power the site without turning content into a separate platform. Models define the data shape, migrations keep it durable, and APIs expose it consistently.</p>
+        </div>
+
+        <div class="waypoints">
+          @foreach (waypoints as waypoint)
+            <div class="waypoint">
+              <strong>{{ waypoint.label }}</strong>
+              <p>{{ waypoint.text }}</p>
+            </div>
+          @endforeach
+        </div>
+      </section>
+
+      <section class="site-shell section" aria-labelledby="signup-heading">
+        <div class="signup-panel">
+          <div>
+            <span class="eyebrow">Ranger notes</span>
+            <h2 id="signup-heading" class="display-font">Get Stacks updates by email.</h2>
+            <p>Release notes, field guides, and the occasional new trail marker.</p>
+          </div>
+          <form action="/api/email/subscribe" method="POST">
+            <input type="email" name="email" placeholder="you@example.com" autocomplete="email" required>
+            <button class="button primary" type="submit">Subscribe</button>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer class="site-shell site-footer">
+      <div class="footer-inner">
+        <span>© 2026 Stacks</span>
+        <a class="trail-link" href="https://github.com/stacksjs/stacks">Source on GitHub</a>
+      </div>
+    </footer>
+  </body>
+</html>
