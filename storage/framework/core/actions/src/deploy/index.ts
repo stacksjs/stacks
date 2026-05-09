@@ -261,7 +261,7 @@ const blogDistExists = storage.hasFiles(p.projectPath('dist/blog'))
 const blogFontAssetsExist = [
   'CampmateScript-Regular.woff2',
   'SequoiaSans-Regular.woff2',
-  'RedwoodSerif-Regular.woff2',
+  'Switchback-Regular.woff2',
 ].every(file => existsSync(p.projectPath(`dist/blog/assets/fonts/nps/${file}`)))
 const blogHtmlUsesCurrentFontFormat = existsSync(p.projectPath('dist/blog/index.html'))
   && !readFileSync(p.projectPath('dist/blog/index.html'), 'utf8').includes('woff2-variations')

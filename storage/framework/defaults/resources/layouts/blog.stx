@@ -22,8 +22,8 @@
       font-display: swap;
     }
     @font-face {
-      font-family: 'Redwood Serif';
-      src: url('/assets/fonts/nps/RedwoodSerif-Regular.woff2') format('woff2');
+      font-family: 'Switchback';
+      src: url('/assets/fonts/nps/Switchback-Regular.woff2') format('woff2');
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -41,7 +41,7 @@
       --color-border: #e2e8f0;
       --font-display: 'Campmate Script', 'Sequoia Sans', system-ui, sans-serif;
       --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-serif: 'Redwood Serif', Georgia, serif;
+      --font-serif: 'Switchback', Georgia, serif;
     }
 
     @media (prefers-color-scheme: dark) {

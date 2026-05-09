@@ -162,8 +162,8 @@ function blogFontFaces(fontPath = '/assets/fonts/nps'): string {
       font-display: swap;
     }
     @font-face {
-      font-family: 'Redwood Serif';
-      src: url('${fontPath}/RedwoodSerif-Regular.woff2') format('woff2');
+      font-family: 'Switchback';
+      src: url('${fontPath}/Switchback-Regular.woff2') format('woff2');
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -284,7 +284,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
       --radius: 8px;
       --font-display: 'Campmate Script', 'Sequoia Sans', system-ui, sans-serif;
       --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-      --font-serif: 'Redwood Serif', Georgia, serif;
+      --font-serif: 'Switchback', Georgia, serif;
     }
     @media (prefers-color-scheme: dark) {
       :root {
@@ -375,7 +375,7 @@ function generateLayout(config: BlogConfig, title: string, content: string, _opt
     .post-title a:hover { color: var(--primary); opacity: 1; }
     .post-meta { color: var(--text-lighter); font-size: 0.8125rem; margin-bottom: 0.6rem; display: flex; align-items: center; gap: 0.5rem; flex-wrap: wrap; }
     .post-meta .sep { color: var(--border); }
-    .post-excerpt { color: var(--text-light); line-height: 1.65; font-size: 0.9375rem; }
+    .post-excerpt { font-family: var(--font-serif); color: var(--text-light); line-height: 1.65; font-size: 0.9375rem; }
     .read-more { display: inline-block; margin-top: 0.75rem; font-size: 0.875rem; font-weight: 500; }
 
     /* Featured badge */

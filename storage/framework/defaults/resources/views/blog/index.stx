@@ -101,8 +101,8 @@ function formatDate(dateStr) {
       font-display: swap;
     }
     @font-face {
-      font-family: 'Redwood Serif';
-      src: url('/assets/fonts/nps/RedwoodSerif-Regular.woff2') format('woff2');
+      font-family: 'Switchback';
+      src: url('/assets/fonts/nps/Switchback-Regular.woff2') format('woff2');
       font-weight: 400;
       font-style: normal;
       font-display: swap;
@@ -120,7 +120,7 @@ function formatDate(dateStr) {
       --color-border: #e2e8f0;
       --font-display: 'Campmate Script', 'Sequoia Sans', system-ui, sans-serif;
       --font-sans: 'Sequoia Sans', -apple-system, BlinkMacSystemFont, sans-serif;
-      --font-serif: 'Redwood Serif', Georgia, serif;
+      --font-serif: 'Switchback', Georgia, serif;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -200,7 +200,7 @@ function formatDate(dateStr) {
     .post-content { display: flex; flex-direction: column; justify-content: center; }
     .post-title { font-family: var(--font-display); font-size: 1.125rem; font-weight: 750; color: var(--color-text); margin-bottom: 0.5rem; line-height: 1.4; }
     .post-title:hover { color: var(--color-primary); }
-    .post-excerpt { color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+    .post-excerpt { font-family: var(--font-serif); color: var(--color-text-secondary); font-size: 0.9375rem; line-height: 1.6; margin-bottom: 0.75rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
     .post-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.8125rem; color: var(--color-text-secondary); }
     .meta-dot { color: var(--color-border); }
 
