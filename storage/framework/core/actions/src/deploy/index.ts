@@ -1368,6 +1368,14 @@ SERVICEFILE`,
           return rendered
         })
 
+        // 4. Strip server-side STX layout directives for static marketing deploys.
+        stxContent = stxContent
+          .replace(/^\s*@extends\([^)]+\)\s*$/gm, '')
+          .replace(/^\s*@include\([^)]+\)\s*$/gm, '')
+          .replace(/^\s*@section\('title',\s*['"][^'"]*['"]\)\s*$/gm, '')
+          .replace(/^\s*@section\('(?:content|footer)'\)\s*$/gm, '')
+          .replace(/^\s*@endsection\s*$/gm, '')
+
         // Inject STX signals runtime if reactive directives are present
         // The runtime must load BEFORE any scope scripts that use state()/effect()
         if (/data-stx-scope|@model|@show|@text|@class|@style|@bind:|@if=|@for=/.test(stxContent)) {
