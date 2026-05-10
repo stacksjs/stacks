@@ -105,6 +105,7 @@
       "name": "@stacksjs/actions",
       "version": "0.70.23",
       "dependencies": {
+        "@stacksjs/bunpress": "^0.1.5",
         "@stacksjs/ts-cloud": "^0.2.15",
         "@stacksjs/ts-md": "^0.1.1"
       },
@@ -1104,6 +1105,7 @@
       "version": "^0.70.23",
       "source": "npm",
       "dependencies": {
+        "@stacksjs/bunpress": "^0.1.5",
         "@stacksjs/ts-cloud": "^0.2.15",
         "@stacksjs/ts-md": "^0.1.1"
       }

@@ -341,10 +341,14 @@ if (storage.hasFiles(docsDir)) {
   try {
     const { rm } = await import('node:fs/promises')
     const localBunpressCli = `${process.env.HOME}/Code/Tools/bunpress/packages/bunpress/bin/cli.ts`
+    const installedBunpressCli = p.projectPath('node_modules/@stacksjs/bunpress/dist/bin/cli.js')
     const hasLocalBunpress = await Bun.file(localBunpressCli).exists()
+    const hasInstalledBunpress = await Bun.file(installedBunpressCli).exists()
     const command = hasLocalBunpress
       ? `bun ${localBunpressCli} build --dir ${docsDir} --outdir ${p.projectPath('dist/docs')}`
-      : 'bunx @stacksjs/bunpress build --dir ./docs --outdir ./dist/docs'
+      : hasInstalledBunpress
+        ? `bun ${installedBunpressCli} build --dir ${docsDir} --outdir ${p.projectPath('dist/docs')}`
+        : 'bunx @stacksjs/bunpress@0.1.5 build --dir ./docs --outdir ./dist/docs'
 
     // Prefer the developer checkout in ~/Code/Tools/bunpress so deploys use
     // the same docs engine being worked on locally. Always clear the old
