@@ -310,6 +310,7 @@ export const tsCloud: TsCloudConfig = {
         encryption: true,
         versioning: true,
         path: '/docs',
+        pathRewriteStyle: 'flat',
         website: {
           indexDocument: 'index.html',
           errorDocument: '404.html',

@@ -333,13 +333,13 @@ await runCommand('bun run build', {
 frameworkBuildSpinner.succeed('Framework built')
 
 // Build documentation with BunPress
-// Skip if docs directory doesn't exist or if pre-built docs exist
 const docsDir = p.projectPath('docs')
-const docsDistExists = storage.hasFiles(p.projectPath('dist/docs/.bunpress'))
-if (storage.hasFiles(docsDir) && !docsDistExists) {
+const docsBuildDir = p.projectPath('dist/docs/.bunpress')
+if (storage.hasFiles(docsDir)) {
   const docsSpinner = spinner('Building documentation with BunPress...')
   docsSpinner.start()
   try {
+    const { rm } = await import('node:fs/promises')
     const localBunpressCli = `${process.env.HOME}/Code/Tools/bunpress/packages/bunpress/bin/cli.ts`
     const hasLocalBunpress = await Bun.file(localBunpressCli).exists()
     const command = hasLocalBunpress
@@ -347,8 +347,10 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
       : 'bunx @stacksjs/bunpress build --dir ./docs --outdir ./dist/docs'
 
     // Prefer the developer checkout in ~/Code/Tools/bunpress so deploys use
-    // the same docs engine being worked on locally. BunPress writes into a
-    // .bunpress subdirectory within the configured outdir.
+    // the same docs engine being worked on locally. Always clear the old
+    // .bunpress output first so route shape changes cannot leave stale pages
+    // behind in production.
+    await rm(docsBuildDir, { recursive: true, force: true })
     await runCommand(command, {
       cwd: p.projectPath(),
       quiet: !isVerbose,
@@ -360,8 +362,6 @@ if (storage.hasFiles(docsDir) && !docsDistExists) {
     console.log(`⚠ Documentation build skipped: ${docsError.message}`)
     if (isVerbose) log.debug('To build docs manually: cd ~/Code/Tools/bunpress && bun packages/bunpress/bin/cli.ts build --dir /path/to/docs --outdir /path/to/dist/docs')
   }
-} else if (docsDistExists) {
-  if (isVerbose) log.debug('Pre-built docs found at dist/docs/.bunpress, skipping build')
 } else {
   if (isVerbose) log.debug('No docs directory found, skipping documentation build')
 }

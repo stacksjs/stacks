@@ -51,7 +51,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-cloud": "^0.2.14"
+    "@stacksjs/ts-cloud": "^0.2.15"
   },
   "devDependencies": {
     "@stacksjs/arrays": "workspace:*",
