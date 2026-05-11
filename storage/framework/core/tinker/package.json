@@ -1,10 +1,12 @@
 {
   "name": "@stacksjs/tinker",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.25",
   "description": "Interactive REPL with Stacks framework preloaded.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/tinker#readme",
@@ -16,7 +18,14 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["tinker", "repl", "ts", "stx", "stacks", "interactive"],
+  "keywords": [
+    "tinker",
+    "repl",
+    "ts",
+    "stx",
+    "stacks",
+    "interactive"
+  ],
   "exports": {
     ".": {
       "bun": "./src/index.ts",
@@ -29,7 +38,10 @@
     }
   },
   "module": "dist/index.js",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "prepublishOnly": "bun run build",

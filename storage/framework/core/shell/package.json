@@ -1,10 +1,12 @@
 {
   "name": "@stacksjs/shell",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.25",
   "description": "A better Stacks shell experience. Currently only fully supporting Oh My Zsh. Stay tuned for more. Or request one!",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/shell#readme",
@@ -16,13 +18,20 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["ohmyzsh", "zsh", "stacks"],
+  "keywords": [
+    "ohmyzsh",
+    "zsh",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "import": "./src/index.ts"
     }
   },
-  "files": ["buddy.plugin.zsh", "dist"],
+  "files": [
+    "buddy.plugin.zsh",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

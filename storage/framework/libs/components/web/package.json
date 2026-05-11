@@ -1,10 +1,12 @@
 {
   "name": "@stacksjs/hello-world-elements",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.25",
   "description": "Your framework agnostic web component library description.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/components#readme",
   "repository": {
@@ -33,7 +35,10 @@
   "main": "dist/index.cjs",
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "dev": "bunx --bun vite -c ../../../core/vite-config/src/web-components.ts",
     "build": "bunx --bun vite build -c ../../../core/vite-config/src/web-components.ts",

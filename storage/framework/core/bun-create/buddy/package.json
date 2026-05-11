@@ -1,10 +1,12 @@
 {
   "name": "@bun-examples/buddy",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.25",
   "description": "Your project description.",
   "author": "your-name <your-email>",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks#readme",
@@ -15,7 +17,10 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["project-starter", "stacks"],
+  "keywords": [
+    "project-starter",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -27,7 +32,10 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "buddy": "bun ./storage/framework/core/buddy/src/cli.ts",
     "stacks": "bun run buddy",

@@ -1,10 +1,12 @@
 {
   "name": "hello-world-fx",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.25",
   "description": "Your function library description.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/functions#readme",
   "repository": {
@@ -30,7 +32,10 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "vite build -c ../build/functions.ts",
     "prepublishOnly": "bun run build"
