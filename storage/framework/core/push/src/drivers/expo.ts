@@ -36,7 +36,7 @@ export interface ExpoPushReceipt {
  * Validates an Expo push token
  */
 export function isExpoPushToken(token: string): boolean {
-  return /^Expo(nent)?PushToken\[.+\]$/.test(token) || /^[a-zA-Z0-9-_]+$/.test(token)
+  return /^Expo(?:nent)?PushToken\[.+\]$/.test(token) || /^[a-zA-Z0-9-_]+$/.test(token)
 }
 
 /**

@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/ui",
   "type": "module",
-  "version": "0.70.25",
+  "version": "0.70.26",
   "description": "The Stacks UI engine.",
   "author": "Chris Breuer",
   "contributors": [
@@ -31,13 +31,13 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./components": {
-      "bun": "./src/components.ts",
       "types": "./dist/components.d.ts",
+      "bun": "./src/components.ts",
       "import": "./dist/components.js"
     }
   },

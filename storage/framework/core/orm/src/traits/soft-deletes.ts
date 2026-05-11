@@ -220,7 +220,7 @@ async function cascadeChildren(
   action: 'softDelete' | 'restore',
 ): Promise<void> {
   try {
-    const where = childModel.where as ((...a: unknown[]) => any) | undefined
+    const where = childModel.where as ((..._a: unknown[]) => any) | undefined
     if (typeof where !== 'function') {
       log.warn(`[orm] cascade ${action}: child model has no .where()`)
       return
@@ -231,7 +231,7 @@ async function cascadeChildren(
       // (timestamp + any per-model audit hook). If the child has no
       // softDelete static, fall back to a real DELETE so we still respect
       // the user's intent of "remove these dependents."
-      const childSoftDelete = childModel.softDelete as ((...a: unknown[]) => Promise<unknown>) | undefined
+      const childSoftDelete = childModel.softDelete as ((..._a: unknown[]) => Promise<unknown>) | undefined
       if (typeof childSoftDelete === 'function') {
         // We need each child's PK to call softDelete(id). Pull the rows
         // first, then iterate. For very large fan-outs this is slower than
@@ -262,7 +262,7 @@ async function cascadeChildren(
     else {
       // Restore: only meaningful if the child actually has soft-deletes.
       // Without it there's no `deleted_at` column to clear.
-      const childRestore = childModel.restore as ((...a: unknown[]) => Promise<unknown>) | undefined
+      const childRestore = childModel.restore as ((..._a: unknown[]) => Promise<unknown>) | undefined
       if (typeof childRestore !== 'function') {
         log.debug(`[orm] cascade restore: child has no restore() — nothing to do`)
         return

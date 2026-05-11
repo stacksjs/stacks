@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/collections",
   "type": "module",
-  "version": "0.70.25",
+  "version": "0.70.26",
   "description": "The Stacks collections.",
   "author": "Chris Breuer",
   "contributors": [
@@ -29,8 +29,8 @@
   "sideEffects": false,
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

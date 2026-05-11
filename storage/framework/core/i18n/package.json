@@ -1,6 +1,6 @@
 {
   "name": "@stacksjs/i18n",
-  "version": "0.70.25",
+  "version": "0.70.26",
   "description": "Internationalization system for Stacks.js applications",
   "type": "module",
   "license": "MIT",
@@ -15,9 +15,9 @@
   },
   "exports": {
     ".": {
+      "types": "./dist/index.d.ts",
       "bun": "./src/index.ts",
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "import": "./dist/index.js"
     }
   },
   "main": "./dist/index.js",

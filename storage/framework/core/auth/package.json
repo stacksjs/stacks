@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/auth",
   "type": "module",
-  "version": "0.70.25",
+  "version": "0.70.26",
   "description": "A more simplistic way to authenticate.",
   "author": "Chris Breuer",
   "contributors": [
@@ -25,8 +25,8 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./*": {

@@ -111,7 +111,7 @@ const AUTO_CRUD_CASTERS: Record<string, { get: (v: unknown) => unknown, set: (v:
 }
 
 function safeJSON(s: string): unknown { try { return JSON.parse(s) } catch { return s } }
-function safeJSONOrEmpty(s: string): unknown { try { return JSON.parse(s) } catch { return [] } }
+function safeJSONOrEmpty(_s: string): unknown { try { return JSON.parse(_s) } catch { return [] } }
 
 // Run each declared `validation.rule` against an incoming write payload.
 // Returns { valid: true } or { valid: false, errors }. Per-attribute custom
@@ -120,10 +120,13 @@ function safeJSONOrEmpty(s: string): unknown { try { return JSON.parse(s) } catc
 // Skips fields the caller never sent on PATCH requests so a partial update
 // doesn't trip a "required" rule on a sibling field that wasn't touched.
 function validateWriteBody(
-  data: Record<string, any>,
-  model: any,
-  hook: 'creating' | 'updating',
+  _data: Record<string, any>,
+  _model: any,
+  _hook: 'creating' | 'updating',
 ): { valid: true } | { valid: false, errors: Record<string, string[]> } {
+  const data = _data
+  const model = _model
+  const hook = _hook
   const attrs = model?.attributes ?? {}
   const errors: Record<string, string[]> = {}
   for (const [field, def] of Object.entries(attrs as Record<string, any>)) {

@@ -71,7 +71,7 @@ export function isAlpha(str: string): boolean {
  */
 export function isPostalCode(zipCode: string): boolean {
   // US ZIP: 12345 or 12345-6789
-  const usZip = /^\d{5}(-\d{4})?$/
+  const usZip = /^\d{5}(?:-\d{4})?$/
   // UK postcode: SW1A 1AA
   const ukPostcode = /^[A-Z]{1,2}\d{1,2}[A-Z]?\s?\d[A-Z]{2}$/i
   // Canada: K1A 0B1
@@ -93,7 +93,7 @@ export function isNumeric(str: string): boolean {
  * Hex color validation
  */
 export function isHexColor(color: string): boolean {
-  return /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)
+  return /^#(?:[A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$/.test(color)
 }
 
 /**
@@ -203,11 +203,11 @@ export function isISBN(isbn: string): boolean {
  */
 export function isIP(ip: string): boolean {
   // IPv4
-  const ipv4Regex = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
+  const ipv4Regex = /^(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/
   if (ipv4Regex.test(ip)) return true
 
   // IPv6 (simplified)
-  const ipv6Regex = /^(([0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,7}:|([0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|([0-9a-fA-F]{1,4}:){1,5}(:[0-9a-fA-F]{1,4}){1,2}|([0-9a-fA-F]{1,4}:){1,4}(:[0-9a-fA-F]{1,4}){1,3}|([0-9a-fA-F]{1,4}:){1,3}(:[0-9a-fA-F]{1,4}){1,4}|([0-9a-fA-F]{1,4}:){1,2}(:[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:((:[0-9a-fA-F]{1,4}){1,6})|:((:[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(:[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(ffff(:0{1,4}){0,1}:){0,1}((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])|([0-9a-fA-F]{1,4}:){1,4}:((25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(25[0-5]|(2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/
+  const ipv6Regex = /^(?:(?:[0-9a-fA-F]{1,4}:){7,7}[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,7}:|(?:[0-9a-fA-F]{1,4}:){1,6}:[0-9a-fA-F]{1,4}|(?:[0-9a-fA-F]{1,4}:){1,5}(?::[0-9a-fA-F]{1,4}){1,2}|(?:[0-9a-fA-F]{1,4}:){1,4}(?::[0-9a-fA-F]{1,4}){1,3}|(?:[0-9a-fA-F]{1,4}:){1,3}(?::[0-9a-fA-F]{1,4}){1,4}|(?:[0-9a-fA-F]{1,4}:){1,2}(?::[0-9a-fA-F]{1,4}){1,5}|[0-9a-fA-F]{1,4}:(?:(?::[0-9a-fA-F]{1,4}){1,6})|:(?:(?::[0-9a-fA-F]{1,4}){1,7}|:)|fe80:(?::[0-9a-fA-F]{0,4}){0,4}%[0-9a-zA-Z]{1,}|::(?:ffff(?::0{1,4}){0,1}:){0,1}(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])|(?:[0-9a-fA-F]{1,4}:){1,4}:(?:(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9])\.){3,3}(?:25[0-5]|(?:2[0-4]|1{0,1}[0-9]){0,1}[0-9]))$/
   return ipv6Regex.test(ip)
 }
 
@@ -236,7 +236,7 @@ export function isIPRange(ip: string): boolean {
  * MAC address validation
  */
 export function isMACAddress(macAddress: string): boolean {
-  const macRegex = /^([0-9A-Fa-f]{2}[:-]){5}([0-9A-Fa-f]{2})$/
+  const macRegex = /^(?:[0-9A-Fa-f]{2}[:-]){5}(?:[0-9A-Fa-f]{2})$/
   return macRegex.test(macAddress)
 }
 
@@ -257,7 +257,7 @@ export function isLatLong(latlong: string): boolean {
  * Currency validation
  */
 export function isCurrency(currency: string): boolean {
-  const currencyRegex = /^[$£€¥]?\d{1,3}(,?\d{3})*(\.\d{2})?$/
+  const currencyRegex = /^[$£€¥]?\d{1,3}(?:,?\d{3})*(?:\.\d{2})?$/
   return currencyRegex.test(currency.trim())
 }
 
@@ -265,7 +265,7 @@ export function isCurrency(currency: string): boolean {
  * Data URI validation
  */
 export function isDataURI(dataURI: string): boolean {
-  const dataURIRegex = /^data:([a-z]+\/[a-z0-9-+.]+(;[a-z-]+=[a-z0-9-]+)*)?;base64,([a-z0-9+/]+=*)/i
+  const dataURIRegex = /^data:(?:[a-z]+\/[a-z0-9-+.]+(?:;[a-z-]+=[a-z0-9-]+)*)?;base64,(?:[a-z0-9+/]+=*)/i
   return dataURIRegex.test(dataURI) || /^data:,/.test(dataURI)
 }
 
@@ -322,7 +322,7 @@ export function isByteLength(str: string, options?: { min?: number, max?: number
  * FQDN validation (Fully Qualified Domain Name)
  */
 export function isFQDN(fqdn: string): boolean {
-  const fqdnRegex = /^(?=.{1,253}$)((?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,}$/
+  const fqdnRegex = /^(?=.{1,253}$)(?:(?!-)[A-Za-z0-9-]{1,63}(?<!-)\.)+[A-Za-z]{2,}$/
   return fqdnRegex.test(fqdn)
 }
 
@@ -362,7 +362,7 @@ export function isHash(hash: string, algorithm: HashAlgorithm): boolean {
  * HSL color validation
  */
 export function isHSL(hsl: string): boolean {
-  const hslRegex = /^hsl\(\s*(\d+)\s*,\s*(\d+(?:\.\d+)?%)\s*,\s*(\d+(?:\.\d+)?%)\s*\)$/
+  const hslRegex = /^hsl\(?:\s*(?:\d+)\s*,\s*(?:\d+(?:\.\d+)?%)\s*,\s*(?:\d+(?:\.\d+)?%)\s*\)$/
   return hslRegex.test(hsl)
 }
 
@@ -436,7 +436,7 @@ export function isISIN(isin: string): boolean {
  * ISO 8601 date validation
  */
 export function isISO8601(iso8601: string): boolean {
-  const iso8601Regex = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d{3})?(Z|[+-]\d{2}:\d{2})?)?$/
+  const iso8601Regex = /^\d{4}-\d{2}-\d{2}(?:T\d{2}:\d{2}:\d{2}(?:\.\d{3})?(?:Z|[+-]\d{2}:\d{2})?)?$/
   if (!iso8601Regex.test(iso8601)) return false
 
   try {

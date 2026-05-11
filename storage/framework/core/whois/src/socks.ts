@@ -314,7 +314,7 @@ export class SocksClient {
    * Check if string is a valid IPv4 address
    */
   private isIPv4(address: string): boolean {
-    const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/
+    const ipv4Regex = /^(?:\d{1,3}\.){3}\d{1,3}$/
     if (!ipv4Regex.test(address))
       return false
 

@@ -47,6 +47,7 @@ const config: PickierConfig = {
     'markdown/reference-links-images': 'off',
     'markdown/single-title': 'off',
     'no-super-linear-backtracking': 'off',
+    'publint/bin-file-not-executable': 'off',
     'style/brace-style': 'off',
     'style/max-statements-per-line': 'off',
     'style/quotes': 'off',

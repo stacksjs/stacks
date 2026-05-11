@@ -1,7 +1,7 @@
 {
   "name": "stacks-server",
   "type": "module",
-  "version": "0.70.25",
+  "version": "0.70.26",
   "description": "The Stacks server.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -25,8 +25,8 @@
   ],
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./*": {
       "import": "./dist/*"

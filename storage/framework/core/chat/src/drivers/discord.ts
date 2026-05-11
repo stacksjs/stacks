@@ -71,7 +71,7 @@ export function configure(options: DiscordConfig): void {
     if (parsed.protocol !== 'https:') {
       throw new Error('[chat/discord] webhookUrl must use https://')
     }
-    if (!/(^|\.)discord(?:app)?\.com$/i.test(parsed.hostname)) {
+    if (!/(?:^|\.)discord(?:app)?\.com$/i.test(parsed.hostname)) {
       throw new Error(`[chat/discord] webhookUrl host "${parsed.hostname}" is not a Discord-owned domain.`)
     }
   }

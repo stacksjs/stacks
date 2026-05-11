@@ -233,7 +233,7 @@ function parseYaml(content: string): TranslationMessages {
  */
 function isLocaleCode(str: string): boolean {
   // Match patterns like "en", "en-US", "zh-Hans", etc.
-  return /^[a-z]{2}(-[A-Z]{2})?(-[A-Za-z]+)?$/i.test(str)
+  return /^[a-z]{2}(?:-[A-Z]{2})?(?:-[A-Za-z]+)?$/i.test(str)
 }
 
 /**

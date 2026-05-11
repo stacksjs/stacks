@@ -12,7 +12,13 @@ import { ExitCode } from '@stacksjs/types'
  * pickier was silently dropped and the parent process always exited 0.
  */
 function exitOnFailure(result: Awaited<ReturnType<typeof runCommand>>, label: string): void {
-  if (result && typeof result === 'object' && 'isErr' in result && (result as { isErr?: () => boolean }).isErr?.()) {
+  if (!result || typeof result !== 'object' || !('isErr' in result))
+    return
+
+  const marker = (result as { isErr?: boolean | (() => boolean) }).isErr
+  const isErr = typeof marker === 'function' ? marker() : marker === true
+
+  if (isErr) {
     log.error(`${label} reported failure`)
     process.exit(ExitCode.FatalError)
   }
@@ -39,8 +45,8 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint')
 
       const result = options.fix
-        ? await runCommand('bunx --bun pickier run --mode lint --config ./pickier.config.ts --fix', { cwd: path.projectPath() })
-        : await runCommand('bunx --bun pickier run --mode lint --config ./pickier.config.ts', { cwd: path.projectPath() })
+        ? await runCommand('bun storage/framework/core/actions/src/lint/fix.ts', { cwd: path.projectPath() })
+        : await runCommand('bun storage/framework/core/actions/src/lint/index.ts', { cwd: path.projectPath() })
       exitOnFailure(result, 'lint')
 
       await outro('Linted your project', { startTime, useSeconds: true })
@@ -56,7 +62,7 @@ export function lint(buddy: CLI): void {
       const startTime = await intro('buddy lint:fix')
 
       log.info('Fixing lint errors...')
-      const result = await runCommand('bunx --bun pickier run --mode lint --config ./pickier.config.ts --fix', { cwd: path.projectPath() })
+      const result = await runCommand('bun storage/framework/core/actions/src/lint/fix.ts', { cwd: path.projectPath() })
       exitOnFailure(result, 'lint:fix')
 
       await outro('Fixed lint errors', { startTime, useSeconds: true })

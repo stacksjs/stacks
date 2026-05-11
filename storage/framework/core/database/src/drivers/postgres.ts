@@ -193,8 +193,8 @@ async function createTableMigration(modelPath: string) {
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await (db as any).schema\n`
+  migrationContent += `export async function up(_db: Database<any>) {\n`
+  migrationContent += `  await (_db as any).schema\n`
   migrationContent += `    .createTable('${tableName}')\n`
 
   migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
@@ -289,7 +289,7 @@ async function createTableMigration(modelPath: string) {
     const upvoteTable = getUpvoteTableName(model, tableName)
     if (upvoteTable) {
       migrationContent += `\n  // Create upvote table\n`
-      migrationContent += `  await (db as any).schema\n`
+      migrationContent += `  await (_db as any).schema\n`
       migrationContent += `    .createTable('${upvoteTable}')\n`
       migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
       migrationContent += `    .addColumn('${tableName}_id', 'integer', (col) => col.notNull())\n`
@@ -298,9 +298,9 @@ async function createTableMigration(modelPath: string) {
       migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
       migrationContent += `    .execute()\n\n`
       migrationContent += `  // Add indexes for upvote table\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_user_id_index').on('${upvoteTable}').column('user_id').execute()\n`
-      migrationContent += `  await (db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
+      migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
+      migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_user_id_index').on('${upvoteTable}').column('user_id').execute()\n`
+      migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_id_index').on('${upvoteTable}').column('id').execute()\n`
     }
   }
 
@@ -329,8 +329,8 @@ export async function createPostgresForeignKeyMigrations(modelPath: string): Pro
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
-  migrationContent += `  await (db as any).schema\n`
+  migrationContent += `export async function up(_db: Database<any>) {\n`
+  migrationContent += `  await (_db as any).schema\n`
   migrationContent += `    .alterTable('${tableName}')\n`
 
   for (const modelRelation of foreignKeyRelations) {
@@ -401,8 +401,8 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-    migrationContent += `export async function up(db: Database<any>) {\n`
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `export async function up(_db: Database<any>) {\n`
+    migrationContent += `  await (_db as any).schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer', (col) => col.notNull())\n`
@@ -411,25 +411,25 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
     migrationContent += `    .execute()\n\n`
 
     // Add foreign key constraints
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `  await (_db as any).schema\n`
     migrationContent += `    .alterTable('${pivotTable.table}')\n`
     migrationContent += `    .addForeignKeyConstraint('${pivotTable.table}_${pivotTable.firstForeignKey}_fkey', ['${pivotTable.firstForeignKey}'], '${plural(pivotTable.firstForeignKey?.replace(/_id$/, '') || '')}', ['id'], (cb) => cb.onDelete('cascade'))\n`
     migrationContent += `    .execute()\n\n`
 
     // Add unique constraint to prevent duplicate relationships
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `  await (_db as any).schema\n`
     migrationContent += `    .alterTable('${pivotTable.table}')\n`
     migrationContent += `    .addUniqueConstraint('${pivotTable.table}_unique', ['${pivotTable.firstForeignKey}', '${pivotTable.secondForeignKey}'])\n`
     migrationContent += `    .execute()\n\n`
 
     // Add indexes for better query performance
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `  await (_db as any).schema\n`
     migrationContent += `    .createIndex('${pivotTable.table}_${pivotTable.firstForeignKey}_idx')\n`
     migrationContent += `    .on('${pivotTable.table}')\n`
     migrationContent += `    .column('${pivotTable.firstForeignKey}')\n`
     migrationContent += `    .execute()\n\n`
 
-    migrationContent += `  await (db as any).schema\n`
+    migrationContent += `  await (_db as any).schema\n`
     migrationContent += `    .createIndex('${pivotTable.table}_${pivotTable.secondForeignKey}_idx')\n`
     migrationContent += `    .on('${pivotTable.table}')\n`
     migrationContent += `    .column('${pivotTable.secondForeignKey}')\n`
@@ -469,11 +469,11 @@ async function createAlterTableMigration(modelPath: string) {
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(db: Database<any>) {\n`
+  migrationContent += `export async function up(_db: Database<any>) {\n`
 
   if (fieldsToAdd.length || fieldsToRemove.length) {
     hasChanged = true
-    migrationContent += `  await (db as any).schema.alterTable('${tableName}')\n`
+    migrationContent += `  await (_db as any).schema.alterTable('${tableName}')\n`
   }
 
   // Add new fields
@@ -542,15 +542,15 @@ async function createAlterTableMigration(modelPath: string) {
 
 function generateIndexCreationSQL(tableName: string, indexName: string, columns: string[]): string {
   const columnsStr = columns.map(col => `'${snakeCase(col)}'`).join(', ')
-  return `  await (db as any).schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
+  return `  await (_db as any).schema.createIndex('${indexName}').on('${tableName}').columns([${columnsStr}]).execute()\n`
 }
 
 function generatePrimaryKeyIndexSQL(tableName: string): string {
-  return `  await (db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
+  return `  await (_db as any).schema.createIndex('${tableName}_id_index').on('${tableName}').column('id').execute()\n`
 }
 
 function generateForeignKeyIndexSQL(tableName: string, foreignKey: string): string {
-  return `  await (db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
+  return `  await (_db as any).schema.createIndex('${tableName}_${foreignKey}_index').on('${tableName}').column('${foreignKey}').execute()\n\n`
 }
 
 export async function fetchPostgresTables(): Promise<string[]> {

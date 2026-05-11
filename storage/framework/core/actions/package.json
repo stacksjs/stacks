@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/actions",
   "type": "module",
-  "version": "0.70.25",
+  "version": "0.70.26",
   "description": "The Stacks actions.",
   "author": "Chris Breuer",
   "contributors": [
@@ -28,13 +28,13 @@
   ],
   "exports": {
     ".": {
-      "bun": "./src/index.ts",
       "types": "./dist/index.d.ts",
+      "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
     "./run-action": {
-      "bun": "./src/run-action.ts",
       "types": "./dist/run-action.d.ts",
+      "bun": "./src/run-action.ts",
       "import": "./dist/run-action.js"
     },
     "./*": {

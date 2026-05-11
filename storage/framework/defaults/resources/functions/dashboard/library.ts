@@ -49,7 +49,7 @@ export function listComponents(): ComponentEntry[] {
     const abs = resolve(root, dir)
     if (!existsSync(abs)) continue
     walkSync(abs, (file) => {
-      if (!/\.(stx|vue|tsx|jsx)$/.test(file)) return
+      if (!/\.(?:stx|vue|tsx|jsx)$/.test(file)) return
       try {
         const stat = statSync(file)
         out.push({

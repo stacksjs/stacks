@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.24...v0.70.25
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.24...v0.70.25)
+
+### 🏡 Chore
+
+- Release v0.70.25 ([5b63a8d8b](https://github.com/stacksjs/stacks/commit/5b63a8d8b))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.0...v0.70.1
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.0...v0.70.1)

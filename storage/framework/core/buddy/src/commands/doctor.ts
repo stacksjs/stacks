@@ -206,7 +206,7 @@ export function doctor(buddy: CLI): void {
         const fs = await import('node:fs')
         if (!fs.existsSync('.env')) return 'No .env (skipped)'
         const content = fs.readFileSync('.env', 'utf8')
-        if (!/(^|=)(?:enc|encrypted):/m.test(content)) return 'No encrypted values'
+        if (!/(?:^|=)(?:enc|encrypted):/m.test(content)) return 'No encrypted values'
         const privateKey = process.env.DOTENV_PRIVATE_KEY
         if (!privateKey) throw new Error('Encrypted values present but DOTENV_PRIVATE_KEY is unset')
         const { parse } = await import('@stacksjs/env')

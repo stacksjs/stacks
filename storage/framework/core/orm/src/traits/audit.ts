@@ -323,7 +323,7 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
   const origUpdate = baseModel.update
   if (typeof origUpdate === 'function') {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
-      const find = model.find as ((id: number | string) => Promise<unknown>) | undefined
+      const find = model.find as ((_id: number | string) => Promise<unknown>) | undefined
       const before = typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null
       const result = await (origUpdate as (i: number | string, d: Record<string, unknown>) => unknown).call(this, id, data)
       try {
@@ -358,7 +358,7 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
     const orig = baseModel[key]
     if (typeof orig !== 'function') return
     baseModel[key] = async function (id: number | string) {
-      const find = model.find as ((id: number | string) => Promise<unknown>) | undefined
+      const find = model.find as ((_id: number | string) => Promise<unknown>) | undefined
       const before = typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null
       const result = await (orig as (i: number | string) => unknown).call(this, id)
       try {

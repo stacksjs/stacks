@@ -32,7 +32,7 @@ import { readFileSync } from 'node:fs'
  * for type/slot/event docs even without rich markdown rendering). When
  * @stacksjs/ts-md is missing we just return the raw description.
  */
-let parseMarkdownFn: ((s: string) => string) | null = null
+let parseMarkdownFn: ((_s: string) => string) | null = null
 async function getMarkdownParser(): Promise<(s: string) => string> {
   if (parseMarkdownFn) return parseMarkdownFn
   try {

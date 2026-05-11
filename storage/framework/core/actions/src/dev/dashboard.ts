@@ -106,11 +106,11 @@ function cmsDatabasePath(): string {
   return configuredPath.startsWith('/') ? configuredPath : projectPath(configuredPath)
 }
 
-function cmsQuoteIdentifier(value: string): string {
-  if (!/^[a-z_][a-z0-9_]*$/i.test(value))
-    throw new Error(`Invalid CMS database identifier: ${value}`)
+function cmsQuoteIdentifier(_value: string): string {
+  if (!/^[a-z_][a-z0-9_]*$/i.test(_value))
+    throw new Error(`Invalid CMS database identifier: ${_value}`)
 
-  return `"${value.replace(/"/g, '""')}"`
+  return `"${_value.replace(/"/g, '""')}"`
 }
 
 function cmsValuesForTable(table: string, values: Record<string, any>): Record<string, any> {
@@ -958,7 +958,7 @@ console.log()
 // (Was previously imported as `@craft-native/ts` which is a stale package
 // name — the actual published package is `@stacksjs/ts-craft`, which exports
 // `createApp` with the same shape.)
-let createApp: ((opts: any) => { show: () => Promise<void>, close: () => void }) | null = null
+let createApp: ((_opts: any) => { show: () => Promise<void>, close: () => void }) | null = null
 try {
   ;({ createApp } = await import('@stacksjs/ts-craft'))
 }

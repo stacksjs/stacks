@@ -264,7 +264,7 @@ async function resetDictionary(index: string): Promise<EnqueuedTask> {
  * like `"category';TRUNCATE INDEX;'"` would close the filter and inject
  * arbitrary DSL fragments. Values are still single-quote-escaped.
  */
-const SAFE_FILTER_FIELD = /^[a-z_][\w]*(\.[a-z_][\w]*)*$/i
+const SAFE_FILTER_FIELD = /^[a-z_][\w]*(?:\.[a-z_][\w]*)*$/i
 
 function convertToFilter(jsonData: any): string[] {
   if (!jsonData) return []

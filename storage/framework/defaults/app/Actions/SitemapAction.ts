@@ -118,7 +118,7 @@ function walkViews(root: string): string[] {
           continue
         visit(full)
       }
-      else if (/\.(stx|md|html)$/i.test(name)) {
+      else if (/\.(?:stx|md|html)$/i.test(name)) {
         out.push(full)
       }
     }
@@ -174,7 +174,7 @@ function staticEntries(): SitemapEntry[] {
       // Pages with dynamic data (products listing, blog index) bump up
       // a touch because they update more often than static copy.
       const isHome = urlPath === '/'
-      const isHighChurn = /^\/(products|blog)\b/.test(urlPath)
+      const isHighChurn = /^\/(?:products|blog)\b/.test(urlPath)
       entries.push({
         loc: urlPath,
         changefreq: isHome ? 'daily' : (isHighChurn ? 'daily' : 'weekly'),
