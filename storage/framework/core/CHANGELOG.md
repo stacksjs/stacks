@@ -1,7 +1,23 @@
 # Changelog
-[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.34...v0.70.35)
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.35...v0.70.36)
 
 ### 🧹 Chores
+
+- release v0.70.36 ([e9d8da7](https://github.com/stacksjs/stacks/commit/e9d8da7)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- avoid lint glob timeout on clean releases ([d13e6eb](https://github.com/stacksjs/stacks/commit/d13e6eb)) _(by Chris <chrisbreuer93@gmail.com>)_
+- harden lint fix fallback ([ce2ee6a](https://github.com/stacksjs/stacks/commit/ce2ee6a)) _(by Chris <chrisbreuer93@gmail.com>)_
+- fix homebrew release token scope ([cc5a856](https://github.com/stacksjs/stacks/commit/cc5a856)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.34...v0.70.35)
+
+## 🧹 Chores
 
 - release v0.70.35 ([56af436](https://github.com/stacksjs/stacks/commit/56af436)) _(by Chris <chrisbreuer93@gmail.com>)_
 

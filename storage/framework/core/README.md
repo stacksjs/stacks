@@ -2,10 +2,10 @@
 
 # Rapid App & Library Development
 
-[![npm version][npm-version-src]][npm-version-href]
-[![GitHub Actions][github-actions-src]][github-actions-href]
+[![npm version](https://img.shields.io/npm/v/stacks?style=flat-square)](https://npmjs.com/package/stacks)
+[![GitHub Actions](https://img.shields.io/github/actions/workflow/status/stacksjs/stacks/ci.yml?style=flat-square&branch=main)](https://github.com/stacksjs/stacks/actions?query=workflow%3Aci)
 [![Commitizen friendly](https://img.shields.io/badge/commitizen-friendly-brightgreen.svg)](http://commitizen.github.io/cz-cli/)
-[![npm downloads][npm-downloads-src]][npm-downloads-href]
+[![npm downloads](https://img.shields.io/npm/dm/stacks?style=flat-square)](https://npmjs.com/package/stacks)
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
 > [!WARNING]

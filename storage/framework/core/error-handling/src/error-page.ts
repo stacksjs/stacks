@@ -525,7 +525,7 @@ export function renderHttpErrorHints(status: number): string {
     ? `<a class="error-hint-doc" href="${escapeHtml(info.docLink!)}" target="_blank" rel="noreferrer noopener">Read the docs →</a>`
     : ''
 
-  return `<section class="error-hint card">
+  return `<section class="card error-hint">
   <div class="card-header">Likely causes &amp; next steps</div>
   <div class="card-body">${causes}${suggestion}${doc}</div>
 </section>`

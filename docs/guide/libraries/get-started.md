@@ -383,6 +383,7 @@ A customizable button component.
 |------|------|---------|-------------|
 | variant | string | 'primary' | Button style |
 | disabled | boolean | false | Disable button |
+
 </docs>
 
 <template>

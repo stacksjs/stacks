@@ -324,6 +324,7 @@ A customizable button component.
 | variant | string | 'primary' | Button style variant |
 | loading | boolean | false | Show loading state |
 | disabled | boolean | false | Disable the button |
+
 </docs>
 
 <template>
