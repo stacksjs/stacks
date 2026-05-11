@@ -1,37 +1,53 @@
-#!/bin/sh
+#!/usr/bin/env bash
 
-# Get the script's directory
-script_dir=$(realpath $(dirname "$0"))
+set -u
 
-# Get all directories in the core path except for src/bun-create
-dirs=$(find "$script_dir/../libs/components" "$script_dir/../libs/functions" -type d -maxdepth 1)
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+roots=(
+  "$script_dir/../libs/components"
+  "$script_dir/../libs/functions"
+)
 
-# Check if no directories found
-if [ -z "$dirs" ]; then
-  echo "No components found"
-  exit 1
-fi
-
-# Loop through each directory
-for dir in $dirs; do
-  echo ""
-  echo "🏗️  Releasing..."
-  echo "📦 $dir"
-
-  # Change to the directory
-  cd $dir
-
-  bun publish --access public || echo "Failed to publish $dir"
-
-  # Check if the build command was successful
-  if [ $? -ne 0 ]; then
-    echo "Failed to publish $dir"
-    exit 1
+package_files=()
+for root in "${roots[@]}"; do
+  if [ ! -d "$root" ]; then
+    continue
   fi
 
-  echo "✅ Latest is published"
-  echo ""
-
-  # Change back to the original directory
-  cd - >/dev/null
+  while IFS= read -r package_file; do
+    package_files+=("$package_file")
+  done < <(find "$root" -path '*/node_modules' -prune -o -name package.json -print)
 done
+
+if [ ${#package_files[@]} -eq 0 ]; then
+  echo "No dummy libraries found"
+  exit 0
+fi
+
+for package_file in "${package_files[@]}"; do
+  dir="$(dirname "$package_file")"
+
+  echo ""
+  echo "🏗️  Releasing dummy library"
+  echo "📦 $dir"
+
+  if grep -q '"private"[[:space:]]*:[[:space:]]*true' "$package_file"; then
+    echo "↪ Skipping private package"
+    continue
+  fi
+
+  (
+    cd "$dir"
+    bun publish --access public
+  )
+
+  status=$?
+  if [ $status -ne 0 ]; then
+    echo "⚠️  Dummy library publish skipped after failure ($status): $dir"
+    continue
+  fi
+
+  echo "✅ Dummy library published"
+done
+
+exit 0
