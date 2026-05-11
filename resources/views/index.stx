@@ -6,9 +6,9 @@ const comingSoonBypassEnabled = true
 const comingSoonBypassToken = 'trailhead'
 
 const navLinks = [
-  { label: 'Platform', url: '#platform' },
+  { label: 'Features', url: '#platform' },
   { label: 'CMS', url: '#cms' },
-  { label: 'Deploy', url: '#deploy' },
+  { label: 'Cloud', url: '#deploy' },
   { label: 'Docs', url: '/docs' },
   { label: 'Blog', url: '/blog' },
   { label: 'GitHub', url: 'https://github.com/stacksjs/stacks' },
@@ -16,35 +16,41 @@ const navLinks = [
 
 const productAreas = [
   {
-    title: 'Markdown CMS',
-    text: 'Posts, tags, authors, pages, and resources stay file-friendly while the dashboard gives editors a real workspace.',
-    image: '/assets/images/marketing-park-lighthouse.svg',
+    title: 'Application core',
+    text: 'Routes, STX views, layouts, components, validation, auth, sessions, and assets live in one TypeScript application.',
+    image: '/assets/images/marketing-park-trail.svg',
   },
   {
-    title: 'Typed app backend',
-    text: 'Models generate migrations, API routes, validation, and dashboard surfaces without turning every feature into plumbing.',
+    title: 'Content workspace',
+    text: 'Markdown posts, pages, docs, tags, authors, custom resources, generated APIs, and a local dashboard move together.',
     image: '/assets/images/marketing-park-camp.svg',
   },
   {
-    title: 'One production trail',
-    text: './buddy deploy ships the app, docs, blog, CMS API, mail, assets, and cloud infrastructure together.',
-    image: '/assets/images/marketing-park-wing.svg',
+    title: 'Production path',
+    text: 'Buddy builds the app, docs, blog, CMS API, mail service, static assets, DNS, CDN, and AWS infrastructure in one deploy.',
+    image: '/assets/images/marketing-park-geyser.svg',
   },
 ]
 
 const workflowSteps = [
-  { label: '01', title: 'Model content', text: 'Define posts, pages, authors, tags, and custom resources once.' },
-  { label: '02', title: 'Edit in dashboard', text: 'Use the local dashboard for CMS work without leaving the framework.' },
-  { label: '03', title: 'Publish everywhere', text: 'Deploy marketing, docs, blog, APIs, and infrastructure with Buddy.' },
+  { label: '01', title: 'Build the product', text: 'Create STX views, API routes, models, actions, queues, mail, and content resources in the app.' },
+  { label: '02', title: 'Run the command center', text: './buddy dev --dashboard gives teams a local CMS and framework operations surface.' },
+  { label: '03', title: 'Ship the whole trail', text: './buddy deploy publishes the marketing site, docs, blog, API, app server, and cloud.' },
 ]
 
 const platformFeatures = [
-  { title: 'Routes and APIs', text: 'Build web routes, JSON resources, validation, OpenAPI, and server actions from one TypeScript framework.' },
-  { title: 'Models and migrations', text: 'Keep models, migrations, dashboard fields, API shape, and seed data moving together.' },
-  { title: 'Content collections', text: 'Posts, docs, pages, authors, tags, media, and custom CMS resources stay manageable from local files or the dashboard.' },
-  { title: 'Background work', text: 'Queues, schedules, mail, notifications, and events are first-class parts of the same application.' },
-  { title: 'Cloud generation', text: 'Generate AWS infrastructure from Stacks config, then deploy with the same Buddy workflow used locally.' },
-  { title: 'Local dashboard', text: './buddy dev --dashboard gives developers and editors a single place to work with CMS data and generated resources.' },
+  { title: 'Routing', text: 'Expressive web and API routes, middleware, controllers, actions, JSON resources, and OpenAPI output.' },
+  { title: 'STX views', text: 'Server-rendered layouts and components with a Blade-like authoring model and TypeScript nearby.' },
+  { title: 'ORM', text: 'Typed models, traits, relationships, factories, seeders, generated migrations, and query tooling.' },
+  { title: 'Auth', text: 'Authentication, authorization, sessions, tokens, policies, passkeys, rate limiting, and guards.' },
+  { title: 'CMS', text: 'Posts, pages, authors, tags, categories, comments, media, dashboard screens, and generated CMS APIs.' },
+  { title: 'Queues', text: 'Jobs, batches, schedules, events, notifications, mail, and worker-friendly background workflows.' },
+  { title: 'Storage', text: 'Local, memory, S3, signed URLs, uploads, public assets, visibility, hashes, and file utilities.' },
+  { title: 'Testing', text: 'Unit, feature, HTTP, browser, database, DynamoDB, factories, assertions, and test helpers.' },
+  { title: 'Realtime', text: 'Channels, broadcasts, websocket drivers, server instances, and product events.' },
+  { title: 'Search', text: 'Search documents, settings, drivers, flushes, imports, and app-level search workflows.' },
+  { title: 'Docs and blog', text: 'BunPress docs, Markdown blog posts, RSS, sitemap, canonical URLs, and path-mounted deploys.' },
+  { title: 'Cloud', text: 'AWS infrastructure, DNS, CDN, email, compute, storage, security, and deploys from TypeScript config.' },
 ]
 
 const cmsResources = [
@@ -52,15 +58,16 @@ const cmsResources = [
   { title: 'Pages', text: 'Structured site content with stable slugs, generated routes, and dashboard editing.' },
   { title: 'Taxonomy', text: 'Tags, categories, relationships, search metadata, and editorial filters.' },
   { title: 'Media', text: 'First-party storage hooks for images, attachments, public assets, and generated paths.' },
+  { title: 'Custom resources', text: 'Model-backed CMS resources can expose generated API endpoints and dashboard management.' },
   { title: 'Docs', text: 'BunPress-powered documentation published at /docs beside the product site.' },
   { title: 'Blog', text: 'Nature-park styled posts, feed, sitemap, and newsletter capture published at /blog.' },
 ]
 
 const stackLayers = [
-  { label: 'Frontend', value: 'STX views, layouts, components, assets' },
-  { label: 'Content', value: 'Markdown, models, resources, dashboard' },
-  { label: 'Backend', value: 'API routes, validation, auth, jobs, mail' },
-  { label: 'Cloud', value: 'S3, CloudFront, DNS, compute, storage' },
+  { label: 'Create', value: 'Buddy generators, STX views, components, models, actions, routes' },
+  { label: 'Operate', value: 'Dashboard, CMS resources, auth, queue monitor, settings, APIs' },
+  { label: 'Scale', value: 'Jobs, schedules, mail, storage, realtime, search, analytics' },
+  { label: 'Deploy', value: 'CloudFront, S3, DNS, compute, TLS, mail, docs, blog, app server' },
 ]
 </script>
 
@@ -69,8 +76,8 @@ const stackLayers = [
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="description" content="Stacks is a full-stack TypeScript framework for building marketing sites, Markdown CMS content, docs, APIs, and cloud infrastructure.">
-    <title>Stacks - TypeScript framework for content, apps, and cloud</title>
+    <meta name="description" content="Stacks is a full-stack TypeScript framework for web apps, CMS content, docs, APIs, queues, mail, tests, and cloud deployment.">
+    <title>Stacks - Full-stack TypeScript framework</title>
     <style>
       @font-face {
         font-display: swap;
@@ -234,8 +241,8 @@ const stackLayers = [
       .mode-title {
         margin: 0;
         color: var(--cream);
-        font-size: clamp(5.4rem, 17vw, 11rem);
-        line-height: 0.82;
+        font-size: clamp(4.2rem, 13vw, 7.6rem);
+        line-height: 0.9;
       }
 
       .mode-lead {
@@ -243,7 +250,7 @@ const stackLayers = [
         margin: 1.5rem 0 0;
         color: var(--sky);
         font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
-        font-size: clamp(1.35rem, 2.5vw, 2rem);
+        font-size: clamp(1.08rem, 2vw, 1.45rem);
         font-weight: 850;
         line-height: 1.32;
         text-transform: uppercase;
@@ -272,7 +279,7 @@ const stackLayers = [
       }
 
       .site-shell {
-        width: min(1180px, calc(100% - 40px));
+        width: min(1220px, calc(100% - 40px));
         margin: 0 auto;
       }
 
@@ -341,10 +348,10 @@ const stackLayers = [
 
       .hero {
         display: grid;
-        grid-template-columns: minmax(0, 0.98fr) minmax(360px, 1.02fr);
-        gap: clamp(2rem, 5vw, 5rem);
+        grid-template-columns: minmax(0, 1fr) minmax(360px, 0.92fr);
+        gap: clamp(2rem, 4vw, 4rem);
         align-items: center;
-        padding: clamp(2rem, 4vw, 3rem) 0 clamp(1.5rem, 3vw, 2rem);
+        padding: clamp(2.2rem, 4vw, 4rem) 0 clamp(1rem, 2vw, 1.5rem);
       }
 
       .kicker {
@@ -369,28 +376,28 @@ const stackLayers = [
         margin: 0 0 0.2rem;
         color: var(--cream);
         font-family: "Campmate Script", ui-serif, Georgia, serif;
-        font-size: clamp(5rem, 9vw, 7.2rem);
+        font-size: clamp(3.9rem, 6.4vw, 5.8rem);
         font-weight: 400;
-        line-height: 0.86;
+        line-height: 0.92;
       }
 
       .hero-headline {
-        max-width: 650px;
+        max-width: 620px;
         margin: 0;
         color: var(--sky);
         font-family: "NPS 2026", "Switchback", ui-sans-serif, system-ui, sans-serif;
-        font-size: clamp(1.55rem, 2.45vw, 2.18rem);
+        font-size: clamp(1.22rem, 1.62vw, 1.58rem);
         font-weight: 850;
-        line-height: 1.16;
+        line-height: 1.2;
         text-transform: uppercase;
       }
 
       .hero-copy {
-        max-width: 680px;
+        max-width: 690px;
         margin: 1.3rem 0 0;
         color: rgba(255, 247, 225, 0.82);
-        font-size: 1.18rem;
-        line-height: 1.7;
+        font-size: 1.06rem;
+        line-height: 1.66;
       }
 
       .hero-actions {
@@ -469,6 +476,19 @@ const stackLayers = [
         overflow: hidden;
       }
 
+      .product-preview::after {
+        position: absolute;
+        right: -1rem;
+        bottom: -2.4rem;
+        width: 14rem;
+        height: 14rem;
+        content: "";
+        background: url("/assets/images/marketing-park-trail.svg") center / contain no-repeat;
+        filter: invert(92%) sepia(17%) saturate(576%) hue-rotate(336deg) brightness(102%) contrast(100%);
+        opacity: 0.08;
+        pointer-events: none;
+      }
+
       .product-preview::before {
         position: absolute;
         inset: 0;
@@ -480,9 +500,10 @@ const stackLayers = [
 
       .dashboard-shell {
         position: relative;
+        z-index: 1;
         display: grid;
         grid-template-columns: 9.4rem minmax(0, 1fr);
-        min-height: 370px;
+        min-height: 340px;
         overflow: hidden;
         border: 1px solid rgba(255, 247, 225, 0.2);
         border-radius: 7px;
@@ -612,7 +633,7 @@ const stackLayers = [
       }
 
       .section {
-        padding: 4.8rem 0;
+        padding: 4rem 0;
       }
 
       .hero + .section {
@@ -621,7 +642,7 @@ const stackLayers = [
 
       .section-heading {
         display: grid;
-        grid-template-columns: minmax(0, 0.9fr) minmax(260px, 0.7fr);
+        grid-template-columns: minmax(0, 0.96fr) minmax(280px, 0.72fr);
         gap: 2rem;
         align-items: end;
         margin-bottom: 1.5rem;
@@ -631,9 +652,9 @@ const stackLayers = [
         margin: 0;
         color: var(--cream);
         font-family: "Redwood Serif", Georgia, ui-serif, serif;
-        font-size: clamp(2rem, 4.6vw, 4.2rem);
+        font-size: clamp(1.72rem, 2.45vw, 2.62rem);
         font-weight: 400;
-        line-height: 1.04;
+        line-height: 1.08;
         overflow-wrap: anywhere;
       }
 
@@ -661,7 +682,7 @@ const stackLayers = [
       }
 
       .area-card {
-        min-height: 300px;
+        min-height: 272px;
         padding: 1.25rem;
       }
 
@@ -689,7 +710,7 @@ const stackLayers = [
         margin: 0;
         color: var(--cream);
         font-family: "Redwood Serif", Georgia, ui-serif, serif;
-        font-size: 1.45rem;
+        font-size: 1.12rem;
         font-weight: 400;
         line-height: 1.18;
       }
@@ -705,14 +726,14 @@ const stackLayers = [
 
       .feature-grid {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(4, minmax(0, 1fr));
         gap: 0.75rem;
         margin-top: 1rem;
       }
 
       .feature-item {
-        min-height: 178px;
-        padding: 1rem;
+        min-height: 154px;
+        padding: 0.95rem;
         border: 1px solid rgba(255, 247, 225, 0.14);
         border-radius: 7px;
         background: rgba(255, 247, 225, 0.045);
@@ -730,13 +751,13 @@ const stackLayers = [
         display: block;
         margin-top: 0.55rem;
         color: rgba(255, 247, 225, 0.72);
-        font-size: 0.95rem;
-        line-height: 1.58;
+        font-size: 0.88rem;
+        line-height: 1.5;
       }
 
       .stack-band {
         display: grid;
-        grid-template-columns: minmax(0, 0.8fr) minmax(340px, 1.2fr);
+        grid-template-columns: minmax(0, 0.82fr) minmax(340px, 1.18fr);
         gap: 1.5rem;
         align-items: stretch;
         padding: clamp(1.25rem, 4vw, 2rem);
@@ -779,7 +800,7 @@ const stackLayers = [
 
       .cms-panel {
         display: grid;
-        grid-template-columns: minmax(0, 0.85fr) minmax(320px, 1.15fr);
+        grid-template-columns: minmax(0, 0.82fr) minmax(320px, 1.18fr);
         gap: 1.5rem;
         padding: clamp(1.25rem, 4vw, 2rem);
       }
@@ -814,7 +835,7 @@ const stackLayers = [
 
       .deploy-panel {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(300px, 0.9fr);
+        grid-template-columns: minmax(0, 0.92fr) minmax(330px, 1.08fr);
         gap: 1.25rem;
         padding: clamp(1.25rem, 4vw, 2rem);
         overflow: hidden;
@@ -884,8 +905,10 @@ const stackLayers = [
         align-items: center;
         padding: clamp(1.25rem, 4vw, 2rem);
         background:
+          url("/assets/images/topography.svg") center / 620px auto,
           linear-gradient(135deg, rgba(39, 95, 60, 0.92), rgba(18, 50, 32, 0.96)),
           var(--pine);
+        background-blend-mode: soft-light, normal, normal;
       }
 
       .signup-panel form {
@@ -956,7 +979,7 @@ const stackLayers = [
         }
 
         .hero-title {
-          font-size: clamp(5.25rem, 24vw, 8rem);
+          font-size: clamp(4.4rem, 22vw, 7rem);
         }
 
         .kicker {
@@ -968,7 +991,7 @@ const stackLayers = [
         }
 
         .hero-headline {
-          font-size: clamp(1.45rem, 7vw, 2.2rem);
+          font-size: clamp(1.2rem, 5.4vw, 1.74rem);
         }
 
         .hero-copy {
@@ -992,9 +1015,12 @@ const stackLayers = [
 
         .hero-metrics,
         .area-grid,
-        .resource-grid,
-        .feature-grid {
+        .resource-grid {
           grid-template-columns: 1fr;
+        }
+
+        .feature-grid {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .hero-metrics,
@@ -1022,7 +1048,7 @@ const stackLayers = [
         }
 
         .hero + .section {
-          padding-top: 7.5rem;
+          padding-top: 1.5rem;
         }
 
         .section-title {
@@ -1050,6 +1076,10 @@ const stackLayers = [
 
         .nav-links {
           flex-wrap: wrap;
+        }
+
+        .feature-grid {
+          grid-template-columns: 1fr;
         }
 
         .product-preview {
@@ -1104,18 +1134,18 @@ const stackLayers = [
           <div>
             <span class="kicker">Full-stack framework v{{ appVersion }}</span>
             <h1 class="script-title hero-title">{{ appName }}</h1>
-            <p class="hero-headline">A trail system for TypeScript products.</p>
+            <p class="hero-headline">The TypeScript framework for product teams.</p>
             <p class="hero-copy">
-              Stacks brings the marketing site, Markdown docs, blog, CMS dashboard, generated APIs, background work, mail, and AWS infrastructure into one framework you can run locally and ship with Buddy.
+              Stacks gives TypeScript teams the web framework essentials in one place: routing, STX views, models, auth, CMS, queues, mail, storage, tests, docs, blog, APIs, and cloud deployment through Buddy.
             </p>
             <div class="hero-actions">
               <a class="button primary" href="/docs">Read the docs</a>
-              <a class="button" href="#cms">See the CMS</a>
+              <a class="button" href="#platform">Explore features</a>
             </div>
             <div class="hero-metrics" aria-label="Stacks platform coverage">
-              <div class="metric"><strong>CMS</strong><span>Posts, pages, tags</span></div>
-              <div class="metric"><strong>Docs</strong><span>Markdown to site</span></div>
-              <div class="metric"><strong>Cloud</strong><span>Buddy deploy</span></div>
+              <div class="metric"><strong>12+</strong><span>First-party systems</span></div>
+              <div class="metric"><strong>CMS</strong><span>Content and APIs</span></div>
+              <div class="metric"><strong>Cloud</strong><span>One deploy path</span></div>
             </div>
           </div>
 
@@ -1135,8 +1165,8 @@ const stackLayers = [
               <div class="dashboard-main">
                 <div class="dashboard-top">
                   <div>
-                    <h2>CMS dashboard</h2>
-                    <p class="section-copy">Manage the full content system from the dashboard while models keep the API and migrations in sync.</p>
+                    <h2>Framework dashboard</h2>
+                    <p class="section-copy">Edit CMS resources, inspect generated APIs, review models, and run the app from the same local command center.</p>
                   </div>
                   <span class="status-chip">Local</span>
                 </div>
@@ -1170,9 +1200,9 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <div class="section-heading">
           <div>
             <span class="kicker">Platform</span>
-            <h2 id="platform-heading" class="section-title">A framework with the whole map.</h2>
+            <h2 id="platform-heading" class="section-title">A complete web framework.</h2>
           </div>
-          <p class="section-copy">Instead of treating content, routes, background work, email, and deploys as separate campsites, Stacks keeps them inside one product system.</p>
+          <p class="section-copy">Routing, views, models, auth, queues, storage, tests, content, and deployment are first-party. The pieces are designed to move together instead of arriving as separate projects.</p>
         </div>
 
         <div class="area-grid">
@@ -1201,8 +1231,8 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <div class="stack-band">
           <div>
             <span class="kicker">System</span>
-            <h2 id="stack-heading" class="section-title">One framework, one route through production.</h2>
-            <p class="section-copy">The core stays close to the app: STX views in resources, content resources in the CMS, APIs in the framework, and AWS rendered by ts-cloud.</p>
+            <h2 id="stack-heading" class="section-title">From idea to release.</h2>
+            <p class="section-copy">Build product surfaces, operate the dashboard, scale background work, and deploy the public site from the same project. Stacks keeps the application, CMS, docs, blog, APIs, and cloud config on one route.</p>
           </div>
           <div class="stack-map">
             @foreach (stackLayers as layer)
@@ -1219,8 +1249,8 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <div class="cms-panel">
           <div>
             <span class="kicker">CMS</span>
-            <h2 id="cms-heading" class="section-title">Content that feels local and edits like a product.</h2>
-            <p class="section-copy">Use Markdown and models as the source of truth, then let the dashboard manage the resources people actually touch.</p>
+            <h2 id="cms-heading" class="section-title">Built-in CMS.</h2>
+            <p class="section-copy">Markdown stays friendly for developers, while the dashboard gives editors real resource management for posts, pages, taxonomy, media, docs, blog content, and model-backed custom resources.</p>
           </div>
           <div class="resource-grid">
             @foreach (cmsResources as resource)
@@ -1234,8 +1264,8 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <div class="deploy-panel">
           <div>
             <span class="kicker">Deploy</span>
-            <h2 id="deploy-heading" class="section-title">One command, every surface.</h2>
-            <p class="section-copy">The same deploy path builds the marketing site, docs, blog, CMS API, application server, mail service, DNS, and static assets.</p>
+            <h2 id="deploy-heading" class="section-title">Deploy every surface.</h2>
+            <p class="section-copy">The same deploy path builds the homepage, docs, blog, CMS API, application server, mail service, DNS, CDN, storage, and static assets.</p>
             <div class="route-list">
               <div class="route"><span>Marketing</span><strong>stacksjs.com</strong></div>
               <div class="route"><span>Docs</span><strong>stacksjs.com/docs</strong></div>
@@ -1262,7 +1292,7 @@ Marketing, docs, blog, CMS, API, mail, and cloud.</div>
         <div class="signup-panel">
           <div>
             <span class="kicker">Field notes</span>
-            <h2 id="signup-heading" class="section-title">Follow the Stacks release trail.</h2>
+            <h2 id="signup-heading" class="section-title">Get field notes.</h2>
             <p>Framework updates, CMS improvements, and deployment notes by email.</p>
           </div>
           <form action="/api/email/subscribe" method="POST">
