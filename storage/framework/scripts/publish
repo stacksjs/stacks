@@ -46,7 +46,6 @@ for dir in $dirs; do
   log_file="${TMPDIR:-/tmp}/stacks-publish-$name-$$.log"
 
   if (cd "$dir" && bun publish --access public) >"$log_file" 2>&1; then
-    cat "$log_file"
     published="$published $name"
     printf '✅ %s published\n\n' "$name"
   else
