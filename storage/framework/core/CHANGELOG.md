@@ -1,4 +1,18 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.32...v0.70.33)
+
+### 🧹 Chores
+
+- release v0.70.33 ([17940ae](https://github.com/stacksjs/stacks/commit/17940ae)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- fix vscode extension release publish ([e185e74](https://github.com/stacksjs/stacks/commit/e185e74)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.31...v0.70.32)
 
 ### 🧹 Chores
