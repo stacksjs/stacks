@@ -49,7 +49,7 @@ jobs:
         run: |
           cd storage/framework/defaults/ide/vscode
           bun install
-          bunx --bun vsce publish
+          bunx --bun vsce publish --no-dependencies
           cd ../../../../
         env:
           VSCE_PAT: ${{ secrets.VSCE_PAT }}
