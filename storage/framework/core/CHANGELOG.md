@@ -1,4 +1,18 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.29...v0.70.30)
+
+### 🧹 Chores
+
+- release v0.70.30 ([201af92](https://github.com/stacksjs/stacks/commit/201af92)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- fix framework query builder release deps ([ba0ff2c](https://github.com/stacksjs/stacks/commit/ba0ff2c)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.28...v0.70.29)
 
 ### 🧹 Chores
