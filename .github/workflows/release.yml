@@ -47,6 +47,7 @@ jobs:
           BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
 
       - name: Publish VS Code Extension
+        continue-on-error: true
         run: |
           cd storage/framework/defaults/ide/vscode
           bun install
