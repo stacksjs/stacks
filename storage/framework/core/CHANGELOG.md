@@ -1,4 +1,18 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.33...v0.70.34)
+
+### 🧹 Chores
+
+- release v0.70.34 ([cf438e1](https://github.com/stacksjs/stacks/commit/cf438e1)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- allow release without vscode marketplace token ([45a4bad](https://github.com/stacksjs/stacks/commit/45a4bad)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.32...v0.70.33)
 
 ### 🧹 Chores
