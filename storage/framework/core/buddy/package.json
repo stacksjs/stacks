@@ -1,7 +1,7 @@
 {
   "name": "@stacksjs/buddy",
   "type": "module",
-  "version": "0.70.26",
+  "version": "0.70.27",
   "description": "Meet Buddy. The Stacks runtime.",
   "author": "Chris Breuer",
   "contributors": [
@@ -81,7 +81,7 @@
     "zip:windows-x64": "zip -r bin/buddy-windows-x64.zip bin/buddy-windows-x64.exe",
     "zip:darwin-x64": "zip -r bin/buddy-darwin-x64.zip bin/buddy-darwin-x64",
     "zip:darwin-arm64": "zip -r bin/buddy-darwin-arm64.zip bin/buddy-darwin-arm64",
-    "prepublishOnly": "bun run build && bun run compile:all && bun run zip:all"
+    "prepublishOnly": "bun run build"
   },
   "dependencies": {
     "@stacksjs/actions": "^0.70.23",
