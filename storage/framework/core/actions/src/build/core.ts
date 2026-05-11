@@ -1,5 +1,5 @@
 import { $ } from 'bun'
-import { existsSync, statSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import process from 'node:process'
 import { dim, italic, log } from '@stacksjs/cli'
 import { corePath } from '@stacksjs/path'
@@ -16,7 +16,15 @@ const dirs = allEntries.filter((entry) => {
   const pkgPath = `${entry}/package.json`
   if (!existsSync(pkgPath))
     return false
-  return true
+
+  try {
+    const pkg = JSON.parse(readFileSync(pkgPath, 'utf8')) as { scripts?: Record<string, string> }
+    return typeof pkg.scripts?.build === 'string'
+  }
+  catch (error) {
+    log.warn(`Skipping ${italic(dim(entry))}: package.json could not be read`)
+    return false
+  }
 })
 
 if (dirs.length === 0) {

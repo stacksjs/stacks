@@ -1,4 +1,5 @@
 import type { CLI, CreateOptions } from '@stacksjs/types'
+import { chmodSync } from 'node:fs'
 import process from 'node:process'
 import { runAction } from '@stacksjs/actions'
 import { bold, cyan, dim, intro, log, onUnknownSubcommand, runCommand } from "@stacksjs/cli"
@@ -63,8 +64,9 @@ export function create(buddy: CLI): void {
         process.exit(ExitCode.FatalError)
       }
 
-      await ensureEnv(path, options)
-      await install(path, options)
+  await ensureEnv(path, options)
+  ensureExecutableScripts(path)
+  await install(path, options)
 
       if (startTime) {
         const time = performance.now() - startTime
@@ -103,6 +105,18 @@ async function download(name: string, path: string, options: CreateOptions) {
   log.success(`Successfully scaffolded your project at ${cyan(path)}`)
 
   return result
+}
+
+function ensureExecutableScripts(path: string) {
+  for (const script of ['buddy', 'bootstrap']) {
+    try {
+      chmodSync(resolve(path, script), 0o755)
+    }
+    catch {
+      // If the template changes and a script is not present, install() will
+      // surface the missing executable in the command that needs it.
+    }
+  }
 }
 
 async function ensureEnv(path: string, _options: CreateOptions) {

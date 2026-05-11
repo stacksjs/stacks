@@ -1,7 +1,7 @@
 {
   "name": "stacks-api",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.24",
   "scripts": {
     "build": "bun build.ts",
     "dev": "bun --hot run dev.ts",
@@ -14,5 +14,7 @@
     "@stacksjs/storage": "workspace:*",
     "@stacksjs/utils": "workspace:*"
   },
-  "workspaces": ["../core/*"]
+  "workspaces": [
+    "../core/*"
+  ]
 }

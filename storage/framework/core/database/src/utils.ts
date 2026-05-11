@@ -187,6 +187,10 @@ function ensureConfigLoaded(): Promise<void> {
   return _configInitPromise
 }
 
+export async function ensureDatabaseConfigLoaded(): Promise<void> {
+  await ensureConfigLoaded()
+}
+
 function getDb(): ReturnType<typeof createQueryBuilder> {
   if (!_dbInstance) {
     updateQueryBuilderConfig()

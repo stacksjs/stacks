@@ -62,6 +62,16 @@ export async function discoverPackages(): Promise<DiscoveredPackagesManifest> {
 
   // Write manifest
   const manifestPath = storagePath('framework/discovered-packages.json')
+  try {
+    const current = await Bun.file(manifestPath).json() as DiscoveredPackagesManifest
+    if (JSON.stringify(current.packages ?? {}) === JSON.stringify(manifest.packages)) {
+      return current
+    }
+  }
+  catch {
+    // Missing or unreadable manifests are regenerated below.
+  }
+
   await Bun.write(manifestPath, JSON.stringify(manifest, null, 2))
 
   return manifest

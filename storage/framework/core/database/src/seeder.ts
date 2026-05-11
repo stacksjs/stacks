@@ -10,7 +10,7 @@
 import type { Attribute, Model, SeedOptions } from '@stacksjs/types'
 import { log } from '@stacksjs/logging'
 // Local relative import — see drivers/mysql.ts for the cycle-deadlock rationale.
-import { db } from './utils'
+import { db, ensureDatabaseConfigLoaded } from './utils'
 import { faker } from '@stacksjs/faker'
 import { path } from '@stacksjs/path'
 import { hashMake } from '@stacksjs/security'
@@ -58,6 +58,8 @@ export interface SeederConfig {
   only?: string[]
   /** Models to exclude from seeding */
   except?: string[]
+  /** Include framework default models even when app/Models contains userland models */
+  includeDefaults?: boolean
 }
 
 /**
@@ -167,14 +169,19 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
  * Load all models from both default and user directories
  * User models take precedence over default models (override by name)
  */
-async function loadAllModels(userModelsDir: string, verbose: boolean = false): Promise<SeederModel[]> {
+async function loadAllModels(userModelsDir: string, verbose: boolean = false, includeDefaults: boolean = false): Promise<SeederModel[]> {
   const defaultDir = defaultModelsPath()
-
-  // Load default models first (with recursive subdirectory support)
-  const defaultModels = await loadModelsFromDir(defaultDir, true)
 
   // Load user models (flat directory)
   const userModels = await loadModelsFromDir(userModelsDir, false)
+
+  if (userModels.length > 0 && !includeDefaults) {
+    return userModels
+  }
+
+  // Load default models when explicitly requested, or as a fallback for apps
+  // that have not defined userland models yet.
+  const defaultModels = await loadModelsFromDir(defaultDir, true)
 
   // Create a map with default models, then override with user models
   const modelMap = new Map<string, SeederModel>()
@@ -470,6 +477,8 @@ function sortModelsByDependencies(models: SeederModel[]): SeederModel[] {
  */
 export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   const startTime = Date.now()
+  await ensureDatabaseConfigLoaded()
+
   const modelsDir = config.modelsDir || path.userModelsPath()
   const verbose = config.verbose ?? true
 
@@ -480,7 +489,7 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
   }
 
   // Load all seedable models from both defaults and user directories
-  let models = await loadAllModels(modelsDir, verbose)
+  let models = await loadAllModels(modelsDir, verbose, config.includeDefaults ?? false)
 
   if (models.length === 0) {
     log.warn('No seedable models found in defaults or user directories')

@@ -1,7 +1,7 @@
 {
   "name": "stacks-server",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.24",
   "description": "The Stacks server.",
   "author": "Chris Breuer",
   "license": "MIT",
@@ -34,8 +34,13 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
-  "files": ["README.md", "dist"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "dev": "docker run -d -p 3000:3000 --name stacks-server --restart unless-stopped stacks",
     "dev:local": "./dev local",

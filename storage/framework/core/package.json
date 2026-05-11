@@ -1,7 +1,7 @@
 {
   "name": "stacks",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.24",
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
   "contributors": [
@@ -338,6 +338,6 @@
     "@stacksjs/utils": "workspace:*",
     "@stacksjs/skills": "workspace:*",
     "@stacksjs/validation": "workspace:*",
-    "bun-query-builder": "^0.1.16"
+    "bun-query-builder": "^0.1.18"
   }
 }

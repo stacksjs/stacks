@@ -83,10 +83,6 @@ async function main() {
     setup(buddy as any)
     markLoaded(buddy as any, 'setup')
 
-    const { key } = await import('./commands/key.ts')
-    key(buddy as any)
-    markLoaded(buddy as any, 'key')
-
     // Before running any commands, ensure the project is already initialized
     // Skip APP_KEY check for commands that don't need it (build, lint, test, etc.)
     if (!skipAppKeyCheck) {

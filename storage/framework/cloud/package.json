@@ -1,10 +1,12 @@
 {
   "name": "stacks-cloud",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.24",
   "description": "The Stacks cloud/serverless integration & implementation.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/cloud#readme",
@@ -35,7 +37,10 @@
   },
   "module": "dist/index.js",
   "types": "dist/index.d.ts",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "deploy": "bun deploy.ts",
     "dev": "./dev local"

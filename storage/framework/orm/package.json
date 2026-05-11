@@ -1,10 +1,12 @@
 {
   "name": "stacks-orm",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.24",
   "description": "Your custom ORM.",
   "author": "Chris Breuer",
-  "contributors": ["Chris Breuer <chris@stacksjs.com>"],
+  "contributors": [
+    "Chris Breuer <chris@stacksjs.com>"
+  ],
   "license": "MIT",
   "funding": "https://github.com/sponsors/chrisbbreuer",
   "homepage": "https://github.com/stacksjs/stacks/tree/main/storage/framework/core/validation#readme",
@@ -16,7 +18,11 @@
   "bugs": {
     "url": "https://github.com/stacksjs/stacks/issues"
   },
-  "keywords": ["orm", "functions", "stacks"],
+  "keywords": [
+    "orm",
+    "functions",
+    "stacks"
+  ],
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
@@ -29,7 +35,10 @@
   },
   "main": "dist/index.cjs",
   "module": "dist/index.js",
-  "files": ["README.md", "dist"],
+  "files": [
+    "README.md",
+    "dist"
+  ],
   "scripts": {
     "build": "bun build.ts",
     "typecheck": "bun tsc --noEmit",

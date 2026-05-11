@@ -1,7 +1,7 @@
 {
   "name": "stacks-framework",
   "type": "module",
-  "version": "0.70.23",
+  "version": "0.70.24",
   "private": true,
   "description": "The Stacks framework.",
   "author": "Chris Breuer",
@@ -17,6 +17,7 @@
     "dev": "bun --filter='./core' run buddy dev",
     "build": "bun --filter='./core/*' run build",
     "build:components": "bun --filter='./core/components/*' run build",
+    "generate:types": "bun ./core/actions/src/generate/types.ts",
     "publish:framework": "./scripts/publish",
     "publish:dummy-libs": "./scripts/publish-dummy-libs"
   }
