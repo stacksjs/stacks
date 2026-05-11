@@ -59,10 +59,21 @@ jobs:
         id: get_version
         run: echo "VERSION=${GITHUB_REF#refs/tags/}" >> $GITHUB_ENV
 
+      - name: Build Buddy Release Assets
+        run: |
+          cd storage/framework/core/buddy
+          bun run compile:all
+          bun run zip:all
+
       - name: Create GitHub Release
         uses: stacksjs/action-releaser@v1.2.9
         with:
           files: |
+            storage/framework/core/buddy/bin/buddy-linux-x64
+            storage/framework/core/buddy/bin/buddy-linux-arm64
+            storage/framework/core/buddy/bin/buddy-windows-x64.exe
+            storage/framework/core/buddy/bin/buddy-darwin-x64
+            storage/framework/core/buddy/bin/buddy-darwin-arm64
             storage/framework/core/buddy/bin/buddy-linux-x64.zip
             storage/framework/core/buddy/bin/buddy-linux-arm64.zip
             storage/framework/core/buddy/bin/buddy-windows-x64.zip
