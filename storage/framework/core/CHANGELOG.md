@@ -1,4 +1,18 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.34...v0.70.35)
+
+### 🧹 Chores
+
+- release v0.70.35 ([56af436](https://github.com/stacksjs/stacks/commit/56af436)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- restore buddy release assets ([5ef25ef](https://github.com/stacksjs/stacks/commit/5ef25ef)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.33...v0.70.34)
 
 ### 🧹 Chores
