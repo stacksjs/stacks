@@ -1,20 +1,16 @@
 import process from 'node:process'
-import { execSync, log, parseOptions, runCommand } from '@stacksjs/cli'
-import { NpmScript } from '@stacksjs/enums'
+import { execSync, log } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 
 // TODO: this should be a loader
 log.info('Ensuring Code Style...')
 
-const options = parseOptions()
+const cwd = projectPath()
 
-const result = await runCommand(NpmScript.LintFix, {
-  cwd: projectPath(),
-  ...options,
-})
+const result = await runPickier(['.'], cwd)
 
-if (result.isErr) {
-  const changedFiles = await filesChangedForLint(projectPath())
+if (!result.ok) {
+  const changedFiles = await filesChangedForLint(cwd)
 
   if (changedFiles.length === 0) {
     log.warn('Full-project lint failed, and no changed source files were found for a targeted fallback.')
@@ -24,12 +20,9 @@ if (result.isErr) {
 
   log.warn(`Full-project lint failed; retrying only ${changedFiles.length} changed file(s).`)
 
-  const fallback = await runCommand(`bunx --bun pickier ${changedFiles.map(shellQuote).join(' ')} --fix`, {
-    cwd: projectPath(),
-    ...options,
-  })
+  const fallback = await runPickier(changedFiles, cwd)
 
-  if (fallback.isErr) {
+  if (!fallback.ok) {
     log.error('There was an error fixing your code style.')
     console.error(fallback.error)
     process.exit(1)
@@ -37,6 +30,25 @@ if (result.isErr) {
 }
 
 log.success('Linted')
+
+async function runPickier(targets: string[], cwd: string): Promise<{ ok: true } | { ok: false, error: Error }> {
+  const proc = Bun.spawn(['bunx', '--bun', 'pickier', ...targets, '--fix'], {
+    cwd,
+    env: { ...process.env },
+    stdin: 'inherit',
+    stdout: 'inherit',
+    stderr: 'inherit',
+  })
+
+  const exitCode = await proc.exited
+  if (exitCode === 0)
+    return { ok: true }
+
+  return {
+    ok: false,
+    error: new Error(`pickier exited with code ${exitCode ?? 'unknown'} for ${targets.join(', ')}`),
+  }
+}
 
 async function filesChangedForLint(cwd: string): Promise<string[]> {
   const tracked = await execSync('git diff --name-only --diff-filter=ACMR', { cwd, silent: true })
@@ -66,8 +78,4 @@ async function filesChangedForLint(cwd: string): Promise<string[]> {
   }
 
   return [...lintable]
-}
-
-function shellQuote(value: string): string {
-  return `'${value.replaceAll(`'`, `'\\''`)}'`
 }
