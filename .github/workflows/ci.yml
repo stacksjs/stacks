@@ -127,7 +127,7 @@ jobs:
       - name: Test Suite
         env:
           AWS_DYNAMODB_ENDPOINT: http://localhost:8000
-        run: bun test
+        run: bun run test
 
   release-check:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
