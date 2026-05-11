@@ -177,7 +177,21 @@ jobs:
         run: |
           cp .env.example .env
 
+      - name: Check AWS Credentials
+        id: aws-credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "AWS credentials are not configured; skipping production deploy."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy
+        if: steps.aws-credentials.outputs.available == 'true'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -210,7 +224,21 @@ jobs:
       - name: Ensure .env Set
         run: cp .env.example .env
 
+      - name: Check AWS Credentials
+        id: aws-credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "AWS credentials are not configured; skipping staging deploy."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy
+        if: steps.aws-credentials.outputs.available == 'true'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -243,7 +271,21 @@ jobs:
       - name: Ensure .env Set
         run: cp .env.example .env
 
+      - name: Check AWS Credentials
+        id: aws-credentials
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          if [ -z "$AWS_ACCESS_KEY_ID" ] || [ -z "$AWS_SECRET_ACCESS_KEY" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "AWS credentials are not configured; skipping development deploy."
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Deploy
+        if: steps.aws-credentials.outputs.available == 'true'
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
