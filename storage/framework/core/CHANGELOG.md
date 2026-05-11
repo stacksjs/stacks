@@ -1,4 +1,18 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.31...v0.70.32)
+
+### 🧹 Chores
+
+- release v0.70.32 ([81cfb72](https://github.com/stacksjs/stacks/commit/81cfb72)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📄 Miscellaneous
+
+- fix dummy library release step ([f817262](https://github.com/stacksjs/stacks/commit/f817262)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.30...v0.70.31)
 
 ### 🧹 Chores
