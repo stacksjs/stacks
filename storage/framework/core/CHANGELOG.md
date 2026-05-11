@@ -1,7 +1,25 @@
 # Changelog
-[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.35...v0.70.36)
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.36...v0.70.37)
+
+### 📚 Documentation
+
+- update changelog for v0.70.36 ([0ac09a0](https://github.com/stacksjs/stacks/commit/0ac09a0)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- use scoped buddy test runner ([f25e67a](https://github.com/stacksjs/stacks/commit/f25e67a)) _(by Chris <chrisbreuer93@gmail.com>)_
 
 ### 🧹 Chores
+
+- release v0.70.37 ([b59bdaf](https://github.com/stacksjs/stacks/commit/b59bdaf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.35...v0.70.36)
+
+## 🧹 Chores
 
 - release v0.70.36 ([e9d8da7](https://github.com/stacksjs/stacks/commit/e9d8da7)) _(by Chris <chrisbreuer93@gmail.com>)_
 
