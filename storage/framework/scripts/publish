@@ -43,13 +43,20 @@ for dir in $dirs; do
   printf '\n🏗️  Releasing %s\n' "$name"
   printf '📦 %s\n' "$dir"
 
-  if (cd "$dir" && bun publish --access public); then
+  log_file="${TMPDIR:-/tmp}/stacks-publish-$name-$$.log"
+
+  if (cd "$dir" && bun publish --access public) >"$log_file" 2>&1; then
+    cat "$log_file"
     published="$published $name"
     printf '✅ %s published\n\n' "$name"
   else
     failed="$failed $name"
+    printf 'Publish output for %s (last 160 lines):\n' "$name"
+    tail -n 160 "$log_file"
     printf '❌ %s failed to publish\n\n' "$name"
   fi
+
+  rm -f "$log_file"
 done
 
 printf '\n────── Publish summary ──────\n'
