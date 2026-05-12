@@ -13,6 +13,8 @@ set -u
 
 script_dir=$(realpath $(dirname "$0"))
 core_dir="$script_dir/../core"
+workspace_root="$script_dir/.."
+normalize_package="$script_dir/normalize-workspace-deps-for-publish"
 
 # `find -maxdepth 1 -type d` would also list core/ itself; trim with -mindepth.
 dirs=$(find "$core_dir" -mindepth 1 -maxdepth 1 -type d)
@@ -40,10 +42,40 @@ for dir in $dirs; do
     continue
   fi
 
+  package_name=$(node -e "const p = require(process.argv[1]); process.stdout.write(p.name || '')" "$pkg")
+  package_version=$(node -e "const p = require(process.argv[1]); process.stdout.write(p.version || '')" "$pkg")
+
+  if [ -z "$package_name" ] || [ -z "$package_version" ]; then
+    failed="$failed $name"
+    printf '❌ %s is missing a package name or version\n\n' "$name"
+    continue
+  fi
+
+  # Release jobs can be retried after a partial publish. Treat packages that
+  # already exist on npm as a successful no-op so reruns converge instead of
+  # repeatedly failing on the first package that made it out.
+  if npm view "$package_name@$package_version" version >/dev/null 2>&1; then
+    skipped="$skipped $name(already-published)"
+    printf '↪ %s@%s already exists on npm; skipping\n' "$package_name" "$package_version"
+    continue
+  fi
+
   printf '\n🏗️  Releasing %s\n' "$name"
   printf '📦 %s\n' "$dir"
 
   log_file="${TMPDIR:-/tmp}/stacks-publish-$name-$$.log"
+  package_backup=$(mktemp)
+  cp "$pkg" "$package_backup"
+
+  if ! node "$normalize_package" "$pkg" "$workspace_root" >"$log_file" 2>&1; then
+    failed="$failed $name"
+    printf 'Failed to prepare %s for publishing:\n' "$name"
+    cat "$log_file"
+    printf '❌ %s failed to publish\n\n' "$name"
+    cp "$package_backup" "$pkg"
+    rm -f "$package_backup" "$log_file"
+    continue
+  fi
 
   if (cd "$dir" && bun publish --access public) >"$log_file" 2>&1; then
     published="$published $name"
@@ -55,7 +87,8 @@ for dir in $dirs; do
     printf '❌ %s failed to publish\n\n' "$name"
   fi
 
-  rm -f "$log_file"
+  cp "$package_backup" "$pkg"
+  rm -f "$package_backup" "$log_file"
 done
 
 printf '\n────── Publish summary ──────\n'

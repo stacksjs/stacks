@@ -1,0 +1,73 @@
+#!/usr/bin/env node
+
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
+
+const packagePath = process.argv[2]
+const workspaceRoot = process.argv[3] || path.resolve(__dirname, '..')
+
+if (!packagePath) {
+  console.error('Usage: normalize-workspace-deps-for-publish <package.json> [workspace-root]')
+  process.exit(1)
+}
+
+const dependencyFields = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']
+const ignoredDirectories = new Set(['.git', 'build', 'dist', 'node_modules'])
+
+function readJson(file) {
+  return JSON.parse(fs.readFileSync(file, 'utf8'))
+}
+
+function walkPackages(dir, packages = new Map()) {
+  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+    if (entry.isDirectory()) {
+      if (!ignoredDirectories.has(entry.name))
+        walkPackages(path.join(dir, entry.name), packages)
+
+      continue
+    }
+
+    if (entry.name !== 'package.json')
+      continue
+
+    const file = path.join(dir, entry.name)
+    const pkg = readJson(file)
+
+    if (pkg.name && pkg.version)
+      packages.set(pkg.name, pkg.version)
+  }
+
+  return packages
+}
+
+const versions = walkPackages(workspaceRoot)
+const pkg = readJson(packagePath)
+let changed = false
+
+for (const field of dependencyFields) {
+  const dependencies = pkg[field]
+
+  if (!dependencies)
+    continue
+
+  for (const [name, version] of Object.entries(dependencies)) {
+    if (typeof version !== 'string' || !version.startsWith('workspace:'))
+      continue
+
+    const resolvedVersion = versions.get(name)
+
+    if (!resolvedVersion) {
+      console.error(`Unable to resolve ${name} for ${packagePath}`)
+      process.exit(1)
+    }
+
+    dependencies[name] = `^${resolvedVersion}`
+    changed = true
+  }
+}
+
+if (changed)
+  fs.writeFileSync(packagePath, `${JSON.stringify(pkg, null, 2)}\n`)

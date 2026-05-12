@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+script_dir="$(cd "$(dirname "$0")" && pwd)"
+core_dir="$script_dir/../core"
+
+package_dirs=()
+
+while IFS= read -r dir; do
+  package_file="$dir/package.json"
+
+  [ -f "$package_file" ] || continue
+
+  if grep -q '"private"[[:space:]]*:[[:space:]]*true' "$package_file"; then
+    continue
+  fi
+
+  package_dirs+=("$dir")
+done < <(find "$core_dir" -mindepth 1 -maxdepth 1 -type d | sort)
+
+if [ ${#package_dirs[@]} -eq 0 ]; then
+  echo "No public core packages found for pkg.pr.new"
+  exit 0
+fi
+
+echo "Publishing ${#package_dirs[@]} public core package previews:"
+printf '  %s\n' "${package_dirs[@]}"
+
+if [ "${PUBLISH_COMMIT_DRY_RUN:-}" = "1" ]; then
+  echo "Dry run enabled; skipping pkg.pr.new publish"
+  exit 0
+fi
+
+bunx pkg-pr-new publish --bun "${package_dirs[@]}"

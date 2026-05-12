@@ -3,6 +3,8 @@
 set -u
 
 script_dir="$(cd "$(dirname "$0")" && pwd)"
+workspace_root="$script_dir/.."
+normalize_package="$script_dir/normalize-workspace-deps-for-publish"
 roots=(
   "$script_dir/../libs/components"
   "$script_dir/../libs/functions"
@@ -36,12 +38,38 @@ for package_file in "${package_files[@]}"; do
     continue
   fi
 
+  package_name=$(node -e "const p = require(process.argv[1]); process.stdout.write(p.name || '')" "$package_file")
+  package_version=$(node -e "const p = require(process.argv[1]); process.stdout.write(p.version || '')" "$package_file")
+
+  if [ -z "$package_name" ] || [ -z "$package_version" ]; then
+    echo "⚠️  Dummy library publish skipped: missing package name or version"
+    continue
+  fi
+
+  if npm view "$package_name@$package_version" version >/dev/null 2>&1; then
+    echo "↪ $package_name@$package_version already exists on npm; skipping"
+    continue
+  fi
+
+  package_backup=$(mktemp)
+  cp "$package_file" "$package_backup"
+
+  if ! node "$normalize_package" "$package_file" "$workspace_root"; then
+    echo "⚠️  Dummy library publish skipped: unable to resolve workspace dependencies"
+    cp "$package_backup" "$package_file"
+    rm -f "$package_backup"
+    continue
+  fi
+
   (
     cd "$dir"
     bun publish --access public
   )
 
   status=$?
+  cp "$package_backup" "$package_file"
+  rm -f "$package_backup"
+
   if [ $status -ne 0 ]; then
     echo "⚠️  Dummy library publish skipped after failure ($status): $dir"
     continue
