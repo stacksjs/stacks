@@ -63,3 +63,76 @@ export interface TwitterUser {
   email?: string
   profile_image_url?: string
 }
+
+export type SocialPublishingProvider =
+  | 'bluesky'
+  | 'twitter'
+  | 'mastodon'
+  | 'facebook'
+  | 'instagram'
+  | 'tiktok'
+  | 'linkedin'
+
+export interface BlueskySessionCredentials {
+  identifier: string
+  password: string
+}
+
+export interface BlueskySession {
+  did: string
+  handle: string
+  displayName?: string
+  accessJwt: string
+  refreshJwt: string
+}
+
+export interface SocialIdentityCredentials {
+  handle: string
+  did?: string
+  accessToken?: string
+  refreshToken?: string
+}
+
+export interface PublishPostInput {
+  text: string
+  scheduledAt?: string
+  langs?: string[]
+  external?: {
+    uri: string
+    title: string
+    description?: string
+  }
+}
+
+export interface PublishedPost {
+  provider: SocialPublishingProvider
+  uri: string
+  cid?: string
+  url?: string
+}
+
+export interface TimelineQuery {
+  cursor?: string
+  limit?: number
+}
+
+export interface TimelineResult {
+  cursor?: string
+  items: Array<{
+    uri: string
+    authorHandle: string
+    authorName?: string
+    body: string
+    postedAt: string
+    likeCount: number
+    repostCount: number
+    replyCount: number
+  }>
+}
+
+export interface SocialPublishingDriver {
+  provider: SocialPublishingProvider
+  characterLimit: number
+  publish: (identity: SocialIdentityCredentials, post: PublishPostInput) => Promise<PublishedPost>
+  timeline: (identity: SocialIdentityCredentials, query?: TimelineQuery) => Promise<TimelineResult>
+}

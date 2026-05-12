@@ -82,7 +82,7 @@ export class GitHubProvider extends AbstractProvider implements ProviderInterfac
     return {
       id: userResponse.data.id.toString(),
       nickname: userResponse.data.login,
-      name: userResponse.data.name,
+      name: userResponse.data.name ?? userResponse.data.login,
       // Fall back to the public profile email when /user/emails returns
       // nothing — that endpoint can be empty (no `user:email` scope, or
       // the user hides every address). The profile's email field, when

@@ -170,4 +170,75 @@ describe('Social Driver Exports', () => {
     const { GitHubProvider } = await import('../src/drivers/github')
     expect(typeof GitHubProvider).toBe('function')
   })
+
+  test('BlueskyPublishingDriver creates a session and publishes posts', async () => {
+    const { BlueskyPublishingDriver } = await import('../src/drivers/bluesky')
+    const originalFetch = globalThis.fetch
+    const calls: Array<{ url: string, init?: RequestInit }> = []
+
+    globalThis.fetch = (async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      calls.push({ url, init })
+
+      if (url.endsWith('/xrpc/com.atproto.server.createSession')) {
+        return Response.json({
+          did: 'did:plc:test',
+          handle: 'tester.bsky.social',
+          accessJwt: 'access-token',
+          refreshJwt: 'refresh-token',
+        })
+      }
+
+      if (url.includes('/xrpc/app.bsky.actor.getProfile')) {
+        return Response.json({
+          did: 'did:plc:test',
+          handle: 'tester.bsky.social',
+          displayName: 'Tester',
+        })
+      }
+
+      if (url.endsWith('/xrpc/com.atproto.repo.createRecord')) {
+        const body = init?.body ? JSON.parse(String(init.body)) : {}
+        expect(body.record?.embed?.external?.uri).toBe('https://example.com/postline')
+        expect(body.record?.embed?.external?.title).toBe('Postline')
+
+        return Response.json({
+          uri: 'at://did:plc:test/app.bsky.feed.post/3test',
+          cid: 'bafytest',
+        })
+      }
+
+      return new Response('not found', { status: 404 })
+    }) as typeof fetch
+
+    try {
+      const driver = new BlueskyPublishingDriver()
+      const session = await driver.createSession({
+        identifier: 'tester.bsky.social',
+        password: 'app-password',
+      })
+      const post = await driver.publish({
+        handle: session.handle,
+        did: session.did,
+        accessToken: session.accessJwt,
+        refreshToken: session.refreshJwt,
+      }, {
+        text: 'Hello from Postline.',
+        external: {
+          uri: 'https://example.com/postline',
+          title: 'Postline',
+          description: 'A small scheduling tool.',
+        },
+      })
+
+      expect(session.did).toBe('did:plc:test')
+      expect(session.displayName).toBe('Tester')
+      expect(post.uri).toContain('/app.bsky.feed.post/')
+      expect(post.url).toBe('https://bsky.app/profile/tester.bsky.social/post/3test')
+      expect(calls.some(call => call.url.endsWith('/xrpc/com.atproto.repo.createRecord'))).toBe(true)
+    }
+    finally {
+      globalThis.fetch = originalFetch
+    }
+  })
 })
