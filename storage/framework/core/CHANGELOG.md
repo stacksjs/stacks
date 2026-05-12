@@ -1,7 +1,8 @@
 # Changelog
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.38...v0.70.39)
 
-### 🐛 Bug Fixes
+## 🐛 Bug Fixes
 
 - **framework**: emit env and logging root declarations ([12d70af](https://github.com/stacksjs/stacks/commit/12d70af)) _(by Chris <chrisbreuer93@gmail.com>)_
 

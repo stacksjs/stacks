@@ -1,5 +1,21 @@
 # Stacks Changelog
 
+## v0.70.40
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.39...v0.70.40)
+
+### 🩹 Fixes
+
+- **release:** Include changelog in release commit ([496fb173f](https://github.com/stacksjs/stacks/commit/496fb173f))
+
+### 📖 Documentation
+
+- Update changelog for v0.70.39 ([2f46b5ba7](https://github.com/stacksjs/stacks/commit/2f46b5ba7))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.38...v0.70.39
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.38...v0.70.39)
