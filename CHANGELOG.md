@@ -1,5 +1,25 @@
 # Stacks Changelog
 
+## v0.70.38...v0.70.39
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.38...v0.70.39)
+
+### 🩹 Fixes
+
+- **framework:** Emit env and logging root declarations ([12d70afb3](https://github.com/stacksjs/stacks/commit/12d70afb3))
+
+### 📖 Documentation
+
+- Update changelog for v0.70.38 ([eba318b49](https://github.com/stacksjs/stacks/commit/eba318b49))
+
+### 🏡 Chore
+
+- Release v0.70.39 ([489197253](https://github.com/stacksjs/stacks/commit/489197253))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.37...v0.70.38
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.37...v0.70.38)
