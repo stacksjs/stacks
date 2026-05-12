@@ -81,7 +81,12 @@
     "bun-plugin-dtsx": "^0.9.23"
   },
   "workspaces": [
-    "storage/framework/**"
+    "storage/framework",
+    "storage/framework/libs/*",
+    "storage/framework/views/*",
+    "storage/framework/core",
+    "storage/framework/core/*",
+    "storage/framework/core/bun-create/*"
   ],
   "git-hooks": {
     "pre-commit": {
