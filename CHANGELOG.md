@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.41
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.40...v0.70.41)
+
+### 🩹 Fixes
+
+- **release:** Harden package publishing ([34f421449](https://github.com/stacksjs/stacks/commit/34f421449))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.40
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.39...v0.70.40)
