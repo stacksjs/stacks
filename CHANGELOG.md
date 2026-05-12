@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.42
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.41...v0.70.42)
+
+### 🩹 Fixes
+
+- **ci:** Unblock release publishing ([0899ade84](https://github.com/stacksjs/stacks/commit/0899ade84))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.41
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.40...v0.70.41)
