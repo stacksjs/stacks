@@ -53,7 +53,7 @@
     "release:major": "./buddy release --bump major",
     "changelog": "./buddy changelog",
     "generate": "./buddy generate",
-    "typecheck": "bunx tsc --noEmit",
+    "typecheck": "bun x tsc --noEmit",
     "types:check": "bun tsc --noEmit",
     "types:fix": "./buddy types:fix",
     "test": "./buddy test",
@@ -76,7 +76,9 @@
     "stacks": "workspace:*"
   },
   "devDependencies": {
-    "better-dx": "^0.2.12"
+    "@stacksjs/dtsx": "^0.9.23",
+    "better-dx": "^0.2.12",
+    "bun-plugin-dtsx": "^0.9.23"
   },
   "workspaces": [
     "storage/framework/**"
@@ -84,9 +86,9 @@
   "git-hooks": {
     "pre-commit": {
       "staged-lint": {
-        "*.{js,ts,json,yaml,yml,md}": "bunx --bun pickier lint --fix"
+        "*.{js,ts,json,yaml,yml,md}": "bun x --bun pickier lint --fix"
       }
     },
-    "commit-msg": "bunx gitlint --edit .git/COMMIT_EDITMSG"
+    "commit-msg": "bun x gitlint --edit .git/COMMIT_EDITMSG"
   }
 }

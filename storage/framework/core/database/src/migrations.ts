@@ -668,7 +668,7 @@ function nextMigrationNumber(migrationsDir: string): number {
   try {
     for (const f of readdirSync(migrationsDir)) {
       const m = f.match(/^(\d+)-/)
-      if (m) max = Math.max(max, Number.parseInt(m[1], 10))
+      if (m?.[1]) max = Math.max(max, Number.parseInt(m[1], 10))
     }
   }
   catch { /* directory missing — start at 1 */ }

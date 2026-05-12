@@ -1,10 +1,17 @@
 import { log, runCommand } from '@stacksjs/cli'
 // generates the pantry file based on the user configuration
 import { config } from '@stacksjs/config'
-import data from '../../../../../pantry.yaml'
 
-if (!data)
+interface PantryFile {
+  dependencies: Record<string, unknown>
+}
+
+const pantryFile = Bun.file(new URL('../../../../../pantry.yaml', import.meta.url))
+
+if (!(await pantryFile.exists()))
   throw new Error('pantry.yaml file not found')
+
+const data = Bun.YAML.parse(await pantryFile.text()) as PantryFile
 
 if (data.dependencies['aws.amazon.com/cdk'] === undefined) {
   log.info('aws.amazon.com/cdk dependency not found in pantry.yaml.')

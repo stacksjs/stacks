@@ -35,7 +35,7 @@
     "prepublishOnly": "bun run build"
   },
   "dependencies": {
-    "@stacksjs/ts-i18n": "^0.1.7"
+    "@stacksjs/ts-i18n": "^0.1.9"
   },
   "devDependencies": {
     "@stacksjs/development": "workspace:*"

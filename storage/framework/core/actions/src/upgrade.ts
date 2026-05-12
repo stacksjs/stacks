@@ -1,4 +1,5 @@
 import type { UpgradeOptions } from '@stacksjs/types'
+import { readFileSync } from 'node:fs'
 import process from 'node:process'
 import { intro, outro, runCommand } from '@stacksjs/cli'
 import { NpmScript } from '@stacksjs/enums'
@@ -6,7 +7,10 @@ import { log } from '@stacksjs/logging'
 import { projectPath } from '@stacksjs/path'
 import * as storage from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
-import { version } from '../package.json'
+
+const { version } = JSON.parse(
+  readFileSync(new URL('../package.json', import.meta.url), 'utf8'),
+) as { version: string }
 
 // import { determineDebugLevel } from '@stacksjs/utils'
 

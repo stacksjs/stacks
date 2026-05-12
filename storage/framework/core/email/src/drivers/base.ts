@@ -85,14 +85,14 @@ export abstract class BaseEmailDriver implements EmailDriver {
     }
 
     return addresses.map((_addr) => {
-      if (typeof addr === 'string')
-        return addr
-      if (!addr.name) return addr.address
-      const needsQuoting = /[",()<>[\]:;@\\]/.test(addr.name)
+      if (typeof _addr === 'string')
+        return _addr
+      if (!_addr.name) return _addr.address
+      const needsQuoting = /[",()<>[\]:;@\\]/.test(_addr.name)
       const safeName = needsQuoting
-        ? `"${addr.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
-        : addr.name
-      return `${safeName} <${addr.address}>`
+        ? `"${_addr.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}"`
+        : _addr.name
+      return `${safeName} <${_addr.address}>`
     })
   }
 

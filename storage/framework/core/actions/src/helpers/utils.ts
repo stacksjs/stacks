@@ -203,7 +203,7 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         // scaffolds put them at resources/layouts and resources/components,
         // so we prefer the new layout when present and fall back to the
         // legacy paths otherwise.
-        const firstExisting = async (candidates: string[]): Promise<string> => {
+        const firstExisting = async (candidates: [string, ...string[]]): Promise<string> => {
           for (const candidate of candidates) {
             try {
               if (await Bun.file(p.projectPath(candidate)).exists())
