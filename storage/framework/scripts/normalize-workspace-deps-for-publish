@@ -15,7 +15,7 @@ if (!packagePath) {
 }
 
 const dependencyFields = ['dependencies', 'devDependencies', 'peerDependencies', 'optionalDependencies']
-const ignoredDirectories = new Set(['.git', 'build', 'dist', 'node_modules'])
+const ignoredDirectories = new Set(['.git', 'dist', 'node_modules'])
 
 function readJson(file) {
   return JSON.parse(fs.readFileSync(file, 'utf8'))

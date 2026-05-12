@@ -15,6 +15,11 @@ script_dir=$(realpath $(dirname "$0"))
 core_dir="$script_dir/../core"
 workspace_root="$script_dir/.."
 normalize_package="$script_dir/normalize-workspace-deps-for-publish"
+publish_flags="--access public --ignore-scripts"
+
+if [ "${PUBLISH_DRY_RUN:-}" = "1" ]; then
+  publish_flags="$publish_flags --dry-run"
+fi
 
 # `find -maxdepth 1 -type d` would also list core/ itself; trim with -mindepth.
 dirs=$(find "$core_dir" -mindepth 1 -maxdepth 1 -type d)
@@ -77,9 +82,14 @@ for dir in $dirs; do
     continue
   fi
 
-  if (cd "$dir" && bun publish --access public) >"$log_file" 2>&1; then
-    published="$published $name"
-    printf '✅ %s published\n\n' "$name"
+  if (cd "$dir" && bun run build && bun publish $publish_flags) >"$log_file" 2>&1; then
+    if [ "${PUBLISH_DRY_RUN:-}" = "1" ]; then
+      published="$published $name(dry-run)"
+      printf '✅ %s publish dry-run completed\n\n' "$name"
+    else
+      published="$published $name"
+      printf '✅ %s published\n\n' "$name"
+    fi
   else
     failed="$failed $name"
     printf 'Publish output for %s (last 160 lines):\n' "$name"
@@ -93,7 +103,7 @@ done
 
 printf '\n────── Publish summary ──────\n'
 [ -n "$published" ] && printf 'Published:%s\n' "$published"
-[ -n "$skipped" ]   && printf 'Skipped (private):%s\n' "$skipped"
+[ -n "$skipped" ]   && printf 'Skipped:%s\n' "$skipped"
 [ -n "$failed" ]    && printf 'Failed:%s\n' "$failed"
 
 # Exit non-zero so CI marks the job as failed when any non-private publish

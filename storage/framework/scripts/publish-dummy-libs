@@ -5,6 +5,11 @@ set -u
 script_dir="$(cd "$(dirname "$0")" && pwd)"
 workspace_root="$script_dir/.."
 normalize_package="$script_dir/normalize-workspace-deps-for-publish"
+publish_flags="--access public --ignore-scripts"
+
+if [ "${PUBLISH_DRY_RUN:-}" = "1" ]; then
+  publish_flags="$publish_flags --dry-run"
+fi
 roots=(
   "$script_dir/../libs/components"
   "$script_dir/../libs/functions"
@@ -63,7 +68,8 @@ for package_file in "${package_files[@]}"; do
 
   (
     cd "$dir"
-    bun publish --access public
+    bun run build
+    bun publish $publish_flags
   )
 
   status=$?
@@ -75,7 +81,11 @@ for package_file in "${package_files[@]}"; do
     continue
   fi
 
-  echo "✅ Dummy library published"
+  if [ "${PUBLISH_DRY_RUN:-}" = "1" ]; then
+    echo "✅ Dummy library publish dry-run completed"
+  else
+    echo "✅ Dummy library published"
+  fi
 done
 
 exit 0
