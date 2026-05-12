@@ -1,7 +1,33 @@
 # Changelog
-[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.36...v0.70.37)
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.37...v0.70.38)
+
+### 🚀 Features
+
+- **socials**: add bluesky publishing driver ([ace2fdf](https://github.com/stacksjs/stacks/commit/ace2fdf)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🐛 Bug Fixes
+
+- **framework**: harden declaration builds ([ef51420](https://github.com/stacksjs/stacks/commit/ef51420)) _(by Chris <chrisbreuer93@gmail.com>)_
 
 ### 📚 Documentation
+
+- update changelog for v0.70.37 ([6c870ab](https://github.com/stacksjs/stacks/commit/6c870ab)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🤖 Continuous Integration
+
+- skip deploys without aws credentials ([bdb98a8](https://github.com/stacksjs/stacks/commit/bdb98a8)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.70.38 ([c989eba](https://github.com/stacksjs/stacks/commit/c989eba)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.36...v0.70.37)
+
+## 📚 Documentation
 
 - update changelog for v0.70.36 ([0ac09a0](https://github.com/stacksjs/stacks/commit/0ac09a0)) _(by Chris <chrisbreuer93@gmail.com>)_
 
