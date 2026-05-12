@@ -1,5 +1,33 @@
 # Stacks Changelog
 
+## v0.70.37...v0.70.38
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.37...v0.70.38)
+
+### 🚀 Enhancements
+
+- **socials:** Add bluesky publishing driver ([ace2fdf8b](https://github.com/stacksjs/stacks/commit/ace2fdf8b))
+
+### 🩹 Fixes
+
+- **framework:** Harden declaration builds ([ef514203a](https://github.com/stacksjs/stacks/commit/ef514203a))
+
+### 📖 Documentation
+
+- Update changelog for v0.70.37 ([6c870ab2f](https://github.com/stacksjs/stacks/commit/6c870ab2f))
+
+### 🏡 Chore
+
+- Release v0.70.38 ([dc734e70d](https://github.com/stacksjs/stacks/commit/dc734e70d))
+
+### 🤖 CI
+
+- Skip deploys without aws credentials ([bdb98a8a9](https://github.com/stacksjs/stacks/commit/bdb98a8a9))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.36...v0.70.37
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.36...v0.70.37)
