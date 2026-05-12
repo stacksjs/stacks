@@ -1,5 +1,9 @@
 # Stacks Changelog
 
+## v0.70.44
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.43...v0.70.44)
+
 ## v0.70.43
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.42...v0.70.43)
