@@ -1,7 +1,25 @@
 # Changelog
+[Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.38...v0.70.39)
+
+### 🐛 Bug Fixes
+
+- **framework**: emit env and logging root declarations ([12d70af](https://github.com/stacksjs/stacks/commit/12d70af)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 📚 Documentation
+
+- update changelog for v0.70.38 ([eba318b](https://github.com/stacksjs/stacks/commit/eba318b)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### 🧹 Chores
+
+- release v0.70.39 ([75d7ef2](https://github.com/stacksjs/stacks/commit/75d7ef2)) _(by Chris <chrisbreuer93@gmail.com>)_
+
+### Contributors
+
+- _Chris <chrisbreuer93@gmail.com>_
+
 [Compare changes](https://github.com/stacksjs/stacks/compare/v0.70.37...v0.70.38)
 
-### 🚀 Features
+## 🚀 Features
 
 - **socials**: add bluesky publishing driver ([ace2fdf](https://github.com/stacksjs/stacks/commit/ace2fdf)) _(by Chris <chrisbreuer93@gmail.com>)_
 
