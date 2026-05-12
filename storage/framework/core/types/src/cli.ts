@@ -403,6 +403,14 @@ export interface ReleaseOptions extends CliOptions {
   dryRun?: boolean
   bump?: 'patch' | 'minor' | 'major' | 'prepatch' | 'preminor' | 'premajor' | 'prerelease' | string
 }
+
+export interface ChangelogOptions extends CliOptions {
+  dryRun?: boolean
+  from?: string
+  to?: string
+  version?: string
+}
+
 export interface ProjectsOptions extends CliOptions {
   list?: boolean
 }

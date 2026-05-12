@@ -1,4 +1,4 @@
-import { log, parseOptions, runCommand } from '@stacksjs/cli'
+import { execSync, log, parseOptions, runCommand } from '@stacksjs/cli'
 import { path as p } from '@stacksjs/path'
 import { join, relative } from 'node:path'
 
@@ -39,15 +39,36 @@ async function resolveBumpArg(bump: string | null): Promise<string | null> {
 }
 
 const resolvedBumpArg = await resolveBumpArg(bumpArg)
+const isDryRun = options?.dryRun === true
+
+async function runOrFail(command: string, commandOptions: Parameters<typeof runCommand>[1]): Promise<void> {
+  const result = await runCommand(command, commandOptions)
+
+  if (result.isErr)
+    throw result.error
+}
+
+async function git(args: string[], cwd = p.projectPath()): Promise<string> {
+  return await execSync(['git', ...args], {
+    cwd,
+    stdin: 'inherit',
+  })
+}
+
+async function readFrameworkVersion(): Promise<string> {
+  const pkg = await Bun.file(p.frameworkPath('core/package.json')).json() as { version?: string }
+
+  if (!pkg.version || !/^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(pkg.version))
+    throw new Error(`Invalid framework version in package.json: ${pkg.version ?? '<missing>'}`)
+
+  return pkg.version
+}
 
 // Use the project-root `./buddy` shell wrapper (bun + src/cli.ts) instead
 // of the `buddy` PATH lookup, which resolves to `pantry/.bin/buddy` — a
 // `node dist/cli.js` shim that breaks when @stacksjs/actions/dist hasn't
 // been rebuilt. The project wrapper always uses live source.
 const buddyBin = p.projectPath('buddy')
-const changelogCommand = options?.dryRun
-  ? `${buddyBin} changelog --quiet --dry-run`
-  : `${buddyBin} changelog --quiet`
 
 const bumpCwd = p.frameworkPath('core')
 
@@ -102,8 +123,8 @@ const bumpFiles = Array.from(bumpFileSet).join(',')
 // non-interactively. Forward --verbose so dry-runs print every file bumpx
 // would touch (otherwise it just prints a summary line and you can't tell
 // what got matched).
-const flags: string[] = ['--all', '--no-recursive']
-if (options?.dryRun) flags.push('--dry-run', '--no-push')
+const flags: string[] = ['--no-commit', '--no-tag', '--no-push', '--no-recursive', '--no-changelog']
+if (isDryRun) flags.push('--dry-run')
 if (resolvedBumpArg) flags.push('--yes')
 if ((options as { verbose?: boolean })?.verbose) flags.push('--verbose')
 
@@ -117,12 +138,28 @@ log.debug(`Running: ${bumpCommand}`)
 log.debug(`Bumping ${bumpFiles.split(',').filter(Boolean).length} package manifest(s)`)
 log.debug(`In frameworkPath: ${p.frameworkPath()}`)
 
-await runCommand(bumpCommand, {
+await runOrFail(bumpCommand, {
   cwd: bumpCwd,
   stdin: 'inherit',
 })
 
-await runCommand(changelogCommand, {
+const latestTag = (await git(['describe', '--abbrev=0', '--tags'])).trim()
+const nextVersion = isDryRun && resolvedBumpArg && /^\d+\.\d+\.\d+(?:-[0-9A-Za-z.-]+)?$/.test(resolvedBumpArg)
+  ? resolvedBumpArg
+  : await readFrameworkVersion()
+const changelogCommand = isDryRun
+  ? `${buddyBin} changelog --quiet --dry-run --from ${latestTag} --to HEAD --version ${nextVersion}`
+  : `${buddyBin} changelog --quiet --from ${latestTag} --to HEAD --version ${nextVersion}`
+
+await runOrFail(changelogCommand, {
   cwd: p.projectPath(),
   stdin: 'inherit',
 })
+
+if (!isDryRun) {
+  await git(['add', '--all'])
+  await git(['commit', '-m', `chore: release v${nextVersion}`])
+  await git(['tag', `v${nextVersion}`])
+  await git(['push'])
+  await git(['push', 'origin', `v${nextVersion}`])
+}
