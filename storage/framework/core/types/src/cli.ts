@@ -250,6 +250,7 @@ export type DevOption =
   | 'frontend'
   | 'api'
   | 'desktop'
+  | 'native'
   | 'all'
   | 'email'
   | 'system-tray'

@@ -950,21 +950,33 @@ if (verbose) {
 console.log()
 /* eslint-enable no-console */
 
-// Import @stacksjs/ts-craft dynamically. Its static import triggers bun-router
+// Import Craft dynamically. Its static import triggers bun-router
 // config loading which prints warnings before our console.log override is
 // active. We also let it be missing — the native window is a nicety, not a
 // requirement; the dashboard runs fine as a plain web server in that case.
-//
-// (Was previously imported as `@craft-native/ts` which is a stale package
-// name — the actual published package is `@stacksjs/ts-craft`, which exports
-// `createApp` with the same shape.)
 let createApp: ((_opts: any) => { show: () => Promise<void>, close: () => void }) | null = null
 try {
-  ;({ createApp } = await import('@stacksjs/ts-craft'))
+  const localCraftSdk = process.env.HOME
+    ? `${process.env.HOME}/Code/Tools/craft/packages/typescript/src/index.ts`
+    : undefined
+
+  ;({ createApp } = localCraftSdk && existsSync(localCraftSdk)
+    ? await import(localCraftSdk)
+    : await import('craft-native'))
 }
 catch {
-  // @stacksjs/ts-craft isn't installed (or its native bindings failed to
-  // load on this platform). Fall through to web-only mode below.
+  try {
+    ;({ createApp } = await import('@craft-native/craft'))
+  }
+  catch {
+    try {
+      ;({ createApp } = await import('@stacksjs/ts-craft'))
+    }
+    catch {
+      // The Craft SDK isn't installed (or its native bindings failed to
+      // load on this platform). Fall through to web-only mode below.
+    }
+  }
 }
 
 if (createApp) {
@@ -992,7 +1004,7 @@ if (createApp) {
   // `'craft'` from PATH. The fallback resolves to the ts-craft CLI shim,
   // not the actual native binary, so spawn never produces a window.
   //
-  // Honour `CRAFT_BIN` (matching the newer @craft-native/craft contract)
+  // Honour `CRAFT_BIN` (matching the newer craft-native contract)
   // and probe a couple of known monorepo locations relative to this
   // checkout so the local `~/Documents/Projects/craft` clone Just Works
   // without requiring an env var.
@@ -1000,6 +1012,15 @@ if (createApp) {
     const explicit = process.env.CRAFT_BIN
     if (explicit && existsSync(explicit))
       return explicit
+    const codeTools = `${process.env.HOME}/Code/Tools/craft/craft`
+    if (existsSync(codeTools))
+      return codeTools
+    const codeToolsBin = `${process.env.HOME}/Code/Tools/craft/bin/craft`
+    if (existsSync(codeToolsBin))
+      return codeToolsBin
+    const codeToolsZig = `${process.env.HOME}/Code/Tools/craft/packages/zig/zig-out/bin/craft`
+    if (existsSync(codeToolsZig))
+      return codeToolsZig
     const homeRel = `${process.env.HOME}/Documents/Projects/craft/packages/zig/zig-out/bin/craft`
     if (existsSync(homeRel))
       return homeRel
@@ -1007,9 +1028,8 @@ if (createApp) {
   })()
 
   // If we couldn't locate a real native binary, don't even attempt to spawn
-  // — ts-craft's `findCraftBinary()` PATH fallback resolves to its own CLI
-  // shim (the `craft` symlink that bun installs into ~/.bun/bin points back
-  // at @stacksjs/ts-craft's bin/cli.ts). That shim then re-receives our
+  // — old SDK `findCraftBinary()` PATH fallbacks can resolve to their own
+  // CLI shim. That shim then re-receives our
   // native-style flags (`--url ...`), clapp rejects them as unknown, and the
   // user sees a noisy "ClappError: Unknown option --url" before the process
   // exits. Skip native-window mode entirely instead and let the web fallback
@@ -1069,7 +1089,7 @@ else {
   // exit cleanly without a window to close.
   //
   // We get here in two cases:
-  //   1. `@stacksjs/ts-craft` failed to import (catch above set createApp = null)
+  //   1. The Craft SDK failed to import (catch above set createApp = null)
   //   2. We couldn't find a real native craft binary (CRAFT_BIN unset and the
   //      `~/Documents/Projects/craft` checkout isn't present). In that case
   //      we deliberately skipped native mode to avoid spawning the ts-craft
