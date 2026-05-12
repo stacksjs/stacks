@@ -39,12 +39,14 @@ jobs:
       - name: Publish Framework
         run: ./storage/framework/scripts/publish
         env:
-          BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish Dummy Libraries
         run: ./storage/framework/scripts/publish-dummy-libs
         env:
-          BUN_AUTH_TOKEN: ${{secrets.NPM_TOKEN}}
+          BUN_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NPM_CONFIG_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish VS Code Extension
         continue-on-error: true

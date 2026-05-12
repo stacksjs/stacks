@@ -292,6 +292,7 @@ jobs:
         run: bun buddy deploy development --yes
 
   publish-commit:
+    if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
 
     steps:
