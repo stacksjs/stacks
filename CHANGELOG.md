@@ -1,5 +1,17 @@
 # Stacks Changelog
 
+## v0.70.45
+
+[compare changes](https://github.com/stacksjs/stacks/compare/v0.70.44...v0.70.45)
+
+### 🚀 Enhancements
+
+- **buddy:** Add native Craft dev mode ([85be84af9](https://github.com/stacksjs/stacks/commit/85be84af9))
+
+### ❤️ Contributors
+
+- Chris ([@chrisbbreuer](https://github.com/chrisbbreuer))
+
 ## v0.70.44
 
 [compare changes](https://github.com/stacksjs/stacks/compare/v0.70.43...v0.70.44)
