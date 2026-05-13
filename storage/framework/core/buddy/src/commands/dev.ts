@@ -526,6 +526,8 @@ async function launchNativeAppWindow(url: string, options: DevOptions): Promise<
       width: 1280,
       height: 860,
       titlebarHidden: true,
+      webSidebarMaterial: true,
+      webSidebarWidth: 286,
       ...(appIconPath && { icon: appIconPath }),
     },
   })
