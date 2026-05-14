@@ -37,7 +37,13 @@ import MaintenanceMiddleware from './app/Middleware/Maintenance'
 // itself reads `activeSiteModePayload()` so it covers both maintenance
 // and coming-soon modes (plus `APP_MAINTENANCE` / `APP_COMING_SOON`
 // env overrides) without the bootstrap needing to know the details.
-route.use(MaintenanceMiddleware.handle.bind(MaintenanceMiddleware) as any)
+//
+// `toRouterHandler()` adapts the Middleware contract (return void to
+// continue, throw a Response to short-circuit) to bun-router's
+// `(req, next) => Response` shape. Without the adapter, `handle` would
+// return `undefined`, bun-router's chain treats that as a short-circuit
+// to an empty 200, and every route returns `200 OK Content-Length: 0`.
+route.use(MaintenanceMiddleware.toRouterHandler() as any)
 
 // Feature-gated route registration. The dashboard.ts file currently bundles
 // ~687 lines covering auth, password reset, email subscribe, storefront
