@@ -4,7 +4,13 @@ import { db as _db } from '@stacksjs/database'
 // resolution to the concrete invocation here can leave methods marked
 // `T | undefined` under strict null checks. Cast through `any` so the trait
 // helpers can call the runtime-defined methods without a guard at every site.
-const db = _db as any
+// We also wrap in our OWN Proxy so each property access reads `_db` at call
+// time, not module-load time. Reading `_db` at the top level triggers a TDZ
+// "Cannot access '_db' before initialization" when this module loads during
+// the @stacksjs/database → @stacksjs/orm → @stacksjs/database import cycle.
+const db: any = new Proxy({} as any, {
+  get(_target, prop) { return (_db as any)[prop] },
+})
 
 export function createCategorizableMethods(tableName: string) {
   async function getCategoryIds(id: number): Promise<number[]> {
