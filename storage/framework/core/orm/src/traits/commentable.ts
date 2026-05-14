@@ -1,12 +1,7 @@
 import { db as _db, sql } from '@stacksjs/database'
 
-// `_db` is a Proxy whose methods are typed via bun-query-builder's generics
-// — we cast through `any` so trait helpers can call the runtime-defined
-// methods without a guard at every site. The cast is performed INSIDE each
-// factory function (`createXxxMethods`) rather than at module scope so the
-// import binding isn't read while the @stacksjs/database → @stacksjs/orm
-// → @stacksjs/database cycle is still initializing (which would throw
-// "Cannot access '_db' before initialization" at module load).
+// See note in categorizable.ts — relax db method types for trait helpers.
+const db = _db as any
 
 function assertId(id: unknown, method: string): asserts id is number {
   if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {
@@ -15,7 +10,6 @@ function assertId(id: unknown, method: string): asserts id is number {
 }
 
 export function createCommentableMethods(tableName: string) {
-  const db = _db as any
   return {
     async comments(id: number): Promise<any[]> {
       assertId(id, 'comments')

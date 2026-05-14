@@ -1,15 +1,9 @@
 import { db as _db, sql } from '@stacksjs/database'
 
-// `_db` is a Proxy whose methods are typed via bun-query-builder's generics
-// — we cast through `any` so trait helpers can call the runtime-defined
-// methods without a guard at every site. The cast is performed INSIDE each
-// factory function (`createXxxMethods`) rather than at module scope so the
-// import binding isn't read while the @stacksjs/database → @stacksjs/orm
-// → @stacksjs/database cycle is still initializing (which would throw
-// "Cannot access '_db' before initialization" at module load).
+// See note in categorizable.ts — relax db method types for trait helpers.
+const db = _db as any
 
 export function createLikeableMethods(tableName: string, options?: { table?: string, foreignKey?: string }) {
-  const db = _db as any
   const likeTable = options?.table || `${tableName}_likes`
   const foreignKey = options?.foreignKey || `${tableName.replace(/s$/, '')}_id`
 
