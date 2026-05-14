@@ -752,9 +752,14 @@ async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
 }
 
 /**
- * Start the reverse proxies (rpx) to enable HTTPS with custom domains.
- * Proxies frontend, API, docs, and dashboard subdomains.
- * rpx wraps tlsx and handles SSL (certs, hosts, trust) automatically.
+ * Register this stacks project's frontends with the rpx daemon so each app is
+ * reachable at `https://<subdomain>.<APP_URL>` over the daemon's shared :443.
+ *
+ * Why daemon vs. in-process: with the legacy in-process mode, two concurrent
+ * `./buddy dev` invocations (e.g. pet-store + training) would fight over :443
+ * and the second one would fail to bind. The daemon owns :443 once and
+ * routes by Host header. PID-GC reaps our entries automatically when this
+ * buddy process exits, so we don't need explicit cleanup on shutdown.
  */
 async function startReverseProxy(options: DevOptions): Promise<void> {
   const appUrl = process.env.APP_URL
@@ -772,7 +777,6 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
   const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
   const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
-  const sslBasePath = `${process.env.HOME}/.stacks/ssl`
   const verbose = options.verbose ?? false
 
   // Mirror the dashboard opt-in from startDevelopmentServer — when the
@@ -782,34 +786,32 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
 
   try {
-    const { startProxies } = await import('@stacksjs/rpx')
+    const { runViaDaemon } = await import('@stacksjs/rpx')
 
-    // Use multi-proxy mode so rpx generates a SINGLE cert covering all domains
-    await startProxies({
+    await runViaDaemon({
       proxies: [
         // Forward /api/** straight to the API server, preserving the prefix.
-        // The API registers its routes as /api/cart/add, /api/checkout/place,
-        // etc., so stripPrefix must be false — otherwise the API would see
-        // /cart/add and 404. The frontend's stx-serve also has a fallback
-        // proxy for direct localhost:PORT access.
-        { from: `localhost:${frontendPort}`, to: domain, cleanUrls: false, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
-        { from: `localhost:${apiPort}`, to: apiDomain, cleanUrls: false },
-        { from: `localhost:${docsPort}`, to: docsDomain, cleanUrls: false },
+        // API routes are registered as /api/cart/add, /api/checkout/place,
+        // etc. — stripPrefix must stay false or the API would see /cart/add
+        // and 404. The frontend's stx-serve still has a fallback proxy for
+        // direct localhost:PORT access.
+        { id: `${domain}-frontend`, from: `localhost:${frontendPort}`, to: domain, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
+        { id: `${domain}-api`, from: `localhost:${apiPort}`, to: apiDomain },
+        { id: `${domain}-docs`, from: `localhost:${docsPort}`, to: docsDomain },
         ...(includeDashboard
-          ? [{ from: `localhost:${dashboardPort}`, to: dashboardDomain, cleanUrls: false }]
+          ? [{ id: `${domain}-dashboard`, from: `localhost:${dashboardPort}`, to: dashboardDomain }]
           : []),
       ],
-      https: {
-        basePath: sslBasePath,
-        validityDays: 825,
-      },
-      regenerateUntrustedCerts: false,
+      // Don't park — buddy needs to keep running its other startup tasks.
+      // The entries carry our PID, so when buddy exits the daemon's PID-GC
+      // reaps them within ~5s.
+      detached: true,
       verbose,
     })
   }
   catch (error) {
     if (options.verbose) {
-      log.warn('Reverse proxy not available, skipping HTTPS')
+      log.warn('rpx daemon not available, skipping HTTPS')
       log.warn(String(error))
     }
   }

@@ -119,7 +119,7 @@ export function maintenance(buddy: CLI): void {
     .option('--secret [token]', 'The secret phrase to bypass maintenance mode', { default: false })
     .option('--allow [ip...]', 'IP addresses allowed to access the application', { default: false })
     .option('--redirect [url]', 'Redirect all requests to a given URL', { default: false })
-    .option('--status [code]', 'The HTTP status code to return', { default: '503' })
+    .option('--status [code]', 'The HTTP status code to return', { default: false })
     .option('--verbose', 'Enable verbose output', { default: false })
     .example('buddy down')
     .example('buddy down --message="Upgrading database"')
@@ -198,33 +198,31 @@ export function maintenance(buddy: CLI): void {
     })
 
   buddy
-    .command('status', 'Check if the application is in maintenance mode')
+    .command('status', 'Check whether the application is in maintenance or coming-soon mode')
     .alias('maintenance:status')
     .option('--verbose', 'Enable verbose output', { default: false })
     .action(async () => {
       try {
-        const { isDownForMaintenance, maintenancePayload } = await import('@stacksjs/server')
+        const { activeSiteModePayload } = await import('@stacksjs/server')
 
-        const isDown = await isDownForMaintenance()
+        const payload = await activeSiteModePayload()
 
-        if (isDown) {
-          const payload = await maintenancePayload()
-          log.warn('Application is in maintenance mode')
+        if (payload) {
+          const mode = payload.mode ?? 'maintenance'
+          log.warn(`Application is in ${mode} mode`)
 
-          if (payload) {
-            if (payload.message) log.info(`Message: ${payload.message}`)
-            if (payload.retry) log.info(`Retry-After: ${payload.retry} seconds`)
-            if (payload.secret) log.info(`Secret: ${payload.secret}`)
-            if (payload.allowed?.length) log.info(`Allowed IPs: ${payload.allowed.join(', ')}`)
-            if (payload.time) log.info(`Started: ${new Date(payload.time).toLocaleString()}`)
-          }
+          if (payload.message) log.info(`Message: ${payload.message}`)
+          if (payload.retry) log.info(`Retry-After: ${payload.retry} seconds`)
+          if (payload.secret) log.info(`Secret: ${payload.secret}`)
+          if (payload.allowed?.length) log.info(`Allowed IPs: ${payload.allowed.join(', ')}`)
+          if (payload.time) log.info(`Started: ${new Date(payload.time).toLocaleString()}`)
         }
         else {
           log.success('Application is live')
         }
       }
       catch (error) {
-        log.error('Failed to check maintenance status:', error)
+        log.error('Failed to check site-mode status:', error)
         process.exit(ExitCode.FatalError)
       }
 

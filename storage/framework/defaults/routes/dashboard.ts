@@ -232,7 +232,7 @@ route.group({ prefix: '/realtime' }, () => {
 // Query Dashboard
 // ============================================================================
 
-route.group({ prefix: '/queries', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/queries', middleware: 'auth' }, () => {
   route.get('/dashboard', 'Actions/Dashboard/Queries/QueryIndexAction')
   route.get('/stats', 'Controllers/QueryController@getStats')
   route.get('/recent', 'Controllers/QueryController@getRecentQueries')
@@ -247,7 +247,7 @@ route.group({ prefix: '/queries', middleware: 'auth' }, () => {
 // Monitoring / Error Tracking
 // ============================================================================
 
-route.group({ prefix: '/monitoring', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/monitoring', middleware: 'auth' }, () => {
   route.get('/errors', 'Actions/Monitoring/ErrorIndexAction')
   route.get('/errors/stats', 'Actions/Monitoring/ErrorStatsAction')
   route.get('/errors/timeline', 'Actions/Monitoring/ErrorTimelineAction')
@@ -327,7 +327,7 @@ route.group({ prefix: '/blog' }, () => {
 // underlying actions, since user routes load before framework routes.
 // ============================================================================
 
-route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/commerce', middleware: 'auth' }, () => {
   route.get('/dashboard', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
   route.get('/pos', 'Actions/Dashboard/Commerce/PosIndexAction')
   route.get('/products', 'Actions/Commerce/Product/ProductIndexAction')
@@ -499,7 +499,7 @@ route.group({ prefix: '/commerce', middleware: 'auth' }, () => {
 // Analytics
 // ============================================================================
 
-route.group({ prefix: '/analytics', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/analytics', middleware: 'auth' }, () => {
   route.get('/sales', 'Actions/Dashboard/Analytics/SalesAnalyticsAction')
   route.get('/web', 'Actions/Dashboard/Analytics/WebAnalyticsAction')
   route.get('/blog', 'Actions/Dashboard/Analytics/BlogAnalyticsAction')
@@ -555,7 +555,7 @@ route.group({ prefix: '/releases', middleware: 'auth' }, () => {
 // Settings
 // ============================================================================
 
-route.group({ prefix: '/settings', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/settings', middleware: 'auth' }, () => {
   route.get('/mail', 'Actions/Dashboard/Settings/MailSettingsGetAction')
   route.put('/mail', 'Actions/Dashboard/Settings/MailSettingsUpdateAction')
 })
@@ -564,7 +564,7 @@ route.group({ prefix: '/settings', middleware: 'auth' }, () => {
 // Data Management
 // ============================================================================
 
-route.group({ prefix: '/data', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/data', middleware: 'auth' }, () => {
   route.get('/dashboard', 'Actions/Dashboard/Data/DataDashboardAction')
   route.get('/access-tokens', 'Actions/Dashboard/Data/AccessTokenIndexAction')
   route.get('/subscribers', 'Actions/Dashboard/Data/SubscriberIndexAction')
@@ -590,7 +590,7 @@ route.group({ prefix: '/infrastructure', middleware: 'auth' }, () => {
   route.get('/cloud', 'Actions/Dashboard/Cloud/CloudIndexAction')
 })
 
-route.get('/serverless', 'Actions/Dashboard/Cloud/CloudIndexAction').middleware('auth')
+route.get('/api/serverless', 'Actions/Dashboard/Cloud/CloudIndexAction').middleware('auth')
 
 // ============================================================================
 // Dashboard Views — Commerce
@@ -625,7 +625,7 @@ route.group({ prefix: '/dashboard/cms', middleware: 'auth' }, () => {
 // Marketing
 // ============================================================================
 
-route.group({ prefix: '/marketing', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/marketing', middleware: 'auth' }, () => {
   route.get('/campaigns', 'Actions/Dashboard/Marketing/CampaignIndexAction')
   route.get('/lists', 'Actions/Dashboard/Marketing/ListIndexAction')
   route.get('/social-posts', 'Actions/Dashboard/Marketing/SocialPostIndexAction')
@@ -635,7 +635,7 @@ route.group({ prefix: '/marketing', middleware: 'auth' }, () => {
 // Notifications
 // ============================================================================
 
-route.group({ prefix: '/notifications', middleware: 'auth' }, () => {
+route.group({ prefix: '/api/notifications', middleware: 'auth' }, () => {
   route.get('/dashboard', 'Actions/Dashboard/Notifications/NotificationDashboardAction')
   route.get('/email', 'Actions/Dashboard/Notifications/NotificationDashboardAction')
   route.get('/sms', 'Actions/Dashboard/Notifications/NotificationDashboardAction')

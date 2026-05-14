@@ -4,7 +4,7 @@
 @title('Mail - Settings')
 <div class="min-h-screen dark:bg-neutral-800">
   <div class="flex h-screen">
-    <EmailSidebar :active-folder="activeFolder" :folders="folders" :unread-counts="unreadCounts" @update:active-folder="handleFolderChange" @compose="handleCompose" />
+    <EmailSidebar :activeFolder="activeFolder" :folders="folders" :unreadCounts="unreadCounts" @update:active-folder="handleFolderChange" @compose="handleCompose" />
 
     <div class="flex overflow-hidden flex-1 flex-col">
       <div class="px-6 py-4 bg-white dark:bg-neutral-700 border-b border-gray-200 dark:border-neutral-600">

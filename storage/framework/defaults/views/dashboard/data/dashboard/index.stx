@@ -85,7 +85,7 @@ function modelRoute(id: string) {
   <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
     <template :for="model in filteredModels()">
       <div class="overflow-hidden p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-        <div class="flex items-center gap-3">
+        <div class="flex gap-3 items-center">
           <span class="text-3xl">{{ model.emoji }}</span>
           <div>
             <h3 class="font-semibold text-gray-900 dark:text-white">{{ model.name }}</h3>
@@ -93,7 +93,7 @@ function modelRoute(id: string) {
           </div>
         </div>
         <div class="mt-4">
-          <h4 class="font-medium text-gray-700 text-xs uppercase tracking-wider dark:text-neutral-300">Properties</h4>
+          <h4 class="font-medium text-gray-700 text-xs tracking-wider uppercase dark:text-neutral-300">Properties</h4>
           <ul class="mt-2 space-y-1">
             <template :for="prop in model.properties">
               <li class="flex items-center justify-between font-mono text-xs">
@@ -104,7 +104,7 @@ function modelRoute(id: string) {
           </ul>
         </div>
         <div class="mt-4">
-          <h4 class="font-medium text-gray-700 text-xs uppercase tracking-wider dark:text-neutral-300">Relationships</h4>
+          <h4 class="font-medium text-gray-700 text-xs tracking-wider uppercase dark:text-neutral-300">Relationships</h4>
           <ul class="mt-2 space-y-1">
             <template :for="rel in model.relationships">
               <li class="flex items-center justify-between text-xs">

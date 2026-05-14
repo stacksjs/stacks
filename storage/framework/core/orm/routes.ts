@@ -119,6 +119,7 @@ function safeJSONOrEmpty(_s: string): unknown { try { return JSON.parse(_s) } ca
 //
 // Skips fields the caller never sent on PATCH requests so a partial update
 // doesn't trip a "required" rule on a sibling field that wasn't touched.
+// eslint-disable-next-line pickier/no-unused-vars
 function validateWriteBody(
   _data: Record<string, any>,
   _model: any,

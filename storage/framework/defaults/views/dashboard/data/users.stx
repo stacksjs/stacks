@@ -89,9 +89,9 @@ const models: ModelNode[] = [
           </div>
         </div>
         <div class="flex">
-          <div class="relative flex-1 h-[400px] flex flex-wrap gap-4 items-start justify-start p-4 bg-gray-50 dark:bg-neutral-600 rounded-lg">
+          <div class="flex relative flex-1 flex-wrap gap-4 items-start justify-start p-4 h-[400px] bg-gray-50 dark:bg-neutral-600 rounded-lg">
             @foreach(models as model)
-              <button type="button" @click="selectModel({{ JSON.stringify(model) }})" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 dark:ring-neutral-600 rounded-lg shadow-sm">
+              <button type="button" @click="selectModel({{ JSON.stringify(model) }})" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600 shadow-sm">
                 <span class="text-3xl">{{ model.emoji }}</span>
                 <span class="mt-2 font-medium text-gray-900 text-sm dark:text-neutral-100">{{ model.name }}</span>
               </button>

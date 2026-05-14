@@ -54,7 +54,7 @@ function downloadsBadgeVariant(n: number) {
 const sortedPackages = [...packages].sort((a, b) => b.downloads - a.downloads)
 </script>
 
-<div class="px-6 pt-6 pb-12 mx-auto max-w-6xl space-y-6">
+<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-6xl">
 
   <PageHeader
     title="Packages"
@@ -69,53 +69,53 @@ const sortedPackages = [...packages].sort((a, b) => b.downloads - a.downloads)
   <div class="grid gap-3 grid-cols-2 lg:grid-cols-4">
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Packages</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalPackages }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Packages</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ totalPackages }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-green-600 dark:text-green-400 bg-green-500/10 dark:bg-green-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5 5-5M12 15V3"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Downloads</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ formatNumber(totalDownloads) }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Downloads</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ formatNumber(totalDownloads) }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-purple-500/10 text-purple-600 dark:bg-purple-400/15 dark:text-purple-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-purple-600 dark:text-purple-400 bg-purple-500/10 dark:bg-purple-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M17 20h5v-2a4 4 0 00-3-3.87M9 20H4v-2a4 4 0 013-3.87m6-5.13a4 4 0 11-8 0 4 4 0 018 0zm6 0a3 3 0 11-6 0 3 3 0 016 0z"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Contributors</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalContributors }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Contributors</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ totalContributors }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01M5.07 19h13.86c1.54 0 2.5-1.67 1.73-3L13.73 4a2 2 0 00-3.46 0L3.34 16c-.77 1.33.19 3 1.73 3z"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Open issues</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalIssues }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Open issues</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ totalIssues }}</p>
         </div>
       </div>
     </Card>
@@ -141,44 +141,44 @@ const sortedPackages = [...packages].sort((a, b) => b.downloads - a.downloads)
       </div>
     @else
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200/60 dark:divide-white/5">
+        <table class="min-w-full divide-neutral-200/60 divide-y dark:divide-white/5">
           <thead class="bg-neutral-50/60 dark:bg-white/[0.02]">
             <tr>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Package</th>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Version</th>
-              <th class="px-5 py-2.5 font-medium text-right text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Downloads</th>
-              <th class="px-5 py-2.5 font-medium text-right text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Contributors</th>
-              <th class="px-5 py-2.5 font-medium text-right text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Issues</th>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Size</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Package</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Version</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-neutral-500 text-right tracking-wider uppercase dark:text-neutral-400">Downloads</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-neutral-500 text-right tracking-wider uppercase dark:text-neutral-400">Contributors</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-neutral-500 text-right tracking-wider uppercase dark:text-neutral-400">Issues</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Size</th>
               <th class="px-5 py-2.5 text-right">
                 <span class="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-200/60 dark:divide-white/5">
+          <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
             @foreach(sortedPackages as pkg)
               <tr class="hover:bg-neutral-50/60 dark:hover:bg-white/[0.02] transition-colors">
                 <td class="px-5 py-3 whitespace-nowrap">
                   <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ pkg.name }}</div>
-                  <div class="mt-0.5 text-neutral-500 text-xs dark:text-neutral-400 truncate max-w-xs">{{ pkg.description }}</div>
+                  <div class="mt-0.5 max-w-xs text-neutral-500 text-xs truncate dark:text-neutral-400">{{ pkg.description }}</div>
                 </td>
-                <td class="px-5 py-3 font-mono text-neutral-600 text-xs dark:text-neutral-300 whitespace-nowrap">
+                <td class="px-5 py-3 font-mono text-neutral-600 text-xs whitespace-nowrap dark:text-neutral-300">
                   {{ pkg.version }}
                 </td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
                   <Badge :variant="downloadsBadgeVariant(pkg.downloads)" size="sm">{{ formatNumber(pkg.downloads) }}</Badge>
                 </td>
-                <td class="px-5 py-3 text-right text-neutral-600 text-sm dark:text-neutral-300 whitespace-nowrap">
+                <td class="px-5 py-3 text-neutral-600 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                   {{ pkg.contributors }}
                 </td>
-                <td class="px-5 py-3 text-right text-neutral-600 text-sm dark:text-neutral-300 whitespace-nowrap">
+                <td class="px-5 py-3 text-neutral-600 text-right text-sm whitespace-nowrap dark:text-neutral-300">
                   {{ pkg.issues }}
                 </td>
-                <td class="px-5 py-3 font-mono text-neutral-500 text-xs dark:text-neutral-400 whitespace-nowrap">
+                <td class="px-5 py-3 font-mono text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400">
                   {{ pkg.size }}
                 </td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
-                  <a href="{{ pkg.url }}" target="_blank" rel="noopener" class="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                  <a href="{{ pkg.url }}" target="_blank" rel="noopener" class="text-blue-600 text-sm dark:text-blue-400 hover:underline">
                     GitHub
                   </a>
                 </td>

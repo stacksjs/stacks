@@ -4,9 +4,9 @@
 @title('Dashboard - Jobs')
 <div>
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mb-6">
-    <StatsCard title="Total Jobs" value="71,897" :trend="12" trend-label="vs last hour" icon="i-hugeicons-layers-01" icon-bg="primary" />
-    <StatsCard title="Avg Processing Time" value="2.3s" :trend="-15" trend-label="Faster than yesterday" icon="i-hugeicons-clock-01" icon-bg="success" />
-    <StatsCard title="Jobs Per Minute" value="42" :trend="-8" trend-label="vs last hour" icon="i-hugeicons-flash" icon-bg="warning" />
+    <StatsCard title="Total Jobs" value="71,897" :trend="12" trendLabel="vs last hour" icon="i-hugeicons-layers-01" iconBg="primary" />
+    <StatsCard title="Avg Processing Time" value="2.3s" :trend="-15" trendLabel="Faster than yesterday" icon="i-hugeicons-clock-01" iconBg="success" />
+    <StatsCard title="Jobs Per Minute" value="42" :trend="-8" trendLabel="vs last hour" icon="i-hugeicons-flash" iconBg="warning" />
   </div>
 
   <div class="grid gap-4 grid-cols-1 lg:grid-cols-2 mb-6">
@@ -16,7 +16,7 @@
           <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Job Throughput</h3>
           <p class="mt-0.5 text-[12px] text-neutral-500 dark:text-neutral-400">Processed vs failed jobs over time</p>
         </div>
-        <Select :value="timeRange" :options="timeRangeOptions" size="sm" class="w-36" />
+        <div class="w-36"><Select :value="timeRange" :options="timeRangeOptions" size="sm" /></div>
       </div>
       <div class="relative h-[280px]">
         <div :show="isLoading" class="flex absolute inset-0 z-10 items-center justify-center bg-white/80 dark:bg-neutral-800/80 rounded-lg backdrop-blur-sm">
@@ -46,10 +46,10 @@
     <div class="px-5 py-4 border-b border-black/5 dark:border-white/5">
       <div class="flex items-center justify-between">
         <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">Recent Jobs</h3>
-        <RouterLink to="/jobs/history" class="inline-flex gap-1 items-center text-[13px] text-blue-600 dark:text-blue-400 hover:text-blue-500">
+        <StxLink to="/jobs/history" class="inline-flex gap-1 items-center text-[13px] text-blue-600 dark:text-blue-400 hover:text-blue-500">
           <span>View All</span>
           <div class="h-3.5 w-3.5 i-hugeicons-arrow-right-01"></div>
-        </RouterLink>
+        </StxLink>
       </div>
     </div>
 

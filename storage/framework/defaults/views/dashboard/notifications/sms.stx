@@ -120,11 +120,11 @@
   </div>
 
   <NotificationErrorModal
-    :is-open="isErrorModalOpen"
-    :notification-id="errorModalId"
-    notification-type="sms"
-    :error-message="errorModalMessage"
-    :sent-at="errorModalSentAt"
+    :isOpen="isErrorModalOpen"
+    :notificationId="errorModalId"
+    notificationType="sms"
+    :errorMessage="errorModalMessage"
+    :sentAt="errorModalSentAt"
     @close="closeErrorModal"
   />
 </div>

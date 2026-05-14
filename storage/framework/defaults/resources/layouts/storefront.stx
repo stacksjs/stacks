@@ -42,19 +42,19 @@ catch { /* schema not migrated yet, or db missing — render an empty header */ 
 </script>
 
 <!DOCTYPE html>
-<html lang="en" class="bg-stone-50 text-stone-900">
+<html lang="en" class="text-stone-900 bg-stone-50">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>@yield('title', 'Stacks Store')</title>
   <meta name="description" content="@yield('description', 'A storefront powered by Stacks.')">
   {{-- Constrain the SPA router to swap only <main>; @stacksjs/stx auto-
-       injects __stxRouterConfig with container:'body', which would erase
-       the header/footer on every navigation. STX_ROUTER_OPTIONS is checked
-       last by the router's Object.assign, so this wins. --}}
+      injects __stxRouterConfig with container:'body', which would erase
+      the header/footer on every navigation. STX_ROUTER_OPTIONS is checked
+      last by the router's Object.assign, so this wins. --}}
   <script>window.STX_ROUTER_OPTIONS = { container: 'main' };</script>
 </head>
-<body class="bg-stone-50 text-stone-900 font-serif antialiased">
+<body class="antialiased font-serif text-stone-900 bg-stone-50">
 
   <AnnouncementBar />
 

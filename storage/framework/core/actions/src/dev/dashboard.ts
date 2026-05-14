@@ -680,6 +680,26 @@ async function startStxServer(): Promise<void> {
   // local dashboard. The dashboard runs entirely on the developer's
   // machine and is not meant to be authenticated; without this flag
   // every page silently 302'd to /login.
+  // Load Stacks router routes (user + framework via bootstrap.ts) so that
+  // routes registered with `route.get(...)` / `route.register(...)` are
+  // reachable from the dashboard server. Without this the dashboard runs
+  // entirely on bun-plugin-stx's flat routes map and any /api/dashboard/*
+  // endpoint declared via the framework router would 404 in dev — even
+  // though it works fine in production (server/start.ts also calls
+  // loadRoutes). We scope onRequest delegation tightly below.
+  let stacksRoute: typeof import('@stacksjs/router').route | null = null
+  try {
+    const router = await import('@stacksjs/router')
+    const routeRegistry = (await import(projectPath('app/Routes.ts'))).default
+    await router.loadRoutes(routeRegistry)
+    stacksRoute = router.route
+  }
+  catch (err) {
+    // Don't crash the dashboard if route loading fails — dev devs still
+    // need page rendering even if /api/* endpoints aren't reachable.
+    if (verbose) console.warn('[dashboard] Stacks router init failed:', (err as Error)?.message || err)
+  }
+
   const serverPromise = serve({
     patterns: [userDashboardPath, dashboardPath],
     port: dashboardPort,
@@ -688,7 +708,39 @@ async function startStxServer(): Promise<void> {
     partialsDir: dashboardPath,
     quiet: true,
     routes: configRoutes,
-    onRequest: dashboardCmsApi,
+    // onRequest fires BEFORE the `routes` map and BEFORE STX page
+    // resolution. Returning a Response short-circuits the rest of the
+    // pipeline; returning null/undefined falls through.
+    //
+    // Delegation policy (dev dashboard):
+    //   1. `/api/config/*` and `/__deps/*` stay with `configRoutes` below
+    //      — those are dev-only static fixtures. Skip the Stacks router.
+    //   2. `/api/*` always delegates to the Stacks router. These are JSON
+    //      endpoints — bun-router's 404 (no route) and 405 (method
+    //      mismatch) are the right responses, never an HTML page.
+    //   3. For everything else, GET goes to STX (page rendering wins,
+    //      so `/health`, `/login`, `/content/authors`, etc. render their
+    //      `.stx` view) and non-GET goes to bun-router (so POST `/login`
+    //      reaches the action). Without rule (3a), root-level routes that
+    //      collide with a page — e.g. `route.health()` registering a
+    //      `/health` LB-probe at root — would intercept the page.
+    onRequest: stacksRoute
+      ? async (req: Request) => {
+          const url = new URL(req.url)
+          const pathname = url.pathname
+
+          if (pathname.startsWith('/api/config/') || pathname.startsWith('/__deps/'))
+            return null
+
+          if (pathname.startsWith('/api/'))
+            return stacksRoute!.handleRequest(req)
+
+          if (req.method.toUpperCase() !== 'GET')
+            return stacksRoute!.handleRequest(req)
+
+          return null
+        }
+      : undefined,
     auth: false,
     ...(stxModule && { stxModule }),
   } as any)
@@ -1010,8 +1062,13 @@ if (createApp) {
   // without requiring an env var.
   const craftBinaryPath = (() => {
     const explicit = process.env.CRAFT_BIN
-    if (explicit && existsSync(explicit))
-      return explicit
+    if (explicit) {
+      // Explicit override — use it if it exists, otherwise skip native mode.
+      // Silently falling through to the well-known probe paths below would
+      // be surprising: the user named a path, so honour that decision.
+      // A non-existent CRAFT_BIN is also our test/headless escape hatch.
+      return existsSync(explicit) ? explicit : undefined
+    }
     const codeTools = `${process.env.HOME}/Code/Tools/craft/craft`
     if (existsSync(codeTools))
       return codeTools

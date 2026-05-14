@@ -19,9 +19,9 @@ const folders = [
 <div class="bg-white dark:bg-neutral-800">
   <div class="flex h-screen">
     <EmailSidebar
-      :active-folder="activeFolder"
+      :activeFolder="activeFolder"
       :folders="folders"
-      :unread-counts="unreadCounts"
+      :unreadCounts="unreadCounts"
       @update:active-folder="handleFolderChange"
       @compose="handleCompose"
     />

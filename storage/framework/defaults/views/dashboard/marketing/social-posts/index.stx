@@ -20,7 +20,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
 
   <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
     <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-5 flex items-center">
+      <div class="flex items-center p-5">
         <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
           <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-document-validation"></div>
         </div>
@@ -31,7 +31,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
       </div>
     </div>
     <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-5 flex items-center">
+      <div class="flex items-center p-5">
         <div class="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 rounded-md">
           <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-checkmark-circle-02"></div>
         </div>
@@ -42,7 +42,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
       </div>
     </div>
     <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-5 flex items-center">
+      <div class="flex items-center p-5">
         <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
           <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-clock-01"></div>
         </div>
@@ -53,7 +53,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
       </div>
     </div>
     <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-5 flex items-center">
+      <div class="flex items-center p-5">
         <div class="p-2 h-10 w-10 bg-yellow-100 dark:bg-yellow-900 rounded-md">
           <div class="h-6 w-6 text-yellow-600 dark:text-yellow-300 i-hugeicons-edit-01"></div>
         </div>
@@ -66,7 +66,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
   </div>
 
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-6">
-    <div class="relative max-w-sm flex-1">
+    <div class="relative flex-1 max-w-sm">
       <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
         <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
       </div>
@@ -152,7 +152,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
 
             <p class="mt-4 text-gray-500 text-sm dark:text-neutral-400">{{ post.content }}</p>
 
-            <div :show="post.images.length > 0" class="mt-4 grid gap-2 grid-cols-2">
+            <div :show="post.images.length > 0" class="grid gap-2 grid-cols-2 mt-4">
               <template :for="image in post.images">
                 <div class="aspect-square overflow-hidden relative rounded-lg">
                   <img :src="image" alt="Post image" class="object-cover h-full w-full" />
@@ -206,11 +206,11 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
       <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
         <template :for="post in paginatedPosts()">
           <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700/50">
-            <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm text-gray-900 dark:text-white max-w-md truncate">{{ truncate(post.content, 80) }}</td>
-            <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-neutral-400">{{ post.platform }}</td>
-            <td class="px-3 py-4 text-sm text-gray-500 whitespace-nowrap dark:text-neutral-400">{{ post.author }}</td>
+            <td class="pl-4 pr-3 py-4 sm:pl-6 max-w-md text-gray-900 text-sm truncate dark:text-white">{{ truncate(post.content, 80) }}</td>
+            <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ post.platform }}</td>
+            <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ post.author }}</td>
             <td class="px-3 py-4 text-sm whitespace-nowrap"><span class="{{ statusBadgeClass(post.status) }}">{{ post.status }}</span></td>
-            <td class="px-3 py-4 text-sm text-gray-500 text-right whitespace-nowrap dark:text-neutral-400">{{ formatDate(post.scheduledDate) }}</td>
+            <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ formatDate(post.scheduledDate) }}</td>
             <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm whitespace-nowrap">
               <div class="flex justify-end space-x-2">
                 <button @click="openEditPostModal(post.id)" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"><div class="h-5 w-5 i-hugeicons-edit-01"></div></button>
@@ -239,10 +239,10 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
   </div>
 
   <div :show="showPostModal()" @click.self="closePostModal()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="overflow-y-auto p-6 max-h-[90vh] sm:max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+    <div class="overflow-y-auto p-6 max-h-[90vh] w-full sm:max-w-2xl bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
       <div class="flex items-start justify-between mb-4">
-        <h3 class="font-semibold text-lg text-gray-900 dark:text-white">{{ isNewPost() ? 'New Post' : 'Edit Post' }}</h3>
-        <button @click="closePostModal()" class="text-gray-400 hover:text-gray-600 dark:text-neutral-300">
+        <h3 class="font-semibold text-gray-900 text-lg dark:text-white">{{ isNewPost() ? 'New Post' : 'Edit Post' }}</h3>
+        <button @click="closePostModal()" class="text-gray-400 dark:text-neutral-300 hover:text-gray-600">
           <i class="h-5 w-5 i-hugeicons-cancel-01"></i>
         </button>
       </div>
@@ -252,7 +252,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
           <label class="block font-medium text-gray-900 text-sm dark:text-white">Content</label>
           <textarea x-model="postContent" rows="4" placeholder="What's on your mind? Use #tags to categorise" class="block mt-2 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 shadow-sm"></textarea>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="grid gap-4 grid-cols-1 sm:grid-cols-2">
           <div>
             <label class="block font-medium text-gray-900 text-sm dark:text-white">Platform</label>
             <select x-model="postPlatform" class="block mt-2 pl-3 pr-10 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
@@ -282,7 +282,7 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
 
       <div class="flex justify-end mt-6 space-x-2">
         <button @click="closePostModal()" class="inline-flex justify-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-        <button @click="savePost()" :disabled="!postContent()" class="inline-flex justify-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 shadow-sm">{{ isNewPost() ? 'Create' : 'Save' }}</button>
+        <button @click="savePost()" :disabled="!postContent()" class="inline-flex justify-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm disabled:opacity-50">{{ isNewPost() ? 'Create' : 'Save' }}</button>
       </div>
     </div>
   </div>

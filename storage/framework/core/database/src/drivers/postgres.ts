@@ -401,8 +401,9 @@ async function createPivotTableMigration(model: Model, modelPath: string) {
 
     let migrationContent = `import type { Database } from '@stacksjs/database'\n`
     migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-    migrationContent += `export async function up(_db: Database<any>) {\n`
-    migrationContent += `  await (_db as any).schema\n`
+    // eslint-disable-next-line pickier/no-unused-vars
+    migrationContent += `export async function up(db: Database<any>) {\n`
+    migrationContent += `  await (db as any).schema\n`
     migrationContent += `    .createTable('${pivotTable.table}')\n`
     migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
     migrationContent += `    .addColumn('${pivotTable.firstForeignKey}', 'integer', (col) => col.notNull())\n`
@@ -469,7 +470,8 @@ async function createAlterTableMigration(modelPath: string) {
 
   let migrationContent = `import type { Database } from '@stacksjs/database'\n`
   migrationContent += `import { sql } from '@stacksjs/database'\n\n`
-  migrationContent += `export async function up(_db: Database<any>) {\n`
+  // eslint-disable-next-line pickier/no-unused-vars
+  migrationContent += `export async function up(db: Database<any>) {\n`
 
   if (fieldsToAdd.length || fieldsToRemove.length) {
     hasChanged = true

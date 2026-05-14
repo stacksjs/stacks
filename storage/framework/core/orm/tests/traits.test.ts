@@ -106,11 +106,16 @@ describe('trait modules', () => {
       expect(typeof methods.createSetupIntent).toBe('function')
       expect(typeof methods.subscriptionHistory).toBe('function')
       expect(typeof methods.transactionHistory).toBe('function')
+      expect(typeof methods.connectAccount).toBe('function')
+      expect(typeof methods.createConnectAccount).toBe('function')
+      expect(typeof methods.connectOnboardLink).toBe('function')
+      expect(typeof methods.syncConnectStatus).toBe('function')
+      expect(typeof methods.chargeWithSplit).toBe('function')
     })
 
-    it('should return exactly 17 methods', () => {
+    it('should return exactly 22 methods', () => {
       const methods = createBillableMethods('users')
-      expect(Object.keys(methods)).toHaveLength(17)
+      expect(Object.keys(methods)).toHaveLength(22)
     })
   })
 
@@ -124,11 +129,12 @@ describe('trait modules', () => {
       expect(typeof methods.like).toBe('function')
       expect(typeof methods.unlike).toBe('function')
       expect(typeof methods.isLiked).toBe('function')
+      expect(typeof methods.likedBy).toBe('function')
     })
 
-    it('should return exactly 5 methods', () => {
+    it('should return exactly 6 methods', () => {
       const methods = createLikeableMethods('posts')
-      expect(Object.keys(methods)).toHaveLength(5)
+      expect(Object.keys(methods)).toHaveLength(6)
     })
 
     it('should accept custom options', () => {

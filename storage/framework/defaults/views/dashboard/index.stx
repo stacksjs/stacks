@@ -96,7 +96,7 @@ const getActivityStatusClass = (status) => {
     <div class="bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
       <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
         <h3 class="font-semibold text-base text-neutral-900 dark:text-white">System Health</h3>
-        <a href="/health" data-stx-link class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
+        <StxLink to="/health" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
       </div>
       <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
         @foreach(systemHealth as service)
@@ -119,7 +119,7 @@ const getActivityStatusClass = (status) => {
     <div class="bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
       <div class="flex items-center justify-between p-5 border-b border-neutral-200 dark:border-neutral-700">
         <h3 class="font-semibold text-base text-neutral-900 dark:text-white">Recent Activity</h3>
-        <a href="/data/activity" data-stx-link class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</a>
+        <StxLink to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
       </div>
       <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
         @foreach(recentActivity as activity)

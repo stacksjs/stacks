@@ -189,7 +189,7 @@
     </div>
   </div>
 
-  <TerminalContainer class="pt-12 px-4 sm:px-6 lg:px-8" />
+  <div class="pt-12 px-4 sm:px-6 lg:px-8"><TerminalContainer /></div>
 
   <div class="pt-12 px-4 sm:px-6 lg:px-8">
     <div class="sm:flex sm:items-center">

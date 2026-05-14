@@ -21,7 +21,7 @@
         <div class="inline-block py-2 sm:px-6 lg:px-8 min-w-full align-middle">
           <div class="overflow-hidden sm:rounded-lg">
             <form @submit.prevent="handleSave()" class="relative">
-              <CodeEditor :value="envValues" :loading="isLoading" language="env" :line-numbers="true" :keyboard-shortcuts="true" @save="handleSave" @format="formatContent" />
+              <CodeEditor :value="envValues" :loading="isLoading" language="env" :lineNumbers="true" :keyboardShortcuts="true" @save="handleSave" @format="formatContent" />
 
               <div class="flex items-center mb-4 mt-2 space-x-4 text-gray-500 text-sm dark:text-neutral-400">
                 <div class="flex items-center space-x-1">

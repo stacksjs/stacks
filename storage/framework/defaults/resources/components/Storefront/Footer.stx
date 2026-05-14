@@ -47,24 +47,24 @@ const {
 } = defineProps<FooterProps>()
 </script>
 
-<footer class="mt-24 border-t border-stone-200 bg-stone-100">
-  <div class="mx-auto max-w-6xl px-6 py-14 grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-12 text-sm">
+<footer class="mt-24 bg-stone-100 border-stone-200 border-t">
+  <div class="grid gap-8 grid-cols-2 md:gap-12 md:grid-cols-4 mx-auto px-6 py-14 max-w-6xl text-sm">
     <div class="col-span-2 md:col-span-1">
-      <a href="/" class="inline-flex items-center gap-2 group rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-100">
-        <span class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-900 text-stone-50 font-bold text-sm transition-transform group-hover:scale-105">{{ brandMark }}</span>
-        <span class="font-bold text-base tracking-tight text-stone-900">{{ brandName }}</span>
+      <a href="/" class="inline-flex gap-2 items-center rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-100 focus-visible:ring-stone-900 group">
+        <span class="inline-flex items-center justify-center h-9 w-9 font-bold text-sm text-stone-50 bg-stone-900 rounded-full transition-transform group-hover:scale-105">{{ brandMark }}</span>
+        <span class="font-bold text-base text-stone-900 tracking-tight">{{ brandName }}</span>
       </a>
-      <p class="mt-4 text-stone-600 leading-relaxed">{{ tagline }}</p>
+      <p class="mt-4 leading-relaxed text-stone-600">{{ tagline }}</p>
     </div>
     @foreach (columns as col)
       <div>
-        <p class="font-semibold mb-3 text-stone-900 text-xs uppercase tracking-wider">{{ col.title }}</p>
+        <p class="mb-3 font-semibold text-stone-900 text-xs tracking-wider uppercase">{{ col.title }}</p>
         <ul class="space-y-2.5 text-stone-600">
           @foreach (col.links as link)
             <li>
               <a
                 href="{{ link.href }}"
-                class="rounded-sm transition-colors hover:text-stone-900 focus-visible:outline-none focus-visible:text-stone-900 focus-visible:underline underline-offset-4"
+                class="underline-offset-4 focus-visible:text-stone-900 focus-visible:underline hover:text-stone-900 rounded-sm focus-visible:outline-none transition-colors"
               >{{ link.label }}</a>
             </li>
           @endforeach
@@ -72,8 +72,8 @@ const {
       </div>
     @endforeach
   </div>
-  <div class="border-t border-stone-200">
-    <div class="mx-auto max-w-6xl px-6 py-6 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-stone-500">
+  <div class="border-stone-200 border-t">
+    <div class="flex flex-col gap-2 items-center justify-between md:flex-row mx-auto px-6 py-6 max-w-6xl text-stone-500 text-xs">
       <p>{{ byline }}</p>
       <p>{{ techByline }}</p>
     </div>

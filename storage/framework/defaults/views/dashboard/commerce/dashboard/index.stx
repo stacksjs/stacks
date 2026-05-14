@@ -211,8 +211,8 @@ function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix
         </dl>
 
         <!-- Charts — still fed by canned monthly arrays in the client block.
-             Wiring real data needs payments.fetchMonthlyPaymentTrends() and
-             a daily orders trend; tracked in the TODO at the top of this file. -->
+            Wiring real data needs payments.fetchMonthlyPaymentTrends() and
+            a daily orders trend; tracked in the TODO at the top of this file. -->
         <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
           <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="p-6">
@@ -234,12 +234,12 @@ function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix
         </div>
 
         <!-- Top Selling Products — by units sold over all time, joined back to
-             current product info. Empty state shows when there are no orders yet. -->
+            current product info. Empty state shows when there are no orders yet. -->
         <div class="mt-8">
           <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
             <div class="px-4 py-5 sm:px-6">
               <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Selling Products</h3>
-              <p class="mt-1 text-sm text-gray-500 dark:text-neutral-400">Ranked by units sold across all orders.</p>
+              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ranked by units sold across all orders.</p>
             </div>
             <div class="border-gray-200 border-t dark:border-neutral-700">
               @if(topProducts.length === 0)
@@ -313,8 +313,8 @@ function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix
 </PageLayout>
 
 <!-- Server-rendered chart payload. Plain `<script>` (no `type="module"`,
-     no `application/json`) so stx interpolates inside it. `{!! ... !!}`
-     emits raw JSON; `{{ }}` would HTML-escape the quotes and break it. -->
+    no `application/json`) so stx interpolates inside it. `{!! ... !!}`
+    emits raw JSON; `{{ }}` would HTML-escape the quotes and break it. -->
 <script>
 window.__commerceChartData = {!! JSON.stringify(chartData) !!}
 </script>

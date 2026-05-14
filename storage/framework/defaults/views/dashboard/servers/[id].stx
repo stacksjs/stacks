@@ -27,10 +27,10 @@ const commonPorts = [
         </div>
 
         <div class="flex gap-4 items-center">
-          <a href="/servers" class="inline-flex gap-1 items-center text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 duration-200 transition-colors">
+          <StxLink to="/servers" class="inline-flex gap-1 items-center text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 duration-200 transition-colors">
             <div class="h-4 w-4 i-hugeicons-arrow-left"></div>
             Back to Servers
-          </a>
+          </StxLink>
         </div>
       </div>
     </div>

@@ -167,7 +167,7 @@ stacks.trackEvent('purchase completed', {
   </div>
 
   <div :show="showEventDetails()" @click.self="closeEventDetails()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="overflow-y-auto p-6 max-h-[90vh] sm:max-w-3xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+    <div class="overflow-y-auto p-6 max-h-[90vh] w-full sm:max-w-3xl bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
       <div class="flex items-start justify-between">
         <div>
           <h3 class="font-semibold text-gray-900 text-xl dark:text-white">{{ selectedEvent()?.name }}</h3>
@@ -219,7 +219,7 @@ stacks.trackEvent('{{ selectedEventName() }}', {
   </div>
 
   <div :show="showCreateEventModal()" @click.self="closeCreateEvent()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="overflow-y-auto p-6 max-h-[90vh] sm:max-w-lg w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+    <div class="overflow-y-auto p-6 max-h-[90vh] w-full sm:max-w-lg bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
       <div class="flex items-start justify-between">
         <div>
           <h3 class="font-semibold text-gray-900 text-xl dark:text-white">Create New Event</h3>
@@ -262,7 +262,7 @@ stacks.trackEvent('{{ selectedEventName() }}', {
   </div>
 
   <div :show="showDeleteConfirmModal()" @click.self="cancelDelete()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="overflow-y-auto p-6 max-h-[90vh] sm:max-w-lg w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+    <div class="overflow-y-auto p-6 max-h-[90vh] w-full sm:max-w-lg bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
       <div class="flex items-center justify-center mx-auto h-12 w-12 bg-red-100 dark:bg-red-900 rounded-full">
         <div class="h-6 w-6 text-red-600 dark:text-red-400 i-hugeicons-alert-02"></div>
       </div>

@@ -22,7 +22,7 @@ const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
     <PageHeader title="Activity Log" description="Audit trail of recent activity" />
-    <div class="flex items-center gap-2">
+    <div class="flex gap-2 items-center">
       <button @click="toggleAutoRefresh()" class="{{ autoRefreshButtonClass }}">
         <div class="mr-2 h-4 w-4 i-hugeicons-refresh"></div>
         {{ autoRefreshLabel }}
@@ -67,7 +67,7 @@ const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
           <tr class="hover:bg-gray-50 dark:hover:bg-neutral-700">
             <td class="px-4 py-3 whitespace-nowrap"><div class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(log.created_at) }}</div></td>
             <td class="px-4 py-3 whitespace-nowrap">
-              <div class="flex items-center gap-2">
+              <div class="flex gap-2 items-center">
                 <img :show="log.causer?.avatar" :src="log.causer?.avatar" alt="" class="h-6 w-6 rounded-full" />
                 <div class="font-medium text-gray-900 text-sm dark:text-white">{{ log.causer?.name ?? 'System' }}</div>
               </div>
@@ -124,7 +124,7 @@ const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
               <dd class="mt-1 text-gray-900 dark:text-white">{{ selectedLog()?.subject_type }} #{{ selectedLog()?.subject_id }}</dd>
             </div>
           </dl>
-          <pre class="mt-4 overflow-auto p-3 max-h-64 font-mono text-gray-800 text-xs bg-gray-50 dark:bg-neutral-900 dark:text-neutral-200 rounded">{{ selectedLogJSON }}</pre>
+          <pre class="overflow-auto mt-4 p-3 max-h-64 font-mono text-gray-800 text-xs dark:text-neutral-200 bg-gray-50 dark:bg-neutral-900 rounded">{{ selectedLogJSON }}</pre>
           <div class="flex justify-end mt-5">
             <button @click="closeLog()" class="inline-flex justify-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Close</button>
           </div>

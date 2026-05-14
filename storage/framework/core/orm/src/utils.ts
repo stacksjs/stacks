@@ -82,6 +82,17 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
     }
   }
 
+  // hasManyThrough — pre-fix this declaration was accepted in `ModelOptions`
+  // but `getRelations` had no branch for it, so `.with('comments')` on a
+  // post that declared `hasManyThrough: { comments: { through: 'User',
+  // target: 'Comment' } }` silently no-op'd. Same shape as hasOneThrough,
+  // wired through the same processor.
+  if (model.hasManyThrough) {
+    for (const relationInstance of model.hasManyThrough) {
+      relationships.push(await processHasThrough(relationInstance, model, modelName, 'hasManyThrough'))
+    }
+  }
+
   if (model.belongsToMany) {
     for (const relationInstance of model.belongsToMany) {
       relationships.push(await processBelongsToMany(relationInstance, model, modelName, 'belongsToMany'))
@@ -92,7 +103,126 @@ export async function getRelations(model: Model, modelName: string): Promise<Rel
     relationships.push(await processMorphOne(model.morphOne, model, modelName, 'morphOne'))
   }
 
+  // morphMany has the same on-disk shape as morphOne (single related row vs
+  // many is a runtime-cardinality concern, not a schema concern). Reuse the
+  // morphOne processor — the relationship name on the resulting config
+  // distinguishes the two for downstream eager-load logic.
+  if (model.morphMany) {
+    const items = Array.isArray(model.morphMany) ? model.morphMany : [model.morphMany]
+    for (const relationInstance of items) {
+      relationships.push(await processMorphOne(relationInstance as any, model, modelName, 'morphMany'))
+    }
+  }
+
+  // morphTo is the inverse — the model carries `<morph>_type` and
+  // `<morph>_id` columns and resolves to whatever model `<morph>_type`
+  // names. We don't know the target model statically, so emit a config
+  // entry with the morph name and let the eager-loader resolve at runtime.
+  if (model.morphTo) {
+    const morphTo = model.morphTo
+    const morphEntries = Array.isArray(morphTo)
+      ? morphTo
+      : (typeof morphTo === 'object' && morphTo !== null ? [morphTo] : [])
+    for (const entry of morphEntries) {
+      relationships.push(processMorphTo(entry, model, modelName))
+    }
+  }
+
+  // morphToMany / morphedByMany — polymorphic many-to-many. The two are
+  // mirror images: if Post `morphToMany`s Tag through `taggable`, then Tag
+  // `morphedByMany`s Post through the same pivot. We emit a relation
+  // config keyed on the relation type so the eager-loader can pick the
+  // right join shape.
+  if (model.morphToMany) {
+    const items = Array.isArray(model.morphToMany) ? model.morphToMany : [model.morphToMany]
+    for (const relationInstance of items) {
+      relationships.push(processPolymorphicPivot(relationInstance as any, model, modelName, 'morphToMany'))
+    }
+  }
+
+  if (model.morphedByMany) {
+    const items = Array.isArray(model.morphedByMany) ? model.morphedByMany : [model.morphedByMany]
+    for (const relationInstance of items) {
+      relationships.push(processPolymorphicPivot(relationInstance as any, model, modelName, 'morphedByMany'))
+    }
+  }
+
   return relationships
+}
+
+/**
+ * Build a RelationConfig for a `morphTo` declaration. Unlike `morphOne` /
+ * `morphMany`, the related model isn't known at definition time — the
+ * row's `<morph>_type` column names it at runtime. We emit a config with
+ * the morph column names so the eager-loader can resolve dynamically.
+ */
+function processMorphTo(relationInstance: any, model: Model, modelName: string): RelationConfig {
+  const morphName = (relationInstance && typeof relationInstance === 'object' && relationInstance.name)
+    ? String(relationInstance.name)
+    : `${snakeCase(modelName)}able`
+  const typeColumn = (relationInstance?.type as string) || `${morphName}_type`
+  const idColumn = (relationInstance?.id as string) || `${morphName}_id`
+
+  return {
+    relationship: 'morphTo',
+    model: '', // resolved at runtime from <morph>_type
+    table: '' as TableNames,
+    relationTable: '' as TableNames,
+    foreignKey: idColumn,
+    modelKey: typeColumn,
+    relationName: morphName,
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign: '',
+    pivotKey: '',
+    pivotTable: '' as TableNames,
+  }
+}
+
+/**
+ * Polymorphic pivot relations (`morphToMany` and its inverse
+ * `morphedByMany`). Both share the same pivot-shape — `(target_id,
+ * target_type, related_id)` — but the join direction differs. The
+ * relation's name field captures which side the model is on so the
+ * eager-loader can pick the right column pair.
+ *
+ * The pivot table defaults to `<morphName>` (e.g. `taggable` for tags),
+ * with `<morphName>_id` and `<morphName>_type` as the polymorphic
+ * columns; callers can override via the relation declaration object.
+ */
+function processPolymorphicPivot(
+  relationInstance: any,
+  model: Model,
+  modelName: string,
+  relation: 'morphToMany' | 'morphedByMany',
+): RelationConfig {
+  const isObject = typeof relationInstance === 'object' && relationInstance !== null
+  const relationModel = isObject ? String(relationInstance.model || '') : String(relationInstance)
+  const morphName = (isObject && relationInstance.morphName)
+    ? String(relationInstance.morphName)
+    : `${snakeCase(modelName)}able`
+  const pivotTable = (isObject && relationInstance.pivotTable)
+    ? String(relationInstance.pivotTable)
+    : morphName
+  const idColumn = (isObject && relationInstance.id) || `${morphName}_id`
+  const typeColumn = (isObject && relationInstance.type) || `${morphName}_type`
+
+  return {
+    relationship: relation,
+    model: relationModel,
+    table: '' as TableNames, // resolved during eager-load via target_type
+    relationTable: '' as TableNames,
+    foreignKey: idColumn,
+    modelKey: typeColumn,
+    relationName: morphName,
+    relationModel: modelName,
+    throughModel: '',
+    throughForeignKey: '',
+    pivotForeign: idColumn,
+    pivotKey: typeColumn,
+    pivotTable: pivotTable as TableNames,
+  }
 }
 
 async function loadModels(modelName: string, relationModel: string): Promise<{ modelRelation: Model, modelPath: string, modelRelationPath: string }> {

@@ -16,7 +16,12 @@ const qbConfigPath = projectPath('config/qb.ts')
 const qbConfig = (await import(qbConfigPath)).default
 setConfig(qbConfig)
 
-// Load all models from app/Models/ (individually, so one broken model doesn't block the rest)
+// Load all models from app/Models/ (individually, so one broken model doesn't block the rest).
+//
+// Pre-fix: bare `catch {}` here swallowed ImportErrors silently. A typo'd
+// model file produced ZERO CRUD endpoints with no log line — developers
+// would hit a 404 in the browser and have no clue the model didn't load.
+// Now we log every failure with full context so the breakage is visible.
 const modelsDir = projectPath('app/Models')
 const models: Record<string, any> = {}
 
@@ -38,13 +43,25 @@ try {
       const name = def.name ?? basename(entry, ext)
       models[name] = { ...def, name }
     }
-    catch {
-      // Skip models that fail to import (e.g., missing dependencies)
+    catch (err) {
+      // The auto-CRUD pipeline depends on this load step. A silent failure
+      // here cascades into "every endpoint for this model returns 404" —
+      // surface it so the dev sees the actual cause.
+      console.error(`[orm] Failed to import model ${entry} — auto-CRUD endpoints will not be registered. Reason:`, err)
     }
   }
 }
-catch {
-  // Models directory may not exist yet
+catch (err: any) {
+  // ENOENT on the models directory is the only expected failure here
+  // (fresh app, no models yet). Anything else is a real problem worth
+  // logging — permissions, broken symlink, malformed path.
+  if (err && (err.code === 'ENOENT' || err.code === 'ENOTDIR')) {
+    // First-run / no-models case: stay quiet, the app just hasn't
+    // declared any models yet.
+  }
+  else {
+    console.error(`[orm] Could not enumerate ${modelsDir}:`, err)
+  }
 }
 
 // Create a query builder instance (uses the config set above)
@@ -119,6 +136,7 @@ function safeJSONOrEmpty(_s: string): unknown { try { return JSON.parse(_s) } ca
 //
 // Skips fields the caller never sent on PATCH requests so a partial update
 // doesn't trip a "required" rule on a sibling field that wasn't touched.
+// eslint-disable-next-line pickier/no-unused-vars
 function validateWriteBody(
   _data: Record<string, any>,
   _model: any,

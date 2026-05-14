@@ -76,7 +76,13 @@ async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): P
       return (await import(userPath)).default
     }
   }
-  catch { /* fall through to framework default */ }
+  catch (err) {
+    // Pre-fix this was a bare `catch {}` — a typo'd user model silently
+    // fell through to the framework default, so the dev's customizations
+    // appeared to "not be applied" with no log line indicating why.
+    // Surface the actual import error so they can fix it.
+    console.error(`[orm] Failed to import userland model ${modelName} from ${userPath} — falling back to framework default. Reason:`, err)
+  }
   // 2) Framework default at storage/framework/defaults/app/Models/<Name>.ts
   //    Defaults are organised in subdirectories (commerce/, Content/,
   //    realtime/) so each model is searched in the relevant subdir first
@@ -89,7 +95,11 @@ async function loadUserlandModel(modelName: string, subdirs: string[] = ['']): P
         return (await import(defaultPath)).default
       }
     }
-    catch { /* try next subdir */ }
+    catch (err) {
+      // Same fix as above for the framework-default branch — a broken
+      // default shouldn't be invisible.
+      console.error(`[orm] Failed to import framework default model ${modelName} from ${defaultPath} — trying next subdir. Reason:`, err)
+    }
   }
   return null
 }

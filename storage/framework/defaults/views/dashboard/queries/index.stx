@@ -128,7 +128,7 @@
                 </td>
                 <td class="hidden sm:table-cell px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">{{ query.executed_at }}</td>
                 <td class="relative pl-3 pr-4 py-4 sm:pr-6 font-medium text-right text-sm">
-                  <a href="/queries/{{ query.id }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">View<span class="sr-only">, {{ query.id }}</span></a>
+                  <StxLink to="/queries/{{ query.id }}" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">View<span class="sr-only">, {{ query.id }}</span></StxLink>
                 </td>
               </tr>
             @endforeach

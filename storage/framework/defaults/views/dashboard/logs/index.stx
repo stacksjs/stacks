@@ -32,10 +32,10 @@
     <div class="mb-6 space-y-4">
       <div class="flex flex-wrap gap-4 items-center">
         <div class="flex-1 min-w-[200px]">
-          <input x-model="searchTerm" type="text" placeholder="Search logs..." class="px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-700 border border-gray-300 dark:border-neutral-600 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
+          <input x-model="searchTerm" type="text" placeholder="Search logs..." class="px-4 py-2 w-full text-gray-900 dark:text-neutral-100 dark:bg-neutral-700 border border-gray-300 rounded-lg dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500" />
         </div>
 
-        <select x-model="sourceFilter" class="px-4 py-2 min-w-[140px] text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 rounded-lg">
+        <select x-model="sourceFilter" class="px-4 py-2 min-w-[140px] text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-800 border border-gray-300 rounded-lg dark:border-neutral-600">
           <option value="all">All Sources</option>
           <option value="cli">CLI</option>
           <option value="file">File</option>
@@ -44,7 +44,7 @@
           <option value="notification">Notification</option>
         </select>
 
-        <select x-model="logTypeFilter" class="px-4 py-2 min-w-[140px] text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-800 border border-gray-300 dark:border-neutral-600 rounded-lg">
+        <select x-model="logTypeFilter" class="px-4 py-2 min-w-[140px] text-gray-900 dark:text-neutral-100 bg-white dark:bg-neutral-800 border border-gray-300 rounded-lg dark:border-neutral-600">
           <option value="all">All Types</option>
           <option value="info">Info</option>
           <option value="success">Success</option>
@@ -103,7 +103,7 @@
                     </div>
                   </td>
                   <td class="px-6 py-4 whitespace-nowrap">
-                    <span class="inline-flex px-2 font-semibold leading-5 text-blue-800 text-xs bg-blue-100 dark:bg-blue-900 dark:text-blue-100 rounded-full">{{ log.source }}</span>
+                    <span class="inline-flex px-2 font-semibold leading-5 text-blue-800 text-xs dark:text-blue-100 bg-blue-100 dark:bg-blue-900 rounded-full">{{ log.source }}</span>
                   </td>
                   <td class="px-6 py-4">
                     <div class="text-gray-900 text-sm dark:text-neutral-100">{{ log.message }}</div>
@@ -135,7 +135,7 @@
         </span>
       </div>
       <div class="flex items-center space-x-2">
-        <select x-model="itemsPerPage" class="px-2 py-1 text-sm dark:text-neutral-100 dark:bg-neutral-700 border border-gray-300 dark:border-neutral-600 rounded-md">
+        <select x-model="itemsPerPage" class="px-2 py-1 text-sm dark:text-neutral-100 dark:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600">
           <option value="10">10 per page</option>
           <option value="25">25 per page</option>
           <option value="50">50 per page</option>
@@ -143,7 +143,7 @@
         </select>
 
         <div class="flex items-center space-x-1">
-          <button @click="prevPage()" :disabled="currentPage() === 1" class="px-2 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-neutral-700">
+          <button @click="prevPage()" :disabled="currentPage() === 1" class="px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed">
             <i class="h-4 w-4 i-hugeicons-arrow-left-01" aria-hidden="true"></i>
           </button>
 
@@ -155,7 +155,7 @@
 
           <button :show="totalPages() > 5" @click="goToPage(totalPages())" class="{{ pageButtonClass(totalPages()) }}">{{ totalPages() }}</button>
 
-          <button @click="nextPage()" :disabled="currentPage() >= totalPages() || totalPages() === 0" class="px-2 py-1 text-sm border border-gray-300 dark:border-neutral-600 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-neutral-700">
+          <button @click="nextPage()" :disabled="currentPage() >= totalPages() || totalPages() === 0" class="px-2 py-1 text-sm hover:bg-gray-100 dark:hover:bg-neutral-700 border border-gray-300 rounded-md dark:border-neutral-600 disabled:opacity-50 disabled:cursor-not-allowed">
             <i class="h-4 w-4 i-hugeicons-arrow-right-01" aria-hidden="true"></i>
           </button>
         </div>
@@ -165,7 +165,7 @@
     <div :show="selectedLog() !== null" @click.self="closeModal()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
       <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
         <div class="flex items-center justify-between mb-4">
-          <h3 class="font-semibold text-lg text-gray-900 dark:text-neutral-100">Log Details</h3>
+          <h3 class="font-semibold text-gray-900 text-lg dark:text-neutral-100">Log Details</h3>
           <button @click="closeModal()" class="text-gray-500 dark:text-neutral-400 hover:text-gray-700 dark:hover:text-neutral-200">
             <i class="h-5 w-5 i-hugeicons-cancel-01" aria-hidden="true"></i>
           </button>
@@ -197,7 +197,7 @@
 
           <div :if="selectedLog()?.metadata?.command" class="mt-4">
             <label class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Command</label>
-            <div class="mt-2 p-3 font-mono text-sm bg-gray-50 dark:bg-neutral-900 dark:text-neutral-100 rounded-md">{{ selectedLog()?.metadata?.command }}</div>
+            <div class="mt-2 p-3 font-mono text-sm dark:text-neutral-100 bg-gray-50 dark:bg-neutral-900 rounded-md">{{ selectedLog()?.metadata?.command }}</div>
           </div>
 
           <div>

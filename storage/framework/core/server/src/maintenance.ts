@@ -56,6 +56,14 @@ const DEFAULT_COMING_SOON_PAYLOAD: Partial<MaintenancePayload> = {
   mode: 'coming-soon',
   status: 200,
   message: 'Stacks is setting up camp. Check back soon for the public launch.',
+  // Redirect to the user's marketing holding page rather than the
+  // framework's inline themed HTML. The view lives at
+  // `storage/framework/defaults/resources/views/coming-soon.stx`
+  // (mounts `<ComingSoon />`) and is the customisable surface — it
+  // ships with an email-subscribe form wired to /api/email/subscribe.
+  // Override with `comingSoon({ redirect: undefined })` to use the
+  // inline themed page instead.
+  redirect: '/coming-soon',
 }
 
 function defaultsForMode(mode: SiteMode): Partial<MaintenancePayload> {
@@ -470,4 +478,127 @@ export function siteModeResponse(payload: MaintenancePayload): Response {
  */
 export function bypassCookieValue(secret: string, mode: SiteMode = 'maintenance'): string {
   return `${bypassCookieName(mode)}=${secret}; Path=/; HttpOnly; SameSite=Lax`
+}
+
+/**
+ * Paths that are always allowed through maintenance/coming-soon mode.
+ * - `/coming-soon` itself must render (else the redirect loops).
+ * - `/api/email/subscribe` so the email-capture form on the holding
+ *   page still works.
+ * - Static assets used by the holding page (favicon, logo, etc.) so it
+ *   renders correctly. The dev server serves these directly; in prod
+ *   they're typically CDN'd — the allowlist is the safety net.
+ */
+const ALWAYS_ALLOWED_PATHS = new Set([
+  '/coming-soon',
+  '/api/email/subscribe',
+  '/favicon.ico',
+])
+
+const ALWAYS_ALLOWED_PREFIXES = [
+  '/css/',
+  '/js/',
+  '/images/',
+  '/fonts/',
+  '/assets/',
+  '/_modules/',
+  '/@vite/',
+  '/@fs/',
+  '/__deps/',
+]
+
+function isAlwaysAllowed(path: string): boolean {
+  if (ALWAYS_ALLOWED_PATHS.has(path))
+    return true
+  return ALWAYS_ALLOWED_PREFIXES.some(p => path.startsWith(p))
+}
+
+/**
+ * Parse a Cookie header into a flat map.
+ */
+function parseCookieHeader(header: string | null): Record<string, string> {
+  const out: Record<string, string> = {}
+  if (!header)
+    return out
+  for (const part of header.split(';')) {
+    const trimmed = part.trim()
+    const eq = trimmed.indexOf('=')
+    if (eq === -1)
+      continue
+    const k = trimmed.slice(0, eq).trim()
+    const v = trimmed.slice(eq + 1).trim()
+    if (k)
+      out[k] = v
+  }
+  return out
+}
+
+/**
+ * Extract the most plausible client IP from a Request.
+ */
+function clientIp(req: Request): string {
+  const fwd = req.headers.get('x-forwarded-for')
+  if (fwd)
+    return fwd.split(',')[0].trim()
+  const real = req.headers.get('x-real-ip')
+  if (real)
+    return real
+  return '127.0.0.1'
+}
+
+/**
+ * Single source of truth for the maintenance / coming-soon gate.
+ *
+ * Returns a `Response` to short-circuit the request, or `null` to let
+ * normal request handling continue.
+ *
+ * Used by:
+ *   - the dev server's `onRequest` hook (so the gate runs before the
+ *     stx-serve view router or the API proxy ever sees the request);
+ *   - the global `Maintenance` middleware in production.
+ *
+ * Order of checks (mirrors Laravel):
+ *   1. No active site-mode (no down file, no coming-soon file, no env
+ *      override) → pass through.
+ *   2. Path is always-allowed (the holding page itself, email
+ *      subscribe, static assets) → pass through.
+ *   3. Path matches the secret token → set mode-aware bypass cookie,
+ *      redirect home.
+ *   4. Bypass cookie present OR client IP allowed → pass through.
+ *   5. Otherwise → return the active mode's response (redirect for
+ *      coming-soon when a redirect URL is configured; HTML page for
+ *      maintenance).
+ */
+export async function maintenanceGate(req: Request): Promise<Response | null> {
+  const payload = await activeSiteModePayload()
+  if (!payload)
+    return null
+
+  const mode: SiteMode = payload.mode ?? 'maintenance'
+  const url = new URL(req.url)
+  const path = url.pathname
+
+  if (isAlwaysAllowed(path))
+    return null
+
+  // Secret bypass URL: visiting `/the-secret` sets the bypass cookie
+  // and bounces the visitor to home (or to the page they wanted).
+  if (payload.secret && isSecretPath(path, payload.secret)) {
+    return new Response(null, {
+      status: 302,
+      headers: {
+        'Location': '/',
+        'Set-Cookie': bypassCookieValue(payload.secret, mode),
+      },
+    })
+  }
+
+  const cookies = parseCookieHeader(req.headers.get('cookie'))
+  const hasCookie = !!payload.secret && hasValidBypassCookie(cookies, payload.secret, mode)
+  const ipAllowed = isAllowedIp(clientIp(req), payload.allowed)
+
+  if (hasCookie || ipAllowed)
+    return null
+
+  return siteModeResponse(payload)
 }

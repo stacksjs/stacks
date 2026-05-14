@@ -135,17 +135,17 @@ function linkTypeBadge(type: string): string {
           <h4 class="font-medium text-base text-gray-900 dark:text-white">{{ group.label }}</h4>
           <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 mt-3">
             @foreach(group.services as service)
-              <div @click="selectService('{{ service.id }}')" class="overflow-hidden p-4 bg-white dark:bg-neutral-700 rounded-lg shadow cursor-pointer hover:ring-2 hover:ring-blue-500">
-                <div class="flex items-center gap-3">
+              <div @click="selectService('{{ service.id }}')" class="overflow-hidden p-4 bg-white dark:bg-neutral-700 rounded-lg hover:ring-2 hover:ring-blue-500 shadow cursor-pointer">
+                <div class="flex gap-3 items-center">
                   <div class="flex items-center justify-center h-10 w-10 rounded-lg" style="background-color: {{ service.color }}20; color: {{ service.color }}">
                     <div class="{{ service.icon }} h-6 w-6"></div>
                   </div>
                   <div>
                     <p class="font-medium text-gray-900 text-sm dark:text-white">{{ service.name }}</p>
-                    <p class="text-gray-500 text-xs dark:text-neutral-400 capitalize">{{ service.type }}</p>
+                    <p class="capitalize text-gray-500 text-xs dark:text-neutral-400">{{ service.type }}</p>
                   </div>
                 </div>
-                <p class="mt-3 text-gray-500 text-xs leading-relaxed dark:text-neutral-400">{{ service.description }}</p>
+                <p class="mt-3 leading-relaxed text-gray-500 text-xs dark:text-neutral-400">{{ service.description }}</p>
               </div>
             @endforeach
           </div>
@@ -156,16 +156,16 @@ function linkTypeBadge(type: string): string {
     <div :show="selectedService() !== null" @click.self="closeService()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
       <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
         <div class="flex items-start justify-between">
-          <div class="flex items-center gap-3">
+          <div class="flex gap-3 items-center">
             <div class="flex items-center justify-center h-12 w-12 rounded-lg" :style="selectedServiceStyle()">
               <div :class="selectedServiceIconClass()"></div>
             </div>
             <div>
-              <h3 class="font-semibold text-lg text-gray-900 dark:text-white">{{ selectedService()?.name }}</h3>
-              <p class="text-gray-500 text-sm dark:text-neutral-400 capitalize">{{ selectedService()?.type }}</p>
+              <h3 class="font-semibold text-gray-900 text-lg dark:text-white">{{ selectedService()?.name }}</h3>
+              <p class="capitalize text-gray-500 text-sm dark:text-neutral-400">{{ selectedService()?.type }}</p>
             </div>
           </div>
-          <button @click="closeService()" class="text-gray-400 hover:text-gray-600 dark:text-neutral-300 dark:hover:text-white">
+          <button @click="closeService()" class="text-gray-400 dark:text-neutral-300 hover:text-gray-600 dark:hover:text-white">
             <i class="h-5 w-5 i-hugeicons-cancel-01"></i>
           </button>
         </div>
@@ -173,11 +173,11 @@ function linkTypeBadge(type: string): string {
         <p class="mt-4 text-gray-700 text-sm dark:text-neutral-300">{{ selectedService()?.description }}</p>
 
         <div :show="selectedOutgoing().length > 0" class="mt-6">
-          <h4 class="font-medium text-sm text-gray-900 dark:text-white">Outgoing connections</h4>
+          <h4 class="font-medium text-gray-900 text-sm dark:text-white">Outgoing connections</h4>
           <ul class="mt-2 space-y-2">
             <template :for="conn in selectedOutgoing()">
               <li class="flex items-center justify-between p-2 bg-gray-50 dark:bg-neutral-700 rounded">
-                <span class="text-sm text-gray-900 dark:text-white">{{ conn.target?.name }}</span>
+                <span class="text-gray-900 text-sm dark:text-white">{{ conn.target?.name }}</span>
                 <span class="{{ linkTypeBadge(conn.type) }}">{{ conn.type }}</span>
               </li>
             </template>
@@ -185,11 +185,11 @@ function linkTypeBadge(type: string): string {
         </div>
 
         <div :show="selectedIncoming().length > 0" class="mt-6">
-          <h4 class="font-medium text-sm text-gray-900 dark:text-white">Incoming connections</h4>
+          <h4 class="font-medium text-gray-900 text-sm dark:text-white">Incoming connections</h4>
           <ul class="mt-2 space-y-2">
             <template :for="conn in selectedIncoming()">
               <li class="flex items-center justify-between p-2 bg-gray-50 dark:bg-neutral-700 rounded">
-                <span class="text-sm text-gray-900 dark:text-white">{{ conn.source?.name }}</span>
+                <span class="text-gray-900 text-sm dark:text-white">{{ conn.source?.name }}</span>
                 <span class="{{ linkTypeBadge(conn.type) }}">{{ conn.type }}</span>
               </li>
             </template>

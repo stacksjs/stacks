@@ -1,13 +1,11 @@
 <script>
 interface ComingSoonProps {
-  email?: string
-  loading?: boolean
-  errors?: any[]
-  successMessage?: string
+  // No server-rendered props — the form is fully client-driven.
 }
 
-const { email = '', loading = false, errors = [], successMessage = '' } = defineProps<ComingSoonProps>()
+defineProps<ComingSoonProps>()
 </script>
+
 <div class="overflow-hidden relative bg-white isolate">
   <svg class="absolute inset-0 h-full w-full stroke-gray-200 -z-10 [mask-image:radial-gradient(100%_100%_at_top_right,white,transparent)]" aria-hidden="true">
     <defs>
@@ -23,9 +21,7 @@ const { email = '', loading = false, errors = [], successMessage = '' } = define
       <Logo class="h-11 w-auto" />
 
       <div class="mt-24 sm:mt-32 lg:mt-16">
-        <a href="#" class="inline-flex space-x-6">
-          <span class="px-3 py-1 font-semibold leading-6 text-blue-600 text-sm bg-blue-600/10 ring-1 ring-blue-600/10 ring-inset rounded-full">Coming soon</span>
-        </a>
+        <span class="inline-block px-3 py-1 font-semibold leading-6 text-blue-600 text-sm bg-blue-600/10 ring-1 ring-blue-600/10 ring-inset rounded-full">Coming soon</span>
       </div>
 
       <h1 class="mt-10 font-bold text-4xl text-gray-900 tracking-tight sm:text-6xl">
@@ -42,40 +38,37 @@ const { email = '', loading = false, errors = [], successMessage = '' } = define
       </p>
 
       <div class="flex gap-x-6 items-center mt-10">
-        <div>
-          <div class="flex w-380px rounded-md shadow-sm">
-            <div class="flex relative focus-within:z-10 flex-grow items-stretch">
-              <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
-                <div class="h-5 w-5 text-gray-400 i-hugeicons-envelope"></div>
-              </div>
-
-              <input id="email" type="email" name="email" value="{{ email }}" class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-l-md rounded-none focus:ring-2 focus:ring-blue-600 focus:ring-inset" placeholder="may-we-ask@your-email.org">
+        <form id="coming-soon-form" class="flex w-380px rounded-md shadow-sm" novalidate>
+          <div class="flex relative focus-within:z-10 flex-grow items-stretch">
+            <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
+              <div class="h-5 w-5 text-gray-400 i-hugeicons-envelope"></div>
             </div>
 
-            <button type="button" class="inline-flex relative gap-x-1.5 items-center -ml-px px-3 py-2 w-120px font-semibold text-gray-900 text-sm hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-r-md : ? '' 'opacity-50' {{ }} loading" data-action="submit-email" {{ loading ? 'disabled' : '' }}>
-              @if(loading)
-                <div class="h-4 w-4 animate-spin i-hugeicons-loading-01"></div>
-              @else
-                Stay in Touch
-              @endif
-            </button>
+            <input
+              id="coming-soon-email"
+              type="email"
+              name="email"
+              required
+              class="block pl-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm placeholder:text-gray-400 border-0 ring-1 ring-gray-300 ring-inset rounded-l-md rounded-none focus:ring-2 focus:ring-blue-600 focus:ring-inset"
+              placeholder="may-we-ask@your-email.org">
           </div>
-        </div>
+
+          <button
+            id="coming-soon-submit"
+            type="submit"
+            class="inline-flex relative gap-x-1.5 items-center -ml-px px-3 py-2 w-120px font-semibold text-gray-900 text-sm hover:bg-gray-50 ring-1 ring-gray-300 ring-inset rounded-r-md">
+            <span id="coming-soon-submit-label">Stay in Touch</span>
+            <div id="coming-soon-spinner" class="hidden h-4 w-4 animate-spin i-hugeicons-loading-01"></div>
+          </button>
+        </form>
 
         <a href="https://stacksjs-docs.netlify.app" class="font-semibold leading-6 text-gray-900 text-sm">Learn more <span aria-hidden="true">→</span></a>
       </div>
 
-      @foreach(errors as error)
-        <p class="pt-2 text-red-500 text-xs">
-          {{ error.message }}
-        </p>
-      @endforeach
-
-      @if(successMessage)
-        <p class="pt-2 text-green-700 text-xs">
-          {{ successMessage }}
-        </p>
-      @endif
+      <p id="coming-soon-error" class="hidden pt-2 text-red-500 text-xs"></p>
+      <p id="coming-soon-success" class="hidden pt-2 text-green-700 text-xs">
+        Thanks — we'll be in touch.
+      </p>
     </div>
     <div class="flex lg:flex-none mt-16 mx-auto sm:mt-24 lg:ml-10 lg:mr-0 lg:mt-0 xl:ml-32 max-w-2xl lg:max-w-none">
       <div class="flex-none max-w-3xl sm:max-w-5xl lg:max-w-none">
@@ -86,3 +79,77 @@ const { email = '', loading = false, errors = [], successMessage = '' } = define
     </div>
   </div>
 </div>
+
+<script client>
+// Client-side wiring for the holding-page email form. The endpoint
+// itself (/api/email/subscribe) is rate-limited server-side; this
+// handler just gives the visitor immediate feedback.
+const form = document.getElementById('coming-soon-form')
+const emailInput = document.getElementById('coming-soon-email')
+const submitBtn = document.getElementById('coming-soon-submit')
+const submitLabel = document.getElementById('coming-soon-submit-label')
+const spinner = document.getElementById('coming-soon-spinner')
+const errorEl = document.getElementById('coming-soon-error')
+const successEl = document.getElementById('coming-soon-success')
+
+function setLoading(loading) {
+  if (!submitBtn || !submitLabel || !spinner) return
+  submitBtn.disabled = loading
+  submitBtn.classList.toggle('opacity-50', loading)
+  submitLabel.classList.toggle('hidden', loading)
+  spinner.classList.toggle('hidden', !loading)
+}
+
+function showError(message) {
+  if (!errorEl) return
+  errorEl.textContent = message
+  errorEl.classList.remove('hidden')
+}
+
+function clearMessages() {
+  if (errorEl) errorEl.classList.add('hidden')
+  if (successEl) successEl.classList.add('hidden')
+}
+
+if (form) {
+  form.addEventListener('submit', async function (event) {
+    event.preventDefault()
+    clearMessages()
+
+    const email = emailInput && emailInput.value ? emailInput.value.trim() : ''
+    if (!email || email.indexOf('@') === -1) {
+      showError('Please enter a valid email address.')
+      return
+    }
+
+    setLoading(true)
+    try {
+      const response = await fetch('/api/email/subscribe', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      })
+
+      if (response.ok) {
+        if (successEl) successEl.classList.remove('hidden')
+        if (form) form.reset()
+      }
+      else {
+        let message = 'Sorry, we could not subscribe you. Please try again later.'
+        try {
+          const data = await response.json()
+          if (data && data.message) message = data.message
+        }
+        catch { /* ignore parse errors */ }
+        showError(message)
+      }
+    }
+    catch {
+      showError('Network error — please try again.')
+    }
+    finally {
+      setLoading(false)
+    }
+  })
+}
+</script>

@@ -1615,8 +1615,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // would otherwise stall the health check itself, and the LB health
     // check would time out at the LB layer instead of seeing a clean
     // 503 from the app.
+    //
+    // Registered at `/api/health` rather than `/health` so it doesn't
+    // collide with a userland `health/index.stx` page (the dev dashboard
+    // ships one). LBs and uptime monitors should be pointed at
+    // `/api/health`.
     health() {
-      bunRouter.get('/health', async () => {
+      bunRouter.get('/api/health', async () => {
         const checks: Record<string, { ok: boolean, message?: string, ms?: number }> = {}
         const probe = async (name: string, fn: () => Promise<unknown>): Promise<void> => {
           const start = Date.now()
@@ -1779,6 +1784,13 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       return bunRouter.handleRequest(req)
     },
 
+    // Mirror bun-router's introspection: which HTTP methods are registered
+    // for `pathname`. Used by the dev dashboard's onRequest gate to decide
+    // whether to delegate or fall through to STX page rendering.
+    getAllowedMethods(pathname: string, domain?: string): string[] {
+      return bunRouter.getAllowedMethods(pathname, domain)
+    },
+
     // Register routes from a package or module file within an optional group
     async register(routePath: string, options?: { prefix?: string, middleware?: string | string[] }): Promise<StacksRouterInstance> {
       log.debug(`[router] Register: ${routePath} prefix=${options?.prefix || 'none'}`)
@@ -1912,6 +1924,14 @@ export interface StacksRouterInstance {
   register: (routePath: string, options?: { prefix?: string, middleware?: string | string[] }) => Promise<StacksRouterInstance>
   serve: (options?: ServerOptions) => Promise<Server<unknown>>
   handleRequest: (req: Request) => Promise<Response>
+  /**
+   * Returns the HTTP methods registered for `pathname`. Empty array means
+   * no route is registered. Useful for upstream gates (e.g. dev servers
+   * that want to fall through to a static-file/page renderer when
+   * bun-router has nothing to say) and for distinguishing 404 from 405:
+   * non-empty + method-not-included = 405.
+   */
+  getAllowedMethods: (pathname: string, domain?: string) => string[]
   importRoutes: () => Promise<void>
   loadDiscoveredRoutes: () => Promise<void>
 }

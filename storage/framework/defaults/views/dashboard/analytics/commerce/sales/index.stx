@@ -159,7 +159,7 @@ function formatCurrency(amount) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/dashboard/commerce/analytics/sales/products" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all products</a>
+            <StxLink to="/dashboard/commerce/analytics/sales/products" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all products</StxLink>
           </div>
         </div>
 
@@ -199,7 +199,7 @@ function formatCurrency(amount) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/dashboard/commerce/analytics/sales/categories" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all categories</a>
+            <StxLink to="/dashboard/commerce/analytics/sales/categories" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all categories</StxLink>
           </div>
         </div>
       </div>
@@ -240,7 +240,7 @@ function formatCurrency(amount) {
           </table>
         </div>
         <div class="flex justify-end mt-2">
-          <a href="/dashboard/commerce/analytics/sales/customers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all customers</a>
+          <StxLink to="/dashboard/commerce/analytics/sales/customers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all customers</StxLink>
         </div>
       </div>
 </PageLayout>

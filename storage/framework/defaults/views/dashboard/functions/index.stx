@@ -35,7 +35,7 @@ function statusVariant(status: string) {
 }
 </script>
 
-<div class="px-6 pt-6 pb-12 mx-auto max-w-6xl space-y-6">
+<div class="mx-auto pb-12 pt-6 px-6 space-y-6 max-w-6xl">
 
   <PageHeader
     title="Functions"
@@ -50,40 +50,40 @@ function statusVariant(status: string) {
   <div class="grid gap-3 grid-cols-3">
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-blue-500/10 text-blue-600 dark:bg-blue-400/15 dark:text-blue-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-blue-600 dark:text-blue-400 bg-blue-500/10 dark:bg-blue-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="1.8">
             <path stroke-linecap="round" stroke-linejoin="round" d="M10 20l4-16m4 4l4 4-4 4M6 16l-4-4 4-4"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Total</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ totalCount }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Total</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ totalCount }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-green-500/10 text-green-600 dark:bg-green-400/15 dark:text-green-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-green-600 dark:text-green-400 bg-green-500/10 dark:bg-green-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Active</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ activeCount }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Active</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ activeCount }}</p>
         </div>
       </div>
     </Card>
     <Card variant="default" padding="md">
       <div class="flex gap-3 items-center">
-        <div class="flex-shrink-0 flex items-center justify-center h-10 w-10 bg-amber-500/10 text-amber-600 dark:bg-amber-400/15 dark:text-amber-400 rounded-lg">
+        <div class="flex flex-shrink-0 items-center justify-center h-10 w-10 text-amber-600 dark:text-amber-400 bg-amber-500/10 dark:bg-amber-400/15 rounded-lg">
           <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
             <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/>
           </svg>
         </div>
         <div class="min-w-0">
-          <p class="text-neutral-500 text-[11px] uppercase tracking-wider dark:text-neutral-400">Draft</p>
-          <p class="font-semibold text-2xl text-neutral-900 leading-tight tracking-tight dark:text-white">{{ draftCount }}</p>
+          <p class="text-[11px] text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Draft</p>
+          <p class="font-semibold leading-tight text-2xl text-neutral-900 tracking-tight dark:text-white">{{ draftCount }}</p>
         </div>
       </div>
     </Card>
@@ -109,39 +109,39 @@ function statusVariant(status: string) {
       </div>
     @else
       <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-neutral-200/60 dark:divide-white/5">
+        <table class="min-w-full divide-neutral-200/60 divide-y dark:divide-white/5">
           <thead class="bg-neutral-50/60 dark:bg-white/[0.02]">
             <tr>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Name</th>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Path</th>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Size</th>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Status</th>
-              <th class="px-5 py-2.5 font-medium text-left text-neutral-500 text-[11px] tracking-wider uppercase dark:text-neutral-400">Updated</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Name</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Path</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Size</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Status</th>
+              <th class="px-5 py-2.5 font-medium text-[11px] text-left text-neutral-500 tracking-wider uppercase dark:text-neutral-400">Updated</th>
               <th class="px-5 py-2.5 text-right">
                 <span class="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
-          <tbody class="divide-y divide-neutral-200/60 dark:divide-white/5">
+          <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
             @foreach(functions as fn)
               <tr class="hover:bg-neutral-50/60 dark:hover:bg-white/[0.02] transition-colors">
-                <td class="px-5 py-3 font-medium text-neutral-900 text-sm dark:text-white whitespace-nowrap">
+                <td class="px-5 py-3 font-medium text-neutral-900 text-sm whitespace-nowrap dark:text-white">
                   {{ fn.name }}
                 </td>
-                <td class="px-5 py-3 font-mono text-neutral-500 text-xs dark:text-neutral-400 whitespace-nowrap">
+                <td class="px-5 py-3 font-mono text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400">
                   {{ fn.path }}
                 </td>
-                <td class="px-5 py-3 font-mono text-neutral-600 text-xs dark:text-neutral-300 whitespace-nowrap">
+                <td class="px-5 py-3 font-mono text-neutral-600 text-xs whitespace-nowrap dark:text-neutral-300">
                   {{ fn.size }}
                 </td>
                 <td class="px-5 py-3 whitespace-nowrap">
                   <Badge :variant="statusVariant(fn.status)" size="sm">{{ fn.status }}</Badge>
                 </td>
-                <td class="px-5 py-3 text-neutral-500 text-xs dark:text-neutral-400 whitespace-nowrap">
+                <td class="px-5 py-3 text-neutral-500 text-xs whitespace-nowrap dark:text-neutral-400">
                   {{ fn.updatedAt }}
                 </td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
-                  <a href="#" class="text-blue-600 dark:text-blue-400 text-sm hover:underline">
+                  <a href="#" class="text-blue-600 text-sm dark:text-blue-400 hover:underline">
                     Edit
                   </a>
                 </td>

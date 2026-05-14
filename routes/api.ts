@@ -14,4 +14,14 @@ import { response, route } from '@stacksjs/router'
 
 // Your custom routes go here:
 route.get('/', () => response.text('hello world'))
-route.get('/coming-soon', 'Controllers/ComingSoonController@index')
+
+// `/coming-soon` is served as an STX view from
+// `storage/framework/defaults/resources/views/coming-soon.stx`. The
+// view auto-resolves through stx-serve, so no route registration is
+// needed here. To activate the holding page across the whole app:
+//
+//   ./buddy coming-soon [--secret=my-magic-token]
+//
+// Launch the site with `./buddy launch`. Maintenance mode (503 page,
+// distinct cookie + state file) is the separate `./buddy down` /
+// `./buddy up` pair.

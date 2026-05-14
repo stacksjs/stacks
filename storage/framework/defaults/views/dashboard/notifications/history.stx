@@ -149,11 +149,11 @@
   </div>
 
   <NotificationErrorModal
-    :is-open="isErrorModalOpen"
-    :notification-id="errorModalId"
-    :notification-type="errorModalType"
-    :error-message="errorModalMessage"
-    :sent-at="errorModalSentAt"
+    :isOpen="isErrorModalOpen"
+    :notificationId="errorModalId"
+    :notificationType="errorModalType"
+    :errorMessage="errorModalMessage"
+    :sentAt="errorModalSentAt"
     @close="closeErrorModal"
   />
 </div>

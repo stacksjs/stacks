@@ -44,35 +44,35 @@ const total = order ? Number(order.total_amount || 0) : 0
 </script>
 
 @section('content')
-  <div class="mx-auto max-w-3xl px-6 py-16">
+  <div class="mx-auto px-6 py-16 max-w-3xl">
 
     @if (!order)
-      <div class="text-center py-16">
-        <h1 class="text-3xl font-bold tracking-tight text-stone-900">Order not found</h1>
+      <div class="py-16 text-center">
+        <h1 class="font-bold text-3xl text-stone-900 tracking-tight">Order not found</h1>
         <p class="mt-3 text-stone-600">We couldn't find that order. Try the shop instead.</p>
-        <a href="/products" class="mt-6 inline-flex rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800">Back to the shop</a>
+        <a href="/products" class="inline-flex mt-6 px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full">Back to the shop</a>
       </div>
     @else
       <div class="text-center">
-        <div class="inline-flex h-14 w-14 items-center justify-center rounded-full bg-emerald-100">
+        <div class="inline-flex items-center justify-center h-14 w-14 bg-emerald-100 rounded-full">
           <svg xmlns="http://www.w3.org/2000/svg" class="h-7 w-7 text-emerald-700" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M4.5 12.75l6 6 9-13.5" /></svg>
         </div>
-        <p class="mt-5 text-xs uppercase tracking-wider text-stone-500 font-medium">Order #{{ order.id }}</p>
-        <h1 class="mt-2 text-4xl font-bold tracking-tight text-stone-900">Order confirmed.</h1>
+        <p class="mt-5 font-medium text-stone-500 text-xs tracking-wider uppercase">Order #{{ order.id }}</p>
+        <h1 class="mt-2 font-bold text-4xl text-stone-900 tracking-tight">Order confirmed.</h1>
         <p class="mt-3 text-stone-600">Thanks, {{ order.customer_name }}. We sent a receipt to {{ order.customer_email }}.</p>
       </div>
 
-      <div class="mt-10 rounded-3xl border border-stone-200 p-6 md:p-8">
-        <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold">Items</p>
-        <ul class="mt-4 divide-y divide-stone-200">
+      <div class="mt-10 p-6 md:p-8 border border-stone-200 rounded-3xl">
+        <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Items</p>
+        <ul class="mt-4 divide-stone-200 divide-y">
           @foreach (items as item)
-            <li class="py-4 flex gap-4 items-center">
-              <div class="w-16 h-16 rounded-xl overflow-hidden bg-stone-200 flex-shrink-0">
-                <img src="{{ item.image }}" alt="{{ item.name }}" class="h-full w-full object-cover">
+            <li class="flex gap-4 items-center py-4">
+              <div class="overflow-hidden flex-shrink-0 h-16 w-16 bg-stone-200 rounded-xl">
+                <img src="{{ item.image }}" alt="{{ item.name }}" class="object-cover h-full w-full">
               </div>
               <div class="flex-1">
                 <p class="font-semibold text-stone-900">{{ item.name }}</p>
-                <p class="text-xs text-stone-500">{{ item.weight }} · qty {{ item.qty }}</p>
+                <p class="text-stone-500 text-xs">{{ item.weight }} · qty {{ item.qty }}</p>
               </div>
               <p class="font-semibold text-stone-900">${{ item.lineTotal.toFixed(2) }}</p>
             </li>
@@ -84,32 +84,32 @@ const total = order ? Number(order.total_amount || 0) : 0
         <dl class="space-y-2 text-sm">
           <div class="flex justify-between"><dt class="text-stone-600">Subtotal</dt><dd class="font-semibold text-stone-900">${{ subtotal.toFixed(2) }}</dd></div>
           <div class="flex justify-between"><dt class="text-stone-600">Shipping</dt><dd class="font-semibold text-stone-900">{{ shipping === 0 ? 'Free' : `$${shipping.toFixed(2)}` }}</dd></div>
-          <div class="flex justify-between text-base pt-2 border-t border-stone-200"><dt class="font-semibold text-stone-900">Total</dt><dd class="font-bold text-stone-900">${{ total.toFixed(2) }}</dd></div>
+          <div class="flex justify-between pt-2 text-base border-stone-200 border-t"><dt class="font-semibold text-stone-900">Total</dt><dd class="font-bold text-stone-900">${{ total.toFixed(2) }}</dd></div>
         </dl>
 
-        <div class="mt-6 rounded-xl bg-stone-100 p-4 text-sm">
-          <p class="text-xs uppercase tracking-wider text-stone-500 font-semibold">Ship to</p>
+        <div class="mt-6 p-4 text-sm bg-stone-100 rounded-xl">
+          <p class="font-semibold text-stone-500 text-xs tracking-wider uppercase">Ship to</p>
           <p class="mt-1 text-stone-900 whitespace-pre-line">{{ order.delivery_address }}</p>
         </div>
       </div>
 
-      <div class="mt-10 grid sm:grid-cols-3 gap-4 text-sm">
-        <div class="rounded-2xl border border-stone-200 p-5">
-          <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-100">
+      <div class="grid gap-4 sm:grid-cols-3 mt-10 text-sm">
+        <div class="p-5 border border-stone-200 rounded-2xl">
+          <div class="inline-flex items-center justify-center h-9 w-9 bg-stone-100 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-700" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 01-2.25 2.25h-15a2.25 2.25 0 01-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25m19.5 0v.243a2.25 2.25 0 01-1.07 1.916l-7.5 4.615a2.25 2.25 0 01-2.36 0L3.32 8.91a2.25 2.25 0 01-1.07-1.916V6.75"/></svg>
           </div>
           <p class="mt-3 font-semibold text-stone-900">Receipt sent</p>
           <p class="mt-1 text-stone-600">Check your inbox at <span class="text-stone-900">{{ order.customer_email }}</span>.</p>
         </div>
-        <div class="rounded-2xl border border-stone-200 p-5">
-          <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-100">
+        <div class="p-5 border border-stone-200 rounded-2xl">
+          <div class="inline-flex items-center justify-center h-9 w-9 bg-stone-100 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-700" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M8.25 18.75a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0m3 0h6m0 0a1.5 1.5 0 01-3 0m3 0a1.5 1.5 0 00-3 0M3.375 5.25h12.5c.621 0 1.125.504 1.125 1.125v9M3.375 5.25a1.125 1.125 0 00-1.125 1.125v9.75c0 .621.504 1.125 1.125 1.125h.375M16.5 14.25V11.25c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v6c0 .621-.504 1.125-1.125 1.125H17.25"/></svg>
           </div>
           <p class="mt-3 font-semibold text-stone-900">Ships in 1–2 days</p>
           <p class="mt-1 text-stone-600">We'll email tracking the moment it leaves the warehouse.</p>
         </div>
-        <div class="rounded-2xl border border-stone-200 p-5">
-          <div class="inline-flex h-9 w-9 items-center justify-center rounded-full bg-stone-100">
+        <div class="p-5 border border-stone-200 rounded-2xl">
+          <div class="inline-flex items-center justify-center h-9 w-9 bg-stone-100 rounded-full">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-stone-700" fill="none" viewBox="0 0 24 24" stroke-width="1.75" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75L11.25 15 15 9.75M21 12c0 1.268-.63 2.39-1.593 3.068a3.745 3.745 0 01-1.043 3.296 3.745 3.745 0 01-3.296 1.043A3.745 3.745 0 0112 21c-1.268 0-2.39-.63-3.068-1.593a3.746 3.746 0 01-3.296-1.043 3.745 3.745 0 01-1.043-3.296A3.745 3.745 0 013 12c0-1.268.63-2.39 1.593-3.068a3.745 3.745 0 011.043-3.296 3.746 3.746 0 013.296-1.043A3.746 3.746 0 0112 3c1.268 0 2.39.63 3.068 1.593a3.746 3.746 0 013.296 1.043 3.746 3.746 0 011.043 3.296A3.745 3.745 0 0121 12z"/></svg>
           </div>
           <p class="mt-3 font-semibold text-stone-900">100% guaranteed</p>
@@ -117,12 +117,12 @@ const total = order ? Number(order.total_amount || 0) : 0
         </div>
       </div>
 
-      <div class="mt-10 flex flex-col sm:flex-row gap-3 justify-center">
-        <a href="/products" class="inline-flex items-center justify-center gap-2 rounded-full bg-stone-900 text-stone-50 px-6 py-3 text-sm font-semibold hover:bg-stone-800 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50">
+      <div class="flex flex-col gap-3 justify-center sm:flex-row mt-10">
+        <a href="/products" class="inline-flex gap-2 items-center justify-center px-6 py-3 font-semibold text-sm text-stone-50 bg-stone-900 hover:bg-stone-800 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 focus-visible:ring-stone-900 transition-colors">
           Keep shopping
           <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3"/></svg>
         </a>
-        <a href="/" class="inline-flex items-center justify-center rounded-full border border-stone-300 px-6 py-3 text-sm font-semibold text-stone-900 hover:border-stone-900 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-stone-900 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50">Back home</a>
+        <a href="/" class="inline-flex items-center justify-center px-6 py-3 font-semibold text-sm text-stone-900 border border-stone-300 rounded-full focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-offset-stone-50 focus-visible:ring-stone-900 hover:border-stone-900 transition-colors">Back home</a>
       </div>
     @endif
 

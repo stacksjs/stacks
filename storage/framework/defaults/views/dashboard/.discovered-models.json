@@ -15,6 +15,13 @@
       "category": "marketing"
     },
     {
+      "id": "campaign-send",
+      "name": "CampaignSend",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
+    },
+    {
       "id": "cart",
       "name": "Cart",
       "icon": "cart.fill",
@@ -90,6 +97,13 @@
       "icon": "envelope.badge.person.crop",
       "hasDedicatedPage": false,
       "category": "marketing"
+    },
+    {
+      "id": "email-list-subscriber",
+      "name": "EmailListSubscriber",
+      "icon": "tablecells.fill",
+      "hasDedicatedPage": false,
+      "category": "data"
     },
     {
       "id": "gift-card",

@@ -29,6 +29,10 @@
       "bun": "./src/index.ts",
       "import": "./dist/index.js"
     },
+    "./traits/*": {
+      "bun": "./src/traits/*.ts",
+      "types": "./dist/src/traits/*.d.ts"
+    },
     "./*": {
       "bun": "./src/*",
       "import": "./dist/*"

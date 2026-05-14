@@ -83,12 +83,12 @@ function typeBadgeClass(type: string): string {
               <div class="flex items-center justify-center mb-2 h-12 w-12 text-pink-600 dark:text-pink-300 bg-pink-200 dark:bg-pink-900 rounded-full">
                 <div class="h-6 w-6 i-hugeicons-globe"></div>
               </div>
-              <p class="font-medium text-sm text-gray-900 dark:text-white">DNS</p>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">DNS</p>
               <p class="text-gray-500 text-xs dark:text-neutral-400">Entry point</p>
             </div>
           </div>
 
-          <div class="hidden lg:flex lg:col-span-1 items-center justify-center text-gray-400 dark:text-neutral-500">
+          <div class="hidden lg:flex items-center justify-center lg:col-span-1 text-gray-400 dark:text-neutral-500">
             <div class="h-6 w-6 i-hugeicons-arrow-right-01"></div>
           </div>
 
@@ -97,12 +97,12 @@ function typeBadgeClass(type: string): string {
               <div class="flex items-center justify-center mb-2 h-12 w-12 text-blue-600 dark:text-blue-300 bg-blue-200 dark:bg-blue-900 rounded-full">
                 <div class="h-6 w-6 i-hugeicons-balance"></div>
               </div>
-              <p class="font-medium text-sm text-gray-900 dark:text-white">Load balancer</p>
+              <p class="font-medium text-gray-900 text-sm dark:text-white">Load balancer</p>
               <p class="text-gray-500 text-xs dark:text-neutral-400">{{ useLoadBalancer ? 'Enabled' : 'Disabled' }}</p>
             </div>
           </div>
 
-          <div class="hidden lg:flex lg:col-span-1 items-center justify-center text-gray-400 dark:text-neutral-500">
+          <div class="hidden lg:flex items-center justify-center lg:col-span-1 text-gray-400 dark:text-neutral-500">
             <div class="h-6 w-6 i-hugeicons-arrow-right-01"></div>
           </div>
 
@@ -110,18 +110,18 @@ function typeBadgeClass(type: string): string {
             <div class="space-y-2">
               @foreach(serversByType as group)
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800 rounded-lg">
-                  <div class="flex items-center gap-2">
+                  <div class="flex gap-2 items-center">
                     <span class="{{ typeBadgeClass(group.type) }}">{{ group.label }}</span>
                   </div>
-                  <span class="font-mono text-sm text-gray-900 dark:text-white">×{{ group.servers.length }}</span>
+                  <span class="font-mono text-gray-900 text-sm dark:text-white">×{{ group.servers.length }}</span>
                 </div>
               @endforeach
             </div>
           </div>
         </div>
 
-        <div class="flex items-center justify-between mt-6 mb-3">
-          <h5 class="font-medium text-sm text-gray-900 dark:text-neutral-100">Topology</h5>
+        <div class="flex items-center justify-between mb-3 mt-6">
+          <h5 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Topology</h5>
           <p class="text-gray-500 text-xs dark:text-neutral-400">Drag nodes · scroll to zoom</p>
         </div>
         <div id="servers_topology" class="h-[420px] w-full bg-neutral-50 dark:bg-neutral-800 rounded-lg"></div>
@@ -194,19 +194,19 @@ function typeBadgeClass(type: string): string {
       <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
         <div class="flex items-start justify-between mb-4">
           <div>
-            <h3 class="font-semibold text-lg text-gray-900 dark:text-white">{{ selectedServer()?.name }}</h3>
+            <h3 class="font-semibold text-gray-900 text-lg dark:text-white">{{ selectedServer()?.name }}</h3>
             <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ selectedServer()?.domain }}</p>
           </div>
-          <button @click="closeServer()" class="text-gray-400 hover:text-gray-600 dark:text-neutral-300 dark:hover:text-white">
+          <button @click="closeServer()" class="text-gray-400 dark:text-neutral-300 hover:text-gray-600 dark:hover:text-white">
             <i class="h-5 w-5 i-hugeicons-cancel-01"></i>
           </button>
         </div>
 
-        <dl class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <dl class="grid gap-3 grid-cols-1 sm:grid-cols-2">
           <template :for="entry in selectedDetails()">
-            <div class="flex justify-between gap-4 py-2 border-gray-100 border-t dark:border-neutral-700">
+            <div class="flex gap-4 justify-between py-2 border-gray-100 border-t dark:border-neutral-700">
               <dt class="text-gray-500 text-sm dark:text-neutral-400">{{ entry.label }}</dt>
-              <dd class="font-medium text-gray-900 text-sm dark:text-white text-right">{{ entry.value }}</dd>
+              <dd class="font-medium text-gray-900 text-right text-sm dark:text-white">{{ entry.value }}</dd>
             </div>
           </template>
         </dl>

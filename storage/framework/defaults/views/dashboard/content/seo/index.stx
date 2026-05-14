@@ -71,7 +71,7 @@
               <div class="max-w-md text-gray-500 text-sm truncate dark:text-neutral-300">{{ entry.metaDescription }}</div>
             </td>
             <td class="px-4 py-4 text-right whitespace-nowrap">
-              <span class="{{ scoreBadgeClass(entry.score) }}">{{ entry.score }}</span>
+              <span :class="scoreBadgeClass(entry.score)">{{ entry.score }}</span>
             </td>
             <td class="px-4 py-4 whitespace-nowrap"><div class="text-gray-500 text-sm dark:text-neutral-300">{{ entry.lastUpdated }}</div></td>
             <td class="px-4 py-4 font-medium text-right text-sm whitespace-nowrap">
@@ -108,8 +108,8 @@
             </div>
           </div>
           <div class="sm:grid sm:gap-3 sm:grid-cols-2 mt-5">
-            <button @click="closeEdit()" class="inline-flex justify-center px-3 py-2 sm:col-start-1 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-            <button @click="saveEdit()" class="inline-flex justify-center px-3 py-2 sm:col-start-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">Save</button>
+            <button @click="closeEdit()" class="inline-flex justify-center sm:col-start-1 px-3 py-2 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
+            <button @click="saveEdit()" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm">Save</button>
           </div>
         </div>
       </div>

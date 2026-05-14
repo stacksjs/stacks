@@ -293,7 +293,8 @@ const events: Emitter<StacksEvents> = createEmitter<StacksEvents>()
 
 type Dispatch = <Key extends keyof StacksEvents>(_type: Key, _event: StacksEvents[Key]) => void
 type Listen = <Key extends keyof StacksEvents>(_type: Key, _handler: Handler<StacksEvents[Key]>) => void
-type Off = <Key extends keyof StacksEvents>(_type: Key, _handler?: Handler<StacksEvents[Key]>) => void
+// eslint-disable-next-line pickier/no-unused-vars
+type Off = <Key extends keyof StacksEvents>(_type: Key, handler?: Handler<StacksEvents[Key]>) => void
 type DispatchAsync = <Key extends keyof StacksEvents>(_type: Key, _event: StacksEvents[Key]) => Promise<unknown[]>
 
 const emitter: Emitter<StacksEvents> = events

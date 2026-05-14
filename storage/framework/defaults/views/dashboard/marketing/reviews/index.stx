@@ -14,7 +14,7 @@ const sentiments = ['positive', 'neutral', 'negative']
   </div>
 
   <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-6">
-    <div class="overflow-hidden p-5 bg-white dark:bg-neutral-800 rounded-lg shadow flex items-center">
+    <div class="flex overflow-hidden items-center p-5 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="p-2 h-10 w-10 bg-blue-100 dark:bg-blue-900 rounded-md">
         <div class="h-6 w-6 text-blue-600 dark:text-blue-300 i-hugeicons-message-multiple-02"></div>
       </div>
@@ -23,7 +23,7 @@ const sentiments = ['positive', 'neutral', 'negative']
         <dd class="font-medium text-gray-900 text-lg dark:text-white">{{ totalReviews() }}</dd>
       </div>
     </div>
-    <div class="overflow-hidden p-5 bg-white dark:bg-neutral-800 rounded-lg shadow flex items-center">
+    <div class="flex overflow-hidden items-center p-5 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="p-2 h-10 w-10 bg-yellow-100 dark:bg-yellow-900 rounded-md">
         <div class="h-6 w-6 text-yellow-600 dark:text-yellow-300 i-hugeicons-star"></div>
       </div>
@@ -32,7 +32,7 @@ const sentiments = ['positive', 'neutral', 'negative']
         <dd class="font-medium text-gray-900 text-lg dark:text-white">{{ averageRating() }}</dd>
       </div>
     </div>
-    <div class="overflow-hidden p-5 bg-white dark:bg-neutral-800 rounded-lg shadow flex items-center">
+    <div class="flex overflow-hidden items-center p-5 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="p-2 h-10 w-10 bg-green-100 dark:bg-green-900 rounded-md">
         <div class="h-6 w-6 text-green-600 dark:text-green-300 i-hugeicons-checkmark-circle-02"></div>
       </div>
@@ -41,7 +41,7 @@ const sentiments = ['positive', 'neutral', 'negative']
         <dd class="font-medium text-gray-900 text-lg dark:text-white">{{ responseRate() }}%</dd>
       </div>
     </div>
-    <div class="overflow-hidden p-5 bg-white dark:bg-neutral-800 rounded-lg shadow flex items-center">
+    <div class="flex overflow-hidden items-center p-5 bg-white dark:bg-neutral-800 rounded-lg shadow">
       <div class="p-2 h-10 w-10 bg-red-100 dark:bg-red-900 rounded-md">
         <div class="h-6 w-6 text-red-600 dark:text-red-300 i-hugeicons-flag-02"></div>
       </div>
@@ -74,7 +74,7 @@ const sentiments = ['positive', 'neutral', 'negative']
   </div>
 
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mt-8">
-    <div class="relative max-w-sm flex-1">
+    <div class="relative flex-1 max-w-sm">
       <div class="flex absolute inset-y-0 left-0 items-center pl-3 pointer-events-none">
         <div class="h-5 w-5 text-gray-400 i-hugeicons-search-01"></div>
       </div>
@@ -143,16 +143,16 @@ const sentiments = ['positive', 'neutral', 'negative']
             </template>
           </div>
 
-          <div :show="review.response !== undefined" class="mt-4 p-4 bg-gray-50 dark:bg-neutral-700 border-l-4 border-blue-500 rounded">
+          <div :show="review.response !== undefined" class="mt-4 p-4 bg-gray-50 dark:bg-neutral-700 border-blue-500 border-l-4 rounded">
             <div class="flex items-center justify-between">
-              <span class="font-medium text-sm text-gray-900 dark:text-white">{{ review.response?.author }}</span>
+              <span class="font-medium text-gray-900 text-sm dark:text-white">{{ review.response?.author }}</span>
               <span class="text-gray-500 text-xs dark:text-neutral-400">{{ formatDate(review.response?.date) }}</span>
             </div>
             <p class="mt-1 text-gray-700 text-sm dark:text-neutral-300">{{ review.response?.content }}</p>
           </div>
 
           <div class="flex items-center justify-between mt-4">
-            <div class="flex items-center text-gray-500 text-sm dark:text-neutral-400 space-x-4">
+            <div class="flex items-center space-x-4 text-gray-500 text-sm dark:text-neutral-400">
               <span><span class="font-medium">{{ review.helpful }}</span> found helpful</span>
             </div>
 
@@ -181,17 +181,17 @@ const sentiments = ['positive', 'neutral', 'negative']
   </div>
 
   <div :show="showResponseModal()" @click.self="closeResponseModal()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
-    <div class="overflow-y-auto p-6 max-h-[90vh] sm:max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+    <div class="overflow-y-auto p-6 max-h-[90vh] w-full sm:max-w-2xl bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
       <div class="flex items-start justify-between mb-4">
-        <h3 class="font-semibold text-lg text-gray-900 dark:text-white">Respond to {{ respondingReview()?.author }}</h3>
-        <button @click="closeResponseModal()" class="text-gray-400 hover:text-gray-600 dark:text-neutral-300">
+        <h3 class="font-semibold text-gray-900 text-lg dark:text-white">Respond to {{ respondingReview()?.author }}</h3>
+        <button @click="closeResponseModal()" class="text-gray-400 dark:text-neutral-300 hover:text-gray-600">
           <i class="h-5 w-5 i-hugeicons-cancel-01"></i>
         </button>
       </div>
 
       <div :show="respondingReview() !== null" class="mb-4 p-4 bg-gray-50 dark:bg-neutral-700 rounded">
         <div class="flex items-center mb-1">{{ ratingStars(respondingReview()?.rating ?? 0) }}</div>
-        <h4 class="font-medium text-sm text-gray-900 dark:text-white">{{ respondingReview()?.title }}</h4>
+        <h4 class="font-medium text-gray-900 text-sm dark:text-white">{{ respondingReview()?.title }}</h4>
         <p class="mt-1 text-gray-700 text-sm dark:text-neutral-300">{{ respondingReview()?.content }}</p>
       </div>
 
@@ -202,7 +202,7 @@ const sentiments = ['positive', 'neutral', 'negative']
 
       <div class="flex justify-end mt-6 space-x-2">
         <button @click="closeResponseModal()" class="inline-flex justify-center px-3 py-2 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-        <button @click="submitResponse()" :disabled="!responseText()" class="inline-flex justify-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md disabled:opacity-50 shadow-sm">Submit Response</button>
+        <button @click="submitResponse()" :disabled="!responseText()" class="inline-flex justify-center px-3 py-2 font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md shadow-sm disabled:opacity-50">Submit Response</button>
       </div>
     </div>
   </div>

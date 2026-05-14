@@ -4,7 +4,7 @@
 @title('Dashboard - File Manager')
 <div class="flex flex-col h-full">
   <div class="flex flex-1">
-    <div class="border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300 {{ sidePanelClass }}">
+    <div :class="sidePanelClass()">
       <div :show="showSidePanel" class="flex flex-col h-full">
         <div class="p-4 border-b border-stone-200/60 dark:border-neutral-700">
           <h3 class="font-semibold text-sm text-stone-500 tracking-wider uppercase dark:text-neutral-400">Storage</h3>
@@ -29,7 +29,7 @@
 
         <nav class="overflow-y-auto flex-1 p-2">
           <div class="space-y-0.5">
-            <button @click="navigateToRoot()" class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] rounded-md transition-colors text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700">
+            <button @click="navigateToRoot()" class="flex items-center px-2.5 py-1.5 w-full font-medium text-[13px] text-stone-600 dark:text-neutral-300 hover:bg-stone-200/50 dark:hover:bg-neutral-700 rounded-md transition-colors">
               <div class="mr-2.5 h-4 w-4 text-stone-500 dark:text-neutral-500 i-hugeicons-home-02"></div>
               Home
             </button>
@@ -84,10 +84,10 @@
 
           <div class="flex items-center space-x-2">
             <div class="flex rounded-md shadow-sm">
-              <button @click="setViewMode('grid')" class="{{ gridViewClass }}">
+              <button @click="setViewMode('grid')" :class="gridViewClass()">
                 <div class="h-5 w-5 i-hugeicons-grid-view"></div>
               </button>
-              <button @click="setViewMode('list')" class="{{ listViewClass }}">
+              <button @click="setViewMode('list')" :class="listViewClass()">
                 <div class="h-5 w-5 i-hugeicons-right-to-left-list-number"></div>
               </button>
             </div>
@@ -99,7 +99,7 @@
             </select>
 
             <button @click="toggleSortOrder()" class="p-2 text-gray-500 dark:text-neutral-400 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-md">
-              <div class="{{ sortOrderIcon }} h-5 w-5"></div>
+              <div :class="sortOrderIconClass()"></div>
             </button>
           </div>
 
@@ -121,7 +121,7 @@
               <li>
                 <div class="flex items-center">
                   <span :show="index > 0" class="mx-1 text-gray-400 dark:text-neutral-500">/</span>
-                  <button @click="navigateToPath(index)" class="text-sm font-medium text-gray-500 hover:text-gray-700 dark:text-neutral-400 dark:hover:text-gray-300">{{ path }}</button>
+                  <button @click="navigateToPath(index)" class="font-medium text-gray-500 text-sm dark:text-neutral-400 hover:text-gray-700 dark:hover:text-gray-300">{{ path }}</button>
                 </div>
               </li>
             </template>
@@ -138,19 +138,19 @@
 
         <div :show="filteredItems().length > 0 && viewMode() === 'grid'" class="grid gap-4 grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6">
           <template :for="item in filteredItems()">
-            <div @click="onItemClick(item)" class="relative group p-4 rounded-lg border cursor-pointer transition-all duration-200 bg-white border-gray-200 hover:border-gray-300 dark:bg-neutral-800 dark:border-neutral-700">
+            <div @click="onItemClick(item)" class="relative p-4 bg-white dark:bg-neutral-800 border border-gray-200 rounded-lg dark:border-neutral-700 hover:border-gray-300 duration-200 transition-all cursor-pointer group">
               <div class="flex justify-center mb-4">
-                <div class="{{ itemIconClass(item) }} h-12 w-12"></div>
+                <div :class="gridIconClass(item)"></div>
               </div>
               <div class="text-center">
                 <p class="font-medium text-gray-900 text-sm truncate dark:text-white">{{ item.name }}</p>
                 <p :show="item.type !== 'folder'" class="mt-1 text-gray-500 text-xs dark:text-neutral-400">{{ formatFileSize(item.size ?? 0) }}</p>
               </div>
               <div class="flex absolute right-2 top-2 space-x-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                <button @click="onStarClick(item, $event)" class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full {{ starButtonClass(item) }}">
+                <button @click="onStarClick(item, $event)" :class="gridStarButtonClass(item)">
                   <div class="h-4 w-4 i-hugeicons-star"></div>
                 </button>
-                <button @click="onShareClick(item, $event)" class="p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full {{ shareButtonClass(item) }}">
+                <button @click="onShareClick(item, $event)" :class="gridShareButtonClass(item)">
                   <div class="h-4 w-4 i-hugeicons-share-01"></div>
                 </button>
               </div>
@@ -170,10 +170,10 @@
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-stone-100 divide-y dark:divide-neutral-700">
               <template :for="item in filteredItems()">
-                <tr @click="onItemClick(item)" class="cursor-pointer hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors">
+                <tr @click="onItemClick(item)" class="hover:bg-stone-50/50 dark:hover:bg-neutral-700/50 transition-colors cursor-pointer">
                   <td class="pl-6 pr-3 py-3.5 text-sm whitespace-nowrap">
                     <div class="flex items-center">
-                      <div class="{{ itemIconClass(item) }} h-5 w-5 mr-3"></div>
+                      <div :class="rowIconClass(item)"></div>
                       <div class="font-medium text-stone-800 dark:text-white">{{ item.name }}</div>
                     </div>
                   </td>
@@ -181,8 +181,8 @@
                   <td class="px-3 py-3.5 text-sm text-stone-500 whitespace-nowrap dark:text-neutral-400">{{ formatDate(item.lastModified) }}</td>
                   <td class="relative pl-3 pr-6 py-3.5 font-medium text-right text-sm whitespace-nowrap">
                     <div class="flex justify-end space-x-2">
-                      <button @click="onStarClick(item, $event)" class="{{ starButtonClass(item) }}"><div class="h-5 w-5 i-hugeicons-star"></div></button>
-                      <button @click="onShareClick(item, $event)" class="{{ shareButtonClass(item) }}"><div class="h-5 w-5 i-hugeicons-share-01"></div></button>
+                      <button @click="onStarClick(item, $event)" :class="starButtonClass(item)"><div class="h-5 w-5 i-hugeicons-star"></div></button>
+                      <button @click="onShareClick(item, $event)" :class="shareButtonClass(item)"><div class="h-5 w-5 i-hugeicons-share-01"></div></button>
                       <button @click="onDeleteClick(item, $event)" class="text-gray-400 hover:text-red-500"><div class="h-5 w-5 i-hugeicons-waste"></div></button>
                     </div>
                   </td>
@@ -218,7 +218,7 @@
       <div class="inline-block overflow-hidden pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl align-bottom sm:align-middle">
         <h3 class="font-medium leading-6 text-gray-900 text-lg dark:text-white">Upload Files</h3>
         <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">Select files to upload to the current folder.</p>
-        <div class="mt-4 flex justify-center pb-6 pt-5 px-6 border-2 border-dashed border-gray-300 rounded-md dark:border-neutral-600">
+        <div class="flex justify-center mt-4 pb-6 pt-5 px-6 border-2 border-dashed border-gray-300 rounded-md dark:border-neutral-600">
           <div class="space-y-1 text-center">
             <div class="mx-auto h-12 w-12 text-gray-400 dark:text-neutral-500 i-hugeicons-upload-01"></div>
             <div class="flex text-gray-600 text-sm dark:text-neutral-400">
@@ -391,14 +391,27 @@ const starredCount = derived(() => countByPredicate(root(), i => i.starred))
 const sharedCount = derived(() => countByPredicate(root(), i => i.shared))
 const topLevelFolders = derived(() => (root().items ?? []).filter(i => i.type === 'folder'))
 
-const sidePanelClass = derived(() => showSidePanel() ? 'w-64' : 'w-0 overflow-hidden')
-const sortOrderIcon = derived(() => sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02')
+// Each derived/function below returns a COMPLETE class string (static + dynamic)
+// because stx's `{{ ... }}` placeholder is not reactively bound inside a `class`
+// attribute — only inside text content. The `:class="fn()"` directive is the
+// supported reactive form, so any class that mixes static and dynamic tokens
+// has to be assembled in JS and applied via :class.
+const sidePanelBase = 'border-r border-stone-200/60 dark:border-neutral-700 bg-[#F5F3EE]/80 dark:bg-neutral-800 transition-all duration-300'
+const sidePanelClass = derived(() => `${sidePanelBase} ${showSidePanel() ? 'w-64' : 'w-0 overflow-hidden'}`)
+
+const sortOrderIconClass = derived(() => `${sortOrder() === 'asc' ? 'i-hugeicons-arrow-up-02' : 'i-hugeicons-arrow-down-02'} h-5 w-5`)
+
 const gridViewClass = derived(() => viewMode() === 'grid'
   ? 'relative inline-flex items-center px-3 py-2 rounded-l-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
   : 'relative inline-flex items-center px-3 py-2 rounded-l-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
 const listViewClass = derived(() => viewMode() === 'list'
   ? 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-indigo-600 text-sm font-medium bg-indigo-600 text-white'
   : 'relative inline-flex items-center px-3 py-2 rounded-r-md border border-gray-300 dark:border-neutral-600 text-sm font-medium bg-white dark:bg-neutral-700 text-gray-700 dark:text-neutral-200 hover:bg-gray-50 dark:hover:bg-neutral-600')
+
+const gridIconClass = (item: FileItem) => `${itemIconClass(item)} h-12 w-12`
+const rowIconClass = (item: FileItem) => `${itemIconClass(item)} h-5 w-5 mr-3`
+const gridStarButtonClass = (item: FileItem) => `p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full ${starButtonClass(item)}`
+const gridShareButtonClass = (item: FileItem) => `p-1 hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-full ${shareButtonClass(item)}`
 
 const usedLabel = derived(() => formatFileSize(storageStats.used))
 const availableLabel = derived(() => formatFileSize(storageStats.available))

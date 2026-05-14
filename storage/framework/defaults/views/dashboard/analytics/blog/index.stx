@@ -156,7 +156,7 @@ const analyticsOverview = {
               </tbody>
             </table>
           </div>
-          <div class="flex justify-end mt-2"><a href="/analytics/pages" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all pages</a></div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/pages" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all pages</StxLink></div>
         </div>
 
         <div>
@@ -186,7 +186,7 @@ const analyticsOverview = {
               </tbody>
             </table>
           </div>
-          <div class="flex justify-end mt-2"><a href="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all referrers</a></div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all referrers</StxLink></div>
         </div>
       </div>
 
@@ -216,7 +216,7 @@ const analyticsOverview = {
               </tbody>
             </table>
           </div>
-          <div class="flex justify-end mt-2"><a href="/analytics/devices" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all devices</a></div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/devices" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all devices</StxLink></div>
         </div>
 
         <div>
@@ -244,7 +244,7 @@ const analyticsOverview = {
               </tbody>
             </table>
           </div>
-          <div class="flex justify-end mt-2"><a href="/analytics/browsers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all browsers</a></div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/browsers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all browsers</StxLink></div>
         </div>
 
         <div>
@@ -272,7 +272,7 @@ const analyticsOverview = {
               </tbody>
             </table>
           </div>
-          <div class="flex justify-end mt-2"><a href="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</a></div>
+          <div class="flex justify-end mt-2"><StxLink to="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</StxLink></div>
         </div>
       </div>
 </PageLayout>

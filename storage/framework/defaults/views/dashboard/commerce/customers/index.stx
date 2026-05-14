@@ -53,12 +53,12 @@ const statuses = ['all', 'Active', 'Inactive'] as const
       <!-- Customer Tables Component -->
       <CustomersTable
         :customers="paginatedCustomers()"
-        :search-query="searchQuery()"
-        :status-filter="statusFilter()"
-        :sort-by="sortBy()"
-        :sort-order="sortOrder()"
-        :current-page="currentPage()"
-        :items-per-page="itemsPerPage()"
+        :searchQuery="searchQuery()"
+        :statusFilter="statusFilter()"
+        :sortBy="sortBy()"
+        :sortOrder="sortOrder()"
+        :currentPage="currentPage()"
+        :itemsPerPage="itemsPerPage()"
         :statuses="statuses"
         @toggle-sort="toggleSort"
         @change-page="handlePageChange"
@@ -71,9 +71,9 @@ const statuses = ['all', 'Active', 'Inactive'] as const
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
         <Pagination
-          :current-page="currentPage()"
-          :total-items="filteredCustomers().length"
-          :items-per-page="itemsPerPage()"
+          :currentPage="currentPage()"
+          :totalItems="filteredCustomers().length"
+          :itemsPerPage="itemsPerPage()"
           @prev="handlePrevPage"
           @next="handleNextPage"
           @page="handlePageChange"

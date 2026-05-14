@@ -1,6 +1,42 @@
-import { createModel, type ModelDefinition as BQBModelDefinition } from 'bun-query-builder'
+import { createModel, type ModelDefinition as BQBModelDefinition, registerModel } from 'bun-query-builder'
 import type { InferRelationNames } from 'bun-query-builder'
 import { log } from '@stacksjs/logging'
+import { snakeCase } from '@stacksjs/strings'
+import { AsyncLocalStorage } from 'node:async_hooks'
+
+/**
+ * Event-suppression scope. When the current async context's store reports
+ * `suppressed: true`, every model lifecycle dispatcher (`creating`,
+ * `created`, `updating`, `updated`, `saving`, `saved`, `deleting`,
+ * `deleted`, `restoring`, `restored`) becomes a no-op.
+ *
+ * Used by `Model.withoutEvents(fn)` and `inst.saveQuietly()` to suppress
+ * downstream observers during bulk imports / backfills / migration jobs
+ * where firing every per-row event would either overwhelm the queue or
+ * cause feedback loops (e.g., an `updated` listener that itself updates
+ * the row).
+ */
+const eventSuppression = new AsyncLocalStorage<{ suppressed: boolean }>()
+
+function eventsAreSuppressed(): boolean {
+  return eventSuppression.getStore()?.suppressed === true
+}
+
+/**
+ * Run a callback with model lifecycle events suppressed for its entire
+ * (synchronous + async) duration. Any nested awaits inside the callback
+ * inherit the suppression via the AsyncLocalStorage propagation.
+ *
+ * @example
+ * ```ts
+ * await User.withoutEvents(async () => {
+ *   for (const row of importedRows) await User.create(row) // no events fire
+ * })
+ * ```
+ */
+export function withoutEvents<T>(fn: () => T | Promise<T>): Promise<T> {
+  return Promise.resolve(eventSuppression.run({ suppressed: true }, fn as () => Promise<T>))
+}
 
 // Extended model definition that provides proper contextual typing for factory callbacks.
 // BrowserModelDefinition from bun-query-builder uses BrowserTypedAttribute<unknown> which
@@ -139,6 +175,95 @@ function wrapModelInstance<T extends object>(
   return new Proxy(instance, {
     get(target, prop, recv) {
       if (prop === STACKS_PROXY_TAG) return true
+
+      // saveAsync()/updateAsync(): async-aware variants that resolve
+      // Promise-returning user setters before delegating to the sync
+      // `save()` underneath. Without these, `inst.password = 'plain';
+      // inst.save()` on a model with `set: { password: bcrypt }` either
+      // throws (post-fix) or silently writes a Promise (pre-fix). These
+      // synthetic methods are returned from the proxy `get` instead of
+      // being patched onto the instance so they don't interfere with
+      // type-aware model definitions.
+      if (prop === 'saveAsync') {
+        return async function () {
+          const def = (target as any)._definition
+          const setters = def?.set as Record<string, (attrs: Record<string, unknown>) => unknown> | undefined
+          if (setters && typeof (target as any).isDirty === 'function') {
+            for (const [key, fn] of Object.entries(setters)) {
+              if (typeof fn !== 'function') continue
+              if (!(target as any).isDirty(key)) continue
+              const result = fn((target as any)._attributes as Record<string, unknown>)
+              const value = (result && typeof (result as { then?: unknown }).then === 'function')
+                ? await result
+                : result
+              ;(target as any)._attributes[key] = value
+            }
+            // Suppress the sync save's own setter pass — we already did
+            // it (and awaited it). Restore on a `finally` so a thrown
+            // save() doesn't leave the model definition in a wonky state
+            // (which would stick across other instances since the def
+            // is shared).
+            const original = def.set
+            def.set = {}
+            try {
+              return (target as any).save()
+            }
+            finally {
+              def.set = original
+            }
+          }
+          return (target as any).save()
+        }
+      }
+
+      if (prop === 'updateAsync') {
+        return async function (data: Record<string, unknown>) {
+          // fill() then saveAsync() — same flow as instance.update() but
+          // async-aware. The proxy `set` trap does the per-key write,
+          // which means our `set:` hook bookkeeping survives.
+          if (data && typeof data === 'object' && !Array.isArray(data)) {
+            for (const [k, v] of Object.entries(data)) {
+              ;(recv as any)[k] = v
+            }
+          }
+          // Re-fetch saveAsync via the same proxy (so 'this'-binding
+          // matches what the user would call directly).
+          return (recv as any).saveAsync()
+        }
+      }
+
+      // Quiet variants — wrap save / saveAsync / update / updateAsync /
+      // delete in `withoutEvents()` so listeners don't fire for the
+      // surrounding call. Eloquent's `saveQuietly` / `deleteQuietly`
+      // pattern, useful for bulk imports / backfills where firing every
+      // per-row event would either overwhelm a queue or trigger a
+      // feedback loop (e.g., an `updated` listener that itself updates).
+      if (prop === 'saveQuietly') {
+        return function () {
+          return withoutEvents(() => (target as any).save())
+        }
+      }
+      if (prop === 'saveAsyncQuietly') {
+        return function () {
+          return withoutEvents(() => (recv as any).saveAsync())
+        }
+      }
+      if (prop === 'updateQuietly') {
+        return function (data: Record<string, unknown>) {
+          return withoutEvents(() => (target as any).update(data))
+        }
+      }
+      if (prop === 'updateAsyncQuietly') {
+        return function (data: Record<string, unknown>) {
+          return withoutEvents(() => (recv as any).updateAsync(data))
+        }
+      }
+      if (prop === 'deleteQuietly') {
+        return function () {
+          return withoutEvents(() => (target as any).delete())
+        }
+      }
+
       if (typeof prop === 'string' && !MODEL_INSTANCE_INTERNAL_KEYS.has(prop)) {
         const a = (target as any)._attributes
         if (a && Object.prototype.hasOwnProperty.call(a, prop)) return a[prop]
@@ -336,6 +461,106 @@ export class ModelNotFoundError extends Error {
 }
 
 /**
+ * Thrown when a write payload (`Model.create` / `Model.update` /
+ * `firstOrCreate` / `updateOrCreate`) contains an attribute the model
+ * forbids from mass assignment. There are two reasons this fires:
+ *
+ *   • `guarded`  — the attribute is explicitly marked `guarded: true`.
+ *   • `not-fillable` — the model is in *allowlist* mode (at least one
+ *     attribute has `fillable: true`) and the write payload contains a
+ *     non-allowlisted field.
+ *
+ * The check exists to stop unfiltered request payloads from landing
+ * directly in the DB. If you genuinely need to write a normally-protected
+ * column, use the `force*` escape hatches (`Model.forceCreate(...)`,
+ * `Model.forceUpdate(id, ...)`) — those bypass the check by design and
+ * make the bypass auditable in code review.
+ */
+export class MassAssignmentException extends Error {
+  readonly model: string
+  readonly attribute: string
+  readonly reason: 'guarded' | 'not-fillable'
+
+  constructor(model: string, attribute: string, reason: 'guarded' | 'not-fillable') {
+    const why = reason === 'guarded'
+      ? `'${attribute}' is marked guarded`
+      : `'${attribute}' is not in the fillable allowlist`
+    super(`[ORM] Mass assignment to ${model} forbidden: ${why}. Use ${model}.forceCreate(...) / .forceUpdate(...) to bypass.`)
+    this.name = 'MassAssignmentException'
+    this.model = model
+    this.attribute = attribute
+    this.reason = reason
+  }
+}
+
+/**
+ * Columns the runtime always allows through mass assignment regardless of
+ * `fillable`/`guarded` markings. Built-in framework bookkeeping that the
+ * developer would never explicitly mark fillable but that nevertheless
+ * has to be writeable from internal pathways.
+ */
+const MASS_ASSIGNMENT_SYSTEM_COLUMNS = new Set([
+  'id', 'created_at', 'updated_at', 'deleted_at', 'uuid',
+])
+
+/**
+ * Apply mass-assignment rules to a write payload. Returns the validated
+ * payload (unchanged) or throws `MassAssignmentException` on the first
+ * forbidden field it sees.
+ *
+ * Mode resolution mirrors Laravel:
+ *
+ *   • If any attribute carries `fillable: true` → allowlist mode. Fields
+ *     not on the allowlist (or in the system-column / FK exemption set)
+ *     throw `not-fillable`.
+ *   • Else, `guarded: true` attrs throw `guarded`; everything else passes.
+ *   • Else, the model has no opinion on mass assignment → permissive
+ *     (matches the framework's pre-fix behavior so existing apps that
+ *     declare neither don't suddenly start throwing).
+ *
+ * `_id`-suffixed columns are always allowed through (FK columns); the
+ * model usually doesn't list them in `attributes`, so blocking them
+ * would break every belongsTo write.
+ *
+ * Callers can opt out per-call via `{ force: true }` — used by the
+ * `forceCreate` / `forceUpdate` static helpers.
+ */
+function applyMassAssignmentRules(
+  definition: BQBModelDefinition,
+  data: Record<string, unknown>,
+  options: { force?: boolean } = {},
+): Record<string, unknown> {
+  if (options.force) return data
+  if (!data || typeof data !== 'object' || Array.isArray(data)) return data
+
+  const attrs = (definition as any).attributes as Record<string, { fillable?: boolean, guarded?: boolean }> | undefined
+  if (!attrs) return data
+
+  const fillable = new Set<string>()
+  const guarded = new Set<string>()
+  for (const [k, a] of Object.entries(attrs)) {
+    const col = snakeCase(k)
+    if (a?.fillable === true) fillable.add(col)
+    if (a?.guarded === true) guarded.add(col)
+  }
+
+  const allowlistMode = fillable.size > 0
+
+  for (const key of Object.keys(data)) {
+    if (MASS_ASSIGNMENT_SYSTEM_COLUMNS.has(key)) continue
+    if (key.endsWith('_id')) continue // foreign keys
+
+    if (guarded.has(key))
+      throw new MassAssignmentException(definition.name, key, 'guarded')
+
+    if (allowlistMode && !fillable.has(key))
+      throw new MassAssignmentException(definition.name, key, 'not-fillable')
+  }
+
+  return data
+}
+
+/**
  * Run a model's user-defined `set:` hooks against an arbitrary write
  * payload. Used by Model.update(id, data) (and the auto-CRUD update path
  * via the duplicated helper in routes.ts) to keep static-write call sites
@@ -380,6 +605,12 @@ async function applyDefinedSetters(
 function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBModelDefinition) {
   const pk = definition.primaryKey || 'id'
 
+  // Capture the un-wrapped `create` reference at install time. Later
+  // `wrapWritesWithMassAssignment` rebinds `baseModel.create` to a wrapper
+  // that throws on guarded fields — `forceCreate` needs to reach the
+  // *underlying* create so the escape hatch actually escapes.
+  const unwrappedCreate = baseModel.create
+
   function getWhere(method: string): Function {
     const w = baseModel.where
     if (typeof w !== 'function')
@@ -412,6 +643,12 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   // = bcrypt). Without this, `User.update(id, { password: 'plain' })`
   // would store plaintext because raw query.update() bypasses the
   // ModelInstance.save() pipeline entirely.
+  //
+  // SECURITY 2: filters the payload through the mass-assignment rules
+  // (`fillable`/`guarded`). Pre-fix, an unfiltered `req.json()` could land
+  // straight in the DB — a request body with `is_admin: true` would write
+  // it even on models that mark the column guarded. Use `forceUpdate` to
+  // bypass when intentional.
   if (typeof baseModel.update !== 'function') {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
       if (id == null) throw new Error(`[ORM] ${definition.name}.update requires an id as the first argument`)
@@ -423,11 +660,40 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
         return typeof f === 'function' ? await f.call(baseModel, id) : null
       }
 
+      applyMassAssignmentRules(definition, data)
       const finalData = await applyDefinedSetters(definition, data)
 
       await getWhere('update').call(baseModel, pk, id).update(finalData)
       const f = baseModel.find as Function | undefined
       return typeof f === 'function' ? await f.call(baseModel, id) : null
+    }
+  }
+
+  // Model.forceUpdate(id, data) — bypass mass-assignment rules. Used for
+  // internal pathways (background jobs, console commands) that need to
+  // touch guarded columns intentionally.
+  if (typeof baseModel.forceUpdate !== 'function') {
+    baseModel.forceUpdate = async function (id: number | string, data: Record<string, unknown>) {
+      if (id == null) throw new Error(`[ORM] ${definition.name}.forceUpdate requires an id as the first argument`)
+      if (!data || typeof data !== 'object' || Array.isArray(data))
+        throw new Error(`[ORM] ${definition.name}.forceUpdate requires a data object as the second argument`)
+      const finalData = await applyDefinedSetters(definition, data)
+      await getWhere('forceUpdate').call(baseModel, pk, id).update(finalData)
+      const f = baseModel.find as Function | undefined
+      return typeof f === 'function' ? await f.call(baseModel, id) : null
+    }
+  }
+
+  // Model.forceCreate(data) — bypass mass-assignment for create as well.
+  // Calls the un-wrapped `create` captured above, NOT `baseModel.create`
+  // (which is rebound to the rule-enforcing wrapper later).
+  if (typeof baseModel.forceCreate !== 'function') {
+    baseModel.forceCreate = async function (data: Record<string, unknown>) {
+      if (!data || typeof data !== 'object' || Array.isArray(data))
+        throw new Error(`[ORM] ${definition.name}.forceCreate requires a data object`)
+      if (typeof unwrappedCreate !== 'function')
+        throw new Error(`[ORM] ${definition.name}.forceCreate cannot create: the underlying query builder did not expose create()`)
+      return await (unwrappedCreate as Function).call(baseModel, data)
     }
   }
 
@@ -466,6 +732,9 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
   }
 
   // Model.firstOrCreate(where, defaults?) — find by attrs, otherwise insert.
+  // Mass-assignment rules apply to the *insert* payload, not the where
+  // clause: looking up by `email` is fine on a guarded `email`, but
+  // *writing* a new row with a guarded field still needs the escape hatch.
   if (typeof baseModel.firstOrCreate !== 'function') {
     baseModel.firstOrCreate = async function (
       attrs: Record<string, unknown>,
@@ -478,7 +747,9 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
       const existing = typeof q.first === 'function' ? await q.first() : await q
       if (existing) return existing
 
-      return await getCreate('firstOrCreate').call(baseModel, { ...attrs, ...defaults })
+      const payload = { ...attrs, ...defaults }
+      applyMassAssignmentRules(definition, payload)
+      return await getCreate('firstOrCreate').call(baseModel, payload)
     }
   }
 
@@ -496,13 +767,16 @@ function addStaticHelpers(baseModel: Record<string, unknown>, definition: BQBMod
       const q: any = getWhere('updateOrCreate').call(baseModel, attrs)
       const existing = typeof q.first === 'function' ? await q.first() : await q
       if (existing) {
+        applyMassAssignmentRules(definition, values)
         const id = (existing as Record<string, unknown>)[pk]
         await getWhere('updateOrCreate').call(baseModel, pk, id).update(values)
         const f = baseModel.find as Function | undefined
         return typeof f === 'function' ? await f.call(baseModel, id) : { ...existing, ...values }
       }
 
-      return await getCreate('updateOrCreate').call(baseModel, { ...attrs, ...values })
+      const payload = { ...attrs, ...values }
+      applyMassAssignmentRules(definition, payload)
+      return await getCreate('updateOrCreate').call(baseModel, payload)
     }
   }
 
@@ -702,6 +976,52 @@ function wrapWritesWithEncryption(baseModel: Record<string, unknown>, encryptedK
   }
 }
 
+/**
+ * Wrap the static write entry points so every write payload is filtered
+ * through `applyMassAssignmentRules` AND through `applyDefinedSetters`
+ * before it can hit the database. The wrapper runs *before* the cast
+ * wrappers so a thrown exception fires on the raw user input (most useful
+ * in error messages); casts only see payloads that already passed the
+ * rule check.
+ *
+ * `create` is the bun-query-builder built-in. Pre-fix it bypassed the
+ * setter pipeline entirely — `User.create({ password: 'plain' })`
+ * persisted plaintext because the static create path doesn't go through
+ * `ModelInstance.save()` (which is where setters fire for instance-mode
+ * writes). Now setters run here too, awaiting any async `set:` hooks
+ * (e.g. `bcrypt`) before the row hits the DB.
+ *
+ * `firstOrCreate` / `updateOrCreate` / `update` are added by
+ * `addStaticHelpers` and apply the mass-assignment rule themselves;
+ * `update` already calls `applyDefinedSetters` in that path, but the
+ * `firstOrCreate`/`updateOrCreate` create branches also need it — wrap
+ * them here so all create flows are setter-aware.
+ */
+function wrapWritesWithMassAssignment(baseModel: Record<string, unknown>, definition: BQBModelDefinition): void {
+  const origCreate = baseModel.create
+  if (typeof origCreate === 'function') {
+    baseModel.create = async function (this: unknown, data: Record<string, unknown>, ...rest: unknown[]) {
+      applyMassAssignmentRules(definition, data)
+      const finalData = await applyDefinedSetters(definition, data)
+      return await (origCreate as Function).call(this, finalData, ...rest)
+    }
+  }
+
+  // Wrap `firstOrCreate` / `updateOrCreate` to push their *create branch*
+  // payloads through `applyDefinedSetters` too. The rule check is applied
+  // by addStaticHelpers; the setter pass is the missing piece.
+  for (const method of ['firstOrCreate', 'updateOrCreate'] as const) {
+    const orig = baseModel[method]
+    if (typeof orig !== 'function') continue
+    // The orig fn was already installed by addStaticHelpers, which
+    // internally calls baseModel.create — that call now lands on the
+    // setter-aware wrapper above. So orig already runs setters via the
+    // outer create chain; no extra work needed here. Keeping the loop as
+    // a marker for the audit trail in case someone replaces the chain.
+    void orig
+  }
+}
+
 function wrapQueryMethodsWithCasts(baseModel: Record<string, unknown>, casts: Record<string, CastType | CasterInterface>) {
   // Read-side casts are handled inside `wrapModelInstance` so the proxy
   // (and its `toJSON`/`update`/etc. methods) survives. Wrapping reads here
@@ -838,6 +1158,15 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // input/output casting consistently across both APIs.
   addStaticHelpers(baseModel, defWithHooks as BQBModelDefinition)
 
+  // SECURITY: enforce fillable / guarded on every write. Wraps `create`
+  // so an unfiltered `req.json()` payload with a guarded field throws
+  // `MassAssignmentException` instead of landing in the DB. Static
+  // helpers (`update`, `firstOrCreate`, `updateOrCreate`) apply the rule
+  // internally; this wrapper covers the bun-query-builder `create` path.
+  // Runs before the cast wrapper so the exception fires against the raw
+  // user input rather than a cast-coerced view.
+  wrapWritesWithMassAssignment(baseModel, defWithHooks as BQBModelDefinition)
+
   // Write-side casts (e.g. JSON serialization on save) still need the
   // legacy wrapper; reads are handled inside the proxy above.
   if (definition.casts && Object.keys(definition.casts).length > 0) {
@@ -873,15 +1202,50 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // Build trait methods based on model config
   const traitMethods = buildTraitMethods(definition as unknown as BQBModelDefinition)
 
+  // Static-level event suppression helpers. `Model.withoutEvents(fn)`
+  // runs `fn` with the lifecycle-event ALS scope marked suppressed —
+  // equivalent to the module-level `withoutEvents` but bound to the
+  // model so it's discoverable via autocomplete.
+  //
+  // `Model.createQuietly(...)` / `Model.updateQuietly(...)` are sugar:
+  // `await User.createQuietly(data)` is exactly `await
+  // User.withoutEvents(() => User.create(data))`. The quiet variants
+  // exist to spare callers the closure noise on the common case (single
+  // bulk write, no surrounding logic).
+  ;(baseModel as any).withoutEvents = function <T>(fn: () => T | Promise<T>): Promise<T> {
+    return withoutEvents(fn)
+  }
+
+  for (const method of ['create', 'update', 'firstOrCreate', 'updateOrCreate', 'forceCreate', 'forceUpdate', 'delete', 'forceDelete', 'softDelete', 'restore'] as const) {
+    const orig = (baseModel as any)[method]
+    if (typeof orig !== 'function') continue
+    const quietName = `${method}Quietly` as const
+    if (typeof (baseModel as any)[quietName] === 'function') continue
+    ;(baseModel as any)[quietName] = function (...args: unknown[]) {
+      return withoutEvents(() => orig.apply(baseModel, args))
+    }
+  }
+
   // Merge: base model + trait methods + raw definition properties (for generators)
   // Spreading `definition` ensures `.name`, `.table`, `.attributes`, `.traits` etc.
   // remain accessible for migration/route/dashboard generators
-  return Object.assign(baseModel, traitMethods, {
+  const finalModel = Object.assign(baseModel, traitMethods, {
     // Raw definition access
     ...definition,
     getDefinition: () => definition,
     _isStacksModel: true as const,
   })
+
+  // Register in bun-query-builder's model registry so cross-model lookups
+  // (`belongsToMany` resolving `'Athlete'` → Athlete model) succeed at
+  // runtime. Without this, every belongsToMany / through-style relation
+  // throws `[orm] related model 'X' is not registered` on the first
+  // call. We bypass `bun-query-builder.defineModel` (which would also
+  // register) because stacks needs to install its own wrappers around
+  // the result of `createModel`.
+  registerModel(definition.name, finalModel)
+
+  return finalModel
 }
 
 function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['hooks'] | undefined {
@@ -890,8 +1254,12 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
 
   const modelName = definition.name.toLowerCase()
 
-  // Lazy import to avoid circular dependency
+  // Lazy import to avoid circular dependency. Suppression check is done
+  // INSIDE the dispatcher (rather than at the hook caller) so even
+  // explicit `dispatchEvent` calls from elsewhere honour the
+  // `withoutEvents` ALS scope without each call site having to remember.
   const dispatchEvent = (event: string, data: any) => {
+    if (eventsAreSuppressed()) return Promise.resolve()
     return import('@stacksjs/events')
       .then(({ dispatch }) => dispatch(event, data))
       .catch((err) => {
@@ -906,6 +1274,7 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
 
   // Dispatches a before-event and returns false if the handler cancels the operation
   const dispatchBeforeEvent = async (event: string, data: any): Promise<boolean> => {
+    if (eventsAreSuppressed()) return true
     try {
       const { dispatchAsync } = await import('@stacksjs/events')
       // dispatchAsync awaits every matching handler and returns their results;
@@ -931,18 +1300,34 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   if (events.includes('create')) {
     hooks.beforeCreate = async (model: any) => {
       log.debug(`[orm] Create ${modelName}`, model)
-      const shouldProceed = await dispatchBeforeEvent(`${modelName}:creating`, model)
-      if (!shouldProceed) throw new Error(`[ORM] ${modelName}:creating event cancelled the operation`)
+      // `saving` fires for every persist (insert OR update), `creating`
+      // for inserts only — Eloquent semantics. Either listener can
+      // cancel the operation by returning `false`.
+      const savingOk = await dispatchBeforeEvent(`${modelName}:saving`, model)
+      if (!savingOk) throw new Error(`[ORM] ${modelName}:saving event cancelled the operation`)
+      const creatingOk = await dispatchBeforeEvent(`${modelName}:creating`, model)
+      if (!creatingOk) throw new Error(`[ORM] ${modelName}:creating event cancelled the operation`)
     }
-    hooks.afterCreate = (model: any) => dispatchEvent(`${modelName}:created`, model)
+    hooks.afterCreate = async (model: any) => {
+      // Order: `created` first (specific), then `saved` (general) — same
+      // as Eloquent so a `saved` listener can rely on `created` having
+      // already fired for the insert path.
+      await dispatchEvent(`${modelName}:created`, model)
+      await dispatchEvent(`${modelName}:saved`, model)
+    }
   }
   if (events.includes('update')) {
     hooks.beforeUpdate = async (model: any) => {
       log.debug(`[orm] Update ${modelName}#${model?.id ?? 'unknown'}`, model)
-      const shouldProceed = await dispatchBeforeEvent(`${modelName}:updating`, model)
-      if (!shouldProceed) throw new Error(`[ORM] ${modelName}:updating event cancelled the operation`)
+      const savingOk = await dispatchBeforeEvent(`${modelName}:saving`, model)
+      if (!savingOk) throw new Error(`[ORM] ${modelName}:saving event cancelled the operation`)
+      const updatingOk = await dispatchBeforeEvent(`${modelName}:updating`, model)
+      if (!updatingOk) throw new Error(`[ORM] ${modelName}:updating event cancelled the operation`)
     }
-    hooks.afterUpdate = (model: any) => dispatchEvent(`${modelName}:updated`, model)
+    hooks.afterUpdate = async (model: any) => {
+      await dispatchEvent(`${modelName}:updated`, model)
+      await dispatchEvent(`${modelName}:saved`, model)
+    }
   }
   if (events.includes('delete')) {
     hooks.beforeDelete = async (model: any) => {
@@ -1020,27 +1405,61 @@ function applySoftDeletes(
   const helpers = createSoftDeleteMethods(baseModel as any, definition.primaryKey || 'id')
   const options = resolveSoftDeleteOptions(traitFlag)
   const parentDef = definition as unknown as { name: string, hasMany?: ReadonlyArray<string>, hasOne?: ReadonlyArray<string> }
+  const modelName = definition.name.toLowerCase()
 
-  // If cascade is configured, wrap the soft-delete and restore methods so
-  // the children fan out alongside. Wrap once here rather than burying the
-  // logic inside `createSoftDeleteMethods` so that simple-case soft-deletes
-  // (no cascade) keep their original, lighter code path.
-  const cascading = (options.cascade?.length ?? 0) > 0
-  const softDeleteFn = cascading
-    ? async (id: number | string): Promise<boolean> => {
-        const ok = await helpers.softDelete(id)
-        if (ok) await cascadeSoftDelete(parentDef, options, id, 'softDelete')
-        return ok
-      }
-    : helpers.softDelete
+  // Lazy event-dispatch helpers, mirroring buildEventHooks but local to
+  // soft-delete restore. We only fire these when the `observe` trait is
+  // on (matching the rest of the lifecycle-event policy) — otherwise
+  // restore() stays a quiet UPDATE.
+  const observeOn = definition.traits?.observe != null && definition.traits?.observe !== false
+  const fireRestoring = async (id: number | string): Promise<boolean> => {
+    if (!observeOn || eventsAreSuppressed()) return true
+    try {
+      const { dispatchAsync } = await import('@stacksjs/events')
+      const results = (await dispatchAsync(`${modelName}:restoring` as any, { id })) as unknown[]
+      if (Array.isArray(results) && results.some(r => r === false)) return false
+    }
+    catch (err: any) {
+      if (err?.code !== 'MODULE_NOT_FOUND')
+        console.error(`[ORM] Before-event '${modelName}:restoring' handler error:`, err)
+    }
+    return true
+  }
+  const fireRestored = async (id: number | string): Promise<void> => {
+    if (!observeOn || eventsAreSuppressed()) return
+    try {
+      const { dispatch } = await import('@stacksjs/events')
+      await dispatch(`${modelName}:restored` as any, { id })
+    }
+    catch (err: any) {
+      if (err?.code !== 'MODULE_NOT_FOUND')
+        console.error(`[ORM] Event '${modelName}:restored' handler error:`, err)
+    }
+  }
 
-  const restoreFn = cascading
-    ? async (id: number | string): Promise<boolean> => {
-        const ok = await helpers.restore(id)
-        if (ok) await cascadeSoftDelete(parentDef, options, id, 'restore')
-        return ok
-      }
-    : helpers.restore
+  // Wrap the raw helpers with event dispatch + cascade. Pre-fix the
+  // restore path wrote `deleted_at = null` directly with no observers
+  // ever fired — the audit's #11 specifically called this out, since a
+  // listener watching for "user came back" via `restored` was never going
+  // to receive the event.
+  const softDeleteFn = async (id: number | string): Promise<boolean> => {
+    const ok = await helpers.softDelete(id)
+    if (ok && options.cascade?.length)
+      await cascadeSoftDelete(parentDef, options, id, 'softDelete')
+    return ok
+  }
+
+  const restoreFn = async (id: number | string): Promise<boolean> => {
+    const proceed = await fireRestoring(id)
+    if (!proceed) return false
+    const ok = await helpers.restore(id)
+    if (ok) {
+      if (options.cascade?.length)
+        await cascadeSoftDelete(parentDef, options, id, 'restore')
+      await fireRestored(id)
+    }
+    return ok
+  }
 
   // Replace `delete` with the soft-delete variant; expose the original
   // as `forceDelete` for the rare case callers want a real DELETE.

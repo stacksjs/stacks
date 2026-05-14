@@ -170,7 +170,7 @@ function formatNumber(n) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/analytics/pages" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all pages</a>
+            <StxLink to="/analytics/pages" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all pages</StxLink>
           </div>
         </div>
 
@@ -204,7 +204,7 @@ function formatNumber(n) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all referrers</a>
+            <StxLink to="/analytics/referrers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all referrers</StxLink>
           </div>
         </div>
       </div>
@@ -238,7 +238,7 @@ function formatNumber(n) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/analytics/devices" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all devices</a>
+            <StxLink to="/analytics/devices" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all devices</StxLink>
           </div>
         </div>
 
@@ -270,7 +270,7 @@ function formatNumber(n) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/analytics/browsers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all browsers</a>
+            <StxLink to="/analytics/browsers" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all browsers</StxLink>
           </div>
         </div>
 
@@ -302,7 +302,7 @@ function formatNumber(n) {
             </table>
           </div>
           <div class="flex justify-end mt-2">
-            <a href="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</a>
+            <StxLink to="/analytics/countries" class="text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">View all countries</StxLink>
           </div>
         </div>
       </div>

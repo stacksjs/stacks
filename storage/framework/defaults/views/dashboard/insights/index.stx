@@ -194,11 +194,11 @@ function statusLabel(status: string): string {
                       <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">{{ queue.name }}</h4>
                     </div>
                     <div class="flex items-center space-x-3">
-                      <div class="flex items-center space-x-2"><div class="bg-blue-500 h-2.5 w-2.5 rounded-full"></div><span class="font-mono text-xs text-blue-700 dark:text-blue-300">{{ queue.stats.queued }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="bg-yellow-500 h-2.5 w-2.5 rounded-full"></div><span class="font-mono text-xs text-yellow-700 dark:text-yellow-300">{{ queue.stats.processing }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="bg-green-500 h-2.5 w-2.5 rounded-full"></div><span class="font-mono text-xs text-green-700 dark:text-green-300">{{ queue.stats.processed }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="bg-purple-500 h-2.5 w-2.5 rounded-full"></div><span class="font-mono text-xs text-purple-700 dark:text-purple-300">{{ queue.stats.released }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="bg-red-500 h-2.5 w-2.5 rounded-full"></div><span class="font-mono text-xs text-red-700 dark:text-red-300">{{ queue.stats.failed }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-blue-500 rounded-full"></div><span class="font-mono text-blue-700 text-xs dark:text-blue-300">{{ queue.stats.queued }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-yellow-500 rounded-full"></div><span class="font-mono text-xs text-yellow-700 dark:text-yellow-300">{{ queue.stats.processing }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-green-500 rounded-full"></div><span class="font-mono text-green-700 text-xs dark:text-green-300">{{ queue.stats.processed }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-purple-500 rounded-full"></div><span class="font-mono text-purple-700 text-xs dark:text-purple-300">{{ queue.stats.released }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-red-500 rounded-full"></div><span class="font-mono text-red-700 text-xs dark:text-red-300">{{ queue.stats.failed }}</span></div>
                     </div>
                   </div>
 

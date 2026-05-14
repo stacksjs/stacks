@@ -37,12 +37,12 @@ const orderTypes = [
     <!-- Orders Table -->
     <OrdersTable
       :orders="paginatedOrders"
-      :search-query="searchQuery"
-      :status-filter="statusFilter"
-      :sort-by="sortBy"
-      :sort-order="sortOrder"
-      :current-page="currentPage"
-      :items-per-page="itemsPerPage"
+      :searchQuery="searchQuery"
+      :statusFilter="statusFilter"
+      :sortBy="sortBy"
+      :sortOrder="sortOrder"
+      :currentPage="currentPage"
+      :itemsPerPage="itemsPerPage"
       :statuses="statuses"
       @toggle-sort="toggleSort"
     />
@@ -62,17 +62,17 @@ const orderTypes = [
   <!-- Add Order Modal -->
   <Modal :isOpen="showAddModal" title="Add New Order" @close="closeAddModal">
     <form @submit.prevent="addOrder()" class="space-y-4">
-      <Input label="Customer ID" name="customer_id" type="number" placeholder="Enter customer ID" x-model.number="newCustomerId" required />
-      <Input label="Total Amount" name="total_amount" type="number" placeholder="0.00" x-model.number="newTotalAmount" required />
+      <Input label="Customer ID" name="customer_id" type="number" placeholder="Enter customer ID" :value="newCustomerId" required />
+      <Input label="Total Amount" name="total_amount" type="number" placeholder="0.00" :value="newTotalAmount" required />
       <Select
         label="Order Type"
         :options="orderTypes"
-        x-model="newOrderType"
+        :value="newOrderType"
       />
       <Select
         label="Status"
         :options="newOrderStatusOptions"
-        x-model="newStatus"
+        :value="newStatus"
       />
       <div class="flex gap-2 justify-end pt-4 border-neutral-200 border-t dark:border-neutral-700">
         <Button variant="secondary" @click.prevent="closeAddModal()">Cancel</Button>

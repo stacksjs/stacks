@@ -31,12 +31,16 @@ const totalViews = 256890
 const totalComments = 3427
 const averageEngagement = '4.2%'
 
+// Returns the COMPLETE class string (badge tone + static layout) because
+// stx's `{{ ... }}` placeholder is not reactively bound inside a `class`
+// attribute — only inside text content. The reactive form is `:class="fn()"`.
 function commentStatusClass(status) {
-  if (status === 'Approved')
-    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-  if (status === 'Spam')
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-  return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+  const tone = status === 'Approved'
+    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    : status === 'Spam'
+      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+  return `${tone} inline-flex items-center px-2 py-1 font-medium text-xs rounded-md`
 }
 
 function draftProgressWidth(id) {
@@ -221,7 +225,7 @@ function draftProgressLabel(id) {
                         </div>
                       </div>
                       <div>
-                        <span class="{{ commentStatusClass(comment.status) }} inline-flex items-center px-2 py-1 font-medium text-xs rounded-md">{{ comment.status }}</span>
+                        <span :class="commentStatusClass(comment.status)">{{ comment.status }}</span>
                       </div>
                     </div>
                     <div class="mt-2 text-gray-700 text-sm dark:text-neutral-300">

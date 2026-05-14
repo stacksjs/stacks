@@ -29,14 +29,14 @@ const tabs = [
           </button>
         </div>
         <div class="mt-4">
-          <SearchFilter placeholder="Search shipping rates..." @search="handleSearch" class="w-full md:w-96" />
+          <div class="w-full md:w-96"><SearchFilter placeholder="Search shipping rates..." @search="handleSearch" /></div>
         </div>
       </div>
 
       <ShippingRatesTable :rates="paginatedShippingRates" @edit="openEditModal" @delete="handleDeleteRate" />
 
       <div class="px-4 py-3 bg-gray-50 dark:bg-neutral-900 border-gray-200 border-t dark:border-neutral-700">
-        <Pagination :current-page="currentPage" :total-items="totalItems" :items-per-page="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange" />
+        <Pagination :currentPage="currentPage" :totalItems="totalItems" :itemsPerPage="itemsPerPage" @prev="handlePrevPage" @next="handleNextPage" @page="handlePageChange" />
       </div>
     </div>
   </div>

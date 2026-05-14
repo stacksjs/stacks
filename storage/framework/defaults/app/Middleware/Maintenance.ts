@@ -1,107 +1,36 @@
 import { Middleware } from '@stacksjs/router'
 
 /**
- * Maintenance Mode Middleware
+ * Maintenance / Coming-Soon Middleware
  *
- * Checks if the application is in maintenance mode and handles
- * bypass logic for allowed IPs, secret tokens, and cookies.
+ * Global middleware that gates every request when the application has
+ * been flipped into a protected site mode via either:
  *
- * This middleware should be applied globally to check all requests.
+ *   - `buddy down` / `buddy up` (maintenance mode), or
+ *   - `buddy coming-soon` / `buddy launch` (coming-soon mode), or
+ *   - the `APP_MAINTENANCE` / `APP_COMING_SOON` env vars in production.
+ *
+ * All gate logic — mode detection, secret-URL bypass, mode-aware bypass
+ * cookies, allowed IPs, always-allowed paths (the holding page itself,
+ * email subscribe, static assets) — lives in one place:
+ * `maintenanceGate()` in `@stacksjs/server`. The dev server's
+ * `onRequest` hook calls the same function, so dev and prod behave
+ * identically.
  *
  * Bypass methods:
- * 1. Secret URL: Visit /your-secret to get a bypass cookie
- * 2. Allowed IPs: Configured when running `buddy down --allow=IP`
- * 3. Bypass cookie: Automatically set when visiting secret URL
+ *   1. Secret URL — visit `/your-secret` to set a bypass cookie.
+ *   2. Allowed IPs — configured with `--allow=IP` on either command.
+ *   3. Bypass cookie — automatically set when visiting the secret URL.
  */
 export default new Middleware({
   name: 'maintenance',
   priority: 0, // Run first, before all other middleware
 
   async handle(request) {
-    const {
-      activeSiteModePayload,
-      siteModeResponse,
-      isAllowedIp,
-      hasValidBypassCookie,
-      isSecretPath,
-      bypassCookieValue,
-    } = await import('@stacksjs/server')
+    const { maintenanceGate } = await import('@stacksjs/server')
 
-    const payload = await activeSiteModePayload()
-
-    if (!payload) {
-      return
-    }
-
-    // Get request info
-    const url = new URL(request.url)
-    const path = url.pathname
-    const ip = getClientIp(request)
-    const cookies = parseCookies(request.headers.get('cookie') || '')
-
-    // Check if this is the secret bypass URL
-    if (payload.secret && isSecretPath(path, payload.secret)) {
-      // Set bypass cookie and redirect to home
-      const response = new Response(null, {
-        status: 302,
-        headers: {
-          'Location': '/',
-          'Set-Cookie': bypassCookieValue(payload.secret, payload.mode),
-        },
-      })
-
-      // Return the response to short-circuit the request
-      throw response
-    }
-
-    // Check bypass conditions
-    const hasValidCookie = payload.secret && hasValidBypassCookie(cookies, payload.secret, payload.mode)
-    const isIpAllowed = isAllowedIp(ip, payload.allowed)
-
-    if (hasValidCookie || isIpAllowed) {
-      return // Bypass granted, continue normally
-    }
-
-    // No bypass - return maintenance response
-    throw siteModeResponse(payload)
+    const gated = await maintenanceGate(request)
+    if (gated)
+      throw gated // short-circuit the request
   },
 })
-
-/**
- * Get client IP from request
- */
-function getClientIp(request: Request): string {
-  // Check common headers for proxied requests
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded) {
-    return forwarded.split(',')[0].trim()
-  }
-
-  const realIp = request.headers.get('x-real-ip')
-  if (realIp) {
-    return realIp
-  }
-
-  // Fallback (may not always be available)
-  return '127.0.0.1'
-}
-
-/**
- * Parse cookies from header string
- */
-function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies: Record<string, string> = {}
-
-  if (!cookieHeader) {
-    return cookies
-  }
-
-  cookieHeader.split(';').forEach((cookie) => {
-    const [name, ...rest] = cookie.split('=')
-    if (name) {
-      cookies[name.trim()] = rest.join('=').trim()
-    }
-  })
-
-  return cookies
-}

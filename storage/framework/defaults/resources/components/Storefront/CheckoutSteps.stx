@@ -23,9 +23,9 @@ const currentIndex = steps.findIndex(s => s.key === current)
 </script>
 
 <nav aria-label="Checkout progress" class="mb-10">
-  <ol class="flex items-center gap-3 text-sm">
+  <ol class="flex gap-3 items-center text-sm">
     @foreach (steps as step, i)
-      <li class="flex-1 flex items-center gap-3 min-w-0">
+      <li class="flex flex-1 gap-3 items-center min-w-0">
         <span class="inline-flex h-7 w-7 items-center justify-center rounded-full text-xs font-semibold flex-shrink-0
           {{ i < currentIndex ? 'bg-stone-900 text-stone-50' : '' }}
           {{ i === currentIndex ? 'bg-stone-900 text-stone-50 ring-4 ring-stone-200' : '' }}
@@ -37,7 +37,7 @@ const currentIndex = steps.findIndex(s => s.key === current)
           @endif
         </span>
         @if (step.href && i <= currentIndex)
-          <a href="{{ step.href }}" class="text-stone-900 font-semibold hover:underline truncate">{{ step.label }}</a>
+          <a href="{{ step.href }}" class="font-semibold text-stone-900 truncate hover:underline">{{ step.label }}</a>
         @else
           <span class="{{ i === currentIndex ? 'text-stone-900 font-semibold' : 'text-stone-500' }} truncate">{{ step.label }}</span>
         @endif

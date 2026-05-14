@@ -23,41 +23,20 @@
 
 import { frameworkPath } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
+import MaintenanceMiddleware from './app/Middleware/Maintenance'
 
-route.use(async (request, next) => {
-  const {
-    activeSiteModePayload,
-    bypassCookieValue,
-    hasValidBypassCookie,
-    isAllowedIp,
-    isSecretPath,
-    siteModeResponse,
-  } = await import('@stacksjs/server')
-
-  const payload = await activeSiteModePayload()
-  if (!payload)
-    return next()
-
-  const url = new URL(request.url)
-  const cookies = parseCookies(request.headers.get('cookie') || '')
-  const ip = getClientIp(request)
-
-  if (payload.secret && isSecretPath(url.pathname, payload.secret)) {
-    return new Response(null, {
-      status: 302,
-      headers: {
-        Location: '/',
-        'Set-Cookie': bypassCookieValue(payload.secret, payload.mode),
-      },
-    })
-  }
-
-  const hasBypass = payload.secret && hasValidBypassCookie(cookies, payload.secret, payload.mode)
-  if (hasBypass || isAllowedIp(ip, payload.allowed))
-    return next()
-
-  return siteModeResponse(payload)
-})
+// Global maintenance / coming-soon gate. Registered first so the
+// `buddy down` / `buddy coming-soon` (and their env-var equivalents)
+// state files intercept every request before any other middleware or
+// route runs.
+//
+// The middleware is a thin wrapper around `maintenanceGate()` in
+// @stacksjs/server, which is also called from the dev server's
+// `onRequest` hook — so dev and prod use one implementation. The gate
+// itself reads `activeSiteModePayload()` so it covers both maintenance
+// and coming-soon modes (plus `APP_MAINTENANCE` / `APP_COMING_SOON`
+// env overrides) without the bootstrap needing to know the details.
+route.use(MaintenanceMiddleware.handle.bind(MaintenanceMiddleware) as any)
 
 // Dashboard, auth, password, email, etc. Currently lives as a single
 // 687-line routes file under defaults/routes/dashboard.ts. As each
@@ -66,25 +45,6 @@ route.use(async (request, next) => {
 // dedicated workspace package whose index.ts self-registers.
 await route.register(frameworkPath('defaults/routes/dashboard.ts'))
 
-function getClientIp(request: Request): string {
-  const forwarded = request.headers.get('x-forwarded-for')
-  if (forwarded)
-    return forwarded.split(',')[0]?.trim() || '127.0.0.1'
-
-  return request.headers.get('x-real-ip') || '127.0.0.1'
-}
-
-function parseCookies(cookieHeader: string): Record<string, string> {
-  const cookies: Record<string, string> = {}
-
-  if (!cookieHeader)
-    return cookies
-
-  for (const cookie of cookieHeader.split(';')) {
-    const [name, ...rest] = cookie.split('=')
-    if (name)
-      cookies[name.trim()] = rest.join('=').trim()
-  }
-
-  return cookies
-}
+// JSON endpoints for the dev dashboard UI. Kept separate from the view
+// routes above so the data layer is one obvious file to grep.
+await route.register(frameworkPath('defaults/routes/dashboard-api.ts'))

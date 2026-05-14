@@ -1,7 +1,12 @@
 @extends('layouts/default')
 
 @section('content')
-<PageLayout variant="centered" minHeight="80vh">
+{{-- Catch-all 404. Inlined instead of using <PageLayout> because the
+     filename's route-param `...all` leaks into component prop scopes
+     and stx's @if evaluator parses it as a rest parameter, breaking
+     every @if in components that consume it. --}}
+<div class="flex items-center justify-center min-h-[80vh] px-6 pt-6 pb-12">
+  <div class="mx-auto w-full max-w-7xl space-y-6">
   <div class="text-center">
     <div class="flex justify-center">
       <div class="mb-6 h-24 w-24 text-gray-400 dark:text-neutral-500 i-hugeicons-alert-circle"></div>
@@ -12,12 +17,12 @@
       Sorry, we couldn't find the page you're looking for. The page might have been moved or deleted.
     </p>
     <div class="flex gap-x-6 items-center justify-center mt-10">
-      <a href="/dashboard" class="px-3.5 py-2.5 font-semibold text-sm text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-500 dark:hover:bg-blue-600 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
+      <StxLink to="/dashboard" class="px-3.5 py-2.5 font-semibold text-sm text-white bg-blue-600 dark:bg-blue-700 hover:bg-blue-500 dark:hover:bg-blue-600 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">
         Return to dashboard
-      </a>
-      <a href="/" class="font-semibold text-gray-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
+      </StxLink>
+      <StxLink to="/" class="font-semibold text-gray-900 text-sm dark:text-white hover:text-blue-600 dark:hover:text-blue-400">
         Go to home <span aria-hidden="true">&rarr;</span>
-      </a>
+      </StxLink>
     </div>
   </div>
 
@@ -25,7 +30,7 @@
   <div>
     <h2 class="font-semibold leading-6 text-base text-center text-gray-900 dark:text-white">You might be looking for</h2>
     <div class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-6">
-            <a href="/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+            <StxLink to="/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 p-3 bg-blue-500 rounded-md">
@@ -41,8 +46,8 @@
                   </div>
                 </div>
               </div>
-            </a>
-            <a href="/content/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+            </StxLink>
+            <StxLink to="/content/dashboard" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 p-3 bg-green-500 rounded-md">
@@ -58,8 +63,8 @@
                   </div>
                 </div>
               </div>
-            </a>
-            <a href="/settings" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
+            </StxLink>
+            <StxLink to="/settings" class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow hover:shadow-md duration-200 transition-shadow">
               <div class="p-5">
                 <div class="flex items-center">
                   <div class="flex-shrink-0 p-3 bg-gray-500 rounded-md">
@@ -75,9 +80,10 @@
                   </div>
                 </div>
               </div>
-            </a>
+            </StxLink>
     </div>
   </div>
-</PageLayout>
+  </div>
+</div>
 
 @endsection
