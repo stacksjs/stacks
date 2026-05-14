@@ -1,4 +1,5 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
+import { existsSync } from 'node:fs'
 import { config } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 
@@ -220,13 +221,15 @@ async function startDefaultServer() {
 }
 
 async function firstExistingPath(candidates: string[]): Promise<string | null> {
+  // existsSync, not `Bun.file(dir).exists()` — `Bun.file` is file-only
+  // and returns false for any directory, which would cause every
+  // candidate to fall through to the caller's default and silently
+  // break projects whose layouts/components live at the legacy paths
+  // (`resources/{layouts,components}/`) instead of the canonical
+  // `resources/views/{layouts,components}/`.
   for (const candidate of candidates) {
-    try {
-      const stat = await Bun.file(projectPath(candidate)).exists()
-      if (stat)
-        return candidate
-    }
-    catch { /* ignore */ }
+    if (existsSync(projectPath(candidate)))
+      return candidate
   }
   return null
 }

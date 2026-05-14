@@ -73,6 +73,21 @@ export async function loadRoutes(registry: RouteRegistry): Promise<void> {
  * package runs from the workspace or from `node_modules/@stacksjs/router/`.
  */
 async function loadFrameworkRoutes(): Promise<void> {
+  // Projects that don't use the bundled dashboard / commerce / monitoring
+  // surface area can opt out of framework default route registration
+  // entirely by setting `STACKS_SKIP_DEFAULT_ROUTES=1`. Without it, the
+  // bootstrap imports `defaults/routes/dashboard.ts` (and friends), each
+  // of which references actions that pull in models like `Product`,
+  // `Coupon`, `WaitlistRestaurant`, `Error` — and projects that don't
+  // ship those models flood their API boot with
+  // `[Router] Failed to import action ...` lines for every missing one.
+  //
+  // The per-route override pattern (declare the same path first in
+  // `routes/api.ts`) only scales when you want a handful of overrides;
+  // for projects that want none of the bundled domain at all this gate
+  // is the wholesale escape hatch. Pattern matches the existing
+  // `STACKS_DEV_DASHBOARD=1` opt-in on the dev-server side.
+  if (process.env.STACKS_SKIP_DEFAULT_ROUTES === '1') return
   try {
     const { frameworkPath } = await import('@stacksjs/path')
     const bootstrapPath = frameworkPath('defaults/bootstrap.ts')
