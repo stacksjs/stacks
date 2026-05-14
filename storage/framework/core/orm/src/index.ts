@@ -113,87 +113,122 @@ export const User = await loadUserlandModel('User')
 // publication (`app/Models/Job.ts`, dropped in by `buddy publish:model
 // Job`) so projects that customize the queue model — renamed columns,
 // extra observers, custom traits — see their version.
-export const Job = await loadUserlandModel('Job')
-export const FailedJob = await loadUserlandModel('FailedJob')
+//
+// Gated on the 'queue' feature flag — projects that don't run a queue
+// (most marketing sites, plain CMS apps) leave it off and skip the
+// defineModel pipeline for these two entirely. The CLI queue commands
+// will get an undefined import + a clear "run ./buddy queue:install"
+// error if invoked without the flag activated.
+const _queueEnabled = await (async () => {
+  const { feature } = await import('@stacksjs/config')
+  return feature('queue')
+})()
+export const Job = _queueEnabled ? await loadUserlandModel('Job') : null
+export const FailedJob = _queueEnabled ? await loadUserlandModel('FailedJob') : null
 
 // ---------------------------------------------------------------------------
-// Auto-load every other framework model. Each name is paired with the
-// subdirectory it lives in under `storage/framework/defaults/app/Models/`.
+// Auto-load every other framework model. Each row is `[name, subdirs, feature]`:
+//   - `name`     : the model class, used as the file basename and the export
+//   - `subdirs`  : where to look under `storage/framework/defaults/app/Models/`
+//   - `feature`  : which feature bundle owns this model — only loaded when
+//                  that flag is `true` in `config/features.ts`. Apps that
+//                  haven't run `./buddy commerce:install` skip every entry
+//                  tagged 'commerce' entirely (no migrations needed, no
+//                  defineModel pipeline, no boot cost).
+//
 // The root namespace is searched first (so a flattened user override wins),
 // then the subdir for the framework default. Loaded sequentially so the
 // schema-TDZ cycle the original `User`-only export was guarding against
 // stays neutralised.
 // ---------------------------------------------------------------------------
-const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[]]> = [
-  // Auth / core
-  ['Team', ['']],
-  ['Subscriber', ['']],
-  ['SubscriberEmail', ['']],
-  ['Subscription', ['']],
+const FRAMEWORK_MODEL_MANIFEST: Array<[name: string, subdirs: string[], feature: string]> = [
+  // Auth
+  ['Team', [''], 'auth'],
+  ['Subscriber', [''], 'auth'],
+  ['SubscriberEmail', [''], 'auth'],
+  ['Subscription', [''], 'auth'],
 
-  // Content (note: capital "Content/" subdir on disk)
-  ['Post', ['Content']],
-  ['Page', ['Content']],
-  ['Author', ['Content']],
-  ['Comment', ['']],
-  ['Tag', ['']],
+  // CMS (Content subdir on disk uses the capital C)
+  ['Post', ['Content'], 'cms'],
+  ['Page', ['Content'], 'cms'],
+  ['Author', ['Content'], 'cms'],
+  ['Comment', [''], 'cms'],
+  ['Tag', [''], 'cms'],
 
-  // App / operations
-  ['Activity', ['']],
-  ['Deployment', ['']],
-  ['Release', ['']],
-  ['Notification', ['']],
-  ['Log', ['']],
-  ['Request', ['']],
-  ['Error', ['']],
-  ['Websocket', ['realtime']],
+  // Dashboard (admin SPA + monitoring dashboards)
+  ['Activity', [''], 'dashboard'],
+  ['Deployment', [''], 'dashboard'],
+  ['Release', [''], 'dashboard'],
+  ['Notification', [''], 'dashboard'],
+  ['Log', [''], 'dashboard'],
+  ['Request', [''], 'dashboard'],
 
-  // Marketing
-  ['Campaign', ['']],
-  ['CampaignSend', ['']],
-  ['EmailList', ['']],
-  ['EmailListSubscriber', ['']],
-  ['SocialPost', ['']],
+  // Monitoring (Error model can be used standalone without the rest of dashboard)
+  ['Error', [''], 'monitoring'],
 
-  // Payments (top-level)
-  ['PaymentMethod', ['']],
-  ['PaymentProduct', ['']],
-  ['PaymentTransaction', ['']],
+  // Realtime (websocket broadcaster)
+  ['Websocket', ['realtime'], 'realtime'],
+
+  // Marketing (email lists, campaigns, social posts)
+  ['Campaign', [''], 'marketing'],
+  ['CampaignSend', [''], 'marketing'],
+  ['EmailList', [''], 'marketing'],
+  ['EmailListSubscriber', [''], 'marketing'],
+  ['SocialPost', [''], 'marketing'],
+
+  // Payments (top-level — used by commerce checkout and by standalone billing)
+  ['PaymentMethod', [''], 'commerce'],
+  ['PaymentProduct', [''], 'commerce'],
+  ['PaymentTransaction', [''], 'commerce'],
 
   // Commerce
-  ['Order', ['commerce']],
-  ['OrderItem', ['commerce']],
-  ['Cart', ['commerce']],
-  ['CartItem', ['commerce']],
-  ['Customer', ['commerce']],
-  ['Product', ['commerce']],
-  ['ProductVariant', ['commerce']],
-  ['ProductUnit', ['commerce']],
-  ['Manufacturer', ['commerce']],
-  ['Category', ['commerce']],
-  ['Coupon', ['commerce']],
-  ['GiftCard', ['commerce']],
-  ['LicenseKey', ['commerce']],
-  ['Review', ['commerce']],
-  ['Receipt', ['commerce']],
-  ['PrintDevice', ['commerce']],
-  ['ShippingMethod', ['commerce']],
-  ['ShippingRate', ['commerce']],
-  ['ShippingZone', ['commerce']],
-  ['DeliveryRoute', ['commerce']],
-  ['DigitalDelivery', ['commerce']],
-  ['Driver', ['commerce']],
-  ['TaxRate', ['commerce']],
-  ['WaitlistProduct', ['commerce']],
-  ['WaitlistRestaurant', ['commerce']],
-  ['LoyaltyPoint', ['commerce']],
-  ['LoyaltyReward', ['commerce']],
-  ['Payment', ['commerce']],
-  ['Transaction', ['commerce']],
+  ['Order', ['commerce'], 'commerce'],
+  ['OrderItem', ['commerce'], 'commerce'],
+  ['Cart', ['commerce'], 'commerce'],
+  ['CartItem', ['commerce'], 'commerce'],
+  ['Customer', ['commerce'], 'commerce'],
+  ['Product', ['commerce'], 'commerce'],
+  ['ProductVariant', ['commerce'], 'commerce'],
+  ['ProductUnit', ['commerce'], 'commerce'],
+  ['Manufacturer', ['commerce'], 'commerce'],
+  ['Category', ['commerce'], 'commerce'],
+  ['Coupon', ['commerce'], 'commerce'],
+  ['GiftCard', ['commerce'], 'commerce'],
+  ['LicenseKey', ['commerce'], 'commerce'],
+  ['Review', ['commerce'], 'commerce'],
+  ['Receipt', ['commerce'], 'commerce'],
+  ['PrintDevice', ['commerce'], 'commerce'],
+  ['ShippingMethod', ['commerce'], 'commerce'],
+  ['ShippingRate', ['commerce'], 'commerce'],
+  ['ShippingZone', ['commerce'], 'commerce'],
+  ['DeliveryRoute', ['commerce'], 'commerce'],
+  ['DigitalDelivery', ['commerce'], 'commerce'],
+  ['Driver', ['commerce'], 'commerce'],
+  ['TaxRate', ['commerce'], 'commerce'],
+  ['WaitlistProduct', ['commerce'], 'commerce'],
+  ['WaitlistRestaurant', ['commerce'], 'commerce'],
+  ['LoyaltyPoint', ['commerce'], 'commerce'],
+  ['LoyaltyReward', ['commerce'], 'commerce'],
+  ['Payment', ['commerce'], 'commerce'],
+  ['Transaction', ['commerce'], 'commerce'],
 ]
 
+// Read activated feature bundles from `config/features.ts`. Imported via
+// the @stacksjs/config `feature()` helper so flag evaluation honors:
+//   - boolean form: `{ commerce: true }`
+//   - env-gated form: `{ commerce: { enabled: true, env: ['production'] } }`
+//   - runtime overrides via enableFeature() (for tests / feature ramps).
+//
+// Imported lazily here (not at module top) because @stacksjs/config sits
+// downstream of @stacksjs/orm in the dependency graph for some apps;
+// dynamic-import avoids re-introducing a cycle just to read this manifest.
+const { feature } = await import('@stacksjs/config')
+
 const _autoLoaded: Record<string, any> = {}
-for (const [name, subdirs] of FRAMEWORK_MODEL_MANIFEST) {
+for (const [name, subdirs, featureFlag] of FRAMEWORK_MODEL_MANIFEST) {
+  // Skip models whose feature bundle isn't activated. The model file stays
+  // on disk; it just doesn't get imported / defineModel'd at boot.
+  if (!feature(featureFlag)) continue
   // eslint-disable-next-line no-await-in-loop
   const M = await loadUserlandModel(name, subdirs)
   if (M) _autoLoaded[name] = M
