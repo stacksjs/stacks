@@ -1,7 +1,5 @@
 import { db as _db, sql } from '@stacksjs/database'
 
-// See note in categorizable.ts — relax db method types for trait helpers.
-const db = _db as any
 
 function assertId(id: unknown, method: string): asserts id is number {
   if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {
@@ -10,6 +8,7 @@ function assertId(id: unknown, method: string): asserts id is number {
 }
 
 export function createCommentableMethods(tableName: string) {
+  const db = _db as any
   return {
     async comments(id: number): Promise<any[]> {
       assertId(id, 'comments')

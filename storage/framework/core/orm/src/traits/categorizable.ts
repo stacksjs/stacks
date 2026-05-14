@@ -4,9 +4,9 @@ import { db as _db } from '@stacksjs/database'
 // resolution to the concrete invocation here can leave methods marked
 // `T | undefined` under strict null checks. Cast through `any` so the trait
 // helpers can call the runtime-defined methods without a guard at every site.
-const db = _db as any
 
 export function createCategorizableMethods(tableName: string) {
+  const db = _db as any
   async function getCategoryIds(id: number): Promise<number[]> {
     const categoryLinks = await db
       .selectFrom('categorizable_models')

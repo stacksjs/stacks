@@ -1,6 +1,5 @@
 import type { CLI } from '@stacksjs/types'
 import process from 'node:process'
-import { log } from '@stacksjs/cli'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
@@ -99,14 +98,14 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
       try {
         const outcome = await setFeatureFlag(feature, true)
         if (outcome === 'unchanged')
-          log.info(`'${feature}' is already enabled in config/features.ts`)
+          console.log(`✓ '${feature}' is already enabled in config/features.ts`)
         else
-          log.success(`Enabled '${feature}' in config/features.ts${outcome === 'created' ? ' (created file)' : ''}`)
-        log.info(`The next ./buddy dev will boot with ${feature} loaded.`)
+          console.log(`✓ Enabled '${feature}' in config/features.ts${outcome === 'created' ? ' (created file)' : ''}`)
+        console.log(`  → next ./buddy dev will boot with ${feature} loaded.`)
         process.exit(ExitCode.Success)
       }
       catch (err) {
-        log.error(`Failed to install ${feature}:`, err)
+        console.error(`✗ Failed to install ${feature}:`, err)
         process.exit(ExitCode.FatalError)
       }
     })
@@ -117,14 +116,14 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
       try {
         const outcome = await setFeatureFlag(feature, false)
         if (outcome === 'unchanged')
-          log.info(`'${feature}' is already disabled in config/features.ts`)
+          console.log(`✓ '${feature}' is already disabled in config/features.ts`)
         else
-          log.success(`Disabled '${feature}' in config/features.ts`)
-        log.info(`The next ./buddy dev will boot without ${feature}.`)
+          console.log(`✓ Disabled '${feature}' in config/features.ts`)
+        console.log(`  → next ./buddy dev will boot without ${feature}.`)
         process.exit(ExitCode.Success)
       }
       catch (err) {
-        log.error(`Failed to uninstall ${feature}:`, err)
+        console.error(`✗ Failed to uninstall ${feature}:`, err)
         process.exit(ExitCode.FatalError)
       }
     })

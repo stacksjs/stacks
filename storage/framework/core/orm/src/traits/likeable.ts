@@ -1,9 +1,8 @@
 import { db as _db, sql } from '@stacksjs/database'
 
-// See note in categorizable.ts — relax db method types for trait helpers.
-const db = _db as any
 
 export function createLikeableMethods(tableName: string, options?: { table?: string, foreignKey?: string }) {
+  const db = _db as any
   const likeTable = options?.table || `${tableName}_likes`
   const foreignKey = options?.foreignKey || `${tableName.replace(/s$/, '')}_id`
 

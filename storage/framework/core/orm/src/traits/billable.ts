@@ -1,9 +1,8 @@
 import { db as _db } from '@stacksjs/database'
 
-// See note in categorizable.ts — relax db method types for trait helpers.
-const db = _db as any
 
 export function createBillableMethods(_tableName: string) {
+  const db = _db as any
   return {
     async createStripeUser(model: any, options: any): Promise<any> {
       const { manageCustomer } = await import('@stacksjs/payments')

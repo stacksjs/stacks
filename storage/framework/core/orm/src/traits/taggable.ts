@@ -1,7 +1,5 @@
 import { db as _db, sql } from '@stacksjs/database'
 
-// See note in categorizable.ts — relax db method types for trait helpers.
-const db = _db as any
 
 /**
  * Validate the parent record id passed to a trait method. Negative or
@@ -15,6 +13,7 @@ function assertId(id: unknown, method: string): asserts id is number {
 }
 
 export function createTaggableMethods(tableName: string) {
+  const db = _db as any
   return {
     async tags(id: number): Promise<any[]> {
       assertId(id, 'tags')
