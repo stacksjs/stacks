@@ -165,6 +165,18 @@ export function build(buddy: CLI): void {
     })
 
   buddy
+    .command('build:frontend', descriptions.pages)
+    .alias('build:pages')
+    .alias('build:views')
+    .alias('prod:frontend')
+    .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('--verbose', descriptions.verbose, { default: false })
+    .action(async (options: BuildOptions) => {
+      log.debug('Running `buddy build:frontend` ...', options)
+      await runAction(Action.BuildViews, options)
+    })
+
+  buddy
     .command('build:docs', 'Automagically build your documentation site.')
     .alias('prod:docs')
     .alias('build:documentation')
