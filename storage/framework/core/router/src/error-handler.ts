@@ -374,10 +374,18 @@ export async function createErrorResponse(
       handler.addQuery(query.query, query.time, query.connection)
     }
 
-    // Check if request wants JSON (API request)
+    // Decide JSON vs HTML by content negotiation. Default to JSON — only
+    // render the Ignition-style HTML page when the client explicitly asked
+    // for HTML (top-level browser navigations send
+    // `Accept: text/html,application/xhtml+xml,…`). Browser `fetch()`
+    // defaults to `Accept: */*`, curl sends `Accept: */*`, and most API
+    // clients omit the header entirely — all of those should get JSON.
+    // The previous logic required `Accept: application/json` explicitly
+    // AND `text/html` absent, so XHR/fetch errors leaked the dev HTML
+    // page into JSON-consuming clients.
     const acceptHeader = request.headers.get('Accept') || ''
     const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
-    if (acceptHeader.includes('application/json') && !acceptHeader.includes('text/html')) {
+    if (!acceptHeader.includes('text/html')) {
       // Return JSON error for API requests. In production, strip the
       // stack trace and recent-queries log — those leak file paths,
       // function names, query shapes, and (potentially) parameter
