@@ -210,10 +210,10 @@ export const FailedJob: any = lazyModel('FailedJob')
 //   - `name`     : the model class, used as the file basename and the export
 //   - `subdirs`  : where to look under `storage/framework/defaults/app/Models/`
 //   - `feature`  : which feature bundle owns this model — only loaded when
-//                  that flag is `true` in `config/features.ts`. Apps that
-//                  haven't run `./buddy commerce:install` skip every entry
-//                  tagged 'commerce' entirely (no migrations needed, no
-//                  defineModel pipeline, no boot cost).
+//                  that bundle's `config/<feature>.ts` has `enabled: true`.
+//                  Apps that haven't run `./buddy commerce:install` skip
+//                  every entry tagged 'commerce' entirely (no migrations
+//                  needed, no defineModel pipeline, no boot cost).
 //
 // The root namespace is searched first (so a flattened user override wins),
 // then the subdir for the framework default. Loaded sequentially so the

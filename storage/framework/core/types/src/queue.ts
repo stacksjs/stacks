@@ -250,6 +250,14 @@ export interface Dispatchable {
 }
 
 export interface QueueOptions {
+  /**
+   * Top-level feature gate. When `false`, the queue runtime is skipped at
+   * boot (no Job/FailedJob model load, no queue worker startup). Missing or
+   * `true` means the queue feature is on.
+   */
+  enabled?: boolean
+  /** Optional deploy-target gate, e.g. `['production']`. */
+  env?: string[]
   /** Default queue driver */
   default: QueueDriver
   /** Queue connections */

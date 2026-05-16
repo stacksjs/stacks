@@ -26,6 +26,8 @@ const queueDriver = String(env.QUEUE_DRIVER || 'sync')
 const failedDriver = String(env.QUEUE_FAILED_DRIVER || 'database')
 
 export default {
+  enabled: true,
+
   // Default queue driver: 'sync' | 'database' | 'redis' | 'sqs' | 'memory'
   default: queueDriver as 'sync' | 'database' | 'redis' | 'sqs' | 'memory',
 

@@ -11,9 +11,10 @@ import { ExitCode } from '@stacksjs/types'
 log.info('Building core packages')
 
 // Feature-gated core packages. Each entry maps a core package directory
-// name to the feature flag (in config/features.ts) that controls it.
-// When the flag is off, the package is skipped — apps that never install
-// `commerce` or `realtime` don't pay the build cost for them.
+// name to the feature flag (its top-level `enabled` field in
+// `config/<name>.ts`) that controls it. When the flag is off, the package
+// is skipped — apps that never install `commerce` or `realtime` don't pay
+// the build cost for them.
 //
 // Dashboard / marketing / monitoring don't ship as their own core packages
 // (they're framework default routes + actions), so they don't appear here
@@ -34,10 +35,10 @@ const dirs = allEntries.filter((entry) => {
   if (!existsSync(pkgPath))
     return false
 
-  // Skip feature-gated packages whose flag is off. `feature()` reads
-  // config/features.ts (with env-aware overrides), so flipping the flag
-  // via `./buddy <feature>:install` is enough to pull a package back
-  // into the build.
+  // Skip feature-gated packages whose flag is off. `feature()` reads the
+  // top-level `enabled` field of `config/<name>.ts` (with env-aware
+  // overrides), so flipping the flag via `./buddy <feature>:install` is
+  // enough to pull a package back into the build.
   const name = basename(entry)
   const gate = FEATURE_GATED_PACKAGES[name]
   if (gate && !feature(gate)) {

@@ -12,6 +12,14 @@
  * row when there's no newsletter without losing the model viewer.
  */
 export interface DashboardOptions {
+  /**
+   * Top-level feature gate. When `false`, the entire admin SPA + dashboard
+   * routes stay un-registered at boot. Missing or `true` keeps the dashboard
+   * on — the framework default, since every Stacks app wants it.
+   */
+  enabled?: boolean
+  /** Optional deploy-target gate, e.g. `['production']`. */
+  env?: string[]
   /** Per-section visibility toggles. Omit a section to leave it enabled. */
   sections?: {
     library?: { enabled?: boolean }

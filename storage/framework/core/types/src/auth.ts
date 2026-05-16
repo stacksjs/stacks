@@ -1,5 +1,13 @@
 export interface AuthOptions {
   /**
+   * Top-level feature gate. When `false`, the auth feature is inert at boot
+   * (no token/password-reset/email-verification flows wired up). Missing or
+   * `true` means auth is on.
+   */
+  enabled?: boolean
+  /** Optional deploy-target gate, e.g. `['production']`. */
+  env?: string[]
+  /**
    * The default authentication guard to use
    */
   default: string

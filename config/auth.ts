@@ -9,6 +9,8 @@ import { env } from '@stacksjs/env'
  * you have any questions, feel free to reach out via Discord or GitHub Discussions.
  */
 export default {
+  enabled: true,
+
   /**
    * The authentication guard to use for your application.
    */

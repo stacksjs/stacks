@@ -18,6 +18,8 @@ import type { DashboardConfig } from '@stacksjs/types'
  *     `app/Models/` is auto-listed, and you always want to see those.
  */
 export default {
+  enabled: true,
+
   sections: {
     library: { enabled: true },
     content: { enabled: true },

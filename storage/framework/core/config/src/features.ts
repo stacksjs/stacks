@@ -1,33 +1,40 @@
 /**
  * Feature flag helpers.
  *
- * The framework has a long history of scattering opt-in flags across
- * `config/queue.ts`, `config/database.ts.queryLogging.enabled`,
- * `config/cache.ts.enabled`, etc. — each one with a slightly different
- * shape (`enabled: bool` vs `default: 'driver'` vs presence-of-key).
+ * Each framework feature bundle (auth, commerce, cms, marketing, monitoring,
+ * realtime, queue, dashboard) is gated by an `enabled` field on its own
+ * `config/<feature>.ts` file — Laravel-style — rather than a central
+ * `config/features.ts` manifest. If a feature's config file is missing, the
+ * feature resolves to its framework default (only `dashboard` defaults on).
  *
- * This module gives a single canonical answer to "is feature X turned on
- * for this app/env right now?" The flag values are read from the live
- * config proxy so user `~/config/features.ts` overrides land as soon as
+ * `feature()` reads the live config proxy, so user overrides land as soon as
  * `overridesReady` resolves; values can also be flipped at runtime via
  * `enableFeature` / `disableFeature` for tests and feature ramps.
  */
 
 import { config } from './config'
 
-type FlagValue = boolean | { enabled?: boolean, env?: string[] }
+export type StacksFeature =
+  | 'auth' | 'marketing' | 'cms' | 'commerce'
+  | 'dashboard' | 'monitoring' | 'realtime' | 'queue'
 
-interface FeaturesConfigShape {
-  // Index signature so users can declare any flag they want without
-  // upstream type changes. Stacks code that uses a specific flag should
-  // treat the result as boolean.
-  [name: string]: FlagValue | undefined
+const FEATURE_NAMES: readonly StacksFeature[] = [
+  'auth', 'marketing', 'cms', 'commerce',
+  'dashboard', 'monitoring', 'realtime', 'queue',
+] as const
+
+// Only `dashboard` defaults on when its config file is absent — every Stacks
+// app wants the admin SPA even at minimum scope. Everything else stays off
+// unless the user has scaffolded the config (typically via `buddy <x>:install`).
+const FEATURE_DEFAULTS: Record<string, boolean> = {
+  dashboard: true,
 }
 
 const overrides = new Map<string, boolean>()
 
-function rawConfig(): FeaturesConfigShape {
-  return ((config as unknown as Record<string, unknown>).features ?? {}) as FeaturesConfigShape
+function configFor(name: string): Record<string, unknown> | undefined {
+  const raw = (config as unknown as Record<string, unknown>)[name]
+  return raw && typeof raw === 'object' ? raw as Record<string, unknown> : undefined
 }
 
 /**
@@ -35,34 +42,41 @@ function rawConfig(): FeaturesConfigShape {
  *
  * Resolution order (first match wins):
  *   1. Runtime override via `enableFeature` / `disableFeature`
- *   2. Object form `{ enabled: true, env: ['production'] }` — env list
- *      gates the flag to specific deploy targets (matched against
- *      `config.app.env`)
- *   3. Boolean form `true` / `false`
- *   4. Missing → `false`
+ *   2. `config.<name>.enabled` — boolean or omitted
+ *      - Optional `config.<name>.env: string[]` narrows the flag to specific
+ *        deploy targets (compared against `config.app.env`)
+ *   3. Per-feature framework default (only `dashboard` defaults true)
  *
  * @example
  * ```ts
- * if (feature('experimental-streaming')) {
- *   return response.stream(producer)
+ * if (feature('commerce')) {
+ *   await loadCommerceRoutes()
  * }
  * ```
  */
 export function feature(name: string): boolean {
   if (overrides.has(name)) return overrides.get(name)!
-  const raw = rawConfig()[name]
-  if (raw === undefined || raw === null) return false
-  if (typeof raw === 'boolean') return raw
-  if (typeof raw === 'object') {
-    if (raw.enabled === false) return false
-    if (Array.isArray(raw.env) && raw.env.length > 0) {
+
+  const cfg = configFor(name)
+  if (cfg) {
+    const enabledField = cfg.enabled
+    // Config file exists. An explicit `enabled: false` short-circuits.
+    if (enabledField === false) return false
+
+    // Optional env gate: `env: ['production']` means only enabled in prod.
+    if (Array.isArray(cfg.env) && cfg.env.length > 0) {
       const currentEnv = ((config as unknown as { app?: { env?: string } }).app?.env ?? '').toString()
-      if (!raw.env.includes(currentEnv)) return false
+      if (!(cfg.env as string[]).includes(currentEnv)) return false
     }
-    // raw.enabled is `true | undefined` here; treat undefined as enabled
-    return raw.enabled !== undefined ? raw.enabled : true
+
+    // `enabled: true` (or any truthy non-false) → on.
+    // No `enabled` field but config object exists → presence implies on.
+    if (enabledField !== undefined) return !!enabledField
+    return true
   }
-  return false
+
+  // Config file missing → fall back to the per-feature framework default.
+  return FEATURE_DEFAULTS[name] ?? false
 }
 
 /**
@@ -88,16 +102,13 @@ export function resetFeature(name: string): void {
 }
 
 /**
- * Snapshot of the live flag set — useful for `/__features` debug
- * endpoints and CLI commands that print the active configuration.
+ * Snapshot of the live flag set — useful for `/__features` debug endpoints
+ * and CLI commands that print the active configuration. Iterates the known
+ * framework features plus any runtime overrides for ad-hoc flags.
  */
 export function listFeatures(): Record<string, boolean> {
   const out: Record<string, boolean> = {}
-  for (const name of Object.keys(rawConfig())) {
-    out[name] = feature(name)
-  }
-  for (const name of overrides.keys()) {
-    out[name] = feature(name)
-  }
+  for (const name of FEATURE_NAMES) out[name] = feature(name)
+  for (const name of overrides.keys()) out[name] = feature(name)
   return out
 }
