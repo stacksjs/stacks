@@ -40,6 +40,10 @@ export {
 // Export route introspection helpers
 export { listRegisteredRoutes, routeParams } from './stacks-router'
 
+// Export JSON-vs-HTML negotiation predicate so userland can short-circuit
+// the same decision the framework makes in formatResult / error-handler.
+export { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
+
 // Export action-level rate limiting helpers
 export { rateLimit, rateLimitStatus, clearRateLimit } from './rate-limit'
 

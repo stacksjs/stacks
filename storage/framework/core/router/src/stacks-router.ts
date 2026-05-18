@@ -13,6 +13,7 @@ import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
 import { applyRequestEnhancements, Router } from '@stacksjs/bun-router'
 import { runWithRequest } from './request-context'
+import { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 import { clearTrackedQueries, createErrorResponse, createMiddlewareErrorResponse } from './error-handler'
 
 import type { StacksActionPath } from './action-paths'
@@ -28,6 +29,15 @@ interface StacksRouterConfig {
 interface GroupOptions {
   prefix?: string
   middleware?: string | string[]
+  /**
+   * When `true`, every route registered inside the group forces a JSON
+   * response regardless of content negotiation — `formatResult()` skips
+   * `isApiRequest()` and unconditionally returns JSON for strings,
+   * primitives, `null`/`undefined`, etc. Use for `/api/*` groups that
+   * should never serve HTML even if a browser navigates to them by
+   * mistake. Action-level `apiResponse` still wins if set.
+   */
+  apiResponse?: boolean
 }
 
 type ResourceAction = 'index' | 'store' | 'show' | 'update' | 'destroy'
@@ -434,6 +444,15 @@ export function installMiddlewareHotReload(): () => void {
 const routeMiddlewareRegistry = new Map<string, string[]>()
 
 /**
+ * Route keys that inherited `apiResponse: true` from a `route.group({
+ * apiResponse: true }, …)` declaration. Checked at request time to flip
+ * `req._forceJson`, which makes `formatResult()` skip content negotiation.
+ * Action-level `apiResponse` (read from the resolved Action instance) is
+ * applied separately and wins over the group setting.
+ */
+const routeApiResponseRegistry = new Set<string>()
+
+/**
  * Parse middleware name and parameters
  * e.g., 'abilities:read,write' -> { name: 'abilities', params: 'read,write' }
  */
@@ -471,6 +490,14 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
     await parseRequestBody(req)
     const enhancedReq = enhanceRequest(req)
     if (actionPrefetch) await actionPrefetch
+
+    // Group-level apiResponse: flip `_forceJson` so `formatResult` skips
+    // negotiation and always returns JSON. Action-level apiResponse is
+    // applied later (inside the action wrapper) and wins by also setting
+    // the same flag.
+    if (routeApiResponseRegistry.has(routeKey)) {
+      ;(req as any)._forceJson = true
+    }
 
     // Run the entire request handling within the request context
     // This allows Auth and other services to access the current request
@@ -855,7 +882,7 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
 
       return async (req: EnhancedRequest) => {
         const result = await instance[methodName](req)
-        return formatResult(result)
+        return formatResult(result, req)
       }
     }
     catch (error) {
@@ -908,27 +935,34 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
     const actionSkipsCsrf = action.skipCsrf === true || action.csrf === false
     actionSkipsCsrfCache.set(handlerPath, actionSkipsCsrf)
 
+    // Action-level apiResponse: when `true`, force JSON responses for this
+    // route regardless of content negotiation. Wins over the group-level
+    // flag (which `createMiddlewareHandler` already applied).
+    const actionForcesJson = action.apiResponse === true
+
     return async (req: EnhancedRequest) => {
       if (actionSkipsCsrf) {
         ;(req as any)._skipCsrf = true
       }
+      if (actionForcesJson) {
+        ;(req as any)._forceJson = true
+      }
       try {
-        // Validate action input if validations are defined
+        // Validate action input if validations are defined. Always returns
+        // JSON — validation failures are 100% an API-shape signal and HTML
+        // pages would be useless here.
         if (action.validations) {
           const validationResult = await validateActionInput(req, action.validations)
           if (!validationResult.valid) {
-            return new Response(JSON.stringify({
-              error: 'Validation failed',
-              errors: validationResult.errors,
-            }), {
-              status: 422,
-              headers: { 'Content-Type': 'application/json' },
-            })
+            return Response.json(
+              { error: 'Validation failed', errors: validationResult.errors },
+              { status: 422 },
+            )
           }
         }
 
         const result = await action.handle(req)
-        return formatResult(result)
+        return formatResult(result, req)
       }
       catch (handleError) {
         // Print the full stack so action failures are diagnosable.
@@ -1056,14 +1090,46 @@ async function getRequestInput(req: EnhancedRequest): Promise<Record<string, unk
 }
 
 /**
- * Format a result into a Response
+ * Format an action's return value into a Response.
+ *
+ * JSON-first: any caller that looks like an API client (per
+ * `isApiRequest()`) gets JSON for every shape — primitives become
+ * JSON-encoded scalars, `null`/`undefined` becomes `204 No Content`. Only
+ * top-level browser navigations fall back to `text/plain` / empty 200,
+ * keeping the obvious dev-mode "open this URL in a browser" path readable.
+ *
+ * Forced override: when an Action or route group sets `apiResponse: true`,
+ * the resolver flips `req._forceJson` and we skip the negotiation. Useful
+ * for endpoints that should never serve HTML even if a browser navigates
+ * to them by mistake.
  */
-function formatResult(result: unknown): Response {
+function formatResult(result: unknown, req: EnhancedRequest): Response {
   if (result instanceof Response) {
     return result
   }
 
-  if (typeof result === 'object' && result !== null) {
+  const forceJson = (req as any)._forceJson === true
+  const apiShaped = forceJson || isApiRequest(req as unknown as Request)
+
+  // Null / undefined → 204 No Content for API requests; empty 200 for the
+  // browser-nav case (returning a literal `'null'` string was a bug; the
+  // old behaviour serialized it as text/plain).
+  if (result === null || result === undefined) {
+    return apiShaped
+      ? new Response(null, { status: 204 })
+      : new Response('', { status: 200 })
+  }
+
+  // Objects + arrays always serialize as JSON regardless of negotiation —
+  // there's no reasonable HTML representation of `{id: 1}`, and userland
+  // that wants HTML should return a `new Response(html, …)` directly.
+  if (typeof result === 'object') {
+    return Response.json(result)
+  }
+
+  // Primitives: JSON-encode for API requests so a string return lands as
+  // `"ok"` with `application/json`, not `ok` with `text/plain`.
+  if (apiShaped) {
     return Response.json(result)
   }
 
@@ -1344,8 +1410,17 @@ function wrapHandler(handler: StacksHandler, skipParsing = false): RouteHandlerF
       }
     }
   }
-  // handler is a callable function (RouteHandler or TypedRouteHandler)
-  return handler
+  // Inline function handler. Route the return value through
+  // `formatResult` so a `() => 'ok'` handler gets the same JSON-first
+  // negotiation as a string-resolved action — same null → 204, same
+  // primitive → JSON-encoded scalar, same Response passthrough.
+  // Without this wrapper, function handlers would return strings to
+  // bun-router and end up as `text/plain` regardless of the client.
+  const fn = handler as RouteHandlerFn
+  return async (req: EnhancedRequest) => {
+    const result = await fn(req)
+    return formatResult(result as unknown, req)
+  }
 }
 
 /**
@@ -1360,9 +1435,14 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
 
   try {
     // Clone once up front — only the branch that matches content-type will use it
-    if (contentType.includes('application/json')) {
-      const body = await req.clone().json()
-      ;(req as any).jsonBody = body
+    if (JSON_CONTENT_TYPE.test(contentType)) {
+      // Empty body on a JSON-typed POST is common (clients sending only
+      // query/path params). Land as `{}` so `request.get('x')` returns
+      // undefined instead of throwing, and validation reports the missing
+      // field cleanly. Malformed JSON also collapses to `{}` for the same
+      // reason — the validator owns the "you sent garbage" diagnostic.
+      const body = await req.clone().json().catch(() => ({}))
+      ;(req as any).jsonBody = body && typeof body === 'object' ? body : {}
     }
     else if (contentType.includes('application/x-www-form-urlencoded')) {
       const text = await req.clone().text()
@@ -1416,6 +1496,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
 
   let currentPrefix = ''
   let currentGroupMiddleware: string[] = []
+  let currentGroupApiResponse = false
 
   // Helper to register a route with group middleware applied
   function registerRoute(method: string, path: string, _handler: StacksHandler) {
@@ -1426,6 +1507,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     // Pre-populate middleware registry with group middleware
     if (currentGroupMiddleware.length > 0) {
       routeMiddlewareRegistry.set(routeKey, [...currentGroupMiddleware])
+    }
+
+    // Pre-populate apiResponse registry with the group flag so the request
+    // handler can flip `req._forceJson` without re-walking the group stack.
+    if (currentGroupApiResponse) {
+      routeApiResponseRegistry.add(routeKey)
     }
 
     // Track string handlers so the CSRF gate can look up action-level
@@ -1487,6 +1574,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
     group(options: GroupOptions, callback: () => void | Promise<void>): StacksRouterInstance | Promise<StacksRouterInstance> {
       const previousPrefix = currentPrefix
       const previousMiddleware = [...currentGroupMiddleware]
+      const previousApiResponse = currentGroupApiResponse
 
       // Apply prefix
       if (options.prefix) {
@@ -1501,7 +1589,14 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         currentGroupMiddleware = [...currentGroupMiddleware, ...middlewareList]
       }
 
-      log.debug(`[router] Entering group: prefix=${options.prefix || '/'} middleware=[${middlewareList?.join(', ') || ''}]`)
+      // Inherit apiResponse from the enclosing group; an inner `false`
+      // cannot un-force JSON once an outer group opted in (groups stack
+      // additively, same as middleware).
+      if (options.apiResponse === true) {
+        currentGroupApiResponse = true
+      }
+
+      log.debug(`[router] Entering group: prefix=${options.prefix || '/'} middleware=[${middlewareList?.join(', ') || ''}]${currentGroupApiResponse ? ' apiResponse=true' : ''}`)
 
       // Call the callback
       const result = callback()
@@ -1515,10 +1610,12 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         return result.then(() => {
           currentPrefix = previousPrefix
           currentGroupMiddleware = previousMiddleware
+          currentGroupApiResponse = previousApiResponse
           return stacksRouter
         }).catch((err) => {
           currentPrefix = previousPrefix
           currentGroupMiddleware = previousMiddleware
+          currentGroupApiResponse = previousApiResponse
           throw err
         })
       }
@@ -1526,6 +1623,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // Sync callback - restore state immediately
       currentPrefix = previousPrefix
       currentGroupMiddleware = previousMiddleware
+      currentGroupApiResponse = previousApiResponse
       return stacksRouter
     },
 

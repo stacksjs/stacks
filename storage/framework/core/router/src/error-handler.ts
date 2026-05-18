@@ -13,6 +13,7 @@ import {
   renderProductionErrorPage,
   type ErrorPageConfig,
 } from '@stacksjs/error-handling'
+import { isApiRequest } from './api-shape'
 
 /**
  * Standard error response structure used across all JSON error responses.
@@ -311,9 +312,12 @@ export async function createErrorResponse(
   const isDevelopment = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
 
   if (!isDevelopment) {
-    // Production: return simple JSON or HTML error
-    const acceptHeader = request.headers.get('Accept') || ''
-    if (acceptHeader.includes('application/json')) {
+    // Production: JSON-first. Only render the HTML production error page
+    // when the client explicitly opted into HTML (top-level browser nav).
+    // The old check required `Accept: application/json` literally, which
+    // missed `Accept: */*` (curl + fetch default) and silently leaked an
+    // HTML page to JSON-consuming clients.
+    if (isApiRequest(request)) {
       return new Response(
         buildErrorJson({
           error: 'Internal Server Error',
@@ -374,18 +378,13 @@ export async function createErrorResponse(
       handler.addQuery(query.query, query.time, query.connection)
     }
 
-    // Decide JSON vs HTML by content negotiation. Default to JSON — only
-    // render the Ignition-style HTML page when the client explicitly asked
-    // for HTML (top-level browser navigations send
-    // `Accept: text/html,application/xhtml+xml,…`). Browser `fetch()`
-    // defaults to `Accept: */*`, curl sends `Accept: */*`, and most API
-    // clients omit the header entirely — all of those should get JSON.
-    // The previous logic required `Accept: application/json` explicitly
-    // AND `text/html` absent, so XHR/fetch errors leaked the dev HTML
-    // page into JSON-consuming clients.
-    const acceptHeader = request.headers.get('Accept') || ''
+    // Decide JSON vs HTML via the shared `isApiRequest()` predicate so
+    // every response path (errors, formatResult, 404s) makes the same call.
+    // The Ignition-style HTML page only renders for explicit top-level
+    // browser navigations; everything else — fetch, curl, API clients —
+    // gets JSON.
     const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
-    if (!acceptHeader.includes('text/html')) {
+    if (isApiRequest(request)) {
       // Return JSON error for API requests. In production, strip the
       // stack trace and recent-queries log — those leak file paths,
       // function names, query shapes, and (potentially) parameter
@@ -520,6 +519,19 @@ export async function createNotFoundResponse(
     const error = new Error(`Route not found: ${path}`)
     error.name = 'NotFoundError'
     return await createErrorResponse(error, request, { status: 404 })
+  }
+
+  // Production: JSON-first 404. Only render the HTML production page when
+  // the client explicitly opted into HTML (top-level browser nav).
+  if (isApiRequest(request)) {
+    return new Response(
+      buildErrorJson({
+        error: 'NotFound',
+        message: `Route not found: ${path}`,
+        status: 404,
+      }),
+      { status: 404, headers: getJsonHeaders() },
+    )
   }
 
   return new Response(renderProductionErrorPage(404), {
