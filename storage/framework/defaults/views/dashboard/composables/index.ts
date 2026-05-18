@@ -11,3 +11,5 @@
 
 export type { ChartCtor, ChartHandle, ChartLike, UseChartOptions } from './useChart'
 export { useChart, useCharts } from './useChart'
+export type { RoleSnapshot } from './useRole'
+export { useRole } from './useRole'

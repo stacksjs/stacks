@@ -47,6 +47,8 @@ interface DashboardSectionToggles {
   analytics: boolean
   management: boolean
   utilities: boolean
+  /** CI tracking surface (stacksjs/stacks#1844). Lives under management. */
+  ci?: boolean
   data: DataRowToggles
 }
 
@@ -115,6 +117,7 @@ const ICON_PATHS: Record<string, string> = {
   'truck': '<rect x="1" y="3" width="15" height="13"/><polygon points="16 8 20 8 23 11 23 16 16 16 16 8"/><circle cx="5.5" cy="18.5" r="2.5"/><circle cx="18.5" cy="18.5" r="2.5"/>',
   'percent': '<line x1="19" y1="5" x2="5" y2="19"/><circle cx="6.5" cy="6.5" r="2.5"/><circle cx="17.5" cy="17.5" r="2.5"/>',
   'activity': '<polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>',
+  'check-circle': '<circle cx="12" cy="12" r="10"/><polyline points="9 12 11 14 15 10"/>',
   'users': '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
   'group': '<path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/>',
   'mail': '<path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22 6 12 13 2 6"/>',
@@ -389,7 +392,7 @@ export function buildSidebarNavHtml(
   // `permissions` lives under a `/management/` subdir. The bare
   // `/management/<x>` URLs from before never resolved.
   if (toggles.management) {
-    sections.push(['management', 'management', [
+    const managementItems: NavItem[] = [
       { to: '/cloud', icon: 'cloud', text: 'Cloud' },
       { to: '/servers', icon: 'server', text: 'Servers' },
       { to: '/serverless', icon: 'zap', text: 'Serverless' },
@@ -399,7 +402,13 @@ export function buildSidebarNavHtml(
       { to: '/logs', icon: 'log', text: 'Logs' },
       { to: '/health', icon: 'activity', text: 'Health' },
       { to: '/insights', icon: 'star', text: 'Insights' },
-    ]])
+    ]
+    // CI tracking (stacksjs/stacks#1844) — opt-in via `ci.enabled` in
+    // config/dashboard.ts. The page additionally checks `useRole().isDev()`
+    // (stub for #1843) before rendering.
+    if (toggles.ci)
+      managementItems.push({ to: '/ci', icon: 'check-circle', text: 'CI' })
+    sections.push(['management', 'management', managementItems])
   }
 
   // Utilities section: real paths are flat (`/buddy`, `/environment`,

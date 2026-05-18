@@ -398,6 +398,20 @@ describe('dashboard-utils', () => {
       expect(homeSection.items[0].icon).toBe('house.fill')
     })
 
+    it('omits the CI row by default (stacksjs/stacks#1844 — opt-in)', () => {
+      const config = buildSidebarConfig('http://localhost:3456/pages', [])
+      const homeSection = config.sections.find(s => s.id === 'home')!
+      expect(homeSection.items.some(i => i.id === 'ci')).toBe(false)
+    })
+
+    it('appends a CI row to the home section when toggles.ci is true', () => {
+      const config = buildSidebarConfig('http://localhost:3456/pages', [], { ci: true })
+      const homeSection = config.sections.find(s => s.id === 'home')!
+      const ci = homeSection.items.find(i => i.id === 'ci')
+      expect(ci).toBeDefined()
+      expect(ci!.url).toBe('http://localhost:3456/pages/ci')
+    })
+
     it('should have correct items in each section', () => {
       const config = buildSidebarConfig('http://localhost:3456/pages', [])
 

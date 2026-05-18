@@ -80,6 +80,7 @@ const sidebarRoutes = {
   'home': '/',
   'dependencies': '/dependencies',
   'services': '/health',
+  'ci': '/ci',
   'components': '/components',
   'functions': '/functions',
   'releases': '/releases',

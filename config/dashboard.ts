@@ -39,4 +39,13 @@ export default {
       allModels: { enabled: true },
     },
   },
+
+  // CI tracking — ports the standalone repo-dashboard into the dashboard
+  // (stacksjs/stacks#1844). Off by default; opt in by listing orgs and
+  // setting GITHUB_TOKEN in .env.
+  ci: {
+    enabled: false,
+    orgs: [],
+    runnerCapDefault: 20,
+  },
 } satisfies DashboardConfig

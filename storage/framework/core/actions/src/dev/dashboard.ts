@@ -883,6 +883,7 @@ async function loadDashboardToggles(): Promise<{
   analytics: boolean
   management: boolean
   utilities: boolean
+  ci: boolean
   data: DataRowToggles
 }> {
   const fallback = {
@@ -893,11 +894,14 @@ async function loadDashboardToggles(): Promise<{
     analytics: true,
     management: true,
     utilities: true,
+    // CI tracking is opt-in (stacksjs/stacks#1844) so it stays off when
+    // the project ships no dashboard.ts at all.
+    ci: false,
     data: { dashboard: true, activity: true, users: true, teams: true, subscribers: true, allModels: true } satisfies DataRowToggles,
   }
   try {
     type SectionMap = Record<string, { enabled?: boolean }> & { data?: Record<string, { enabled?: boolean }> }
-    const mod = await import(projectPath('config/dashboard.ts')) as { default?: { sections?: SectionMap } }
+    const mod = await import(projectPath('config/dashboard.ts')) as { default?: { sections?: SectionMap, ci?: { enabled?: boolean } } }
     const sections = mod.default?.sections ?? {}
     const data = sections.data ?? {}
     return {
@@ -908,6 +912,10 @@ async function loadDashboardToggles(): Promise<{
       analytics: sections.analytics?.enabled ?? true,
       management: sections.management?.enabled ?? true,
       utilities: sections.utilities?.enabled ?? true,
+      // ci lives at top level (it owns runtime config — orgs, runner caps —
+      // not just visibility) so its toggle reads from `mod.default.ci`,
+      // not from `sections.ci`.
+      ci: mod.default?.ci?.enabled ?? false,
       data: {
         dashboard: data.dashboard?.enabled ?? true,
         activity: data.activity?.enabled ?? true,

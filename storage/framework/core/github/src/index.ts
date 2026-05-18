@@ -1,0 +1,25 @@
+/**
+ * @stacksjs/github — thin GitHub API client used by Stacks framework
+ * features (dashboard CI surface, future runner alerts, kanban→PR links).
+ *
+ * Top-level entry: {@link getDashboardData} returns the aggregated snapshot
+ * the dashboard renders. Lower-level helpers (`fetchAllRepos`,
+ * `fetchRepoStatus`, …) are also exported so other surfaces can pull a
+ * single dimension without pulling the whole snapshot through.
+ */
+
+export { fetchBotPRCounts } from './bots'
+export { ghFetch, ghHeaders, GITHUB_API, mapWithConcurrency } from './client'
+export { clearDashboardCache, getDashboardData } from './dashboard'
+export { fetchAllRepos } from './repos'
+export { fetchRepoActiveRuns } from './runners'
+export { fetchFailedJobs, fetchRepoStatus } from './runs'
+export type {
+  DashboardData,
+  DashboardOptions,
+  FailedJob,
+  OrgRunnerUsage,
+  Repo,
+  RepoStatus,
+  RepoStatusKind,
+} from './types'

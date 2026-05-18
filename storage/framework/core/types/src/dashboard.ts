@@ -43,6 +43,24 @@ export interface DashboardOptions {
       allModels?: { enabled?: boolean }
     }
   }
+  /**
+   * CI tracking surface — GitHub Actions health across the configured orgs.
+   * Ports the standalone `repo-dashboard` app into the dashboard
+   * (stacksjs/stacks#1844). Defaults to off because most projects don't
+   * own multiple GitHub orgs; opt in by listing orgs and surfacing a
+   * `GITHUB_TOKEN` in the environment.
+   */
+  ci?: {
+    enabled?: boolean
+    /** Orgs whose repos appear as per-tab CI cards. */
+    orgs?: string[]
+    /** Self-hosted runner caps per org. Defaults to {@link runnerCapDefault}. */
+    runnerCaps?: Record<string, number>
+    /** Fallback cap for orgs missing from `runnerCaps`. Defaults to 20. */
+    runnerCapDefault?: number
+    /** Repo names to exclude from the CI feed. */
+    ignoreRepos?: string[]
+  }
 }
 
 export type DashboardConfig = Partial<DashboardOptions>

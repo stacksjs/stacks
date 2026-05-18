@@ -256,6 +256,13 @@ export interface DashboardSectionToggles {
   management?: boolean
   utilities?: boolean
   library?: boolean
+  /**
+   * CI tracking row. Lives next to Health under Home. Off by default;
+   * projects with multi-org GitHub Actions opt in via `config/dashboard.ts`
+   * → `ci.enabled: true` (and listing one or more `ci.orgs`).
+   * See stacksjs/stacks#1844 for the surface itself, #1843 for role-gating.
+   */
+  ci?: boolean
   data?: {
     dashboard?: boolean
     activity?: boolean
@@ -320,14 +327,22 @@ export function buildSidebarConfig(
 
   const sections: Array<{ id: string, title: string, items: Array<{ id: string, label: string, icon: string, url: string }> }> = []
 
+  const homeItems = [
+    { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/` },
+    { id: 'dependencies', label: 'Dependencies', icon: 'shippingbox.fill', url: `${baseRoute}/dependencies` },
+    { id: 'health', label: 'Health', icon: 'heart.text.square.fill', url: `${baseRoute}/health` },
+  ]
+  // CI tracking sits under Home next to Health — both are infra-status
+  // surfaces. Opt-in via `config/dashboard.ts:ci.enabled`. The page
+  // itself applies a role check via `useRole()` (#1843 stub) so the
+  // server-side toggle and the in-page check stay in sync.
+  if (toggles.ci)
+    homeItems.push({ id: 'ci', label: 'CI', icon: 'checkmark.seal.fill', url: `${baseRoute}/ci` })
+
   sections.push({
     id: 'home',
     title: 'Home',
-    items: [
-      { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/` },
-      { id: 'dependencies', label: 'Dependencies', icon: 'shippingbox.fill', url: `${baseRoute}/dependencies` },
-      { id: 'health', label: 'Health', icon: 'heart.text.square.fill', url: `${baseRoute}/health` },
-    ],
+    items: homeItems,
   })
 
   if (enabled.library) {

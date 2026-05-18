@@ -1,0 +1,231 @@
+@extends('layouts/default')
+
+@section('content')
+<script client>
+  // CI tracking surface (stacksjs/stacks#1844).
+  //
+  // Renders the snapshot exposed by `/api/dashboard/ci/status`
+  // (Action: Dashboard/Ci/StatusAction → @stacksjs/github). Active tab +
+  // status filter live in the `ciStore` so they survive SPA navigation.
+  //
+  // No <script server>, no window./document. reads — per #1838 the page
+  // is pure presentation against the store.
+  import { useStore } from '@stacksjs/stx'
+  import { useRole } from '../composables/useRole'
+
+  const ci = useStore('ci')
+  // Role check is a stub until stacksjs/stacks#1843 ships the real role
+  // system. Until then `isDev()` returns true so this surface renders for
+  // everyone — same as the server-side `toggles.ci` gate. The hook point
+  // is here so swapping the stub flips both the sidebar item and the page
+  // body in one place.
+  const { isDev } = useRole()
+  const canView = derived(() => isDev())
+
+  // Lift store signals so template :if/:text auto-unwrap them.
+  const loading = derived(() => ci.loading())
+  const error = derived(() => ci.error())
+  const disabled = derived(() => ci.disabled())
+  const orgs = derived(() => ci.orgs())
+  const repos = derived(() => ci.reposForTab())
+  const totals = derived(() => ci.tabTotals())
+  const tabRunners = derived(() => ci.tabRunners())
+  const activeTab = derived(() => ci.activeTab())
+  const statusFilter = derived(() => ci.statusFilter())
+
+  const passingText = derived(() => totals().passing + ' passing')
+  const failingText = derived(() => totals().failing + ' failing')
+  const totalText = derived(() => totals().total + ' total')
+  const runnersText = derived(() => {
+    const r = tabRunners()
+    return 'Runners: ' + r.running + ' running, ' + r.queued + ' queued / ' + r.cap + ' cap'
+  })
+
+  function tabClass(id) {
+    const base = 'px-4 py-2 font-medium text-sm whitespace-nowrap bg-transparent border-b-2 transition-colors cursor-pointer '
+    return activeTab() === id
+      ? base + 'border-violet-400 text-violet-600 dark:text-violet-400'
+      : base + 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+  }
+
+  function filterClass(id) {
+    const base = 'px-3 py-1 text-xs rounded-full border transition-colors cursor-pointer '
+    return statusFilter() === id
+      ? base + 'bg-violet-500 border-violet-500 text-white'
+      : base + 'bg-transparent border-zinc-300 dark:border-zinc-700 text-zinc-600 dark:text-zinc-400 hover:border-zinc-400'
+  }
+
+  function borderColor(status) {
+    if (status === 'success') return 'border-color: rgba(16,185,129,0.3)'
+    if (status === 'failure' || status === 'error') return 'border-color: rgba(239,68,68,0.3)'
+    if (status === 'pending') return 'border-color: rgba(234,179,8,0.3)'
+    return 'border-color: rgba(39,39,42,1)'
+  }
+
+  function isSuccess(status) { return status === 'success' }
+  function isFailing(status) { return status === 'failure' || status === 'error' }
+  function isPending(status) { return status === 'pending' }
+  function isNoRuns(status) { return status === 'no_runs' }
+
+  function timeAgo(dateStr) {
+    if (!dateStr) return ''
+    const diff = Date.now() - new Date(dateStr).getTime()
+    const mins = Math.floor(diff / 60000)
+    if (mins < 60) return mins + 'm ago'
+    const hrs = Math.floor(mins / 60)
+    if (hrs < 24) return hrs + 'h ago'
+    const days = Math.floor(hrs / 24)
+    return days + 'd ago'
+  }
+
+  function truncate(str, len) {
+    if (!str) return ''
+    return str.length > len ? str.slice(0, len) + '...' : str
+  }
+
+  // Top-level fetch — runs on both hard reload (SSR hydration) and SPA
+  // mount, since `<script client>` re-executes on every entry. The store
+  // tracks its own loading flag so back-to-back calls don't double-fire.
+  ci.load()
+</script>
+
+<div class="mx-auto px-6 py-8 max-w-7xl">
+  <!-- Role-gated wrapper: in #1843 this collapses to nothing for client-role
+       viewers. Until then `canView` is always true (see useRole stub). -->
+  <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center">
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">This surface requires the dev role.</p>
+  </div>
+
+  <div :if="canView">
+  <header class="mb-6">
+    <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100">CI Status</h1>
+    <p class="mt-1 text-sm text-zinc-500">GitHub Actions health across the configured orgs. Configure in <code class="text-xs">config/dashboard.ts</code>.</p>
+  </header>
+
+  <!-- Disabled state — the surface is off in config/dashboard.ts -->
+  <div :if="disabled" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center">
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">CI tracking is disabled.</p>
+    <p class="mt-1 text-xs text-zinc-500">Enable it in <code>config/dashboard.ts</code> by setting <code>ci.enabled = true</code> and listing one or more orgs.</p>
+  </div>
+
+  <!-- Loading state -->
+  <div :if="loading && !disabled" class="flex items-center justify-center" style="min-height: 50vh">
+    <div class="flex flex-col gap-4 items-center">
+      <svg class="text-violet-500 animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+      <span class="text-sm text-zinc-400">Fetching CI status…</span>
+    </div>
+  </div>
+
+  <!-- Error state -->
+  <div :if="error && !loading && !disabled" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-5 py-4">
+    <p class="text-sm font-medium text-red-700 dark:text-red-300">Snapshot failed</p>
+    <p class="mt-1 text-xs text-red-600 dark:text-red-400" :text="error"></p>
+    <p class="mt-2 text-xs text-zinc-500">Most often: <code>GITHUB_TOKEN</code> is missing or lacks <code>public_repo</code> scope.</p>
+  </div>
+
+  <!-- Loaded state -->
+  <div :if="!loading && !error && !disabled">
+    <!-- Org tabs -->
+    <div class="flex overflow-x-auto gap-1 items-center mb-4 border-b border-zinc-200 dark:border-zinc-800">
+      <button
+        :for="org in orgs"
+        @click="ci.setActiveTab(org)"
+        :class="tabClass(org)"
+        :text="org"
+      ></button>
+    </div>
+
+    <!-- Status-filter chips -->
+    <div class="flex flex-wrap gap-2 mb-4">
+      <button @click="ci.setStatusFilter('all')" :class="filterClass('all')">All</button>
+      <button @click="ci.setStatusFilter('passing')" :class="filterClass('passing')">Passing</button>
+      <button @click="ci.setStatusFilter('failing')" :class="filterClass('failing')">Failing</button>
+      <button @click="ci.setStatusFilter('pending')" :class="filterClass('pending')">Pending</button>
+    </div>
+
+    <!-- Summary line -->
+    <div class="flex flex-wrap gap-x-4 gap-y-1 items-center mb-5 text-sm">
+      <span class="font-medium text-emerald-600 dark:text-emerald-400" :text="passingText"></span>
+      <span class="font-medium text-red-500 dark:text-red-400" :text="failingText"></span>
+      <span class="text-zinc-400" :text="totalText"></span>
+      <span class="text-zinc-300 dark:text-zinc-700">·</span>
+      <span class="text-zinc-500 dark:text-zinc-400" :text="runnersText"></span>
+    </div>
+
+    <!-- Repo cards -->
+    <div class="grid gap-2" style="grid-template-columns: repeat(auto-fill, minmax(340px, 1fr))">
+      <div
+        :for="repo in repos"
+        :style="borderColor(repo.status)"
+        class="flex gap-3 items-start px-4 py-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border rounded-lg transition-colors"
+      >
+        <svg :if="isSuccess(repo.status)" class="mt-0.5 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+        <svg :if="isFailing(repo.status)" class="mt-0.5 text-red-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18" />
+          <line x1="6" y1="6" x2="18" y2="18" />
+        </svg>
+        <svg :if="isPending(repo.status)" class="mt-0.5 text-yellow-500 animate-spin" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+        <svg :if="isNoRuns(repo.status)" class="mt-0.5 text-zinc-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+
+        <div class="flex-1 min-w-0">
+          <div class="flex gap-2 items-center">
+            <a :href="repo.url" target="_blank" class="font-medium no-underline text-sm text-zinc-900 dark:text-zinc-100 hover:underline" :text="repo.name"></a>
+            <span :if="repo.commitSha" class="font-mono text-xs text-zinc-400" :text="repo.commitSha"></span>
+            <span :if="repo.updatedAt" class="text-xs text-zinc-400" :text="timeAgo(repo.updatedAt)"></span>
+          </div>
+
+          <div :if="repo.commitMessage" class="mt-1">
+            <a :href="repo.commitUrl || repo.url" target="_blank" class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline" :text="truncate(repo.commitMessage, 50)"></a>
+          </div>
+
+          <div :if="repo.commitAuthor" class="mt-0.5">
+            <span class="text-xs text-zinc-400" :text="repo.commitAuthor"></span>
+          </div>
+
+          <div :if="repo.renovatePRs > 0 || repo.actionsPRs > 0" class="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
+            <div class="mb-1 text-xs text-zinc-400">Pull Requests</div>
+            <div class="flex flex-wrap gap-x-3 gap-y-0.5">
+              <a :if="repo.renovatePRs > 0" :href="repo.renovatePRsUrl" target="_blank" class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
+                renovatebot: <span :text="repo.renovatePRs"></span>
+              </a>
+              <a :if="repo.actionsPRs > 0" :href="repo.actionsPRsUrl" target="_blank" class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
+                github-actions: <span :text="repo.actionsPRs"></span>
+              </a>
+            </div>
+          </div>
+
+          <div :if="repo.failedJobs && repo.failedJobs.length > 0" class="mt-2 pt-2 border-red-500/10 border-t">
+            <a
+              :for="job in repo.failedJobs"
+              :href="job.url"
+              target="_blank"
+              class="flex gap-1.5 items-center mt-1 no-underline hover:underline"
+            >
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400/70">
+                <circle cx="12" cy="12" r="10" />
+                <line x1="15" y1="9" x2="9" y2="15" />
+                <line x1="9" y1="9" x2="15" y2="15" />
+              </svg>
+              <span class="text-red-400/80 text-xs" :text="job.name"></span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Empty filter result -->
+    <div :if="repos.length === 0" class="px-4 py-8 text-center text-sm text-zinc-500">
+      No repos match the current filter.
+    </div>
+  </div>
+  </div>
+</div>
+@endsection
