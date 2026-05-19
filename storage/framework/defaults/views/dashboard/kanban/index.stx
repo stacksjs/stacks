@@ -23,6 +23,69 @@
   const boards = derived(() => kanban.boards())
   const hasBoards = derived(() => kanban.hasBoards())
 
+  // ─── New-board modal (Phase 2) ────────────────────────────────────
+  //
+  // Inline modal so the page stays single-file. Phase 3 may extract
+  // this into a reusable component if/when a third caller appears
+  // (board rename, column rename, label edit — same shape).
+  const isCreating = state(false)
+  const draftName = state('')
+  const draftDescription = state('')
+  const draftColor = state('violet')
+  const submitting = state(false)
+  const submitError = state('')
+
+  const colorChoices = ['violet', 'blue', 'emerald', 'amber', 'rose', 'slate']
+
+  function openCreate() {
+    isCreating.set(true)
+    draftName.set('')
+    draftDescription.set('')
+    draftColor.set('violet')
+    submitError.set('')
+  }
+  function closeCreate() {
+    isCreating.set(false)
+    submitError.set('')
+  }
+  async function submitCreate() {
+    const name = draftName().trim()
+    if (!name) {
+      submitError.set('Name is required.')
+      return
+    }
+    submitting.set(true)
+    submitError.set('')
+    const result = await kanban.createBoard({
+      name,
+      description: draftDescription().trim() || undefined,
+      color: draftColor(),
+    })
+    submitting.set(false)
+    if (result)
+      closeCreate()
+    else
+      submitError.set(kanban.error() || 'Failed to create board.')
+  }
+
+  function colorSwatchClass(c) {
+    return ({
+      violet: 'bg-violet-500',
+      blue: 'bg-blue-500',
+      emerald: 'bg-emerald-500',
+      amber: 'bg-amber-500',
+      rose: 'bg-rose-500',
+      slate: 'bg-slate-500',
+    })[c] || 'bg-violet-500'
+  }
+
+  function colorButtonClass(c) {
+    const base = `w-6 h-6 rounded-full ${colorSwatchClass(c)} cursor-pointer transition-all `
+    return draftColor() === c
+      ? base + 'ring-2 ring-offset-2 ring-violet-500 dark:ring-offset-zinc-950'
+      : base + 'opacity-60 hover:opacity-100'
+  }
+
   // Color → tailwind class. Free-form string in the model, mapped here
   // so the UI stays stable when a new hue is added without an explicit
   // mapping (falls back to violet).
@@ -61,9 +124,8 @@
         <p class="mt-1 text-sm text-zinc-500">Internal project-management boards. Drag-and-drop kanban view lands in Phase 2.</p>
       </div>
       <button
-        class="px-3 py-1.5 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white opacity-50 cursor-not-allowed"
-        title="Board creation lands in Phase 2 — see #1846"
-        disabled
+        @click="openCreate()"
+        class="px-3 py-1.5 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white"
       >
         New board
       </button>
@@ -91,7 +153,7 @@
         <rect x="19" y="4" width="2" height="6" rx="1" />
       </svg>
       <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">No boards yet</p>
-      <p class="mt-1 text-xs text-zinc-500">Phase 2 ships board creation. For now, seed via SQL or wait for the write API.</p>
+      <p class="mt-1 text-xs text-zinc-500">Click "New board" to create one.</p>
     </div>
 
     <!-- Boards grid -->
@@ -115,6 +177,83 @@
           <p class="mt-3 text-xs text-zinc-400" :text="cardCountText(board.cardCount)"></p>
         </div>
       </a>
+    </div>
+  </div>
+
+  <!-- Create-board modal. Fixed positioned with a backdrop; closes on
+       backdrop click + Escape key. Optimistic insert: kanban.createBoard
+       updates the boards list immediately on success and rolls back on
+       failure (with the error surfaced inline below the form). -->
+  <div
+    :if="isCreating()"
+    class="fixed inset-0 z-50 flex items-center justify-center bg-black/50 px-4"
+    @click="closeCreate()"
+    @keydown.escape.window="closeCreate()"
+  >
+    <div
+      @click.stop
+      class="w-full max-w-md rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl"
+    >
+      <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800">
+        <h3 class="text-base font-semibold text-zinc-900 dark:text-zinc-100">New board</h3>
+      </div>
+      <div class="px-5 py-4 space-y-4">
+        <div>
+          <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Name</label>
+          <input
+            :value="draftName()"
+            @input="(e) => draftName.set(e.target.value)"
+            @keydown.enter="submitCreate()"
+            placeholder="e.g. Q3 Roadmap"
+            class="w-full px-3 py-2 text-sm rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
+            autofocus
+          />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-1">Description <span class="text-zinc-400">(optional)</span></label>
+          <textarea
+            :value="draftDescription()"
+            @input="(e) => draftDescription.set(e.target.value)"
+            rows="3"
+            placeholder="A short description of what this board tracks."
+            class="w-full px-3 py-2 text-sm rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 resize-none focus:outline-none focus:border-violet-500"
+          ></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium text-zinc-700 dark:text-zinc-300 mb-2">Accent color</label>
+          <div class="flex items-center gap-2">
+            <button
+              :for="c in colorChoices"
+              @click="draftColor.set(c)"
+              :class="colorButtonClass(c)"
+              :title="c"
+              type="button"
+            ></button>
+          </div>
+        </div>
+
+        <p :if="submitError()" class="text-xs text-red-600 dark:text-red-400" :text="submitError()"></p>
+      </div>
+
+      <div class="px-5 py-3 border-t border-zinc-200 dark:border-zinc-800 flex justify-end gap-2">
+        <button
+          @click="closeCreate()"
+          class="px-3 py-1.5 text-sm rounded-md text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+          :disabled="submitting()"
+        >
+          Cancel
+        </button>
+        <button
+          @click="submitCreate()"
+          class="px-3 py-1.5 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white"
+          :disabled="submitting()"
+        >
+          <span :if="!submitting()">Create</span>
+          <span :if="submitting()">Creating…</span>
+        </button>
+      </div>
     </div>
   </div>
 </div>

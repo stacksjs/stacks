@@ -47,6 +47,27 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // see an empty surface when the dashboard ever gets exposed beyond
   // localhost. Tighten with `.middleware('auth').middleware('role:admin,dev')`
   // when the dashboard is deployed multi-tenant.
+  // Reads (Phase 1)
   route.get('/kanban/boards', 'Actions/Dashboard/Kanban/BoardsIndexAction')
   route.get('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardShowAction')
+
+  // Writes (Phase 2). The reorder endpoints are POST not PATCH because
+  // their semantics — "here's the full new state of this slice of the
+  // board" — match the resource-replacement intent better than PATCH's
+  // "apply this delta" verb. They also accept a body shape that PATCH
+  // verbs don't conventionally carry.
+  route.post('/kanban/boards', 'Actions/Dashboard/Kanban/BoardStoreAction')
+  route.patch('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardUpdateAction')
+  route.delete('/kanban/boards/{id}', 'Actions/Dashboard/Kanban/BoardDestroyAction')
+  route.post('/kanban/boards/reorder', 'Actions/Dashboard/Kanban/BoardsReorderAction')
+
+  route.post('/kanban/columns', 'Actions/Dashboard/Kanban/ColumnStoreAction')
+  route.patch('/kanban/columns/{id}', 'Actions/Dashboard/Kanban/ColumnUpdateAction')
+  route.delete('/kanban/columns/{id}', 'Actions/Dashboard/Kanban/ColumnDestroyAction')
+  route.post('/kanban/columns/reorder', 'Actions/Dashboard/Kanban/ColumnsReorderAction')
+
+  route.post('/kanban/cards', 'Actions/Dashboard/Kanban/CardStoreAction')
+  route.patch('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardUpdateAction')
+  route.delete('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardDestroyAction')
+  route.post('/kanban/cards/reorder', 'Actions/Dashboard/Kanban/CardsReorderAction')
 })

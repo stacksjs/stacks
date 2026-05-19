@@ -2,15 +2,32 @@
 
 @section('content')
 <script client>
-  // Kanban — Single board view (stacksjs/stacks#1846).
+  // Kanban board view (stacksjs/stacks#1846 Phase 2).
   //
-  // Phase 1 placeholder: loads the board's data via the store so the
-  // read path is exercised, but renders a static summary + a "Phase 2"
-  // notice. The full drag-and-drop kanban view lands in Phase 2; the
-  // page structure is here so the URL works and existing link targets
-  // (sidebar, boards index) point at a real page.
+  // Drag-and-drop via Pragmatic Drag and Drop (Atlassian). Loaded from
+  // esm.sh so we don't need a bundler step — the dashboard's
+  // <script client> blocks run as inline modules and ESM imports
+  // resolve at fetch time. The library is ~5kb gzipped so the
+  // round-trip cost is negligible.
+  //
+  // Optimistic-update pattern:
+  //   1. The DnD handler mutates the store immediately (so the card
+  //      visually settles in its new position before the network
+  //      round-trip).
+  //   2. The store fires the reorder API call.
+  //   3. On failure, the store restores its snapshot and surfaces an
+  //      error message; the UI re-renders from the restored state.
+  //
+  // Both column reorder (drag the column header) and card reorder
+  // (drag the card body) share the same /cards/reorder + /columns/reorder
+  // mutations on the store.
   import { useStore } from '@stacksjs/stx'
   import { useRole } from '../composables/useRole'
+  import {
+    draggable,
+    dropTargetForElements,
+    monitorForElements,
+  } from 'https://esm.sh/@atlaskit/pragmatic-drag-and-drop@1/element/adapter'
 
   const kanban = useStore('kanban')
   const { isDev } = useRole()
@@ -20,7 +37,13 @@
   const error = derived(() => kanban.errorBoard())
   const board = derived(() => kanban.currentBoard())
   const columns = derived(() => kanban.currentColumns())
-  const labels = derived(() => kanban.currentLabels())
+
+  // Inline composer state. Each column has its own (independent) "add
+  // card" composer; the boolean tracks whether the input is open.
+  const composingCardForColumnId = state(null)
+  const draftCardTitle = state('')
+  const composingNewColumn = state(false)
+  const draftColumnName = state('')
 
   function totalCards() {
     const cols = columns()
@@ -29,24 +52,186 @@
     return n
   }
 
-  function columnPreviewText(col) {
-    const n = col.cards ? col.cards.length : 0
-    if (n === 0) return col.name + ' — empty'
-    if (n === 1) return col.name + ' — 1 card'
-    return col.name + ' — ' + n + ' cards'
+  // Column color → header accent class. Free-form string in the
+  // model, mapped here so a new hue without an explicit mapping
+  // falls back to slate.
+  function columnAccentClass(color) {
+    return ({
+      slate: 'bg-slate-100 dark:bg-slate-800',
+      amber: 'bg-amber-100 dark:bg-amber-900/40',
+      blue: 'bg-blue-100 dark:bg-blue-900/40',
+      emerald: 'bg-emerald-100 dark:bg-emerald-900/40',
+      red: 'bg-red-100 dark:bg-red-900/40',
+      violet: 'bg-violet-100 dark:bg-violet-900/40',
+    })[color] || 'bg-slate-100 dark:bg-slate-800'
   }
 
-  // Pull the id from the URL. stx page routing exposes route params
-  // via `route.params` / `useRoute()` depending on version; the safe
-  // read is to parse `window.location.pathname` — the route here is
-  // `/kanban/[id]` so the id is the last segment.
+  // Pull the id from the URL.
   const id = Number(window.location.pathname.split('/').pop())
   if (Number.isFinite(id) && id > 0)
     kanban.loadBoard(id)
+
+  // ─── Composer handlers ────────────────────────────────────────────
+
+  function openCardComposer(columnId) {
+    composingCardForColumnId.set(columnId)
+    draftCardTitle.set('')
+  }
+  function closeCardComposer() {
+    composingCardForColumnId.set(null)
+    draftCardTitle.set('')
+  }
+  async function submitCard(columnId) {
+    const title = draftCardTitle().trim()
+    if (!title) {
+      closeCardComposer()
+      return
+    }
+    await kanban.createCard({ columnId, title })
+    closeCardComposer()
+  }
+  function isComposingFor(columnId) {
+    return composingCardForColumnId() === columnId
+  }
+
+  function openColumnComposer() {
+    composingNewColumn.set(true)
+    draftColumnName.set('')
+  }
+  function closeColumnComposer() {
+    composingNewColumn.set(false)
+    draftColumnName.set('')
+  }
+  async function submitColumn() {
+    const name = draftColumnName().trim()
+    if (!name) {
+      closeColumnComposer()
+      return
+    }
+    if (!board()) return
+    await kanban.createColumn({ boardId: board().id, name })
+    closeColumnComposer()
+  }
+
+  async function deleteCardClicked(cardId) {
+    if (!window.confirm('Delete this card?')) return
+    await kanban.deleteCard(cardId)
+  }
+  async function deleteColumnClicked(columnId, hasCards) {
+    const warning = hasCards
+      ? 'Delete this column AND its cards? This cannot be undone.'
+      : 'Delete this empty column?'
+    if (!window.confirm(warning)) return
+    await kanban.deleteColumn(columnId)
+  }
+
+  // ─── DnD wiring ────────────────────────────────────────────────────
+  //
+  // The cleanest pattern with Pragmatic DnD + a reactive UI: wire the
+  // drop targets + draggables in an `onMount`-style effect that
+  // re-runs when the columns list changes. The library's `cleanup()`
+  // functions handle deregistering listeners as DOM nodes go away.
+  //
+  // We mark every card element with `data-card-id` and every column
+  // with `data-column-id` so the monitor can extract the move
+  // semantics from the dragged element + drop target.
+
+  const dndCleanups = []
+
+  function teardownDnd() {
+    while (dndCleanups.length) {
+      const fn = dndCleanups.pop()
+      try { fn() } catch { /* ignore */ }
+    }
+  }
+
+  function setupDnd() {
+    teardownDnd()
+    const root = document.querySelector('[data-kanban-root]')
+    if (!root) return
+
+    // Card draggables + column drop targets.
+    for (const cardEl of root.querySelectorAll('[data-card-id]')) {
+      dndCleanups.push(draggable({
+        element: cardEl,
+        getInitialData: () => ({
+          kind: 'card',
+          cardId: Number(cardEl.getAttribute('data-card-id')),
+          fromColumnId: Number(cardEl.getAttribute('data-card-column-id')),
+        }),
+      }))
+    }
+    for (const colEl of root.querySelectorAll('[data-column-id]')) {
+      dndCleanups.push(dropTargetForElements({
+        element: colEl,
+        canDrop: ({ source }) => source.data?.kind === 'card',
+        getData: () => ({
+          kind: 'column-drop',
+          columnId: Number(colEl.getAttribute('data-column-id')),
+        }),
+      }))
+    }
+
+    // Single monitor handles the actual move semantics — fires once
+    // per drop, reads source + target, computes the new per-column
+    // order, hands it to the store.
+    dndCleanups.push(monitorForElements({
+      canMonitor: ({ source }) => source.data?.kind === 'card',
+      onDrop: ({ source, location }) => {
+        const target = location.current.dropTargets?.[0]
+        if (!target) return
+        const cardId = Number(source.data.cardId)
+        const fromColumnId = Number(source.data.fromColumnId)
+        const toColumnId = Number(target.data.columnId)
+        if (!cardId || !fromColumnId || !toColumnId) return
+
+        // Build the new per-column orders for the two affected
+        // columns. Card moves within a column → only one entry.
+        const cols = columns()
+        const fromCol = cols.find(c => c.id === fromColumnId)
+        const toCol = cols.find(c => c.id === toColumnId)
+        if (!fromCol || !toCol) return
+
+        let fromOrder = fromCol.cards.map(c => c.id).filter(idd => idd !== cardId)
+        let toOrder
+        if (fromColumnId === toColumnId) {
+          // Same-column drop = append for now (drop-between
+          // positions land in Phase 3 alongside card-detail
+          // hover targets; this is the minimum-viable shape).
+          toOrder = [...fromOrder, cardId]
+          fromOrder = toOrder
+        }
+        else {
+          toOrder = [...toCol.cards.map(c => c.id), cardId]
+        }
+
+        const payload = fromColumnId === toColumnId
+          ? [{ columnId: toColumnId, order: toOrder }]
+          : [
+              { columnId: fromColumnId, order: fromOrder },
+              { columnId: toColumnId, order: toOrder },
+            ]
+        kanban.reorderCards(payload)
+      },
+    }))
+  }
+
+  // Re-wire DnD whenever columns mutate (new card, deleted card,
+  // post-drop reorder, etc.). `effect` runs after every state change
+  // that touches `columns()`, with a microtask delay so the DOM has
+  // re-rendered first.
+  effect(() => {
+    columns()
+    Promise.resolve().then(setupDnd)
+  })
+
+  onUnmount(() => {
+    teardownDnd()
+  })
 </script>
 
-<div class="mx-auto px-6 py-8 max-w-7xl">
-  <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center">
+<div class="mx-auto px-6 py-6 max-w-full">
+  <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center mx-auto max-w-2xl">
     <p class="text-sm text-zinc-600 dark:text-zinc-400">Kanban boards require the dev role.</p>
   </div>
 
@@ -65,52 +250,148 @@
 
     <!-- Error -->
     <div :if="error && !loading" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-5 py-4">
-      <p class="text-sm font-medium text-red-700 dark:text-red-300">Couldn't load board</p>
+      <p class="text-sm font-medium text-red-700 dark:text-red-300">Board operation failed</p>
       <p class="mt-1 text-xs text-red-600 dark:text-red-400" :text="error"></p>
     </div>
 
     <!-- Loaded -->
-    <div :if="board && !loading && !error">
-      <header class="mb-6">
-        <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100" :text="board.name"></h1>
-        <p :if="board.description" class="mt-1 text-sm text-zinc-500" :text="board.description"></p>
-        <p class="mt-2 text-xs text-zinc-400">
-          <span :text="columns.length + ' columns'"></span>
-          <span> · </span>
-          <span :text="totalCards() + ' cards'"></span>
-          <span :if="labels.length > 0"> · </span>
-          <span :if="labels.length > 0" :text="labels.length + ' labels'"></span>
-        </p>
+    <div :if="board && !loading">
+      <header class="flex items-start justify-between mb-6">
+        <div>
+          <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100" :text="board.name"></h1>
+          <p :if="board.description" class="mt-1 text-sm text-zinc-500" :text="board.description"></p>
+          <p class="mt-2 text-xs text-zinc-400">
+            <span :text="columns.length + ' columns'"></span>
+            <span> · </span>
+            <span :text="totalCards() + ' cards'"></span>
+          </p>
+        </div>
       </header>
 
-      <!-- Phase 1: column summary cards. Phase 2 replaces this with the
-           drag-and-drop kanban surface. -->
-      <div class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-4 mb-6">
-        <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phase 1: read-only summary</p>
-        <p class="mt-1 text-xs text-zinc-500">
-          The drag-and-drop board view ships in Phase 2 of <a href="https://github.com/stacksjs/stacks/issues/1846" target="_blank" class="text-violet-600 dark:text-violet-400 hover:underline">#1846</a>.
-          This page proves the read API works end-to-end.
-        </p>
-      </div>
-
-      <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))">
+      <!-- The board itself. Horizontal scroll for wide boards;
+           each column is a vertical card stack. -->
+      <div data-kanban-root class="flex gap-3 overflow-x-auto pb-4" style="min-height: 60vh">
         <div
           :for="col in columns"
-          class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden"
+          :data-column-id="col.id"
+          class="flex-shrink-0 w-72 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 flex flex-col"
+          style="max-height: calc(100vh - 220px)"
         >
-          <div class="px-4 py-2 border-b border-zinc-100 dark:border-zinc-900">
-            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200" :text="col.name"></p>
-            <p class="text-xs text-zinc-400" :text="columnPreviewText(col)"></p>
+          <!-- Column header -->
+          <div :class="`px-3 py-2 border-b border-zinc-100 dark:border-zinc-900 ${columnAccentClass(col.color)}`">
+            <div class="flex items-center justify-between gap-2">
+              <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200 truncate" :text="col.name"></p>
+              <div class="flex items-center gap-1">
+                <span class="text-xs text-zinc-500 font-mono" :text="col.cards.length"></span>
+                <button
+                  @click="deleteColumnClicked(col.id, col.cards.length > 0)"
+                  class="text-zinc-400 hover:text-red-500 p-1 -m-1"
+                  title="Delete column"
+                >
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="3 6 5 6 21 6" />
+                    <path d="M19 6l-2 14a2 2 0 01-2 2H9a2 2 0 01-2-2L5 6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2" />
+                  </svg>
+                </button>
+              </div>
+            </div>
           </div>
-          <div class="p-2 space-y-1">
+
+          <!-- Cards (scrollable) -->
+          <div class="p-2 space-y-1 overflow-y-auto flex-1" style="min-height: 40px">
             <div
               :for="card in col.cards"
-              class="rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2"
+              :data-card-id="card.id"
+              :data-card-column-id="col.id"
+              class="rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 cursor-grab hover:border-violet-300 dark:hover:border-violet-700 transition-colors group"
             >
-              <p class="text-xs text-zinc-800 dark:text-zinc-200 truncate" :text="card.title"></p>
+              <div class="flex items-start justify-between gap-2">
+                <p class="text-xs text-zinc-800 dark:text-zinc-200 leading-snug flex-1" :text="card.title"></p>
+                <button
+                  @click.stop="deleteCardClicked(card.id)"
+                  class="text-zinc-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete card"
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" />
+                    <line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              </div>
             </div>
-            <p :if="col.cards.length === 0" class="text-xs text-zinc-400 italic px-1 py-2">No cards yet</p>
           </div>
+
+          <!-- Add card composer -->
+          <div class="p-2 border-t border-zinc-100 dark:border-zinc-900">
+            <div :if="isComposingFor(col.id)" class="space-y-2">
+              <textarea
+                :value="draftCardTitle()"
+                @input="(e) => draftCardTitle.set(e.target.value)"
+                @keydown.enter.prevent="submitCard(col.id)"
+                @keydown.escape="closeCardComposer()"
+                placeholder="Card title…"
+                rows="2"
+                class="w-full px-2 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 resize-none focus:outline-none focus:border-violet-500"
+              ></textarea>
+              <div class="flex gap-1">
+                <button
+                  @click="submitCard(col.id)"
+                  class="px-2 py-1 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white"
+                >
+                  Add
+                </button>
+                <button
+                  @click="closeCardComposer()"
+                  class="px-2 py-1 text-xs rounded text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                >
+                  Cancel
+                </button>
+              </div>
+            </div>
+            <button
+              :if="!isComposingFor(col.id)"
+              @click="openCardComposer(col.id)"
+              class="w-full px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded text-left"
+            >
+              + Add card
+            </button>
+          </div>
+        </div>
+
+        <!-- Add column trailing slot -->
+        <div class="flex-shrink-0 w-72">
+          <div :if="composingNewColumn()" class="rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 p-3 space-y-2">
+            <input
+              :value="draftColumnName()"
+              @input="(e) => draftColumnName.set(e.target.value)"
+              @keydown.enter="submitColumn()"
+              @keydown.escape="closeColumnComposer()"
+              placeholder="Column name…"
+              class="w-full px-2 py-1 text-sm rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 text-zinc-800 dark:text-zinc-100 focus:outline-none focus:border-violet-500"
+              autofocus
+            />
+            <div class="flex gap-1">
+              <button
+                @click="submitColumn()"
+                class="px-2 py-1 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white"
+              >
+                Add column
+              </button>
+              <button
+                @click="closeColumnComposer()"
+                class="px-2 py-1 text-xs rounded text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+          <button
+            :if="!composingNewColumn()"
+            @click="openColumnComposer()"
+            class="w-full h-12 rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:border-zinc-400 dark:hover:border-zinc-600 text-sm"
+          >
+            + Add column
+          </button>
         </div>
       </div>
     </div>
