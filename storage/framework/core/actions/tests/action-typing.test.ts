@@ -122,10 +122,79 @@ function _checkBare(r: RequestInstance): unknown {
 }
 void _checkBare
 
+// ─── End-to-end smoke (#1851 Phase 4) ────────────────────────────
+//
+// Importing the smoke fixture forces it through TS in this test
+// pass. If the smoke action's inference regresses (path-extracted
+// params, validations-inferred body, cookies access, no `as any`),
+// the import fails to typecheck and the test runner won't even
+// reach the assertions below.
+import {
+  DestroySessionAction,
+  FollowJudgeAction,
+  ListJudgesAction,
+  NoCastsSmokeAction,
+  UpdateOrderItemAction,
+} from './fixtures/smoke-action'
+
+// ─── Bun-router inline-handler narrowing (#1851 Phase 2d) ──────────
+//
+// Type-only test that the `router.get<TPath>(path, handler)` overload
+// in bun-router threads the path literal into the inline handler's
+// `request.params` keyset. The function is never *called* — its
+// existence is enough to type-check the inference.
+import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { ExtractRouteParams } from '@stacksjs/bun-router'
+
+function _inlineHandlerTypeSmoke(): void {
+  // Inline-handler shape that the typed-overload route methods
+  // accept. The narrowing comes from `request: EnhancedRequest &
+  // { params: ExtractRouteParams<TPath> }` — the `TypedRouteHandler`
+  // contract bun-router already exports.
+  type Handler<P extends string> = (
+    req: EnhancedRequest & { params: ExtractRouteParams<P> },
+  ) => Response | Promise<Response>
+
+  // Single-param.
+  const _h1: Handler<'/api/users/{id}'> = (req) => {
+    const id: string = req.params.id
+    // @ts-expect-error wrong key
+    void req.params.bogus
+    return new Response(id)
+  }
+  void _h1
+
+  // Multi-param.
+  const _h2: Handler<'/orgs/{org}/repos/{repo}/runs/{runId}'> = (req) => {
+    const org: string = req.params.org
+    const repo: string = req.params.repo
+    const runId: string = req.params.runId
+    return new Response(`${org}/${repo}@${runId}`)
+  }
+  void _h2
+
+  // Static path → no narrowed params (empty `object` per
+  // ExtractRouteParams's fallback).
+  const _h3: Handler<'/api/health'> = (_req) => new Response('ok')
+  void _h3
+}
+void _inlineHandlerTypeSmoke
+
 describe('action-typing (compile-time)', () => {
   test('file type-checks', () => {
     // The real test happens at compile time. If you got here, the
     // type-level invariants hold.
     expect(true).toBe(true)
+  })
+
+  test('smoke action fixture is importable + constructed', () => {
+    // Each action constructs without throwing. The interesting
+    // story is the compile pass — these runtime asserts just keep
+    // the imports from being tree-shaken.
+    expect(FollowJudgeAction.name).toBe('FollowJudge')
+    expect(ListJudgesAction.method).toBe('GET')
+    expect(UpdateOrderItemAction.path).toBe('/api/orders/{orderId}/items/{itemId}')
+    expect(DestroySessionAction.path).toBe('/api/sessions/:sessionId')
+    expect(NoCastsSmokeAction.name).toBe('NoCastsSmoke')
   })
 })
