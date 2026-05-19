@@ -13,6 +13,8 @@ export { ghFetch, ghHeaders, GITHUB_API, mapWithConcurrency } from './client'
 export { clearDashboardCache, getDashboardData } from './dashboard'
 export { fetchAllRepos } from './repos'
 export { fetchRepoActiveRuns } from './runners'
+export { fetchRunJobs, fetchWorkflowRuns } from './run-history'
+export type { WorkflowJob, WorkflowRun } from './run-history'
 export { fetchFailedJobs, fetchRepoStatus } from './runs'
 export type {
   DashboardData,

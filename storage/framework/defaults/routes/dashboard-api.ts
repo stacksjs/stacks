@@ -21,6 +21,13 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
   route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
   route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction')
+  // CI drilldown (stacksjs/stacks#1848): per-repo run history + per-run
+  // job detail. On-demand reads so the polled snapshot stays cheap.
+  // `name` is the URL-meaningful identifier here; bun-router segments
+  // route on per-param basis so the `runs/{runId}/jobs` form doesn't
+  // conflict with the `runs?limit=N` collection form.
+  route.get('/ci/repos/{owner}/{name}/runs', 'Actions/Dashboard/Ci/RepoRunsAction')
+  route.get('/ci/repos/{owner}/{name}/runs/{runId}/jobs', 'Actions/Dashboard/Ci/RepoRunJobsAction')
   // RBAC identity endpoint (stacksjs/stacks#1843). Returns the
   // authenticated user + their role names so the dashboard's `useRole()`
   // composable can gate dev-mode surfaces. Tolerates unauthenticated

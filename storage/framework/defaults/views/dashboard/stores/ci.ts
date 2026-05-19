@@ -37,6 +37,44 @@ interface OrgRunnerUsage {
 
 type StatusFilter = 'all' | 'passing' | 'failing' | 'pending'
 
+// Drilldown shapes (stacksjs/stacks#1848). Mirror the @stacksjs/github
+// `WorkflowRun` / `WorkflowJob` typings without the strict GH-conclusion
+// union (lets unknown future conclusion strings flow through without
+// breaking the type).
+interface WorkflowRun {
+  id: number
+  status: string
+  conclusion: string | null
+  name: string
+  headBranch: string | null
+  headSha: string
+  headShaShort: string
+  commitMessage: string | null
+  commitAuthor: string | null
+  event: string
+  url: string
+  startedAt: string | null
+  updatedAt: string
+  durationMs: number | null
+}
+
+interface WorkflowJobStep { name: string, status: string, conclusion: string | null, number: number }
+
+interface WorkflowJob {
+  id: number
+  name: string
+  status: string
+  conclusion: string | null
+  startedAt: string | null
+  completedAt: string | null
+  durationMs: number | null
+  url: string
+  steps: WorkflowJobStep[]
+}
+
+/** The repo currently open in the drilldown drawer. `null` = closed. */
+interface DrilldownTarget { owner: string, name: string, fullName: string }
+
 /**
  * CI tracking store — backs `dashboard/ci/index.stx` (stacksjs/stacks#1844).
  * Fetches the aggregated snapshot from `/api/dashboard/ci/status` (Action:
@@ -58,6 +96,18 @@ export const ciStore = defineStore('ci', () => {
 
   const activeTab = state<string>('')
   const statusFilter = state<StatusFilter>('all')
+
+  // ─── Drilldown state (stacksjs/stacks#1848) ─────────────────────
+  const drilldown = state<DrilldownTarget | null>(null)
+  const drilldownRuns = state<WorkflowRun[]>([])
+  const loadingDrilldown = state(false)
+  const drilldownError = state<string | null>(null)
+  // Per-run job detail, keyed by run id. Lazy-loaded when the user
+  // expands a row. Once fetched, cached for the duration of the
+  // drawer so re-expanding doesn't re-fetch.
+  const drilldownJobsByRunId = state<Record<number, WorkflowJob[]>>({})
+  const loadingJobsForRunId = state<number | null>(null)
+  const expandedRunId = state<number | null>(null)
 
   const reposForTab = derived(() => {
     const tab = activeTab()
@@ -139,6 +189,76 @@ export const ciStore = defineStore('ci', () => {
     statusFilter.set(filter)
   }
 
+  // ─── Drilldown actions ──────────────────────────────────────────
+
+  async function openDrilldown(repo: { owner: string, name: string, fullName: string }): Promise<void> {
+    drilldown.set({ owner: repo.owner, name: repo.name, fullName: repo.fullName })
+    drilldownRuns.set([])
+    drilldownJobsByRunId.set({})
+    expandedRunId.set(null)
+    drilldownError.set(null)
+    loadingDrilldown.set(true)
+    try {
+      const res = await fetch(`/api/dashboard/ci/repos/${encodeURIComponent(repo.owner)}/${encodeURIComponent(repo.name)}/runs?limit=20`, { headers: { accept: 'application/json' } })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json() as { runs?: WorkflowRun[], error?: string, disabled?: boolean }
+      if (data.error)
+        throw new Error(data.error)
+      drilldownRuns.set(data.runs ?? [])
+    }
+    catch (e) {
+      drilldownError.set(e instanceof Error ? e.message : String(e))
+    }
+    finally {
+      loadingDrilldown.set(false)
+    }
+  }
+
+  function closeDrilldown(): void {
+    drilldown.set(null)
+    drilldownRuns.set([])
+    drilldownJobsByRunId.set({})
+    expandedRunId.set(null)
+    drilldownError.set(null)
+  }
+
+  async function toggleRunJobs(runId: number): Promise<void> {
+    // Click-the-same-row-twice collapses it.
+    if (expandedRunId() === runId) {
+      expandedRunId.set(null)
+      return
+    }
+    expandedRunId.set(runId)
+
+    // Already cached? Don't re-fetch.
+    if (drilldownJobsByRunId()[runId])
+      return
+
+    const target = drilldown()
+    if (!target) return
+
+    loadingJobsForRunId.set(runId)
+    try {
+      const res = await fetch(`/api/dashboard/ci/repos/${encodeURIComponent(target.owner)}/${encodeURIComponent(target.name)}/runs/${runId}/jobs`, { headers: { accept: 'application/json' } })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json() as { jobs?: WorkflowJob[], error?: string }
+      if (data.error)
+        throw new Error(data.error)
+      drilldownJobsByRunId.set({ ...drilldownJobsByRunId(), [runId]: data.jobs ?? [] })
+    }
+    catch (e) {
+      // Set empty list on error so the row shows "no jobs" rather
+      // than spinning forever. The outer drawer error surface picks
+      // up the failure message instead.
+      drilldownJobsByRunId.set({ ...drilldownJobsByRunId(), [runId]: [] })
+      drilldownError.set(e instanceof Error ? e.message : String(e))
+    }
+    finally {
+      if (loadingJobsForRunId() === runId)
+        loadingJobsForRunId.set(null)
+    }
+  }
+
   return {
     allRepos,
     runners,
@@ -155,6 +275,17 @@ export const ciStore = defineStore('ci', () => {
     load,
     setActiveTab,
     setStatusFilter,
+    // Drilldown (#1848)
+    drilldown,
+    drilldownRuns,
+    loadingDrilldown,
+    drilldownError,
+    drilldownJobsByRunId,
+    loadingJobsForRunId,
+    expandedRunId,
+    openDrilldown,
+    closeDrilldown,
+    toggleRunJobs,
   }
 }, {
   persist: {

@@ -83,6 +83,50 @@
     return str.length > len ? str.slice(0, len) + '...' : str
   }
 
+  // ─── Drilldown drawer state (stacksjs/stacks#1848) ──────────────
+  const drilldownTarget = derived(() => ci.drilldown())
+  const drilldownRuns = derived(() => ci.drilldownRuns())
+  const loadingDrilldown = derived(() => ci.loadingDrilldown())
+  const drilldownError = derived(() => ci.drilldownError())
+  const expandedRunId = derived(() => ci.expandedRunId())
+  const jobsByRunId = derived(() => ci.drilldownJobsByRunId())
+  const loadingJobsRunId = derived(() => ci.loadingJobsForRunId())
+
+  function runRowClass(conclusion, status) {
+    const base = 'px-3 py-2 -mx-3 border-l-2 cursor-pointer hover:bg-zinc-50 dark:hover:bg-zinc-900 transition-colors '
+    if (status !== 'completed') return base + 'border-yellow-400'
+    if (conclusion === 'success') return base + 'border-emerald-400'
+    if (conclusion === 'failure' || conclusion === 'timed_out') return base + 'border-red-400'
+    if (conclusion === 'cancelled') return base + 'border-zinc-400'
+    return base + 'border-zinc-200 dark:border-zinc-800'
+  }
+
+  function runStatusBadge(conclusion, status) {
+    if (status !== 'completed') return { label: status, cls: 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/40 dark:text-yellow-300' }
+    if (conclusion === 'success') return { label: 'success', cls: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-300' }
+    if (conclusion === 'failure') return { label: 'failure', cls: 'bg-red-100 text-red-700 dark:bg-red-900/40 dark:text-red-300' }
+    return { label: conclusion || 'unknown', cls: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300' }
+  }
+
+  function formatDuration(ms) {
+    if (ms == null) return ''
+    const s = Math.floor(ms / 1000)
+    if (s < 60) return s + 's'
+    const m = Math.floor(s / 60)
+    const rem = s % 60
+    if (m < 60) return m + 'm' + (rem ? ' ' + rem + 's' : '')
+    const h = Math.floor(m / 60)
+    return h + 'h ' + (m % 60) + 'm'
+  }
+
+  function jobsForRun(runId) {
+    return jobsByRunId()[runId] || []
+  }
+
+  function failedJobs(runId) {
+    return jobsForRun(runId).filter(j => j.conclusion && j.conclusion !== 'success' && j.conclusion !== 'skipped' && j.conclusion !== 'neutral')
+  }
+
   // Top-level fetch — runs on both hard reload (SSR hydration) and SPA
   // mount, since `<script client>` re-executes on every entry. The store
   // tracks its own loading flag so back-to-back calls don't double-fire.
@@ -161,7 +205,8 @@
       <div
         :for="repo in repos"
         :style="borderColor(repo.status)"
-        class="flex gap-3 items-start px-4 py-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border rounded-lg transition-colors"
+        @click="ci.openDrilldown(repo)"
+        class="flex gap-3 items-start px-4 py-3 bg-zinc-50 dark:bg-zinc-900 hover:bg-zinc-100 dark:hover:bg-zinc-800 border rounded-lg transition-colors cursor-pointer"
       >
         <svg :if="isSuccess(repo.status)" class="mt-0.5 text-emerald-500" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <polyline points="20 6 9 17 4 12" />
@@ -179,13 +224,16 @@
 
         <div class="flex-1 min-w-0">
           <div class="flex gap-2 items-center">
-            <a :href="repo.url" target="_blank" class="font-medium no-underline text-sm text-zinc-900 dark:text-zinc-100 hover:underline" :text="repo.name"></a>
+            <!-- Inner links stop propagation so they remain "open repo
+                 in a new tab" rather than triggering the drilldown
+                 drawer on the parent card. -->
+            <a :href="repo.url" target="_blank" @click.stop class="font-medium no-underline text-sm text-zinc-900 dark:text-zinc-100 hover:underline" :text="repo.name"></a>
             <span :if="repo.commitSha" class="font-mono text-xs text-zinc-400" :text="repo.commitSha"></span>
             <span :if="repo.updatedAt" class="text-xs text-zinc-400" :text="timeAgo(repo.updatedAt)"></span>
           </div>
 
           <div :if="repo.commitMessage" class="mt-1">
-            <a :href="repo.commitUrl || repo.url" target="_blank" class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline" :text="truncate(repo.commitMessage, 50)"></a>
+            <a :href="repo.commitUrl || repo.url" target="_blank" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline" :text="truncate(repo.commitMessage, 50)"></a>
           </div>
 
           <div :if="repo.commitAuthor" class="mt-0.5">
@@ -195,10 +243,10 @@
           <div :if="repo.renovatePRs > 0 || repo.actionsPRs > 0" class="mt-2 pt-2 border-t border-zinc-200/60 dark:border-zinc-800">
             <div class="mb-1 text-xs text-zinc-400">Pull Requests</div>
             <div class="flex flex-wrap gap-x-3 gap-y-0.5">
-              <a :if="repo.renovatePRs > 0" :href="repo.renovatePRsUrl" target="_blank" class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
+              <a :if="repo.renovatePRs > 0" :href="repo.renovatePRsUrl" target="_blank" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
                 renovatebot: <span :text="repo.renovatePRs"></span>
               </a>
-              <a :if="repo.actionsPRs > 0" :href="repo.actionsPRsUrl" target="_blank" class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
+              <a :if="repo.actionsPRs > 0" :href="repo.actionsPRsUrl" target="_blank" @click.stop class="no-underline text-xs text-zinc-500 dark:text-zinc-400 hover:underline">
                 github-actions: <span :text="repo.actionsPRs"></span>
               </a>
             </div>
@@ -209,6 +257,7 @@
               :for="job in repo.failedJobs"
               :href="job.url"
               target="_blank"
+              @click.stop
               class="flex gap-1.5 items-center mt-1 no-underline hover:underline"
             >
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-red-400/70">
@@ -228,6 +277,130 @@
       No repos match the current filter.
     </div>
   </div>
+  </div>
+
+  <!-- ────────── Drilldown drawer (#1848) ────────── -->
+  <!-- Slide-in side panel triggered by a repo-card click. Lists the
+       last 20 workflow runs as a vertical timeline; failing runs
+       expand inline to their failed-jobs list. Closes on backdrop
+       click + Escape. -->
+  <div
+    :if="drilldownTarget()"
+    class="fixed inset-0 z-50 flex justify-end"
+    @click="ci.closeDrilldown()"
+    @keydown.escape.window="ci.closeDrilldown()"
+  >
+    <div class="absolute inset-0 bg-black/40"></div>
+    <aside
+      @click.stop
+      class="relative w-full max-w-2xl h-full bg-white dark:bg-zinc-950 border-l border-zinc-200 dark:border-zinc-800 overflow-y-auto shadow-2xl"
+    >
+      <!-- Header -->
+      <div class="px-5 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-start gap-3 sticky top-0 bg-white dark:bg-zinc-950 z-10">
+        <div class="flex-1 min-w-0">
+          <p class="text-xs uppercase tracking-wide text-zinc-500">Run history</p>
+          <h3 class="font-semibold text-lg text-zinc-900 dark:text-zinc-100 truncate" :text="drilldownTarget().fullName"></h3>
+        </div>
+        <button
+          @click="ci.closeDrilldown()"
+          class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          title="Close"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <!-- Error -->
+      <div :if="drilldownError()" class="mx-5 mt-4 rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-4 py-3">
+        <p class="text-xs text-red-700 dark:text-red-300" :text="drilldownError()"></p>
+      </div>
+
+      <!-- Loading -->
+      <div :if="loadingDrilldown() && drilldownRuns().length === 0" class="px-5 py-12 text-center">
+        <svg class="mx-auto text-violet-500 animate-spin" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+        </svg>
+        <p class="mt-2 text-xs text-zinc-500">Fetching recent runs…</p>
+      </div>
+
+      <!-- Runs list -->
+      <ul :if="drilldownRuns().length > 0" class="px-5 py-3">
+        <li
+          :for="run in drilldownRuns()"
+          class="border-b border-zinc-100 dark:border-zinc-900 last:border-0"
+        >
+          <div
+            @click="ci.toggleRunJobs(run.id)"
+            :class="runRowClass(run.conclusion, run.status)"
+          >
+            <div class="flex items-start justify-between gap-3">
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                  <span
+                    :class="`px-1.5 py-0.5 text-[10px] font-medium rounded ${runStatusBadge(run.conclusion, run.status).cls}`"
+                    :text="runStatusBadge(run.conclusion, run.status).label"
+                  ></span>
+                  <span class="text-sm font-medium text-zinc-800 dark:text-zinc-200 truncate" :text="run.name"></span>
+                </div>
+                <p :if="run.commitMessage" class="mt-1 text-xs text-zinc-500 truncate" :text="truncate(run.commitMessage, 80)"></p>
+                <div class="mt-1 flex items-center gap-2 text-[10px] text-zinc-400">
+                  <span class="font-mono" :text="run.headShaShort"></span>
+                  <span :if="run.headBranch" :text="run.headBranch"></span>
+                  <span :if="run.commitAuthor">·</span>
+                  <span :if="run.commitAuthor" :text="run.commitAuthor"></span>
+                  <span>·</span>
+                  <span :text="timeAgo(run.updatedAt)"></span>
+                  <span :if="run.durationMs">·</span>
+                  <span :if="run.durationMs" :text="formatDuration(run.durationMs)"></span>
+                </div>
+              </div>
+              <a
+                :href="run.url"
+                target="_blank"
+                @click.stop
+                class="text-xs text-violet-600 dark:text-violet-400 hover:underline no-underline flex-shrink-0"
+              >view ↗</a>
+            </div>
+          </div>
+
+          <!-- Expanded: failed job list -->
+          <div :if="expandedRunId() === run.id" class="px-3 py-2 bg-zinc-50 dark:bg-zinc-900/50 border-t border-zinc-100 dark:border-zinc-900">
+            <div :if="loadingJobsRunId() === run.id" class="text-xs text-zinc-500 py-2">
+              Loading jobs…
+            </div>
+            <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length === 0" class="text-xs text-zinc-400 italic py-1">
+              No job detail.
+            </div>
+            <div :if="loadingJobsRunId() !== run.id && failedJobs(run.id).length > 0" class="space-y-1.5">
+              <p class="text-[10px] uppercase tracking-wide text-zinc-500">Failed jobs</p>
+              <a
+                :for="job in failedJobs(run.id)"
+                :href="job.url"
+                target="_blank"
+                @click.stop
+                class="flex items-center gap-1.5 text-xs no-underline hover:underline text-red-700 dark:text-red-400"
+              >
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10" /><line x1="15" y1="9" x2="9" y2="15" /><line x1="9" y1="9" x2="15" y2="15" />
+                </svg>
+                <span :text="job.name"></span>
+                <span :if="job.durationMs" class="text-zinc-400" :text="'(' + formatDuration(job.durationMs) + ')'"></span>
+              </a>
+            </div>
+            <div :if="loadingJobsRunId() !== run.id && jobsForRun(run.id).length > 0 && failedJobs(run.id).length === 0" class="text-xs text-zinc-500 py-1">
+              All <span :text="jobsForRun(run.id).length"></span> jobs passed.
+            </div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- Empty -->
+      <div :if="!loadingDrilldown() && !drilldownError() && drilldownRuns().length === 0" class="px-5 py-12 text-center">
+        <p class="text-sm text-zinc-500">No recent runs.</p>
+      </div>
+    </aside>
   </div>
 </div>
 @endsection
