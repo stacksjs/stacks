@@ -24,6 +24,8 @@ export * from './authorizable'
 // Role-Based Access Control (RBAC)
 export * from './rbac'
 export { createBqbRbacStore } from './rbac-store-bqb'
+export { DEFAULT_ROLE_PACKS, seedDefaultRoles } from './rbac-seed'
+export type { SeedDefaultRolesResult } from './rbac-seed'
 
 // Email Verification
 export * from './email-verification'

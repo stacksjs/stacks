@@ -81,6 +81,11 @@ const commandRegistry: Record<string, CommandLoader> = {
   'schedule': { path: './commands/schedule.ts', exportName: 'schedule' },
   'search': { path: './commands/search.ts', exportName: 'search' },
   'seed': { path: './commands/seed.ts', exportName: 'seed' },
+  // `seed:roles` alias also lazy-loads commands/seed.ts (which registers
+  // both `seed` and `seed:roles` subcommands when its exported `seed()`
+  // function runs). Single export, two callable commands.
+  'seed:roles': { path: './commands/seed.ts', exportName: 'seed' },
+  'roles:seed': { path: './commands/seed.ts', exportName: 'seed' },
   'setup': { path: './commands/setup.ts', exportName: 'setup' },
   'share': { path: './commands/share.ts', exportName: 'share' },
   'stack': { path: './commands/stacks.ts', exportName: 'stacks' },

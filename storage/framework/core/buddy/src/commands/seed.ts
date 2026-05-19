@@ -121,5 +121,41 @@ export function seed(buddy: CLI): void {
       process.exit(ExitCode.Success)
     })
 
+  // `./buddy seed:roles` — idempotently seed the default RBAC role packs
+  // (admin, dev, client) introduced in stacksjs/stacks#1843. Re-runs are
+  // safe — existing rows are skipped, not duplicated.
+  buddy
+    .command('seed:roles', 'Seed default RBAC role packs (admin, dev, client)')
+    .alias('roles:seed')
+    .action(async () => {
+      const perf = await intro('buddy seed:roles')
+      try {
+        const { seedDefaultRoles } = await import('@stacksjs/auth')
+        const result = await seedDefaultRoles()
+        if (result.created.length === 0 && result.skipped.length > 0) {
+          await outro(
+            `All ${result.skipped.length} default role packs already exist — nothing to do.`,
+            { startTime: perf, useSeconds: true },
+          )
+        }
+        else {
+          const createdNames = result.created.map(r => r.name).join(', ')
+          await outro(
+            `Created ${result.created.length} role pack(s): ${createdNames}. Skipped ${result.skipped.length} existing.`,
+            { startTime: perf, useSeconds: true },
+          )
+        }
+        process.exit(ExitCode.Success)
+      }
+      catch (err) {
+        await outro(
+          'Failed to seed default roles. Most often: migrations haven\'t run yet (try `./buddy migrate` first).',
+          { startTime: perf, useSeconds: true },
+          err as Error,
+        )
+        process.exit(ExitCode.FatalError)
+      }
+    })
+
   onUnknownSubcommand(buddy, "seed")
 }
