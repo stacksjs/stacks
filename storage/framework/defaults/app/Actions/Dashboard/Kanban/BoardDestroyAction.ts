@@ -38,13 +38,19 @@ export default new Action({
       // are idempotent, so re-running the same DELETE on the same id
       // is safe.
       const txOps = async (qb: any) => {
-        // Pivots first — they reference cards.
+        // Pivots + card-scoped children first — they reference cards.
         await qb.unsafe(
           'DELETE FROM card_labels WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
           [id],
         ).execute()
         await qb.unsafe(
           'DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
+          [id],
+        ).execute()
+        // Card comments (Phase 3, migration 0000000112). Same
+        // card-scoped pattern as the pivots.
+        await qb.unsafe(
+          'DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE board_id = ?)',
           [id],
         ).execute()
         // Cards (denormalised board_id avoids the column join).

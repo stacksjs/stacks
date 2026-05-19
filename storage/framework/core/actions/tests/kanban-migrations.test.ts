@@ -20,6 +20,8 @@ const MIGRATIONS = [
   '0000000109-create-labels-table.sql',
   '0000000110-create-card_labels-table.sql',
   '0000000111-create-card_assignees-table.sql',
+  // Phase 3
+  '0000000112-create-card_comments-table.sql',
 ]
 
 function applyMigrations(db: Database): void {
@@ -288,6 +290,146 @@ describe('Board store SQL pattern (BoardStoreAction)', () => {
     const maxRow = db.query(`SELECT COALESCE(MAX(position), -1) AS m FROM boards WHERE archived = 0`).get() as { m: number }
     const next = (maxRow.m + 1) || 0
     expect(next).toBe(0)
+
+    db.close()
+  })
+})
+
+// ─── Phase 3: comments + label sync + assignee sync ─────────────────
+
+describe('card_comments migration', () => {
+  test('has the columns CardCommentStoreAction relies on', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const cols = db.query(`PRAGMA table_info(card_comments)`).all() as Array<{ name: string }>
+    const names = cols.map(c => c.name)
+    expect(names).toEqual(expect.arrayContaining(['id', 'uuid', 'card_id', 'user_id', 'body', 'created_at', 'updated_at']))
+    db.close()
+  })
+
+  test('card_comments(card_id, created_at) index exists for the thread-fetch hot path', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const idx = db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'card_comments'`).all() as Array<{ name: string }>
+    expect(idx.map(i => i.name)).toContain('card_comments_card_created_index')
+    db.close()
+  })
+
+  test('user_id is nullable (anonymous + dev-dashboard comments)', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    db.run(`INSERT INTO boards (name) VALUES ('B')`)
+    db.run(`INSERT INTO board_columns (board_id, name) VALUES (1, 'T')`)
+    db.run(`INSERT INTO cards (column_id, board_id, title) VALUES (1, 1, 'C')`)
+    expect(() => db.run(`INSERT INTO card_comments (card_id, body) VALUES (1, 'hi')`)).not.toThrow()
+    db.close()
+  })
+})
+
+describe('Card cascade delete includes card_comments (CardDestroyAction)', () => {
+  test('deleting a card removes its comments AND its pivot rows', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const { card1 } = seedSampleBoard(db)
+    db.run(`INSERT INTO card_comments (card_id, body) VALUES (?, 'a')`, [card1])
+    db.run(`INSERT INTO card_comments (card_id, body) VALUES (?, 'b')`, [card1])
+
+    db.run(`DELETE FROM card_labels WHERE card_id = ?`, [card1])
+    db.run(`DELETE FROM card_assignees WHERE card_id = ?`, [card1])
+    db.run(`DELETE FROM card_comments WHERE card_id = ?`, [card1])
+    db.run(`DELETE FROM cards WHERE id = ?`, [card1])
+
+    const cm = db.query(`SELECT COUNT(*) AS c FROM card_comments WHERE card_id = ?`).get(card1) as { c: number }
+    const cl = db.query(`SELECT COUNT(*) AS c FROM card_labels WHERE card_id = ?`).get(card1) as { c: number }
+    expect(cm.c).toBe(0)
+    expect(cl.c).toBe(0)
+
+    db.close()
+  })
+})
+
+describe('Card labels sync SQL pattern (CardLabelsSyncAction)', () => {
+  test('replaces the full set: delete-then-insert', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const { boardId, card1 } = seedSampleBoard(db)
+    db.run(`INSERT INTO labels (board_id, name) VALUES (?, 'Feature')`, [boardId])
+    db.run(`INSERT INTO labels (board_id, name) VALUES (?, 'Docs')`, [boardId])
+    const featureId = (db.query(`SELECT id FROM labels WHERE board_id = ? AND name = 'Feature'`).get(boardId) as { id: number }).id
+    const docsId = (db.query(`SELECT id FROM labels WHERE board_id = ? AND name = 'Docs'`).get(boardId) as { id: number }).id
+
+    // Seed: card1 carries 'Bug' (the original).
+    // After sync to [feature, docs]: 'Bug' should be gone.
+    db.run(`DELETE FROM card_labels WHERE card_id = ?`, [card1])
+    db.run(`INSERT INTO card_labels (card_id, label_id) VALUES (?, ?)`, [card1, featureId])
+    db.run(`INSERT INTO card_labels (card_id, label_id) VALUES (?, ?)`, [card1, docsId])
+
+    const rows = db.query(`SELECT label_id FROM card_labels WHERE card_id = ? ORDER BY label_id ASC`).all(card1) as Array<{ label_id: number }>
+    expect(rows.map(r => r.label_id).sort()).toEqual([featureId, docsId].sort())
+
+    db.close()
+  })
+
+  test('label deletion strips it from every card that carried it (LabelDestroyAction)', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const { boardId, card1, card2 } = seedSampleBoard(db)
+    const labelId = (db.query(`SELECT id FROM labels WHERE board_id = ?`).get(boardId) as { id: number }).id
+    // card1 already has the seeded label; attach to card2 too.
+    db.run(`INSERT INTO card_labels (card_id, label_id) VALUES (?, ?)`, [card2, labelId])
+
+    // LabelDestroyAction sequence:
+    db.run(`DELETE FROM card_labels WHERE label_id = ?`, [labelId])
+    db.run(`DELETE FROM labels WHERE id = ?`, [labelId])
+
+    const cl = db.query(`SELECT COUNT(*) AS c FROM card_labels WHERE label_id = ?`).get(labelId) as { c: number }
+    const l = db.query(`SELECT COUNT(*) AS c FROM labels WHERE id = ?`).get(labelId) as { c: number }
+    expect(cl.c).toBe(0)
+    expect(l.c).toBe(0)
+    // Sibling cards' other pivots untouched.
+    const allCl = db.query(`SELECT COUNT(*) AS c FROM card_labels WHERE card_id = ?`).get(card1) as { c: number }
+    expect(allCl.c).toBe(0)
+
+    db.close()
+  })
+})
+
+describe('Card assignees sync SQL pattern (CardAssigneesSyncAction)', () => {
+  test('replaces assignees and persists assigned_by_user_id', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const { card1 } = seedSampleBoard(db)
+    // Stub a users table — the real one isn't part of the kanban
+    // migration set, but the sync action joins/inserts against it.
+    db.run(`CREATE TABLE users (id INTEGER PRIMARY KEY, name TEXT, email TEXT)`)
+    db.run(`INSERT INTO users (id, name, email) VALUES (1, 'Alice', 'a@x'), (2, 'Bob', 'b@x'), (3, 'Cara', 'c@x')`)
+
+    // Initial: card1 already has user_id=99 from seedSampleBoard.
+    // Sync to [1, 2] with assigned_by_user_id=99.
+    db.run(`DELETE FROM card_assignees WHERE card_id = ?`, [card1])
+    db.run(`INSERT INTO card_assignees (card_id, user_id, assigned_by_user_id) VALUES (?, 1, 99), (?, 2, 99)`, [card1, card1])
+
+    const rows = db.query(`SELECT user_id, assigned_by_user_id FROM card_assignees WHERE card_id = ? ORDER BY user_id ASC`).all(card1) as Array<{ user_id: number, assigned_by_user_id: number | null }>
+    expect(rows.map(r => r.user_id)).toEqual([1, 2])
+    expect(rows.every(r => r.assigned_by_user_id === 99)).toBe(true)
+
+    db.close()
+  })
+})
+
+describe('Card thread ordering (CardShowAction)', () => {
+  test('comments come back oldest-first via (card_id, created_at) order', () => {
+    const db = new Database(':memory:')
+    applyMigrations(db)
+    const { card1 } = seedSampleBoard(db)
+    // Force insertion order with explicit created_at timestamps so the
+    // test isn't a race against same-millisecond default values.
+    db.run(`INSERT INTO card_comments (card_id, body, created_at) VALUES (?, 'first',  '2026-05-20 00:00:00')`, [card1])
+    db.run(`INSERT INTO card_comments (card_id, body, created_at) VALUES (?, 'second', '2026-05-20 00:01:00')`, [card1])
+    db.run(`INSERT INTO card_comments (card_id, body, created_at) VALUES (?, 'third',  '2026-05-20 00:02:00')`, [card1])
+
+    const rows = db.query(`SELECT body FROM card_comments WHERE card_id = ? ORDER BY created_at ASC, id ASC`).all(card1) as Array<{ body: string }>
+    expect(rows.map(r => r.body)).toEqual(['first', 'second', 'third'])
 
     db.close()
   })

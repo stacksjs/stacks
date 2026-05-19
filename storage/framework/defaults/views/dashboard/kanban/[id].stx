@@ -28,6 +28,10 @@
     dropTargetForElements,
     monitorForElements,
   } from 'https://esm.sh/@atlaskit/pragmatic-drag-and-drop@1/element/adapter'
+  import {
+    attachClosestEdge,
+    extractClosestEdge,
+  } from 'https://esm.sh/@atlaskit/pragmatic-drag-and-drop-hitbox@1/closest-edge'
 
   const kanban = useStore('kanban')
   const { isDev } = useRole()
@@ -37,6 +41,13 @@
   const error = derived(() => kanban.errorBoard())
   const board = derived(() => kanban.currentBoard())
   const columns = derived(() => kanban.currentColumns())
+  const allLabels = derived(() => kanban.currentLabels())
+
+  // Card detail modal state — read straight from the store. The
+  // modal itself lives at the bottom of this file.
+  const openCard = derived(() => kanban.openCard())
+  const loadingCard = derived(() => kanban.loadingCard())
+  const errorCard = derived(() => kanban.errorCard())
 
   // Inline composer state. Each column has its own (independent) "add
   // card" composer; the boolean tracks whether the input is open.
@@ -44,6 +55,99 @@
   const draftCardTitle = state('')
   const composingNewColumn = state(false)
   const draftColumnName = state('')
+
+  // Modal-local edit drafts. Title + description debounce-on-blur,
+  // due-date commits on change. Labels + assignees commit instantly
+  // via the sync endpoints (one round-trip per toggle).
+  const titleDraft = state('')
+  const descDraft = state('')
+  const commentDraft = state('')
+  const showLabelPicker = state(false)
+  const showAssigneePicker = state(false)
+  const showNewLabelComposer = state(false)
+  const newLabelName = state('')
+  const newLabelColor = state('slate')
+
+  function syncDraftsFromCard() {
+    const c = openCard()
+    titleDraft.set(c ? c.title : '')
+    descDraft.set(c ? (c.description || '') : '')
+    commentDraft.set('')
+  }
+  // Sync drafts when the open card changes (open / close / refetch).
+  effect(() => { openCard(); Promise.resolve().then(syncDraftsFromCard) })
+
+  async function commitTitle() {
+    const c = openCard()
+    if (!c) return
+    const next = titleDraft().trim()
+    if (!next || next === c.title) return
+    await kanban.updateCard({ title: next })
+  }
+
+  async function commitDescription() {
+    const c = openCard()
+    if (!c) return
+    const next = descDraft()
+    if (next === (c.description || '')) return
+    await kanban.updateCard({ description: next || null })
+  }
+
+  async function commitDueDate(value) {
+    await kanban.updateCard({ dueDate: value || null })
+  }
+
+  async function toggleLabel(labelId) {
+    const c = openCard()
+    if (!c) return
+    const has = c.labels.some(l => l.id === labelId)
+    const next = has
+      ? c.labels.filter(l => l.id !== labelId).map(l => l.id)
+      : [...c.labels.map(l => l.id), labelId]
+    await kanban.syncCardLabels(c.id, next)
+  }
+
+  async function toggleAssignee(userId) {
+    const c = openCard()
+    if (!c) return
+    const has = c.assignees.some(a => a.userId === userId)
+    const next = has
+      ? c.assignees.filter(a => a.userId !== userId).map(a => a.userId)
+      : [...c.assignees.map(a => a.userId), userId]
+    await kanban.syncCardAssignees(c.id, next)
+  }
+
+  async function submitComment() {
+    const text = commentDraft().trim()
+    if (!text) return
+    const ok = await kanban.addComment(text)
+    if (ok) commentDraft.set('')
+  }
+
+  async function deleteCommentClicked(commentId) {
+    if (!window.confirm('Delete this comment?')) return
+    await kanban.deleteComment(commentId)
+  }
+
+  async function submitNewLabel() {
+    const name = newLabelName().trim()
+    if (!name) return
+    const c = openCard()
+    const boardId = c ? c.boardId : (board() ? board().id : null)
+    if (!boardId) return
+    const created = await kanban.createLabel({ boardId, name, color: newLabelColor() })
+    if (created && c)
+      await kanban.syncCardLabels(c.id, [...c.labels.map(l => l.id), created.id])
+    newLabelName.set('')
+    showNewLabelComposer.set(false)
+  }
+
+  async function deleteLabelClicked(labelId) {
+    if (!window.confirm('Delete this label everywhere it\'s used?')) return
+    await kanban.deleteLabel(labelId)
+  }
+
+  const labelColors = ['slate', 'red', 'amber', 'emerald', 'blue', 'violet', 'rose']
 
   function totalCards() {
     const cols = columns()
@@ -125,6 +229,50 @@
     await kanban.deleteColumn(columnId)
   }
 
+  // ─── Card detail modal handlers ───────────────────────────────────
+
+  function openDetail(cardId) {
+    kanban.loadUsers() // background-fetch for assignee picker
+    kanban.openCardDetail(cardId)
+  }
+  function closeDetail() { kanban.closeCardDetail() }
+
+  // Label color → tailwind hue. Mirrors the column-accent map but
+  // returns a more saturated chip class.
+  function labelChipClass(color) {
+    return ({
+      slate:   'bg-slate-100   text-slate-700   dark:bg-slate-800/60  dark:text-slate-200',
+      amber:   'bg-amber-100   text-amber-700   dark:bg-amber-900/40  dark:text-amber-200',
+      blue:    'bg-blue-100    text-blue-700    dark:bg-blue-900/40   dark:text-blue-200',
+      emerald: 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/40 dark:text-emerald-200',
+      red:     'bg-red-100     text-red-700     dark:bg-red-900/40    dark:text-red-200',
+      violet:  'bg-violet-100  text-violet-700  dark:bg-violet-900/40 dark:text-violet-200',
+      rose:    'bg-rose-100    text-rose-700    dark:bg-rose-900/40   dark:text-rose-200',
+    })[color] || 'bg-slate-100 text-slate-700 dark:bg-slate-800/60 dark:text-slate-200'
+  }
+
+  function initialsOf(name, email) {
+    const source = (name || email || '?').trim()
+    const parts = source.split(/\s+/).filter(Boolean)
+    if (parts.length === 0) return '?'
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+  }
+
+  function formatDueDate(iso) {
+    if (!iso) return ''
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
+  }
+
+  function formatTimestamp(iso) {
+    if (!iso) return ''
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleString(undefined, { dateStyle: 'medium', timeStyle: 'short' })
+  }
+
   // ─── DnD wiring ────────────────────────────────────────────────────
   //
   // The cleanest pattern with Pragmatic DnD + a reactive UI: wire the
@@ -150,7 +298,11 @@
     const root = document.querySelector('[data-kanban-root]')
     if (!root) return
 
-    // Card draggables + column drop targets.
+    // Card draggables + per-card drop targets (for drop-between
+    // hitbox detection via Pragmatic DnD's closestEdge utility).
+    // Per-card drop targets give us a "drop above / below this card"
+    // signal; the column-level drop target is the fallback for
+    // empty-column drops.
     for (const cardEl of root.querySelectorAll('[data-card-id]')) {
       dndCleanups.push(draggable({
         element: cardEl,
@@ -159,6 +311,18 @@
           cardId: Number(cardEl.getAttribute('data-card-id')),
           fromColumnId: Number(cardEl.getAttribute('data-card-column-id')),
         }),
+      }))
+      dndCleanups.push(dropTargetForElements({
+        element: cardEl,
+        canDrop: ({ source }) => source.data?.kind === 'card',
+        getData: ({ input, element }) => attachClosestEdge(
+          {
+            kind: 'card-drop',
+            overCardId: Number(cardEl.getAttribute('data-card-id')),
+            overColumnId: Number(cardEl.getAttribute('data-card-column-id')),
+          },
+          { input, element, allowedEdges: ['top', 'bottom'] },
+        ),
       }))
     }
     for (const colEl of root.querySelectorAll('[data-column-id]')) {
@@ -173,42 +337,88 @@
     }
 
     // Single monitor handles the actual move semantics — fires once
-    // per drop, reads source + target, computes the new per-column
-    // order, hands it to the store.
+    // per drop, reads source + nearest drop target (a card if the
+    // pointer is over one, the column otherwise), computes the new
+    // per-column order honouring drop position, hands it to the store.
     dndCleanups.push(monitorForElements({
       canMonitor: ({ source }) => source.data?.kind === 'card',
       onDrop: ({ source, location }) => {
-        const target = location.current.dropTargets?.[0]
-        if (!target) return
+        // The nearest drop target wins. If we landed over a card,
+        // its `closestEdge` (top/bottom) tells us whether the drop
+        // is before or after that card; if we landed over the
+        // column shell, it's an append-to-column drop.
+        const dropTargets = location.current.dropTargets ?? []
+        if (dropTargets.length === 0) return
+
         const cardId = Number(source.data.cardId)
         const fromColumnId = Number(source.data.fromColumnId)
-        const toColumnId = Number(target.data.columnId)
-        if (!cardId || !fromColumnId || !toColumnId) return
+        if (!cardId || !fromColumnId) return
 
-        // Build the new per-column orders for the two affected
-        // columns. Card moves within a column → only one entry.
+        // Card-over-card target takes priority over the column-level
+        // target (Pragmatic DnD's `dropTargets` array is innermost-
+        // first, so a card target appears before its parent column).
+        const cardTarget = dropTargets.find(t => t.data?.kind === 'card-drop')
+        const columnTarget = dropTargets.find(t => t.data?.kind === 'column-drop')
+
+        let toColumnId
+        let dropBeforeCardId = null
+        if (cardTarget) {
+          toColumnId = Number(cardTarget.data.overColumnId)
+          const overCardId = Number(cardTarget.data.overCardId)
+          const edge = extractClosestEdge(cardTarget.data)
+          // edge === 'top' → insert before the overCard
+          // edge === 'bottom' → insert after = before the NEXT card
+          dropBeforeCardId = edge === 'top' ? overCardId : null
+          if (edge === 'bottom') {
+            // Find the next card in the column; null means "append".
+            const cols = columns()
+            const tcol = cols.find(c => c.id === toColumnId)
+            if (tcol) {
+              const idx = tcol.cards.findIndex(c => c.id === overCardId)
+              const next = idx >= 0 ? tcol.cards[idx + 1] : null
+              dropBeforeCardId = next ? next.id : null
+            }
+          }
+        }
+        else if (columnTarget) {
+          toColumnId = Number(columnTarget.data.columnId)
+          dropBeforeCardId = null // append
+        }
+        else {
+          return
+        }
+        if (!toColumnId) return
+
+        // No-op: dragging a card onto itself.
+        if (cardId === dropBeforeCardId) return
+
         const cols = columns()
         const fromCol = cols.find(c => c.id === fromColumnId)
         const toCol = cols.find(c => c.id === toColumnId)
         if (!fromCol || !toCol) return
 
-        let fromOrder = fromCol.cards.map(c => c.id).filter(idd => idd !== cardId)
-        let toOrder
-        if (fromColumnId === toColumnId) {
-          // Same-column drop = append for now (drop-between
-          // positions land in Phase 3 alongside card-detail
-          // hover targets; this is the minimum-viable shape).
-          toOrder = [...fromOrder, cardId]
-          fromOrder = toOrder
+        // Build the new per-column orders.
+        const fromOrderRaw = fromCol.cards.map(c => c.id).filter(idd => idd !== cardId)
+
+        // Start the target column's order from the existing one,
+        // minus the moving card (in case of same-column rearrange),
+        // then insert at the computed position.
+        const toOrderRaw = toCol.cards.map(c => c.id).filter(idd => idd !== cardId)
+        let insertAt = toOrderRaw.length
+        if (dropBeforeCardId !== null) {
+          const idx = toOrderRaw.indexOf(dropBeforeCardId)
+          if (idx >= 0) insertAt = idx
         }
-        else {
-          toOrder = [...toCol.cards.map(c => c.id), cardId]
-        }
+        const toOrder = [
+          ...toOrderRaw.slice(0, insertAt),
+          cardId,
+          ...toOrderRaw.slice(insertAt),
+        ]
 
         const payload = fromColumnId === toColumnId
           ? [{ columnId: toColumnId, order: toOrder }]
           : [
-              { columnId: fromColumnId, order: fromOrder },
+              { columnId: fromColumnId, order: fromOrderRaw },
               { columnId: toColumnId, order: toOrder },
             ]
         kanban.reorderCards(payload)
@@ -303,8 +513,18 @@
               :for="card in col.cards"
               :data-card-id="card.id"
               :data-card-column-id="col.id"
+              @click="openDetail(card.id)"
               class="rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2 cursor-grab hover:border-violet-300 dark:hover:border-violet-700 transition-colors group"
             >
+              <!-- Label chips strip -->
+              <div :if="card.labels && card.labels.length > 0" class="flex flex-wrap gap-1 mb-1">
+                <span
+                  :for="lbl in card.labels"
+                  :class="`px-1.5 py-0.5 text-[10px] font-medium rounded ${labelChipClass(lbl.color)}`"
+                  :text="lbl.name"
+                ></span>
+              </div>
+
               <div class="flex items-start justify-between gap-2">
                 <p class="text-xs text-zinc-800 dark:text-zinc-200 leading-snug flex-1" :text="card.title"></p>
                 <button
@@ -317,6 +537,25 @@
                     <line x1="6" y1="6" x2="18" y2="18" />
                   </svg>
                 </button>
+              </div>
+
+              <!-- Footer: due date + assignee avatars -->
+              <div :if="card.dueDate || (card.assignees && card.assignees.length > 0)" class="flex items-center justify-between gap-2 mt-1.5 pt-1.5 border-t border-zinc-200/50 dark:border-zinc-800/50">
+                <div :if="card.dueDate" class="flex items-center gap-1 text-[10px] text-zinc-500">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="4" width="18" height="18" rx="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+                  </svg>
+                  <span :text="formatDueDate(card.dueDate)"></span>
+                </div>
+                <div :if="!card.dueDate"></div>
+                <div :if="card.assignees && card.assignees.length > 0" class="flex -space-x-1">
+                  <span
+                    :for="asg in card.assignees"
+                    class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[9px] font-medium ring-1 ring-white dark:ring-zinc-950"
+                    :title="asg.name || asg.email || 'Assignee'"
+                    :text="initialsOf(asg.name, asg.email)"
+                  ></span>
+                </div>
               </div>
             </div>
           </div>
@@ -393,6 +632,264 @@
             + Add column
           </button>
         </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ───────────── Card detail modal (Phase 3) ───────────── -->
+  <!-- Opens on card click. Fixed positioned with a backdrop; closes
+       on backdrop click + Escape. Sections (top → bottom):
+         · Title (inline-editable, blurs to commit)
+         · Description (textarea, blurs to commit)
+         · Sidebar: labels picker, assignees picker, due date, archive
+         · Comments thread + composer
+       All mutations route through the store, which fires optimistic
+       updates with rollback on failure. -->
+  <div
+    :if="openCard()"
+    class="fixed inset-0 z-50 flex items-start justify-center bg-black/50 px-4 py-8 overflow-y-auto"
+    @click="closeDetail()"
+    @keydown.escape.window="closeDetail()"
+  >
+    <div
+      @click.stop
+      class="w-full max-w-3xl rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 shadow-xl my-8"
+    >
+      <!-- Header: title + close -->
+      <div class="px-6 py-4 border-b border-zinc-200 dark:border-zinc-800 flex items-start gap-3">
+        <input
+          :value="titleDraft()"
+          @input="(e) => titleDraft.set(e.target.value)"
+          @blur="commitTitle()"
+          @keydown.enter.prevent="(e) => e.target.blur()"
+          class="flex-1 text-lg font-semibold text-zinc-900 dark:text-zinc-100 bg-transparent focus:outline-none focus:bg-zinc-50 dark:focus:bg-zinc-800 rounded px-2 -mx-2 py-1 -my-1"
+        />
+        <button
+          @click="closeDetail()"
+          class="text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300"
+          title="Close"
+        >
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div :if="loadingCard() && (!openCard() || openCard().comments.length === 0)" class="px-6 py-8 text-center text-sm text-zinc-500">
+        Loading…
+      </div>
+
+      <div :if="errorCard()" class="px-6 py-3 bg-red-50 dark:bg-red-950/30 border-b border-red-200 dark:border-red-900/40">
+        <p class="text-xs text-red-700 dark:text-red-300" :text="errorCard()"></p>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6 px-6 py-5">
+        <!-- Main column: description + comments -->
+        <div class="md:col-span-2 space-y-6">
+          <!-- Description -->
+          <section>
+            <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">Description</h4>
+            <textarea
+              :value="descDraft()"
+              @input="(e) => descDraft.set(e.target.value)"
+              @blur="commitDescription()"
+              rows="4"
+              placeholder="Add a more detailed description…"
+              class="w-full px-3 py-2 text-sm rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 resize-y focus:outline-none focus:border-violet-400 dark:focus:border-violet-600"
+            ></textarea>
+          </section>
+
+          <!-- Comments -->
+          <section>
+            <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">Activity</h4>
+
+            <!-- Composer -->
+            <div class="mb-4">
+              <textarea
+                :value="commentDraft()"
+                @input="(e) => commentDraft.set(e.target.value)"
+                @keydown.metaCmd.enter.prevent="submitComment()"
+                rows="2"
+                placeholder="Add a comment… (⌘+Enter to send)"
+                class="w-full px-3 py-2 text-sm rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 resize-none focus:outline-none focus:border-violet-400 dark:focus:border-violet-600"
+              ></textarea>
+              <div class="flex justify-end mt-2">
+                <button
+                  @click="submitComment()"
+                  :disabled="!commentDraft().trim()"
+                  class="px-3 py-1 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  Comment
+                </button>
+              </div>
+            </div>
+
+            <!-- Thread -->
+            <div :if="openCard().comments.length === 0 && !loadingCard()" class="text-xs text-zinc-400 italic">
+              No comments yet.
+            </div>
+            <ul class="space-y-3">
+              <li
+                :for="cm in openCard().comments"
+                class="flex gap-3"
+              >
+                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-violet-500 text-white text-[10px] font-medium flex-shrink-0" :text="initialsOf(cm.authorName, cm.authorEmail)"></span>
+                <div class="flex-1 min-w-0">
+                  <div class="flex items-baseline gap-2">
+                    <span class="text-xs font-medium text-zinc-700 dark:text-zinc-200" :text="cm.authorName || cm.authorEmail || 'Unknown'"></span>
+                    <span class="text-[10px] text-zinc-400" :text="formatTimestamp(cm.createdAt)"></span>
+                    <button
+                      @click="deleteCommentClicked(cm.id)"
+                      class="text-[10px] text-zinc-400 hover:text-red-500 ml-auto"
+                    >Delete</button>
+                  </div>
+                  <p class="mt-0.5 text-xs text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap" :text="cm.body"></p>
+                </div>
+              </li>
+            </ul>
+          </section>
+        </div>
+
+        <!-- Sidebar: labels, assignees, due date, archive -->
+        <aside class="space-y-5">
+          <!-- Labels -->
+          <section>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500">Labels</h4>
+              <button
+                @click="showLabelPicker.set(!showLabelPicker())"
+                class="text-xs text-violet-600 dark:text-violet-400 hover:underline"
+              >
+                <span :if="!showLabelPicker()">Edit</span>
+                <span :if="showLabelPicker()">Done</span>
+              </button>
+            </div>
+
+            <!-- Selected labels -->
+            <div :if="!showLabelPicker()" class="flex flex-wrap gap-1">
+              <span
+                :for="lbl in openCard().labels"
+                :class="`px-2 py-0.5 text-xs font-medium rounded ${labelChipClass(lbl.color)}`"
+                :text="lbl.name"
+              ></span>
+              <span :if="openCard().labels.length === 0" class="text-xs text-zinc-400 italic">None</span>
+            </div>
+
+            <!-- Picker -->
+            <div :if="showLabelPicker()" class="space-y-2">
+              <button
+                :for="lbl in allLabels()"
+                @click="toggleLabel(lbl.id)"
+                :class="`w-full flex items-center justify-between px-2 py-1 rounded text-xs ${labelChipClass(lbl.color)} hover:opacity-90`"
+              >
+                <span :text="lbl.name"></span>
+                <span class="flex items-center gap-1">
+                  <svg :if="openCard().labels.some(l => l.id === lbl.id)" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <span
+                    @click.stop="deleteLabelClicked(lbl.id)"
+                    class="text-zinc-500 hover:text-red-500"
+                    title="Delete label"
+                  >
+                    ✕
+                  </span>
+                </span>
+              </button>
+
+              <!-- New label composer -->
+              <div :if="showNewLabelComposer()" class="space-y-2 pt-2 border-t border-zinc-200 dark:border-zinc-800">
+                <input
+                  :value="newLabelName()"
+                  @input="(e) => newLabelName.set(e.target.value)"
+                  @keydown.enter.prevent="submitNewLabel()"
+                  placeholder="Label name"
+                  class="w-full px-2 py-1 text-xs rounded border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-950 focus:outline-none focus:border-violet-500"
+                />
+                <div class="flex items-center gap-1">
+                  <button
+                    :for="c in labelColors"
+                    @click="newLabelColor.set(c)"
+                    :class="`w-5 h-5 rounded ${labelChipClass(c)} ${newLabelColor() === c ? 'ring-2 ring-offset-1 ring-violet-500 dark:ring-offset-zinc-900' : ''}`"
+                    :title="c"
+                  ></button>
+                </div>
+                <div class="flex gap-1">
+                  <button @click="submitNewLabel()" class="px-2 py-0.5 text-xs rounded bg-violet-600 hover:bg-violet-700 text-white">Create</button>
+                  <button @click="showNewLabelComposer.set(false)" class="px-2 py-0.5 text-xs text-zinc-500 hover:text-zinc-700">Cancel</button>
+                </div>
+              </div>
+              <button
+                :if="!showNewLabelComposer()"
+                @click="showNewLabelComposer.set(true)"
+                class="w-full px-2 py-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded border border-dashed border-zinc-300 dark:border-zinc-700"
+              >
+                + New label
+              </button>
+            </div>
+          </section>
+
+          <!-- Assignees -->
+          <section>
+            <div class="flex items-center justify-between mb-2">
+              <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500">Assignees</h4>
+              <button
+                @click="showAssigneePicker.set(!showAssigneePicker())"
+                class="text-xs text-violet-600 dark:text-violet-400 hover:underline"
+              >
+                <span :if="!showAssigneePicker()">Edit</span>
+                <span :if="showAssigneePicker()">Done</span>
+              </button>
+            </div>
+
+            <div :if="!showAssigneePicker()" class="flex flex-wrap gap-2">
+              <div
+                :for="asg in openCard().assignees"
+                class="flex items-center gap-1.5 text-xs text-zinc-700 dark:text-zinc-200"
+              >
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-500 text-white text-[10px] font-medium" :text="initialsOf(asg.name, asg.email)"></span>
+                <span :text="asg.name || asg.email || 'Unknown'"></span>
+              </div>
+              <span :if="openCard().assignees.length === 0" class="text-xs text-zinc-400 italic">Unassigned</span>
+            </div>
+
+            <div :if="showAssigneePicker()" class="space-y-1 max-h-48 overflow-y-auto">
+              <p :if="kanban.users().length === 0" class="text-xs text-zinc-400 italic">No users to assign.</p>
+              <button
+                :for="u in kanban.users()"
+                @click="toggleAssignee(u.id)"
+                class="w-full flex items-center gap-2 px-2 py-1.5 rounded text-xs hover:bg-zinc-100 dark:hover:bg-zinc-800 text-left"
+              >
+                <span class="inline-flex items-center justify-center w-6 h-6 rounded-full bg-violet-500 text-white text-[10px] font-medium flex-shrink-0" :text="initialsOf(u.name, u.email)"></span>
+                <span class="flex-1 truncate text-zinc-700 dark:text-zinc-200" :text="u.name || u.email"></span>
+                <svg :if="openCard().assignees.some(a => a.userId === u.id)" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="text-violet-500">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              </button>
+            </div>
+          </section>
+
+          <!-- Due date -->
+          <section>
+            <h4 class="text-xs font-medium uppercase tracking-wide text-zinc-500 mb-2">Due date</h4>
+            <input
+              type="date"
+              :value="openCard().dueDate ? openCard().dueDate.slice(0, 10) : ''"
+              @change="(e) => commitDueDate(e.target.value)"
+              class="w-full px-2 py-1 text-xs rounded border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 text-zinc-800 dark:text-zinc-200 focus:outline-none focus:border-violet-400"
+            />
+          </section>
+
+          <!-- Meta -->
+          <section class="pt-3 border-t border-zinc-200 dark:border-zinc-800">
+            <p class="text-[10px] text-zinc-400">
+              Created <span :text="formatTimestamp(openCard().createdAt)"></span>
+            </p>
+            <p :if="openCard().updatedAt && openCard().updatedAt !== openCard().createdAt" class="text-[10px] text-zinc-400">
+              Updated <span :text="formatTimestamp(openCard().updatedAt)"></span>
+            </p>
+          </section>
+        </aside>
       </div>
     </div>
   </div>

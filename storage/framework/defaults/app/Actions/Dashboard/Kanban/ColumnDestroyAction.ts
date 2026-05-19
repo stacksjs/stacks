@@ -35,6 +35,11 @@ export default new Action({
           'DELETE FROM card_assignees WHERE card_id IN (SELECT id FROM cards WHERE column_id = ?)',
           [id],
         ).execute()
+        // Card comments (Phase 3, stacksjs/stacks#1846).
+        await qb.unsafe(
+          'DELETE FROM card_comments WHERE card_id IN (SELECT id FROM cards WHERE column_id = ?)',
+          [id],
+        ).execute()
         await qb.deleteFrom('cards').where('column_id', '=', id).execute()
         await qb.deleteFrom('board_columns').where('id', '=', id).execute()
       }

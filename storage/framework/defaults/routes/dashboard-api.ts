@@ -70,4 +70,35 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   route.patch('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardUpdateAction')
   route.delete('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardDestroyAction')
   route.post('/kanban/cards/reorder', 'Actions/Dashboard/Kanban/CardsReorderAction')
+
+  // Phase 3 — card detail + labels + assignees + comments.
+  //
+  // The card-show endpoint is the only "single card with everything"
+  // read; the boards/{id} response already embeds labels + assignees
+  // per card for the kanban view, so the modal only fetches when
+  // opening (or for direct URL access).
+  route.get('/kanban/cards/{id}', 'Actions/Dashboard/Kanban/CardShowAction')
+
+  // Label CRUD. No reorder endpoint — labels are board-scoped tag
+  // palettes, no inherent order beyond alphabetical.
+  route.post('/kanban/labels', 'Actions/Dashboard/Kanban/LabelStoreAction')
+  route.patch('/kanban/labels/{id}', 'Actions/Dashboard/Kanban/LabelUpdateAction')
+  route.delete('/kanban/labels/{id}', 'Actions/Dashboard/Kanban/LabelDestroyAction')
+
+  // Card-pivot sync endpoints. Sync semantics: pass the full new
+  // list, the action diffs against current state. Single-shot calls
+  // from the modal's label/assignee pickers.
+  route.post('/kanban/cards/{id}/labels', 'Actions/Dashboard/Kanban/CardLabelsSyncAction')
+  route.post('/kanban/cards/{id}/assignees', 'Actions/Dashboard/Kanban/CardAssigneesSyncAction')
+
+  // Comments. Append-only thread: store + destroy, no edit yet — the
+  // history-preservation argument outweighs the "fix a typo" argument
+  // until someone explicitly asks for editing.
+  route.post('/kanban/cards/{id}/comments', 'Actions/Dashboard/Kanban/CardCommentStoreAction')
+  route.delete('/kanban/comments/{id}', 'Actions/Dashboard/Kanban/CardCommentDestroyAction')
+
+  // Lightweight user list for the assignee picker. Distinct from the
+  // wider `/api/dashboard/users` (Data section consumer) — the
+  // picker only needs id/name/email.
+  route.get('/kanban/users', 'Actions/Dashboard/Kanban/UsersListAction')
 })

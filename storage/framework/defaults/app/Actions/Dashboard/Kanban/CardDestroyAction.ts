@@ -28,6 +28,8 @@ export default new Action({
       const txOps = async (qb: any) => {
         await qb.deleteFrom('card_labels').where('card_id', '=', id).execute()
         await qb.deleteFrom('card_assignees').where('card_id', '=', id).execute()
+        // Card comments (Phase 3, stacksjs/stacks#1846).
+        await qb.deleteFrom('card_comments').where('card_id', '=', id).execute()
         await qb.deleteFrom('cards').where('id', '=', id).execute()
       }
       try {

@@ -111,6 +111,41 @@ export default new Action({
         ).execute() as Promise<LabelRow[]>,
       ])
 
+      // Pivot lookups for label + assignee chips on card previews
+      // (stacksjs/stacks#1846 Phase 3). Two batched JOINs keyed off the
+      // board's card list — single round-trip per pivot, then group
+      // client-side into `cardId → list` maps.
+      const [cardLabelRows, cardAssigneeRows] = await Promise.all([
+        db.unsafe(
+          `SELECT cl.card_id, l.id, l.name, l.color
+          FROM card_labels cl
+          JOIN labels l ON l.id = cl.label_id
+          WHERE cl.card_id IN (SELECT id FROM cards WHERE board_id = ? AND archived = 0)
+          ORDER BY l.name ASC`,
+          [id],
+        ).execute() as Promise<Array<{ card_id: number, id: number, name: string, color: string }>>,
+        db.unsafe(
+          `SELECT ca.card_id, ca.user_id, u.name, u.email
+          FROM card_assignees ca
+          LEFT JOIN users u ON u.id = ca.user_id
+          WHERE ca.card_id IN (SELECT id FROM cards WHERE board_id = ? AND archived = 0)`,
+          [id],
+        ).execute() as Promise<Array<{ card_id: number, user_id: number, name: string | null, email: string | null }>>,
+      ])
+
+      const labelsByCard = new Map<number, Array<{ id: number, name: string, color: string }>>()
+      for (const r of cardLabelRows ?? []) {
+        const list = labelsByCard.get(r.card_id) ?? []
+        list.push({ id: r.id, name: r.name, color: r.color })
+        labelsByCard.set(r.card_id, list)
+      }
+      const assigneesByCard = new Map<number, Array<{ userId: number, name: string | null, email: string | null }>>()
+      for (const r of cardAssigneeRows ?? []) {
+        const list = assigneesByCard.get(r.card_id) ?? []
+        list.push({ userId: r.user_id, name: r.name, email: r.email })
+        assigneesByCard.set(r.card_id, list)
+      }
+
       // Group cards by column id so the page renders columns directly
       // from `columns[].cards` without doing the grouping client-side.
       // Empty columns get an empty array, not undefined.
@@ -142,6 +177,8 @@ export default new Action({
           archived: c.archived === 1,
           createdAt: c.created_at,
           updatedAt: c.updated_at,
+          labels: labelsByCard.get(c.id) ?? [],
+          assignees: assigneesByCard.get(c.id) ?? [],
         })),
       }))
 
