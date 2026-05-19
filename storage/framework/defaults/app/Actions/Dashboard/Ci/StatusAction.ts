@@ -2,6 +2,7 @@ import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { getDashboardData } from '@stacksjs/github'
 import { runCiFailureNotifier } from './failure-notifier'
+import { runRunnerPressureMonitor } from './runner-pressure-monitor'
 
 /**
  * `GET /api/dashboard/ci/status`
@@ -41,12 +42,14 @@ export default new Action({
         defaultRunnerCap: ci.runnerCapDefault,
         ignoreRepos: ci.ignoreRepos,
       })
-      // Failing-CI notifications (stacksjs/stacks#1849). Fire-and-
-      // forget — we don't block the response on the notification
-      // round-trips. The notifier internally guards on
-      // `ci.notifications.enabled` so this is a no-op when the
-      // feature is off.
+      // Failing-CI notifications (stacksjs/stacks#1849) +
+      // runner-pressure alerts (stacksjs/stacks#1850). Both
+      // fire-and-forget so they don't block the response on the
+      // notification + time-series persistence round-trips. Each
+      // internally guards on its own enabled flag, so unrelated
+      // projects pay no cost.
       void runCiFailureNotifier(data)
+      void runRunnerPressureMonitor(data)
       return data
     }
     catch (err) {

@@ -28,6 +28,10 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // conflict with the `runs?limit=N` collection form.
   route.get('/ci/repos/{owner}/{name}/runs', 'Actions/Dashboard/Ci/RepoRunsAction')
   route.get('/ci/repos/{owner}/{name}/runs/{runId}/jobs', 'Actions/Dashboard/Ci/RepoRunJobsAction')
+  // Runner-pressure history for the sparkline (stacksjs/stacks#1850).
+  // Only useful when `ci.alerts.enabled` is on — otherwise no samples
+  // have been recorded.
+  route.get('/ci/runner-history', 'Actions/Dashboard/Ci/RunnerHistoryAction')
   // RBAC identity endpoint (stacksjs/stacks#1843). Returns the
   // authenticated user + their role names so the dashboard's `useRole()`
   // composable can gate dev-mode surfaces. Tolerates unauthenticated

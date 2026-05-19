@@ -109,6 +109,12 @@ export const ciStore = defineStore('ci', () => {
   const loadingJobsForRunId = state<number | null>(null)
   const expandedRunId = state<number | null>(null)
 
+  // ─── Runner pressure history (stacksjs/stacks#1850) ─────────────
+  // Per-org sample history for the sparkline under the runner line.
+  // Lazy-loaded on first view of an org's tab.
+  const runnerHistoryByOrg = state<Record<string, Array<{ queued: number, sampledAt: string }>>>({})
+  const loadingRunnerHistory = state<Record<string, boolean>>({})
+
   const reposForTab = derived(() => {
     const tab = activeTab()
     const filter = statusFilter()
@@ -222,6 +228,39 @@ export const ciStore = defineStore('ci', () => {
     drilldownError.set(null)
   }
 
+  async function loadRunnerHistory(org: string): Promise<void> {
+    // Already loaded? Don't re-fetch — runner samples have a 30s
+    // refresh cadence anyway. If the user wants a fresh view they
+    // can reload the page.
+    if (runnerHistoryByOrg()[org] !== undefined) return
+    if (loadingRunnerHistory()[org]) return
+
+    loadingRunnerHistory.set({ ...loadingRunnerHistory(), [org]: true })
+    try {
+      const res = await fetch(`/api/dashboard/ci/runner-history?org=${encodeURIComponent(org)}`, {
+        headers: { accept: 'application/json' },
+      })
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      const data = await res.json() as { samples?: Array<{ queued: number, sampledAt: string }>, error?: string, disabled?: boolean }
+      if (data.disabled || data.error) {
+        runnerHistoryByOrg.set({ ...runnerHistoryByOrg(), [org]: [] })
+        return
+      }
+      runnerHistoryByOrg.set({
+        ...runnerHistoryByOrg(),
+        [org]: (data.samples ?? []).map(s => ({ queued: s.queued, sampledAt: s.sampledAt })),
+      })
+    }
+    catch {
+      // Soft-fail — sparkline renders nothing, no need to surface
+      // the error in the main CI page.
+      runnerHistoryByOrg.set({ ...runnerHistoryByOrg(), [org]: [] })
+    }
+    finally {
+      loadingRunnerHistory.set({ ...loadingRunnerHistory(), [org]: false })
+    }
+  }
+
   async function toggleRunJobs(runId: number): Promise<void> {
     // Click-the-same-row-twice collapses it.
     if (expandedRunId() === runId) {
@@ -286,6 +325,10 @@ export const ciStore = defineStore('ci', () => {
     openDrilldown,
     closeDrilldown,
     toggleRunJobs,
+    // Runner-pressure history (#1850)
+    runnerHistoryByOrg,
+    loadingRunnerHistory,
+    loadRunnerHistory,
   }
 }, {
   persist: {

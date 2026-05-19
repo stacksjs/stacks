@@ -92,6 +92,33 @@ export interface DashboardOptions {
        */
       cooldownMinutes?: number
     }
+    /**
+     * Runner-pressure alerts (stacksjs/stacks#1850).
+     *
+     * When an org's queued-job count stays at or above
+     * `queuedThreshold` for `windowMinutes`, the dashboard fires a
+     * notification through the configured channels. Hysteresis: an
+     * already-alerting org doesn't re-fire until the queue drops
+     * below threshold for a full window first.
+     */
+    alerts?: {
+      enabled?: boolean
+      /** Queue depth at or above counts as pressure. Defaults to 8. */
+      queuedThreshold?: number
+      /** Duration the threshold must hold in either direction before
+       *  the alert fires / clears. Defaults to 10 minutes. */
+      windowMinutes?: number
+      /** Same channel options as {@link notifications.channels}. */
+      channels?: Array<'email' | 'sms' | 'chat' | 'database'>
+      /** Same recipient shape as {@link notifications.recipients}. */
+      recipients?: Array<{ email?: string, phone?: string, userId?: number }>
+      /**
+       * How long the runner-sample time-series is kept on disk.
+       * Older samples are pruned during each refresh to bound
+       * storage. Defaults to 24h.
+       */
+      retentionHours?: number
+    }
   }
 }
 

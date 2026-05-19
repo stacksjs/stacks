@@ -56,5 +56,17 @@ export default {
       channels: ['chat'],
       cooldownMinutes: 5,
     },
+    // Runner-pressure alerts (stacksjs/stacks#1850). Fires when an
+    // org's queue depth stays at or above `queuedThreshold` for a
+    // full `windowMinutes` of dashboard refreshes. Hysteresis means a
+    // sustained-pressure alert clears only after queue drops below
+    // threshold for another full window before re-firing.
+    alerts: {
+      enabled: false,
+      queuedThreshold: 8,
+      windowMinutes: 10,
+      channels: ['chat'],
+      retentionHours: 24,
+    },
   },
 } satisfies DashboardConfig

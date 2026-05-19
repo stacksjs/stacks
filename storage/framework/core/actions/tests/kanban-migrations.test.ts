@@ -29,8 +29,21 @@ const CI_NOTIFICATIONS_MIGRATIONS = [
   '0000000113-create-ci_run_states-table.sql',
 ]
 
+// stacksjs/stacks#1850 — runner-pressure time-series + alert states.
+const CI_PRESSURE_MIGRATIONS = [
+  '0000000114-create-ci_runner_samples-table.sql',
+  '0000000115-create-ci_runner_alert_states-table.sql',
+]
+
 function applyCiNotificationsMigrations(db: Database): void {
   for (const file of CI_NOTIFICATIONS_MIGRATIONS) {
+    const sql = readFileSync(join(MIGRATION_DIR, file), 'utf8')
+    db.exec(sql)
+  }
+}
+
+function applyCiPressureMigrations(db: Database): void {
+  for (const file of CI_PRESSURE_MIGRATIONS) {
     const sql = readFileSync(join(MIGRATION_DIR, file), 'utf8')
     db.exec(sql)
   }
@@ -533,6 +546,144 @@ describe('CI failure notifier SQL patterns (failure-notifier.ts)', () => {
     expect(row.last_run_id).toBe(200)
     expect(row.last_notified_at).toBe('2026-05-20T12:05:00Z')
 
+    db.close()
+  })
+})
+
+// ─── #1850 runner-pressure migrations + persistence patterns ────────
+
+describe('Runner-pressure migrations (stacksjs/stacks#1850)', () => {
+  test('both migrations apply cleanly to a fresh DB', () => {
+    const db = new Database(':memory:')
+    expect(() => applyCiPressureMigrations(db)).not.toThrow()
+    db.close()
+  })
+
+  test('ci_runner_samples carries the columns the monitor inserts', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    const cols = db.query(`PRAGMA table_info(ci_runner_samples)`).all() as Array<{ name: string }>
+    const names = cols.map(c => c.name)
+    expect(names).toEqual(expect.arrayContaining([
+      'id',
+      'org',
+      'running',
+      'queued',
+      'cap',
+      'sampled_at',
+    ]))
+    db.close()
+  })
+
+  test('ci_runner_samples (org, sampled_at) index exists — window-load hot path', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    const idx = db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ci_runner_samples'`).all() as Array<{ name: string }>
+    expect(idx.map(i => i.name)).toContain('ci_runner_samples_org_sampled_index')
+    db.close()
+  })
+
+  test('ci_runner_alert_states has org as primary key — single row per org', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    db.run(`INSERT INTO ci_runner_alert_states (org, alerting) VALUES ('org-a', 0)`)
+    expect(() => db.run(`INSERT INTO ci_runner_alert_states (org, alerting) VALUES ('org-a', 1)`)).toThrow()
+    db.close()
+  })
+})
+
+describe('Runner-pressure persistence patterns (runner-pressure-monitor.ts)', () => {
+  test('append samples: multi-row INSERT for one snapshot pass', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    // The monitor inserts one row per org per refresh — match that
+    // shape verbatim.
+    db.run(`INSERT INTO ci_runner_samples (org, running, queued, cap, sampled_at) VALUES
+      ('org-a', 3, 12, 20, '2026-05-20T12:00:00Z'),
+      ('org-b', 1, 2, 20, '2026-05-20T12:00:00Z')`)
+    const rows = db.query(`SELECT org, queued FROM ci_runner_samples ORDER BY org`).all() as Array<{ org: string, queued: number }>
+    expect(rows.length).toBe(2)
+    expect(rows[0].queued).toBe(12)
+    db.close()
+  })
+
+  test('prune deletes only samples older than the retention cutoff', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    db.run(`INSERT INTO ci_runner_samples (org, queued, sampled_at) VALUES
+      ('org-a', 12, '2026-05-19T00:00:00Z'),
+      ('org-a', 12, '2026-05-20T11:30:00Z'),
+      ('org-a', 12, '2026-05-20T12:00:00Z')`)
+    // Cutoff: 24h before 12:00 → keep anything >= 2026-05-19T12:00:00Z.
+    db.run(`DELETE FROM ci_runner_samples WHERE sampled_at < ?`, '2026-05-19T12:00:00Z')
+    const remaining = db.query(`SELECT COUNT(*) AS c FROM ci_runner_samples`).get() as { c: number }
+    expect(remaining.c).toBe(2)
+    db.close()
+  })
+
+  test('window load: ASC-ordered samples for one org within the window', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    db.run(`INSERT INTO ci_runner_samples (org, queued, sampled_at) VALUES
+      ('org-a', 5,  '2026-05-20T11:00:00Z'),
+      ('org-a', 10, '2026-05-20T11:55:00Z'),
+      ('org-a', 12, '2026-05-20T12:00:00Z'),
+      ('org-b', 2,  '2026-05-20T12:00:00Z')`)
+    // 10-minute window before 12:00 → 11:50:00.
+    const rows = db.query(
+      `SELECT org, queued, sampled_at FROM ci_runner_samples WHERE sampled_at >= ? ORDER BY sampled_at ASC`,
+    ).all('2026-05-20T11:50:00Z') as Array<{ org: string, queued: number, sampled_at: string }>
+    expect(rows.length).toBe(3) // both org-a in window + org-b
+    expect(rows[0].queued).toBe(10) // oldest first
+    expect(rows[2].queued).toBe(2)  // newest last (org-b)
+    db.close()
+  })
+
+  test('alert-state upsert: SELECT-then-INSERT/UPDATE replays correctly', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+
+    // First fire: INSERT.
+    const before = db.query(`SELECT org FROM ci_runner_alert_states WHERE org = ?`).get('org-a')
+    expect(before).toBeNull()
+    db.run(
+      `INSERT INTO ci_runner_alert_states (org, alerting, last_alerted_at, updated_at) VALUES ('org-a', 1, ?, ?)`,
+      '2026-05-20T12:00:00Z',
+      '2026-05-20T12:00:00Z',
+    )
+
+    // Clear: UPDATE the existing row.
+    const after = db.query(`SELECT org FROM ci_runner_alert_states WHERE org = ?`).get('org-a') as { org: string }
+    expect(after?.org).toBe('org-a')
+    db.run(
+      `UPDATE ci_runner_alert_states SET alerting = 0, last_cleared_at = ?, updated_at = ? WHERE org = ?`,
+      '2026-05-20T12:15:00Z',
+      '2026-05-20T12:15:00Z',
+      'org-a',
+    )
+
+    const final = db.query(`SELECT alerting, last_alerted_at, last_cleared_at FROM ci_runner_alert_states WHERE org = ?`).get('org-a') as { alerting: number, last_alerted_at: string, last_cleared_at: string }
+    expect(final.alerting).toBe(0)
+    expect(final.last_alerted_at).toBe('2026-05-20T12:00:00Z') // unchanged
+    expect(final.last_cleared_at).toBe('2026-05-20T12:15:00Z') // bumped
+    db.close()
+  })
+
+  test('runner history DESC query for sparkline: most-recent N samples', () => {
+    const db = new Database(':memory:')
+    applyCiPressureMigrations(db)
+    for (let i = 0; i < 30; i++) {
+      const t = new Date(Date.parse('2026-05-20T10:00:00Z') + i * 60_000).toISOString()
+      db.run(`INSERT INTO ci_runner_samples (org, queued, sampled_at) VALUES (?, ?, ?)`, 'org-a', i, t)
+    }
+    // Sparkline reads `LIMIT N ORDER BY DESC` then reverses client-
+    // side to get ASC oldest-first.
+    const rows = db.query(
+      `SELECT queued FROM ci_runner_samples WHERE org = ? ORDER BY sampled_at DESC LIMIT 10`,
+    ).all('org-a') as Array<{ queued: number }>
+    expect(rows.length).toBe(10)
+    expect(rows[0].queued).toBe(29) // newest first
+    expect(rows[9].queued).toBe(20) // 10 newest
     db.close()
   })
 })

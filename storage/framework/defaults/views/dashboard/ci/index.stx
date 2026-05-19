@@ -127,6 +127,52 @@
     return jobsForRun(runId).filter(j => j.conclusion && j.conclusion !== 'success' && j.conclusion !== 'skipped' && j.conclusion !== 'neutral')
   }
 
+  // ─── Runner pressure sparkline (stacksjs/stacks#1850) ────────────
+  //
+  // Inline SVG sparkline — no chart lib. The path is built off the
+  // active tab's sample history with a simple linear scale: x maps
+  // to sample index (oldest left, newest right), y maps to queue
+  // depth normalised against the larger of the org's cap or the
+  // peak queue depth, inverted so higher pressure paints higher
+  // on the chart.
+  const runnerHistory = derived(() => {
+    const tab = activeTab()
+    return (ci.runnerHistoryByOrg()[tab] || [])
+  })
+
+  effect(() => {
+    const tab = activeTab()
+    if (!tab) return
+    // Lazy-load history for the active org tab when it changes.
+    // The store dedupes if already fetched.
+    Promise.resolve().then(() => ci.loadRunnerHistory(tab))
+  })
+
+  function sparklinePath() {
+    const samples = runnerHistory()
+    if (!samples || samples.length === 0) return ''
+    const w = 200
+    const h = 24
+    const r = tabRunners()
+    const cap = Math.max(1, r.cap || 1)
+    let maxQueued = cap
+    for (const s of samples)
+      if (s.queued > maxQueued) maxQueued = s.queued
+    const n = samples.length
+    const stepX = n === 1 ? 0 : w / (n - 1)
+    const points = samples.map((s, i) => {
+      const x = i * stepX
+      const y = h - (s.queued / maxQueued) * h
+      return [x, y]
+    })
+    return points.map((p, i) => (i === 0 ? `M ${p[0]} ${p[1]}` : `L ${p[0]} ${p[1]}`)).join(' ')
+  }
+
+  function hasHistory() {
+    const samples = runnerHistory()
+    return samples && samples.length >= 2
+  }
+
   // Top-level fetch — runs on both hard reload (SSR hydration) and SPA
   // mount, since `<script client>` re-executes on every entry. The store
   // tracks its own loading flag so back-to-back calls don't double-fire.
@@ -191,13 +237,23 @@
       <button @click="ci.setStatusFilter('pending')" :class="filterClass('pending')">Pending</button>
     </div>
 
-    <!-- Summary line -->
-    <div class="flex flex-wrap gap-x-4 gap-y-1 items-center mb-5 text-sm">
+    <!-- Summary line + runner sparkline -->
+    <div class="flex flex-wrap gap-x-4 gap-y-1 items-center mb-2 text-sm">
       <span class="font-medium text-emerald-600 dark:text-emerald-400" :text="passingText"></span>
       <span class="font-medium text-red-500 dark:text-red-400" :text="failingText"></span>
       <span class="text-zinc-400" :text="totalText"></span>
       <span class="text-zinc-300 dark:text-zinc-700">·</span>
       <span class="text-zinc-500 dark:text-zinc-400" :text="runnersText"></span>
+    </div>
+    <!-- Sparkline showing recent queue depth for the active org —
+         appears only when alerts are on (history collection is gated
+         on `ci.alerts.enabled`). Drawn inline as a single SVG path
+         so we don't pull a chart library for 20 datapoints. -->
+    <div :if="hasHistory()" class="mb-5 flex items-center gap-2">
+      <span class="text-[10px] uppercase tracking-wide text-zinc-400">Queue depth (last hour)</span>
+      <svg width="200" height="24" viewBox="0 0 200 24" class="text-violet-400">
+        <path :d="sparklinePath()" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round" stroke-linecap="round" />
+      </svg>
     </div>
 
     <!-- Repo cards -->

@@ -17,6 +17,13 @@ export { fetchAllRepos } from './repos'
 export { fetchRepoActiveRuns } from './runners'
 export { fetchRunJobs, fetchWorkflowRuns } from './run-history'
 export type { WorkflowJob, WorkflowRun } from './run-history'
+export { detectRunnerPressure } from './runner-pressure-detector'
+export type {
+  DetectOptions as PressureDetectOptions,
+  PressureAction,
+  RunnerAlertState,
+  RunnerSample,
+} from './runner-pressure-detector'
 export { fetchFailedJobs, fetchRepoStatus } from './runs'
 export type {
   DashboardData,
