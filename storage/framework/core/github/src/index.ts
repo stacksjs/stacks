@@ -11,6 +11,8 @@
 export { fetchBotPRCounts } from './bots'
 export { ghFetch, ghHeaders, GITHUB_API, mapWithConcurrency } from './client'
 export { clearDashboardCache, getDashboardData } from './dashboard'
+export { detectNewlyFailedRuns } from './failure-detector'
+export type { DetectOptions, FailedTransition, PreviousRunState } from './failure-detector'
 export { fetchAllRepos } from './repos'
 export { fetchRepoActiveRuns } from './runners'
 export { fetchRunJobs, fetchWorkflowRuns } from './run-history'

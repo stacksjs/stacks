@@ -24,6 +24,18 @@ const MIGRATIONS = [
   '0000000112-create-card_comments-table.sql',
 ]
 
+// stacksjs/stacks#1849 — failing-CI notification state.
+const CI_NOTIFICATIONS_MIGRATIONS = [
+  '0000000113-create-ci_run_states-table.sql',
+]
+
+function applyCiNotificationsMigrations(db: Database): void {
+  for (const file of CI_NOTIFICATIONS_MIGRATIONS) {
+    const sql = readFileSync(join(MIGRATION_DIR, file), 'utf8')
+    db.exec(sql)
+  }
+}
+
 function applyMigrations(db: Database): void {
   for (const file of MIGRATIONS) {
     const sql = readFileSync(join(MIGRATION_DIR, file), 'utf8')
@@ -430,6 +442,96 @@ describe('Card thread ordering (CardShowAction)', () => {
 
     const rows = db.query(`SELECT body FROM card_comments WHERE card_id = ? ORDER BY created_at ASC, id ASC`).all(card1) as Array<{ body: string }>
     expect(rows.map(r => r.body)).toEqual(['first', 'second', 'third'])
+
+    db.close()
+  })
+})
+
+// ─── #1849 failing-CI notifications — ci_run_states ─────────────────
+
+describe('ci_run_states migration (stacksjs/stacks#1849)', () => {
+  test('applies cleanly to a fresh in-memory SQLite', () => {
+    const db = new Database(':memory:')
+    expect(() => applyCiNotificationsMigrations(db)).not.toThrow()
+    db.close()
+  })
+
+  test('has the columns the failure-notifier upserts against', () => {
+    const db = new Database(':memory:')
+    applyCiNotificationsMigrations(db)
+    const cols = db.query(`PRAGMA table_info(ci_run_states)`).all() as Array<{ name: string }>
+    const names = cols.map(c => c.name)
+    expect(names).toEqual(expect.arrayContaining([
+      'repo_full_name',
+      'last_conclusion',
+      'last_run_id',
+      'last_seen_at',
+      'last_notified_at',
+    ]))
+    db.close()
+  })
+
+  test('repo_full_name is the primary key — duplicate insert rejects', () => {
+    const db = new Database(':memory:')
+    applyCiNotificationsMigrations(db)
+    db.run(`INSERT INTO ci_run_states (repo_full_name) VALUES ('org/a')`)
+    expect(() => db.run(`INSERT INTO ci_run_states (repo_full_name) VALUES ('org/a')`)).toThrow()
+    db.close()
+  })
+
+  test('last_notified_at index exists (cooldown-lookup hot path)', () => {
+    const db = new Database(':memory:')
+    applyCiNotificationsMigrations(db)
+    const idx = db.query(`SELECT name FROM sqlite_master WHERE type = 'index' AND tbl_name = 'ci_run_states'`).all() as Array<{ name: string }>
+    expect(idx.map(i => i.name)).toContain('ci_run_states_last_notified_index')
+    db.close()
+  })
+})
+
+describe('CI failure notifier SQL patterns (failure-notifier.ts)', () => {
+  test('upsert path: SELECT-then-INSERT/UPDATE replays correctly', () => {
+    const db = new Database(':memory:')
+    applyCiNotificationsMigrations(db)
+
+    // First run: no existing row → INSERT.
+    // bun:sqlite's `.get()` returns `null` when no row matches (not
+    // `undefined`); the upsert path checks truthiness, so either
+    // shape behaves the same in production.
+    const existing1 = db.query(`SELECT repo_full_name FROM ci_run_states WHERE repo_full_name = ?`).get('org/a')
+    expect(existing1).toBeNull()
+    db.run(
+      `INSERT INTO ci_run_states (repo_full_name, last_conclusion, last_run_id, last_seen_at, updated_at) VALUES (?, 'success', 100, ?, ?)`,
+      ['org/a', '2026-05-20T12:00:00Z', '2026-05-20T12:00:00Z'],
+    )
+
+    // Second run: row exists → UPDATE.
+    const existing2 = db.query(`SELECT repo_full_name FROM ci_run_states WHERE repo_full_name = ?`).get('org/a') as { repo_full_name: string } | undefined
+    expect(existing2?.repo_full_name).toBe('org/a')
+    db.run(
+      `UPDATE ci_run_states SET last_conclusion = 'failure', last_run_id = 101, last_seen_at = ?, updated_at = ? WHERE repo_full_name = ?`,
+      ['2026-05-20T12:05:00Z', '2026-05-20T12:05:00Z', 'org/a'],
+    )
+
+    const final = db.query(`SELECT last_conclusion, last_run_id FROM ci_run_states WHERE repo_full_name = ?`).get('org/a') as { last_conclusion: string, last_run_id: number }
+    expect(final.last_conclusion).toBe('failure')
+    expect(final.last_run_id).toBe(101)
+
+    db.close()
+  })
+
+  test('mark-notified bumps last_notified_at without touching other columns', () => {
+    const db = new Database(':memory:')
+    applyCiNotificationsMigrations(db)
+    db.run(
+      `INSERT INTO ci_run_states (repo_full_name, last_conclusion, last_run_id) VALUES ('org/a', 'failure', 200)`,
+    )
+
+    db.run(`UPDATE ci_run_states SET last_notified_at = ? WHERE repo_full_name = ?`, ['2026-05-20T12:05:00Z', 'org/a'])
+
+    const row = db.query(`SELECT last_conclusion, last_run_id, last_notified_at FROM ci_run_states WHERE repo_full_name = ?`).get('org/a') as { last_conclusion: string, last_run_id: number, last_notified_at: string }
+    expect(row.last_conclusion).toBe('failure')
+    expect(row.last_run_id).toBe(200)
+    expect(row.last_notified_at).toBe('2026-05-20T12:05:00Z')
 
     db.close()
   })

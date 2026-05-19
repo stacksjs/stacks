@@ -60,6 +60,38 @@ export interface DashboardOptions {
     runnerCapDefault?: number
     /** Repo names to exclude from the CI feed. */
     ignoreRepos?: string[]
+    /**
+     * Failing-CI notification fan-out (stacksjs/stacks#1849).
+     *
+     * When enabled, the dashboard fires a notification through the
+     * configured channels every time a repo's CI transitions from
+     * success → failure (or first-time-seen → failure). Sticky-red
+     * repos don't keep firing; same-run-id polls don't re-fire; a
+     * 5-minute cooldown silences flap-storms.
+     */
+    notifications?: {
+      enabled?: boolean
+      /**
+       * Channels to fan out through. Maps to the same values
+       * `notify()` from @stacksjs/notifications accepts. Defaults to
+       * `['chat']` — Slack via webhook — because that channel
+       * doesn't need a recipient list (it's already scoped to a
+       * Slack channel via env).
+       */
+      channels?: Array<'email' | 'sms' | 'chat' | 'database'>
+      /**
+       * Per-channel recipients for the channels that need one
+       * (email/sms/database). Skipped for `chat`. Each entry must
+       * carry the field the named channel requires (`email`,
+       * `phone`, `userId`).
+       */
+      recipients?: Array<{ email?: string, phone?: string, userId?: number }>
+      /**
+       * Minimum delay (minutes) between consecutive notifications for
+       * the same repo. Defaults to 5. Set to 0 to disable.
+       */
+      cooldownMinutes?: number
+    }
   }
 }
 

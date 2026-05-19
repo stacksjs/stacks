@@ -1,6 +1,7 @@
 import { Action } from '@stacksjs/actions'
 import { dashboard as dashboardConfig } from '@stacksjs/config'
 import { getDashboardData } from '@stacksjs/github'
+import { runCiFailureNotifier } from './failure-notifier'
 
 /**
  * `GET /api/dashboard/ci/status`
@@ -34,12 +35,19 @@ export default new Action({
     }
 
     try {
-      return await getDashboardData({
+      const data = await getDashboardData({
         orgs: ci.orgs,
         runnerCaps: ci.runnerCaps,
         defaultRunnerCap: ci.runnerCapDefault,
         ignoreRepos: ci.ignoreRepos,
       })
+      // Failing-CI notifications (stacksjs/stacks#1849). Fire-and-
+      // forget — we don't block the response on the notification
+      // round-trips. The notifier internally guards on
+      // `ci.notifications.enabled` so this is a no-op when the
+      // feature is off.
+      void runCiFailureNotifier(data)
+      return data
     }
     catch (err) {
       // Most likely cause: GITHUB_TOKEN missing. Surface a clean error

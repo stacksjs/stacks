@@ -47,5 +47,14 @@ export default {
     enabled: false,
     orgs: [],
     runnerCapDefault: 20,
+    // Failing-CI notifications (stacksjs/stacks#1849). Off by default;
+    // turn on to get pinged every time main goes red. Defaults to the
+    // `chat` channel (Slack via webhook) so projects that have no
+    // explicit recipient list still get notifications out of the box.
+    notifications: {
+      enabled: false,
+      channels: ['chat'],
+      cooldownMinutes: 5,
+    },
   },
 } satisfies DashboardConfig
