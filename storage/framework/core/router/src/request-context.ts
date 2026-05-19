@@ -6,6 +6,7 @@
  */
 
 import type { EnhancedRequest } from '@stacksjs/bun-router'
+import type { RequestInstance } from '@stacksjs/types'
 import process from 'node:process'
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { log } from '@stacksjs/logging'
@@ -139,49 +140,77 @@ export function getCurrentRequest(): EnhancedRequest | undefined {
 
 /**
  * Request proxy that provides access to the current request
- * Similar to Laravel's request() helper
+ * (Laravel's `request()` helper, but typed).
  *
- * Methods:
- * - bearerToken() - Get the bearer token from Authorization header
- * - user() - Get the authenticated user (async)
- * - userToken() - Get the current access token (async)
- * - tokenCan(ability) - Check if token has an ability (async)
- * - tokenCant(ability) - Check if token doesn't have an ability (async)
+ * The proxy is statically typed as {@link RequestInstance} —
+ * the canonical Stacks-side action-request surface
+ * (stacksjs/stacks#1851 Phase 1). All the macros action handlers
+ * reach for (`all`, `get`, `input`, `cookies`, `param`, `validate`,
+ * `user`, `bearerToken`, …) resolve to their declared types instead
+ * of `any`, eliminating most `(request as any)` casts in action code.
+ *
+ * Runtime is unchanged — the proxy still delegates to whichever
+ * `EnhancedRequest` is in the AsyncLocalStorage slot. The type swap
+ * is API-compatible: every method action code uses on `request`
+ * existed on either type already, but only `RequestInstance` carries
+ * the model-aware / path-aware narrowing.
+ *
+ * Methods worth knowing about:
+ * - `bearerToken()` — Authorization header
+ * - `user()` — authenticated user (async)
+ * - `userToken()` — current access token (async)
+ * - `tokenCan(ability)` / `tokenCant(ability)` — async ability checks
  */
-export const request = new Proxy({} as EnhancedRequest, {
-  get(_target, prop: string): any {
-    const currentRequest = getCurrentRequest()
+export const request: RequestInstance = new Proxy(
+  {} as RequestInstance,
+  {
+    // Note: we don't annotate the trap's return type. `ProxyHandler<T>`
+    // declares `get` as returning `any` and the runtime body returns
+    // values bound to whichever real request is in the ALS slot —
+    // letting TS infer keeps the outer proxy's `RequestInstance` typing
+    // intact while staying compatible with the handler interface.
+    get(_target, prop: string | symbol) {
+      const currentRequest = getCurrentRequest()
 
-    if (!currentRequest) {
-      if (process.env.NODE_ENV !== 'production') {
-        console.warn(`[RequestContext] Accessing request.${String(prop)} outside of request context`)
+      if (!currentRequest) {
+        if (process.env.NODE_ENV !== 'production') {
+          console.warn(`[RequestContext] Accessing request.${String(prop)} outside of request context`)
+        }
+        // Safe defaults when there's no current request. Shapes
+        // match RequestInstance's declared types as closely as
+        // possible so type-checking callers don't get surprised when
+        // a logger or test harness reaches in early.
+        if (prop === 'bearerToken') {
+          return (): null => null
+        }
+        if (prop === 'user' || prop === 'userToken') {
+          return async (): Promise<undefined> => undefined
+        }
+        if (prop === 'tokenCan' || prop === 'tokenCant') {
+          return async (): Promise<boolean> => false
+        }
+        if (prop === 'headers') {
+          return new Headers()
+        }
+        if (prop === 'url') {
+          return ''
+        }
+        if (prop === 'method') {
+          return 'GET'
+        }
+        return undefined
       }
-      // Return safe defaults when no request context
-      if (prop === 'bearerToken') {
-        return (): any => null
-      }
-      if (prop === 'user' || prop === 'userToken') {
-        return async (): Promise<any> => undefined
-      }
-      if (prop === 'tokenCan' || prop === 'tokenCant') {
-        return async () => false
-      }
-      if (prop === 'headers') {
-        return new Headers()
-      }
-      if (prop === 'url') {
-        return ''
-      }
-      if (prop === 'method') {
-        return 'GET'
-      }
-      return undefined
-    }
 
-    const value = (currentRequest as any)[prop]
-    if (typeof value === 'function') {
-      return value.bind(currentRequest)
-    }
-    return value
+      // The runtime EnhancedRequest can carry arbitrary middleware-
+      // injected properties beyond what RequestInstance declares
+      // statically (rate-limit headers, span ids, etc.). The proxy
+      // forwards those verbatim — callers that need them can widen
+      // via `(request as EnhancedRequest)` for the rare cases.
+      const value = (currentRequest as any)[prop]
+      if (typeof value === 'function') {
+        return value.bind(currentRequest)
+      }
+      return value
+    },
   },
-})
+)

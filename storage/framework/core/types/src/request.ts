@@ -2,6 +2,10 @@ import type { ModelRow } from '@stacksjs/orm'
 import { User } from '@stacksjs/orm'
 import type { UploadedFile } from '@stacksjs/storage'
 import type { AuthToken, RouteParam } from '@stacksjs/types'
+// `Infer<T extends Validator<U>>` resolves to the validator's output
+// type — `Infer<typeof schema.string()> → string`. Type-only import
+// keeps this package free of a runtime ts-validation dependency.
+import type { Infer } from '@stacksjs/ts-validation'
 
 type UserJsonResponse = ModelRow<typeof User>
 
@@ -9,9 +13,95 @@ interface RequestData {
   [key: string]: any
 }
 
+/**
+ * Loose route-param shape kept around for back-compat with code that
+ * predates {@link RequestInstance}'s `TParams` generic. New code should
+ * rely on the path-extracted `TParams` instead — see {@link ExtractParams}.
+ *
+ * @deprecated Use {@link ExtractParams}-driven typing on the action /
+ *   route signature instead. URL route params are always strings at
+ *   runtime; the `string | number` here misled callers into thinking
+ *   the framework coerced numbers automatically (it doesn't —
+ *   `Number(request.params.id)` is the correct pattern).
+ */
 type RouteParams = { [key: string]: string | number } | null
 
+/**
+ * Legacy hard-coded list of param names treated as `number` by
+ * {@link RequestInstance.getParam}. The name-match heuristic is
+ * brittle (`'judgeId'`, `'user_id'`, etc. all silently fall through
+ * to `string`) and will be retired in a future release.
+ *
+ * @deprecated The name-match returns `number` for these specific keys
+ *   only — pass the value through {@link Number} or
+ *   {@link RequestInstance.getParamAsInt} for explicit, predictable
+ *   coercion. See stacksjs/stacks#1851 Phase 3.
+ */
 type NumericField = 'id' | 'age' | 'count' | 'quantity' | 'amount' | 'price' | 'total' | 'score' | 'rating' | 'duration' | 'size' | 'weight' | 'height' | 'width' | 'length' | 'distance' | 'speed' | 'temperature' | 'volume' | 'capacity' | 'density' | 'pressure' | 'force' | 'energy' | 'power' | 'frequency' | 'voltage' | 'current' | 'resistance' | 'time' | 'date' | 'year' | 'month' | 'day' | 'hour' | 'minute' | 'second' | 'millisecond' | 'microsecond' | 'nanosecond'
+
+/**
+ * Cookie-access helper exposed via `request.cookies` on
+ * {@link RequestInstance}. The methods mirror bun-router's
+ * `CookieAccessor` — duplicated locally so this package doesn't
+ * have to depend on bun-router for a single type. Keep the surface
+ * in sync if bun-router extends its accessor.
+ */
+export interface RequestCookies {
+  get: (name: string) => string | undefined
+  set: (name: string, value: string, options?: {
+    path?: string
+    domain?: string
+    secure?: boolean
+    httpOnly?: boolean
+    sameSite?: 'strict' | 'lax' | 'none'
+    maxAge?: number
+    expires?: Date
+  }) => void
+  delete: (name: string, options?: { path?: string, domain?: string }) => void
+  getAll: () => Record<string, string>
+}
+
+/**
+ * Template-literal helper that extracts named route params from a
+ * path string (stacksjs/stacks#1851 Phase 2a). Supports both Stacks's
+ * brace-style (`/users/{id}`) and Express-style (`/users/:id`) so a
+ * project using either gets typed `params` out of the box.
+ *
+ * @example
+ *   ExtractParams<'/api/judges/{id}/follow'>  // { id: string }
+ *   ExtractParams<'/api/orders/:orderId/items/:itemId'>  // { orderId: string, itemId: string }
+ *   ExtractParams<'/api/health'>  // Record<string, never>
+ */
+// Step 1: pull the next param name out of either `{name}` or `:name`,
+// recurse on the rest, and union the keys.
+type ExtractParamKeys<S extends string> =
+  // brace form: `…/{name}/…`
+  S extends `${string}{${infer Key}}${infer Rest}`
+    ? Key | ExtractParamKeys<Rest>
+    // colon form: `…/:name/…` (colon must be at a segment boundary
+    // so we don't match `:` inside e.g. a port number; the `/` before
+    // it enforces that)
+    : S extends `${string}/:${infer Key}/${infer Rest}`
+      ? KeyHead<Key> | ExtractParamKeys<`/${Rest}`>
+      // tail colon-form: `…/:name` (no trailing slash)
+      : S extends `${string}/:${infer Key}`
+        ? KeyHead<Key>
+        : never
+
+// `KeyHead<'name>'>` → `'name>'` because TS template literal infers
+// the longest possible match. We need to handle params that are at
+// the end of the path AND followed by a query string. This util
+// truncates a captured key at the first non-name character.
+type KeyHead<S extends string> =
+  S extends `${infer H}/${string}` ? H :
+    S extends `${infer H}?${string}` ? H :
+      S extends `${infer H}.${string}` ? H :
+        S
+
+export type ExtractParams<S extends string> =
+  [ExtractParamKeys<S>] extends [never]
+    ? Record<string, never>
+    : { [K in ExtractParamKeys<S>]: string }
 
 export type HttpMethod = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE' | 'HEAD' | 'OPTIONS' | 'CONNECT' | 'TRACE'
 
@@ -103,9 +193,35 @@ export interface SafeData<T extends Record<string, any> = Record<string, any>> {
  * })
  * ```
  */
-export type ActionRequest<TFields extends Record<string, any> = Record<string, any>> = RequestInstance<TFields>
+export type ActionRequest<
+  TFields extends Record<string, any> = Record<string, any>,
+  TParams extends Record<string, string> = Record<string, string>,
+> = RequestInstance<TFields, TParams>
 
-export interface RequestInstance<TFields extends Record<string, any> = Record<string, any>> {
+/**
+ * Read the body shape declared by an action's `validations:` field as
+ * a TypeScript object type (stacksjs/stacks#1851 Phase 2b). Threaded
+ * into {@link RequestInstance}'s `TFields` so `request.all()` returns
+ * the body shape with the field types {@link Infer}'d from each
+ * `schema.X()` rule.
+ *
+ * @example
+ *   const validations = {
+ *     email:    { rule: schema.string().email() },
+ *     password: { rule: schema.string().min(8) },
+ *     remember: { rule: schema.boolean() },
+ *   } as const
+ *   type Body = InferValidations<typeof validations>
+ *   // → { email: string, password: string, remember: boolean }
+ */
+export type InferValidations<V extends Record<string, { rule: any }>> = {
+  [K in keyof V]: Infer<V[K]['rule']>
+}
+
+export interface RequestInstance<
+  TFields extends Record<string, any> = Record<string, any>,
+  TParams extends Record<string, string> = Record<string, string>,
+> {
   // ==========================================================================
   // Native Request properties
   // ==========================================================================
@@ -116,10 +232,28 @@ export interface RequestInstance<TFields extends Record<string, any> = Record<st
 
   // Raw data access (always untyped — use get()/input() for typed access)
   query: RequestData
-  params: RouteParams
+  /**
+   * Route parameters from the URL. When the action is bound to a path
+   * literal (via {@link ActionOptions.path} or a typed
+   * `route.get<TPath>(...)` overload), `TParams` narrows to the
+   * extracted keys so `request.params.id` is `string` with no `as any`.
+   *
+   * For un-narrowed callers (bare `RequestInstance`), this falls
+   * back to `Record<string, string>` — the runtime shape is always
+   * string-keyed even for "numeric" params, since URL segments are
+   * never coerced.
+   */
+  params: TParams
   jsonBody?: any
   formBody?: any
   files: Record<string, File | File[]>
+  /**
+   * Cookies parsed from the request. The accessor exposes
+   * `get`/`set`/`delete`/`getAll` helpers that mirror bun-router's
+   * cookie handling. Optional because not every request middleware
+   * stack runs the cookie parser.
+   */
+  cookies?: RequestCookies
 
   // ==========================================================================
   // Model-aware Input Methods
@@ -325,12 +459,39 @@ export interface RequestInstance<TFields extends Record<string, any> = Record<st
   bearerToken: () => string | null | AuthToken
 
   // ==========================================================================
-  // Route & Param Methods — not narrowed to model fields
+  // Route & Param Methods
+  //
+  // `params` (the field above) is the typed primary surface — narrow
+  // it via the action's `path:` literal for full inference. These
+  // method-form helpers stay around for back-compat and for cases
+  // where the param key isn't statically known.
   // ==========================================================================
 
+  /**
+   * Look up a single route param, optionally with a default. Narrows
+   * to {@link TParams} when the key is part of the path-extracted
+   * keyset; falls back to `string | undefined` otherwise (covers
+   * dynamic key access without `as any`).
+   *
+   * @example
+   *   const id = request.param('id')              // typed string (from path)
+   *   const note = request.param('note', '')      // string with default
+   */
+  param: <K extends keyof TParams | string, D = string>(
+    key: K,
+    defaultValue?: D,
+  ) => K extends keyof TParams ? TParams[K] : (string | D)
+  /**
+   * @deprecated Use {@link param} for typed param lookups, or
+   *   `Number(request.params.id)` for explicit numeric coercion.
+   *   The name-match heuristic returning `number` for {@link NumericField}
+   *   keys (`id`, `count`, `amount`, …) is brittle: it silently falls
+   *   through to `string` for `judgeId`, `user_id`, etc.
+   *   See stacksjs/stacks#1851 Phase 3.
+   */
   getParam: <K extends string>(key: K) => K extends NumericField ? number : string
   route: (key: string) => number | string | null
-  getParams: () => RouteParams
+  getParams: () => TParams
   getParamAsInt: (key: string) => number | null
 
   // ==========================================================================
