@@ -1,496 +1,490 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const recentPermissionChanges = [
-  { id: '#PCH-1234', user: 'John Smith', role: 'editor', action: 'Added', resource: 'edit articles', date: '2023-12-01' },
-  { id: '#PCH-1233', user: 'Sarah Johnson', role: 'admin', action: 'Removed', resource: 'delete users', date: '2023-12-01' },
-  { id: '#PCH-1232', user: 'Michael Brown', role: 'manager', action: 'Modified', resource: 'publish articles', date: '2023-11-30' },
-  { id: '#PCH-1231', user: 'Emily Davis', role: 'viewer', action: 'Added', resource: 'view articles', date: '2023-11-30' },
-  { id: '#PCH-1230', user: 'David Wilson', role: 'guest', action: 'Modified', resource: 'view articles', date: '2023-11-29' },
-]
+<script client>
+  // RBAC management surface (stacksjs/stacks#1845).
+  //
+  // Lets an admin manage roles, permissions, per-user role attachments,
+  // and the role/permission matrix against the live `user_roles` /
+  // `role_permissions` / `user_permissions` pivots. All persistence
+  // flows through the `/api/dashboard/rbac/*` endpoints which delegate
+  // to `@stacksjs/auth`'s `Rbac` facade — no direct DB writes from the
+  // page.
+  //
+  // Follows #1838 conventions:
+  //   - No `<script server>` and no vanilla DOM reads.
+  //   - All state in the rbacStore; the page is pure presentation.
+  //   - Mutations are optimistic with rollback on failure (store handles
+  //     the snapshot/rollback dance).
+  import { useStore } from '@stacksjs/stx'
+  import { useRole } from '../../composables/useRole'
 
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+  const rbac = useStore('rbac')
+  // Admin-only surface. Per `useRole.ts`, `isAdmin()` returns true for
+  // any user with the `admin` role *or* an unauthenticated viewer on
+  // the localhost dev dashboard — same permissive-dev defaults the rest
+  // of the management surface uses.
+  const { isAdmin } = useRole()
+  const canManage = derived(() => isAdmin())
+
+  // ─── Lifted store signals (for template auto-unwrap) ──────────
+
+  const loading = derived(() => rbac.loading())
+  const error = derived(() => rbac.error())
+  const roles = derived(() => rbac.roles())
+  const permissions = derived(() => rbac.permissions())
+  const users = derived(() => rbac.users())
+
+  // ─── Tab state ────────────────────────────────────────────────
+
+  const activeTab = state('roles')
+
+  function tabClass(id) {
+    const base = 'px-4 py-2 font-medium text-sm whitespace-nowrap bg-transparent border-b-2 transition-colors cursor-pointer '
+    return activeTab() === id
+      ? base + 'border-violet-400 text-violet-600 dark:text-violet-400'
+      : base + 'border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300'
+  }
+
+  function selectTab(id) {
+    activeTab.set(id)
+    selectedUserId.set(null)
+    selectedRoleName.set(null)
+  }
+
+  // ─── Filters ──────────────────────────────────────────────────
+
+  const roleFilter = state('')
+  const permissionFilter = state('')
+  const userFilter = state('')
+
+  const filteredRoles = derived(() => {
+    const q = roleFilter().toLowerCase()
+    if (!q) return roles()
+    return roles().filter(r => r.name.toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q))
+  })
+
+  const filteredPermissions = derived(() => {
+    const q = permissionFilter().toLowerCase()
+    if (!q) return permissions()
+    return permissions().filter(p => p.name.toLowerCase().includes(q) || (p.description || '').toLowerCase().includes(q))
+  })
+
+  const filteredUsers = derived(() => {
+    const q = userFilter().toLowerCase()
+    if (!q) return users()
+    return users().filter(u => (u.name || '').toLowerCase().includes(q) || (u.email || '').toLowerCase().includes(q))
+  })
+
+  // ─── Create-role form ─────────────────────────────────────────
+
+  const newRoleName = state('')
+  const newRoleDescription = state('')
+  const newRoleGuard = state('web')
+  const submittingRole = state(false)
+
+  async function submitNewRole() {
+    const name = newRoleName().trim()
+    if (!name) return
+    submittingRole.set(true)
+    try {
+      const created = await rbac.createRole({
+        name,
+        guardName: newRoleGuard().trim() || 'web',
+        description: newRoleDescription().trim(),
+      })
+      if (created) {
+        newRoleName.set('')
+        newRoleDescription.set('')
+      }
+    }
+    finally {
+      submittingRole.set(false)
+    }
+  }
+
+  async function removeRole(name, guardName) {
+    // eslint-disable-next-line no-alert
+    if (typeof window !== 'undefined' && !window.confirm('Delete role "' + name + '"? This also detaches it from every user.'))
+      return
+    await rbac.deleteRole(name, guardName)
+  }
+
+  // ─── Create-permission form ───────────────────────────────────
+
+  const newPermName = state('')
+  const newPermDescription = state('')
+  const newPermGuard = state('web')
+  const submittingPerm = state(false)
+
+  async function submitNewPermission() {
+    const name = newPermName().trim()
+    if (!name) return
+    submittingPerm.set(true)
+    try {
+      const created = await rbac.createPermission({
+        name,
+        guardName: newPermGuard().trim() || 'web',
+        description: newPermDescription().trim(),
+      })
+      if (created) {
+        newPermName.set('')
+        newPermDescription.set('')
+      }
+    }
+    finally {
+      submittingPerm.set(false)
+    }
+  }
+
+  async function removePermission(name, guardName) {
+    // eslint-disable-next-line no-alert
+    if (typeof window !== 'undefined' && !window.confirm('Delete permission "' + name + '"? This also detaches it from every role.'))
+      return
+    await rbac.deletePermission(name, guardName)
+  }
+
+  // ─── User-role assignment drawer ──────────────────────────────
+
+  const selectedUserId = state(null)
+  const userRolesDraft = state([])
+  const savingUserRoles = state(false)
+
+  function selectUser(userId) {
+    selectedUserId.set(userId)
+    userRolesDraft.set([])
+    rbac.loadUserRoles(userId).then(() => {
+      userRolesDraft.set([...(rbac.userRoles()[userId] || [])])
+    })
+  }
+
+  function toggleUserRoleDraft(roleName) {
+    const list = userRolesDraft()
+    userRolesDraft.set(
+      list.includes(roleName)
+        ? list.filter(n => n !== roleName)
+        : [...list, roleName],
+    )
+  }
+
+  async function saveUserRoles() {
+    const uid = selectedUserId()
+    if (uid == null) return
+    savingUserRoles.set(true)
+    try {
+      await rbac.syncUserRoles(uid, userRolesDraft())
+    }
+    finally {
+      savingUserRoles.set(false)
+    }
+  }
+
+  function closeUserDrawer() {
+    selectedUserId.set(null)
+    userRolesDraft.set([])
+  }
+
+  function isRoleInDraft(roleName) {
+    return userRolesDraft().includes(roleName)
+  }
+
+  const selectedUser = derived(() => {
+    const uid = selectedUserId()
+    if (uid == null) return null
+    return users().find(u => u.id === uid) || null
+  })
+
+  // ─── Role-permission matrix ───────────────────────────────────
+
+  const selectedRoleName = state(null)
+  const rolePermsDraft = state([])
+  const savingRolePerms = state(false)
+
+  function selectRole(roleName, guardName) {
+    selectedRoleName.set(roleName)
+    rolePermsDraft.set([])
+    rbac.loadRolePermissions(roleName, guardName).then(() => {
+      rolePermsDraft.set([...(rbac.rolePermissions()[roleName] || [])])
+    })
+  }
+
+  function toggleRolePermDraft(permName) {
+    const list = rolePermsDraft()
+    rolePermsDraft.set(
+      list.includes(permName)
+        ? list.filter(n => n !== permName)
+        : [...list, permName],
+    )
+  }
+
+  async function saveRolePerms() {
+    const name = selectedRoleName()
+    if (!name) return
+    savingRolePerms.set(true)
+    try {
+      await rbac.syncRolePermissions(name, rolePermsDraft())
+    }
+    finally {
+      savingRolePerms.set(false)
+    }
+  }
+
+  function closeRoleDrawer() {
+    selectedRoleName.set(null)
+    rolePermsDraft.set([])
+  }
+
+  function isPermInDraft(permName) {
+    return rolePermsDraft().includes(permName)
+  }
+
+  const selectedRole = derived(() => {
+    const name = selectedRoleName()
+    if (!name) return null
+    return roles().find(r => r.name === name) || null
+  })
+
+  // ─── Tiny formatters ──────────────────────────────────────────
+
+  function formatDate(iso) {
+    if (!iso) return ''
+    const d = new Date(iso)
+    if (Number.isNaN(d.getTime())) return ''
+    return d.toLocaleDateString()
+  }
+
+  // Top-level fetch — runs on every page entry (hard reload + SPA swap).
+  // The store dedupes its own loading flag so back-to-back calls don't
+  // double-fire.
+  rbac.load()
 </script>
 
 @title('Dashboard - Permissions')
-<div class="p-6 space-y-6">
+<div class="mx-auto px-6 py-8 max-w-7xl">
+  <!-- Role-gated wrapper: only admins can manage RBAC. Unauthenticated
+      viewers on localhost see the surface as if they were admin so the
+      dev dashboard stays usable; production must put the auth
+      middleware in front of `/api/dashboard/rbac/*` to make that
+      guarantee real. -->
+  <div :if="!canManage" class="px-5 py-8 text-center bg-zinc-50 dark:bg-zinc-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">This surface requires the admin role.</p>
+  </div>
 
-  <PageHeader title="Permissions Management" description="Overview of system permissions and roles" />
+  <div :if="canManage">
+    <header class="mb-6">
+      <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100">Permissions Management</h1>
+      <p class="mt-1 text-sm text-zinc-500">Manage roles, permissions, and user assignments. Backed by the live <code class="text-xs">user_roles</code> / <code class="text-xs">role_permissions</code> pivots.</p>
+    </header>
 
-  <div class="flex items-center justify-end">
-    <div class="relative">
-      <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        @foreach(timeRanges as range)
-          <option value="{{ range }}">{{ range }}</option>
+    <!-- Error banner (initial load + transient mutation failures) -->
+    <div :if="error" class="mb-4 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950 border border-red-300 rounded-md dark:border-red-800">
+      <span :text="error"></span>
+    </div>
+
+    <!-- Loading state -->
+    <div :if="loading" class="px-5 py-8 text-center bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+      <p class="text-sm text-zinc-500">Loading…</p>
+    </div>
+
+    <div :if="!loading">
+      <!-- Tabs -->
+      <div class="flex mb-6 border-b border-zinc-200 dark:border-zinc-800">
+        <button type="button" @click="selectTab('roles')" :class="tabClass('roles')">Roles</button>
+        <button type="button" @click="selectTab('permissions')" :class="tabClass('permissions')">Permissions</button>
+        <button type="button" @click="selectTab('users')" :class="tabClass('users')">Users</button>
+        <button type="button" @click="selectTab('matrix')" :class="tabClass('matrix')">Role × Permission</button>
+      </div>
+
+      <!-- ─── Roles tab ─────────────────────────────────────── -->
+      <div :if="activeTab() === 'roles'" class="space-y-6">
+        <div class="p-5 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <h2 class="mb-3 font-medium text-sm text-zinc-700 dark:text-zinc-300">Create role</h2>
+          <form @submit.prevent="submitNewRole()" class="grid gap-3 grid-cols-1 sm:grid-cols-4">
+            <input type="text" :value="newRoleName()" @input="newRoleName.set($event.target.value)" required maxlength="60" placeholder="Role name (e.g. editor)" class="block sm:col-span-2 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <input type="text" :value="newRoleDescription()" @input="newRoleDescription.set($event.target.value)" placeholder="Description (optional)" class="block px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <button type="submit" :disabled="submittingRole()" class="block px-3 py-1.5 font-medium text-sm text-white bg-violet-600 hover:bg-violet-500 rounded-md disabled:opacity-50">Add role</button>
+          </form>
+        </div>
+
+        <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <div class="flex gap-3 items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Roles (<span :text="roles().length"></span>)</h2>
+            <input type="text" :value="roleFilter()" @input="roleFilter.set($event.target.value)" placeholder="Filter roles…" class="block px-3 py-1 w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+          </div>
+          <div :if="filteredRoles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500">No roles yet.</div>
+          <table :if="filteredRoles().length > 0" class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead class="bg-zinc-50 dark:bg-neutral-950/50">
+              <tr>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Name</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Guard</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Description</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Created</th>
+                <th class="px-5 py-2 font-medium text-right text-xs text-zinc-500 tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+              @foreach(filteredRoles() as role)
+                <tr>
+                  <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500"><code>{{ role.guardName }}</code></td>
+                  <td class="px-5 py-2 text-sm text-zinc-600 dark:text-zinc-400">{{ role.description || '—' }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500">{{ formatDate(role.createdAt) }}</td>
+                  <td class="px-5 py-2 text-right text-sm">
+                    <button type="button" @click="selectTab('matrix'); selectRole('{{ role.name }}', '{{ role.guardName }}')" class="mr-3 text-violet-600 dark:text-violet-400 hover:underline">Permissions</button>
+                    <button type="button" @click="removeRole('{{ role.name }}', '{{ role.guardName }}')" class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── Permissions tab ───────────────────────────────── -->
+      <div :if="activeTab() === 'permissions'" class="space-y-6">
+        <div class="p-5 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <h2 class="mb-3 font-medium text-sm text-zinc-700 dark:text-zinc-300">Create permission</h2>
+          <form @submit.prevent="submitNewPermission()" class="grid gap-3 grid-cols-1 sm:grid-cols-4">
+            <input type="text" :value="newPermName()" @input="newPermName.set($event.target.value)" required maxlength="100" placeholder="Permission name (e.g. posts.publish)" class="block sm:col-span-2 px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <input type="text" :value="newPermDescription()" @input="newPermDescription.set($event.target.value)" placeholder="Description (optional)" class="block px-3 py-1.5 text-sm text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+            <button type="submit" :disabled="submittingPerm()" class="block px-3 py-1.5 font-medium text-sm text-white bg-violet-600 hover:bg-violet-500 rounded-md disabled:opacity-50">Add permission</button>
+          </form>
+        </div>
+
+        <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <div class="flex gap-3 items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Permissions (<span :text="permissions().length"></span>)</h2>
+            <input type="text" :value="permissionFilter()" @input="permissionFilter.set($event.target.value)" placeholder="Filter permissions…" class="block px-3 py-1 w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+          </div>
+          <div :if="filteredPermissions().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500">No permissions yet.</div>
+          <table :if="filteredPermissions().length > 0" class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead class="bg-zinc-50 dark:bg-neutral-950/50">
+              <tr>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Name</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Guard</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Description</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Created</th>
+                <th class="px-5 py-2 font-medium text-right text-xs text-zinc-500 tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+              @foreach(filteredPermissions() as perm)
+                <tr>
+                  <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500"><code>{{ perm.guardName }}</code></td>
+                  <td class="px-5 py-2 text-sm text-zinc-600 dark:text-zinc-400">{{ perm.description || '—' }}</td>
+                  <td class="px-5 py-2 text-xs text-zinc-500">{{ formatDate(perm.createdAt) }}</td>
+                  <td class="px-5 py-2 text-right text-sm">
+                    <button type="button" @click="removePermission('{{ perm.name }}', '{{ perm.guardName }}')" class="text-red-600 dark:text-red-400 hover:underline">Delete</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── Users tab ─────────────────────────────────────── -->
+      <div :if="activeTab() === 'users'" class="space-y-6">
+        <div class="bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <div class="flex gap-3 items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <h2 class="font-medium text-sm text-zinc-700 dark:text-zinc-300">Users (<span :text="users().length"></span>)</h2>
+            <input type="text" :value="userFilter()" @input="userFilter.set($event.target.value)" placeholder="Filter users…" class="block px-3 py-1 w-64 text-xs text-zinc-900 dark:text-zinc-100 dark:bg-neutral-800 border-0 ring-1 ring-zinc-300 rounded-md dark:ring-zinc-700 focus:ring-2 focus:ring-violet-500" />
+          </div>
+          <div :if="filteredUsers().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500">No users found.</div>
+          <table :if="filteredUsers().length > 0" class="min-w-full divide-y divide-zinc-200 dark:divide-zinc-800">
+            <thead class="bg-zinc-50 dark:bg-neutral-950/50">
+              <tr>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Name</th>
+                <th class="px-5 py-2 font-medium text-left text-xs text-zinc-500 tracking-wider uppercase">Email</th>
+                <th class="px-5 py-2 font-medium text-right text-xs text-zinc-500 tracking-wider uppercase">Actions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-zinc-200 dark:divide-zinc-800">
+              @foreach(filteredUsers() as u)
+                <tr>
+                  <td class="px-5 py-2 font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ u.name || '—' }}</td>
+                  <td class="px-5 py-2 text-sm text-zinc-500">{{ u.email || '—' }}</td>
+                  <td class="px-5 py-2 text-right text-sm">
+                    <button type="button" @click="selectUser({{ u.id }})" class="text-violet-600 dark:text-violet-400 hover:underline">Manage roles</button>
+                  </td>
+                </tr>
+              @endforeach
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ─── Role × Permission matrix tab ──────────────────── -->
+      <div :if="activeTab() === 'matrix'" class="space-y-4">
+        <div class="p-5 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">
+          <p class="text-sm text-zinc-500">Pick a role to edit its permission attachments.</p>
+        </div>
+        <div :if="roles().length === 0" class="px-5 py-8 text-center text-sm text-zinc-500 bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800">No roles yet — create one on the Roles tab.</div>
+        <div :if="roles().length > 0" class="grid gap-3 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+          @foreach(roles() as role)
+            <button type="button" @click="selectRole('{{ role.name }}', '{{ role.guardName }}')" class="block px-4 py-3 text-left bg-white dark:bg-neutral-900 border border-zinc-200 rounded-lg dark:border-zinc-800 hover:border-violet-300 dark:hover:border-violet-700 transition-colors">
+              <div class="font-medium text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</div>
+              <div class="mt-0.5 text-xs text-zinc-500">{{ role.description || 'No description' }}</div>
+            </button>
+          @endforeach
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ─── User-role drawer (right-side panel) ───────────────── -->
+  <div :if="selectedUserId() !== null" class="fixed inset-0 z-30">
+    <div class="fixed inset-0 bg-black/50" @click="closeUserDrawer()"></div>
+    <div class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <h3 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+          Roles for <span :if="selectedUser()" :text="selectedUser().name || selectedUser().email || ('User #' + selectedUser().id)"></span>
+        </h3>
+        <button type="button" @click="closeUserDrawer()" class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">Close</button>
+      </div>
+      <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+        <div :if="roles().length === 0" class="text-sm text-zinc-500">No roles defined yet.</div>
+        @foreach(roles() as role)
+          <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
+            <input type="checkbox" :checked="isRoleInDraft('{{ role.name }}')" @change="toggleUserRoleDraft('{{ role.name }}')" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
+            <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ role.name }}</span>
+            <span class="text-xs text-zinc-500">{{ role.description || '' }}</span>
+          </label>
         @endforeach
-      </select>
-    </div>
-  </div>
-
-  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Roles</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">5</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>1 new role added</span>
-      </dd>
-    </div>
-
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Permissions</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">105</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>12 new permissions</span>
-      </dd>
-    </div>
-
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Users with Roles</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">95</dd>
-      <dd class="flex items-center mt-2 text-green-600 text-sm dark:text-green-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-up"></div>
-        <span>8.3% increase</span>
-      </dd>
-    </div>
-
-    <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Permission Changes</dt>
-      <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">145</dd>
-      <dd class="flex items-center mt-2 text-red-600 text-sm dark:text-red-400">
-        <div class="mr-1 h-4 w-4 i-hugeicons-analytics-down"></div>
-        <span>5.2% decrease</span>
-      </dd>
-    </div>
-  </dl>
-
-  <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Permissions by Role</h3>
-        <div class="mt-2 h-80">
-          <canvas id="permissions_by_role_chart"></canvas>
-        </div>
       </div>
-    </div>
-
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="p-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Permission Activity</h3>
-        <div class="mt-2 h-80">
-          <canvas id="permissions_activity_chart"></canvas>
-        </div>
+      <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
+        <button type="button" @click="closeUserDrawer()" class="px-3 py-1.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-neutral-800 rounded-md">Cancel</button>
+        <button type="button" @click="saveUserRoles()" :disabled="savingUserRoles()" class="px-3 py-1.5 text-sm text-white bg-violet-600 hover:bg-violet-500 rounded-md disabled:opacity-50">Save</button>
       </div>
     </div>
   </div>
 
-  <div class="mt-8">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="flex items-center justify-between px-4 py-5 sm:px-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Roles</h3>
-        <Button variant="primary" @click="addRole()">Add Role</Button>
+  <!-- ─── Role-permission drawer ────────────────────────────── -->
+  <div :if="selectedRoleName() !== null" class="fixed inset-0 z-30">
+    <div class="fixed inset-0 bg-black/50" @click="closeRoleDrawer()"></div>
+    <div class="flex fixed inset-y-0 right-0 flex-col w-full sm:w-[28rem] bg-white dark:bg-neutral-900 shadow-xl">
+      <div class="flex items-center justify-between px-5 py-3 border-b border-zinc-200 dark:border-zinc-800">
+        <h3 class="font-medium text-sm text-zinc-900 dark:text-zinc-100">
+          Permissions for <span :if="selectedRole()" :text="selectedRole().name"></span>
+        </h3>
+        <button type="button" @click="closeRoleDrawer()" class="text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300">Close</button>
       </div>
-      <div class="border-gray-200 border-t dark:border-neutral-700">
-        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-          <thead class="bg-gray-50 dark:bg-neutral-700">
-            <tr>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Role Name</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Description</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Users</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Last Updated</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-            @foreach(rolesList() as role)
-              <tr>
-                <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ role.name }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ role.description }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ role.users }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ role.lastUpdated }}</td>
-                <td class="px-6 py-4 font-medium text-right text-sm whitespace-nowrap">
-                  <button @click="editRole({{ role.id }})" class="mr-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit</button>
-                  <button @click="deleteRole({{ role.id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
-                </td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
+      <div class="overflow-y-auto flex-1 px-5 py-4 space-y-2">
+        <div :if="permissions().length === 0" class="text-sm text-zinc-500">No permissions defined yet.</div>
+        @foreach(permissions() as perm)
+          <label class="flex gap-2 items-center px-2 py-1.5 hover:bg-zinc-50 dark:hover:bg-neutral-800 rounded-md cursor-pointer">
+            <input type="checkbox" :checked="isPermInDraft('{{ perm.name }}')" @change="toggleRolePermDraft('{{ perm.name }}')" class="h-4 w-4 text-violet-600 border-zinc-300 rounded dark:border-zinc-700 focus:ring-violet-500" />
+            <span class="text-sm text-zinc-900 dark:text-zinc-100">{{ perm.name }}</span>
+            <span class="text-xs text-zinc-500">{{ perm.description || '' }}</span>
+          </label>
+        @endforeach
       </div>
-    </div>
-  </div>
-
-  <div class="mt-8">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="flex items-center justify-between px-4 py-5 sm:px-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Permissions</h3>
-        <div class="flex items-center space-x-4">
-          <div class="flex items-center space-x-2">
-            <label for="permission-filter" class="text-gray-500 text-sm dark:text-neutral-400">Filter:</label>
-            <input id="permission-filter" x-model="permissionFilter" type="text" placeholder="Search permissions..." class="pl-3 pr-3 py-1.5 w-64 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" />
-          </div>
-          <Button variant="primary" @click="addPermission()">Add Permission</Button>
-        </div>
-      </div>
-      <div class="border-gray-200 border-t dark:border-neutral-700">
-        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-          <thead class="bg-gray-50 dark:bg-neutral-700">
-            <tr>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">ID</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Name</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Description</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Created</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-right text-xs tracking-wider uppercase dark:text-neutral-300">Actions</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-            @foreach(filteredPermissions() as permission)
-              <tr>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ permission.id }}</td>
-                <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ permission.name }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ permission.description }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ permission.created_at }}</td>
-                <td class="px-6 py-4 font-medium text-right text-sm whitespace-nowrap">
-                  <button class="mr-3 text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit</button>
-                  <button class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Delete</button>
-                </td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div class="mt-8">
-    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-      <div class="px-4 py-5 sm:px-6">
-        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Recent Permission Changes</h3>
-      </div>
-      <div class="border-gray-200 border-t dark:border-neutral-700">
-        <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-          <thead class="bg-gray-50 dark:bg-neutral-700">
-            <tr>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">ID</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">User</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Role</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Action</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Resource</th>
-              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Date</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-            @foreach(recentPermissionChanges as change)
-              <tr>
-                <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ change.id }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ change.user }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ change.role }}</td>
-                <td class="px-6 py-4 whitespace-nowrap">
-                  <span class="{{ actionBadgeClass(change.action) }} inline-flex px-2 font-semibold leading-5 text-xs rounded-full">{{ change.action }}</span>
-                </td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ change.resource }}</td>
-                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ change.date }}</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-
-  <div :show="showRoleModal" class="fixed inset-0 overflow-y-auto z-10">
-    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closeRoleModal()"></div>
-
-      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-        <div>
-          <div class="mt-3 sm:mt-5 text-center">
-            <h3 class="font-semibold leading-6 text-gray-900 text-lg dark:text-white">{{ roleModalTitle() }}</h3>
-            <div class="mt-6">
-              <form @submit.prevent="saveRole()" class="space-y-4">
-                <div>
-                  <label for="role-name" class="block font-medium text-gray-700 text-left text-sm dark:text-neutral-300">Role Name</label>
-                  <div class="mt-1">
-                    <input type="text" id="role-name" x-model="roleFormName" required placeholder="e.g. editor" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
-                  </div>
-                </div>
-
-                <div>
-                  <label for="role-description" class="block font-medium text-gray-700 text-left text-sm dark:text-neutral-300">Description</label>
-                  <div class="mt-1">
-                    <input type="text" id="role-description" x-model="roleFormDescription" placeholder="Role description" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
-                  </div>
-                </div>
-
-                <div>
-                  <label class="block mb-2 font-medium text-gray-700 text-left text-sm dark:text-neutral-300">Permissions</label>
-                  <div class="overflow-y-auto p-2 max-h-60 border border-gray-300 rounded-md dark:border-neutral-600">
-                    @foreach(allPermissions() as permission)
-                      <div class="flex items-center py-1">
-                        <input type="checkbox" id="permission-{{ permission.id }}" @change="toggleRolePermission({{ permission.id }})" {{ isRolePermissionChecked(permission.id) ? 'checked' : '' }} class="h-4 w-4 text-blue-600 dark:bg-neutral-700 border-gray-300 rounded dark:border-neutral-600 focus:ring-blue-600" />
-                        <label for="permission-{{ permission.id }}" class="block ml-2 text-gray-900 text-sm dark:text-neutral-300">{{ permission.name }}</label>
-                      </div>
-                    @endforeach
-                  </div>
-                </div>
-
-                <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-                  <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Save</button>
-                  <button type="button" @click="closeRoleModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div :show="showPermissionModal" class="fixed inset-0 overflow-y-auto z-10">
-    <div class="flex items-end justify-center sm:items-center p-4 sm:p-0 min-h-full text-center">
-      <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity" @click="closePermissionModal()"></div>
-
-      <div class="overflow-hidden relative pb-4 pt-5 px-4 sm:my-8 sm:p-6 sm:max-w-lg sm:w-full text-left bg-white dark:bg-neutral-800 rounded-lg shadow-xl transition-all transform">
-        <div>
-          <div class="mt-3 sm:mt-5 text-center">
-            <h3 class="font-semibold leading-6 text-gray-900 text-lg dark:text-white">Add New Permission</h3>
-            <div class="mt-6">
-              <form @submit.prevent="savePermission()" class="space-y-4">
-                <div>
-                  <label for="permission-name" class="block font-medium text-gray-700 text-left text-sm dark:text-neutral-300">Permission Name</label>
-                  <div class="mt-1">
-                    <input type="text" id="permission-name" x-model="permissionFormName" required placeholder="e.g. edit articles" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
-                  </div>
-                  <p class="mt-1 text-gray-500 text-left text-xs dark:text-neutral-400">Use verb-noun format (e.g., "edit articles", "view users")</p>
-                </div>
-
-                <div>
-                  <label for="permission-description" class="block font-medium text-gray-700 text-left text-sm dark:text-neutral-300">Description</label>
-                  <div class="mt-1">
-                    <input type="text" id="permission-description" x-model="permissionFormDescription" placeholder="Permission description" class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white placeholder:text-gray-400 dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm" />
-                  </div>
-                </div>
-
-                <div class="sm:grid sm:gap-3 sm:grid-cols-2 sm:grid-flow-row-dense mt-5 sm:mt-6">
-                  <button type="submit" class="inline-flex justify-center sm:col-start-2 px-3 py-2 w-full font-semibold text-sm text-white bg-blue-600 hover:bg-blue-500 rounded-md focus-visible:outline focus-visible:outline-2 focus-visible:outline-blue-600 focus-visible:outline-offset-2 shadow-sm">Save</button>
-                  <button type="button" @click="closePermissionModal()" class="inline-flex justify-center sm:col-start-1 mt-3 px-3 py-2 sm:mt-0 w-full font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">Cancel</button>
-                </div>
-              </form>
-            </div>
-          </div>
-        </div>
+      <div class="flex gap-2 items-center justify-end px-5 py-3 border-t border-zinc-200 dark:border-zinc-800">
+        <button type="button" @click="closeRoleDrawer()" class="px-3 py-1.5 text-sm text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-neutral-800 rounded-md">Cancel</button>
+        <button type="button" @click="saveRolePerms()" :disabled="savingRolePerms()" class="px-3 py-1.5 text-sm text-white bg-violet-600 hover:bg-violet-500 rounded-md disabled:opacity-50">Save</button>
       </div>
     </div>
   </div>
 </div>
-
-<script client>
-
-interface Role {
-  id: number
-  name: string
-  description: string
-  users: number
-  lastUpdated: string
-}
-
-interface Permission {
-  id: number
-  name: string
-  description: string
-  created_at: string
-}
-
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
-
-const roles = state<Role[]>([
-  { id: 1, name: 'admin', description: 'Full system access', users: 3, lastUpdated: '2023-12-01' },
-  { id: 2, name: 'manager', description: 'Department management access', users: 8, lastUpdated: '2023-11-28' },
-  { id: 3, name: 'editor', description: 'Content editing access', users: 15, lastUpdated: '2023-11-25' },
-  { id: 4, name: 'viewer', description: 'Read-only access', users: 27, lastUpdated: '2023-11-20' },
-  { id: 5, name: 'guest', description: 'Limited public access', users: 42, lastUpdated: '2023-11-15' },
-])
-
-const permissions = state<Permission[]>([
-  { id: 1, name: 'view users', description: 'View user profiles', created_at: '2023-11-01' },
-  { id: 2, name: 'create users', description: 'Create new users', created_at: '2023-11-01' },
-  { id: 3, name: 'edit users', description: 'Edit existing users', created_at: '2023-11-01' },
-  { id: 4, name: 'delete users', description: 'Delete users', created_at: '2023-11-01' },
-  { id: 5, name: 'view roles', description: 'View roles', created_at: '2023-11-01' },
-  { id: 6, name: 'create roles', description: 'Create new roles', created_at: '2023-11-01' },
-  { id: 7, name: 'edit roles', description: 'Edit existing roles', created_at: '2023-11-01' },
-  { id: 8, name: 'delete roles', description: 'Delete roles', created_at: '2023-11-01' },
-  { id: 9, name: 'view permissions', description: 'View permissions', created_at: '2023-11-01' },
-  { id: 10, name: 'create permissions', description: 'Create new permissions', created_at: '2023-11-01' },
-  { id: 11, name: 'edit permissions', description: 'Edit existing permissions', created_at: '2023-11-01' },
-  { id: 12, name: 'delete permissions', description: 'Delete permissions', created_at: '2023-11-01' },
-  { id: 13, name: 'view articles', description: 'View articles', created_at: '2023-11-01' },
-  { id: 14, name: 'create articles', description: 'Create new articles', created_at: '2023-11-01' },
-  { id: 15, name: 'edit articles', description: 'Edit existing articles', created_at: '2023-11-01' },
-  { id: 16, name: 'delete articles', description: 'Delete articles', created_at: '2023-11-01' },
-  { id: 17, name: 'publish articles', description: 'Publish articles', created_at: '2023-11-01' },
-  { id: 18, name: 'unpublish articles', description: 'Unpublish articles', created_at: '2023-11-01' },
-])
-
-const rolePermissions = state<Record<number, number[]>>({
-  1: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18],
-  2: [1, 5, 9, 13, 14, 15, 16, 17, 18],
-  3: [1, 5, 9, 13, 14, 15, 17, 18],
-  4: [1, 5, 9, 13],
-  5: [13],
-})
-
-const timeRange = state('Last 30 days')
-const permissionFilter = state('')
-
-const showRoleModal = state(false)
-const showPermissionModal = state(false)
-const editingRoleId = state<number | null>(null)
-
-const roleFormName = state('')
-const roleFormDescription = state('')
-const roleFormPermissions = state<number[]>([])
-const permissionFormName = state('')
-const permissionFormDescription = state('')
-
-function rolesList(): Role[] { return roles() }
-function allPermissions(): Permission[] { return permissions() }
-
-function filteredPermissions(): Permission[] {
-  const q = permissionFilter().toLowerCase()
-  return permissions().filter(p => p.name.toLowerCase().includes(q))
-}
-
-function roleModalTitle(): string {
-  return editingRoleId() !== null ? 'Edit Role' : 'Add New Role'
-}
-
-function isRolePermissionChecked(id: number): boolean {
-  return roleFormPermissions().includes(id)
-}
-
-function toggleRolePermission(id: number): void {
-  const list = roleFormPermissions()
-  roleFormPermissions.set(list.includes(id) ? list.filter(p => p !== id) : [...list, id])
-}
-
-function actionBadgeClass(action: string): string {
-  if (action === 'Added')
-    return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-  if (action === 'Removed')
-    return 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-  return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-}
-
-function addRole(): void {
-  editingRoleId.set(null)
-  roleFormName.set('')
-  roleFormDescription.set('')
-  roleFormPermissions.set([])
-  showRoleModal.set(true)
-}
-
-function editRole(roleId: number): void {
-  const target = roles().find(r => r.id === roleId)
-  if (!target)
-    return
-  editingRoleId.set(roleId)
-  roleFormName.set(target.name)
-  roleFormDescription.set(target.description)
-  roleFormPermissions.set(rolePermissions()[roleId] ?? [])
-  showRoleModal.set(true)
-}
-
-function closeRoleModal(): void {
-  showRoleModal.set(false)
-  editingRoleId.set(null)
-}
-
-function saveRole(): void {
-  // TODO: API call to save role
-  closeRoleModal()
-}
-
-function deleteRole(roleId: number): void {
-  // eslint-disable-next-line no-alert
-  if (!confirm('Are you sure you want to delete this role?'))
-    return
-  // eslint-disable-next-line no-console
-  console.log('Deleting role', roleId)
-}
-
-function addPermission(): void {
-  permissionFormName.set('')
-  permissionFormDescription.set('')
-  showPermissionModal.set(true)
-}
-
-function closePermissionModal(): void {
-  showPermissionModal.set(false)
-}
-
-function savePermission(): void {
-  // TODO: API call to save permission
-  closePermissionModal()
-}
-
-const permissionsByRoleData = {
-  labels: ['Admin', 'Manager', 'Editor', 'Viewer', 'Guest'],
-  datasets: [{
-    label: 'Permissions Count',
-    backgroundColor: ['rgba(59, 130, 246, 0.8)', 'rgba(16, 185, 129, 0.8)', 'rgba(245, 158, 11, 0.8)', 'rgba(99, 102, 241, 0.8)', 'rgba(236, 72, 153, 0.8)'],
-    borderColor: ['rgba(59, 130, 246, 1)', 'rgba(16, 185, 129, 1)', 'rgba(245, 158, 11, 1)', 'rgba(99, 102, 241, 1)', 'rgba(236, 72, 153, 1)'],
-    borderWidth: 1,
-    data: [42, 28, 18, 12, 5],
-  }],
-}
-
-const permissionActivityData = {
-  labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'],
-  datasets: [{
-    label: 'Permission Changes',
-    backgroundColor: 'rgba(99, 102, 241, 0.8)',
-    borderColor: 'rgba(99, 102, 241, 1)',
-    borderWidth: 1,
-    borderRadius: 4,
-    data: [8, 12, 5, 18, 11, 9, 14, 22, 16, 10, 7, 13],
-  }],
-}
-
-const pieChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { position: 'right', labels: { boxWidth: 12 } } },
-}
-
-const barChartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  plugins: { legend: { display: false } },
-  scales: {
-    y: { beginAtZero: true, grid: { display: true, color: 'rgba(0, 0, 0, 0.05)' } },
-    x: { grid: { display: false } },
-  },
-}
-
-let chartHandles: Array<{ destroy: () => void }> = []
-
-onMount(async () => {
-  const { Chart, registerables } = await import('@stacksjs/charts')
-  Chart.register(...registerables)
-  const Ctor = Chart as unknown as ChartCtor
-  const byRole = useChart({ Chart: Ctor, id: 'permissions_by_role_chart', type: 'pie', data: permissionsByRoleData, options: pieChartOptions })
-  const activity = useChart({ Chart: Ctor, id: 'permissions_activity_chart', type: 'bar', data: permissionActivityData, options: barChartOptions })
-  chartHandles = [byRole.instance, activity.instance].filter((c): c is ChartLike => c !== null)
-})
-
-onDestroy(() => {
-  chartHandles.forEach(c => c.destroy())
-  chartHandles = []
-})
-</script>
-
 @endsection

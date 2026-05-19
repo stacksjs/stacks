@@ -32,6 +32,30 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // Only useful when `ci.alerts.enabled` is on — otherwise no samples
   // have been recorded.
   route.get('/ci/runner-history', 'Actions/Dashboard/Ci/RunnerHistoryAction')
+
+  // RBAC management surface (stacksjs/stacks#1845).
+  //
+  // No auth/role middleware at the group level — the wider
+  // `/api/dashboard` group is unauthenticated by design for the dev
+  // dashboard's localhost use case (see the file-level comment).
+  // The page itself wraps content in `useRole().isAdmin()` so the
+  // surface stays gated client-side. Deployments that expose the
+  // dashboard beyond localhost should tighten with
+  // `.middleware('auth').middleware('role:admin')` here.
+  route.get('/rbac/roles', 'Actions/Dashboard/Rbac/RolesIndexAction')
+  route.post('/rbac/roles', 'Actions/Dashboard/Rbac/RoleStoreAction')
+  route.delete('/rbac/roles/{name}', 'Actions/Dashboard/Rbac/RoleDestroyAction')
+
+  route.get('/rbac/permissions', 'Actions/Dashboard/Rbac/PermissionsIndexAction')
+  route.post('/rbac/permissions', 'Actions/Dashboard/Rbac/PermissionStoreAction')
+  route.delete('/rbac/permissions/{name}', 'Actions/Dashboard/Rbac/PermissionDestroyAction')
+
+  route.get('/rbac/users', 'Actions/Dashboard/Rbac/UsersListAction')
+  route.get('/rbac/users/{id}/roles', 'Actions/Dashboard/Rbac/UserRolesShowAction')
+  route.post('/rbac/users/{id}/roles', 'Actions/Dashboard/Rbac/UserRolesSyncAction')
+
+  route.get('/rbac/roles/{name}/permissions', 'Actions/Dashboard/Rbac/RolePermissionsShowAction')
+  route.post('/rbac/roles/{name}/permissions', 'Actions/Dashboard/Rbac/RolePermissionsSyncAction')
   // RBAC identity endpoint (stacksjs/stacks#1843). Returns the
   // authenticated user + their role names so the dashboard's `useRole()`
   // composable can gate dev-mode surfaces. Tolerates unauthenticated
