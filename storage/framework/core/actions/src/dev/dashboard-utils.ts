@@ -1,4 +1,6 @@
+import type { DashboardModelOptions } from '@stacksjs/types'
 import { Glob } from 'bun'
+import path from 'node:path'
 
 // Model name to icon mapping (SF Symbols)
 export const iconMap: Record<string, string> = {
@@ -115,6 +117,14 @@ export interface DiscoveredModel {
   icon: string
   id: string
   category?: ModelCategory
+  /**
+   * Per-model dashboard configuration from `defineModel({ dashboard: … })`
+   * (stacksjs/stacks#1843). Populated when the model file can be imported
+   * and exports a definition with a `dashboard` property; left undefined
+   * otherwise (default behaviour: show the model in its auto-derived
+   * section with the auto-derived icon).
+   */
+  dashboard?: DashboardModelOptions
 }
 
 /** Convert PascalCase model name to kebab-case ID */
@@ -148,6 +158,31 @@ function categorizeModel(relativePath: string, modelId: string, defaultCategory?
   return ROOT_MODEL_CATEGORY[modelId.replace(/-/g, '')] ?? 'data'
 }
 
+/**
+ * Best-effort import of a model file. Reads `module.default` (the common
+ * `defineModel()` export shape) and pulls the `dashboard` field if
+ * present. Anything goes wrong — file doesn't load, module has no default
+ * export, the import throws transitively pulling in a missing dependency —
+ * we swallow and return `undefined`. The model still shows up in the
+ * sidebar via the filename-derived metadata; only the per-model overrides
+ * are lost.
+ *
+ * Importing models at boot adds ~10-30ms per file. For typical projects
+ * with <100 models that's tolerable. The result is cached implicitly
+ * because Bun's module loader memoises imports.
+ */
+async function readModelDashboardConfig(absolutePath: string): Promise<DashboardModelOptions | undefined> {
+  try {
+    const mod = await import(absolutePath) as { default?: { dashboard?: DashboardModelOptions } } & { dashboard?: DashboardModelOptions }
+    const def = mod.default ?? mod
+    const dashboard = (def as { dashboard?: DashboardModelOptions }).dashboard
+    return dashboard
+  }
+  catch {
+    return undefined
+  }
+}
+
 /** Scan a directory for model files and add them to the models array */
 export async function scanModelsDir(
   dir: string,
@@ -164,11 +199,17 @@ export async function scanModelsDir(
       if (name && !seenNames.has(nameLower) && !excludeModels.has(nameLower)) {
         seenNames.add(nameLower)
         const id = modelNameToId(name)
+        const absolutePath = path.join(dir, file)
+        // Read the model's optional dashboard config. The import is
+        // wrapped in try/catch (in the helper) so a single broken model
+        // never blocks the rest of the sidebar from rendering.
+        const dashboard = await readModelDashboardConfig(absolutePath)
         models.push({
           name,
-          icon: getModelIcon(name),
+          icon: dashboard?.icon ?? getModelIcon(name),
           id,
           category: categorizeModel(file, id, defaultCategory),
+          dashboard,
         })
       }
     }
@@ -189,15 +230,36 @@ export async function discoverModels(userModelsPath: string, defaultModelsPath: 
   return models.sort((a, b) => a.name.localeCompare(b.name))
 }
 
+/**
+ * Manifest row written to `defaults/views/dashboard/.discovered-models.json`
+ * for the web-side sidebar to consume. Includes the per-model `dashboard`
+ * config (stacksjs/stacks#1843) so both sidebar builders (the native one
+ * here and the HTML one in `defaults/resources/functions/dashboard/sidebar.ts`)
+ * see the same data.
+ */
+export interface DiscoveredModelManifestRow {
+  id: string
+  name: string
+  icon: string
+  hasDedicatedPage: boolean
+  category: ModelCategory
+  dashboard?: DashboardModelOptions
+}
+
 /** Build the manifest array for discovered models */
-export function buildManifest(models: DiscoveredModel[]): Array<{ id: string, name: string, icon: string, hasDedicatedPage: boolean, category: ModelCategory }> {
-  return models.map(m => ({
-    id: m.id,
-    name: m.name,
-    icon: m.icon,
-    hasDedicatedPage: dedicatedPages.has(m.id),
-    category: m.category ?? 'data',
-  }))
+export function buildManifest(models: DiscoveredModel[]): DiscoveredModelManifestRow[] {
+  return models.map((m) => {
+    const row: DiscoveredModelManifestRow = {
+      id: m.id,
+      name: m.name,
+      icon: m.icon,
+      hasDedicatedPage: dedicatedPages.has(m.id),
+      category: m.category ?? 'data',
+    }
+    if (m.dashboard)
+      row.dashboard = m.dashboard
+    return row
+  })
 }
 
 /** Check if a port is available by attempting to listen on it */
@@ -282,20 +344,46 @@ export interface DashboardSectionToggles {
  * skip-set prevents double-listing models that the section already
  * surfaces as a hand-built static row.
  */
+/**
+ * The section a model surfaces under, after honouring the model's
+ * `dashboard.section` override (stacksjs/stacks#1843). When no override
+ * is set, falls back to the path-derived category (commerce/, Content/,
+ * realtime/, …) → see `categorizeModel`.
+ *
+ * Returns `undefined` when the model is explicitly disabled — callers
+ * should skip the row entirely in that case.
+ */
+function effectiveCategory(m: DiscoveredModel): ModelCategory | undefined {
+  if (m.dashboard?.enabled === false)
+    return undefined
+  // `dashboard.section` is a superset of `ModelCategory` ('home', 'app',
+  // 'utilities', etc.). Narrow when comparing against framework
+  // categories; the wider value flows through unchanged for the sidebar
+  // builders to handle.
+  if (m.dashboard?.section)
+    return m.dashboard.section as ModelCategory
+  return m.category ?? 'data'
+}
+
 function categoryRows(
   baseRoute: string,
   models: DiscoveredModel[],
   category: ModelCategory,
   dedicated: Set<string>,
-): Array<{ id: string, label: string, icon: string, url: string }> {
+): Array<{ id: string, label: string, icon: string, url: string, roles?: string[] }> {
   return models
-    .filter(m => (m.category ?? 'data') === category)
+    .filter(m => effectiveCategory(m) === category)
     .filter(m => !dedicatedPages.has(m.id) && !dedicated.has(m.id))
     .map(m => ({
       id: `model-${m.id}`,
-      label: m.name,
-      icon: m.icon,
+      label: m.dashboard?.label ?? m.name,
+      icon: m.icon, // already resolved with dashboard.icon override at scan time
       url: `${baseRoute}/models/${m.id}`,
+      // Surface role gate as item metadata. The client-side filter in
+      // `useRole()` consumes this to hide rows the viewer can't access.
+      ...(m.dashboard?.roles && m.dashboard.roles.length > 0
+        ? { roles: m.dashboard.roles }
+        : {}),
     }))
 }
 
@@ -325,7 +413,12 @@ export function buildSidebarConfig(
     allModels: toggles.data?.allModels ?? true,
   }
 
-  const sections: Array<{ id: string, title: string, items: Array<{ id: string, label: string, icon: string, url: string }> }> = []
+  // Sidebar item shape carries optional `roles` for client-side filtering
+  // when a model's `dashboard.roles` opts into role-gating
+  // (stacksjs/stacks#1843). Pre-built static rows leave it undefined so
+  // they remain visible to everyone.
+  interface SidebarItem { id: string, label: string, icon: string, url: string, roles?: string[] }
+  const sections: Array<{ id: string, title: string, items: SidebarItem[] }> = []
 
   const homeItems = [
     { id: 'home', label: 'Dashboard', icon: 'house.fill', url: `${baseRoute}/` },
@@ -413,7 +506,7 @@ export function buildSidebarConfig(
   // The "All Models" row points at /models (the overview page that lists
   // every model with live counts). Per-model rows point at /models/<id>
   // (the dynamic ORM viewer).
-  const dataItems: Array<{ id: string, label: string, icon: string, url: string }> = []
+  const dataItems: SidebarItem[] = []
   if (dataRow.dashboard)
     dataItems.push({ id: 'data-dashboard', label: 'Dashboard', icon: 'gauge.with.dots.needle.33percent', url: `${baseRoute}/data/dashboard` })
   if (dataRow.activity)
@@ -430,14 +523,23 @@ export function buildSidebarConfig(
   // Always show every userland + root-level data model. The dedicatedPages
   // skip-set keeps `users`, `teams`, `subscribers`, `activity` from
   // appearing twice when the project also uses the basic rows above.
-  const dynamicRows = discoveredModels
-    .filter(m => m.category === 'userland' || m.category === 'data' || m.category === undefined)
+  // `effectiveCategory` filters out `dashboard.enabled === false` (returns
+  // undefined) and respects `dashboard.section` overrides — a userland
+  // model with `dashboard.section: 'commerce'` won't double-list here.
+  const dynamicRows: SidebarItem[] = discoveredModels
+    .filter((m) => {
+      const eff = effectiveCategory(m)
+      return eff === 'userland' || eff === 'data'
+    })
     .filter(m => !dedicatedPages.has(m.id))
     .map(model => ({
       id: `model-${model.id}`,
-      label: model.name,
+      label: model.dashboard?.label ?? model.name,
       icon: model.icon,
       url: `${baseRoute}/models/${model.id}`,
+      ...(model.dashboard?.roles && model.dashboard.roles.length > 0
+        ? { roles: model.dashboard.roles }
+        : {}),
     }))
 
   sections.push({

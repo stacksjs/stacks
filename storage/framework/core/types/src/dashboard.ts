@@ -64,3 +64,96 @@ export interface DashboardOptions {
 }
 
 export type DashboardConfig = Partial<DashboardOptions>
+
+/**
+ * Per-model dashboard configuration (stacksjs/stacks#1843).
+ *
+ * Attach to a model definition to influence how the model surfaces in the
+ * dashboard sidebar without touching the framework's dashboard internals:
+ *
+ * ```ts
+ * defineModel({
+ *   name: 'AuditLog',
+ *   table: 'audit_logs',
+ *   dashboard: {
+ *     section: 'management',
+ *     icon: 'shield',
+ *     roles: ['admin'],
+ *     description: 'Append-only audit trail (admin-only)',
+ *   },
+ *   attributes: { … },
+ * })
+ * ```
+ *
+ * Resolution chain (most specific → fallback):
+ *
+ *   1. `dashboard.enabled === false` → model is hidden from the sidebar
+ *      entirely. The dynamic ORM viewer (`/models/<id>`) still works for
+ *      direct navigation, but the row is suppressed.
+ *   2. `dashboard.section` → pins the model to that section, overriding
+ *      the path-based auto-categorisation (commerce/, Content/, etc.).
+ *   3. `dashboard.label` / `dashboard.icon` → display overrides; fall back
+ *      to the model name and `iconMap` lookup.
+ *   4. `dashboard.roles` → role-gates the sidebar row. The server-side
+ *      sidebar builder emits the row with role metadata; the client filters
+ *      it out for users who lack a matching role. Permissive default
+ *      (unauthenticated viewers see everything — see `useRole.ts`).
+ */
+export interface DashboardModelOptions {
+  /**
+   * Hide this model from the dashboard sidebar entirely. Direct
+   * navigation to `/models/<id>` still works — this only suppresses the
+   * sidebar row.
+   *
+   * Defaults to `true` (model is shown).
+   */
+  enabled?: boolean
+
+  /**
+   * Override the display name in the sidebar. Defaults to the model name.
+   */
+  label?: string
+
+  /**
+   * Override the icon. Defaults to the auto-derived one in `iconMap`.
+   * The string is whatever the active sidebar icon set expects
+   * (e.g., SF Symbol name for the native sidebar; Lucide-style name for
+   * the web sidebar).
+   */
+  icon?: string
+
+  /**
+   * Pin this model to a specific sidebar section instead of the
+   * auto-derived category. Useful when a "logs" model lives under
+   * `app/Models/` (userland) but should appear under Management rather
+   * than Data.
+   */
+  section?:
+    | 'home'
+    | 'library'
+    | 'content'
+    | 'commerce'
+    | 'marketing'
+    | 'analytics'
+    | 'management'
+    | 'utilities'
+    | 'data'
+    | 'app'
+
+  /**
+   * Role-gate the sidebar row. The row is rendered server-side with
+   * `data-required-roles="…"`; the client filters it out via
+   * `useRole()` if the viewer doesn't hold any of the listed roles.
+   *
+   * The dev-mode default in `useRole()` means unauthenticated viewers
+   * (e.g., the local dev dashboard) see role-gated rows as if they
+   * were a dev — see `composables/useRole.ts` for the full chain.
+   */
+  roles?: string[]
+
+  /**
+   * Short tooltip / hover description for the sidebar row. Optional —
+   * sidebars that don't support tooltips ignore it.
+   */
+  description?: string
+}

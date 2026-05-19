@@ -21,6 +21,10 @@ export * from './components'
 export * from './configure'
 export * from './cron-jobs'
 export * from './dashboard'
+// Module-augments bun-query-builder's BrowserModelDefinition with the
+// stacks `dashboard` slot. Importing this file (transitively via the
+// barrel) is what makes `defineModel({ dashboard: {...} })` typecheck.
+export * from './model-dashboard-augmentation'
 export * from './database'
 export * from './dependencies'
 export * from './deploy'

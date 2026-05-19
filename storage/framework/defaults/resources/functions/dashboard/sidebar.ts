@@ -22,12 +22,29 @@ import { resolve } from 'node:path'
 
 type ModelCategory = 'userland' | 'data' | 'commerce' | 'content' | 'marketing' | 'system'
 
+/**
+ * Per-model dashboard configuration shape (stacksjs/stacks#1843).
+ * Mirror of `DashboardModelOptions` in `@stacksjs/types` — duplicated here
+ * because this file is consumed from STX server-script context where the
+ * full type imports aren't available. Keep in sync with the source.
+ */
+interface DashboardModelOptionsLite {
+  enabled?: boolean
+  label?: string
+  icon?: string
+  section?: string
+  roles?: string[]
+  description?: string
+}
+
 interface DiscoveredModel {
   id: string
   name: string
   icon?: string
   hasDedicatedPage?: boolean
   category?: ModelCategory
+  /** Per-model dashboard config from `defineModel({ dashboard: … })`. */
+  dashboard?: DashboardModelOptionsLite
 }
 
 interface DataRowToggles {
@@ -145,13 +162,47 @@ function svg(key: string): string {
   return SVG_OPEN + path + SVG_CLOSE
 }
 
-interface NavItem { to: string, icon: string, text: string, mpa?: boolean }
+interface NavItem {
+  to: string
+  icon: string
+  text: string
+  mpa?: boolean
+  /**
+   * Role-gate metadata for sidebar items (stacksjs/stacks#1843).
+   * When set, the rendered `<a>` carries `data-required-roles="…"` and
+   * the client-side `useRole()` filter hides the row from viewers who
+   * don't hold a matching role. Unauthenticated viewers (dev dashboard)
+   * see all rows per the permissive default in `useRole`.
+   */
+  roles?: string[]
+}
 
 const SECTION_TOGGLE_ONCLICK = "(function(btn){var sec=btn.closest('.sidebar-section');var key=sec.getAttribute('data-section');sec.classList.toggle('collapsed');try{var c={};var s=localStorage.getItem('sidebar-collapsed');if(s)c=JSON.parse(s);c[key]=sec.classList.contains('collapsed');localStorage.setItem('sidebar-collapsed',JSON.stringify(c));}catch(e){}})(this)"
 
+/**
+ * HTML-encode a string for safe insertion into element attributes (`role`
+ * names, labels) or text content. Models can ship arbitrary `dashboard`
+ * config, so we don't trust the values to be HTML-safe by construction.
+ */
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
 function renderItem(item: NavItem): string {
   const mpaAttr = item.mpa ? ' data-mpa="true"' : ''
-  return `<li><a href="${item.to}" class="sidebar-link"${mpaAttr}><span class="sidebar-icon">${svg(item.icon)}</span><span>${item.text}</span></a></li>`
+  // Roles encoded as a comma-separated list on `data-required-roles`. The
+  // client-side filter in `useRole()` parses this and removes the row if
+  // the viewer doesn't hold any of the listed roles. Static rows omit the
+  // attribute entirely, so they're always visible.
+  const rolesAttr = item.roles && item.roles.length > 0
+    ? ` data-required-roles="${escapeHtml(item.roles.join(','))}"`
+    : ''
+  return `<li${rolesAttr ? ` data-required-roles-li="${escapeHtml((item.roles ?? []).join(','))}"` : ''}><a href="${escapeHtml(item.to)}" class="sidebar-link"${mpaAttr}${rolesAttr}><span class="sidebar-icon">${svg(item.icon)}</span><span>${escapeHtml(item.text)}</span></a></li>`
 }
 
 function renderSection(key: string, label: string, items: NavItem[]): string {
@@ -209,15 +260,37 @@ export function loadDiscoveredModels(): DiscoveredModel[] {
  * `/commerce/customers` already exists, so the Customer model row would
  * just duplicate it).
  */
+/**
+ * The section a model surfaces under, after honouring the model's
+ * `dashboard.section` override. When no override is set, falls back to
+ * the path-derived category. Returns `undefined` when the model is
+ * explicitly disabled so callers can skip the row.
+ */
+function effectiveCategory(m: DiscoveredModel): string | undefined {
+  if (m.dashboard?.enabled === false)
+    return undefined
+  if (m.dashboard?.section)
+    return m.dashboard.section
+  return m.category ?? 'data'
+}
+
 function categoryNavItems(
   models: DiscoveredModel[],
   category: ModelCategory,
   dedicated: Set<string>,
 ): NavItem[] {
   return models
-    .filter(m => (m.category ?? 'data') === category)
+    .filter(m => effectiveCategory(m) === category)
     .filter(m => !m.hasDedicatedPage && !dedicated.has(m.id))
-    .map((m): NavItem => ({ to: `/models/${m.id}`, icon: 'table', text: m.name, mpa: true }))
+    .map((m): NavItem => ({
+      to: `/models/${m.id}`,
+      icon: m.dashboard?.icon ?? m.icon ?? 'table',
+      text: m.dashboard?.label ?? m.name,
+      mpa: true,
+      ...(m.dashboard?.roles && m.dashboard.roles.length > 0
+        ? { roles: m.dashboard.roles }
+        : {}),
+    }))
 }
 
 /**
@@ -306,9 +379,22 @@ export function buildSidebarNavHtml(
   if (dataRows.subscribers) dataNav.push({ to: '/data/subscribers', icon: 'mail', text: 'Subscribers' })
   if (dataRows.allModels) dataNav.push({ to: '/models', icon: 'table', text: 'All Models' })
   for (const m of discoveredModels) {
-    if (m.category !== 'userland' && m.category !== 'data' && m.category !== undefined) continue
+    // Skip when:
+    //   - explicit `dashboard.enabled === false` (effectiveCategory returns undefined)
+    //   - pinned to a different section via `dashboard.section`
+    //   - already has a dedicated dashboard page
+    const eff = effectiveCategory(m)
+    if (eff !== 'userland' && eff !== 'data') continue
     if (m.hasDedicatedPage) continue
-    dataNav.push({ to: `/models/${m.id}`, icon: 'table', text: m.name, mpa: true })
+    dataNav.push({
+      to: `/models/${m.id}`,
+      icon: m.dashboard?.icon ?? m.icon ?? 'table',
+      text: m.dashboard?.label ?? m.name,
+      mpa: true,
+      ...(m.dashboard?.roles && m.dashboard.roles.length > 0
+        ? { roles: m.dashboard.roles }
+        : {}),
+    })
   }
   sections.push(['data', 'data', dataNav])
 

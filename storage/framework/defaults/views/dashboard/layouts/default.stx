@@ -176,6 +176,49 @@ const toastWrapperClass = (type) => `pointer-events-auto overflow-hidden bg-whit
   warning: 'ring-yellow-500/20',
   info: 'ring-blue-500/20',
 }[type] || 'ring-black/5 dark:ring-white/10')} rounded-lg shadow-lg`
+
+// Role-gated sidebar filter (stacksjs/stacks#1843).
+//
+// The server emits sidebar `<a>` items with `data-required-roles="…"` for
+// any model that declares `dashboard.roles: ['admin', 'dev', …]`. We
+// walk those nodes on hydration and on auth-store changes, hiding rows
+// the current viewer can't access.
+//
+// Permissive default: when the viewer is unauthenticated (the localhost
+// dev dashboard) `isDev()` returns true so every gated row stays visible.
+// In production deployments where `/api/dashboard/*` sits behind auth,
+// the endpoint returns real role data and the filter hides what the
+// viewer can't reach.
+const auth = useStore('auth')
+auth.load()
+
+function applyRoleFilter() {
+  const roleList = auth.roles()
+  const unauth = auth.unauthenticated()
+  const nodes = document.querySelectorAll('[data-required-roles]')
+  for (const el of nodes) {
+    const required = (el.getAttribute('data-required-roles') || '')
+      .split(',').map(s => s.trim()).filter(Boolean)
+    if (required.length === 0) continue
+    // Unauthenticated viewers (no auth wired) see everything — keeps the
+    // dev dashboard usable. Once authenticated, role membership becomes
+    // the authoritative answer.
+    const allowed = unauth || required.some(r => roleList.includes(r))
+    // Hide the parent <li> when the link is inside one; otherwise the
+    // link itself. Either way the row disappears from the rendered
+    // sidebar; CSS `display: none` keeps the DOM intact for SPA nav so
+    // a later role change can re-show without a re-render.
+    const target = el.closest('li') || el
+    target.style.display = allowed ? '' : 'none'
+  }
+}
+
+effect(() => {
+  // `effect` re-runs whenever `auth.roles()` / `auth.unauthenticated()`
+  // change. Includes the first run, which executes after hydration once
+  // the auth fetch resolves.
+  applyRoleFilter()
+})
 </script>
 
 <main data-stx-content>
