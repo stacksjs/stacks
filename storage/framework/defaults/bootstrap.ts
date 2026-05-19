@@ -26,6 +26,18 @@ import { frameworkPath } from '@stacksjs/path'
 import { route } from '@stacksjs/router'
 import MaintenanceMiddleware from './app/Middleware/Maintenance'
 
+// RBAC: wire the bun-query-builder-backed store so `hasRole(user, …)` and
+// friends from `@stacksjs/auth` actually hit the database (otherwise every
+// call throws "RBAC store not configured"). The store is a thin adapter
+// over the `roles` / `permissions` / `user_roles` / `user_permissions` /
+// `role_permissions` tables created by migrations 0000000101–0000000105.
+// Registered unconditionally because the auth middleware + Role middleware
+// both reach for the helpers at request time regardless of which feature
+// the project opts into.
+import { createBqbRbacStore, setRbacStore } from '@stacksjs/auth'
+
+setRbacStore(createBqbRbacStore())
+
 // Global maintenance / coming-soon gate. Registered first so the
 // `buddy down` / `buddy coming-soon` (and their env-var equivalents)
 // state files intercept every request before any other middleware or

@@ -21,4 +21,9 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   route.get('/authors', 'Actions/Dashboard/Content/AuthorIndexAction')
   route.get('/posts', 'Actions/Dashboard/Content/PostIndexAction')
   route.get('/ci/status', 'Actions/Dashboard/Ci/StatusAction')
+  // RBAC identity endpoint (stacksjs/stacks#1843). Returns the
+  // authenticated user + their role names so the dashboard's `useRole()`
+  // composable can gate dev-mode surfaces. Tolerates unauthenticated
+  // requests — see the action for the soft-fallback shape.
+  route.get('/auth/me', 'Actions/Dashboard/Auth/MeAction')
 })

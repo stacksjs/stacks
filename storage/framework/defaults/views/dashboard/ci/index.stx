@@ -14,11 +14,11 @@
   import { useRole } from '../composables/useRole'
 
   const ci = useStore('ci')
-  // Role check is a stub until stacksjs/stacks#1843 ships the real role
-  // system. Until then `isDev()` returns true so this surface renders for
-  // everyone — same as the server-side `toggles.ci` gate. The hook point
-  // is here so swapping the stub flips both the sidebar item and the page
-  // body in one place.
+  // Role check is now backed by the real RBAC store + `/api/dashboard/auth/me`
+  // (stacksjs/stacks#1843). `isDev()` returns true if the authenticated user
+  // holds the `admin` or `dev` role, OR if the request is unauthenticated
+  // (i.e. local dev dashboard with no bearer token) — see `useRole.ts` for
+  // the full resolution chain.
   const { isDev } = useRole()
   const canView = derived(() => isDev())
 
@@ -90,8 +90,10 @@
 </script>
 
 <div class="mx-auto px-6 py-8 max-w-7xl">
-  <!-- Role-gated wrapper: in #1843 this collapses to nothing for client-role
-       viewers. Until then `canView` is always true (see useRole stub). -->
+  <!-- Role-gated wrapper. Collapses to the "requires dev role" message
+       when an authenticated client-role user lands here. Unauthenticated
+       viewers (dev dashboard on localhost) see the surface as if they
+       were a dev. -->
   <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center">
     <p class="text-sm text-zinc-600 dark:text-zinc-400">This surface requires the dev role.</p>
   </div>

@@ -1,47 +1,58 @@
 /**
  * Role-aware visibility hook for dashboard features.
  *
- * **Stub** — the role system itself lives in
- * [stacksjs/stacks#1843](https://github.com/stacksjs/stacks/issues/1843).
- * Until that lands, every caller sees `isDev: true` so the dev-mode
- * dashboard surfaces (CI tracking from #1844, future infra surfaces)
- * render as if the viewer were an admin/dev.
+ * Backs gating decisions across the dashboard
+ * (stacksjs/stacks#1843, first consumer: CI tracking in #1844).
  *
- * Surfaces that should be gated behind the eventual role system call
- * this composable; replacing the body with the real implementation
- * once #1843 ships flips all consumers in one place.
+ * Resolution chain (in order):
  *
- * Example consumer:
+ *   1. **Authenticated user with roles** — Reads the role names returned
+ *      by `/api/dashboard/auth/me` (Action: `Dashboard/Auth/MeAction` →
+ *      `@stacksjs/auth` → `BqbRbacStore` → `user_roles` pivot). Role
+ *      membership is the authoritative answer.
+ *   2. **Authenticated user with no role records** — The user exists but
+ *      has nothing in `user_roles`. Treated as `client` (most restrictive)
+ *      so a brand-new account doesn't accidentally see dev tools before
+ *      an admin assigns a role.
+ *   3. **Unauthenticated** — No bearer token, no session. The dev
+ *      dashboard on localhost lands here. Defaults to `isDev: true` so
+ *      the surface stays usable without forcing anyone to log in against
+ *      a local DB. Production deployments that gate `/api/dashboard/*`
+ *      behind the `auth` middleware never hit this branch — the endpoint
+ *      returns a real user/roles and case (1) applies.
  *
- * ```ts
- * const { isDev } = useRole()
- * const showCiTab = derived(() => isDev())
- * ```
+ * Consumers should `derived(() => isDev())` so the signal flips
+ * reactively if the user's roles change (admin assigns/revokes via the
+ * RBAC UI without a page reload).
  */
-import { state } from '@stacksjs/stx'
+import { useStore } from '@stacksjs/stx'
 
 export interface RoleSnapshot {
   /** Admin: every dashboard surface is visible. */
   isAdmin: () => boolean
-  /** Dev: infra/dev-mode surfaces (CI tracking, runner alerts) are visible. */
+  /** Dev: infra/dev-mode surfaces (CI tracking, runner alerts, queries). */
   isDev: () => boolean
   /** Client: minimal surface — content / orders / billing only. */
   isClient: () => boolean
+  /** Trigger the identity round-trip. Safe to call repeatedly; the store
+   * dedupes in-flight + cached responses. */
+  load: () => Promise<void>
+  /** Force a re-fetch (e.g. after an admin assigns the viewer a new role). */
+  refresh: () => Promise<void>
 }
 
-// Stub returns hardcoded "everyone is a dev" until #1843 ships the real
-// role layer. State wrappers keep the API reactive so consumers that
-// `derived(() => isDev())` won't have to rewrite their call sites.
-const TRUE = state(true)
-const FALSE = state(false)
-
 export function useRole(): RoleSnapshot {
-  // TODO(#1843): replace with the real role resolution. Should read the
-  // authenticated user's role from the auth store / cookie / JWT and
-  // expose reactive signals that flip when the user re-authenticates.
+  const auth = useStore('auth')
+
+  // Fire the load lazily on first consumer. The store guards against
+  // double-fetch so multiple `useRole()` calls in one page are safe.
+  auth.load()
+
   return {
-    isAdmin: () => TRUE(),
-    isDev: () => TRUE(),
-    isClient: () => FALSE(),
+    isAdmin: () => auth.isAdmin(),
+    isDev: () => auth.isDev(),
+    isClient: () => auth.isClient(),
+    load: () => auth.load(),
+    refresh: () => auth.refresh(),
   }
 }

@@ -23,6 +23,7 @@ export * from './authorizable'
 
 // Role-Based Access Control (RBAC)
 export * from './rbac'
+export { createBqbRbacStore } from './rbac-store-bqb'
 
 // Email Verification
 export * from './email-verification'
