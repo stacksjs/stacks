@@ -62,8 +62,15 @@ export function seed(buddy: CLI): void {
     .alias('db:seed')
     .option('-p, --project [project]', descriptions.project, { default: false })
     .option('-c, --class [class]', 'Run a specific seeder class from database/seeders/', { default: '' })
+    // Escape hatch for the protected-model guard (stacksjs/stacks#1852).
+    // By default `./buddy seed` skips auth/oauth models on a non-fresh
+    // database so re-rolling the Personal Access Client secret doesn't
+    // silently invalidate every currently-logged-in user's session.
+    // Pass --allow-protected to override.
+    .option('--allow-protected', 'Seed auth/oauth models even on a non-fresh DB (will invalidate live tokens)', { default: false })
+    .option('--fresh', 'Truncate tables before seeding', { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
-    .action(async (options: SeedOptions & { class?: string }) => {
+    .action(async (options: SeedOptions & { class?: string, allowProtected?: boolean, fresh?: boolean }) => {
       log.debug('Running `buddy seed` ...', options)
 
       const perf = await intro('buddy seed')

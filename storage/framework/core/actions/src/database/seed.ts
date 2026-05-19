@@ -2,10 +2,18 @@ import process from 'node:process'
 import { log } from '@stacksjs/cli'
 import { seed } from '@stacksjs/database'
 
+// `runAction(Action.Seed, options)` spawns this file with `buddyOptions`
+// translating the CLI options into argv flags. Bridge the auth-relevant
+// ones here so the seeder's protected-model guard (stacksjs/stacks#1852)
+// can be opted out of without reaching for env vars.
+const argv = process.argv.slice(2)
+const allowProtected = argv.includes('--allow-protected') || argv.includes('--allowProtected')
+const fresh = argv.includes('--fresh')
+
 const startTime = Date.now()
 
 try {
-  const result = await seed({ verbose: true })
+  const result = await seed({ verbose: true, fresh, allowProtected })
   const duration = Date.now() - startTime
 
   if (result.failed > 0) {

@@ -24,6 +24,46 @@ function defaultModelsPath(subpath?: string): string {
 }
 
 /**
+ * Models that touch live auth state and are unsafe to auto-seed on an
+ * already-populated database (stacksjs/stacks#1852).
+ *
+ * The motivating incident: a userland `app/Models/OauthClient.ts` shipped
+ * with the default `useSeeder: { count: 10 }` trait. Every `./buddy seed`
+ * re-rolled the `oauth_clients` table — including the row at id=1, the
+ * Personal Access Client whose `secret` is part of the encryption key
+ * used to derive each issued access token's `encryptedId`. With the
+ * secret rotated, every previously-issued token failed validation at
+ * `decrypt(encryptedId, clientSecret)`, surfacing as a generic
+ * "Unauthorized. Invalid token." 401 with no log line indicating what
+ * actually happened.
+ *
+ * Models on this list are skipped by default. They are seeded when:
+ *
+ *   - `fresh: true` is passed (the seeder truncates first; live tokens
+ *     are gone anyway, so re-rolling the PAC secret is harmless), OR
+ *   - `allowProtected: true` is passed (explicit opt-in escape hatch
+ *     surfaced as `./buddy seed --allow-protected`).
+ *
+ * The list is conservative: any model whose rows participate in token
+ * issuance / validation / refresh belongs here.
+ */
+export const PROTECTED_MODELS: readonly string[] = Object.freeze([
+  'OauthClient',
+  'OauthAccessToken',
+  'OauthRefreshToken',
+  'PersonalAccessToken',
+])
+
+/**
+ * Test whether a model name is on the protected list.
+ * Exported for downstream tooling (CI lint rules, custom seeders) so the
+ * list stays a single source of truth.
+ */
+export function isProtectedModel(name: string): boolean {
+  return PROTECTED_MODELS.includes(name)
+}
+
+/**
  * Convert a camelCase or PascalCase string to snake_case
  * Examples:
  *   companyName -> company_name
@@ -60,6 +100,14 @@ export interface SeederConfig {
   except?: string[]
   /** Include framework default models even when app/Models contains userland models */
   includeDefaults?: boolean
+  /**
+   * Bypass the {@link PROTECTED_MODELS} guard and seed auth/oauth models
+   * even on a non-fresh database. Use this only when you know the
+   * downstream consequence (every issued token will fail validation
+   * because the Personal Access Client secret got rotated). Surfaced via
+   * `./buddy seed --allow-protected`. (stacksjs/stacks#1852)
+   */
+  allowProtected?: boolean
 }
 
 /**
@@ -509,6 +557,33 @@ export async function seed(config: SeederConfig = {}): Promise<SeedSummary> {
 
   if (config.except && config.except.length > 0) {
     models = models.filter(m => !config.except!.includes(m.name))
+  }
+
+  // Protected-model guard (stacksjs/stacks#1852).
+  //
+  // Auth/oauth models are unsafe to auto-seed on a non-fresh database
+  // because their rows feed token validation. Skip them unless the
+  // caller opted in via `fresh` (tables are truncated first — live
+  // tokens are gone anyway) or `allowProtected` (explicit escape
+  // hatch surfaced as `./buddy seed --allow-protected`).
+  //
+  // The skip is logged unconditionally — silence here is what caused the
+  // original "Unauthorized. Invalid token." mystery in the first place.
+  if (!config.fresh && !config.allowProtected) {
+    const skipped: SeederModel[] = []
+    models = models.filter((m) => {
+      if (isProtectedModel(m.name)) {
+        skipped.push(m)
+        return false
+      }
+      return true
+    })
+    if (skipped.length > 0) {
+      log.info(
+        `Skipped ${skipped.length} protected auth model(s) to avoid invalidating live sessions: ${skipped.map(m => m.name).join(', ')}`,
+      )
+      log.info('  Re-run with --fresh (truncates tables first) or --allow-protected to include them.')
+    }
   }
 
   // Sort by dependencies
