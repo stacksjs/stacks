@@ -22,6 +22,7 @@
   // (drag the card body) share the same /cards/reorder + /columns/reorder
   // mutations on the store.
   import { useStore } from '@stacksjs/stx'
+  import { useNavigation } from '../composables/useNavigation'
   import { useRole } from '../composables/useRole'
   import {
     draggable,
@@ -170,9 +171,10 @@
     })[color] || 'bg-slate-100 dark:bg-slate-800'
   }
 
-  // Pull the id from the URL.
-  const id = Number(window.location.pathname.split('/').pop())
-  if (Number.isFinite(id) && id > 0)
+  // Pull the id from the URL via the composable instead of window.location
+  // (stacksjs/stacks#1838 — no vanilla DOM in dashboard pages).
+  const id = useNavigation().urlIdParam()
+  if (id !== null)
     kanban.loadBoard(id)
 
   // ─── Composer handlers ────────────────────────────────────────────

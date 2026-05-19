@@ -1,8 +1,35 @@
 # Dashboard `.stx` audit — stacksjs/stacks#1838
 
-_Generated 2026-05-04 from `storage/framework/defaults/views/dashboard/`._
+_Initial audit 2026-05-04. Refreshed 2026-05-20 with current numbers; the
+per-area / per-file inventory below still reflects the 2026-05-04 snapshot
+and will be regenerated on the next audit pass._
 
-## Roll-up
+## Roll-up — 2026-05-20
+
+| Metric | 2026-05-04 | 2026-05-20 | Δ |
+|---|---:|---:|---:|
+| Total `.stx` files | 110 | 113 | +3 |
+| `<script server>` blocks | 98 | 57 | **−41** |
+| `<script client>` blocks | 78 | 89 | +11 |
+| Bare `<script>` blocks (no qualifier) | 11 | 9 | −2 |
+| `window.` / `document.` lines | 168 | 78 | **−90** |
+| Pages calling `useStore(…)` | 0 | 5 | +5 |
+| Pages importing a composable | 0 | 4 | +4 |
+| Stores defined under `dashboard/stores/` | 1 | 5 | +4 |
+| Composables under `dashboard/composables/` | 0 | 4 | +4 |
+
+Three new pages landed since the original audit (kanban index, kanban
+`[id]`, management/permissions — see #1846 and #1845). Net `<script
+server>` count still dropped because the surrounding sweep on the existing
+pages outpaced the new arrivals.
+
+The remaining 78 DOM-access lines cluster in two patterns: pre-existing
+`document.getElementById(...)` event wiring in vanilla `<script>` blocks
+(largely under `content/*`, `commerce/*`), and the layout's own
+import-map / role-filter installer where direct DOM is appropriate. The
+in-page DOM references are the next sweep target.
+
+## Roll-up — 2026-05-04 (initial snapshot)
 
 | Metric | Count |
 |---|---:|

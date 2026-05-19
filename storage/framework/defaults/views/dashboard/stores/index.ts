@@ -1,4 +1,5 @@
 import { defineStore, derived, registerStoresClient, state } from '@stacksjs/stx'
+import { isDarkTheme, useTheme } from '../composables/useTheme'
 
 /**
  * Dashboard Store — shared state across all dashboard pages.
@@ -19,25 +20,13 @@ export const dashboardStore = defineStore('dashboard', () => {
 
   const unreadCount = derived(() => notifications().filter(n => !n.read).length)
 
-  // System preference exposed as a tracked signal so `isDark` re-runs
-  // when the user flips OS theme. We can't pull `usePreferredDark` from
-  // `@stacksjs/stx/composables` here — that subpath ships types only, no
-  // runtime — so we wire `matchMedia` directly. The window guard keeps
-  // this safe to import server-side; the listener attaches lazily on
-  // first read in the browser.
-  const prefersDark = state(false)
-  if (typeof window !== 'undefined' && typeof window.matchMedia === 'function') {
-    const mql = window.matchMedia('(prefers-color-scheme: dark)')
-    prefersDark.set(mql.matches)
-    mql.addEventListener('change', e => prefersDark.set(e.matches))
-  }
+  // OS dark-mode preference now lives in `useTheme()` (stacksjs/stacks#1838)
+  // — the store no longer reaches into `window.matchMedia` directly. The
+  // composable installs a single listener at module load and exposes the
+  // signal so this derived re-runs when the OS flips theme.
+  const { prefersDark } = useTheme()
 
-  const isDark = derived(() => {
-    const t = theme()
-    if (t === 'system')
-      return prefersDark()
-    return t === 'dark'
-  })
+  const isDark = derived(() => isDarkTheme(theme(), prefersDark()))
 
   function navigate(pageId: string): void {
     currentPage.set(pageId)
