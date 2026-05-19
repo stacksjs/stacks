@@ -8,8 +8,10 @@
 [![npm downloads](https://img.shields.io/npm/dm/stacks?style=flat-square)](https://npmjs.com/package/stacks)
 <!-- [![Codecov][codecov-src]][codecov-href] -->
 
-> [!WARNING]
-> Stay tuned. Open Beta coming soon.
+> [!NOTE]
+> Stacks is in active development and usable today — every section below
+> is real, runnable functionality. Expect occasional breaking changes
+> while we cut the official 1.0. Feedback and issue reports are welcome.
 
 Stacks is a rapid development framework, where the goal is to _help you_ create & maintain frontends, backends, and clouds—without having to worry about the boilerplate. _An all-in-one toolkit that meets all your full stack needs._
 
@@ -28,48 +30,40 @@ As a developer, Stacks helps you every step along the way—in beginner & expert
 
 <!-- ![Atomic UI & FX Design](./docs/assets/diagram.png) -->
 
+## Prerequisites
+
+Stacks runs on [Bun](https://bun.sh). You'll need:
+
+- **Bun ≥ 1.3.11** — install with `curl -fsSL https://bun.sh/install | bash`, or upgrade an existing install with `bun upgrade`.
+- **macOS, Linux, or WSL** — Windows-native is on the roadmap; today the toolchain assumes a POSIX shell.
+- **Node.js is NOT required.** Bun handles the JS/TS runtime, package management, and bundling.
+
+That's it for the framework itself. Individual features (Postgres, Redis, AWS deploys, etc.) bring their own prereqs — each is called out where it matters in the docs.
+
 ## Get Started
 
-It’s incredibly easy to get started with this framework. Simply run the following command in your terminal:
+The fastest path, assuming Bun is installed:
 
 ```bash
-curl -Ssf stacksjs.com/install | sh # wip
-
-# alternatively, if Bun >= v1.3.11 is installed already
-# you may also get started via
 bunx buddy new my-project
 ```
 
+A one-line installer (`curl -Ssf stacksjs.com/install | sh`) is also planned and will appear here once it lands; for now the `bunx` form above is the supported install path.
+
 ## Usage
 
-The following list includes some of the most common ways to interact with the Stacks API.
-
-_Meet the toolkit, Buddy:_
+Stacks ships with `buddy`, a single CLI for everything you'll do day to day. The handful below covers the common workflows; the full reference is collapsed underneath.
 
 ```bash
-buddy install # installs all dependencies
-buddy dev # starts one of the dev servers (frontend, API, components, docs, desktop, etc.)
-buddy share # creates a sharable link of your local project
-buddy build # follow CLI prompts to select which library (or server) to build
-buddy commit # follow CLI prompts for committing changes
-buddy release # creates the releases for the stack & consequently, publishes them to npm
-buddy upgrade # auto-update all deps & the Stacks framework
-
-buddy make:component HelloWorld # scaffolds a Component
-buddy make:function HelloWorld # scaffolds a Function
-buddy make:model Car # scaffolds a Model
-buddy make:action UpdateCar # scaffolds an Action
-buddy make:migration create_cars_table # scaffolds a Migration
-buddy make:view Car # scaffolds a Page (https://my-project.test/car)
-buddy make:command Inspire # scaffolds a Command
-buddy make:job SendEmail # scaffolds a Job
-buddy make:middleware Logger # scaffolds a new Middleware
-buddy make:notification WelcomeEmail # scaffolds a Notification
-buddy make:lang de # scaffolds a language file
-
-buddy list # lists all available commands
-buddy --help
+buddy dev          # start the dev server (frontend, API, dashboard, …)
+buddy build        # build for production (CLI prompts for what to build)
+buddy test         # run tests
+buddy migrate      # run database migrations
+buddy make:action UpdateUser   # scaffold a new Action (also: model, view, job, …)
+buddy --help       # show every available command
 ```
+
+For the full command reference, see the collapsible section below or the [Buddy CLI documentation](https://stacksjs.org/docs/cli).
 
 <details>
 <summary>View the complete Buddy Toolkit</summary>
@@ -243,7 +237,7 @@ bud fresh
 
 </details>
 
-Read more here about the Stacks CLI in the documentation.
+Read more about the Buddy CLI in the [official docs](https://stacksjs.org/docs/cli) — every command, every flag, every prompt explained.
 
 ## Features
 
