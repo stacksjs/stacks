@@ -19,7 +19,12 @@ export default new Action({
     },
 
     level: {
-      rule: schema.string().in(['info', 'warn', 'error']),
+      // `schema.string().in([...])` was a renamed/removed method
+      // (stacksjs/stacks#1853) — the validator throws "schema.string().in
+      // is not a function" at module evaluation. Use `schema.enum([...])`
+      // — that's the working enum primitive used elsewhere in defaults
+      // (Settings/UpdateAiConfig.ts) and in the typical project's models.
+      rule: schema.enum(['info', 'warn', 'error']),
       message: 'The log level must be one of "info", "warn", or "error".',
     },
   },
