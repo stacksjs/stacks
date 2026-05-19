@@ -134,6 +134,7 @@ const sidebarRoutes = {
   'serverless': '/serverless',
   'dns': '/dns',
   'permissions': '/management/permissions',
+  'kanban': '/kanban',
   'mailboxes': '/mailboxes',
   'logs': '/logs',
   'buddy': '/buddy',

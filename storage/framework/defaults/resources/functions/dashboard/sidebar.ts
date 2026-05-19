@@ -488,6 +488,11 @@ export function buildSidebarNavHtml(
       { to: '/logs', icon: 'log', text: 'Logs' },
       { to: '/health', icon: 'activity', text: 'Health' },
       { to: '/insights', icon: 'star', text: 'Insights' },
+      // Kanban surface (stacksjs/stacks#1846). Role-gated to admin+dev
+      // via data-required-roles; the client filter in useRole() hides
+      // the row for client-role viewers. Permissive default applies on
+      // the localhost dev dashboard.
+      { to: '/kanban', icon: 'table', text: 'Kanban', mpa: true, roles: ['admin', 'dev'] },
     ]
     // CI tracking (stacksjs/stacks#1844) — opt-in via `ci.enabled` in
     // config/dashboard.ts. The page additionally checks `useRole().isDev()`

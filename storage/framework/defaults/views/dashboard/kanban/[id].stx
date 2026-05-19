@@ -1,0 +1,119 @@
+@extends('layouts/default')
+
+@section('content')
+<script client>
+  // Kanban — Single board view (stacksjs/stacks#1846).
+  //
+  // Phase 1 placeholder: loads the board's data via the store so the
+  // read path is exercised, but renders a static summary + a "Phase 2"
+  // notice. The full drag-and-drop kanban view lands in Phase 2; the
+  // page structure is here so the URL works and existing link targets
+  // (sidebar, boards index) point at a real page.
+  import { useStore } from '@stacksjs/stx'
+  import { useRole } from '../composables/useRole'
+
+  const kanban = useStore('kanban')
+  const { isDev } = useRole()
+  const canView = derived(() => isDev())
+
+  const loading = derived(() => kanban.loadingBoard())
+  const error = derived(() => kanban.errorBoard())
+  const board = derived(() => kanban.currentBoard())
+  const columns = derived(() => kanban.currentColumns())
+  const labels = derived(() => kanban.currentLabels())
+
+  function totalCards() {
+    const cols = columns()
+    let n = 0
+    for (const col of cols) n += (col.cards ? col.cards.length : 0)
+    return n
+  }
+
+  function columnPreviewText(col) {
+    const n = col.cards ? col.cards.length : 0
+    if (n === 0) return col.name + ' — empty'
+    if (n === 1) return col.name + ' — 1 card'
+    return col.name + ' — ' + n + ' cards'
+  }
+
+  // Pull the id from the URL. stx page routing exposes route params
+  // via `route.params` / `useRoute()` depending on version; the safe
+  // read is to parse `window.location.pathname` — the route here is
+  // `/kanban/[id]` so the id is the last segment.
+  const id = Number(window.location.pathname.split('/').pop())
+  if (Number.isFinite(id) && id > 0)
+    kanban.loadBoard(id)
+</script>
+
+<div class="mx-auto px-6 py-8 max-w-7xl">
+  <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center">
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">Kanban boards require the dev role.</p>
+  </div>
+
+  <div :if="canView">
+    <a href="/kanban" class="inline-flex items-center gap-1 text-xs text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 no-underline mb-4" data-mpa="true">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+      All boards
+    </a>
+
+    <!-- Loading -->
+    <div :if="loading" class="flex items-center justify-center" style="min-height: 40vh">
+      <svg class="text-violet-500 animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+    </div>
+
+    <!-- Error -->
+    <div :if="error && !loading" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-5 py-4">
+      <p class="text-sm font-medium text-red-700 dark:text-red-300">Couldn't load board</p>
+      <p class="mt-1 text-xs text-red-600 dark:text-red-400" :text="error"></p>
+    </div>
+
+    <!-- Loaded -->
+    <div :if="board && !loading && !error">
+      <header class="mb-6">
+        <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100" :text="board.name"></h1>
+        <p :if="board.description" class="mt-1 text-sm text-zinc-500" :text="board.description"></p>
+        <p class="mt-2 text-xs text-zinc-400">
+          <span :text="columns.length + ' columns'"></span>
+          <span> · </span>
+          <span :text="totalCards() + ' cards'"></span>
+          <span :if="labels.length > 0"> · </span>
+          <span :if="labels.length > 0" :text="labels.length + ' labels'"></span>
+        </p>
+      </header>
+
+      <!-- Phase 1: column summary cards. Phase 2 replaces this with the
+           drag-and-drop kanban surface. -->
+      <div class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-4 mb-6">
+        <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">Phase 1: read-only summary</p>
+        <p class="mt-1 text-xs text-zinc-500">
+          The drag-and-drop board view ships in Phase 2 of <a href="https://github.com/stacksjs/stacks/issues/1846" target="_blank" class="text-violet-600 dark:text-violet-400 hover:underline">#1846</a>.
+          This page proves the read API works end-to-end.
+        </p>
+      </div>
+
+      <div class="grid gap-3" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))">
+        <div
+          :for="col in columns"
+          class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 overflow-hidden"
+        >
+          <div class="px-4 py-2 border-b border-zinc-100 dark:border-zinc-900">
+            <p class="text-sm font-medium text-zinc-700 dark:text-zinc-200" :text="col.name"></p>
+            <p class="text-xs text-zinc-400" :text="columnPreviewText(col)"></p>
+          </div>
+          <div class="p-2 space-y-1">
+            <div
+              :for="card in col.cards"
+              class="rounded border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-3 py-2"
+            >
+              <p class="text-xs text-zinc-800 dark:text-zinc-200 truncate" :text="card.title"></p>
+            </div>
+            <p :if="col.cards.length === 0" class="text-xs text-zinc-400 italic px-1 py-2">No cards yet</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+@endsection

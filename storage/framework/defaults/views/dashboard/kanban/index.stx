@@ -1,0 +1,121 @@
+@extends('layouts/default')
+
+@section('content')
+<script client>
+  // Kanban — Boards index (stacksjs/stacks#1846, Phase 1).
+  //
+  // Lists every non-archived board with a card-count badge. Clicking a
+  // board navigates to `/kanban/[id]` — Phase 2 ships the actual
+  // drag-and-drop board view at that URL.
+  //
+  // Follows #1838 conventions: no <script server>, no vanilla DOM
+  // reads, all state via the store. Role gate via useRole() — the
+  // surface is dev-mode-only (admins + devs see it, clients don't).
+  import { useStore } from '@stacksjs/stx'
+  import { useRole } from '../composables/useRole'
+
+  const kanban = useStore('kanban')
+  const { isDev } = useRole()
+  const canView = derived(() => isDev())
+
+  const loading = derived(() => kanban.loading())
+  const error = derived(() => kanban.error())
+  const boards = derived(() => kanban.boards())
+  const hasBoards = derived(() => kanban.hasBoards())
+
+  // Color → tailwind class. Free-form string in the model, mapped here
+  // so the UI stays stable when a new hue is added without an explicit
+  // mapping (falls back to violet).
+  function accentClass(color) {
+    return ({
+      violet: 'bg-violet-500',
+      blue: 'bg-blue-500',
+      emerald: 'bg-emerald-500',
+      amber: 'bg-amber-500',
+      rose: 'bg-rose-500',
+      slate: 'bg-slate-500',
+    })[color] || 'bg-violet-500'
+  }
+
+  function cardCountText(n) {
+    if (n === 0) return 'No cards'
+    if (n === 1) return '1 card'
+    return n + ' cards'
+  }
+
+  kanban.loadBoards()
+</script>
+
+<div class="mx-auto px-6 py-8 max-w-7xl">
+  <!-- Role gate. The full RBAC check via useRole(); unauthenticated
+       dev-dashboard viewers see the surface as if they were a dev per
+       the permissive default. -->
+  <div :if="!canView" class="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-5 py-8 text-center">
+    <p class="text-sm text-zinc-600 dark:text-zinc-400">Kanban boards require the dev role.</p>
+  </div>
+
+  <div :if="canView">
+    <header class="flex items-center justify-between mb-6">
+      <div>
+        <h1 class="font-semibold text-2xl text-zinc-900 dark:text-zinc-100">Boards</h1>
+        <p class="mt-1 text-sm text-zinc-500">Internal project-management boards. Drag-and-drop kanban view lands in Phase 2.</p>
+      </div>
+      <button
+        class="px-3 py-1.5 text-sm rounded-md bg-violet-600 hover:bg-violet-700 text-white opacity-50 cursor-not-allowed"
+        title="Board creation lands in Phase 2 — see #1846"
+        disabled
+      >
+        New board
+      </button>
+    </header>
+
+    <!-- Loading -->
+    <div :if="loading" class="flex items-center justify-center" style="min-height: 40vh">
+      <svg class="text-violet-500 animate-spin" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12a9 9 0 1 1-6.219-8.56" />
+      </svg>
+    </div>
+
+    <!-- Error -->
+    <div :if="error && !loading" class="rounded-lg border border-red-200 dark:border-red-900/40 bg-red-50 dark:bg-red-950/30 px-5 py-4">
+      <p class="text-sm font-medium text-red-700 dark:text-red-300">Couldn't load boards</p>
+      <p class="mt-1 text-xs text-red-600 dark:text-red-400" :text="error"></p>
+      <p class="mt-2 text-xs text-zinc-500">Most common: migrations haven't run yet. Try <code>./buddy migrate</code>.</p>
+    </div>
+
+    <!-- Empty state — DB reachable but no boards yet -->
+    <div :if="!loading && !error && !hasBoards" class="rounded-lg border border-dashed border-zinc-300 dark:border-zinc-700 px-6 py-12 text-center">
+      <svg class="mx-auto text-zinc-400 mb-3" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3" y="4" width="6" height="16" rx="1" />
+        <rect x="11" y="4" width="6" height="10" rx="1" />
+        <rect x="19" y="4" width="2" height="6" rx="1" />
+      </svg>
+      <p class="text-sm font-medium text-zinc-700 dark:text-zinc-300">No boards yet</p>
+      <p class="mt-1 text-xs text-zinc-500">Phase 2 ships board creation. For now, seed via SQL or wait for the write API.</p>
+    </div>
+
+    <!-- Boards grid -->
+    <div :if="!loading && !error && hasBoards" class="grid gap-4" style="grid-template-columns: repeat(auto-fill, minmax(280px, 1fr))">
+      <a
+        :for="board in boards"
+        :href="`/kanban/${board.id}`"
+        class="block rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors overflow-hidden no-underline group"
+        data-mpa="true"
+      >
+        <div :class="`h-2 ${accentClass(board.color)}`"></div>
+        <div class="px-4 py-3">
+          <div class="flex items-start gap-2">
+            <h2 class="flex-1 font-medium text-sm text-zinc-900 dark:text-zinc-100 group-hover:text-violet-600 dark:group-hover:text-violet-400 truncate" :text="board.name"></h2>
+          </div>
+          <p
+            :if="board.description"
+            class="mt-1 text-xs text-zinc-500 line-clamp-2"
+            :text="board.description"
+          ></p>
+          <p class="mt-3 text-xs text-zinc-400" :text="cardCountText(board.cardCount)"></p>
+        </div>
+      </a>
+    </div>
+  </div>
+</div>
+@endsection

@@ -612,6 +612,12 @@ export function buildSidebarConfig(
         { id: 'dns', label: 'DNS', icon: 'network', url: `${baseRoute}/dns` },
         { id: 'mailboxes', label: 'Mailboxes', icon: 'tray.full.fill', url: `${baseRoute}/mailboxes` },
         { id: 'logs', label: 'Logs', icon: 'list.bullet.rectangle.portrait.fill', url: `${baseRoute}/logs` },
+        // Kanban surface (stacksjs/stacks#1846). Lives under Management
+        // as a dev-mode project tool, alongside infra surfaces. The
+        // page itself role-gates via useRole().isDev() — sidebar item
+        // metadata mirrors the page check so the row hides for
+        // client-role viewers too.
+        { id: 'kanban', label: 'Kanban', icon: 'rectangle.stack.fill', url: `${baseRoute}/kanban`, roles: ['admin', 'dev'] },
       ],
     })
   }
