@@ -187,3 +187,44 @@ describe('Storage.put — router UploadedFile class shape (stacksjs/stacks#1856)
     expect(result.path).toBe(result2.path)
   })
 })
+
+describe('Storage.put — transform pipeline (stacksjs/stacks#1856 Stage 5)', () => {
+  // The `transform` hook runs in `putUploadedFile` between bytes-read
+  // and disk-write. Tests here use a synthetic transform — the real
+  // sharp-backed pipeline lives in `@stacksjs/storage/image` and is
+  // covered by its own unit tests (sharp is a peer dep).
+  test('replaces the persisted bytes with the transform output', async () => {
+    const original = new TextEncoder().encode('original-bytes')
+    const transformed = new TextEncoder().encode('TRANSFORMED-BYTES')
+    const result = await storage.put(makeFile({ buffer: original.buffer }), {
+      dir: 'avatars',
+      transform: async () => transformed,
+    })
+    const disk = readFileSync(join(publicRoot, result.path), 'utf8')
+    expect(disk).toBe('TRANSFORMED-BYTES')
+  })
+
+  test('receives the same bytes the underlying file resolved to', async () => {
+    let seen: Uint8Array | null = null
+    await storage.put(makeFile({ buffer: new TextEncoder().encode('observe me').buffer }), {
+      dir: 'avatars',
+      transform: async (input) => {
+        seen = input instanceof Uint8Array ? input : new Uint8Array(input as ArrayBuffer)
+        return Buffer.from('out')
+      },
+    })
+    expect(seen).not.toBeNull()
+    expect(new TextDecoder().decode(seen!)).toBe('observe me')
+  })
+
+  test('propagates transform errors instead of writing partial files', async () => {
+    await expect(storage.put(makeFile(), {
+      dir: 'avatars',
+      filename: 'will-not-exist',
+      transform: async () => { throw new Error('boom') },
+    })).rejects.toThrow('boom')
+
+    // The file should never have been written.
+    expect(existsSync(join(publicRoot, 'avatars/will-not-exist.jpg'))).toBe(false)
+  })
+})

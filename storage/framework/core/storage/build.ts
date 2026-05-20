@@ -6,7 +6,12 @@ const { startTime } = await intro({
 })
 
 const result = await Bun.build({
-  entrypoints: ['./src/index.ts'],
+  // `./src/image.ts` is a separate entrypoint because it lazy-loads
+  // `sharp` (a native module) — emitting it as its own dist file lets
+  // consumers `import { transform } from '@stacksjs/storage/image'`
+  // without pulling the lazy-import into the main bundle's static
+  // dependency graph (stacksjs/stacks#1856 Stage 5).
+  entrypoints: ['./src/index.ts', './src/image.ts'],
   outdir: './dist',
   format: 'esm',
   target: 'bun',

@@ -185,3 +185,25 @@ describe('Storage Facade - configuration methods', () => {
     expect(config).toBeUndefined()
   })
 })
+
+describe('Storage Facade - presignedUploadUrl (stacksjs/stacks#1856)', () => {
+  test('throws a clear error on adapters that do not support it', async () => {
+    // The local adapter never implements `presignedUploadUrl` — there's no
+    // out-of-band URL to PUT to for a filesystem disk. The facade should
+    // throw with a clear message pointing the caller at `Storage.put(...)`.
+    await expect(storage.presignedUploadUrl({
+      contentType: 'image/png',
+      expiresIn: 60,
+    })).rejects.toThrow(/does not support presignedUploadUrl/i)
+  })
+
+  test('error message points users at Storage.put for the non-S3 path', async () => {
+    try {
+      await storage.presignedUploadUrl({ contentType: 'image/png', expiresIn: 60 })
+      throw new Error('expected unsupported error')
+    }
+    catch (e) {
+      expect(e instanceof Error ? e.message : String(e)).toContain('Storage.put')
+    }
+  })
+})

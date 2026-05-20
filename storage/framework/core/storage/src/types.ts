@@ -97,6 +97,63 @@ export interface SignedUrlOptions {
 }
 
 /**
+ * Options for `presignedUploadUrl()` (stacksjs/stacks#1856 Stage 6).
+ */
+export interface PresignedUploadUrlOptions {
+  /**
+   * MIME type the browser will send as `Content-Type` on the PUT.
+   * AWS signs the request against this exact string — any mismatch on
+   * upload returns 403. Required so the signed URL is unambiguous.
+   */
+  contentType: string
+
+  /**
+   * URL lifetime in seconds. S3 clamps to [60, 7 * 24 * 60 * 60] —
+   * shorter is better for security since a leaked URL is a
+   * write-anywhere primitive until it expires.
+   */
+  expiresIn: number
+
+  /**
+   * Sub-directory inside the disk (e.g. `'avatars'`). The adapter
+   * appends the filename to this.
+   */
+  dir?: string
+
+  /**
+   * Optional explicit filename. When omitted, the adapter generates a
+   * uuid-based name and derives an extension from `contentType`.
+   * Mirrors the filename derivation in `Storage.put(file, opts)`.
+   */
+  filename?: string
+
+  /**
+   * Maximum size in bytes the eventual upload should be. **Not
+   * enforceable on a simple presigned PUT URL** — S3 enforces
+   * Content-Length-Range only via presigned POST policies. Callers
+   * pass this so client-side composables (`useDirectUpload`) can
+   * reject the file before kicking off the PUT, but the server cannot
+   * rely on this being respected by an attacker. For real
+   * size-enforcement against untrusted clients, use a server-side
+   * scan after upload or switch to presigned POST policies.
+   */
+  maxBytes?: number
+}
+
+export interface PresignedUploadUrl {
+  /** The presigned URL the browser PUTs to. */
+  url: string
+  /** Storage path the file lands at (without the disk root prefix). */
+  path: string
+  /** Stable key suitable for persisting alongside user records. */
+  key: string
+  /** Echoed back for the client to use as the `Content-Type` header. */
+  contentType: string
+  /** Echoed back so the client can advise on size before uploading. */
+  maxBytes?: number
+}
+
+/**
  * Checksum algorithm options
  */
 export interface ChecksumOptions {
@@ -196,6 +253,22 @@ export interface StorageAdapter {
    * unusable URL would be a security footgun.
    */
   signedUrl?(path: string, options: SignedUrlOptions): Promise<string>
+
+  /**
+   * Generate a presigned URL for direct browser-to-cloud upload
+   * (stacksjs/stacks#1856 Stage 6). Pairs with the
+   * `useDirectUpload({ presignEndpoint })` frontend composable: the
+   * server mints a URL, the browser PUTs the file bytes straight to
+   * the storage backend without round-tripping through the app server.
+   *
+   * Optional because not every adapter can produce one — local-disk
+   * uploads don't need this primitive, and in-memory mocks can't
+   * service the URL. Implementing adapters MUST honour `contentType`
+   * (the browser uses it as the `Content-Type` header on the PUT) and
+   * MUST clamp `expiresIn` to a sane range. The returned `path` is
+   * what the caller should persist; `url` is for the browser.
+   */
+  presignedUploadUrl?(options: PresignedUploadUrlOptions): Promise<PresignedUploadUrl>
 
   /** Calculate file checksum */
   checksum(path: string, options?: ChecksumOptions): Promise<string>

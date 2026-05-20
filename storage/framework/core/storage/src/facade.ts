@@ -21,7 +21,7 @@ import { resolve } from 'node:path'
 import process from 'node:process'
 import { filesystems, app as appConfig } from '@stacksjs/config'
 import { S3Client } from '@stacksjs/ts-cloud'
-import type { SignedUrlOptions, StorageAdapter } from './types'
+import type { PresignedUploadUrl, PresignedUploadUrlOptions, SignedUrlOptions, StorageAdapter } from './types'
 import { createLocalStorage } from './adapters/local'
 import { S3StorageAdapter } from './adapters/s3'
 import { putUploadedFile } from './put-file'
@@ -274,6 +274,34 @@ class StorageManager {
       throw new Error(`[storage] disk '${this.config.default}' does not support signedUrl`)
     }
     return adapter.signedUrl(path, options)
+  }
+
+  /**
+   * Mint a presigned URL the browser can PUT to directly, bypassing
+   * the app server (stacksjs/stacks#1856 Stage 6). Use with the
+   * `useDirectUpload({ presignEndpoint })` frontend composable.
+   *
+   * Only adapters that can serve URLs (S3, etc.) implement this — the
+   * local-disk and in-memory adapters throw a clear "not supported"
+   * error rather than returning a useless localhost URL.
+   *
+   * @example
+   * ```ts
+   * // In a `/api/me/avatar/presign` action:
+   * const { url, path } = await Storage.disk('s3').presignedUploadUrl({
+   *   contentType: req.body.contentType,
+   *   expiresIn: 60,
+   *   dir: 'avatars',
+   * })
+   * return { url, path }
+   * ```
+   */
+  async presignedUploadUrl(options: PresignedUploadUrlOptions): Promise<PresignedUploadUrl> {
+    const adapter = this.disk()
+    if (typeof adapter.presignedUploadUrl !== 'function') {
+      throw new Error(`[storage] disk '${this.config.default}' does not support presignedUploadUrl — only S3-style adapters do. Use \`Storage.put(file, opts)\` for local/proxied uploads.`)
+    }
+    return adapter.presignedUploadUrl(options)
   }
 
   async size(path: string): Promise<number> {

@@ -67,6 +67,30 @@ export interface PutFileOptions {
    * one. Defaults to `true`.
    */
   preserveExtension?: boolean
+  /**
+   * Optional image-processing pipeline applied before write
+   * (stacksjs/stacks#1856 Stage 5). Receives the raw bytes + a Sharp
+   * instance loaded lazily from the `@stacksjs/storage/image` submodule;
+   * returns the processed bytes that get persisted. Throws a clear
+   * error if `sharp` isn't installed — projects that don't need image
+   * transforms don't pay the native-module install cost.
+   *
+   * If the transform changes the output format (e.g. JPEG → WebP), the
+   * caller is responsible for updating `mimetype` / `filename` to match
+   * — the storage layer doesn't sniff bytes.
+   *
+   * @example
+   * ```ts
+   * import { transform } from '@stacksjs/storage/image'
+   *
+   * await Storage.put(file, {
+   *   disk: 'public',
+   *   dir: 'avatars',
+   *   transform: transform(img => img.resize(512, 512, { fit: 'cover' }).webp({ quality: 85 })),
+   * })
+   * ```
+   */
+  transform?: (input: Uint8Array | Buffer | ArrayBuffer) => Promise<Uint8Array | Buffer>
 }
 
 /**
@@ -190,7 +214,16 @@ export async function putUploadedFile(
   // and read the class-shape's async accessor when there's no sync
   // `.buffer` property.
   const raw = await readBytes(file)
-  const contents = raw instanceof ArrayBuffer ? new Uint8Array(raw) : raw
+  let contents: Uint8Array | Buffer = raw instanceof ArrayBuffer ? new Uint8Array(raw) : raw
+
+  // Optional image-processing pipeline (stacksjs/stacks#1856 Stage 5).
+  // Runs *after* filename resolution so the same `dir/filename.ext`
+  // path is used for the transformed bytes. If the caller wants to
+  // change the extension (e.g. JPEG → WebP), they pass an explicit
+  // `filename` and pre-built `transform` together.
+  if (opts.transform) {
+    contents = await opts.transform(contents)
+  }
 
   await disk.write(fullPath, contents)
   const url = await disk.publicUrl(fullPath)

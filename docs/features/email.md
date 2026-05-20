@@ -2,6 +2,8 @@
 
 Stacks provides a fully serverless email infrastructure powered by AWS SES, S3, and Lambda.
 
+> Just need to route outgoing mail through SES (no inbox needed)? See [Sending email via AWS SES](./email-ses.md) for the env-var + DNS + sandbox checklist.
+
 ## Configuration
 
 Configure your email settings in `config/email.ts`:
