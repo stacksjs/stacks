@@ -1,19 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const commonPorts = [
-  { port: '22', name: 'SSH' },
-  { port: '80', name: 'HTTP' },
-  { port: '443', name: 'HTTPS' },
-  { port: '3306', name: 'MySQL' },
-  { port: '5432', name: 'PostgreSQL' },
-  { port: '6379', name: 'Redis' },
-  { port: '11211', name: 'Memcached' },
-  { port: '7700', name: 'Meilisearch' },
-]
-</script>
-
 @title('Server Details')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">
@@ -98,9 +85,9 @@ const commonPorts = [
               <label class="block mb-1 font-medium text-gray-700 text-sm dark:text-neutral-300">Port</label>
               <select x-model="newRulePort" class="block px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors">
                 <option value="" disabled>Select a port</option>
-                @foreach(commonPorts as port)
-                  <option value="{{ port.port }}">{{ port.port }} ({{ port.name }})</option>
-                @endforeach
+                <template :for="port in commonPorts">
+                  <option :value="port.port">{{ port.port }} ({{ port.name }})</option>
+                </template>
                 <option value="custom">Custom Port</option>
               </select>
               <input :show="isCustomPort" x-model="newRuleCustomPort" type="text" placeholder="Enter port number" class="block mt-2 px-3 py-2 h-10 w-full text-gray-900 text-sm dark:text-neutral-100 bg-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 duration-200 transition-colors" />
@@ -149,20 +136,20 @@ const commonPorts = [
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                @foreach(ufwRulesList() as rule)
+                <template :for="rule in ufwRulesList()">
                   <tr>
                     <td class="px-6 py-4 text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ rule.port }}</td>
                     <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ rule.from }}</td>
                     <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ rule.protocol.toUpperCase() }}</td>
                     <td class="px-6 py-4 whitespace-nowrap">
-                      <span class="{{ ruleActionClass(rule.action) }} inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full">{{ rule.action }}</span>
+                      <span :class="ruleActionClass(rule.action)" class="inline-flex items-center px-2.5 py-0.5 font-medium text-xs rounded-full">{{ rule.action }}</span>
                     </td>
                     <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-400">{{ rule.description }}</td>
                     <td class="px-6 py-4 font-medium text-right text-sm whitespace-nowrap">
-                      <button @click="removeRule({{ rule.id }})" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Remove</button>
+                      <button @click="removeRule(rule.id)" class="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300">Remove</button>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -173,6 +160,19 @@ const commonPorts = [
 </div>
 
 <script client>
+// Common port preset list — moved out of the former `<script server>`
+// block (stacksjs/stacks#1838).
+const commonPorts = [
+  { port: '22', name: 'SSH' },
+  { port: '80', name: 'HTTP' },
+  { port: '443', name: 'HTTPS' },
+  { port: '3306', name: 'MySQL' },
+  { port: '5432', name: 'PostgreSQL' },
+  { port: '6379', name: 'Redis' },
+  { port: '11211', name: 'Memcached' },
+  { port: '7700', name: 'Meilisearch' },
+]
+
 interface ServerConfig {
   name: string
   domain: string

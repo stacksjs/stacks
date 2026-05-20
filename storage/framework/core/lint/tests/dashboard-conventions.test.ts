@@ -115,7 +115,6 @@ const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'models/[model].stx',
   'models/index.stx',
   'register.stx',
-  'servers/[id].stx',
 ])
 
 /**
