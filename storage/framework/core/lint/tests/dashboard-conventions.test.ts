@@ -120,7 +120,6 @@ const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'requests/index.stx',
   'serverless/index.stx',
   'servers/[id].stx',
-  'servers/index.stx',
 ])
 
 /**

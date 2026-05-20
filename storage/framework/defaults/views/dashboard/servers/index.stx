@@ -1,65 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const serversRaw = [
-  { key: 'app1', name: 'app-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'app', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: 'sqlite', databaseName: 'stacks', searchEngine: 'meilisearch' },
-  { key: 'worker1', name: 'worker-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'worker', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: '', databaseName: '', searchEngine: '' },
-  { key: 'worker2', name: 'worker2-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'worker', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: '', databaseName: '', searchEngine: '' },
-  { key: 'worker3', name: 'worker3-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'worker', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: '', databaseName: '', searchEngine: '' },
-  { key: 'cache1', name: 'cache-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'cache', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: '', databaseName: '', searchEngine: '' },
-  { key: 'database1', name: 'database-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'database', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: '', database: 'sqlite', databaseName: 'stacks', searchEngine: '' },
-  { key: 'search1', name: 'search-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'search', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: '', databaseName: '', searchEngine: 'meilisearch' },
-]
-
-const serversByType = ['app', 'worker', 'cache', 'database', 'search'].map(type => ({
-  type,
-  label: type.charAt(0).toUpperCase() + type.slice(1),
-  servers: serversRaw.filter(s => s.type === type),
-})).filter(group => group.servers.length > 0)
-
-const useLoadBalancer = true
-
-const serverEventsRaw = [
-  { id: '1', service: 'App Server', type: 'success', message: 'Server deployment completed successfully', timestamp: '2024-03-21 14:23:45' },
-  { id: '2', service: 'Worker', type: 'info', message: 'New worker instance launched', timestamp: '2024-03-21 14:20:12' },
-  { id: '3', service: 'Database', type: 'warning', message: 'High CPU utilization detected', timestamp: '2024-03-21 14:15:30' },
-  { id: '4', service: 'Cache', type: 'error', message: 'Connection timeout', timestamp: '2024-03-21 14:10:55' },
-  { id: '5', service: 'Search', type: 'success', message: 'Index rebuilt successfully', timestamp: '2024-03-21 14:05:22' },
-]
-
-function eventTypeColor(type: string): string {
-  switch (type) {
-    case 'success': return 'text-green-500'
-    case 'error': return 'text-red-500'
-    case 'warning': return 'text-yellow-500'
-    default: return 'text-blue-500'
-  }
-}
-
-function eventTypeIcon(type: string): string {
-  switch (type) {
-    case 'success': return 'i-hugeicons-checkmark-circle-02'
-    case 'error': return 'i-hugeicons-cancel-circle'
-    case 'warning': return 'i-hugeicons-alert-02'
-    default: return 'i-hugeicons-information-circle'
-  }
-}
-
-function typeBadgeClass(type: string): string {
-  const base = 'inline-flex px-2 font-semibold leading-5 text-xs rounded-full'
-  switch (type) {
-    case 'app': return `${base} bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200`
-    case 'worker': return `${base} bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200`
-    case 'cache': return `${base} bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-200`
-    case 'database': return `${base} bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200`
-    case 'search': return `${base} bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200`
-    case 'web': return `${base} bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-200`
-    default: return `${base} bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-200`
-  }
-}
-</script>
-
 @title('Dashboard - Servers')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="px-4 sm:px-6 lg:px-8">
@@ -108,14 +49,14 @@ function typeBadgeClass(type: string): string {
 
           <div class="lg:col-span-4">
             <div class="space-y-2">
-              @foreach(serversByType as group)
+              <template :for="group in serversByType">
                 <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800 rounded-lg">
                   <div class="flex gap-2 items-center">
-                    <span class="{{ typeBadgeClass(group.type) }}">{{ group.label }}</span>
+                    <span :class="typeBadgeClassFor(group.type)">{{ group.label }}</span>
                   </div>
                   <span class="font-mono text-gray-900 text-sm dark:text-white">×{{ group.servers.length }}</span>
                 </div>
-              @endforeach
+              </template>
             </div>
           </div>
         </div>
@@ -233,16 +174,16 @@ function typeBadgeClass(type: string): string {
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(serverEventsRaw as event)
+              <template :for="event in serverEventsRaw">
                 <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
                   <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
-                    <div class="{{ eventTypeIcon(event.type) }} {{ eventTypeColor(event.type) }} h-5 w-5"></div>
+                    <div :class="eventTypeIcon(event.type) + ' ' + eventTypeColor(event.type)" class="h-5 w-5"></div>
                   </td>
                   <td class="px-3 py-4 text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ event.service }}</td>
                   <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">{{ event.message }}</td>
                   <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ event.timestamp }}</td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -276,6 +217,44 @@ const serversData: ServerConfig[] = [
   { key: 'database1', name: 'database-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'database', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: '', database: 'sqlite', databaseName: 'stacks', searchEngine: '' },
   { key: 'search1', name: 'search-cosmic-nebula', domain: 'stacksjs.com', region: 'us-east-1', type: 'search', size: 't3.micro', diskSize: 20, serverOS: 'ubuntu-24-lts-x86_64', bunVersion: 'v1.2.4', database: '', databaseName: '', searchEngine: 'meilisearch' },
 ]
+
+// Grouped view + static events — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
+const serversByType = ['app', 'worker', 'cache', 'database', 'search']
+  .map(type => ({
+    type,
+    label: type.charAt(0).toUpperCase() + type.slice(1),
+    servers: serversData.filter(s => s.type === type),
+  }))
+  .filter(group => group.servers.length > 0)
+
+const useLoadBalancer = true
+
+const serverEventsRaw = [
+  { id: '1', service: 'App Server', type: 'success', message: 'Server deployment completed successfully', timestamp: '2024-03-21 14:23:45' },
+  { id: '2', service: 'Worker', type: 'info', message: 'New worker instance launched', timestamp: '2024-03-21 14:20:12' },
+  { id: '3', service: 'Database', type: 'warning', message: 'High CPU utilization detected', timestamp: '2024-03-21 14:15:30' },
+  { id: '4', service: 'Cache', type: 'error', message: 'Connection timeout', timestamp: '2024-03-21 14:10:55' },
+  { id: '5', service: 'Search', type: 'success', message: 'Index rebuilt successfully', timestamp: '2024-03-21 14:05:22' },
+]
+
+function eventTypeColor(type: string): string {
+  switch (type) {
+    case 'success': return 'text-green-500'
+    case 'error': return 'text-red-500'
+    case 'warning': return 'text-yellow-500'
+    default: return 'text-blue-500'
+  }
+}
+
+function eventTypeIcon(type: string): string {
+  switch (type) {
+    case 'success': return 'i-hugeicons-checkmark-circle-02'
+    case 'error': return 'i-hugeicons-cancel-circle'
+    case 'warning': return 'i-hugeicons-alert-02'
+    default: return 'i-hugeicons-information-circle'
+  }
+}
 
 const searchQuery = state('')
 const sortKey = state<keyof ServerConfig>('name')
