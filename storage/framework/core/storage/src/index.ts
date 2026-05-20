@@ -21,6 +21,7 @@ export type { ServeFileOptions } from './static-serve'
 // Laravel-style Storage facade and UploadedFile
 export { Storage, StorageManager } from './facade'
 export type { DiskConfig, FilesystemConfig, LocalDiskConfig, S3DiskConfig } from './facade'
+export type { FilenameStrategy, PutFileOptions, UploadedFileLike } from './put-file'
 export { UploadedFile, uploadedFile, uploadedFiles } from './uploaded-file'
 
 // Filesystem type helpers

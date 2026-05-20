@@ -95,6 +95,19 @@ export default defineModel({
 
       factory: () => '123456',
     },
+
+    avatar: {
+      order: 4,
+      fillable: true,
+      validation: {
+        rule: schema.string().max(2048),
+        message: {
+          max: 'Avatar URL must be at most 2048 characters',
+        },
+      },
+
+      factory: faker => faker.image.avatar(),
+    },
   },
   get: {
     salutationName: (attributes: Attributes) => {

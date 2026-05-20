@@ -217,6 +217,52 @@ export function doctor(buddy: CLI): void {
         return 'All encrypted values decrypt cleanly'
       })
 
+      // Storage credentials — if the default disk is `s3`, the AWS env vars
+      // need to be present, otherwise every upload action throws on first
+      // use. Warn loudly so the developer notices before the first upload
+      // attempt rather than in a stacktrace. See stacksjs/stacks#1856.
+      try {
+        const { filesystems } = await import('@stacksjs/config')
+        const driver = (filesystems as { driver?: string }).driver ?? 'local'
+        if (driver === 's3') {
+          const bucket = process.env.S3_BUCKET ?? (filesystems as { s3?: { bucket?: string } }).s3?.bucket
+          const accessKeyId = process.env.AWS_ACCESS_KEY_ID
+          const secretAccessKey = process.env.AWS_SECRET_ACCESS_KEY
+          const missing: string[] = []
+          if (!bucket) missing.push('S3_BUCKET')
+          if (!accessKeyId) missing.push('AWS_ACCESS_KEY_ID')
+          if (!secretAccessKey) missing.push('AWS_SECRET_ACCESS_KEY')
+          if (missing.length > 0) {
+            checks.push({
+              name: 'Storage credentials',
+              status: 'warn',
+              message: `Default disk is 's3' but missing: ${missing.join(', ')}. Uploads will throw on first use.`,
+            })
+          }
+          else {
+            checks.push({
+              name: 'Storage credentials',
+              status: 'pass',
+              message: 's3 default disk has bucket + AWS credentials',
+            })
+          }
+        }
+        else {
+          checks.push({
+            name: 'Storage credentials',
+            status: 'pass',
+            message: `Default disk is '${driver}' (no remote credentials required)`,
+          })
+        }
+      }
+      catch (err) {
+        checks.push({
+          name: 'Storage credentials',
+          status: 'warn',
+          message: `Could not audit storage config: ${err instanceof Error ? err.message : String(err)}`,
+        })
+      }
+
       // Feature scaffolding orphans — files belonging to a disabled feature
       // are still on disk. Spec: `./buddy doctor` should warn so the user
       // can decide whether to `<feature>:uninstall` (delete them) or
