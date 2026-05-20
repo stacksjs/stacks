@@ -1,20 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const EmailSidebar = (await import('../../../components/Dashboard/Email/EmailSidebar.stx')).default
-
-const folders = [
-  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
-  { id: 'starred', name: 'Starred', icon: 'star' },
-  { id: 'sent', name: 'Sent', icon: 'send' },
-  { id: 'drafts', name: 'Drafts', icon: 'drafts' },
-  { id: 'archive', name: 'Archive', icon: 'archive' },
-  { id: 'spam', name: 'Spam', icon: 'spam' },
-  { id: 'trash', name: 'Trash', icon: 'waste' },
-]
-</script>
-
 @title('Mail - Your Inbox')
 <div class="bg-white dark:bg-neutral-800">
   <div class="flex h-screen">
@@ -202,6 +188,20 @@ const folders = [
 </div>
 
 <script client>
+// Mail folder list — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). `EmailSidebar` resolves through stx's
+// component auto-discovery (it lives at
+// `resources/components/Dashboard/Email/EmailSidebar.stx`).
+const folders = [
+  { id: 'inbox', name: 'Inbox', icon: 'inbox' },
+  { id: 'starred', name: 'Starred', icon: 'star' },
+  { id: 'sent', name: 'Sent', icon: 'send' },
+  { id: 'drafts', name: 'Drafts', icon: 'drafts' },
+  { id: 'archive', name: 'Archive', icon: 'archive' },
+  { id: 'spam', name: 'Spam', icon: 'spam' },
+  { id: 'trash', name: 'Trash', icon: 'waste' },
+]
+
 interface Email {
   id: number
   from: string

@@ -111,13 +111,11 @@ const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'access-tokens/index.stx',
   'cloud/index.stx',
   'commerce/dashboard/index.stx',
-  'components/index.stx',
   'content/dashboard.stx',
   'dependencies/index.stx',
   'forgot-password.stx',
   'functions/index.stx',
   'health/index.stx',
-  'inbox/index.stx',
   'index.stx',
   'insights/index.stx',
   'login.stx',
@@ -125,12 +123,10 @@ const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'models/index.stx',
   'packages/index.stx',
   'register.stx',
-  'releases/index.stx',
   'requests/index.stx',
   'serverless/index.stx',
   'servers/[id].stx',
   'servers/index.stx',
-  'settings/billing.stx',
 ])
 
 /**

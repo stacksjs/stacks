@@ -125,7 +125,7 @@
               </thead>
 
               <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-600">
-                @foreach(componentList as component)
+                <template :for="component in componentList">
                   <tr>
                     <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ component.name }}</td>
                     <td class="px-3 py-4 font-mono text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ component.size }}</td>
@@ -136,7 +136,7 @@
                       <a href="#" class="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300">Edit<span class="sr-only">, {{ component.name }}, in IDE</span></a>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -146,15 +146,15 @@
   </div>
 </div>
 
-<script server>
+<script client>
+// Demo component rows — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). Replace with a real component scan when the
+// API lands.
 const componentList = [
   { name: 'Component A', size: '30kb', path: './resources/components/component-a.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
   { name: 'Component B', size: '30kb', path: './resources/components/component-b.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
   { name: 'Component C', size: '30kb', path: './resources/components/component-c.vue', updated_at: '01-03-2023 08:23:15', created_at: '04-19-2022 09:04:20' },
 ]
-</script>
-
-<script client>
 
 interface DownloadStats {
   labels: string[]

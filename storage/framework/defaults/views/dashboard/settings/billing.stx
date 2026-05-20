@@ -1,14 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import { useBillable } from '../../../functions/billing/payments'
-
-const { isEmpty, showCurrentPlan } = useBillable()
-
-const paymentStore = usePaymentStore()
-
-</script>
 <div class="container mx-auto px-4 py-8 lg:px-8">
   <div id="subscribed">
     <TransactionHistory />
@@ -32,6 +24,12 @@ const paymentStore = usePaymentStore()
 </div>
 <script client>
 import { useAuth } from '../../../functions/auth'
+import { useBillable } from '../../../functions/billing/payments'
+
+// Moved out of the former `<script server>` block (stacksjs/stacks#1838).
+// `usePaymentStore` is auto-imported by stx.
+const { isEmpty, showCurrentPlan } = useBillable()
+const paymentStore = usePaymentStore()
 
 onMount(async () => {
   const { user } = useAuth()
