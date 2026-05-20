@@ -108,13 +108,10 @@ function hasLiveDomAccess(src: string): boolean {
  * deliberate decision (reviewer flag).
  */
 const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
-  'access-tokens/index.stx',
   'cloud/index.stx',
   'commerce/dashboard/index.stx',
   'content/dashboard.stx',
-  'dependencies/index.stx',
   'forgot-password.stx',
-  'functions/index.stx',
   'health/index.stx',
   'index.stx',
   'insights/index.stx',

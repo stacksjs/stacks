@@ -1,7 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
+<script client>
 
 interface FunctionRow {
   name: string
@@ -12,10 +12,12 @@ interface FunctionRow {
   status: 'active' | 'draft' | 'archived'
 }
 
-// Placeholder data. Wire this up to whatever lists `./resources/functions/*`
-// once the framework exposes a directory walker — the table renders
-// against `name/size/path/updatedAt/createdAt/status` so the swap is a
-// one-line replacement of `functions = …`.
+// Placeholder data — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). Wire this up to whatever lists
+// `./resources/functions/*` once the framework exposes a directory
+// walker — the table renders against
+// `name/size/path/updatedAt/createdAt/status` so the swap is a one-line
+// replacement of `functions = …`.
 const functions: FunctionRow[] = [
   { name: 'sendInvoice', size: '5.2 kB', path: './resources/functions/send-invoice.ts', updatedAt: '2026-04-19 09:04', createdAt: '2025-11-03 08:23', status: 'active' },
   { name: 'syncCustomer', size: '3.8 kB', path: './resources/functions/sync-customer.ts', updatedAt: '2026-04-12 14:11', createdAt: '2025-12-01 11:45', status: 'active' },
@@ -123,7 +125,7 @@ function statusVariant(status: string) {
             </tr>
           </thead>
           <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
-            @foreach(functions as fn)
+            <template :for="fn in functions">
               <tr class="hover:bg-neutral-50/60 dark:hover:bg-white/[0.02] transition-colors">
                 <td class="px-5 py-3 font-medium text-neutral-900 text-sm whitespace-nowrap dark:text-white">
                   {{ fn.name }}
@@ -146,7 +148,7 @@ function statusVariant(status: string) {
                   </a>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>

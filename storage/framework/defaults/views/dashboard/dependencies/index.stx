@@ -1,7 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
+<script client>
 
 interface Dependency {
   name: string
@@ -11,10 +11,11 @@ interface Dependency {
   description?: string
 }
 
-// Placeholder rows. Wire this up to `pantry list --json` (or whatever
-// the real source of truth is) once the Pantry CLI exposes a listing
-// API. The shape above is what the table renders against — keep it
-// stable so the wiring is a one-line swap of `dependencies = …`.
+// Placeholder rows — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). Wire this up to `pantry list --json` (or
+// whatever the real source of truth is) once the Pantry CLI exposes a
+// listing API. The shape above is what the table renders against — keep
+// it stable so the wiring is a one-line swap of `dependencies = …`.
 const dependencies: Dependency[] = [
   { name: 'Node.js', version: '22.11.0', status: 'pending', source: 'pantry' },
   { name: 'Redis', version: '8.0.0', status: 'installed', source: 'pantry' },
@@ -146,7 +147,7 @@ function statusVariant(status: string) {
             </tr>
           </thead>
           <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
-            @foreach(dependencies as dep)
+            <template :for="dep in dependencies">
               <tr class="hover:bg-neutral-50/70 dark:hover:bg-white/[0.02] transition-colors">
                 <td class="px-5 py-3 font-medium text-neutral-900 text-sm dark:text-white">{{ dep.name }}</td>
                 <td class="px-5 py-3 font-mono tabular-nums text-[13px] text-neutral-500 dark:text-neutral-400">{{ dep.version }}</td>
@@ -156,16 +157,17 @@ function statusVariant(status: string) {
                 </td>
                 <td class="px-5 py-3 text-right">
                   <div class="inline-flex gap-1">
-                    @if(dep.status === 'installed')
+                    <div :if="dep.status === 'installed'" class="inline-flex gap-1">
                       <Button variant="secondary" size="sm">Upgrade</Button>
                       <Button variant="ghost" size="sm">Remove</Button>
-                    @else
+                    </div>
+                    <div :if="dep.status !== 'installed'">
                       <Button variant="primary" size="sm">Install</Button>
-                    @endif
+                    </div>
                   </div>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>

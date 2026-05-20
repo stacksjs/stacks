@@ -1,7 +1,10 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
+<script client>
+// Demo token list — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). Replace with a real fetch from the personal
+// access tokens API when wired up.
 const tokens = [
   {
     name: 'Mobile App Token',
@@ -10,7 +13,7 @@ const tokens = [
     lastUsed: '2 minutes ago',
     status: 'active',
     createdAt: '2024-01-15 08:23:15',
-    expiresAt: '2024-02-14 08:23:15'
+    expiresAt: '2024-02-14 08:23:15',
   },
   {
     name: 'Dashboard API',
@@ -19,7 +22,7 @@ const tokens = [
     lastUsed: '1 hour ago',
     status: 'active',
     createdAt: '2024-01-10 15:45:30',
-    expiresAt: '2024-01-24 15:45:30'
+    expiresAt: '2024-01-24 15:45:30',
   },
   {
     name: 'Integration Service',
@@ -28,8 +31,8 @@ const tokens = [
     lastUsed: '3 days ago',
     status: 'revoked',
     createdAt: '2023-12-20 11:30:00',
-    expiresAt: '2024-01-19 11:30:00'
-  }
+    expiresAt: '2024-01-19 11:30:00',
+  },
 ]
 </script>
 
@@ -111,7 +114,7 @@ const tokens = [
               </thead>
 
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y">
-                @foreach(tokens as token)
+                <template :for="token in tokens">
                   <tr>
                     <td class="pl-4 pr-3 py-4 sm:pl-6 font-medium text-gray-900 text-sm whitespace-nowrap">
                       {{ token.name }}
@@ -123,13 +126,13 @@ const tokens = [
 
                     <td class="px-3 py-4 text-gray-500 text-sm whitespace-nowrap">
                       <div class="flex gap-1">
-                        @foreach(token.abilities as ability)
+                        <template :for="ability in token.abilities">
                           <span
                             class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs bg-blue-50 ring-1 ring-blue-600/20 ring-inset rounded-md"
                           >
                             {{ ability }}
                           </span>
-                        @endforeach
+                        </template>
                       </div>
                     </td>
 
@@ -161,7 +164,7 @@ const tokens = [
                       </button>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
