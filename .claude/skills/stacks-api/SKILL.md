@@ -54,7 +54,7 @@ core/router/src/
 └── action-paths.ts      # StacksActionPath type definitions
 
 routes/
-├── api.ts               # Main API routes (no prefix, loaded at /*)
+├── api.ts               # Main API routes (auto-prefixed with /api; see #1835)
 ├── v1.ts                # Versioned routes (loaded at /v1/*)
 ├── buddy.ts             # Buddy CLI routes (loaded at /buddy/*)
 └── users.ts             # Example user routes (commented out)
@@ -100,13 +100,13 @@ export interface RouteDefinition {
 export type RouteRegistry = Record<string, string | RouteDefinition>
 
 export default {
-  'api': 'api',                           // No prefix (special key) - routes at /*
+  'api': 'api',                           // Auto-prefixed with /api (see #1835)
   'v1': { path: 'v1', prefix: 'v1' },    // routes at /v1/*
   // 'admin': { path: 'admin', middleware: ['auth'] },
 } satisfies RouteRegistry
 ```
 
-Special keys `'api'` and `'web'` have no prefix (loaded at root `/`). All other keys auto-prefix with `/<key>`.
+`'web'` is the only key that loads at root `/` with no prefix; all other keys (including `'api'`) auto-prefix with `/<key>`. The `'api'` auto-prefix lines up with the rpx proxy forward path so a user route registered as `route.get('/cart/add', ...)` in `routes/api.ts` resolves at `https://<domain>/api/cart/add` through the dev proxy.
 
 ### Route Methods
 
@@ -720,7 +720,7 @@ Models with `traits.useApi` automatically get CRUD routes via ORM actions:
 - The `fetcher` is a **singleton instance** -- state (headers, body, query params) is reset after each request via `resetState()`, but calling chain methods without executing a request will accumulate state
 - `fetcher.withDigestAuth()` uses SHA-256 internally despite the method name `generateMD5` -- this is a misnomer in the source code
 - `fetcher` always parses responses as JSON (`response.json()`) -- it will throw if the response is not valid JSON
-- Route files named `api` or `web` are loaded at root `/` with no prefix; all other route file keys auto-prefix with `/<key>`
+- Only the `'web'` route file key loads at root `/` with no prefix; all other keys (including `'api'`) auto-prefix with `/<key>`. The `'api'` auto-prefix was added in stacksjs/stacks#1835 so user routes line up with the rpx proxy forward path
 - The `route` object is a global singleton from `stacks-router.ts` -- all route definitions across files share the same router instance
 - String-based handlers (`'Actions/MyAction'`) are resolved lazily at request time, not at registration time -- import errors surface only when the route is hit
 - Actions must export `default` with a `handle()` method; Controllers must export `default` as a class with the specified method (defaults to `index`)

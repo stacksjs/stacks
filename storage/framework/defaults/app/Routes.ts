@@ -12,15 +12,23 @@ export type RouteRegistry = Record<string, string | RouteDefinition>
 /**
  * Application route registry.
  *
- * Define your route files here. The key becomes the URL prefix automatically.
- * Special keys 'api' and 'web' have no prefix (loaded at root /).
+ * Define your route files here. The key becomes the URL prefix
+ * automatically. The `'web'` key is the only one that loads at root
+ * (`/`) with no prefix — see the route-loader's `NO_PREFIX_KEYS` for
+ * the canonical list.
+ *
+ * `'api'` auto-prefixes with `/api` so user routes line up with the
+ * rpx proxy forward path (stacksjs/stacks#1835). Writing
+ * `route.get('/cart/add', ...)` in `routes/api.ts` registers as
+ * `/api/cart/add` — exactly what `https://<domain>/api/cart/add`
+ * resolves to via the dev proxy.
  *
  * @example
- * // No prefix - routes/api.ts loaded at /*
+ * // Default API routes - routes/api.ts loaded at /api/*
  * 'api': 'api',
  *
- * // Auto prefix from key - routes/api/v1.ts loaded at /v1/*
- * 'v1': 'api/v1',
+ * // Auto prefix from key - routes/v1.ts loaded at /v1/*
+ * 'v1': 'v1',
  *
  * // Explicit prefix - routes/api/v1.ts loaded at /api/v1/*
  * 'legacy': { path: 'api/v1', prefix: '/api/v1' },
@@ -32,7 +40,8 @@ export type RouteRegistry = Record<string, string | RouteDefinition>
  * 'admin': { path: 'admin', middleware: ['auth'] },
  */
 export default {
-  // Default API routes (no prefix)
+  // Default API routes — auto-prefixed with /api by the route-loader
+  // so `routes/api.ts` aligns with the proxy forward path.
   'api': 'api',
 
   // Add versioned or prefixed routes here:

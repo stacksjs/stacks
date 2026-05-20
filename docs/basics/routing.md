@@ -179,7 +179,9 @@ Stacks uses `app/Routes.ts` to register which route files to load and how to pre
 
 // app/Routes.ts
 export default {
-  // Default API routes (no prefix) - loads routes/api.ts at /*
+  // Default API routes - loads routes/api.ts at /api/*
+  // (The 'api' key auto-prefixes with /api so user routes line up
+  //  with the rpx proxy forward path. See stacksjs/stacks#1835.)
   'api': 'api',
 
   // Versioned routes with explicit prefix - loads routes/v1.ts at /v1/*
@@ -189,6 +191,8 @@ export default {
   'admin': { path: 'admin', middleware: ['auth'] },
 
   // No prefix override - loads routes/internal.ts at /* (no prefix)
+  // 'web' is the only key in the route-loader's NO_PREFIX_KEYS list;
+  // for other no-prefix routes, pass an explicit empty string.
   'internal': { path: 'internal', prefix: '' },
 } satisfies RouteRegistry
 

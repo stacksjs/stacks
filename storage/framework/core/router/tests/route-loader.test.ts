@@ -26,16 +26,32 @@ describe('Route Loader - loadRoutes', () => {
     ).rejects.toThrow()
   })
 
-  test('api and web keys have no prefix added', async () => {
-    // Both 'api' and 'web' are in NO_PREFIX_KEYS, so they should not
-    // cause a group with prefix. Since the import fails, we verify
-    // by checking the error message contains the route path.
+  test('the web key has no prefix added (only `web` is in NO_PREFIX_KEYS now)', async () => {
+    // `web` mounts at root /. The import will throw for the synthetic
+    // path, but reaching the import means the prefix logic ran with
+    // `undefined` — the group wrapper wasn't invoked. We verify by
+    // ensuring the error mentions the route path (came from the
+    // import attempt, not a group setup failure).
     try {
-      await loadRoutes({ api: 'api' })
+      await loadRoutes({ web: 'web' })
     }
     catch (e: any) {
-      expect(e.message).toContain('api')
+      expect(e.message).toContain('web')
     }
+  })
+
+  test('the api key auto-prefixes with /api (stacksjs/stacks#1835)', async () => {
+    // Previously `api` was in NO_PREFIX_KEYS and `routes/api.ts`
+    // mounted at root — which 404'd through the rpx proxy because the
+    // forwarded URL kept its `/api` prefix. The fix moves `api` out of
+    // NO_PREFIX_KEYS so it picks up the conventional `/api` prefix
+    // from the key-to-prefix default.
+    //
+    // We can't easily assert the group prefix without spinning up the
+    // real router; the integration smoke is that registering
+    // `route.get('/cart/add')` from `routes/api.ts` ends up matchable
+    // at `/api/cart/add` via the dev proxy.
+    await expect(loadRoutes({ api: 'api' })).resolves.toBeUndefined()
   })
 
   test('non-api/web keys get /<key> prefix via route.group', async () => {

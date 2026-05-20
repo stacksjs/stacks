@@ -794,10 +794,13 @@ async function startReverseProxy(options: DevOptions): Promise<void> {
     await runViaDaemon({
       proxies: [
         // Forward /api/** straight to the API server, preserving the prefix.
-        // API routes are registered as /api/cart/add, /api/checkout/place,
-        // etc. — stripPrefix must stay false or the API would see /cart/add
-        // and 404. The frontend's stx-serve still has a fallback proxy for
-        // direct localhost:PORT access.
+        // Both user routes (registered through `routes/api.ts` — auto-prefixed
+        // with /api by the route-loader, see stacksjs/stacks#1835) and
+        // framework routes (which use explicit `route.group({ prefix: '/api/...' })`)
+        // expect the /api segment to be present at registration time, so
+        // `stripPrefix` must stay `false` or the API would see /cart/add and
+        // 404. The frontend's stx-serve has a fallback proxy for direct
+        // localhost:PORT access.
         { id: `${domain}-frontend`, from: `localhost:${frontendPort}`, to: domain, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
         { id: `${domain}-api`, from: `localhost:${apiPort}`, to: apiDomain },
         { id: `${domain}-docs`, from: `localhost:${docsPort}`, to: docsDomain },

@@ -2,19 +2,36 @@
  * Route Loader
  *
  * Loads routes from the route registry with automatic prefixing.
- * The key name becomes the URL prefix (except 'api' and 'web' which have no prefix).
+ * The key name becomes the URL prefix; `'web'` is the only key that
+ * loads at root (`/`) without a prefix.
  *
- * User routes are loaded FIRST so they always take priority over framework defaults.
- * When bun-router encounters a duplicate route (same method + path), the first
- * registration wins — so user-defined routes naturally override framework routes.
+ * The `'api'` key auto-prefixes with `/api` so user routes in
+ * `routes/api.ts` line up with the rpx proxy forward path
+ * (`/api/*` → API server with `stripPrefix: false`). Previously this
+ * key was also in `NO_PREFIX_KEYS`, which produced silent 404s when
+ * `routes/api.ts` registered `route.get('/cart/add', ...)` but the
+ * proxied request arrived as `/api/cart/add` — see
+ * stacksjs/stacks#1835 root cause 4.
+ *
+ * User routes are loaded FIRST so they always take priority over
+ * framework defaults. When bun-router encounters a duplicate route
+ * (same method + path), the first registration wins — so user-defined
+ * routes naturally override framework routes.
  */
 
 import type { RouteDefinition, RouteRegistry } from '../../../../../app/Routes'
 import { log } from '@stacksjs/logging'
 import { route } from './stacks-router'
 
-/** Keys that should not have a prefix (loaded at root /) */
-const NO_PREFIX_KEYS = ['api', 'web']
+/**
+ * Keys that load at root `/` with no prefix. Currently just `'web'`
+ * for HTML/SSR routes that mount at the document root.
+ *
+ * `'api'` is deliberately NOT in this list (see top-of-file note).
+ * It picks up the conventional `/api` prefix via the default
+ * key-to-prefix mapping below.
+ */
+const NO_PREFIX_KEYS = ['web']
 
 /**
  * Load all routes from the registry

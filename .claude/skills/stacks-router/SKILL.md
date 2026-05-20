@@ -55,7 +55,7 @@ route.group({ prefix: '/api/v1', middleware: ['auth', 'throttle'] }, () => {
 
 ```typescript
 export default {
-  'api': 'api',                              // routes/api.ts → / (no prefix)
+  'api': 'api',                              // routes/api.ts → /api/* (auto-prefixed; see #1835)
   'v1': { path: 'v1', prefix: 'v1' },       // routes/v1.ts → /v1/*
   'admin': { path: 'admin', prefix: 'admin', middleware: ['auth'] }
 } satisfies Record<string, string | RouteDefinition>
