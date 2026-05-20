@@ -1,25 +1,15 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const dateRanges = [
-  { id: 'last7days', name: 'Last 7 Days' },
-  { id: 'last30days', name: 'Last 30 Days' },
-  { id: 'thisMonth', name: 'This Month' },
-  { id: 'lastMonth', name: 'Last Month' },
-  { id: 'thisYear', name: 'This Year' },
-]
-</script>
-
 @title('Dashboard - Events & Goals')
 <PageLayout>
   <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
     <div class="flex items-center space-x-2">
       <div class="h-5 w-5 text-gray-500 dark:text-neutral-400 i-hugeicons-calendar-03"></div>
       <select x-model="selectedDateRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        @foreach(dateRanges as range)
-          <option value="{{ range.id }}">{{ range.name }}</option>
-        @endforeach
+        <template :for="range in dateRanges">
+          <option :value="range.id">{{ range.name }}</option>
+        </template>
       </select>
       <span class="text-gray-500 text-sm dark:text-neutral-400">{{ dateRangeDisplay() }}</span>
     </div>
@@ -279,6 +269,16 @@ stacks.trackEvent('{{ selectedEventName() }}', {
 </PageLayout>
 
 <script client>
+// Date range options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const dateRanges = [
+  { id: 'last7days', name: 'Last 7 Days' },
+  { id: 'last30days', name: 'Last 30 Days' },
+  { id: 'thisMonth', name: 'This Month' },
+  { id: 'lastMonth', name: 'Last Month' },
+  { id: 'thisYear', name: 'This Year' },
+]
+
 interface Event {
   id: string
   name: string

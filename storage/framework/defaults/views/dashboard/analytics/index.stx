@@ -1,11 +1,10 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-/**
- * Analytics Dashboard - macOS Style
- * Overview of analytics with macOS-inspired design.
- */
+<script client>
+// Analytics Dashboard - macOS Style.
+// Hub list — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
 const analyticsCards = [
   { name: 'Web Analytics', description: 'Page views, sessions, and user behavior', icon: 'i-hugeicons-chart-line-data-02', to: '/analytics/web' },
   { name: 'Blog Analytics', description: 'Post performance and engagement', icon: 'i-hugeicons-edit-02', to: '/analytics/blog' },
@@ -60,29 +59,29 @@ const analyticsCards = [
 
   <!-- Analytics Sections -->
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-    @foreach(analyticsCards as card)
-    <StxLink
-      :to="card.to"
-      class="block"
-    >
-      <Card variant="default" padding="md" hoverable clickable>
-        <div class="flex gap-4 items-start">
-          <div class="flex-shrink-0 p-2.5 text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/20 rounded-lg">
-            <div class="{{ card.icon }} h-5 w-5" />
+    <template :for="card in analyticsCards">
+      <StxLink
+        :to="card.to"
+        class="block"
+      >
+        <Card variant="default" padding="md" hoverable clickable>
+          <div class="flex gap-4 items-start">
+            <div class="flex-shrink-0 p-2.5 text-blue-600 dark:text-blue-400 bg-blue-500/15 dark:bg-blue-400/20 rounded-lg">
+              <div :class="card.icon" class="h-5 w-5" />
+            </div>
+            <div class="flex-1 min-w-0">
+              <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">
+                {{ card.name }}
+              </h3>
+              <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
+                {{ card.description }}
+              </p>
+            </div>
+            <div class="flex-shrink-0 h-4 w-4 text-neutral-400 i-hugeicons-arrow-right-01" />
           </div>
-          <div class="flex-1 min-w-0">
-            <h3 class="font-medium text-[14px] text-neutral-900 dark:text-white">
-              {{ card.name }}
-            </h3>
-            <p class="mt-1 text-[12px] text-neutral-500 dark:text-neutral-400">
-              {{ card.description }}
-            </p>
-          </div>
-          <div class="flex-shrink-0 h-4 w-4 text-neutral-400 i-hugeicons-arrow-right-01" />
-        </div>
-      </Card>
-    </StxLink>
-    @endforeach
+        </Card>
+      </StxLink>
+    </template>
   </div>
 </div>
 

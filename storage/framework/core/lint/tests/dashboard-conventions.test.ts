@@ -109,13 +109,6 @@ function hasLiveDomAccess(src: string): boolean {
  */
 const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'access-tokens/index.stx',
-  'analytics/blog/index.stx',
-  'analytics/commerce/sales/index.stx',
-  'analytics/commerce/web/index.stx',
-  'analytics/events/index.stx',
-  'analytics/index.stx',
-  'analytics/marketing/index.stx',
-  'analytics/web/index.stx',
   'cloud/index.stx',
   'commerce/coupons/index.stx',
   'commerce/customers/index.stx',

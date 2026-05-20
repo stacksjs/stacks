@@ -1,62 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const campaignsRaw = [
-  { name: 'Summer Sale 2024', id: 'SUMMER24', spend: 25000, revenue: 75000, roi: 200, conversions: 1500 },
-  { name: 'New Product Launch', id: 'NEWPROD', spend: 20000, revenue: 60000, roi: 200, conversions: 1200 },
-  { name: 'Holiday Special', id: 'HOLIDAY', spend: 18000, revenue: 54000, roi: 200, conversions: 1080 },
-  { name: 'Back to School', id: 'SCHOOL', spend: 15000, revenue: 45000, roi: 200, conversions: 900 },
-  { name: 'Flash Sale', id: 'FLASH', spend: 12000, revenue: 36000, roi: 200, conversions: 720 },
-  { name: 'Loyalty Program', id: 'LOYALTY', spend: 10000, revenue: 30000, roi: 200, conversions: 600 },
-  { name: 'Referral Program', id: 'REFERRAL', spend: 8000, revenue: 24000, roi: 200, conversions: 480 },
-  { name: 'Email Newsletter', id: 'EMAIL', spend: 7000, revenue: 21000, roi: 200, conversions: 420 },
-  { name: 'Retargeting Campaign', id: 'RETARGET', spend: 6000, revenue: 18000, roi: 200, conversions: 360 },
-  { name: 'Social Media Contest', id: 'CONTEST', spend: 4000, revenue: 12000, roi: 200, conversions: 240 },
-]
-
-const channelsRaw = [
-  { name: 'Paid Search', spend: 35000, revenue: 105000, roi: 200, conversions: 2100 },
-  { name: 'Social Media', spend: 30000, revenue: 90000, roi: 200, conversions: 1800 },
-  { name: 'Email Marketing', spend: 20000, revenue: 60000, roi: 200, conversions: 1200 },
-  { name: 'Display Ads', spend: 15000, revenue: 45000, roi: 200, conversions: 900 },
-  { name: 'Affiliate Marketing', spend: 10000, revenue: 30000, roi: 200, conversions: 600 },
-  { name: 'Influencer Marketing', spend: 8000, revenue: 24000, roi: 200, conversions: 480 },
-  { name: 'Content Marketing', spend: 5000, revenue: 15000, roi: 200, conversions: 300 },
-  { name: 'SMS Marketing', spend: 2000, revenue: 6000, roi: 200, conversions: 120 },
-]
-
-const adsRaw = [
-  { name: 'Summer Sale Banner', id: 'AD-001', impressions: 250000, clicks: 12500, ctr: 5, conversions: 625, cpa: 16 },
-  { name: 'Product Showcase Video', id: 'AD-002', impressions: 200000, clicks: 10000, ctr: 5, conversions: 500, cpa: 16 },
-  { name: 'Limited Time Offer', id: 'AD-003', impressions: 180000, clicks: 9000, ctr: 5, conversions: 450, cpa: 16 },
-  { name: 'Customer Testimonial', id: 'AD-004', impressions: 150000, clicks: 7500, ctr: 5, conversions: 375, cpa: 16 },
-  { name: 'Free Shipping Promo', id: 'AD-005', impressions: 120000, clicks: 6000, ctr: 5, conversions: 300, cpa: 16 },
-]
-
-const totalCampaignRevenue = campaignsRaw.reduce((s, c) => s + c.revenue, 0)
-const totalChannelRevenue = channelsRaw.reduce((s, c) => s + c.revenue, 0)
-const totalAdConversions = adsRaw.reduce((s, a) => s + a.conversions, 0)
-
-const campaignsData = campaignsRaw.map(c => ({ ...c, percentage: Math.round((c.revenue / totalCampaignRevenue) * 100) }))
-const channelsData = channelsRaw.map(c => ({ ...c, percentage: Math.round((c.revenue / totalChannelRevenue) * 100) }))
-const adsData = adsRaw.map(a => ({ ...a, percentage: Math.round((a.conversions / totalAdConversions) * 100) }))
-
-const marketingOverview = {
-  roi: 200,
-  cpa: 16.67,
-  conversionRate: '3.2%',
-}
-
-function formatNumber(n) {
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
-
-function formatCurrency(amount) {
-  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-</script>
-
 @title('Dashboard - Commerce Marketing Analytics')
 <PageLayout>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -133,10 +77,10 @@ function formatCurrency(amount) {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(campaignsData as campaign)
+                <template :for="campaign in campaignsData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" style="width: {{ campaign.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" :style="'width: ' + campaign.percentage + '%'"></div>
                       <span class="relative z-10">{{ campaign.name }}</span>
                       <span class="block relative z-10 text-gray-500 text-xs dark:text-neutral-400">{{ campaign.id }}</span>
                     </td>
@@ -145,7 +89,7 @@ function formatCurrency(amount) {
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ campaign.roi }}%</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ campaign.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -168,10 +112,10 @@ function formatCurrency(amount) {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(channelsData as channel)
+                <template :for="channel in channelsData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="width: {{ channel.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="'width: ' + channel.percentage + '%'"></div>
                       <span class="relative z-10">{{ channel.name }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ formatCurrency(channel.spend) }}</span></td>
@@ -179,7 +123,7 @@ function formatCurrency(amount) {
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ channel.roi }}%</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ channel.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -205,10 +149,10 @@ function formatCurrency(amount) {
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(adsData as ad)
+              <template :for="ad in adsData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                    <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="width: {{ ad.percentage }}%"></div>
+                    <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="'width: ' + ad.percentage + '%'"></div>
                     <span class="relative z-10">{{ ad.name }}</span>
                     <span class="block relative z-10 text-gray-500 text-xs dark:text-neutral-400">{{ ad.id }}</span>
                   </td>
@@ -219,7 +163,7 @@ function formatCurrency(amount) {
                   <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">${{ ad.cpa }}</span></td>
                   <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ ad.percentage }}%</span></td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -232,6 +176,62 @@ function formatCurrency(amount) {
 
 interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+// Static analytics tables + overview — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
+const campaignsRaw = [
+  { name: 'Summer Sale 2024', id: 'SUMMER24', spend: 25000, revenue: 75000, roi: 200, conversions: 1500 },
+  { name: 'New Product Launch', id: 'NEWPROD', spend: 20000, revenue: 60000, roi: 200, conversions: 1200 },
+  { name: 'Holiday Special', id: 'HOLIDAY', spend: 18000, revenue: 54000, roi: 200, conversions: 1080 },
+  { name: 'Back to School', id: 'SCHOOL', spend: 15000, revenue: 45000, roi: 200, conversions: 900 },
+  { name: 'Flash Sale', id: 'FLASH', spend: 12000, revenue: 36000, roi: 200, conversions: 720 },
+  { name: 'Loyalty Program', id: 'LOYALTY', spend: 10000, revenue: 30000, roi: 200, conversions: 600 },
+  { name: 'Referral Program', id: 'REFERRAL', spend: 8000, revenue: 24000, roi: 200, conversions: 480 },
+  { name: 'Email Newsletter', id: 'EMAIL', spend: 7000, revenue: 21000, roi: 200, conversions: 420 },
+  { name: 'Retargeting Campaign', id: 'RETARGET', spend: 6000, revenue: 18000, roi: 200, conversions: 360 },
+  { name: 'Social Media Contest', id: 'CONTEST', spend: 4000, revenue: 12000, roi: 200, conversions: 240 },
+]
+
+const channelsRaw = [
+  { name: 'Paid Search', spend: 35000, revenue: 105000, roi: 200, conversions: 2100 },
+  { name: 'Social Media', spend: 30000, revenue: 90000, roi: 200, conversions: 1800 },
+  { name: 'Email Marketing', spend: 20000, revenue: 60000, roi: 200, conversions: 1200 },
+  { name: 'Display Ads', spend: 15000, revenue: 45000, roi: 200, conversions: 900 },
+  { name: 'Affiliate Marketing', spend: 10000, revenue: 30000, roi: 200, conversions: 600 },
+  { name: 'Influencer Marketing', spend: 8000, revenue: 24000, roi: 200, conversions: 480 },
+  { name: 'Content Marketing', spend: 5000, revenue: 15000, roi: 200, conversions: 300 },
+  { name: 'SMS Marketing', spend: 2000, revenue: 6000, roi: 200, conversions: 120 },
+]
+
+const adsRaw = [
+  { name: 'Summer Sale Banner', id: 'AD-001', impressions: 250000, clicks: 12500, ctr: 5, conversions: 625, cpa: 16 },
+  { name: 'Product Showcase Video', id: 'AD-002', impressions: 200000, clicks: 10000, ctr: 5, conversions: 500, cpa: 16 },
+  { name: 'Limited Time Offer', id: 'AD-003', impressions: 180000, clicks: 9000, ctr: 5, conversions: 450, cpa: 16 },
+  { name: 'Customer Testimonial', id: 'AD-004', impressions: 150000, clicks: 7500, ctr: 5, conversions: 375, cpa: 16 },
+  { name: 'Free Shipping Promo', id: 'AD-005', impressions: 120000, clicks: 6000, ctr: 5, conversions: 300, cpa: 16 },
+]
+
+const totalCampaignRevenue = campaignsRaw.reduce((s, c) => s + c.revenue, 0)
+const totalChannelRevenue = channelsRaw.reduce((s, c) => s + c.revenue, 0)
+const totalAdConversions = adsRaw.reduce((s, a) => s + a.conversions, 0)
+
+const campaignsData = campaignsRaw.map(c => ({ ...c, percentage: Math.round((c.revenue / totalCampaignRevenue) * 100) }))
+const channelsData = channelsRaw.map(c => ({ ...c, percentage: Math.round((c.revenue / totalChannelRevenue) * 100) }))
+const adsData = adsRaw.map(a => ({ ...a, percentage: Math.round((a.conversions / totalAdConversions) * 100) }))
+
+const marketingOverview = {
+  roi: 200,
+  cpa: 16.67,
+  conversionRate: '3.2%',
+}
+
+function formatNumber(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+function formatCurrency(amount) {
+  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
 
 const dateRangeDisplay = state('All Time: Sep 7, 2023 to Mar 6, 2025')
 const comparisonType = state('no-comparison')

@@ -1,73 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const pagesRaw = [
-  { path: '/', entries: 1800, visitors: 1800, views: 2100 },
-  { path: '/blog', entries: 113, visitors: 113, views: 139 },
-  { path: '/about', entries: 51, visitors: 51, views: 77 },
-  { path: '/contact', entries: 42, visitors: 42, views: 51 },
-  { path: '/products', entries: 37, visitors: 37, views: 60 },
-  { path: '/guide/get-started.html', entries: 21, visitors: 29, views: 45 },
-  { path: '/docs', entries: 16, visitors: 17, views: 202 },
-  { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22 },
-  { path: '/guide/get-started', entries: 9, visitors: 12, views: 13 },
-  { path: '/team', entries: 9, visitors: 10, views: 15 },
-]
-
-const referrersRaw = [
-  { name: 'Direct / Unknown', visitors: 1400, views: 2100 },
-  { name: 'X/Twitter', visitors: 545, views: 580 },
-  { name: 'Google', visitors: 46, views: 50 },
-  { name: 'stacksjs.com', visitors: 45, views: 63 },
-  { name: 'stacksjs.netlify.app', visitors: 38, views: 60 },
-  { name: 'github.com', visitors: 34, views: 47 },
-  { name: 'DuckDuckGo', visitors: 32, views: 35 },
-  { name: 'Bing', visitors: 22, views: 24 },
-  { name: 'Baidu', visitors: 8, views: 8 },
-  { name: 'npmjs.com', visitors: 7, views: 7 },
-]
-
-const deviceData = [
-  { name: 'Desktop', visitors: 1300, percentage: 60 },
-  { name: 'Phone', visitors: 874, percentage: 38 },
-  { name: 'Tablet', visitors: 5, percentage: 2 },
-]
-
-const browserData = [
-  { name: 'Chrome', visitors: 1300, percentage: 58 },
-  { name: 'Safari', visitors: 579, percentage: 26 },
-  { name: 'Edge', visitors: 129, percentage: 6 },
-  { name: 'Firefox', visitors: 92, percentage: 4 },
-  { name: 'Mozilla', visitors: 24, percentage: 1 },
-]
-
-const countriesRaw = [
-  { name: 'United States of America', visitors: 768, flag: '🇺🇸' },
-  { name: 'Germany', visitors: 140, flag: '🇩🇪' },
-  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧' },
-  { name: 'India', visitors: 83, flag: '🇮🇳' },
-  { name: 'Indonesia', visitors: 80, flag: '🇮🇩' },
-]
-
-const totalPageViews = pagesRaw.reduce((s, p) => s + p.views, 0)
-const totalReferrerViews = referrersRaw.reduce((s, r) => s + r.views, 0)
-const totalCountryVisitors = countriesRaw.reduce((s, c) => s + c.visitors, 0)
-
-const pagesData = pagesRaw.map(p => ({ ...p, percentage: Math.round((p.views / totalPageViews) * 100) }))
-const referrersData = referrersRaw.map(r => ({ ...r, percentage: Math.round((r.views / totalReferrerViews) * 100) }))
-const countriesData = countriesRaw.map(c => ({ ...c, percentage: Math.round((c.visitors / totalCountryVisitors) * 100) }))
-
-const analyticsOverview = {
-  realtime: 0,
-  people: 2200,
-  views: 3000,
-  avgTimeOnSite: '03:36',
-  bounceRate: '89%',
-  eventCompletions: 0,
-}
-</script>
-
 @title('Dashboard - Blog Analytics')
 <PageLayout>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -141,10 +74,10 @@ const analyticsOverview = {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(pagesData as page)
+                <template :for="page in pagesData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="width: {{ page.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="'width: ' + page.percentage + '%'"></div>
                       <span class="relative z-10">{{ page.path }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.entries }}</span></td>
@@ -152,7 +85,7 @@ const analyticsOverview = {
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.views }}</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ page.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -172,17 +105,17 @@ const analyticsOverview = {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(referrersData as referrer)
+                <template :for="referrer in referrersData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="width: {{ referrer.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" :style="'width: ' + referrer.percentage + '%'"></div>
                       <span class="relative z-10">{{ referrer.name }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ referrer.visitors }}</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ referrer.views }}</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ referrer.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -203,16 +136,16 @@ const analyticsOverview = {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(deviceData as device)
+                <template :for="device in deviceData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="width: {{ device.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="'width: ' + device.percentage + '%'"></div>
                       <span class="relative z-10">{{ device.name }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ device.visitors }}</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ device.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -231,16 +164,16 @@ const analyticsOverview = {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(browserData as browser)
+                <template :for="browser in browserData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" style="width: {{ browser.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-amber-100/50 dark:bg-amber-900/50" :style="'width: ' + browser.percentage + '%'"></div>
                       <span class="relative z-10">{{ browser.name }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ browser.visitors }}</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ browser.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -259,16 +192,16 @@ const analyticsOverview = {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(countriesData as country)
+                <template :for="country in countriesData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" style="width: {{ country.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-rose-100/50 dark:bg-rose-900/50" :style="'width: ' + country.percentage + '%'"></div>
                       <span class="relative z-10"><span class="mr-2">{{ country.flag }}</span>{{ country.name }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ country.visitors }}</span></td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300"><span class="relative z-10">{{ country.percentage }}%</span></td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -280,6 +213,73 @@ const analyticsOverview = {
 
 interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+// Static analytics tables + overview — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
+const pagesRaw = [
+  { path: '/', entries: 1800, visitors: 1800, views: 2100 },
+  { path: '/blog', entries: 113, visitors: 113, views: 139 },
+  { path: '/about', entries: 51, visitors: 51, views: 77 },
+  { path: '/contact', entries: 42, visitors: 42, views: 51 },
+  { path: '/products', entries: 37, visitors: 37, views: 60 },
+  { path: '/guide/get-started.html', entries: 21, visitors: 29, views: 45 },
+  { path: '/docs', entries: 16, visitors: 17, views: 202 },
+  { path: '/guide/intro.html', entries: 12, visitors: 17, views: 22 },
+  { path: '/guide/get-started', entries: 9, visitors: 12, views: 13 },
+  { path: '/team', entries: 9, visitors: 10, views: 15 },
+]
+
+const referrersRaw = [
+  { name: 'Direct / Unknown', visitors: 1400, views: 2100 },
+  { name: 'X/Twitter', visitors: 545, views: 580 },
+  { name: 'Google', visitors: 46, views: 50 },
+  { name: 'stacksjs.com', visitors: 45, views: 63 },
+  { name: 'stacksjs.netlify.app', visitors: 38, views: 60 },
+  { name: 'github.com', visitors: 34, views: 47 },
+  { name: 'DuckDuckGo', visitors: 32, views: 35 },
+  { name: 'Bing', visitors: 22, views: 24 },
+  { name: 'Baidu', visitors: 8, views: 8 },
+  { name: 'npmjs.com', visitors: 7, views: 7 },
+]
+
+const deviceData = [
+  { name: 'Desktop', visitors: 1300, percentage: 60 },
+  { name: 'Phone', visitors: 874, percentage: 38 },
+  { name: 'Tablet', visitors: 5, percentage: 2 },
+]
+
+const browserData = [
+  { name: 'Chrome', visitors: 1300, percentage: 58 },
+  { name: 'Safari', visitors: 579, percentage: 26 },
+  { name: 'Edge', visitors: 129, percentage: 6 },
+  { name: 'Firefox', visitors: 92, percentage: 4 },
+  { name: 'Mozilla', visitors: 24, percentage: 1 },
+]
+
+const countriesRaw = [
+  { name: 'United States of America', visitors: 768, flag: '🇺🇸' },
+  { name: 'Germany', visitors: 140, flag: '🇩🇪' },
+  { name: 'United Kingdom', visitors: 87, flag: '🇬🇧' },
+  { name: 'India', visitors: 83, flag: '🇮🇳' },
+  { name: 'Indonesia', visitors: 80, flag: '🇮🇩' },
+]
+
+const totalPageViews = pagesRaw.reduce((s, p) => s + p.views, 0)
+const totalReferrerViews = referrersRaw.reduce((s, r) => s + r.views, 0)
+const totalCountryVisitors = countriesRaw.reduce((s, c) => s + c.visitors, 0)
+
+const pagesData = pagesRaw.map(p => ({ ...p, percentage: Math.round((p.views / totalPageViews) * 100) }))
+const referrersData = referrersRaw.map(r => ({ ...r, percentage: Math.round((r.views / totalReferrerViews) * 100) }))
+const countriesData = countriesRaw.map(c => ({ ...c, percentage: Math.round((c.visitors / totalCountryVisitors) * 100) }))
+
+const analyticsOverview = {
+  realtime: 0,
+  people: 2200,
+  views: 3000,
+  avgTimeOnSite: '03:36',
+  bounceRate: '89%',
+  eventCompletions: 0,
+}
 
 const dateRangeDisplay = state('All Time: Sep 7, 2023 to Mar 6, 2025')
 const comparisonType = state('no-comparison')

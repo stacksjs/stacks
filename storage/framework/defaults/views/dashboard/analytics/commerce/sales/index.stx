@@ -1,65 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const productsRaw = [
-  { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450 },
-  { name: 'Wireless Earbuds', sku: 'WE-200', sales: 3567, revenue: 178350 },
-  { name: 'Smart Watch Series 5', sku: 'SW-S5', sales: 2134, revenue: 149380 },
-  { name: 'Laptop Ultra Slim', sku: 'LT-US-15', sales: 876, revenue: 131400 },
-  { name: 'Bluetooth Speaker', sku: 'BS-100', sales: 1543, revenue: 61720 },
-  { name: 'Fitness Tracker', sku: 'FT-300', sales: 1876, revenue: 56280 },
-  { name: 'Tablet Pro 12', sku: 'TB-P12', sales: 654, revenue: 45780 },
-  { name: 'Gaming Mouse', sku: 'GM-RGB', sales: 1234, revenue: 43190 },
-  { name: 'Mechanical Keyboard', sku: 'KB-MECH', sales: 987, revenue: 39480 },
-  { name: 'External SSD 1TB', sku: 'SSD-1TB', sales: 765, revenue: 38250 },
-]
-
-const categoriesRaw = [
-  { name: 'Electronics', sales: 5678, revenue: 850200 },
-  { name: 'Clothing', sales: 4532, revenue: 226600 },
-  { name: 'Home & Kitchen', sales: 3210, revenue: 160500 },
-  { name: 'Beauty & Personal Care', sales: 2876, revenue: 143800 },
-  { name: 'Sports & Outdoors', sales: 1987, revenue: 99350 },
-  { name: 'Books', sales: 1654, revenue: 33080 },
-  { name: 'Toys & Games', sales: 1432, revenue: 57280 },
-  { name: 'Health & Household', sales: 1234, revenue: 61700 },
-  { name: 'Automotive', sales: 876, revenue: 43800 },
-  { name: 'Pet Supplies', sales: 765, revenue: 38250 },
-]
-
-const customersRaw = [
-  { name: 'John Smith', orders: 24, spent: 4800 },
-  { name: 'Sarah Johnson', orders: 18, spent: 3600 },
-  { name: 'Michael Brown', orders: 15, spent: 3000 },
-  { name: 'Emily Davis', orders: 12, spent: 2400 },
-  { name: 'David Wilson', orders: 10, spent: 2000 },
-]
-
-const totalProductRevenue = productsRaw.reduce((s, p) => s + p.revenue, 0)
-const totalCategoryRevenue = categoriesRaw.reduce((s, c) => s + c.revenue, 0)
-const totalCustomerSpent = customersRaw.reduce((s, c) => s + c.spent, 0)
-
-const productsData = productsRaw.map(p => ({ ...p, percentage: Math.round((p.revenue / totalProductRevenue) * 100) }))
-const categoriesData = categoriesRaw.map(c => ({ ...c, percentage: Math.round((c.revenue / totalCategoryRevenue) * 100) }))
-const customersData = customersRaw.map(c => ({ ...c, percentage: Math.round((c.spent / totalCustomerSpent) * 100) }))
-
-const salesOverview = {
-  averageOrderValue: 36.04,
-  conversionRate: '2.4%',
-  returnRate: '5.2%',
-  repeatCustomerRate: '28%',
-}
-
-function formatNumber(n) {
-  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
-}
-
-function formatCurrency(amount) {
-  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-</script>
-
 @title('Dashboard - Commerce Sales Analytics')
 <PageLayout>
       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between mb-6">
@@ -137,10 +78,10 @@ function formatCurrency(amount) {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(productsData as product)
+                <template :for="product in productsData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" style="width: {{ product.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-green-100/50 dark:bg-green-900/50" :style="'width: ' + product.percentage + '%'"></div>
                       <span class="relative z-10">{{ product.name }}</span>
                       <span class="block relative z-10 text-gray-500 text-xs dark:text-neutral-400">{{ product.sku }}</span>
                     </td>
@@ -154,7 +95,7 @@ function formatCurrency(amount) {
                       <span class="relative z-10">{{ product.percentage }}%</span>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -178,10 +119,10 @@ function formatCurrency(amount) {
                 </tr>
               </thead>
               <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(categoriesData as category)
+                <template :for="category in categoriesData">
                   <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                     <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" style="width: {{ category.percentage }}%"></div>
+                      <div class="absolute inset-0 bg-blue-100/50 dark:bg-blue-900/50" :style="'width: ' + category.percentage + '%'"></div>
                       <span class="relative z-10">{{ category.name }}</span>
                     </td>
                     <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
@@ -194,7 +135,7 @@ function formatCurrency(amount) {
                       <span class="relative z-10">{{ category.percentage }}%</span>
                     </td>
                   </tr>
-                @endforeach
+                </template>
               </tbody>
             </table>
           </div>
@@ -219,10 +160,10 @@ function formatCurrency(amount) {
               </tr>
             </thead>
             <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-              @foreach(customersData as customer)
+              <template :for="customer in customersData">
                 <tr class="relative hover:bg-gray-50 dark:hover:bg-neutral-700/50">
                   <td class="px-4 py-3 text-gray-900 text-sm whitespace-nowrap dark:text-white">
-                    <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" style="width: {{ customer.percentage }}%"></div>
+                    <div class="absolute inset-0 bg-purple-100/50 dark:bg-purple-900/50" :style="'width: ' + customer.percentage + '%'"></div>
                     <span class="relative z-10">{{ customer.name }}</span>
                   </td>
                   <td class="relative px-4 py-3 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-300">
@@ -235,7 +176,7 @@ function formatCurrency(amount) {
                     <span class="relative z-10">{{ customer.percentage }}%</span>
                   </td>
                 </tr>
-              @endforeach
+              </template>
             </tbody>
           </table>
         </div>
@@ -248,6 +189,65 @@ function formatCurrency(amount) {
 
 interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+// Static analytics tables + overview — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
+const productsRaw = [
+  { name: 'Smartphone X Pro', sku: 'SP-X-PRO', sales: 1245, revenue: 623450 },
+  { name: 'Wireless Earbuds', sku: 'WE-200', sales: 3567, revenue: 178350 },
+  { name: 'Smart Watch Series 5', sku: 'SW-S5', sales: 2134, revenue: 149380 },
+  { name: 'Laptop Ultra Slim', sku: 'LT-US-15', sales: 876, revenue: 131400 },
+  { name: 'Bluetooth Speaker', sku: 'BS-100', sales: 1543, revenue: 61720 },
+  { name: 'Fitness Tracker', sku: 'FT-300', sales: 1876, revenue: 56280 },
+  { name: 'Tablet Pro 12', sku: 'TB-P12', sales: 654, revenue: 45780 },
+  { name: 'Gaming Mouse', sku: 'GM-RGB', sales: 1234, revenue: 43190 },
+  { name: 'Mechanical Keyboard', sku: 'KB-MECH', sales: 987, revenue: 39480 },
+  { name: 'External SSD 1TB', sku: 'SSD-1TB', sales: 765, revenue: 38250 },
+]
+
+const categoriesRaw = [
+  { name: 'Electronics', sales: 5678, revenue: 850200 },
+  { name: 'Clothing', sales: 4532, revenue: 226600 },
+  { name: 'Home & Kitchen', sales: 3210, revenue: 160500 },
+  { name: 'Beauty & Personal Care', sales: 2876, revenue: 143800 },
+  { name: 'Sports & Outdoors', sales: 1987, revenue: 99350 },
+  { name: 'Books', sales: 1654, revenue: 33080 },
+  { name: 'Toys & Games', sales: 1432, revenue: 57280 },
+  { name: 'Health & Household', sales: 1234, revenue: 61700 },
+  { name: 'Automotive', sales: 876, revenue: 43800 },
+  { name: 'Pet Supplies', sales: 765, revenue: 38250 },
+]
+
+const customersRaw = [
+  { name: 'John Smith', orders: 24, spent: 4800 },
+  { name: 'Sarah Johnson', orders: 18, spent: 3600 },
+  { name: 'Michael Brown', orders: 15, spent: 3000 },
+  { name: 'Emily Davis', orders: 12, spent: 2400 },
+  { name: 'David Wilson', orders: 10, spent: 2000 },
+]
+
+const totalProductRevenue = productsRaw.reduce((s, p) => s + p.revenue, 0)
+const totalCategoryRevenue = categoriesRaw.reduce((s, c) => s + c.revenue, 0)
+const totalCustomerSpent = customersRaw.reduce((s, c) => s + c.spent, 0)
+
+const productsData = productsRaw.map(p => ({ ...p, percentage: Math.round((p.revenue / totalProductRevenue) * 100) }))
+const categoriesData = categoriesRaw.map(c => ({ ...c, percentage: Math.round((c.revenue / totalCategoryRevenue) * 100) }))
+const customersData = customersRaw.map(c => ({ ...c, percentage: Math.round((c.spent / totalCustomerSpent) * 100) }))
+
+const salesOverview = {
+  averageOrderValue: 36.04,
+  conversionRate: '2.4%',
+  returnRate: '5.2%',
+  repeatCustomerRate: '28%',
+}
+
+function formatNumber(n) {
+  return n.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+}
+
+function formatCurrency(amount) {
+  return `$${amount.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
+}
 
 const dateRangeDisplay = state('All Time: Sep 7, 2023 to Mar 6, 2025')
 const comparisonType = state('no-comparison')
