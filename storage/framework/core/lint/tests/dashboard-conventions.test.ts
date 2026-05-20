@@ -107,11 +107,7 @@ function hasLiveDomAccess(src: string): boolean {
  * containing the pattern is listed. Adding to this list should be a
  * deliberate decision (reviewer flag).
  */
-const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
-  'commerce/dashboard/index.stx',
-  'models/[model].stx',
-  'models/index.stx',
-])
+const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set<string>([])
 
 /**
  * Files allowed to contain `window.` or `document.` references. Most
@@ -125,7 +121,6 @@ const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
  */
 const DOM_ACCESS_ALLOWLIST: ReadonlySet<string> = new Set([
   'cloud/index.stx',
-  'commerce/dashboard/index.stx',
   'commerce/pos/index.stx',
   'content/authors/index.stx',
   'content/categories/index.stx',

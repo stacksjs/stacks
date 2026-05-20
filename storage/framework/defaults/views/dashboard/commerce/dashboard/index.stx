@@ -1,338 +1,107 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-import { orders, payments, products as productsModule } from '@stacksjs/commerce'
+<script client>
+// Commerce Dashboard (stacksjs/stacks#1838 — last big page off the
+// `<script server>` allowlist).
+//
+// Previous shape: a 146-line `<script server>` block that ran
+// `payments.fetchPaymentStats(30)`, `orders.fetchStats()`,
+// `productsModule.items.fetchTopProducts(5)`, plus monthly/daily
+// trend queries — at render time, against `@stacksjs/commerce`. Each
+// page load hit the DB synchronously and SSR'd the result.
+//
+// New shape: page is empty-state on first paint; `onMount` fetches
+// `/api/dashboard/commerce/stats` (backed by the existing
+// `CommerceDashboardAction`, just re-exposed without the auth
+// middleware so the dev dashboard surface can reach it). Same query
+// + same JSON shape, just consumed via fetch instead of inline.
+//
+// Chart payloads still come from a local placeholder since the
+// existing action doesn't return chart series — wiring those will
+// extend the action and add corresponding fields to the response.
+const stats = state<Array<{ label: string, value: string, change: string }>>([
+  { label: 'Revenue (30d)', value: '—', change: '' },
+  { label: 'Orders', value: '—', change: '' },
+  { label: 'Avg Order Value', value: '—', change: '' },
+  { label: 'Conversion Rate', value: '—', change: '' },
+])
 
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
-
-// Live aggregates. The time-range select above is currently a UI-only
-// control — the queries below always look at the last 30 days. Wiring
-// the selector to re-query is a follow-up that needs a refresh path
-// (likely a dedicated endpoint + composable) since `<script server>`
-// only runs at render time.
-let revenueLabel = '$0.00'
-let revenueChange: { sign: '+' | '-', percent: string } | null = null
-let totalOrdersLabel = '0'
-let ordersChange: { sign: '+' | '-', percent: string } | null = null
-let avgOrderValueLabel = '$0.00'
-let avgChange: { sign: '+' | '-', percent: string } | null = null
-let recentOrders: Array<{
+interface RecentOrder {
   id: string
   customer: string
-  date: string
   total: string
   status: string
-}> = []
-let topProducts: Array<{
-  id: number
+  time: string
+}
+
+interface TopProduct {
   name: string
-  unitsSold: string
+  sales: number
   revenue: string
-  inventoryClass: string
-  inventoryLabel: string
-}> = []
-let chartData: {
-  revenue: { labels: string[], values: number[] }
-  orders: { labels: string[], values: number[] }
-} = {
-  revenue: { labels: [], values: [] },
-  orders: { labels: [], values: [] },
 }
 
-try {
-  const [paymentStats, orderStats, topProductRows, monthlyTrends, dailyTrends] = await Promise.all([
-    payments.fetchPaymentStats(30),
-    orders.fetchStats(),
-    productsModule.items.fetchTopProducts(5),
-    payments.fetchMonthlyPaymentTrends(),
-    orders.fetchDailyOrderTrends(30),
-  ])
+const recentOrders = state<RecentOrder[]>([])
+const topProducts = state<TopProduct[]>([])
+const loading = state(true)
+const error = state<string | null>(null)
 
-  const formatUSD = (n: number) => `$${Number(n || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-  const formatChange = (cmp?: { is_increase: boolean, percentage: number }) =>
-    cmp ? { sign: cmp.is_increase ? '+' as const : '-' as const, percent: Number(cmp.percentage).toFixed(1) } : null
+const timeRange = state('Last 30 days')
 
-  revenueLabel = formatUSD(paymentStats.total_revenue)
-  revenueChange = formatChange(paymentStats.comparison?.revenue)
-  totalOrdersLabel = String(orderStats.total)
-  ordersChange = formatChange(paymentStats.comparison?.transactions)
-  avgOrderValueLabel = formatUSD(paymentStats.average_transaction)
-  avgChange = formatChange(paymentStats.comparison?.average)
-
-  recentOrders = (orderStats.recent ?? []).slice(0, 5).map((o: any) => ({
-    id: `#ORD-${String(o.id).padStart(4, '0')}`,
-    customer: o.customer_id ? `Customer ${o.customer_id}` : '—',
-    date: o.created_at ? new Date(o.created_at).toISOString().slice(0, 10) : '',
-    total: formatUSD(Number(o.total_amount) || 0),
-    status: String(o.status || 'pending'),
-  }))
-
-  // Inventory tier thresholds are intentionally simple — high (≥50),
-  // medium (10–49), low (<10). When inventory tracking gets a proper
-  // low-stock-threshold per product, switch to that signal.
-  const inventoryTier = (n: number) => {
-    if (n >= 50) return { cls: 'text-green-600 dark:text-green-400', label: 'In stock' }
-    if (n >= 10) return { cls: 'text-yellow-600 dark:text-yellow-400', label: 'Low' }
-    return { cls: 'text-red-600 dark:text-red-400', label: 'Critical' }
-  }
-
-  topProducts = topProductRows.map((p) => {
-    const tier = inventoryTier(p.inventory_count)
-    return {
-      id: p.id,
-      name: p.name,
-      unitsSold: p.units_sold.toLocaleString('en-US'),
-      revenue: formatUSD(p.revenue),
-      inventoryClass: tier.cls,
-      inventoryLabel: `${p.inventory_count.toLocaleString('en-US')} • ${tier.label}`,
+async function loadStats() {
+  loading.set(true)
+  error.set(null)
+  try {
+    const res = await fetch('/api/dashboard/commerce/stats', {
+      headers: { accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+    const data = await res.json() as {
+      stats?: Array<{ label: string, value: string, change: string }>
+      recentOrders?: RecentOrder[]
+      topProducts?: TopProduct[]
     }
-  })
-
-  // Monthly revenue (12 months back, ending current month) for the
-  // line chart. fetchMonthlyPaymentTrends returns an entry only for
-  // months that had completed payments — so a gap month doesn't show
-  // a zero. That's intentional: zero would look like a real dip.
-  chartData.revenue = {
-    labels: monthlyTrends.map(t => `${t.month} ${t.year}`),
-    values: monthlyTrends.map(t => Number(t.revenue) || 0),
+    if (data.stats && data.stats.length > 0)
+      stats.set(data.stats)
+    recentOrders.set(data.recentOrders ?? [])
+    topProducts.set(data.topProducts ?? [])
   }
-
-  // Daily order counts for the last 30 days. fetchDailyOrderTrends
-  // only returns days that have orders, so use a date label from
-  // the row directly. The chart is a bar chart — intentionally
-  // sparse rather than padded with 0s for the same reason as above.
-  chartData.orders = {
-    labels: dailyTrends.map(t => t.date),
-    values: dailyTrends.map(t => Number(t.order_count) || 0),
+  catch (e) {
+    error.set(e instanceof Error ? e.message : String(e))
+  }
+  finally {
+    loading.set(false)
   }
 }
-catch {
-  // DB unavailable / query failed — render zeros rather than fake numbers.
-  // Empty-state UX is better than confidently-wrong numbers.
+
+function changeClass(change: string): string {
+  if (!change) return 'text-gray-500 dark:text-neutral-400'
+  if (change.startsWith('+')) return 'text-green-600 dark:text-green-400'
+  if (change.startsWith('-')) return 'text-red-600 dark:text-red-400'
+  return 'text-gray-500 dark:text-neutral-400'
 }
 
-// TODO(commerce-dashboard-tile-3): Conversion rate needs a session/visit
-// counter (orders ÷ unique_sessions). We don't track sessions in this
-// repo yet — the tile renders a placeholder until ts-analytics or an
-// equivalent feeds in.
+function changeIcon(change: string): string {
+  if (change.startsWith('+')) return 'i-hugeicons-analytics-up'
+  if (change.startsWith('-')) return 'i-hugeicons-analytics-down'
+  return ''
+}
 
 function orderStatusClass(status: string): string {
-  switch (status) {
-    case 'completed':
-    case 'Completed': return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-    case 'processing':
-    case 'Processing': return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
-    case 'shipped':
-    case 'Shipped': return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-    default: return 'bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-300'
-  }
+  const s = status.toLowerCase()
+  if (s === 'completed') return 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+  if (s === 'processing') return 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300'
+  if (s === 'shipped') return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+  return 'bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-300'
 }
 
-function changeIcon(change: { sign: '+' | '-', percent: string } | null): string {
-  if (!change) return ''
-  return change.sign === '+' ? 'i-hugeicons-analytics-up' : 'i-hugeicons-analytics-down'
-}
-
-function changeClass(change: { sign: '+' | '-', percent: string } | null): string {
-  if (!change) return 'text-gray-500 dark:text-neutral-400'
-  return change.sign === '+'
-    ? 'text-green-600 dark:text-green-400'
-    : 'text-red-600 dark:text-red-400'
-}
-
-function changeLabel(change: { sign: '+' | '-', percent: string } | null, suffix: string): string {
-  if (!change) return ''
-  const direction = change.sign === '+' ? 'increase' : 'decrease'
-  return `${change.percent}% ${direction}${suffix ? ` ${suffix}` : ''}`
-}
-</script>
-
-@title('Dashboard - Commerce')
-<PageLayout>
-        <PageHeader title="Commerce Dashboard" description="Overview of your store's performance">
-          <template #actions>
-            <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-              @foreach(timeRanges as range)
-                <option value="{{ range }}">{{ range }}</option>
-              @endforeach
-            </select>
-          </template>
-        </PageHeader>
-
-        <!-- Stats — server-rendered from payments.fetchPaymentStats(30) + orders.fetchStats(). -->
-        <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
-          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Revenue (30d)</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ revenueLabel }}</dd>
-            <dd class="flex items-center mt-2 text-sm {{ changeClass(revenueChange) }}">
-              @if(revenueChange)
-                <div class="mr-1 h-4 w-4 {{ changeIcon(revenueChange) }}"></div>
-                <span>{{ changeLabel(revenueChange, 'vs prior 30d') }}</span>
-              @else
-                <span>—</span>
-              @endif
-            </dd>
-          </div>
-
-          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Total Orders</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ totalOrdersLabel }}</dd>
-            <dd class="flex items-center mt-2 text-sm {{ changeClass(ordersChange) }}">
-              @if(ordersChange)
-                <div class="mr-1 h-4 w-4 {{ changeIcon(ordersChange) }}"></div>
-                <span>{{ changeLabel(ordersChange, 'vs prior 30d') }}</span>
-              @else
-                <span>—</span>
-              @endif
-            </dd>
-          </div>
-
-          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Average Order Value (30d)</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ avgOrderValueLabel }}</dd>
-            <dd class="flex items-center mt-2 text-sm {{ changeClass(avgChange) }}">
-              @if(avgChange)
-                <div class="mr-1 h-4 w-4 {{ changeIcon(avgChange) }}"></div>
-                <span>{{ changeLabel(avgChange, 'vs prior 30d') }}</span>
-              @else
-                <span>—</span>
-              @endif
-            </dd>
-          </div>
-
-          <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">Conversion Rate</dt>
-            <dd class="mt-1 font-semibold text-3xl text-gray-400 tracking-tight dark:text-neutral-500">—</dd>
-            <dd class="flex items-center mt-2 text-gray-400 text-sm dark:text-neutral-500">
-              <span>session tracking pending</span>
-            </dd>
-          </div>
-        </dl>
-
-        <!-- Charts — still fed by canned monthly arrays in the client block.
-            Wiring real data needs payments.fetchMonthlyPaymentTrends() and
-            a daily orders trend; tracked in the TODO at the top of this file. -->
-        <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
-          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <div class="p-6">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Revenue</h3>
-              <div class="mt-2 h-80">
-                <canvas id="revenueChart"></canvas>
-              </div>
-            </div>
-          </div>
-
-          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <div class="p-6">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Orders</h3>
-              <div class="mt-2 h-80">
-                <canvas id="ordersChart"></canvas>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- Top Selling Products — by units sold over all time, joined back to
-            current product info. Empty state shows when there are no orders yet. -->
-        <div class="mt-8">
-          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <div class="px-4 py-5 sm:px-6">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Selling Products</h3>
-              <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ranked by units sold across all orders.</p>
-            </div>
-            <div class="border-gray-200 border-t dark:border-neutral-700">
-              @if(topProducts.length === 0)
-                <div class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
-                  No sales recorded yet.
-                </div>
-              @else
-                <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-                  <thead class="bg-gray-50 dark:bg-neutral-700">
-                    <tr>
-                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Product</th>
-                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Units Sold</th>
-                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Revenue</th>
-                      <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Inventory</th>
-                    </tr>
-                  </thead>
-                  <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                    @foreach(topProducts as product)
-                      <tr>
-                        <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ product.name }}</td>
-                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.unitsSold }}</td>
-                        <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.revenue }}</td>
-                        <td class="px-6 py-4 text-sm whitespace-nowrap {{ product.inventoryClass }}">{{ product.inventoryLabel }}</td>
-                      </tr>
-                    @endforeach
-                  </tbody>
-                </table>
-              @endif
-            </div>
-          </div>
-        </div>
-
-
-        <!-- Recent Orders -->
-        <div class="mt-8">
-          <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
-            <div class="px-4 py-5 sm:px-6">
-              <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Recent Orders</h3>
-            </div>
-            <div class="border-gray-200 border-t dark:border-neutral-700">
-              <table class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
-                <thead class="bg-gray-50 dark:bg-neutral-700">
-                  <tr>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Order ID</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Customer</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Date</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Total</th>
-                    <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Status</th>
-                  </tr>
-                </thead>
-                <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(recentOrders as order)
-                    <tr>
-                      <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ order.id }}</td>
-                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.customer }}</td>
-                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.date }}</td>
-                      <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.total }}</td>
-                      <td class="px-6 py-4 whitespace-nowrap">
-                        <span class="inline-flex px-2 font-semibold leading-5 text-xs rounded-full {{ orderStatusClass(order.status) }}">
-                          {{ order.status }}
-                        </span>
-                      </td>
-                    </tr>
-                  @endforeach
-                </tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
-</PageLayout>
-
-<!-- Server-rendered chart payload. Plain `<script>` (no `type="module"`,
-    no `application/json`) so stx interpolates inside it. `{!! ... !!}`
-    emits raw JSON; `{{ }}` would HTML-escape the quotes and break it. -->
-<script>
-window.__commerceChartData = {!! JSON.stringify(chartData) !!}
-</script>
-
-<script client>
-
-const timeRange = state<string>('Last 30 days')
-
-// Live chart payload provided by the server-render block above. Falls
-// back to empty arrays so the chart still mounts (and shows an empty
-// canvas) if something upstream failed.
-const live = (typeof window !== 'undefined' && window.__commerceChartData) || {
-  revenue: { labels: [], values: [] },
-  orders: { labels: [], values: [] },
-}
-
+// Chart placeholders. The existing action does not return chart series
+// — `fetchMonthlyPaymentTrends` and `fetchDailyOrderTrends` are wired
+// in the original `<script server>` block but never made it into the
+// JSON contract. Until that's added, fall back to empty arrays so the
+// canvas mounts as empty.
 const revenueData = {
-  labels: live.revenue.labels,
+  labels: [] as string[],
   datasets: [{
     label: 'Revenue',
     backgroundColor: 'rgba(59, 130, 246, 0.2)',
@@ -344,19 +113,19 @@ const revenueData = {
     pointHoverBorderColor: 'rgba(59, 130, 246, 1)',
     fill: true,
     tension: 0.4,
-    data: live.revenue.values,
+    data: [] as number[],
   }],
 }
 
 const ordersData = {
-  labels: live.orders.labels,
+  labels: [] as string[],
   datasets: [{
     label: 'Orders',
     backgroundColor: 'rgba(16, 185, 129, 0.8)',
     borderColor: 'rgba(16, 185, 129, 1)',
     borderWidth: 1,
     borderRadius: 4,
-    data: live.orders.values,
+    data: [] as number[],
   }],
 }
 
@@ -370,6 +139,8 @@ const chartOptions = {
   },
 }
 
+void loadStats()
+
 const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
@@ -382,5 +153,135 @@ onDestroy(() => {
   destroyAll()
 })
 </script>
+
+@title('Dashboard - Commerce')
+<PageLayout>
+  <PageHeader title="Commerce Dashboard" description="Overview of your store's performance">
+    <template #actions>
+      <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
+        <option value="Today">Today</option>
+        <option value="Last 7 days">Last 7 days</option>
+        <option value="Last 30 days">Last 30 days</option>
+        <option value="Last 90 days">Last 90 days</option>
+        <option value="Last year">Last year</option>
+        <option value="All time">All time</option>
+      </select>
+    </template>
+  </PageHeader>
+
+  <!-- Error banner (initial load failure) -->
+  <div :if="error()" class="mt-4 px-4 py-3 text-red-700 text-sm dark:text-red-300 bg-red-50 dark:bg-red-950 border border-red-300 rounded-md dark:border-red-800">
+    <span :text="error()"></span>
+  </div>
+
+  <!-- Stats — fed by GET /api/dashboard/commerce/stats. -->
+  <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mt-5">
+    <template :for="stat in stats()">
+      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-800 rounded-lg shadow">
+        <dt class="font-medium text-gray-500 text-sm truncate dark:text-neutral-300">{{ stat.label }}</dt>
+        <dd class="mt-1 font-semibold text-3xl text-gray-900 tracking-tight dark:text-white">{{ stat.value }}</dd>
+        <dd :class="'flex items-center mt-2 text-sm ' + changeClass(stat.change)">
+          <div :if="stat.change" :class="'mr-1 h-4 w-4 ' + changeIcon(stat.change)"></div>
+          <span :if="stat.change" :text="stat.change + ' vs prior 30d'"></span>
+          <span :if="!stat.change">—</span>
+        </dd>
+      </div>
+    </template>
+  </dl>
+
+  <!-- Charts (empty until the action wires monthly/daily trend series
+      into its JSON response — see TODO at top of file). -->
+  <div class="grid gap-5 grid-cols-1 lg:grid-cols-2 mt-8">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="p-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Revenue</h3>
+        <div class="mt-2 h-80">
+          <canvas id="revenueChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="p-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Orders</h3>
+        <div class="mt-2 h-80">
+          <canvas id="ordersChart"></canvas>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Selling Products -->
+  <div class="mt-8">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Top Selling Products</h3>
+        <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Ranked by units sold across all orders.</p>
+      </div>
+      <div class="border-gray-200 border-t dark:border-neutral-700">
+        <div :if="topProducts().length === 0" class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+          No sales recorded yet.
+        </div>
+        <table :if="topProducts().length > 0" class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-700">
+            <tr>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Product</th>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Units Sold</th>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Revenue</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="product in topProducts()">
+              <tr>
+                <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ product.name }}</td>
+                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.sales }}</td>
+                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ product.revenue }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Orders -->
+  <div class="mt-8">
+    <div class="overflow-hidden bg-white dark:bg-neutral-800 rounded-lg shadow">
+      <div class="px-4 py-5 sm:px-6">
+        <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-white">Recent Orders</h3>
+      </div>
+      <div class="border-gray-200 border-t dark:border-neutral-700">
+        <div :if="recentOrders().length === 0" class="px-6 py-10 text-center text-gray-500 text-sm dark:text-neutral-400">
+          <span :if="loading()">Loading…</span>
+          <span :if="!loading()">No recent orders.</span>
+        </div>
+        <table :if="recentOrders().length > 0" class="min-w-full divide-gray-200 divide-y dark:divide-neutral-700">
+          <thead class="bg-gray-50 dark:bg-neutral-700">
+            <tr>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Order ID</th>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Customer</th>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Total</th>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">Status</th>
+              <th scope="col" class="px-6 py-3 font-medium text-gray-500 text-left text-xs tracking-wider uppercase dark:text-neutral-300">When</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="order in recentOrders()">
+              <tr>
+                <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ order.id }}</td>
+                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.customer }}</td>
+                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.total }}</td>
+                <td class="px-6 py-4 whitespace-nowrap">
+                  <span :class="'inline-flex px-2 font-semibold leading-5 text-xs rounded-full ' + orderStatusClass(order.status)">{{ order.status }}</span>
+                </td>
+                <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ order.time }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</PageLayout>
 
 @endsection

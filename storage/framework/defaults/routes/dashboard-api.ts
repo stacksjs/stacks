@@ -136,4 +136,21 @@ route.group({ prefix: '/api/dashboard', apiResponse: true }, () => {
   // wider `/api/dashboard/users` (Data section consumer) — the
   // picker only needs id/name/email.
   route.get('/kanban/users', 'Actions/Dashboard/Kanban/UsersListAction')
+
+  // Commerce dashboard stats. Same Action that backs the auth'd
+  // `/api/commerce/dashboard` — exposed here without the auth gate so
+  // the dev-mode dashboard surface in `views/dashboard/commerce/dashboard/`
+  // can load it directly. The page itself stays admin-gated via
+  // `useRole().isAdmin()` (stacksjs/stacks#1838).
+  route.get('/commerce/stats', 'Actions/Dashboard/Commerce/CommerceDashboardAction')
+
+  // Models overview. Walks `app/Models/` + framework default models,
+  // counts rows for each, returns grouped JSON for the
+  // `views/dashboard/models/index.stx` page (stacksjs/stacks#1838).
+  route.get('/models', 'Actions/Dashboard/Models/ModelsIndexAction')
+
+  // Per-model row view — first 50 rows + column list, for the
+  // dynamic `views/dashboard/models/[model].stx` page. ORM path
+  // first, raw SQLite fallback if no model file matches the slug.
+  route.get('/models/{slug}', 'Actions/Dashboard/Models/ModelShowAction')
 })

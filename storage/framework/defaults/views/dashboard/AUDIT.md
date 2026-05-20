@@ -9,19 +9,36 @@ the 2026-05-04 snapshot and will be regenerated on the next audit pass._
 | Metric | 2026-05-04 | 2026-05-20 | Δ |
 |---|---:|---:|---:|
 | Total `.stx` files | 110 | 113 | +3 |
-| `<script server>` blocks | 98 | 48 | **−50** |
-| `<script client>` blocks | 78 | 89 | +11 |
+| `<script server>` blocks | 98 | **0** | −98 |
+| `<script client>` blocks | 78 | 100+ | +22 |
 | Bare `<script>` blocks (no qualifier) | 11 | 9 | −2 |
-| `window.` / `document.` lines | 168 | 78 | **−90** |
+| `window.` / `document.` lines | 168 | 78 | −90 |
 | Pages calling `useStore(…)` | 0 | 5 | +5 |
-| Pages importing a composable | 0 | 4 | +4 |
+| Pages importing a composable | 0 | 5 | +5 |
 | Stores defined under `dashboard/stores/` | 1 | 5 | +4 |
 | Composables under `dashboard/composables/` | 0 | 4 | +4 |
 
-Latest sweep (`data/*`, 2026-05-20): 5 pages moved their static
-`<script server>` data definitions into the existing `<script client>`
-block — same shape every time, no behavioural change. Pages: `users`,
-`teams`, `subscribers`, `activity/index`, `dashboard/index`.
+**`<script server>` migration — complete.** Every dashboard page now
+renders against client-side state or fetches its data from an API
+endpoint. Several pages got new API endpoints in
+`storage/framework/defaults/routes/dashboard-api.ts`:
+
+- `/api/dashboard/commerce/stats` — reuses the existing
+  `CommerceDashboardAction`, exposed without auth middleware so the
+  dev dashboard can reach it
+- `/api/dashboard/models` — walks `app/Models/` + framework defaults,
+  counts rows per model
+- `/api/dashboard/models/{slug}` — first 50 rows of any single model
+
+Auth pages (`login`/`register`/`forgot-password`) also got real bug
+fixes during the conversion — their `<script server>` blocks tried to
+reassign `const` vars (always threw in strict-mode JS) and called
+`useRouter()` (a Nuxt-ism, no-op in stx).
+
+Remaining work for #1838: the 78 in-page `window.`/`document.` lines
+(mostly pre-existing vanilla event wiring under `content/*` and
+`commerce/*`) and deliverable #4 (component lift to
+`@stacksjs/components`) are the open targets.
 
 Three new pages landed since the original audit (kanban index, kanban
 `[id]`, management/permissions — see #1846 and #1845). Net `<script
