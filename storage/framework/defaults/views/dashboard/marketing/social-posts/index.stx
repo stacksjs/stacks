@@ -1,11 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const statuses = ['Published', 'Scheduled', 'Draft', 'Failed']
-const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
-</script>
-
 @title('Dashboard - Social Posts')
 <PageLayout>
   <div class="sm:flex sm:items-center sm:justify-between">
@@ -76,16 +71,16 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
     <div class="flex flex-col gap-4 sm:flex-row">
       <select x-model="statusFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Statuses</option>
-        @foreach(statuses as status)
-          <option value="{{ status }}">{{ status }}</option>
-        @endforeach
+        <template :for="status in statuses">
+          <option :value="status">{{ status }}</option>
+        </template>
       </select>
 
       <select x-model="platformFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Platforms</option>
-        @foreach(platforms as platform)
-          <option value="{{ platform }}">{{ platform }}</option>
-        @endforeach
+        <template :for="platform in platforms">
+          <option :value="platform">{{ platform }}</option>
+        </template>
       </select>
 
       <select x-model="authorFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
@@ -256,17 +251,17 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
           <div>
             <label class="block font-medium text-gray-900 text-sm dark:text-white">Platform</label>
             <select x-model="postPlatform" class="block mt-2 pl-3 pr-10 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-              @foreach(platforms as platform)
-                <option value="{{ platform }}">{{ platform }}</option>
-              @endforeach
+              <template :for="platform in platforms">
+                <option :value="platform">{{ platform }}</option>
+              </template>
             </select>
           </div>
           <div>
             <label class="block font-medium text-gray-900 text-sm dark:text-white">Status</label>
             <select x-model="postStatus" class="block mt-2 pl-3 pr-10 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-              @foreach(statuses as status)
-                <option value="{{ status }}">{{ status }}</option>
-              @endforeach
+              <template :for="status in statuses">
+                <option :value="status">{{ status }}</option>
+              </template>
             </select>
           </div>
         </div>
@@ -289,6 +284,11 @@ const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
 </PageLayout>
 
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const statuses = ['Published', 'Scheduled', 'Draft', 'Failed']
+const platforms = ['Bluesky', 'Twitter', 'Instagram', 'Facebook']
+
 interface SocialPost {
   id: number
   content: string

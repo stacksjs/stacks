@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const sources = ['Google', 'Yelp', 'Facebook', 'TripAdvisor', 'Other']
-const reviewStatuses = ['unread', 'read', 'responded', 'flagged']
-const sentiments = ['positive', 'neutral', 'negative']
-</script>
-
 @title('Dashboard - Reviews')
 <PageLayout>
   <div class="sm:flex sm:items-center sm:justify-between">
@@ -84,9 +78,9 @@ const sentiments = ['positive', 'neutral', 'negative']
     <div class="flex flex-col gap-4 sm:flex-row">
       <select x-model="sourceFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Sources</option>
-        @foreach(sources as source)
-          <option value="{{ source }}">{{ source }}</option>
-        @endforeach
+        <template :for="source in sources">
+          <option :value="source">{{ source }}</option>
+        </template>
       </select>
       <select x-model="ratingFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Ratings</option>
@@ -98,15 +92,15 @@ const sentiments = ['positive', 'neutral', 'negative']
       </select>
       <select x-model="sentimentFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Sentiments</option>
-        @foreach(sentiments as sentiment)
-          <option value="{{ sentiment }}">{{ sentiment }}</option>
-        @endforeach
+        <template :for="sentiment in sentiments">
+          <option :value="sentiment">{{ sentiment }}</option>
+        </template>
       </select>
       <select x-model="statusFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Statuses</option>
-        @foreach(reviewStatuses as status)
-          <option value="{{ status }}">{{ status }}</option>
-        @endforeach
+        <template :for="status in reviewStatuses">
+          <option :value="status">{{ status }}</option>
+        </template>
       </select>
     </div>
   </div>
@@ -209,6 +203,12 @@ const sentiments = ['positive', 'neutral', 'negative']
 </PageLayout>
 
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const sources = ['Google', 'Yelp', 'Facebook', 'TripAdvisor', 'Other']
+const reviewStatuses = ['unread', 'read', 'responded', 'flagged']
+const sentiments = ['positive', 'neutral', 'negative']
+
 interface Review {
   id: number
   uuid: string

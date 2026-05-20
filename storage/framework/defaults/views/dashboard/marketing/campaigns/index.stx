@@ -1,11 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const campaignTypes = ['Email', 'SMS', 'Seasonal', 'Discount', 'Product Launch', 'App Promotion']
-const campaignStatuses = ['Active', 'Scheduled', 'Draft', 'Completed', 'Paused']
-</script>
-
 @title('Dashboard - Campaigns')
 <PageLayout>
   <div class="sm:flex sm:items-center sm:justify-between">
@@ -83,15 +78,15 @@ const campaignStatuses = ['Active', 'Scheduled', 'Draft', 'Completed', 'Paused']
     <div class="flex flex-col gap-4 sm:flex-row">
       <select x-model="statusFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Statuses</option>
-        @foreach(campaignStatuses as status)
-          <option value="{{ status }}">{{ status }}</option>
-        @endforeach
+        <template :for="status in campaignStatuses">
+          <option :value="status">{{ status }}</option>
+        </template>
       </select>
       <select x-model="typeFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="all">All Types</option>
-        @foreach(campaignTypes as type)
-          <option value="{{ type }}">{{ type }}</option>
-        @endforeach
+        <template :for="type in campaignTypes">
+          <option :value="type">{{ type }}</option>
+        </template>
       </select>
       <select x-model="sortBy" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
         <option value="startDate">Sort by Start Date</option>
@@ -215,17 +210,17 @@ const campaignStatuses = ['Active', 'Scheduled', 'Draft', 'Completed', 'Paused']
           <div>
             <label class="block font-medium text-gray-900 text-sm dark:text-white">Type</label>
             <select x-model="formType" class="block mt-2 pl-3 pr-10 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-              @foreach(campaignTypes as type)
-                <option value="{{ type }}">{{ type }}</option>
-              @endforeach
+              <template :for="type in campaignTypes">
+                <option :value="type">{{ type }}</option>
+              </template>
             </select>
           </div>
           <div>
             <label class="block font-medium text-gray-900 text-sm dark:text-white">Status</label>
             <select x-model="formStatus" class="block mt-2 pl-3 pr-10 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600">
-              @foreach(campaignStatuses as status)
-                <option value="{{ status }}">{{ status }}</option>
-              @endforeach
+              <template :for="status in campaignStatuses">
+                <option :value="status">{{ status }}</option>
+              </template>
             </select>
           </div>
         </div>
@@ -264,6 +259,11 @@ const campaignStatuses = ['Active', 'Scheduled', 'Draft', 'Completed', 'Paused']
 </PageLayout>
 
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const campaignTypes = ['Email', 'SMS', 'Seasonal', 'Discount', 'Product Launch', 'App Promotion']
+const campaignStatuses = ['Active', 'Scheduled', 'Draft', 'Completed', 'Paused']
+
 interface Campaign {
   id: number
   uuid: string
