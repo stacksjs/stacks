@@ -1,19 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-
-const tabs = [
-  { name: 'Shipping Methods', value: 'methods', href: '/commerce/delivery/shipping-methods' },
-  { name: 'Shipping Zones', value: 'zones', href: '/commerce/delivery/shipping-zones' },
-  { name: 'Shipping Rates', value: 'rates', href: '/commerce/delivery/shipping-rates' },
-  { name: 'Digital Delivery', value: 'digital', href: '/commerce/delivery/digital-delivery' },
-  { name: 'License Keys', value: 'license', href: '/commerce/delivery/license-keys' },
-  { name: 'Delivery Routes', value: 'routes', href: '/commerce/delivery/delivery-routes' },
-  { name: 'Drivers', value: 'drivers', href: '/commerce/delivery/drivers' },
-]
-</script>
-
 @title('Dashboard - Shipping Rates')
 <div class="py-6">
   <div class="mx-auto px-4 sm:px-6 md:px-8 max-w-7xl">
@@ -172,6 +159,9 @@ const tabs = [
 
 <script client>
 import { useShippingMethods } from '../../../../functions/commerce/shippings/shipping-methods'
+// Shared tab nav config — formerly duplicated in every delivery page's
+// `<script server>` block (stacksjs/stacks#1838).
+import { deliveryTabs as tabs } from './tabs'
 import { useShippingRates } from '../../../../functions/commerce/shippings/shipping-rates'
 import { useShippingZones } from '../../../../functions/commerce/shippings/shipping-zones'
 
