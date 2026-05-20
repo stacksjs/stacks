@@ -1,7 +1,156 @@
-@extends('layouts/default')
 
-@section('content')
-<script server>
+@title('Dashboard - Cloud')
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="px-4 sm:px-6 lg:px-8">
+    <PageHeader title="Cloud Infrastructure" description="Design and manage your cloud infrastructure." />
+
+    <dl class="grid gap-5 grid-cols-2 sm:grid-cols-4 mt-8">
+      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Provider</dt>
+        <dd class="mt-1 font-semibold text-2xl text-gray-900 uppercase dark:text-white">{{ cloudConfig.type }}</dd>
+      </div>
+      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Servers</dt>
+        <dd class="mt-1 font-semibold text-2xl text-gray-900 dark:text-white">{{ serversWithDetails.length }}</dd>
+      </div>
+      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Server Types</dt>
+        <dd class="mt-1 font-semibold text-2xl text-gray-900 dark:text-white">{{ serversByType.length }}</dd>
+      </div>
+      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Load Balancer</dt>
+        <dd class="mt-1 font-semibold text-2xl text-gray-900 dark:text-white">{{ cloudConfig.useLoadBalancer ? 'Enabled' : 'Disabled' }}</dd>
+      </div>
+    </dl>
+
+    <div class="mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+      <div class="p-6">
+        <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Topology breakdown</h4>
+        <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 mt-4">
+          <template :for="group in serversByType">
+            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800 rounded-lg">
+              <span :class="typeBadgeClass(group.type)">{{ group.label }}</span>
+              <span class="font-mono text-gray-900 text-sm dark:text-white">×{{ group.count }}</span>
+            </div>
+          </template>
+        </div>
+
+        <div class="flex items-center justify-between mb-3 mt-6">
+          <h5 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Diagram</h5>
+          <p class="text-gray-500 text-xs dark:text-neutral-400">Drag nodes · scroll to zoom</p>
+        </div>
+        <div id="cloud_topology" class="h-[420px] w-full bg-neutral-50 dark:bg-neutral-800 rounded-lg"></div>
+      </div>
+    </div>
+
+    <div class="mt-8">
+      <div class="flex items-center justify-between mb-6">
+        <div>
+          <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Servers</h4>
+          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Configured application servers and their specifications.</p>
+        </div>
+        <div class="flex gap-4 items-center">
+          <StxLink to="/servers" class="inline-flex gap-1 items-center text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
+            View All
+            <div class="h-4 w-4 i-hugeicons-arrow-right-01"></div>
+          </StxLink>
+        </div>
+      </div>
+
+      <div class="space-y-4">
+        <template :for="server in serversWithDetails">
+          <div @click="selectServer(server.key)" class="p-6 bg-white dark:bg-neutral-700 border border-transparent rounded-lg dark:border-neutral-600 hover:border-blue-300 dark:hover:border-blue-500 shadow cursor-pointer">
+            <div class="flex flex-wrap gap-4 items-start justify-between">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap gap-3 items-center">
+                  <h5 class="font-medium text-gray-900 text-lg dark:text-neutral-100">{{ server.name }}</h5>
+                  <span :class="typeBadgeClass(server.type)">{{ server.label }}</span>
+                </div>
+                <div class="flex gap-2 items-center mt-1 text-gray-500 text-sm dark:text-neutral-400">
+                  <div class="h-4 w-4 i-hugeicons-link"></div>
+                  <p>{{ server.domain }}</p>
+                </div>
+                <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">{{ server.description }}</p>
+                <div class="flex flex-wrap gap-2 mt-3">
+                  <template :for="badge in server.badges">
+                    <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-100 dark:bg-blue-900 rounded-md">{{ badge }}</span>
+                  </template>
+                </div>
+              </div>
+
+              <div class="flex flex-col gap-1 items-end text-right">
+                <span class="text-gray-500 text-xs dark:text-neutral-400">{{ server.region }}</span>
+                <span class="font-mono text-gray-900 text-sm dark:text-white">{{ server.size }}</span>
+                <span class="text-gray-500 text-xs dark:text-neutral-400">{{ server.ramGb }}GB RAM · {{ server.specs.vcpu }} vCPU · {{ server.arch }}</span>
+              </div>
+            </div>
+          </div>
+        </template>
+      </div>
+    </div>
+
+    <div :show="selectedServer() !== null" @click.self="closeServer()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
+      <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
+        <div class="flex items-start justify-between">
+          <div>
+            <h3 class="font-semibold text-gray-900 text-lg dark:text-white">{{ selectedServer()?.name }}</h3>
+            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ selectedServer()?.domain }}</p>
+          </div>
+          <button @click="closeServer()" class="text-gray-400 dark:text-neutral-300 hover:text-gray-600 dark:hover:text-white">
+            <i class="h-5 w-5 i-hugeicons-cancel-01"></i>
+          </button>
+        </div>
+
+        <dl class="grid gap-3 grid-cols-1 sm:grid-cols-2 mt-6">
+          <template :for="entry in selectedDetails()">
+            <div class="flex gap-4 justify-between py-2 border-gray-100 border-t dark:border-neutral-700">
+              <dt class="text-gray-500 text-sm dark:text-neutral-400">{{ entry.label }}</dt>
+              <dd class="font-medium text-gray-900 text-right text-sm dark:text-white">{{ entry.value }}</dd>
+            </div>
+          </template>
+        </dl>
+      </div>
+    </div>
+
+    <div class="mt-12">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Recent Events</h3>
+          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">Latest server events and notifications.</p>
+        </div>
+      </div>
+
+      <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
+        <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
+          <thead class="bg-gray-50 dark:bg-neutral-600">
+            <tr>
+              <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Type</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Service</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Message</th>
+              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">Timestamp</th>
+            </tr>
+          </thead>
+          <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-700">
+            <template :for="event in recentEvents">
+              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
+                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
+                  <div :class="eventIcon(event.type) + ' ' + eventColor(event.type)" class="h-5 w-5"></div>
+                </td>
+                <td class="px-3 py-4 text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ event.service }}</td>
+                <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">{{ event.message }}</td>
+                <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ event.timestamp }}</td>
+              </tr>
+            </template>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
+// Topology demo data + view helpers — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
 const cloudConfig = {
   type: 'aws',
   useLoadBalancer: true,
@@ -96,158 +245,7 @@ function typeBadgeClass(type: string): string {
     default: return `${base} bg-gray-100 text-gray-800 dark:bg-neutral-700 dark:text-neutral-200`
   }
 }
-</script>
 
-@title('Dashboard - Cloud')
-<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
-  <div class="px-4 sm:px-6 lg:px-8">
-    <PageHeader title="Cloud Infrastructure" description="Design and manage your cloud infrastructure." />
-
-    <dl class="grid gap-5 grid-cols-2 sm:grid-cols-4 mt-8">
-      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Provider</dt>
-        <dd class="mt-1 font-semibold text-2xl text-gray-900 uppercase dark:text-white">{{ cloudConfig.type }}</dd>
-      </div>
-      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Servers</dt>
-        <dd class="mt-1 font-semibold text-2xl text-gray-900 dark:text-white">{{ serversWithDetails.length }}</dd>
-      </div>
-      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Server Types</dt>
-        <dd class="mt-1 font-semibold text-2xl text-gray-900 dark:text-white">{{ serversByType.length }}</dd>
-      </div>
-      <div class="overflow-hidden px-4 py-5 sm:p-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <dt class="font-medium text-gray-500 text-sm dark:text-neutral-400">Load Balancer</dt>
-        <dd class="mt-1 font-semibold text-2xl text-gray-900 dark:text-white">{{ cloudConfig.useLoadBalancer ? 'Enabled' : 'Disabled' }}</dd>
-      </div>
-    </dl>
-
-    <div class="mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-      <div class="p-6">
-        <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Topology breakdown</h4>
-        <div class="grid gap-3 grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 mt-4">
-          @foreach(serversByType as group)
-            <div class="flex items-center justify-between p-3 bg-gray-50 dark:bg-neutral-800 rounded-lg">
-              <span class="{{ typeBadgeClass(group.type) }}">{{ group.label }}</span>
-              <span class="font-mono text-gray-900 text-sm dark:text-white">×{{ group.count }}</span>
-            </div>
-          @endforeach
-        </div>
-
-        <div class="flex items-center justify-between mb-3 mt-6">
-          <h5 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Diagram</h5>
-          <p class="text-gray-500 text-xs dark:text-neutral-400">Drag nodes · scroll to zoom</p>
-        </div>
-        <div id="cloud_topology" class="h-[420px] w-full bg-neutral-50 dark:bg-neutral-800 rounded-lg"></div>
-      </div>
-    </div>
-
-    <div class="mt-8">
-      <div class="flex items-center justify-between mb-6">
-        <div>
-          <h4 class="font-medium text-base text-gray-900 dark:text-neutral-100">Servers</h4>
-          <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">Configured application servers and their specifications.</p>
-        </div>
-        <div class="flex gap-4 items-center">
-          <StxLink to="/servers" class="inline-flex gap-1 items-center text-blue-600 text-sm dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300">
-            View All
-            <div class="h-4 w-4 i-hugeicons-arrow-right-01"></div>
-          </StxLink>
-        </div>
-      </div>
-
-      <div class="space-y-4">
-        @foreach(serversWithDetails as server)
-          <div @click="selectServer('{{ server.key }}')" class="p-6 bg-white dark:bg-neutral-700 border border-transparent rounded-lg dark:border-neutral-600 hover:border-blue-300 dark:hover:border-blue-500 shadow cursor-pointer">
-            <div class="flex flex-wrap gap-4 items-start justify-between">
-              <div class="flex-1 min-w-0">
-                <div class="flex flex-wrap gap-3 items-center">
-                  <h5 class="font-medium text-gray-900 text-lg dark:text-neutral-100">{{ server.name }}</h5>
-                  <span class="{{ typeBadgeClass(server.type) }}">{{ server.label }}</span>
-                </div>
-                <div class="flex gap-2 items-center mt-1 text-gray-500 text-sm dark:text-neutral-400">
-                  <div class="h-4 w-4 i-hugeicons-link"></div>
-                  <p>{{ server.domain }}</p>
-                </div>
-                <p class="mt-2 text-gray-500 text-sm dark:text-neutral-400">{{ server.description }}</p>
-                <div class="flex flex-wrap gap-2 mt-3">
-                  @foreach(server.badges as badge)
-                    <span class="inline-flex items-center px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-300 bg-blue-100 dark:bg-blue-900 rounded-md">{{ badge }}</span>
-                  @endforeach
-                </div>
-              </div>
-
-              <div class="flex flex-col gap-1 items-end text-right">
-                <span class="text-gray-500 text-xs dark:text-neutral-400">{{ server.region }}</span>
-                <span class="font-mono text-gray-900 text-sm dark:text-white">{{ server.size }}</span>
-                <span class="text-gray-500 text-xs dark:text-neutral-400">{{ server.ramGb }}GB RAM · {{ server.specs.vcpu }} vCPU · {{ server.arch }}</span>
-              </div>
-            </div>
-          </div>
-        @endforeach
-      </div>
-    </div>
-
-    <div :show="selectedServer() !== null" @click.self="closeServer()" class="flex fixed inset-0 z-50 items-center justify-center p-4 bg-black bg-opacity-50">
-      <div class="overflow-y-auto p-6 max-h-[90vh] max-w-2xl w-full bg-white dark:bg-neutral-800 rounded-lg shadow-xl">
-        <div class="flex items-start justify-between">
-          <div>
-            <h3 class="font-semibold text-gray-900 text-lg dark:text-white">{{ selectedServer()?.name }}</h3>
-            <p class="mt-1 text-gray-500 text-sm dark:text-neutral-400">{{ selectedServer()?.domain }}</p>
-          </div>
-          <button @click="closeServer()" class="text-gray-400 dark:text-neutral-300 hover:text-gray-600 dark:hover:text-white">
-            <i class="h-5 w-5 i-hugeicons-cancel-01"></i>
-          </button>
-        </div>
-
-        <dl class="grid gap-3 grid-cols-1 sm:grid-cols-2 mt-6">
-          <template :for="entry in selectedDetails()">
-            <div class="flex gap-4 justify-between py-2 border-gray-100 border-t dark:border-neutral-700">
-              <dt class="text-gray-500 text-sm dark:text-neutral-400">{{ entry.label }}</dt>
-              <dd class="font-medium text-gray-900 text-right text-sm dark:text-white">{{ entry.value }}</dd>
-            </div>
-          </template>
-        </dl>
-      </div>
-    </div>
-
-    <div class="mt-12">
-      <div class="flex items-center justify-between mb-4">
-        <div>
-          <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Recent Events</h3>
-          <p class="mt-2 text-gray-700 text-sm dark:text-neutral-400">Latest server events and notifications.</p>
-        </div>
-      </div>
-
-      <div class="overflow-hidden ring-1 ring-black ring-opacity-5 sm:rounded-lg shadow">
-        <table class="min-w-full divide-gray-300 divide-y dark:divide-neutral-600">
-          <thead class="bg-gray-50 dark:bg-neutral-600">
-            <tr>
-              <th scope="col" class="pl-4 pr-3 py-3.5 sm:pl-6 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Type</th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Service</th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-left text-sm dark:text-neutral-100">Message</th>
-              <th scope="col" class="px-3 py-3.5 font-semibold text-gray-900 text-right text-sm dark:text-neutral-100">Timestamp</th>
-            </tr>
-          </thead>
-          <tbody class="bg-white dark:bg-neutral-700 divide-gray-200 divide-y dark:divide-neutral-700">
-            @foreach(recentEvents as event)
-              <tr class="hover:bg-gray-50 dark:hover:bg-neutral-600">
-                <td class="pl-4 pr-3 py-4 sm:pl-6 text-sm whitespace-nowrap">
-                  <div class="{{ eventIcon(event.type) }} {{ eventColor(event.type) }} h-5 w-5"></div>
-                </td>
-                <td class="px-3 py-4 text-gray-900 text-sm whitespace-nowrap dark:text-neutral-100">{{ event.service }}</td>
-                <td class="px-3 py-4 text-gray-500 text-sm dark:text-neutral-400">{{ event.message }}</td>
-                <td class="px-3 py-4 text-gray-500 text-right text-sm whitespace-nowrap dark:text-neutral-400">{{ event.timestamp }}</td>
-              </tr>
-            @endforeach
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script client>
 interface ServerSummary {
   key: string
   name: string

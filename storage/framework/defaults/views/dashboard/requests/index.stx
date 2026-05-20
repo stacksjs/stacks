@@ -1,143 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const chartOptions = {
-  responsive: true,
-  maintainAspectRatio: false,
-  scales: {
-    y: {
-      beginAtZero: true,
-      grid: {
-        color: 'rgba(200, 200, 200, 0.1)',
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-    x: {
-      grid: {
-        display: false,
-      },
-      ticks: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  plugins: {
-    legend: {
-      display: true,
-      labels: {
-        color: 'rgb(156, 163, 175)',
-        font: {
-          family: "'JetBrains Mono', monospace",
-        },
-      },
-    },
-  },
-  elements: {
-    line: {
-      tension: 0.4,
-    },
-  },
-}
-
-const requestVolumeData = {
-  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
-  datasets: [
-    {
-      label: 'Requests',
-      data: [1200, 1900, 800, 1600, 2400, 2100, 1800, 2200],
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      borderColor: 'rgb(59, 130, 246)',
-      fill: true,
-    }
-  ]
-}
-
-const responseTimeData = {
-  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
-  datasets: [
-    {
-      label: 'Average',
-      data: [320, 280, 300, 390, 420, 350, 360, 380],
-      borderColor: 'rgb(59, 130, 246)',
-      backgroundColor: 'rgba(59, 130, 246, 0.1)',
-      fill: false,
-    },
-    {
-      label: 'p95',
-      data: [480, 420, 450, 580, 630, 525, 540, 570],
-      borderColor: 'rgb(147, 197, 253)',
-      backgroundColor: 'rgba(147, 197, 253, 0.1)',
-      fill: false,
-    }
-  ]
-}
-
-const successRateData = {
-  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
-  datasets: [
-    {
-      label: 'Success Rate',
-      data: [98, 97, 99, 96, 95, 97, 98, 96],
-      borderColor: 'rgb(34, 197, 94)',
-      backgroundColor: 'rgba(34, 197, 94, 0.1)',
-      fill: true,
-    },
-    {
-      label: 'Error Rate',
-      data: [2, 3, 1, 4, 5, 3, 2, 4],
-      borderColor: 'rgb(239, 68, 68)',
-      backgroundColor: 'rgba(239, 68, 68, 0.1)',
-      fill: true,
-    }
-  ]
-}
-
-const statusCodesData = {
-  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
-  datasets: [
-    {
-      label: '2xx',
-      data: [980, 970, 990, 960, 950, 970, 980, 960],
-      backgroundColor: 'rgba(34, 197, 94, 0.7)',
-    },
-    {
-      label: '3xx',
-      data: [15, 20, 8, 25, 30, 20, 15, 25],
-      backgroundColor: 'rgba(234, 179, 8, 0.7)',
-    },
-    {
-      label: '4xx/5xx',
-      data: [5, 10, 2, 15, 20, 10, 5, 15],
-      backgroundColor: 'rgba(239, 68, 68, 0.7)',
-    }
-  ]
-}
-
-const barChartOptions = {
-  ...chartOptions,
-  scales: {
-    ...chartOptions.scales,
-    x: {
-      ...chartOptions.scales.x,
-      stacked: true,
-    },
-    y: {
-      ...chartOptions.scales.y,
-      stacked: true,
-    },
-  },
-}
-</script>
-
 @title('Dashboard - Requests')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
@@ -418,6 +281,143 @@ const barChartOptions = {
 </div>
 
 <script client>
+// Static chart data + options — moved out of the former `<script server>`
+// block (stacksjs/stacks#1838).
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  scales: {
+    y: {
+      beginAtZero: true,
+      grid: {
+        color: 'rgba(200, 200, 200, 0.1)',
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+    x: {
+      grid: {
+        display: false,
+      },
+      ticks: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  plugins: {
+    legend: {
+      display: true,
+      labels: {
+        color: 'rgb(156, 163, 175)',
+        font: {
+          family: "'JetBrains Mono', monospace",
+        },
+      },
+    },
+  },
+  elements: {
+    line: {
+      tension: 0.4,
+    },
+  },
+}
+
+const requestVolumeData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Requests',
+      data: [1200, 1900, 800, 1600, 2400, 2100, 1800, 2200],
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      borderColor: 'rgb(59, 130, 246)',
+      fill: true,
+    },
+  ],
+}
+
+const responseTimeData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Average',
+      data: [320, 280, 300, 390, 420, 350, 360, 380],
+      borderColor: 'rgb(59, 130, 246)',
+      backgroundColor: 'rgba(59, 130, 246, 0.1)',
+      fill: false,
+    },
+    {
+      label: 'p95',
+      data: [480, 420, 450, 580, 630, 525, 540, 570],
+      borderColor: 'rgb(147, 197, 253)',
+      backgroundColor: 'rgba(147, 197, 253, 0.1)',
+      fill: false,
+    },
+  ],
+}
+
+const successRateData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: 'Success Rate',
+      data: [98, 97, 99, 96, 95, 97, 98, 96],
+      borderColor: 'rgb(34, 197, 94)',
+      backgroundColor: 'rgba(34, 197, 94, 0.1)',
+      fill: true,
+    },
+    {
+      label: 'Error Rate',
+      data: [2, 3, 1, 4, 5, 3, 2, 4],
+      borderColor: 'rgb(239, 68, 68)',
+      backgroundColor: 'rgba(239, 68, 68, 0.1)',
+      fill: true,
+    },
+  ],
+}
+
+const statusCodesData = {
+  labels: ['12am', '3am', '6am', '9am', '12pm', '3pm', '6pm', '9pm'],
+  datasets: [
+    {
+      label: '2xx',
+      data: [980, 970, 990, 960, 950, 970, 980, 960],
+      backgroundColor: 'rgba(34, 197, 94, 0.7)',
+    },
+    {
+      label: '3xx',
+      data: [15, 20, 8, 25, 30, 20, 15, 25],
+      backgroundColor: 'rgba(234, 179, 8, 0.7)',
+    },
+    {
+      label: '4xx/5xx',
+      data: [5, 10, 2, 15, 20, 10, 5, 15],
+      backgroundColor: 'rgba(239, 68, 68, 0.7)',
+    },
+  ],
+}
+
+const barChartOptions = {
+  ...chartOptions,
+  scales: {
+    ...chartOptions.scales,
+    x: {
+      ...chartOptions.scales.x,
+      stacked: true,
+    },
+    y: {
+      ...chartOptions.scales.y,
+      stacked: true,
+    },
+  },
+}
+
 const { Chart, registerables } = await import('@stacksjs/charts')
 Chart.register(...registerables)
 
