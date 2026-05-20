@@ -1,4 +1,6 @@
 import type { CLI } from '@stacksjs/types'
+import { existsSync } from 'node:fs'
+import { rm } from 'node:fs/promises'
 import process from 'node:process'
 import { projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
@@ -10,9 +12,11 @@ import { ExitCode } from '@stacksjs/types'
  * monitoring, realtime, queue) lives in its own `config/<feature>.ts`
  * file. Running `./buddy <feature>:install` flips that file's top-level
  * `enabled` to `true` (scaffolding the file from a starter template if it's
- * missing); `./buddy <feature>:uninstall` flips it back to `false`. The
- * uninstall command never deletes the file — any custom driver/credential
- * settings the user added stay intact for the next reinstall.
+ * missing). `./buddy <feature>:uninstall` flips the flag back to `false`
+ * AND removes the feature's stamped action/model/view files from the
+ * project (pass `--keep-files` to preserve them); the config file itself
+ * is preserved so any custom driver/credential settings survive a future
+ * reinstall.
  *
  * The framework loaders (`orm/index.ts` eager-load, `defaults/bootstrap.ts`
  * route registration, action prefetch) consult `feature(name)` at boot and
@@ -28,7 +32,7 @@ import { ExitCode } from '@stacksjs/types'
  * pattern: features are inert dead code on disk until installed.
  */
 
-const FEATURE_NAMES = [
+export const FEATURE_NAMES = [
   'dashboard',
   'commerce',
   'cms',
@@ -38,7 +42,114 @@ const FEATURE_NAMES = [
   'queue',
 ] as const
 
-type FeatureName = (typeof FEATURE_NAMES)[number]
+export type FeatureName = (typeof FEATURE_NAMES)[number]
+
+/**
+ * Per-feature stamped file/directory manifest. Paths are relative to the
+ * project root and mirror the layout that `./buddy new` lays down. Entries
+ * ending in `/` are directory trees (recursive remove on uninstall); bare
+ * paths are single files.
+ *
+ * Manifests intentionally overlap where features share scaffolding —
+ * `dashboard` claims the umbrella `app/Actions/Dashboard/` even though
+ * `app/Actions/Dashboard/Content/` is also claimed by `cms`. Both the
+ * uninstall delete and the doctor orphan check are idempotent
+ * (already-gone paths are skipped silently), so the overlap is safe.
+ *
+ * Adding a new file to one of these directories does **not** require a
+ * manifest update — directory entries are recursive. Only add an entry
+ * when a feature introduces a new top-level path the framework didn't
+ * already claim.
+ */
+export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
+  cms: [
+    'app/Actions/Cms/',
+    'app/Actions/Dashboard/Content/',
+    'app/Models/Content/',
+    'app/Models/Tag.ts',
+    'app/Models/Comment.ts',
+    'resources/views/dashboard/content/',
+  ],
+  commerce: [
+    'app/Actions/Commerce/',
+    'app/Actions/Dashboard/Commerce/',
+    'app/Models/commerce/',
+    'resources/components/Dashboard/Commerce/',
+    'resources/views/dashboard/commerce/',
+  ],
+  dashboard: [
+    'app/Actions/Dashboard/',
+    'resources/components/Dashboard/',
+    'resources/views/dashboard/',
+    'routes/dashboard.ts',
+    'routes/dashboard-api.ts',
+  ],
+  marketing: [
+    'app/Actions/Dashboard/Marketing/',
+    'app/Models/Campaign.ts',
+    'app/Models/CampaignSend.ts',
+    'app/Models/EmailList.ts',
+    'app/Models/EmailListSubscriber.ts',
+    'app/Models/SocialPost.ts',
+    'resources/components/Marketing/',
+    'resources/views/dashboard/marketing/',
+  ],
+  monitoring: [
+    'app/Actions/Monitoring/',
+    'app/Actions/TestErrorAction.ts',
+    'app/Models/Error.ts',
+    'functions/monitoring/',
+    'resources/views/dashboard/monitoring/',
+    'resources/views/dashboard/errors/',
+  ],
+  realtime: [
+    'app/Actions/Realtime/',
+    'app/Actions/Dashboard/Realtime/',
+    'app/Models/realtime/',
+    'app/Broadcasts/',
+    'functions/realtime/',
+    'resources/views/dashboard/realtime/',
+  ],
+  queue: [
+    'app/Actions/Queue/',
+    'app/Actions/Dashboard/Jobs/',
+    'app/Jobs/',
+    'app/Models/Job.ts',
+    'app/Models/FailedJob.ts',
+    'functions/jobs.ts',
+    'resources/views/dashboard/queue/',
+    'resources/views/dashboard/jobs/',
+  ],
+}
+
+/**
+ * Returns the subset of a feature's manifest paths that currently exist
+ * on disk under `root` (defaults to `projectPath()`). Used by both the
+ * uninstall delete and the doctor orphan check.
+ */
+export function featurePathsPresent(feature: FeatureName, root: string = projectPath()): string[] {
+  return FEATURE_FILES[feature].filter(rel => existsSync(`${root}/${rel}`))
+}
+
+/**
+ * Recursively delete every file/dir listed in the feature's manifest under
+ * `root` (defaults to `projectPath()`). Missing entries are skipped
+ * silently — the operation is safe to re-run. Returns the list of paths
+ * actually removed so the caller can print a useful summary.
+ */
+export async function deleteFeatureFiles(
+  feature: FeatureName,
+  root: string = projectPath(),
+): Promise<string[]> {
+  const removed: string[] = []
+  for (const rel of FEATURE_FILES[feature]) {
+    const full = `${root}/${rel}`
+    if (!existsSync(full)) continue
+    await rm(full, { recursive: true, force: true })
+    removed.push(rel)
+  }
+  return removed
+}
 
 const FEATURE_DESCRIPTIONS: Record<FeatureName, string> = {
   dashboard: 'Admin SPA shell + Activity/Log/Request/Deployment/Notification dashboards.',
@@ -278,7 +389,8 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
 
   buddy
     .command(`${feature}:uninstall`, `Deactivate the ${feature} feature bundle.`)
-    .action(async () => {
+    .option('--keep-files', `Don't delete the ${feature} scaffolding (action/model/view files). Flip the flag only.`)
+    .action(async (options: { keepFiles?: boolean }) => {
       try {
         const outcome = await setFeatureEnabled(feature, false, { createIfMissing: false })
         switch (outcome) {
@@ -297,6 +409,20 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
             console.log(`✗ Unexpected create on uninstall for ${feature}; please re-run with --force or report this bug.`)
             break
         }
+
+        if (options.keepFiles) {
+          const stillPresent = featurePathsPresent(feature)
+          if (stillPresent.length > 0)
+            console.log(`  → ${stillPresent.length} stamped path(s) preserved (--keep-files).`)
+        }
+        else {
+          const removed = await deleteFeatureFiles(feature)
+          if (removed.length > 0) {
+            console.log(`✓ Removed ${removed.length} stamped path(s):`)
+            for (const path of removed) console.log(`    - ${path}`)
+          }
+        }
+
         console.log(`  → next ./buddy dev will boot without ${feature}.`)
         process.exit(ExitCode.Success)
       }
