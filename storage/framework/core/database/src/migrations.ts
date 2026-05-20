@@ -377,10 +377,78 @@ async function ensureDatabaseExists(): Promise<void> {
 }
 
 /**
+ * Skip migrations owned by features whose `config.<feature>.enabled` is
+ * false (stacksjs/stacks#1854). Pre-flight pass that hides
+ * `database/migrations/<owned>.sql` → `<owned>.sql.disabled` for the
+ * duration of the run. Restored in a `finally` so a crash mid-migration
+ * still leaves the directory clean. Returns the list of paths that
+ * were hidden so the caller can log them.
+ *
+ * Lives here (not in `@stacksjs/buddy`) so the migration runner can
+ * import it without a dependency cycle. Stays a no-op when the
+ * feature manifest / config can't be resolved — defensive, since the
+ * runner is also called from non-CLI contexts (tests, programmatic
+ * migrations) where one or the other might not be initialised.
+ */
+async function hideDisabledFeatureMigrations(): Promise<Array<{ original: string, hidden: string, feature: string }>> {
+  const hidden: Array<{ original: string, hidden: string, feature: string }> = []
+  try {
+    const { FEATURE_NAMES, migrationFeature } = await import('@stacksjs/buddy')
+    const { feature: isFeatureEnabled } = await import('@stacksjs/config')
+    const fs = await import('node:fs/promises')
+
+    const migrationsDir = path.projectPath('database/migrations')
+    if (!existsSync(migrationsDir)) return hidden
+
+    const disabledFeatures = new Set(
+      (FEATURE_NAMES as readonly string[]).filter((f: string) => !(isFeatureEnabled as (name: string) => boolean)(f)),
+    )
+    if (disabledFeatures.size === 0) return hidden
+
+    const files = readdirSync(migrationsDir).filter(f => f.endsWith('.sql'))
+    for (const file of files) {
+      const owner = (migrationFeature as (filename: string) => string | null)(file)
+      if (!owner || !disabledFeatures.has(owner)) continue
+      const original = join(migrationsDir, file)
+      const hiddenPath = `${original}.disabled`
+      await fs.rename(original, hiddenPath)
+      hidden.push({ original, hidden: hiddenPath, feature: owner })
+    }
+
+    if (hidden.length > 0) {
+      const summary = Object.entries(
+        hidden.reduce<Record<string, number>>((acc, h) => {
+          acc[h.feature] = (acc[h.feature] ?? 0) + 1
+          return acc
+        }, {}),
+      )
+        .map(([f, n]) => `${f}: ${n}`)
+        .join(', ')
+      log.info(`[migration] Skipping ${hidden.length} migration(s) for disabled features (${summary}). Run \`./buddy <feature>:install\` to enable.`)
+    }
+  }
+  catch {
+    // `@stacksjs/buddy` / `@stacksjs/config` may not resolve cleanly in
+    // every embedding (notably bare tests). The gate is best-effort —
+    // a missing manifest doesn't block migrations from running.
+  }
+  return hidden
+}
+
+async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden: string, feature: string }>): Promise<void> {
+  const fs = await import('node:fs/promises')
+  for (const { original, hidden: h } of hidden) {
+    try { await fs.rename(h, original) }
+    catch { /* best-effort restore; another invocation may have already swept */ }
+  }
+}
+
+/**
  * Run database migrations
  */
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   const startedAt = Date.now()
+  const hidden = await hideDisabledFeatureMigrations()
   try {
     log.info('Migrating database...')
 
@@ -413,6 +481,9 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     log.error(`[migration] Failed after ${Date.now() - startedAt}ms: ${detail}`)
     log.info('[migration] Run `./buddy migrate:fresh` to drop and recreate the schema if state is partial.')
     return err(handleError('Migration failed', error))
+  }
+  finally {
+    await restoreHiddenMigrations(hidden)
   }
 }
 

@@ -124,6 +124,91 @@ export const FEATURE_FILES: Record<FeatureName, readonly string[]> = {
 }
 
 /**
+ * Per-feature database table ownership (stacksjs/stacks#1854).
+ *
+ * Stacks generates SQL migrations from model files, so each feature's
+ * tables map 1:1 with the models in its `FEATURE_FILES.app/Models/...`
+ * entries. Listed here explicitly rather than derived at runtime so
+ * additions are visible in a single grep-able place and the migration
+ * gate doesn't depend on filesystem scanning at boot.
+ *
+ * The migration runner consults this when `config.<feature>.enabled =
+ * false`: matching `*-create-<table>-table.sql` (and `*-alter-<table>-*.sql`)
+ * files get hidden for the duration of the run, so a project that
+ * never installed CMS doesn't materialize `posts`, `pages`,
+ * `comments`, etc. on `./buddy migrate`.
+ *
+ * Tables on this list are scoped to a single feature. Tables shared
+ * across features (none today, but `categories` could end up here)
+ * should stay out of the manifest until that's resolved — the runner
+ * defaults to "run unless owned by a disabled feature".
+ */
+export const FEATURE_TABLES: Record<FeatureName, readonly string[]> = {
+  cms: ['posts', 'pages', 'comments', 'tags', 'authors', 'categories'],
+  commerce: [
+    'products', 'product_variants', 'product_units', 'manufacturers',
+    'orders', 'order_items', 'carts', 'cart_items',
+    'payments', 'payment_methods', 'payment_products', 'payment_transactions',
+    'customers', 'subscribers', 'subscriber_emails', 'subscriptions',
+    'gift_cards', 'coupons', 'transactions', 'reviews',
+    'drivers', 'delivery_routes', 'digital_deliveries',
+    'shipping_methods', 'shipping_rates', 'shipping_zones',
+    'license_keys', 'loyalty_points', 'loyalty_rewards',
+    'print_devices', 'receipts', 'tax_rates',
+    'waitlist_products', 'waitlist_restaurants',
+  ],
+  dashboard: [
+    // Kanban
+    'boards', 'board_columns', 'cards', 'card_labels', 'card_assignees',
+    'card_comments', 'labels',
+    // CI tracking surface
+    'ci_run_states', 'ci_runner_samples', 'ci_runner_alert_states',
+    // Dashboard observability tables
+    'requests', 'logs',
+  ],
+  marketing: [], // Marketing models exist but don't generate dedicated tables yet
+  monitoring: ['errors'],
+  realtime: ['websockets'],
+  queue: ['jobs', 'failed_jobs'],
+}
+
+/**
+ * Parse a migration filename like `0000000045-create-posts-table.sql` or
+ * `0000000085-alter-posts-author_id.sql` to extract the table name it
+ * acts on. Returns `null` for filenames that don't match the
+ * recognised `create-<table>-table` / `alter-<table>-` shapes — those
+ * pass through the gate unchanged.
+ *
+ * Index migrations (`create-<table>_<col>_unique-index-in-<table>.sql`)
+ * use the trailing `-in-<table>.sql` segment as the source of truth
+ * since the leading segment includes the index name. The other
+ * forms read the table from the segment immediately after the verb.
+ */
+export function migrationTable(filename: string): string | null {
+  const inMatch = filename.match(/-in-([a-z0-9_]+)\.sql$/i)
+  if (inMatch) return inMatch[1]
+  const createMatch = filename.match(/-create-([a-z0-9_]+)-table\.sql$/i)
+  if (createMatch) return createMatch[1]
+  const alterMatch = filename.match(/-alter-([a-z0-9_]+)-/i)
+  if (alterMatch) return alterMatch[1]
+  return null
+}
+
+/**
+ * Returns the feature that owns the given migration filename, or `null`
+ * if the migration isn't claimed by any feature (in which case it
+ * always runs). Used by the migration runner's gating pass.
+ */
+export function migrationFeature(filename: string): FeatureName | null {
+  const table = migrationTable(filename)
+  if (!table) return null
+  for (const f of FEATURE_NAMES) {
+    if (FEATURE_TABLES[f].includes(table)) return f
+  }
+  return null
+}
+
+/**
  * Returns the subset of a feature's manifest paths that currently exist
  * on disk under `root` (defaults to `projectPath()`). Used by both the
  * uninstall delete and the doctor orphan check.

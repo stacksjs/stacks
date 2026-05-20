@@ -3,7 +3,16 @@ import { existsSync, mkdtempSync, readFileSync } from 'node:fs'
 import { mkdir, rm, writeFile } from 'node:fs/promises'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
-import { copyFeatureFiles, deleteFeatureFiles, FEATURE_FILES, FEATURE_NAMES, featurePathsPresent } from '../src/commands/features'
+import {
+  copyFeatureFiles,
+  deleteFeatureFiles,
+  FEATURE_FILES,
+  FEATURE_NAMES,
+  FEATURE_TABLES,
+  featurePathsPresent,
+  migrationFeature,
+  migrationTable,
+} from '../src/commands/features'
 
 let root: string
 
@@ -213,5 +222,103 @@ describe('copyFeatureFiles()', () => {
     expect(removed).toContain('app/Models/Comment.ts')
     expect(existsSync(join(target, 'app/Models/Tag.ts'))).toBe(false)
     expect(existsSync(join(target, 'app/Models/Comment.ts'))).toBe(false)
+  })
+})
+
+describe('FEATURE_TABLES manifest (stacksjs/stacks#1854 migration gating)', () => {
+  it('lists tables for each declared feature', () => {
+    for (const name of FEATURE_NAMES) {
+      expect(FEATURE_TABLES[name]).toBeDefined()
+      expect(Array.isArray(FEATURE_TABLES[name])).toBe(true)
+    }
+  })
+
+  it('claims the obvious cms tables', () => {
+    expect(FEATURE_TABLES.cms).toContain('posts')
+    expect(FEATURE_TABLES.cms).toContain('comments')
+    expect(FEATURE_TABLES.cms).toContain('tags')
+  })
+
+  it('claims the obvious commerce tables', () => {
+    expect(FEATURE_TABLES.commerce).toContain('products')
+    expect(FEATURE_TABLES.commerce).toContain('orders')
+    expect(FEATURE_TABLES.commerce).toContain('payments')
+  })
+
+  it('claims queue tables', () => {
+    expect(FEATURE_TABLES.queue).toContain('jobs')
+    expect(FEATURE_TABLES.queue).toContain('failed_jobs')
+  })
+
+  it('tables are unique within a feature', () => {
+    for (const name of FEATURE_NAMES) {
+      const set = new Set(FEATURE_TABLES[name])
+      expect(set.size).toBe(FEATURE_TABLES[name].length)
+    }
+  })
+
+  it('the same table is not claimed by two features', () => {
+    const seen = new Map<string, string>()
+    for (const name of FEATURE_NAMES) {
+      for (const table of FEATURE_TABLES[name]) {
+        const existing = seen.get(table)
+        if (existing)
+          throw new Error(`Table "${table}" claimed by both "${existing}" and "${name}"`)
+        seen.set(table, name)
+      }
+    }
+  })
+})
+
+describe('migrationTable() — filename → table parser', () => {
+  it('parses standard create-<table>-table.sql', () => {
+    expect(migrationTable('0000000045-create-posts-table.sql')).toBe('posts')
+    expect(migrationTable('0000000099-create-comments-table.sql')).toBe('comments')
+    expect(migrationTable('0000000115-create-ci_runner_alert_states-table.sql')).toBe('ci_runner_alert_states')
+  })
+
+  it('parses alter-<table>-* migrations', () => {
+    expect(migrationTable('0000000085-alter-posts-author_id.sql')).toBe('posts')
+    expect(migrationTable('0000000076-alter-products-stock.sql')).toBe('products')
+  })
+
+  it('prefers the trailing -in-<table>.sql segment for index migrations', () => {
+    // The leading segment includes the index name, not the table.
+    expect(migrationTable('0000000086-create-payments_transaction_id_unique-index-in-payments.sql')).toBe('payments')
+    expect(migrationTable('0000000089-create-authors_email_name_index-index-in-authors.sql')).toBe('authors')
+  })
+
+  it('returns null for filenames without a recognised table segment', () => {
+    expect(migrationTable('0000000098-revoke-legacy-long-lived-tokens.sql')).toBeNull()
+    expect(migrationTable('random.sql')).toBeNull()
+    expect(migrationTable('not-a-migration.txt')).toBeNull()
+  })
+})
+
+describe('migrationFeature() — filename → owning feature', () => {
+  it('routes cms tables to the cms feature', () => {
+    expect(migrationFeature('0000000045-create-posts-table.sql')).toBe('cms')
+    expect(migrationFeature('0000000099-create-comments-table.sql')).toBe('cms')
+    expect(migrationFeature('0000000085-alter-posts-author_id.sql')).toBe('cms')
+  })
+
+  it('routes commerce tables to the commerce feature', () => {
+    expect(migrationFeature('0000000015-create-products-table.sql')).toBe('commerce')
+    expect(migrationFeature('0000000034-create-orders-table.sql')).toBe('commerce')
+  })
+
+  it('routes dashboard kanban tables to the dashboard feature', () => {
+    expect(migrationFeature('0000000106-create-boards-table.sql')).toBe('dashboard')
+    expect(migrationFeature('0000000108-create-cards-table.sql')).toBe('dashboard')
+  })
+
+  it('returns null for framework-core tables (users, roles, etc.)', () => {
+    expect(migrationFeature('0000000095-create-users_email_name_index-index-in-users.sql')).toBeNull()
+    expect(migrationFeature('0000000101-create-roles-table.sql')).toBeNull()
+    expect(migrationFeature('0000000097-create-teams-table.sql')).toBeNull()
+  })
+
+  it('returns null for unrecognised migration shapes', () => {
+    expect(migrationFeature('0000000098-revoke-legacy-long-lived-tokens.sql')).toBeNull()
   })
 })
