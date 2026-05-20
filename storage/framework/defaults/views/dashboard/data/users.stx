@@ -1,26 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-interface ModelNode {
-  id: string
-  name: string
-  description: string
-  properties: string[]
-  relationships: string[]
-  emoji: string
-  color: string
-}
-
-const models: ModelNode[] = [
-  { id: 'user', name: 'User', description: 'Core user model representing application users with authentication and profile information.', properties: ['id', 'name', 'email', 'password'], relationships: ['teams', 'accessTokens', 'activities', 'posts'], emoji: '👤', color: '#2563EB' },
-  { id: 'team', name: 'Team', description: 'Represents a group of users who collaborate together. Teams can have multiple users and users can belong to multiple teams.', properties: ['id', 'name', 'owner_id'], relationships: ['users'], emoji: '👥', color: '#60A5FA' },
-  { id: 'accessToken', name: 'AccessToken', description: 'Manages API authentication tokens for users. Each token grants specific permissions for API access.', properties: ['id', 'token', 'user_id'], relationships: ['user'], emoji: '🔑', color: '#3B82F6' },
-  { id: 'activity', name: 'Activity', description: 'Tracks user actions and events within the application for analytics and audit purposes.', properties: ['id', 'type', 'user_id'], relationships: ['user'], emoji: '📊', color: '#93C5FD' },
-  { id: 'post', name: 'Post', description: 'User-generated content model for sharing updates, articles, or other text-based content.', properties: ['id', 'title', 'content'], relationships: ['user'], emoji: '📝', color: '#BFDBFE' },
-]
-</script>
-
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
     <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Last 30 days</h3>
@@ -90,12 +70,12 @@ const models: ModelNode[] = [
         </div>
         <div class="flex">
           <div class="flex relative flex-1 flex-wrap gap-4 items-start justify-start p-4 h-[400px] bg-gray-50 dark:bg-neutral-600 rounded-lg">
-            @foreach(models as model)
-              <button type="button" @click="selectModel({{ JSON.stringify(model) }})" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600 shadow-sm">
+            <template :for="model in models">
+              <button type="button" @click="selectModel(model)" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600 shadow-sm">
                 <span class="text-3xl">{{ model.emoji }}</span>
                 <span class="mt-2 font-medium text-gray-900 text-sm dark:text-neutral-100">{{ model.name }}</span>
               </button>
-            @endforeach
+            </template>
           </div>
 
           <div :show="selectedModel() !== null" class="ml-6 p-4 w-64 bg-gray-50 dark:bg-neutral-600 rounded-lg">
@@ -194,6 +174,17 @@ interface ModelNode {
   emoji: string
   color: string
 }
+
+// Model relationship graph — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). Static for now; can be swapped for an API fetch
+// without changing the page.
+const models: ModelNode[] = [
+  { id: 'user', name: 'User', description: 'Core user model representing application users with authentication and profile information.', properties: ['id', 'name', 'email', 'password'], relationships: ['teams', 'accessTokens', 'activities', 'posts'], emoji: '👤', color: '#2563EB' },
+  { id: 'team', name: 'Team', description: 'Represents a group of users who collaborate together. Teams can have multiple users and users can belong to multiple teams.', properties: ['id', 'name', 'owner_id'], relationships: ['users'], emoji: '👥', color: '#60A5FA' },
+  { id: 'accessToken', name: 'AccessToken', description: 'Manages API authentication tokens for users. Each token grants specific permissions for API access.', properties: ['id', 'token', 'user_id'], relationships: ['user'], emoji: '🔑', color: '#3B82F6' },
+  { id: 'activity', name: 'Activity', description: 'Tracks user actions and events within the application for analytics and audit purposes.', properties: ['id', 'type', 'user_id'], relationships: ['user'], emoji: '📊', color: '#93C5FD' },
+  { id: 'post', name: 'Post', description: 'User-generated content model for sharing updates, articles, or other text-based content.', properties: ['id', 'title', 'content'], relationships: ['user'], emoji: '📝', color: '#BFDBFE' },
+]
 
 const timeRange = state('30')
 const isLoading = state(false)

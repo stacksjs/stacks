@@ -1,67 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-interface ModelNode {
-  id: string
-  name: string
-  emoji: string
-  category: string
-  properties: Array<{ name: string, type: string, nullable: boolean }>
-  relationships: Array<{ type: string, model: string }>
-  color: string
-}
-
-const models: ModelNode[] = [
-  { id: 'user', name: 'User', emoji: '👤', category: 'Authentication', color: '#2563EB',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'name', type: 'string', nullable: false }, { name: 'email', type: 'string', nullable: false }, { name: 'password', type: 'string', nullable: false }, { name: 'created_at', type: 'timestamp', nullable: true }],
-    relationships: [{ type: 'hasOne', model: 'Subscriber' }, { type: 'hasMany', model: 'Deployment' }, { type: 'hasMany', model: 'Post' }, { type: 'belongsToMany', model: 'Team' }] },
-  { id: 'team', name: 'Team', emoji: '👥', category: 'Authentication', color: '#2563EB',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'name', type: 'string', nullable: false }, { name: 'owner_id', type: 'bigInteger', nullable: false }],
-    relationships: [{ type: 'belongsToMany', model: 'User' }, { type: 'hasMany', model: 'AccessToken' }] },
-  { id: 'post', name: 'Post', emoji: '📝', category: 'Content', color: '#DB2777',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'title', type: 'string', nullable: false }, { name: 'content', type: 'text', nullable: false }, { name: 'user_id', type: 'bigInteger', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'User' }] },
-  { id: 'subscriber', name: 'Subscriber', emoji: '📫', category: 'Communication', color: '#0D9488',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'email', type: 'string', nullable: false }, { name: 'status', type: 'string', nullable: false }],
-    relationships: [{ type: 'hasMany', model: 'SubscriberEmail' }, { type: 'belongsTo', model: 'User' }] },
-  { id: 'subscriberEmail', name: 'SubscriberEmail', emoji: '✉️', category: 'Communication', color: '#0D9488',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'email', type: 'string', nullable: false }, { name: 'subscriber_id', type: 'bigInteger', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'Subscriber' }] },
-  { id: 'accessToken', name: 'AccessToken', emoji: '🔑', category: 'Authentication', color: '#2563EB',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'token', type: 'string', nullable: false }, { name: 'user_id', type: 'bigInteger', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'User' }, { type: 'belongsTo', model: 'Team' }] },
-  { id: 'deployment', name: 'Deployment', emoji: '🚀', category: 'Other', color: '#4B5563',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'project_id', type: 'bigInteger', nullable: false }, { name: 'user_id', type: 'bigInteger', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'Project' }, { type: 'belongsTo', model: 'User' }] },
-  { id: 'project', name: 'Project', emoji: '📁', category: 'Other', color: '#4B5563',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'name', type: 'string', nullable: false }],
-    relationships: [{ type: 'hasMany', model: 'Deployment' }, { type: 'hasMany', model: 'Release' }] },
-  { id: 'release', name: 'Release', emoji: '🏷️', category: 'Other', color: '#4B5563',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'project_id', type: 'bigInteger', nullable: false }, { name: 'version', type: 'string', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'Project' }] },
-  { id: 'order', name: 'Order', emoji: '🛒', category: 'Commerce', color: '#7E22CE',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'user_id', type: 'bigInteger', nullable: false }, { name: 'total', type: 'decimal', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'User' }, { type: 'hasMany', model: 'OrderItem' }] },
-  { id: 'orderItem', name: 'OrderItem', emoji: '🧾', category: 'Commerce', color: '#7E22CE',
-    properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'order_id', type: 'bigInteger', nullable: false }, { name: 'product_id', type: 'bigInteger', nullable: false }],
-    relationships: [{ type: 'belongsTo', model: 'Order' }] },
-]
-
-const categories = ['All', 'Authentication', 'Content', 'Communication', 'Commerce', 'Other']
-
-function modelRoute(id: string) {
-  const map: Record<string, string> = {
-    user: '/models/users', team: '/models/teams', post: '/models/posts',
-    subscriber: '/models/subscribers', subscriberEmail: '/models/subscriber-emails',
-    accessToken: '/models/access-tokens', deployment: '/models/deployments',
-    project: '/models/projects', release: '/models/releases',
-    order: '/models/orders', orderItem: '/models/order-items',
-  }
-  return map[id] || '/models'
-}
-</script>
-
 @title('Dashboard - Data Models')
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
@@ -76,9 +15,9 @@ function modelRoute(id: string) {
       <input x-model="searchQuery" type="text" class="block pl-10 pr-3 py-1.5 w-full text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600" placeholder="Search models..." />
     </div>
     <select x-model="selectedCategory" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-      @foreach(categories as cat)
-        <option value="{{ cat }}">{{ cat }}</option>
-      @endforeach
+      <template :for="cat in categories">
+        <option :value="cat">{{ cat }}</option>
+      </template>
     </select>
   </div>
 
@@ -131,6 +70,10 @@ interface ModelNode {
   relationships: Array<{ type: string, model: string }>
   color: string
 }
+
+// Category filter options + model relationship graph — moved out of the
+// former `<script server>` block (stacksjs/stacks#1838).
+const categories = ['All', 'Authentication', 'Content', 'Communication', 'Commerce', 'Other']
 
 const initialModels: ModelNode[] = [
   { id: 'user', name: 'User', emoji: '👤', category: 'Authentication', color: '#2563EB', properties: [{ name: 'id', type: 'bigInteger', nullable: false }, { name: 'name', type: 'string', nullable: false }, { name: 'email', type: 'string', nullable: false }, { name: 'password', type: 'string', nullable: false }, { name: 'created_at', type: 'timestamp', nullable: true }], relationships: [{ type: 'hasOne', model: 'Subscriber' }, { type: 'hasMany', model: 'Deployment' }, { type: 'hasMany', model: 'Post' }, { type: 'belongsToMany', model: 'Team' }] },

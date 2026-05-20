@@ -1,23 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-interface ModelNode {
-  id: string
-  name: string
-  description: string
-  properties: string[]
-  relationships: string[]
-  emoji: string
-  color: string
-}
-
-const models: ModelNode[] = [
-  { id: 'subscriber', name: 'Subscriber', description: 'Manages newsletter and communication preferences for users and contacts. Tracks subscription status and email preferences.', properties: ['id', 'email', 'status'], relationships: ['subscriberEmails'], emoji: '📫', color: '#0D9488' },
-  { id: 'subscriberEmail', name: 'SubscriberEmail', description: 'Tracks email communications sent to subscribers, including campaign history and engagement metrics.', properties: ['id', 'email', 'subscriber_id'], relationships: ['subscriber'], emoji: '✉️', color: '#2DD4BF' },
-]
-</script>
-
 @title('Dashboard - Subscribers')
 <div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
   <div class="mb-8 px-4 sm:px-6 lg:px-8">
@@ -88,12 +71,12 @@ const models: ModelNode[] = [
         </div>
         <div class="flex">
           <div class="flex relative flex-1 flex-wrap gap-4 items-start justify-start p-4 h-[400px] bg-gray-50 dark:bg-neutral-600 rounded-lg">
-            @foreach(models as model)
-              <button type="button" @click="selectModel({{ JSON.stringify(model) }})" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600 shadow-sm">
+            <template :for="model in models">
+              <button type="button" @click="selectModel(model)" class="inline-flex flex-col items-center px-4 py-3 bg-white dark:bg-neutral-800 hover:bg-gray-100 dark:hover:bg-neutral-700 ring-1 ring-gray-200 rounded-lg dark:ring-neutral-600 shadow-sm">
                 <span class="text-3xl">{{ model.emoji }}</span>
                 <span class="mt-2 font-medium text-gray-900 text-sm dark:text-neutral-100">{{ model.name }}</span>
               </button>
-            @endforeach
+            </template>
           </div>
 
           <div :show="selectedModel() !== null" class="ml-6 p-4 w-64 bg-gray-50 dark:bg-neutral-600 rounded-lg">
@@ -197,6 +180,13 @@ interface ModelNode {
   emoji: string
   color: string
 }
+
+// Model relationship graph — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const models: ModelNode[] = [
+  { id: 'subscriber', name: 'Subscriber', description: 'Manages newsletter and communication preferences for users and contacts. Tracks subscription status and email preferences.', properties: ['id', 'email', 'status'], relationships: ['subscriberEmails'], emoji: '📫', color: '#0D9488' },
+  { id: 'subscriberEmail', name: 'SubscriberEmail', description: 'Tracks email communications sent to subscribers, including campaign history and engagement metrics.', properties: ['id', 'email', 'subscriber_id'], relationships: ['subscriber'], emoji: '✉️', color: '#2DD4BF' },
+]
 
 const timeRange = state('30')
 const isLoading = state(false)

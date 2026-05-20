@@ -1,15 +1,15 @@
 # Dashboard `.stx` audit — stacksjs/stacks#1838
 
-_Initial audit 2026-05-04. Refreshed 2026-05-20 with current numbers; the
-per-area / per-file inventory below still reflects the 2026-05-04 snapshot
-and will be regenerated on the next audit pass._
+_Initial audit 2026-05-04. Refreshed 2026-05-20 (second sweep) with the
+current numbers; the per-area / per-file inventory below still reflects
+the 2026-05-04 snapshot and will be regenerated on the next audit pass._
 
 ## Roll-up — 2026-05-20
 
 | Metric | 2026-05-04 | 2026-05-20 | Δ |
 |---|---:|---:|---:|
 | Total `.stx` files | 110 | 113 | +3 |
-| `<script server>` blocks | 98 | 57 | **−41** |
+| `<script server>` blocks | 98 | 48 | **−50** |
 | `<script client>` blocks | 78 | 89 | +11 |
 | Bare `<script>` blocks (no qualifier) | 11 | 9 | −2 |
 | `window.` / `document.` lines | 168 | 78 | **−90** |
@@ -17,6 +17,11 @@ and will be regenerated on the next audit pass._
 | Pages importing a composable | 0 | 4 | +4 |
 | Stores defined under `dashboard/stores/` | 1 | 5 | +4 |
 | Composables under `dashboard/composables/` | 0 | 4 | +4 |
+
+Latest sweep (`data/*`, 2026-05-20): 5 pages moved their static
+`<script server>` data definitions into the existing `<script client>`
+block — same shape every time, no behavioural change. Pages: `users`,
+`teams`, `subscribers`, `activity/index`, `dashboard/index`.
 
 Three new pages landed since the original audit (kanban index, kanban
 `[id]`, management/permissions — see #1846 and #1845). Net `<script

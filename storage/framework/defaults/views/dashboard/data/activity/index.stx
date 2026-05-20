@@ -1,23 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const logNames = [
-  { id: 'default', name: 'Default' },
-  { id: 'auth', name: 'Authentication' },
-  { id: 'users', name: 'Users' },
-  { id: 'posts', name: 'Posts' },
-  { id: 'comments', name: 'Comments' },
-  { id: 'media', name: 'Media' },
-  { id: 'deployment', name: 'Deployment' },
-  { id: 'server', name: 'Server' },
-  { id: 'commerce', name: 'Commerce' },
-  { id: 'blog', name: 'Blog' },
-]
-
-const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
-</script>
-
 @title('Dashboard - Activity Log')
 <div class="p-6 space-y-6">
   <div class="flex items-center justify-between">
@@ -39,14 +22,14 @@ const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
     </div>
     <select x-model="logNameFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
       <option value="all">All Channels</option>
-      @foreach(logNames as ln)
-        <option value="{{ ln.id }}">{{ ln.name }}</option>
-      @endforeach
+      <template :for="ln in logNames">
+        <option :value="ln.id">{{ ln.name }}</option>
+      </template>
     </select>
     <select x-model="eventFilter" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-      @foreach(eventTypes as ev)
-        <option value="{{ ev }}">{{ ev === 'all' ? 'All Events' : ev.charAt(0).toUpperCase() + ev.slice(1) }}</option>
-      @endforeach
+      <template :for="ev in eventTypes">
+        <option :value="ev">{{ ev === 'all' ? 'All Events' : ev.charAt(0).toUpperCase() + ev.slice(1) }}</option>
+      </template>
     </select>
   </div>
 
@@ -135,6 +118,23 @@ const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
 </div>
 
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const logNames = [
+  { id: 'default', name: 'Default' },
+  { id: 'auth', name: 'Authentication' },
+  { id: 'users', name: 'Users' },
+  { id: 'posts', name: 'Posts' },
+  { id: 'comments', name: 'Comments' },
+  { id: 'media', name: 'Media' },
+  { id: 'deployment', name: 'Deployment' },
+  { id: 'server', name: 'Server' },
+  { id: 'commerce', name: 'Commerce' },
+  { id: 'blog', name: 'Blog' },
+]
+
+const eventTypes = ['all', 'created', 'updated', 'deleted', 'restored']
+
 interface ActivityLog {
   id: string
   log_name: string
