@@ -1,43 +1,37 @@
 @extends('layouts/guest')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: [],
-  layout: 'guest'
-})
-
+<script client>
+// Register form (stacksjs/stacks#1838) — see comment on login.stx; same
+// shape, same broken-`const`-reassignment fix.
 import { useAuth } from '../../functions/auth'
-
-const router = useRouter()
 
 const { register } = useAuth()
 
-// Form state
-const isLoading = false
-const error = ''
+const isLoading = state(false)
+const error = state('')
 
 async function handleRegister(credentials) {
-  isLoading = true
-  error = ''
+  isLoading.set(true)
+  error.set('')
 
   try {
     const result = await register(credentials)
 
     if (result && 'errors' in result) {
-      error = result.message || 'Registration failed'
+      error.set(result.message || 'Registration failed')
       return
     }
 
-    // Redirect to dashboard on success
-    router.push('/')
+    navigate('/')
   }
   catch (err) {
-    error = err.message || 'An error occurred during registration'
+    error.set(err.message || 'An error occurred during registration')
+    // eslint-disable-next-line no-console
     console.error(err)
   }
   finally {
-    isLoading = false
+    isLoading.set(false)
   }
 }
 </script>
@@ -45,8 +39,8 @@ async function handleRegister(credentials) {
 @title('Register - Stacks Dashboard')
 <Register
   @submit="handleRegister"
-  :isLoading="isLoading"
-  :error="error"
+  :isLoading="isLoading()"
+  :error="error()"
 />
 
 @endsection

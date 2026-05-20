@@ -1,8 +1,12 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-// Server-side data — rendered at request time, no client JS needed
+<script client>
+// Dashboard home (stacksjs/stacks#1838). Static demo data — replace with
+// a real `/api/dashboard/home` fetch when the endpoint lands. The
+// previous `<script server>` block had three `{{ }} <var>` typos in the
+// template (empty interpolation + bare identifier) — converted those to
+// proper `:class` bindings below at the same time.
 const stats = [
   { title: 'Total Users', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-user-group' },
   { title: 'Active Projects', value: '0', trend: 0, trendLabel: 'vs last period', icon: 'i-hugeicons-folder-02' },
@@ -33,14 +37,14 @@ const quickLinks = [
   { name: 'Settings', description: 'Configure your app', href: '/settings', color: 'bg-neutral-500' },
 ]
 
-const getStatusDotClass = (status) => {
+function getStatusDotClass(status) {
   if (status === 'healthy') return 'bg-green-500'
   if (status === 'degraded') return 'bg-amber-500'
   if (status === 'critical') return 'bg-red-500'
   return 'bg-gray-500'
 }
 
-const getActivityStatusClass = (status) => {
+function getActivityStatusClass(status) {
   if (status === 'success') return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30'
   if (status === 'error') return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30'
   if (status === 'warning') return 'text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30'
@@ -54,7 +58,7 @@ const getActivityStatusClass = (status) => {
 
   <!-- Stats Grid -->
   <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 mb-8">
-    @foreach(stats as stat)
+    <template :for="stat in stats">
       <div class="p-5 bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700">
         <div class="flex items-center justify-between">
           <div>
@@ -63,21 +67,21 @@ const getActivityStatusClass = (status) => {
             <p class="mt-1 text-neutral-500 text-xs dark:text-neutral-400">{{ stat.trendLabel }}</p>
           </div>
           <div class="flex-shrink-0 p-3 bg-neutral-100 dark:bg-neutral-700 rounded-xl">
-            <div class="h-6 w-6 text-neutral-500 dark:text-neutral-400 {{ }} stat.icon"></div>
+            <div :class="stat.icon" class="h-6 w-6 text-neutral-500 dark:text-neutral-400"></div>
           </div>
         </div>
       </div>
-    @endforeach
+    </template>
   </div>
 
   <!-- Quick Links -->
   <div class="mb-8">
     <h2 class="mb-4 font-semibold text-base text-neutral-900 dark:text-white">Quick Links</h2>
     <div class="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-      @foreach(quickLinks as link)
-        <a href="{{ link.href }}" data-stx-link class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow">
+      <template :for="link in quickLinks">
+        <a :href="link.href" data-stx-link class="block p-5 no-underline bg-white dark:bg-neutral-800 border border-neutral-200 rounded-xl dark:border-neutral-700 hover:shadow-md transition-shadow">
           <div class="flex gap-4 items-center">
-            <div class="flex-shrink-0 p-3 rounded-xl {{ }} link.color">
+            <div :class="link.color" class="flex-shrink-0 p-3 rounded-xl">
               <div class="h-5 w-5 text-white"></div>
             </div>
             <div class="flex-1 min-w-0">
@@ -86,7 +90,7 @@ const getActivityStatusClass = (status) => {
             </div>
           </div>
         </a>
-      @endforeach
+      </template>
     </div>
   </div>
 
@@ -99,10 +103,10 @@ const getActivityStatusClass = (status) => {
         <StxLink to="/health" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
       </div>
       <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
-        @foreach(systemHealth as service)
+        <template :for="service in systemHealth">
           <div class="flex items-center justify-between px-5 py-3.5">
             <div class="flex gap-3 items-center">
-              <span class="h-2.5 w-2.5 rounded-full {{ }} getStatusDotClass(service.status)"></span>
+              <span :class="getStatusDotClass(service.status)" class="h-2.5 w-2.5 rounded-full"></span>
               <span class="font-medium text-neutral-700 text-sm dark:text-neutral-200">{{ service.name }}</span>
             </div>
             <div class="flex gap-4 items-center">
@@ -111,7 +115,7 @@ const getActivityStatusClass = (status) => {
               <span class="px-2 py-0.5 font-medium text-green-700 text-xs dark:text-green-400 bg-green-100 dark:bg-green-900/30 rounded-full">{{ service.status }}</span>
             </div>
           </div>
-        @endforeach
+        </template>
       </div>
     </div>
 
@@ -122,9 +126,9 @@ const getActivityStatusClass = (status) => {
         <StxLink to="/data/activity" class="text-neutral-500 text-sm hover:text-neutral-700 dark:hover:text-neutral-300">View all</StxLink>
       </div>
       <div class="divide-neutral-100 divide-y dark:divide-neutral-700">
-        @foreach(recentActivity as activity)
+        <template :for="activity in recentActivity">
           <div class="flex gap-4 items-center px-5 py-3.5">
-            <div class="flex-shrink-0 p-2 rounded-lg {{ }} getActivityStatusClass(activity.status)">
+            <div :class="getActivityStatusClass(activity.status)" class="flex-shrink-0 p-2 rounded-lg">
               <div class="h-4 w-4"></div>
             </div>
             <div class="flex-1 min-w-0">
@@ -132,7 +136,7 @@ const getActivityStatusClass = (status) => {
               <p class="text-neutral-500 text-xs dark:text-neutral-400">{{ activity.time }}</p>
             </div>
           </div>
-        @endforeach
+        </template>
       </div>
     </div>
   </div>

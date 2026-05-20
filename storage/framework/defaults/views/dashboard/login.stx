@@ -1,41 +1,39 @@
 @extends('layouts/guest')
 
 @section('content')
-<script server>
-definePageMeta({
-  middleware: [],
-  layout: 'guest'
-})
-
+<script client>
+// Login form (stacksjs/stacks#1838). Previously a `<script server>` block
+// that tried to reassign `const isLoading = false` at runtime — which
+// throws in strict-mode JS, so the form's loading/error state never
+// actually updated. Now uses `state(...)` signals for proper reactivity
+// and the auto-imported `navigate()` for SPA navigation instead of the
+// nonexistent `useRouter()`.
 import { useAuth } from '../../functions/auth'
-
-const router = useRouter()
 
 const { login } = useAuth()
 
-// Form state
-const isLoading = false
-const error = ''
+const isLoading = state(false)
+const error = state('')
 
 async function handleLogin(credentials) {
-  isLoading = true
-  error = ''
+  isLoading.set(true)
+  error.set('')
 
   try {
     const result = await login(credentials)
 
     if (result && 'errors' in result) {
-      error = result.message || 'Invalid credentials'
+      error.set(result.message || 'Invalid credentials')
       return
     }
 
-    router.push('/')
+    navigate('/')
   }
   catch (err) {
-    error = err.message || 'An error occurred during login'
+    error.set(err.message || 'An error occurred during login')
   }
   finally {
-    isLoading = false
+    isLoading.set(false)
   }
 }
 </script>
@@ -43,8 +41,8 @@ async function handleLogin(credentials) {
 @title('Login - Stacks Dashboard')
 <Login
   @submit="handleLogin"
-  isLoading="{{ isLoading }}"
-  error="{{ error }}"
+  :isLoading="isLoading()"
+  :error="error()"
 />
 
 @endsection

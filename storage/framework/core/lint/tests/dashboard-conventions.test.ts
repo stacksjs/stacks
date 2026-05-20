@@ -109,12 +109,8 @@ function hasLiveDomAccess(src: string): boolean {
  */
 const SERVER_SCRIPT_ALLOWLIST: ReadonlySet<string> = new Set([
   'commerce/dashboard/index.stx',
-  'forgot-password.stx',
-  'index.stx',
-  'login.stx',
   'models/[model].stx',
   'models/index.stx',
-  'register.stx',
 ])
 
 /**
