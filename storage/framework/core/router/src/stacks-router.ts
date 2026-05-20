@@ -1092,6 +1092,26 @@ async function getRequestInput(req: EnhancedRequest): Promise<Record<string, unk
     Object.assign(input, (req as any).formBody)
   }
 
+  // Merge multipart files so file-shaped validations
+  // (`schema.file().image().maxBytes(...)`) see the `UploadedFile`
+  // instance under its field name. Body wins on collision — text
+  // fields and file uploads sharing a name is a pathological case the
+  // caller should disambiguate, and silently overwriting the body
+  // value with the file would be more surprising than the reverse.
+  // (stacksjs/stacks#1856)
+  if (typeof (req as any).allFiles === 'function') {
+    try {
+      const files = (req as any).allFiles() as Record<string, unknown>
+      for (const key of Object.keys(files ?? {})) {
+        if (!(key in input)) input[key] = files[key]
+      }
+    }
+    catch {
+      // allFiles() reads parsed multipart state — if parsing failed,
+      // skip file merge rather than fail the whole validation pass.
+    }
+  }
+
   return input
 }
 

@@ -134,3 +134,56 @@ describe('Storage.put(uploadedFile, opts)', () => {
     expect(existsSync(join(publicRoot, path))).toBe(false)
   })
 })
+
+describe('Storage.put — router UploadedFile class shape (stacksjs/stacks#1856)', () => {
+  // The router wraps multipart fields in an `UploadedFile` class
+  // that exposes `name`/`mimeType` (camelCase) and async `bytes()` /
+  // `arrayBuffer()` accessors instead of a sync `buffer` property.
+  // `putUploadedFile` has to consume both shapes.
+  function classShape(overrides: { name?: string, mimeType?: string, contents?: string } = {}) {
+    const bytes = new TextEncoder().encode(overrides.contents ?? 'class-shape bytes')
+    return {
+      name: overrides.name ?? 'avatar.png',
+      mimeType: overrides.mimeType ?? 'image/png',
+      size: bytes.byteLength,
+      bytes: async () => bytes,
+    }
+  }
+
+  test('accepts the class shape and derives an extension from `mimeType` when `name` lacks one', async () => {
+    const result = await storage.put(classShape({ name: 'photo', mimeType: 'image/png' }) as any, { dir: 'avatars' })
+    expect(result.path).toMatch(/^avatars\/[a-f0-9]+\.png$/)
+    expect(existsSync(join(publicRoot, result.path))).toBe(true)
+  })
+
+  test('reads bytes via the async `bytes()` accessor when no sync `buffer` is present', async () => {
+    const result = await storage.put(classShape({ contents: 'hello from the class shape' }) as any, { dir: 'avatars' })
+    const disk = readFileSync(join(publicRoot, result.path), 'utf8')
+    expect(disk).toBe('hello from the class shape')
+  })
+
+  test('falls back to `arrayBuffer()` when only that accessor is provided', async () => {
+    const buf = new TextEncoder().encode('arraybuffer only').buffer
+    const file = {
+      name: 'avatar.jpg',
+      mimeType: 'image/jpeg',
+      size: 16,
+      arrayBuffer: async () => buf,
+    }
+    const result = await storage.put(file as any, { dir: 'avatars' })
+    const disk = readFileSync(join(publicRoot, result.path), 'utf8')
+    expect(disk).toBe('arraybuffer only')
+  })
+
+  test('throws a clear error when neither `buffer` nor an async accessor is available', async () => {
+    const bad = { name: 'x.png', mimeType: 'image/png', size: 4 } as any
+    await expect(storage.put(bad, { dir: 'avatars' })).rejects.toThrow(/buffer.*bytes.*arrayBuffer/i)
+  })
+
+  test('hash filename strategy works against the class shape too', async () => {
+    const result = await storage.put(classShape({ contents: 'fixed' }) as any, { dir: 'avatars', filename: 'hash' })
+    const result2 = await storage.put(classShape({ contents: 'fixed' }) as any, { dir: 'avatars', filename: 'hash' })
+    // Same contents → same hash → same filename.
+    expect(result.path).toBe(result2.path)
+  })
+})

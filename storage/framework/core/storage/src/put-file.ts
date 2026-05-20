@@ -11,17 +11,37 @@ import type { StorageManager } from './facade'
 
 /**
  * Minimal structural shape for an uploaded file accepted by
- * `Storage.put(file, opts)`. Compatible with `@stacksjs/bun-router`'s
- * `UploadedFile` interface but defined here so storage doesn't take a
- * dependency on the router.
+ * `Storage.put(file, opts)`.
+ *
+ * Two callsites land here in practice (stacksjs/stacks#1856):
+ *
+ *   1. **Direct multipart parse** (the original router shape, before
+ *      bun-router wrapped each entry in an `UploadedFile` class).
+ *      `{ originalName, mimetype, buffer }` — synchronous.
+ *   2. **Router's `UploadedFile` class** (current shape from
+ *      `req.file(key)` / `req.files`). Exposes `name`, `mimeType`, and
+ *      an async `bytes()` / `arrayBuffer()` accessor instead of a `buffer`
+ *      property — Bun's `File` is lazy by design.
+ *
+ * Both shapes flow through `putUploadedFile()` below; the helper
+ * detects which one it got and reads bytes accordingly. Storage doesn't
+ * import from the router to avoid a dependency cycle.
  */
 export interface UploadedFileLike {
-  /** The original filename from the client (used by `filename: 'original'`). */
+  /** Original filename from the client (used by `filename: 'original'`). */
   originalName?: string
+  /** Class-style alias that the router's `UploadedFile` exposes as `name`. */
+  name?: string
   /** Client-reported MIME type (used to derive an extension when missing). */
   mimetype?: string
-  /** Raw bytes — `req.files`/`req.file()` already populates this. */
-  buffer: ArrayBuffer | Uint8Array | Buffer
+  /** Class-style alias that the router's `UploadedFile` exposes as `mimeType`. */
+  mimeType?: string
+  /** Raw bytes — populated by the direct-parse shape. */
+  buffer?: ArrayBuffer | Uint8Array | Buffer
+  /** Async byte accessor — populated by the class shape. */
+  bytes?: () => Promise<Uint8Array>
+  /** Async ArrayBuffer accessor — alternative to `bytes()` on the class shape. */
+  arrayBuffer?: () => Promise<ArrayBuffer>
 }
 
 /** Built-in filename strategies for `Storage.put(file, { filename })`. */
@@ -88,8 +108,30 @@ function extFromOriginalName(name: string | undefined): string | null {
   return ext
 }
 
+function originalNameOf(file: UploadedFileLike): string | undefined {
+  return file.originalName ?? file.name
+}
+
+function mimetypeOf(file: UploadedFileLike): string | undefined {
+  return file.mimetype ?? file.mimeType
+}
+
 function deriveExtension(file: UploadedFileLike): string | null {
-  return extFromOriginalName(file.originalName) ?? (file.mimetype && MIME_TO_EXT[file.mimetype.toLowerCase()]) ?? null
+  const mime = mimetypeOf(file)
+  return extFromOriginalName(originalNameOf(file)) ?? (mime && MIME_TO_EXT[mime.toLowerCase()]) ?? null
+}
+
+/**
+ * Pull raw bytes off whichever shape the caller passed in. Synchronous
+ * `.buffer` wins (direct-parse shape) because it's free; otherwise we
+ * fall back to the class-style async accessors. Throws if neither is
+ * available — that's an upstream contract bug, not a runtime miss.
+ */
+async function readBytes(file: UploadedFileLike): Promise<ArrayBuffer | Uint8Array | Buffer> {
+  if (file.buffer !== undefined) return file.buffer
+  if (typeof file.bytes === 'function') return await file.bytes()
+  if (typeof file.arrayBuffer === 'function') return await file.arrayBuffer()
+  throw new Error('UploadedFile is missing both `buffer` and `bytes()`/`arrayBuffer()` accessors — cannot read file contents.')
 }
 
 function bufferLikeToHash(buffer: ArrayBuffer | Uint8Array | Buffer): string {
@@ -106,13 +148,18 @@ function sanitizeOriginalName(name: string): string {
   return stripped.replace(/[^A-Za-z0-9._-]/g, '_').replace(/_+/g, '_')
 }
 
-function resolveFilename(file: UploadedFileLike, strategy: FilenameStrategy): string {
+async function resolveFilename(file: UploadedFileLike, strategy: FilenameStrategy): Promise<string> {
   if (typeof strategy === 'function') return strategy(file)
   switch (strategy) {
     case 'uuid': return crypto.randomUUID().replace(/-/g, '')
-    case 'hash': return bufferLikeToHash(file.buffer)
-    case 'original':
-      return file.originalName ? sanitizeOriginalName(file.originalName) : crypto.randomUUID().replace(/-/g, '')
+    case 'hash': {
+      const bytes = await readBytes(file)
+      return bufferLikeToHash(bytes)
+    }
+    case 'original': {
+      const name = originalNameOf(file)
+      return name ? sanitizeOriginalName(name) : crypto.randomUUID().replace(/-/g, '')
+    }
   }
 }
 
@@ -131,7 +178,7 @@ export async function putUploadedFile(
 ): Promise<{ path: string, url: string }> {
   const disk = manager.disk(opts.disk)
 
-  const baseName = resolveFilename(file, opts.filename ?? 'uuid')
+  const baseName = await resolveFilename(file, opts.filename ?? 'uuid')
   const wantExt = opts.preserveExtension !== false
   const baseHasExt = /\.[A-Za-z0-9]+$/.test(baseName)
   const ext = wantExt && !baseHasExt ? deriveExtension(file) : null
@@ -139,10 +186,11 @@ export async function putUploadedFile(
 
   const fullPath = joinPath(opts.dir ?? '', finalName)
 
-  // Adapters accept Buffer | Uint8Array | string. Normalize ArrayBuffer.
-  const contents = file.buffer instanceof ArrayBuffer
-    ? new Uint8Array(file.buffer)
-    : file.buffer
+  // Adapters accept Buffer | Uint8Array | string. Normalize ArrayBuffer
+  // and read the class-shape's async accessor when there's no sync
+  // `.buffer` property.
+  const raw = await readBytes(file)
+  const contents = raw instanceof ArrayBuffer ? new Uint8Array(raw) : raw
 
   await disk.write(fullPath, contents)
   const url = await disk.publicUrl(fullPath)
