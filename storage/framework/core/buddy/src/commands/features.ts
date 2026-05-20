@@ -1,8 +1,9 @@
 import type { CLI } from '@stacksjs/types'
 import { existsSync } from 'node:fs'
-import { rm } from 'node:fs/promises'
+import { cp, rm } from 'node:fs/promises'
+import { join } from 'node:path'
 import process from 'node:process'
-import { projectPath } from '@stacksjs/path'
+import { frameworkPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 
 /**
@@ -149,6 +150,68 @@ export async function deleteFeatureFiles(
     removed.push(rel)
   }
   return removed
+}
+
+export interface CopyFeatureFilesOptions {
+  /**
+   * Overwrite target paths that already exist. Default `false`, so
+   * re-running `<feature>:install` on a project that came out of
+   * `./buddy new` (which stamps everything via gitit) is a clean no-op
+   * for files that haven't been customised.
+   */
+  force?: boolean
+  /**
+   * Source root holding the framework defaults (`storage/framework/defaults/`).
+   * Override for tests; production uses `frameworkPath('defaults')`.
+   */
+  source?: string
+  /**
+   * Target project root. Override for tests; production uses
+   * `projectPath()`.
+   */
+  target?: string
+}
+
+/**
+ * Copy every path listed in the feature's manifest from the framework
+ * defaults tree (`storage/framework/defaults/<path>`) into the project
+ * root (`<project>/<path>`). Missing source entries are skipped — not
+ * every feature owns every manifest slot (e.g. `cms` doesn't ship a
+ * `resources/components/Dashboard/Commerce/` dir, so that entry is
+ * absent from its source). Existing target paths are also skipped by
+ * default so re-running install on an existing project is idempotent.
+ *
+ * Returns the list of paths actually copied. See stacksjs/stacks#1854.
+ */
+export async function copyFeatureFiles(
+  feature: FeatureName,
+  options: CopyFeatureFilesOptions = {},
+): Promise<{ copied: string[], skipped: string[] }> {
+  const source = options.source ?? frameworkPath('defaults')
+  const target = options.target ?? projectPath()
+  const force = options.force === true
+
+  const copied: string[] = []
+  const skipped: string[] = []
+
+  for (const rel of FEATURE_FILES[feature]) {
+    const sourceFull = join(source, rel)
+    if (!existsSync(sourceFull)) {
+      // No template in defaults — nothing to stamp.
+      skipped.push(rel)
+      continue
+    }
+    const targetFull = join(target, rel)
+    if (existsSync(targetFull) && !force) {
+      // Already there; don't overwrite the user's possibly-customised file.
+      skipped.push(rel)
+      continue
+    }
+    await cp(sourceFull, targetFull, { recursive: true, force })
+    copied.push(rel)
+  }
+
+  return { copied, skipped }
 }
 
 const FEATURE_DESCRIPTIONS: Record<FeatureName, string> = {
@@ -364,7 +427,8 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
 
   buddy
     .command(`${feature}:install`, `Activate the ${feature} feature bundle. ${desc}`)
-    .action(async () => {
+    .option('--force', `Overwrite any existing ${feature} files in the project (default skips existing paths so the install is idempotent).`)
+    .action(async (options: { force?: boolean }) => {
       try {
         const outcome = await setFeatureEnabled(feature, true, { createIfMissing: true })
         switch (outcome) {
@@ -378,6 +442,16 @@ function registerInstallPair(buddy: CLI, feature: FeatureName): void {
             console.log(`✓ '${feature}' is already enabled in ${configRel}.`)
             break
         }
+
+        const { copied } = await copyFeatureFiles(feature, { force: options.force === true })
+        if (copied.length > 0) {
+          console.log(`✓ Copied ${copied.length} stamped path(s) from framework defaults:`)
+          for (const path of copied) console.log(`    - ${path}`)
+        }
+        else if (featurePathsPresent(feature).length > 0) {
+          console.log(`  → ${feature} scaffolding already in place — use --force to overwrite.`)
+        }
+
         console.log(`  → next ./buddy dev will boot with ${feature} loaded.`)
         process.exit(ExitCode.Success)
       }
