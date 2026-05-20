@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const printerOptions = ['All Printers', 'Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1'] as const
-const statuses = ['All Statuses', 'Success', 'Warning', 'Failed'] as const
-const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Last month'] as const
-</script>
-
 @title('Printer Logs - Analytics')
 <div class="p-6 space-y-6">
 
@@ -75,25 +69,25 @@ const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This m
     <div class="w-full sm:w-auto">
       <label for="printer-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Printer</label>
       <select id="printer-filter" x-model="printerFilter" class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
-        @foreach(printerOptions as printer)
-          <option value="{{ printer }}">{{ printer }}</option>
-        @endforeach
+        <template :for="printer in printerOptions">
+          <option :value="printer">{{ printer }}</option>
+        </template>
       </select>
     </div>
     <div class="w-full sm:w-auto">
       <label for="status-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
       <select id="status-filter" x-model="statusFilter" class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
-        @foreach(statuses as status)
-          <option value="{{ status }}">{{ status }}</option>
-        @endforeach
+        <template :for="status in statuses">
+          <option :value="status">{{ status }}</option>
+        </template>
       </select>
     </div>
     <div class="w-full sm:w-auto">
       <label for="date-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Date Range</label>
       <select id="date-filter" x-model="dateFilter" class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
-        @foreach(dateRanges as range)
-          <option value="{{ range }}">{{ range }}</option>
-        @endforeach
+        <template :for="range in dateRanges">
+          <option :value="range">{{ range }}</option>
+        </template>
       </select>
     </div>
   </div>
@@ -188,6 +182,11 @@ const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This m
 </div>
 
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const printerOptions = ['All Printers', 'Checkout-1', 'Checkout-2', 'Checkout-3', 'Checkout-4', 'Kitchen-1', 'Kitchen-2', 'Pickup-1'] as const
+const statuses = ['All Statuses', 'Success', 'Warning', 'Failed'] as const
+const dateRanges = ['Today', 'Yesterday', 'Last 7 days', 'Last 30 days', 'This month', 'Last month'] as const
 
 interface PrintLog {
   id: number

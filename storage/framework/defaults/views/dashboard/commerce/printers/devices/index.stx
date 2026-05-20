@@ -1,11 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area'] as const
-const statuses = ['All Statuses', 'Online', 'Offline', 'Warning'] as const
-</script>
-
 @title('Receipt Printers - Analytics')
 <div class="p-6 space-y-6">
 
@@ -79,17 +74,17 @@ const statuses = ['All Statuses', 'Online', 'Offline', 'Warning'] as const
     <div class="w-full sm:w-auto">
       <label for="location-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Location</label>
       <select id="location-filter" x-model="locationFilter" class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
-        @foreach(locations as location)
-          <option value="{{ location }}">{{ location }}</option>
-        @endforeach
+        <template :for="location in locations">
+          <option :value="location">{{ location }}</option>
+        </template>
       </select>
     </div>
     <div class="w-full sm:w-auto">
       <label for="status-filter" class="block font-medium text-gray-700 text-sm dark:text-neutral-300">Status</label>
       <select id="status-filter" x-model="statusFilter" class="block mt-1 pl-3 pr-10 py-2 w-full text-base sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:outline-none focus:ring-blue-500">
-        @foreach(statuses as status)
-          <option value="{{ status }}">{{ status }}</option>
-        @endforeach
+        <template :for="status in statuses">
+          <option :value="status">{{ status }}</option>
+        </template>
       </select>
     </div>
   </div>
@@ -171,6 +166,10 @@ const statuses = ['All Statuses', 'Online', 'Offline', 'Warning'] as const
 </div>
 
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const locations = ['All Locations', 'Main Floor', 'Second Floor', 'Kitchen', 'Pickup Area'] as const
+const statuses = ['All Statuses', 'Online', 'Offline', 'Warning'] as const
 
 interface Printer {
   id: number

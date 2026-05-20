@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded'] as const
-const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer'] as const
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
-</script>
-
 @title('Dashboard - Commerce Payments')
 <PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
@@ -306,6 +300,11 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
       </div>
 </PageLayout>
 <script client>
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const statuses = ['all', 'Completed', 'Pending', 'Failed', 'Refunded'] as const
+const methods = ['all', 'Credit Card', 'PayPal', 'Apple Pay', 'Google Pay', 'Bank Transfer'] as const
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 
 interface PaymentTransaction {
   id: number

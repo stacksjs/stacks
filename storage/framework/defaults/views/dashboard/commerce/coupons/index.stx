@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-
-const statuses = ['all', 'Active', 'Expired', 'Scheduled'] as const
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
-</script>
-
 @title('Dashboard - Commerce Coupons')
 <div class="p-6 space-y-6">
 
@@ -26,9 +20,9 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
     </p>
     <div class="relative">
       <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        @foreach(timeRanges as range)
-          <option value="{{ range }}">{{ range }}</option>
-        @endforeach
+        <template :for="range in timeRanges">
+          <option :value="range">{{ range }}</option>
+        </template>
       </select>
     </div>
   </div>
@@ -105,9 +99,9 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
         x-model="statusFilter"
         class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
       >
-        @foreach(statuses as status)
-          <option value="{{ status }}">{{ status }}</option>
-        @endforeach
+        <template :for="status in statuses">
+          <option :value="status">{{ status }}</option>
+        </template>
       </select>
 
       <select
@@ -219,6 +213,10 @@ const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Las
 <script client>
 import { useCoupons } from '../../../../functions/commerce/coupons'
 import type { Coupons, NewCoupon } from '../../../../types/defaults'
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const statuses = ['all', 'Active', 'Expired', 'Scheduled'] as const
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time'] as const
 
 const { coupons, createCoupon, fetchCoupons, deleteCoupon, updateCoupon } = useCoupons()
 

@@ -1,12 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-
-// Statuses are server-rendered into the <select>; never mutate at runtime.
-const statuses = ['all', 'Active', 'Inactive'] as const
-</script>
-
 @title('Dashboard - Commerce Customers')
 <div class="p-6 space-y-6">
 
@@ -32,9 +26,9 @@ const statuses = ['all', 'Active', 'Inactive'] as const
               x-model="statusFilter"
               class="block pl-3 pr-10 py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600 focus:ring-inset"
             >
-              @foreach(statuses as status)
-                <option value="{{ status }}">{{ status }}</option>
-              @endforeach
+              <template :for="status in statuses">
+                <option :value="status">{{ status }}</option>
+              </template>
             </select>
 
             <select
@@ -140,9 +134,9 @@ const statuses = ['all', 'Active', 'Inactive'] as const
                       x-model="newCustomerStatus"
                       class="block py-1.5 w-full text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-700 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 focus:ring-2 focus:ring-blue-600 focus:ring-inset shadow-sm"
                     >
-                      @foreach(statuses as status)
-                        <option value="{{ status }}">{{ status }}</option>
-                      @endforeach
+                      <template :for="status in statuses">
+                        <option :value="status">{{ status }}</option>
+                      </template>
                     </select>
                   </div>
                 </div>
@@ -212,6 +206,9 @@ const statuses = ['all', 'Active', 'Inactive'] as const
 
 <script client>
 import { useCustomers } from '../../../../functions/commerce/customers'
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const statuses = ['all', 'Active', 'Inactive'] as const
 
 interface Customer {
   id: number

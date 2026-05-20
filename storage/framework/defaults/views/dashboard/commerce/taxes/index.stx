@@ -1,10 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Consumption Tax'] as const
-</script>
-
 @title('Dashboard - Commerce Taxes')
 <PageLayout>
       <div class="sm:flex sm:items-center sm:justify-between">
@@ -202,9 +198,9 @@ const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Cons
                 <label for="tax-type" class="block font-medium text-gray-700 text-sm dark:text-neutral-200">Type</label>
                 <div class="mt-1">
                   <select id="tax-type" x-model="newType" class="block w-full sm:text-sm dark:text-white dark:bg-neutral-700 border-gray-300 rounded-md dark:border-neutral-600 focus:border-blue-500 focus:ring-blue-500 shadow-sm">
-                    @foreach(taxTypeOptions as type)
-                      <option value="{{ type }}">{{ type }}</option>
-                    @endforeach
+                    <template :for="type in taxTypeOptions">
+                      <option :value="type">{{ type }}</option>
+                    </template>
                   </select>
                 </div>
               </div>
@@ -244,6 +240,10 @@ const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Cons
       </div>
 </PageLayout>
 <script client>
+// Tax type options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const taxTypeOptions = ['VAT', 'GST', 'Sales Tax', 'Digital Services Tax', 'Consumption Tax'] as const
+
 interface Tax {
   id: number
   name: string

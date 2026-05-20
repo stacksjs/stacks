@@ -1,16 +1,6 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-
-const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
-const orderTypes = [
-  { value: 'delivery', label: 'Delivery' },
-  { value: 'pickup', label: 'Pickup' },
-  { value: 'dine-in', label: 'Dine-in' },
-] as const
-</script>
-
 <div class="p-6 space-y-6">
 
   <PageHeader title="Orders" description="Manage commerce orders">
@@ -95,6 +85,14 @@ const orderTypes = [
 
 <script client>
 import { useOrders } from '../../../../functions/commerce/orders'
+// Filter options — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838).
+const statuses = ['all', 'Completed', 'Processing', 'Shipped', 'Cancelled', 'Refunded'] as const
+const orderTypes = [
+  { value: 'delivery', label: 'Delivery' },
+  { value: 'pickup', label: 'Pickup' },
+  { value: 'dine-in', label: 'Dine-in' },
+] as const
 
 interface Order {
   id: number
