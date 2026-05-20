@@ -1,73 +1,14 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
-const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
-
-const topPosts = [
-  { id: 1, title: '10 Tips for Better Code Quality', category: 'Tutorials', views: 12450, comments: 78, published: '2023-12-01', status: 'Published' },
-  { id: 2, title: 'The Future of JavaScript Frameworks', category: 'Technology', views: 9870, comments: 124, published: '2023-11-28', status: 'Published' },
-  { id: 3, title: 'Getting Started with Vue 3', category: 'Tutorials', views: 8760, comments: 45, published: '2023-11-25', status: 'Published' },
-  { id: 4, title: 'Review: Latest MacBook Pro', category: 'Reviews', views: 7650, comments: 92, published: '2023-11-20', status: 'Published' },
-  { id: 5, title: 'Understanding Web Accessibility', category: 'Tutorials', views: 6540, comments: 31, published: '2023-11-15', status: 'Published' },
-]
-
-const recentComments = [
-  { id: 1, author: 'John Smith', email: 'john.smith@example.com', content: "Great article! This helped me solve a problem I've been stuck on for days.", post: '10 Tips for Better Code Quality', date: '2023-12-01', status: 'Approved' },
-  { id: 2, author: 'Sarah Johnson', email: 'sarah.j@example.com', content: 'I disagree with point #3. In my experience, that approach causes more problems than it solves.', post: 'The Future of JavaScript Frameworks', date: '2023-12-01', status: 'Pending' },
-  { id: 3, author: 'Michael Brown', email: 'mbrown@example.com', content: 'Thanks for the tutorial! Could you elaborate more on the setup process?', post: 'Getting Started with Vue 3', date: '2023-11-30', status: 'Approved' },
-  { id: 4, author: 'Emily Davis', email: 'emily.davis@example.com', content: 'I found a typo in the third paragraph. It should be "their" not "there".', post: '10 Tips for Better Code Quality', date: '2023-11-30', status: 'Approved' },
-  { id: 5, author: 'David Wilson', email: 'dwilson@example.com', content: 'This review seems biased. Have you tried comparing it with the competition?', post: 'Review: Latest MacBook Pro', date: '2023-11-29', status: 'Spam' },
-]
-
-const draftPosts = [
-  { id: 6, title: 'Introduction to TypeScript', category: 'Tutorials', lastEdited: '2023-12-01', author: 'Jane Doe' },
-  { id: 7, title: 'Building a REST API with Node.js', category: 'Tutorials', lastEdited: '2023-11-29', author: 'John Smith' },
-  { id: 8, title: 'CSS Grid vs Flexbox', category: 'Tutorials', lastEdited: '2023-11-27', author: 'Jane Doe' },
-]
-
-const totalPosts = 127
-const totalViews = 256890
-const totalComments = 3427
-const averageEngagement = '4.2%'
-
-// Returns the COMPLETE class string (badge tone + static layout) because
-// stx's `{{ ... }}` placeholder is not reactively bound inside a `class`
-// attribute — only inside text content. The reactive form is `:class="fn()"`.
-function commentStatusClass(status) {
-  const tone = status === 'Approved'
-    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
-    : status === 'Spam'
-      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
-      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
-  return `${tone} inline-flex items-center px-2 py-1 font-medium text-xs rounded-md`
-}
-
-function draftProgressWidth(id) {
-  if (id === 6)
-    return '90%'
-  if (id === 7)
-    return '65%'
-  return '40%'
-}
-
-function draftProgressLabel(id) {
-  if (id === 6)
-    return 'Almost ready'
-  if (id === 7)
-    return 'In progress'
-  return 'Just started'
-}
-</script>
-
 @title('Dashboard - Blog')
 <PageLayout>
   <PageHeader title="Content Dashboard" description="Overview of your blog's performance">
     <template #actions>
       <select x-model="timeRange" class="block pl-3 pr-10 py-1.5 text-gray-900 sm:leading-6 sm:text-sm dark:text-white dark:bg-neutral-800 border-0 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-700 focus:ring-2 focus:ring-blue-600">
-        @foreach(timeRanges as range)
-          <option value="{{ range }}">{{ range }}</option>
-        @endforeach
+        <template :for="range in timeRanges">
+          <option :value="range">{{ range }}</option>
+        </template>
       </select>
     </template>
   </PageHeader>
@@ -153,7 +94,7 @@ function draftProgressLabel(id) {
                   </tr>
                 </thead>
                 <tbody class="bg-white dark:bg-neutral-800 divide-gray-200 divide-y dark:divide-neutral-700">
-                  @foreach(topPosts as post)
+                  <template :for="post in topPosts">
                     <tr>
                       <td class="px-6 py-4 font-medium text-gray-900 text-sm whitespace-nowrap dark:text-white">{{ post.title }}</td>
                       <td class="px-6 py-4 text-gray-500 text-sm whitespace-nowrap dark:text-neutral-300">{{ post.category }}</td>
@@ -177,7 +118,7 @@ function draftProgressLabel(id) {
                         </div>
                       </td>
                     </tr>
-                  @endforeach
+                  </template>
                 </tbody>
               </table>
             </div>
@@ -205,7 +146,7 @@ function draftProgressLabel(id) {
             </div>
             <div class="border-gray-200 border-t dark:border-neutral-700">
               <ul role="list" class="overflow-y-auto max-h-[500px] divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(recentComments as comment)
+                <template :for="comment in recentComments">
                   <li class="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-neutral-700 duration-150 transition">
                     <div class="flex items-center justify-between">
                       <div class="flex items-center">
@@ -217,9 +158,7 @@ function draftProgressLabel(id) {
                         <div class="ml-4">
                           <div class="flex items-center font-medium text-gray-900 dark:text-white">
                             {{ comment.author }}
-                            @if(comment.id <= 2)
-                              <span class="inline-flex items-center ml-2 px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-700/10 ring-inset rounded-md dark:ring-blue-400/30">New</span>
-                            @endif
+                            <span :if="comment.id <= 2" class="inline-flex items-center ml-2 px-2 py-1 font-medium text-blue-700 text-xs dark:text-blue-400 bg-blue-50 dark:bg-blue-900/30 ring-1 ring-blue-700/10 ring-inset rounded-md dark:ring-blue-400/30">New</span>
                           </div>
                           <div class="text-gray-500 text-sm dark:text-neutral-400">{{ comment.email }}</div>
                         </div>
@@ -236,12 +175,10 @@ function draftProgressLabel(id) {
                       <p>On: <a href="#" class="font-medium text-blue-600 dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">{{ comment.post }}</a> • <span class="whitespace-nowrap">{{ comment.date }}</span></p>
                     </div>
                     <div class="flex mt-2 space-x-2">
-                      @if(comment.status !== 'Approved')
-                        <button type="button" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
-                          <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
-                          Approve
-                        </button>
-                      @endif
+                      <button :if="comment.status !== 'Approved'" type="button" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
+                        <div class="mr-1 h-4 w-4 i-hugeicons-checkmark-circle-02"></div>
+                        Approve
+                      </button>
                       <button type="button" class="inline-flex items-center px-2.5 py-1.5 font-semibold text-gray-900 text-sm dark:text-white bg-white dark:bg-neutral-700 hover:bg-gray-50 dark:hover:bg-neutral-600 ring-1 ring-gray-300 ring-inset rounded-md dark:ring-neutral-600 shadow-sm">
                         <div class="mr-1 h-4 w-4 i-hugeicons-edit-01"></div>
                         Reply
@@ -252,7 +189,7 @@ function draftProgressLabel(id) {
                       </button>
                     </div>
                   </li>
-                @endforeach
+                </template>
               </ul>
               <div class="flex items-center justify-between px-4 py-4 sm:px-6 bg-gray-50 dark:bg-neutral-700">
                 <a href="#" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">View all comments<span aria-hidden="true"> &rarr;</span></a>
@@ -271,15 +208,13 @@ function draftProgressLabel(id) {
             </div>
             <div class="border-gray-200 border-t dark:border-neutral-700">
               <ul role="list" class="overflow-y-auto max-h-[500px] divide-gray-200 divide-y dark:divide-neutral-700">
-                @foreach(draftPosts as post)
+                <template :for="post in draftPosts">
                   <li class="px-4 py-4 sm:px-6 hover:bg-gray-50 dark:hover:bg-neutral-700 duration-150 transition">
                     <div class="flex items-center justify-between">
                       <div>
                         <div class="flex items-center font-medium text-gray-900 dark:text-white">
                           {{ post.title }}
-                          @if(post.id === 6)
-                            <span class="inline-flex items-center ml-2 px-2 py-1 font-medium text-green-700 text-xs dark:text-green-400 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-600/20 ring-inset rounded-md dark:ring-green-500/30">Updated today</span>
-                          @endif
+                          <span :if="post.id === 6" class="inline-flex items-center ml-2 px-2 py-1 font-medium text-green-700 text-xs dark:text-green-400 bg-green-50 dark:bg-green-900/30 ring-1 ring-green-600/20 ring-inset rounded-md dark:ring-green-500/30">Updated today</span>
                         </div>
                         <div class="flex items-center mt-1 text-gray-500 text-sm dark:text-neutral-400">
                           <div class="mr-1 h-4 w-4 i-hugeicons-folder-01"></div>
@@ -287,9 +222,7 @@ function draftProgressLabel(id) {
                           <span class="mx-2">&middot;</span>
                           <div class="mr-1 h-4 w-4 i-hugeicons-user-01"></div>
                           <span>{{ post.author }}</span>
-                          @if(post.id === 7)
-                            <span class="inline-flex items-center ml-2 px-2 py-1 font-medium text-xs text-yellow-800 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 ring-1 ring-inset ring-yellow-600/20 rounded-md dark:ring-yellow-500/30">Needs review</span>
-                          @endif
+                          <span :if="post.id === 7" class="inline-flex items-center ml-2 px-2 py-1 font-medium text-xs text-yellow-800 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30 ring-1 ring-inset ring-yellow-600/20 rounded-md dark:ring-yellow-500/30">Needs review</span>
                         </div>
                       </div>
                       <div class="flex items-center text-gray-500 text-sm dark:text-neutral-400">
@@ -298,7 +231,7 @@ function draftProgressLabel(id) {
                       </div>
                     </div>
                     <div class="mt-3 h-1.5 w-full bg-gray-200 dark:bg-neutral-700 rounded-full">
-                      <div class="h-1.5 bg-blue-600 rounded-full" style="width: {{ draftProgressWidth(post.id) }}"></div>
+                      <div class="h-1.5 bg-blue-600 rounded-full" :style="'width: ' + draftProgressWidth(post.id)"></div>
                     </div>
                     <div class="mt-1 text-gray-500 text-right text-xs dark:text-neutral-400">{{ draftProgressLabel(post.id) }}</div>
                     <div class="flex mt-2 space-x-2">
@@ -316,7 +249,7 @@ function draftProgressLabel(id) {
                       </button>
                     </div>
                   </li>
-                @endforeach
+                </template>
               </ul>
               <div class="flex items-center justify-between px-4 py-4 sm:px-6 bg-gray-50 dark:bg-neutral-700">
                 <a href="#" class="font-medium text-blue-600 text-sm dark:text-blue-400 hover:text-blue-500 dark:hover:text-blue-300">View all drafts<span aria-hidden="true"> &rarr;</span></a>
@@ -332,6 +265,59 @@ function draftProgressLabel(id) {
 interface ChartLike { destroy: () => void }
 type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
+// Static demo data + view helpers — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
+const timeRanges = ['Today', 'Last 7 days', 'Last 30 days', 'Last 90 days', 'Last year', 'All time']
+
+const topPosts = [
+  { id: 1, title: '10 Tips for Better Code Quality', category: 'Tutorials', views: 12450, comments: 78, published: '2023-12-01', status: 'Published' },
+  { id: 2, title: 'The Future of JavaScript Frameworks', category: 'Technology', views: 9870, comments: 124, published: '2023-11-28', status: 'Published' },
+  { id: 3, title: 'Getting Started with Vue 3', category: 'Tutorials', views: 8760, comments: 45, published: '2023-11-25', status: 'Published' },
+  { id: 4, title: 'Review: Latest MacBook Pro', category: 'Reviews', views: 7650, comments: 92, published: '2023-11-20', status: 'Published' },
+  { id: 5, title: 'Understanding Web Accessibility', category: 'Tutorials', views: 6540, comments: 31, published: '2023-11-15', status: 'Published' },
+]
+
+const recentComments = [
+  { id: 1, author: 'John Smith', email: 'john.smith@example.com', content: "Great article! This helped me solve a problem I've been stuck on for days.", post: '10 Tips for Better Code Quality', date: '2023-12-01', status: 'Approved' },
+  { id: 2, author: 'Sarah Johnson', email: 'sarah.j@example.com', content: 'I disagree with point #3. In my experience, that approach causes more problems than it solves.', post: 'The Future of JavaScript Frameworks', date: '2023-12-01', status: 'Pending' },
+  { id: 3, author: 'Michael Brown', email: 'mbrown@example.com', content: 'Thanks for the tutorial! Could you elaborate more on the setup process?', post: 'Getting Started with Vue 3', date: '2023-11-30', status: 'Approved' },
+  { id: 4, author: 'Emily Davis', email: 'emily.davis@example.com', content: 'I found a typo in the third paragraph. It should be "their" not "there".', post: '10 Tips for Better Code Quality', date: '2023-11-30', status: 'Approved' },
+  { id: 5, author: 'David Wilson', email: 'dwilson@example.com', content: 'This review seems biased. Have you tried comparing it with the competition?', post: 'Review: Latest MacBook Pro', date: '2023-11-29', status: 'Spam' },
+]
+
+const draftPosts = [
+  { id: 6, title: 'Introduction to TypeScript', category: 'Tutorials', lastEdited: '2023-12-01', author: 'Jane Doe' },
+  { id: 7, title: 'Building a REST API with Node.js', category: 'Tutorials', lastEdited: '2023-11-29', author: 'John Smith' },
+  { id: 8, title: 'CSS Grid vs Flexbox', category: 'Tutorials', lastEdited: '2023-11-27', author: 'Jane Doe' },
+]
+
+const totalPosts = 127
+const totalViews = 256890
+const totalComments = 3427
+const averageEngagement = '4.2%'
+
+function commentStatusClass(status) {
+  const tone = status === 'Approved'
+    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300'
+    : status === 'Spam'
+      ? 'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300'
+      : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300'
+  return `${tone} inline-flex items-center px-2 py-1 font-medium text-xs rounded-md`
+}
+
+function draftProgressWidth(id) {
+  if (id === 6) return '90%'
+  if (id === 7) return '65%'
+  return '40%'
+}
+
+function draftProgressLabel(id) {
+  if (id === 6) return 'Almost ready'
+  if (id === 7) return 'In progress'
+  return 'Just started'
+}
+
+// `timeRange` shadows the static `timeRanges` filter label list above.
 const timeRange = state('Last 30 days')
 
 const viewsData = {

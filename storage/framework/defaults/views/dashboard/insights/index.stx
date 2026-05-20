@@ -1,7 +1,361 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
+@title('Dashboard - Insights')
+<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
+  <div class="mb-8 px-4 sm:px-6 lg:px-8">
+    <div>
+      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">System Overview</h3>
+
+      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
+        <template :for="stat in statsCards">
+          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
+            <dt>
+              <div class="absolute p-3 bg-blue-500 rounded-md">
+                <div :class="stat.icon" class="h-6 w-6 text-white"></div>
+              </div>
+              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">{{ stat.title }}</p>
+            </dt>
+            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
+              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">{{ stat.value }}</p>
+              <p :class="'ml-2 flex items-baseline text-sm font-semibold ' + (stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600')">
+                <span :if="stat.changeType === 'increase'" class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-up"></span>
+                <span :if="stat.changeType !== 'increase'" class="flex-shrink-0 self-center h-5 w-5 text-red-500 i-hugeicons-arrow-down-02"></span>
+                {{ stat.change }}
+              </p>
+            </dd>
+          </div>
+        </template>
+      </dl>
+    </div>
+  </div>
+
+  <div class="px-4 sm:px-6 lg:px-8">
+    <div class="sm:flex sm:items-center">
+      <div class="sm:flex-auto">
+        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">System Metrics</h1>
+        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Real-time monitoring of your system's performance and resource usage.</p>
+      </div>
+    </div>
+
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-3 mt-8">
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">CPU Usage</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.cpu }}%</span>
+          </div>
+          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+            <div class="h-2 bg-blue-500 rounded-full" style="width: {{ systemMetrics.cpu }}%"></div>
+          </div>
+          <div class="mt-4 h-32"><canvas id="insights_cpu_chart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Memory</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.memory.used }}MB / {{ systemMetrics.memory.total }}MB</span>
+          </div>
+          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+            <div class="h-2 bg-blue-500 rounded-full" style="width: {{ memoryPct }}%"></div>
+          </div>
+          <div class="mt-4 h-32"><canvas id="insights_memory_chart"></canvas></div>
+        </div>
+      </div>
+
+      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
+        <div class="p-6">
+          <div class="flex items-center justify-between">
+            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Storage</h3>
+            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.storage.used }}GB / {{ systemMetrics.storage.total }}GB</span>
+          </div>
+          <div class="mt-4 h-32"><canvas id="insights_storage_chart"></canvas></div>
+          <div class="flex justify-center mt-4 space-x-4">
+            <div class="flex items-center">
+              <div class="mr-2 h-3 w-3 bg-blue-500 rounded-full"></div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Used ({{ systemMetrics.storage.used }}GB)</span>
+            </div>
+            <div class="flex items-center">
+              <div class="mr-2 h-3 w-3 bg-gray-200 dark:bg-neutral-600 rounded-full"></div>
+              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Queue Monitoring</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Real-time monitoring of your application's queue processing.</p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="space-y-8">
+              <template :for="queue in queuesRaw">
+                <div class="space-y-4">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center space-x-2">
+                      <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">{{ queue.name }}</h4>
+                    </div>
+                    <div class="flex items-center space-x-3">
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-blue-500 rounded-full"></div><span class="font-mono text-blue-700 text-xs dark:text-blue-300">{{ queue.stats.queued }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-yellow-500 rounded-full"></div><span class="font-mono text-xs text-yellow-700 dark:text-yellow-300">{{ queue.stats.processing }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-green-500 rounded-full"></div><span class="font-mono text-green-700 text-xs dark:text-green-300">{{ queue.stats.processed }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-purple-500 rounded-full"></div><span class="font-mono text-purple-700 text-xs dark:text-purple-300">{{ queue.stats.released }}</span></div>
+                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-red-500 rounded-full"></div><span class="font-mono text-red-700 text-xs dark:text-red-300">{{ queue.stats.failed }}</span></div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <div class="flex items-center mb-2 space-x-4">
+                      <div class="flex items-center space-x-2">
+                        <div class="h-1 w-4 bg-green-500 rounded"></div>
+                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Processed</span>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <div class="h-1 w-4 bg-red-500 rounded"></div>
+                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Failed</span>
+                      </div>
+                    </div>
+                    <div class="h-48"><canvas :id="'insights_queue_' + queue.name + '_chart'"></canvas></div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Cache Performance</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Real-time monitoring of your application's cache performance and hit rates.</p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="grid gap-8 grid-cols-3">
+              <div class="text-center">
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cacheRaw.hits }}</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hits</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cacheRaw.misses }}</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Misses</p>
+              </div>
+              <div class="text-center">
+                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cacheRaw.hitRate }}%</p>
+                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hit Rate</p>
+              </div>
+            </div>
+
+            <div class="mt-8">
+              <div class="space-y-4">
+                <template :for="key in cacheRaw.keys">
+                  <div class="p-4 border border-gray-100 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors">
+                    <div class="flex items-center justify-between mb-3">
+                      <div class="flex items-center space-x-3">
+                        <div class="h-2 w-2 bg-blue-500 rounded-full"></div>
+                        <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.name }}</span>
+                      </div>
+                      <div class="flex items-center space-x-2">
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">TTL: {{ key.ttl }}s</span>
+                        <span class="font-mono text-gray-400 text-xs">|</span>
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ key.lastAccessed }}</span>
+                      </div>
+                    </div>
+
+                    <div class="flex items-center space-x-3">
+                      <div class="overflow-hidden flex-1 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
+                        <div class="h-full bg-blue-500 rounded-full" :style="'width: ' + key.hitRate + '%'"></div>
+                      </div>
+                      <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.hitRate }}%</span>
+                    </div>
+
+                    <div class="flex items-center mt-3 space-x-4 text-xs">
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-green-500 i-hugeicons-checkmark-circle-02"></div>
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.hits }} hits</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-red-500 i-hugeicons-x-circle"></div>
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.misses }} misses</span>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mt-8 px-4 sm:px-6 lg:px-8">
+    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Exceptions</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Recent application exceptions and their occurrence rates.</p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="space-y-4">
+              <template :for="exception in exceptionsRaw">
+                <div class="relative p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
+                  <div class="mb-3">
+                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">{{ exception.type }}</div>
+                  </div>
+                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
+                    <div class="flex items-center space-x-2">
+                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square"></div>
+                      <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.location }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01"></div>
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.latest }}</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy"></div>
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.count }}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="absolute left-0 top-0 h-full w-1 bg-red-500 rounded-l-lg"></div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <div class="sm:flex sm:items-center">
+          <div class="sm:flex-auto">
+            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Slow Queries</h1>
+            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Database queries that are taking longer than expected to execute.</p>
+          </div>
+        </div>
+
+        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+          <div class="p-6">
+            <div class="space-y-4">
+              <template :for="query in slowQueriesRaw">
+                <div class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
+                  <div class="mb-3">
+                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">{{ query.query }}</div>
+                  </div>
+                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
+                    <div class="flex items-center space-x-2">
+                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square"></div>
+                      <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.location }}</span>
+                    </div>
+                    <div class="flex items-center space-x-4">
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01"></div>
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.count }}</span>
+                      </div>
+                      <div class="flex items-center space-x-1">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy"></div>
+                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.slowest }}ms</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="mt-6">
+      <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
+        <div>
+          <div class="sm:flex sm:items-center">
+            <div class="sm:flex-auto">
+              <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Slow Routes</h1>
+              <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Routes that are taking longer than expected to respond (>1000ms).</p>
+            </div>
+          </div>
+
+          <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
+            <div class="p-6">
+              <div class="space-y-4">
+                <template :for="route in slowRoutesRaw">
+                  <div class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
+                    <div class="mb-3">
+                      <div class="flex items-center space-x-3">
+                        <span :class="'px-2 py-1 font-medium text-xs rounded-md ' + routeMethodBadge(route.method)">{{ route.method }}</span>
+                        <span class="font-mono text-gray-900 text-sm dark:text-neutral-100">{{ route.route }}</span>
+                      </div>
+                      <div :if="route.action" class="flex items-center mt-2 space-x-2">
+                        <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square"></div>
+                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ route.action }}</span>
+                      </div>
+                    </div>
+                    <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
+                      <div class="flex items-center space-x-4">
+                        <div class="flex items-center space-x-1">
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01"></div>
+                          <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.count }} requests</span>
+                        </div>
+                        <div class="flex items-center space-x-1">
+                          <div class="h-4 w-4 text-gray-400 i-hugeicons-energy"></div>
+                          <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.slowest }}ms</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </template>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="flex overflow-hidden items-center justify-center h-full dark:bg-neutral-700 rounded-lg">
+            <div class="p-6">
+              <div class="flex flex-col items-center text-center">
+                <div class="mb-4 h-12 w-12 text-blue-500 i-hugeicons-puzzle-piece"></div>
+                <h3 class="mb-2 font-medium text-gray-900 text-lg dark:text-neutral-100">Extend Your Dashboard</h3>
+                <p class="mb-6 max-w-sm text-gray-500 text-sm dark:text-neutral-400">Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.</p>
+                <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm">
+                  <div class="mr-2 h-5 w-5 i-hugeicons-book-open"></div>
+                  Read the Documentation
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script client>
+
+interface ChartLike { destroy: () => void }
+type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
+
+// Static demo data + view helpers — moved out of the former
+// `<script server>` block (stacksjs/stacks#1838).
 const statsCards = [
   { title: 'Total Requests', value: '71,897', change: '+122', changeType: 'increase', icon: 'i-hugeicons-arrow-up-01' },
   { title: 'Average Response Time', value: '235ms', change: '-12ms', changeType: 'decrease', icon: 'i-hugeicons-clock-01' },
@@ -83,365 +437,6 @@ function routeMethodBadge(method: string): string {
 function statusLabel(status: string): string {
   return status.charAt(0).toUpperCase() + status.slice(1)
 }
-</script>
-
-@title('Dashboard - Insights')
-<div class="py-4 lg:py-8 min-h-screen dark:bg-neutral-800">
-  <div class="mb-8 px-4 sm:px-6 lg:px-8">
-    <div>
-      <h3 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">System Overview</h3>
-
-      <dl class="grid gap-5 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 mt-5">
-        @foreach(statsCards as stat)
-          <div class="overflow-hidden relative pt-5 px-4 sm:pt-6 sm:px-6 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <dt>
-              <div class="absolute p-3 bg-blue-500 rounded-md">
-                <div class="{{ stat.icon }} h-6 w-6 text-white"></div>
-              </div>
-              <p class="ml-16 font-medium text-gray-500 text-sm truncate dark:text-neutral-300">{{ stat.title }}</p>
-            </dt>
-            <dd class="flex items-baseline ml-16 pb-6 sm:pb-7">
-              <p class="font-semibold text-2xl text-gray-900 dark:text-neutral-100">{{ stat.value }}</p>
-              <p class="ml-2 flex items-baseline text-sm font-semibold {{ stat.changeType === 'increase' ? 'text-green-600' : 'text-red-600' }}">
-                @if(stat.changeType === 'increase')
-                  <span class="flex-shrink-0 self-center h-5 w-5 text-green-500 i-hugeicons-arrow-up"></span>
-                @else
-                  <span class="flex-shrink-0 self-center h-5 w-5 text-red-500 i-hugeicons-arrow-down-02"></span>
-                @endif
-                {{ stat.change }}
-              </p>
-            </dd>
-          </div>
-        @endforeach
-      </dl>
-    </div>
-  </div>
-
-  <div class="px-4 sm:px-6 lg:px-8">
-    <div class="sm:flex sm:items-center">
-      <div class="sm:flex-auto">
-        <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">System Metrics</h1>
-        <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Real-time monitoring of your system's performance and resource usage.</p>
-      </div>
-    </div>
-
-    <div class="grid gap-6 grid-cols-1 lg:grid-cols-3 mt-8">
-      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">CPU Usage</h3>
-            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.cpu }}%</span>
-          </div>
-          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
-            <div class="h-2 bg-blue-500 rounded-full" style="width: {{ systemMetrics.cpu }}%"></div>
-          </div>
-          <div class="mt-4 h-32"><canvas id="insights_cpu_chart"></canvas></div>
-        </div>
-      </div>
-
-      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Memory</h3>
-            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.memory.used }}MB / {{ systemMetrics.memory.total }}MB</span>
-          </div>
-          <div class="mt-2 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
-            <div class="h-2 bg-blue-500 rounded-full" style="width: {{ memoryPct }}%"></div>
-          </div>
-          <div class="mt-4 h-32"><canvas id="insights_memory_chart"></canvas></div>
-        </div>
-      </div>
-
-      <div class="overflow-hidden bg-white dark:bg-neutral-700 rounded-lg shadow">
-        <div class="p-6">
-          <div class="flex items-center justify-between">
-            <h3 class="font-medium text-gray-900 text-sm dark:text-neutral-100">Storage</h3>
-            <span class="font-mono text-gray-500 text-sm dark:text-neutral-400">{{ systemMetrics.storage.used }}GB / {{ systemMetrics.storage.total }}GB</span>
-          </div>
-          <div class="mt-4 h-32"><canvas id="insights_storage_chart"></canvas></div>
-          <div class="flex justify-center mt-4 space-x-4">
-            <div class="flex items-center">
-              <div class="mr-2 h-3 w-3 bg-blue-500 rounded-full"></div>
-              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Used ({{ systemMetrics.storage.used }}GB)</span>
-            </div>
-            <div class="flex items-center">
-              <div class="mr-2 h-3 w-3 bg-gray-200 dark:bg-neutral-600 rounded-full"></div>
-              <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">Available ({{ systemMetrics.storage.total - systemMetrics.storage.used }}GB)</span>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mt-8 px-4 sm:px-6 lg:px-8">
-    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
-      <div>
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Queue Monitoring</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Real-time monitoring of your application's queue processing.</p>
-          </div>
-        </div>
-
-        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="space-y-8">
-              @foreach(queuesRaw as queue)
-                <div class="space-y-4">
-                  <div class="flex items-center justify-between">
-                    <div class="flex items-center space-x-2">
-                      <h4 class="inline-flex items-center px-2.5 py-0.5 font-medium text-gray-800 text-xs dark:text-neutral-200 bg-gray-100 dark:bg-neutral-600 rounded-full">{{ queue.name }}</h4>
-                    </div>
-                    <div class="flex items-center space-x-3">
-                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-blue-500 rounded-full"></div><span class="font-mono text-blue-700 text-xs dark:text-blue-300">{{ queue.stats.queued }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-yellow-500 rounded-full"></div><span class="font-mono text-xs text-yellow-700 dark:text-yellow-300">{{ queue.stats.processing }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-green-500 rounded-full"></div><span class="font-mono text-green-700 text-xs dark:text-green-300">{{ queue.stats.processed }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-purple-500 rounded-full"></div><span class="font-mono text-purple-700 text-xs dark:text-purple-300">{{ queue.stats.released }}</span></div>
-                      <div class="flex items-center space-x-2"><div class="h-2.5 w-2.5 bg-red-500 rounded-full"></div><span class="font-mono text-red-700 text-xs dark:text-red-300">{{ queue.stats.failed }}</span></div>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div class="flex items-center mb-2 space-x-4">
-                      <div class="flex items-center space-x-2">
-                        <div class="h-1 w-4 bg-green-500 rounded"></div>
-                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Processed</span>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        <div class="h-1 w-4 bg-red-500 rounded"></div>
-                        <span class="font-medium text-gray-500 text-xs dark:text-neutral-400">Failed</span>
-                      </div>
-                    </div>
-                    <div class="h-48"><canvas id="insights_queue_{{ queue.name }}_chart"></canvas></div>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Cache Performance</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Real-time monitoring of your application's cache performance and hit rates.</p>
-          </div>
-        </div>
-
-        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="grid gap-8 grid-cols-3">
-              <div class="text-center">
-                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cacheRaw.hits }}</p>
-                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hits</p>
-              </div>
-              <div class="text-center">
-                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cacheRaw.misses }}</p>
-                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Misses</p>
-              </div>
-              <div class="text-center">
-                <p class="font-mono font-semibold text-3xl text-gray-900 dark:text-neutral-100">{{ cacheRaw.hitRate }}%</p>
-                <p class="mt-1.5 font-medium text-gray-500 text-sm dark:text-neutral-400">Hit Rate</p>
-              </div>
-            </div>
-
-            <div class="mt-8">
-              <div class="space-y-4">
-                @foreach(cacheRaw.keys as key)
-                  <div class="p-4 border border-gray-100 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors">
-                    <div class="flex items-center justify-between mb-3">
-                      <div class="flex items-center space-x-3">
-                        <div class="h-2 w-2 bg-blue-500 rounded-full"></div>
-                        <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.name }}</span>
-                      </div>
-                      <div class="flex items-center space-x-2">
-                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">TTL: {{ key.ttl }}s</span>
-                        <span class="font-mono text-gray-400 text-xs">|</span>
-                        <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ key.lastAccessed }}</span>
-                      </div>
-                    </div>
-
-                    <div class="flex items-center space-x-3">
-                      <div class="overflow-hidden flex-1 h-2 bg-gray-200 dark:bg-neutral-600 rounded-full">
-                        <div class="h-full bg-blue-500 rounded-full" style="width: {{ key.hitRate }}%"></div>
-                      </div>
-                      <span class="font-medium font-mono text-gray-900 text-sm dark:text-neutral-100">{{ key.hitRate }}%</span>
-                    </div>
-
-                    <div class="flex items-center mt-3 space-x-4 text-xs">
-                      <div class="flex items-center space-x-1">
-                        <div class="h-4 w-4 text-green-500 i-hugeicons-checkmark-circle-02"></div>
-                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.hits }} hits</span>
-                      </div>
-                      <div class="flex items-center space-x-1">
-                        <div class="h-4 w-4 text-red-500 i-hugeicons-x-circle"></div>
-                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ key.misses }} misses</span>
-                      </div>
-                    </div>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="mt-8 px-4 sm:px-6 lg:px-8">
-    <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
-      <div>
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Exceptions</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Recent application exceptions and their occurrence rates.</p>
-          </div>
-        </div>
-
-        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="space-y-4">
-              @foreach(exceptionsRaw as exception)
-                <div class="relative p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
-                  <div class="mb-3">
-                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">{{ exception.type }}</div>
-                  </div>
-                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
-                    <div class="flex items-center space-x-2">
-                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square"></div>
-                      <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.location }}</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                      <div class="flex items-center space-x-1">
-                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01"></div>
-                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.latest }}</span>
-                      </div>
-                      <div class="flex items-center space-x-1">
-                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy"></div>
-                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ exception.count }}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <div class="absolute left-0 top-0 h-full w-1 bg-red-500 rounded-l-lg"></div>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <div>
-        <div class="sm:flex sm:items-center">
-          <div class="sm:flex-auto">
-            <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Slow Queries</h1>
-            <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Database queries that are taking longer than expected to execute.</p>
-          </div>
-        </div>
-
-        <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-          <div class="p-6">
-            <div class="space-y-4">
-              @foreach(slowQueriesRaw as query)
-                <div class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
-                  <div class="mb-3">
-                    <div class="break-all font-mono leading-relaxed text-gray-900 text-sm dark:text-neutral-100">{{ query.query }}</div>
-                  </div>
-                  <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
-                    <div class="flex items-center space-x-2">
-                      <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square"></div>
-                      <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.location }}</span>
-                    </div>
-                    <div class="flex items-center space-x-4">
-                      <div class="flex items-center space-x-1">
-                        <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01"></div>
-                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.count }}</span>
-                      </div>
-                      <div class="flex items-center space-x-1">
-                        <div class="h-4 w-4 text-gray-400 i-hugeicons-energy"></div>
-                        <span class="font-mono text-gray-500 dark:text-neutral-400">{{ query.slowest }}ms</span>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              @endforeach
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="mt-6">
-      <div class="grid gap-6 grid-cols-1 lg:grid-cols-2">
-        <div>
-          <div class="sm:flex sm:items-center">
-            <div class="sm:flex-auto">
-              <h1 class="font-semibold leading-6 text-base text-gray-900 dark:text-neutral-100">Slow Routes</h1>
-              <p class="mt-2 text-gray-700 text-sm dark:text-neutral-300">Routes that are taking longer than expected to respond (>1000ms).</p>
-            </div>
-          </div>
-
-          <div class="overflow-hidden mt-8 bg-white dark:bg-neutral-700 rounded-lg shadow">
-            <div class="p-6">
-              <div class="space-y-4">
-                @foreach(slowRoutesRaw as route)
-                  <div class="p-4 border border-gray-200 rounded-lg dark:border-neutral-600 hover:border-blue-500 dark:hover:border-blue-400 duration-150 transition-colors group">
-                    <div class="mb-3">
-                      <div class="flex items-center space-x-3">
-                        <span class="px-2 py-1 font-medium text-xs rounded-md {{ routeMethodBadge(route.method) }}">{{ route.method }}</span>
-                        <span class="font-mono text-gray-900 text-sm dark:text-neutral-100">{{ route.route }}</span>
-                      </div>
-                      @if(route.action)
-                        <div class="flex items-center mt-2 space-x-2">
-                          <div class="h-4 w-4 text-gray-400 i-hugeicons-code-bracket-square"></div>
-                          <span class="font-mono text-gray-500 text-xs dark:text-neutral-400">{{ route.action }}</span>
-                        </div>
-                      @endif
-                    </div>
-                    <div class="flex items-center justify-between pt-3 text-sm border-gray-100 border-t dark:border-neutral-600">
-                      <div class="flex items-center space-x-4">
-                        <div class="flex items-center space-x-1">
-                          <div class="h-4 w-4 text-gray-400 i-hugeicons-clock-01"></div>
-                          <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.count }} requests</span>
-                        </div>
-                        <div class="flex items-center space-x-1">
-                          <div class="h-4 w-4 text-gray-400 i-hugeicons-energy"></div>
-                          <span class="font-mono text-gray-500 dark:text-neutral-400">{{ route.slowest }}ms</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                @endforeach
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <div>
-          <div class="flex overflow-hidden items-center justify-center h-full dark:bg-neutral-700 rounded-lg">
-            <div class="p-6">
-              <div class="flex flex-col items-center text-center">
-                <div class="mb-4 h-12 w-12 text-blue-500 i-hugeicons-puzzle-piece"></div>
-                <h3 class="mb-2 font-medium text-gray-900 text-lg dark:text-neutral-100">Extend Your Dashboard</h3>
-                <p class="mb-6 max-w-sm text-gray-500 text-sm dark:text-neutral-400">Create custom insight cards to monitor your application's performance, user behavior, or any other metrics that matter to you.</p>
-                <a href="https://stacksjs.com/docs/insights" class="inline-flex items-center px-4 py-2 font-medium text-sm text-white bg-blue-600 hover:bg-blue-700 border border-transparent rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-neutral-800 shadow-sm">
-                  <div class="mr-2 h-5 w-5 i-hugeicons-book-open"></div>
-                  Read the Documentation
-                </a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script client>
-
-interface ChartLike { destroy: () => void }
-type ChartCtor = new (canvas: HTMLElement, config: { type: string, data: unknown, options?: unknown }) => ChartLike
 
 const labels = ['12am', '1am', '2am', '3am', '4am', '5am', '6am']
 

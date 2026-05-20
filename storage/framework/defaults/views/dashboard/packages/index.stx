@@ -1,7 +1,7 @@
 @extends('layouts/default')
 
 @section('content')
-<script server>
+<script client>
 
 interface PackageRow {
   name: string
@@ -15,7 +15,8 @@ interface PackageRow {
   url: string
 }
 
-// Placeholder data. Wire this up to the npm registry once the
+// Placeholder data — moved out of the former `<script server>` block
+// (stacksjs/stacks#1838). Wire this up to the npm registry once the
 // dashboard exposes a `GET /api/dashboard/packages` endpoint that
 // returns the same shape (`name/version/downloads/...`). Until then,
 // this snapshot mirrors what stacks-org publishes.
@@ -156,7 +157,7 @@ const sortedPackages = [...packages].sort((a, b) => b.downloads - a.downloads)
             </tr>
           </thead>
           <tbody class="divide-neutral-200/60 divide-y dark:divide-white/5">
-            @foreach(sortedPackages as pkg)
+            <template :for="pkg in sortedPackages">
               <tr class="hover:bg-neutral-50/60 dark:hover:bg-white/[0.02] transition-colors">
                 <td class="px-5 py-3 whitespace-nowrap">
                   <div class="font-medium text-neutral-900 text-sm dark:text-white">{{ pkg.name }}</div>
@@ -178,12 +179,12 @@ const sortedPackages = [...packages].sort((a, b) => b.downloads - a.downloads)
                   {{ pkg.size }}
                 </td>
                 <td class="px-5 py-3 text-right whitespace-nowrap">
-                  <a href="{{ pkg.url }}" target="_blank" rel="noopener" class="text-blue-600 text-sm dark:text-blue-400 hover:underline">
+                  <a :href="pkg.url" target="_blank" rel="noopener" class="text-blue-600 text-sm dark:text-blue-400 hover:underline">
                     GitHub
                   </a>
                 </td>
               </tr>
-            @endforeach
+            </template>
           </tbody>
         </table>
       </div>
