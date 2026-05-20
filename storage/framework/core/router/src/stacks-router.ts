@@ -954,9 +954,15 @@ async function resolveStringHandler(handlerPath: string): Promise<RouteHandlerFn
         if (action.validations) {
           const validationResult = await validateActionInput(req, action.validations)
           if (!validationResult.valid) {
+            // Positional status (not `{ status: 422 }`) — bun-router's
+            // `Response.json` macro had a positional-only signature for a
+            // while (see stacksjs/stacks#1857 for the historical bite).
+            // The macro is dual-shape now, but defensive positional usage
+            // keeps the validation failure path working even if a project
+            // resolves to an older `@stacksjs/bun-router`.
             return Response.json(
               { error: 'Validation failed', errors: validationResult.errors },
-              { status: 422 },
+              422,
             )
           }
         }
@@ -1762,7 +1768,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
           checks,
           timestamp: Date.now(),
         }
-        return Response.json(body, { status: healthy ? 200 : 503 })
+        return Response.json(body, healthy ? 200 : 503)
       })
       // Internal route-introspection endpoint. Powers `buddy dev` route
       // listing on startup and future `buddy route:list` consumers.
@@ -1773,7 +1779,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const env = (process.env.APP_ENV ?? '').toLowerCase()
         const isProd = env === 'production' || process.env.NODE_ENV === 'production'
         if (isProd && process.env.STACKS_EXPOSE_ROUTES !== '1') {
-          return Response.json({ error: 'disabled in production' }, { status: 404 })
+          return Response.json({ error: 'disabled in production' }, 404)
         }
         return Response.json(listRegisteredRoutes())
       })
@@ -1847,7 +1853,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         const env = (process.env.APP_ENV ?? '').toLowerCase()
         const isProd = env === 'production' || process.env.NODE_ENV === 'production'
         if (isProd && process.env.STACKS_EXPOSE_ROUTES !== '1') {
-          return Response.json({ error: 'disabled in production' }, { status: 404 })
+          return Response.json({ error: 'disabled in production' }, 404)
         }
         try {
           const { generateOpenApi } = await import('@stacksjs/api')
@@ -1857,7 +1863,7 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
         catch (err) {
           return Response.json(
             { error: 'OpenAPI generation failed', message: err instanceof Error ? err.message : String(err) },
-            { status: 500 },
+            500,
           )
         }
       })
