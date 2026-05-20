@@ -22,6 +22,13 @@ const MAIL_PACKAGE_DOMAIN = 'github.com/mail-os/mail'
 const MAIL_PACKAGE_SPEC = `${MAIL_PACKAGE_DOMAIN}@0.1.0`
 const MAIL_TARGET_PLATFORM = 'linux-x86_64'
 const MAIL_BINARY_NAMES = ['mail', 'mail-x86_64-linux', 'mail-x86_64-linux-gnu']
+const LOCAL_MAIL_PROJECT = process.env.STACKS_MAIL_PROJECT || `${process.env.HOME}/Code/Libraries/mail`
+
+function expandHomePath(filePath: string): string {
+  if (filePath === '~') return process.env.HOME || filePath
+  if (filePath.startsWith('~/')) return `${process.env.HOME}${filePath.slice(1)}`
+  return filePath
+}
 
 // Check if verbose mode is enabled via CLI args
 const isVerbose = process.argv.includes('--verbose') || process.argv.includes('-v')
@@ -125,6 +132,56 @@ async function findPantryMailBinary(): Promise<string | null> {
   }
 
   return null
+}
+
+async function findLocalMailBinary(): Promise<string | null> {
+  const { existsSync } = await import('node:fs')
+  const { join } = await import('node:path')
+
+  const explicitBinary = process.env.STACKS_MAIL_BINARY
+  if (explicitBinary) {
+    const candidate = expandHomePath(explicitBinary)
+    if (existsSync(candidate) && await isElfBinary(candidate)) return candidate
+  }
+
+  const localProject = expandHomePath(LOCAL_MAIL_PROJECT)
+  const directCandidates = [
+    join(localProject, 'packages/zig/zig-out/bin/mail-x86_64-linux'),
+    join(localProject, 'packages/zig/zig-out/bin/mail-x86_64-linux-gnu'),
+    join(localProject, 'packages/zig/zig-out/bin/x86_64-linux/mail-x86_64-linux'),
+    join(localProject, 'packages/zig/zig-out/bin/mail'),
+    join(localProject, 'zig-out/bin/mail-x86_64-linux'),
+    join(localProject, 'zig-out/bin/mail-x86_64-linux-gnu'),
+    join(localProject, 'zig-out/bin/mail'),
+  ]
+
+  for (const candidate of directCandidates) {
+    if (existsSync(candidate) && await isElfBinary(candidate)) return candidate
+  }
+
+  for (const candidate of await collectMatchingFiles(localProject, MAIL_BINARY_NAMES, 5)) {
+    if (await isElfBinary(candidate)) return candidate
+  }
+
+  return null
+}
+
+async function findMailServerBinary(): Promise<string | null> {
+  const localBinary = await findLocalMailBinary()
+  if (localBinary) {
+    if (isVerbose) log.debug(`  Using local mail binary: ${localBinary}`)
+    return localBinary
+  }
+
+  try {
+    await installMailBinaryWithPantry()
+  } catch (error: any) {
+    if (isVerbose) log.debug(`  Pantry mail install failed: ${error.message}`)
+  }
+
+  const pantryBinary = await findPantryMailBinary()
+  if (pantryBinary && isVerbose) log.debug(`  Using Pantry mail binary: ${pantryBinary}`)
+  return pantryBinary
 }
 
 const MIME_TYPES: Record<string, string> = {
@@ -1170,19 +1227,14 @@ systemctl enable stacks-api`,
           const mailSubdomain = emailConfig?.server?.subdomain || 'mail'
 
           if (mailServerMode === 'server') {
-            // Server mode: deploy the Pantry-provided Linux binary.
+            // Server mode: deploy the Zig mail server binary from the local mail project first,
+            // falling back to the Pantry release when no local Linux ELF is available.
             if (isVerbose) log.debug('Deploying Zig mail server binary...')
 
-            try {
-              await installMailBinaryWithPantry()
-            } catch (error: any) {
-              if (isVerbose) log.debug(`  Pantry mail install failed: ${error.message}`)
-            }
-
-            const linuxBinaryPath = await findPantryMailBinary()
+            const linuxBinaryPath = await findMailServerBinary()
             if (linuxBinaryPath && smtpFileExists(linuxBinaryPath)) {
               if (!await isElfBinary(linuxBinaryPath)) {
-                smtpSpinner.fail(`Pantry installed ${MAIL_PACKAGE_DOMAIN}, but the ${MAIL_TARGET_PLATFORM} binary is not an ELF file.`)
+                smtpSpinner.fail(`Found a mail binary, but it is not a ${MAIL_TARGET_PLATFORM} ELF file.`)
                 throw new Error('Linux binary is not a valid ELF file')
               }
 
@@ -1190,7 +1242,7 @@ systemctl enable stacks-api`,
               const binaryContent = readSmtpFile(linuxBinaryPath)
               await s3.putObject({
                 bucket: emailBucketName,
-                key: 'mail-server/smtp-server',
+                key: 'mail-server/mail-server',
                 body: binaryContent,
                 contentType: 'application/octet-stream',
               })
@@ -1204,67 +1256,85 @@ systemctl enable stacks-api`,
                 'systemctl stop stacks-smtp 2>/dev/null || true',
                 'systemctl disable stacks-smtp 2>/dev/null || true',
                 'systemctl stop smtp-server 2>/dev/null || true',
+                'systemctl disable smtp-server 2>/dev/null || true',
+                'systemctl stop mail 2>/dev/null || true',
                 // Create directories
-                'mkdir -p /opt/smtp-server /var/lib/smtp-server /var/log/smtp-server /var/spool/mail /etc/smtp-server /var/lib/smtp-server/backups',
+                'id -u mail-server >/dev/null 2>&1 || useradd --system --home /opt/mail --shell /sbin/nologin mail-server',
+                'mkdir -p /opt/mail/mail /var/log/mail /etc/mail /opt/mail/backups',
                 // Download binary from S3
-                `aws s3 cp s3://${emailBucketName}/mail-server/smtp-server /opt/smtp-server/smtp-server --region ${region}`,
-                'chmod +x /opt/smtp-server/smtp-server',
+                `aws s3 cp s3://${emailBucketName}/mail-server/mail-server /opt/mail/mail-server --region ${region}`,
+                'chmod +x /opt/mail/mail-server',
+                'chown mail-server:mail-server /opt/mail /opt/mail/mail /opt/mail/backups /opt/mail/mail-server',
                 // Verify binary
-                'file /opt/smtp-server/smtp-server | grep -q ELF || { echo "Binary is not ELF"; exit 1; }',
+                'file /opt/mail/mail-server | grep -q ELF || { echo "Binary is not ELF"; exit 1; }',
                 firewallOpenCommand(mailPorts),
                 // Create environment configuration
-                // Note: TLS is disabled for now due to Zig TLS PEM parsing issue.
-                // SMTP_IO_MODE=epoll is required (io_uring causes issues under systemd).
-                // STARTTLS will be offered once the Zig TLS cert loading is fixed upstream.
-                `cat > /etc/smtp-server/smtp-server.env << 'ENVEOF'
+                // Preserve an existing /etc/mail/mail.env because it may contain TLS paths and secrets.
+                // SMTP_IO_MODE=epoll is required in production (io_uring causes issues under systemd).
+                `if [ ! -f /etc/mail/mail.env ]; then cat > /etc/mail/mail.env << 'ENVEOF'
 SMTP_PROFILE=production
 SMTP_HOST=0.0.0.0
 SMTP_PORT=25
 SMTP_HOSTNAME=${mailSubdomain}.${domain}
-SMTP_ENABLE_TLS=false
+SMTP_ENABLE_TLS=true
 SMTP_ENABLE_AUTH=true
-SMTP_DB_PATH=/var/lib/smtp-server/smtp.db
+SMTP_DB_PATH=/opt/mail/smtp.db
 AWS_S3_BUCKET=${emailBucketName}
 AWS_REGION=${region}
 SMTP_ENABLE_JSON_LOGGING=true
 SMTP_LOG_LEVEL=info
-SMTP_MAILBOX_PATH=/var/spool/mail
-SMTP_BACKUP_PATH=/var/lib/smtp-server/backups
+SMTP_MAILBOX_PATH=/opt/mail/mail
+SMTP_BACKUP_PATH=/opt/mail/backups
 SMTP_MAX_CONNECTIONS=1000
 SMTP_MAX_MESSAGE_SIZE=52428800
 SMTP_MAX_RECIPIENTS=100
 SMTP_RATE_LIMIT_PER_IP=100
 SMTP_RATE_LIMIT_PER_USER=200
 SMTP_IO_MODE=epoll
-ENVEOF`,
-                'chmod 600 /etc/smtp-server/smtp-server.env',
-                // Create systemd service (no sandboxing - Zig binary needs unrestricted access)
-                `cat > /etc/systemd/system/smtp-server.service << 'SVCEOF'
+SMTP_TLS_CERT=/etc/letsencrypt/live/${mailSubdomain}.${domain}/fullchain.pem
+SMTP_TLS_KEY=/etc/letsencrypt/live/${mailSubdomain}.${domain}/privkey.pem
+ENVEOF
+fi`,
+                'grep -q "^AWS_S3_BUCKET=" /etc/mail/mail.env || echo "AWS_S3_BUCKET=' + emailBucketName + '" >> /etc/mail/mail.env',
+                'grep -q "^AWS_REGION=" /etc/mail/mail.env || echo "AWS_REGION=' + region + '" >> /etc/mail/mail.env',
+                'grep -q "^SMTP_IO_MODE=" /etc/mail/mail.env || echo "SMTP_IO_MODE=epoll" >> /etc/mail/mail.env',
+                'chmod 600 /etc/mail/mail.env',
+                // Create systemd service matching the mail project deployment layout.
+                `cat > /etc/systemd/system/mail.service << 'SVCEOF'
 [Unit]
-Description=Stacks Mail Server (Zig)
+Description=Mail Server
 After=network.target
 
 [Service]
 Type=simple
-WorkingDirectory=/opt/smtp-server
-EnvironmentFile=/etc/smtp-server/smtp-server.env
-ExecStart=/opt/smtp-server/smtp-server
+User=mail-server
+Group=mail-server
+WorkingDirectory=/opt/mail
+EnvironmentFile=/etc/mail/mail.env
+ExecStart=/opt/mail/mail-server serve
 Restart=always
 RestartSec=10
+TimeoutStopSec=20
+KillMode=mixed
 StandardOutput=journal
 StandardError=journal
-SyslogIdentifier=smtp-server
+SyslogIdentifier=mail
+AmbientCapabilities=CAP_NET_BIND_SERVICE
+CapabilityBoundingSet=CAP_NET_BIND_SERVICE
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
 
 [Install]
 WantedBy=multi-user.target
 SVCEOF`,
                 'systemctl daemon-reload',
-                'systemctl enable smtp-server',
-                'systemctl restart smtp-server',
+                'systemctl enable mail',
+                'systemctl restart mail',
                 // Verify
                 'sleep 3',
-                'systemctl is-active smtp-server && echo "Mail server is running" || echo "Mail server failed to start"',
-                'ss -tlnp | grep -E "(25|143)" || echo "Warning: mail ports not listening yet"',
+                'systemctl is-active mail && echo "Mail server is running" || { journalctl -u mail -n 80 --no-pager; exit 1; }',
+                'ss -tlnp | grep -E ":(25|143|465|587|993)\\b" || echo "Warning: mail ports not listening yet"',
               ].join(' && ')
 
               const ssmResult = await awsClient.request({
@@ -1326,7 +1396,7 @@ SVCEOF`,
                 smtpSpinner.fail('Failed to send SSM command for mail server')
               }
             } else {
-              smtpSpinner.fail(`No Pantry-provided ${MAIL_TARGET_PLATFORM} mail binary found. Release ${MAIL_PACKAGE_DOMAIN}, then run the Pantry binary sync for that package.`)
+              smtpSpinner.fail(`No ${MAIL_TARGET_PLATFORM} mail binary found in ${LOCAL_MAIL_PROJECT} or Pantry (${MAIL_PACKAGE_DOMAIN}). Build the local mail project or release the Pantry package.`)
             }
           } else {
             // Serverless mode: Deploy the TypeScript SMTP proxy (existing behavior)
