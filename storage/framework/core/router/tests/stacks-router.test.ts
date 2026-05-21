@@ -208,11 +208,14 @@ describe('createStacksRouter - resource()', () => {
 // ============================================================================
 
 describe('createStacksRouter - health()', () => {
-  test('health() registers a GET /health route', () => {
+  test('health() registers a GET /api/health route', () => {
+    // Mounted under /api so a userland `resources/views/health/index.stx`
+    // page can still own `/health` without colliding with the framework's
+    // liveness probe (see stacks-router.ts:1743-1746).
     const router = createStacksRouter()
     router.health()
     const routes = router.bunRouter.routes
-    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/health')).toBe(true)
+    expect(routes.some((r: any) => r.method === 'GET' && r.path === '/api/health')).toBe(true)
   })
 
   test('health() returns the router for chaining', () => {

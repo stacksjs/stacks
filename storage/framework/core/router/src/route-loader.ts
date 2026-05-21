@@ -19,7 +19,7 @@
  * routes naturally override framework routes.
  */
 
-import type { RouteDefinition, RouteRegistry } from '../../../../../app/Routes'
+import type { RouteDefinition, RouteRegistry } from './route-types'
 import { log } from '@stacksjs/logging'
 import { route } from './stacks-router'
 
@@ -122,16 +122,56 @@ async function loadFrameworkRoutes(): Promise<void> {
 }
 
 /**
+ * Validate that a route-file name can't escape the `routes/` root.
+ *
+ * The registry today is author-trusted, but treating it as untrusted
+ * at the loader boundary costs nothing and prevents a future "let
+ * users register routes" feature from turning into a path-traversal
+ * vector. Mirrors `assertSafeHandlerPath` in `stacks-router.ts` so a
+ * reviewer can compare the two side-by-side.
+ *
+ * Checks in order:
+ *   1. Null bytes anywhere.
+ *   2. URL-encoded characters (`%2e%2e` → `..`) — decoded BEFORE the
+ *      traversal check, otherwise an attacker could hide `..` from the
+ *      string-contains check by encoding it.
+ *   3. Absolute paths (POSIX `/...` and Windows `C:\...`).
+ *   4. `..` segments after splitting on either separator (catches
+ *      `..\..\..\etc` on Windows registries).
+ *
+ * stacksjs/stacks#1863 (T-9).
+ */
+function assertSafeRouteName(routeName: string): string {
+  if (typeof routeName !== 'string' || routeName.length === 0)
+    throw new Error(`[route-loader] Invalid route path: empty or non-string`)
+  if (routeName.includes('\0'))
+    throw new Error(`[route-loader] Invalid route path: null byte`)
+
+  let decoded: string
+  try {
+    decoded = decodeURIComponent(routeName)
+  }
+  catch {
+    throw new Error(`[route-loader] Invalid route path: malformed URL encoding`)
+  }
+
+  const cleanPath = decoded.replace(/\.ts$/, '')
+
+  if (cleanPath.startsWith('/') || /^[A-Za-z]:[\\/]/.test(cleanPath))
+    throw new Error(`[route-loader] Invalid route path: absolute paths not allowed (${cleanPath})`)
+
+  const segments = cleanPath.split(/[/\\]/)
+  if (segments.some(s => s === '..'))
+    throw new Error(`[route-loader] Invalid route path: '..' segment not allowed (${cleanPath})`)
+
+  return cleanPath
+}
+
+/**
  * Import a route file from the routes directory
  */
 async function importRouteFile(routeName: string): Promise<void> {
-  // Remove .ts extension if present
-  const cleanPath = routeName.replace(/\.ts$/, '')
-
-  // Prevent path traversal
-  if (cleanPath.includes('..') || cleanPath.startsWith('/')) {
-    throw new Error(`Invalid route path: ${cleanPath}`)
-  }
+  const cleanPath = assertSafeRouteName(routeName)
 
   // Resolve `routes/<name>` against the project root via @stacksjs/path so
   // the import works whether this package is loaded from the workspace

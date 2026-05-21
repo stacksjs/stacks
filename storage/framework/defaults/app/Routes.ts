@@ -1,13 +1,9 @@
-export interface RouteDefinition {
-  /** Route file path (relative to routes/) */
-  path: string
-  /** Optional URL prefix (overrides the key-based prefix) */
-  prefix?: string
-  /** Optional middleware for all routes in file */
-  middleware?: string | string[]
-}
+// Route registry types live in `@stacksjs/router` (the consumer) — see
+// stacksjs/stacks#1863. Re-exported here for backwards compatibility
+// with any project code that imports them via `app/Routes`.
+import type { RouteDefinition, RouteRegistry } from '@stacksjs/router'
 
-export type RouteRegistry = Record<string, string | RouteDefinition>
+export type { RouteDefinition, RouteRegistry }
 
 /**
  * Application route registry.

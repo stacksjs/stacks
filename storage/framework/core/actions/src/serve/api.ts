@@ -28,8 +28,13 @@ const hostname = process.env.HOST || (isProduction ? '0.0.0.0' : '127.0.0.1')
 log.info(`[Stacks API] Starting server...`)
 log.info(`[Stacks API] Environment: ${process.env.APP_ENV || 'development'}`)
 
-// Enable CORS middleware
-route.use(cors().handle.bind(cors()) as any)
+// Enable CORS middleware. We hold ONE Cors instance so `handle.bind(...)`
+// targets the same object the method was read from — the previous
+// `cors().handle.bind(cors())` form constructed two separate instances
+// and bound across them, which silently broke if `Cors` ever held
+// per-instance state (stacksjs/stacks#1863 T-11).
+const corsMiddleware = cors()
+route.use(corsMiddleware.handle.bind(corsMiddleware))
 
 // Import routes
 await route.importRoutes()

@@ -188,10 +188,12 @@ describe('Named routes', () => {
 // Health check route
 // ---------------------------------------------------------------------------
 describe('Health check', () => {
-  test('health() registers /health route', () => {
+  test('health() registers /api/health route', () => {
+    // Mounted under /api so a userland `health/` page can still own
+    // `/health` (see stacks-router.ts:1743-1746).
     const router = createStacksRouter()
     router.health()
-    const found = router.routes.some(r => r.path === '/health' && r.method === 'GET')
+    const found = router.routes.some(r => r.path === '/api/health' && r.method === 'GET')
     expect(found).toBe(true)
   })
 })

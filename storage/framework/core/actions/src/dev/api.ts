@@ -56,8 +56,13 @@ catch (err) {
   log.warn(`[api:dev] failed to bootstrap event listeners — dispatched events will be ignored: ${(err as Error).message}`)
 }
 
-// Enable CORS middleware
-route.use(cors().handle.bind(cors()) as any)
+// Enable CORS middleware. We hold ONE Cors instance so `handle.bind(...)`
+// targets the same object the method was read from — the previous
+// `cors().handle.bind(cors())` form constructed two separate instances
+// and bound across them, which silently broke if `Cors` ever held
+// per-instance state (stacksjs/stacks#1863 T-11).
+const corsMiddleware = cors()
+route.use(corsMiddleware.handle.bind(corsMiddleware))
 
 // Stamp X-Request-ID + start time on the request, then enrich the
 // outbound response with the id, Server-Timing, and (for generic 404s) the

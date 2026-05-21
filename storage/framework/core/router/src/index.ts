@@ -23,8 +23,10 @@ export type { MiddlewareConfig, Request } from './middleware'
 // Export route loader
 export { loadRoutes } from './route-loader'
 
-// Export route registry types
-export type { RouteDefinition, RouteRegistry } from '../../../../../app/Routes'
+// Export route registry types — owned here rather than in app/Routes.ts
+// so the path doesn't depend on a 5-level relative reach across the
+// framework defaults tree (stacksjs/stacks#1863, T-10).
+export type { RouteDefinition, RouteRegistry } from './route-types'
 
 // Export error handler utilities
 export {

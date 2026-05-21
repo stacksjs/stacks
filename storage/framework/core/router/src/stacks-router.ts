@@ -268,7 +268,18 @@ export function listRegisteredRoutes(): Array<{ method: string, path: string, na
 /** Represents a middleware module with a handle method */
 interface MiddlewareHandler {
   handle: (req: EnhancedRequest) => Promise<void> | void
+  /**
+   * Optional execution priority. Lower numbers run earlier. Defaults to
+   * `DEFAULT_MIDDLEWARE_PRIORITY` (10) when unset — matches the
+   * `Middleware` class default in `./middleware.ts`. The chain is sorted
+   * by this field at request time so declared order can be authored
+   * for readability while execution order remains coherent (CORS
+   * before auth before throttle, etc.). See stacksjs/stacks#1863.
+   */
+  priority?: number
 }
+
+const DEFAULT_MIDDLEWARE_PRIORITY = 10
 
 /**
  * Cache for loaded middleware handlers
@@ -535,24 +546,48 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
         log.debug(`[middleware] Executing chain: [${middlewareEntries.join(', ')}] for ${method} ${urlPath}`)
       }
 
-      // Run middleware in order
-      const middlewareTimings: Array<{ name: string, ms: number }> = []
+      // Pre-resolve every entry to its handler + priority. Each
+      // Middleware instance declares an optional `priority` (lower
+      // runs earlier, default 10); without sorting, declared order
+      // alone decides execution — which contradicts the Cors header
+      // contract requiring CORS to precede auth/throttle so 4xx
+      // responses still carry the right headers. See
+      // stacksjs/stacks#1863, #1859 (H-1).
+      interface ResolvedMiddleware {
+        name: string
+        handler: MiddlewareHandler
+        priority: number
+      }
+      const resolved: ResolvedMiddleware[] = []
       for (const middlewareEntry of middlewareEntries) {
         const { name: middlewareName, params } = parseMiddlewareName(middlewareEntry)
 
-        // Store middleware params on request for middleware to access
+        // Store middleware params on request for middleware to access.
+        // Params are keyed by middleware name so this is order-independent.
         if (params) {
           ;(enhancedReq as any)._middlewareParams = (enhancedReq as any)._middlewareParams || {}
           ;(enhancedReq as any)._middlewareParams[middlewareName] = params
         }
 
         const middleware = await loadMiddleware(middlewareName)
-        if (middleware && typeof middleware.handle === 'function') {
-          // Per-middleware timing is appended to the request's
-          // Server-Timing trail so devtools (and Chrome's network panel)
-          // can show exactly which middleware spent how long. Cheap —
-          // hrtime delta per layer.
-          const mwStart = process.hrtime.bigint()
+        if (!middleware || typeof middleware.handle !== 'function') continue
+        const priority = typeof middleware.priority === 'number' ? middleware.priority : DEFAULT_MIDDLEWARE_PRIORITY
+        resolved.push({ name: middlewareName, handler: middleware, priority })
+      }
+
+      // Stable sort — V8 + Bun guarantee Array.sort is stable since 2018,
+      // so same-priority entries preserve insertion order. This keeps
+      // declared sequencing within a priority band predictable.
+      resolved.sort((a, b) => a.priority - b.priority)
+
+      // Run middleware in priority order
+      const middlewareTimings: Array<{ name: string, ms: number }> = []
+      for (const { name: middlewareName, handler: middleware } of resolved) {
+        // Per-middleware timing is appended to the request's
+        // Server-Timing trail so devtools (and Chrome's network panel)
+        // can show exactly which middleware spent how long. Cheap —
+        // hrtime delta per layer.
+        const mwStart = process.hrtime.bigint()
           try {
             // 30s middleware budget. A misbehaving middleware that hangs
             // (e.g. waits forever on a deadlocked external service) used
@@ -628,7 +663,6 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
             catch { /* immutable headers — leave the response alone */ }
             return errorResponse
           }
-        }
       }
 
       // Call the actual handler with the enhanced request.
