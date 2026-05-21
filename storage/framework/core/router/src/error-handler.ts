@@ -44,22 +44,20 @@ function buildErrorJson(opts: {
 }
 
 function getJsonHeaders(): Record<string, string> {
-  const isDev = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
-  const headers: Record<string, string> = { 'Content-Type': 'application/json' }
-  if (isDev) {
-    const appUrl = process.env.APP_URL ? `https://${process.env.APP_URL}` : '*'
-    headers['Access-Control-Allow-Origin'] = appUrl
-  }
-  return headers
+  // CORS headers used to be emitted here directly using `APP_URL` env,
+  // independent of the configured CORS policy. That meant error
+  // responses could advertise different allowed origins than success
+  // responses (and in dev defaulted to `*` regardless of policy).
+  // The router's post-response CORS wrapper now owns all CORS header
+  // injection, applying the configured policy uniformly to success
+  // and error paths. See stacksjs/stacks#1859 H-3.
+  return { 'Content-Type': 'application/json' }
 }
 
 function getJsonHeadersFull(): Record<string, string> {
-  const headers = getJsonHeaders()
-  if (headers['Access-Control-Allow-Origin']) {
-    headers['Access-Control-Allow-Methods'] = 'GET, POST, PUT, DELETE, PATCH, OPTIONS'
-    headers['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
-  }
-  return headers
+  // Same rationale as `getJsonHeaders` — defer CORS to the post-response
+  // wrapper rather than emit policy-inconsistent headers from here.
+  return getJsonHeaders()
 }
 
 // Circular buffer for tracked queries (avoids O(n) shift on every insert).

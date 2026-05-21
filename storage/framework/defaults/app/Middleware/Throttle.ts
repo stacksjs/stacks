@@ -82,7 +82,11 @@ export default new Middleware({
           'X-RateLimit-Remaining': result.headers.get('X-RateLimit-Remaining') || '0',
           'X-RateLimit-Reset': result.headers.get('X-RateLimit-Reset') || '',
           'Retry-After': retryAfter,
-          'Access-Control-Allow-Origin': '*',
+          // CORS headers (if any) are applied by the router's post-response
+          // CORS wrapper using the configured policy — hardcoding
+          // `Access-Control-Allow-Origin: *` here leaked the rate-limit
+          // body cross-origin even when the configured policy was
+          // restrictive. See stacksjs/stacks#1859 R-3.
         },
       })
     }

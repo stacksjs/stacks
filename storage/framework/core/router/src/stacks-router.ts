@@ -133,6 +133,31 @@ class BoundedMap<K, V> {
 }
 
 /**
+ * Apply the configured CORS policy to an outgoing response. Pulled
+ * out as a helper so success-path and error-path responses both flow
+ * through the same single CORS injection point — error paths used to
+ * skip CORS entirely, which left browsers unable to read error bodies
+ * cross-origin and forced individual middleware (Throttle 429,
+ * Maintenance 503) to hand-roll `Access-Control-Allow-Origin: *`
+ * regardless of policy. See stacksjs/stacks#1859 H-3, R-3.
+ */
+async function applyCorsIfConfigured(req: EnhancedRequest, response: Response): Promise<Response> {
+  if (!req._corsConfig || !response) return response
+  try {
+    const { applyCorsHeaders } = await import(p.storagePath('framework/defaults/app/Middleware/Cors.ts'))
+    return (applyCorsHeaders as (req: Request, res: Response, cfg?: unknown) => Response)(
+      req as unknown as Request,
+      response,
+      req._corsConfig,
+    )
+  }
+  catch (err) {
+    log.warn('[router] CORS header injection failed', { error: err })
+    return response
+  }
+}
+
+/**
  * Soft cap large enough to cover any realistic app's action count
  * (Stacks framework defaults today register ~120 actions); higher
  * gives us comfortable headroom for plugin authors without enabling
@@ -699,7 +724,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
                 if (reqId) error.headers.set('X-Request-ID', reqId)
               }
               catch { /* immutable headers — leave the response alone */ }
-              return error
+              return await applyCorsIfConfigured(enhancedReq, error)
             }
             const err = error instanceof Error ? error : new Error(String(error))
             // Accept both `statusCode` (Express convention) and `status`
@@ -730,7 +755,7 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
               if (reqId) errorResponse.headers.set('X-Request-ID', reqId)
             }
             catch { /* immutable headers — leave the response alone */ }
-            return errorResponse
+            return await applyCorsIfConfigured(enhancedReq, errorResponse)
           }
       }
 
@@ -770,23 +795,11 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // so a JSON-error rewrite carries the freshly-set CORS headers
       // forward, and BEFORE compression so the resulting `Vary` value
       // can include both `Origin` and `Accept-Encoding`. The `_corsConfig`
-      // marker is set by the `cors` middleware's `handle()`.
-      if (enhancedReq._corsConfig && response) {
-        try {
-          const { applyCorsHeaders } = await import(p.storagePath('framework/defaults/app/Middleware/Cors.ts'))
-          response = (applyCorsHeaders as (req: Request, res: Response, cfg?: unknown) => Response)(
-            enhancedReq as unknown as Request,
-            response,
-            enhancedReq._corsConfig,
-          )
-        }
-        catch (err) {
-          // CORS header injection failure must not drop the response.
-          // The browser will surface a CORS error, which is recoverable
-          // for the developer; a 500 here would not be.
-          log.warn('[router] CORS header injection failed', { error: err })
-        }
-      }
+      // marker is set by the `cors` middleware's `handle()`. Uses the
+      // same `applyCorsIfConfigured` helper as the error paths above
+      // so policy enforcement is consistent across all responses
+      // (stacksjs/stacks#1859 H-3).
+      if (response) response = await applyCorsIfConfigured(enhancedReq, response)
 
       // Echo X-Request-ID + Server-Timing on every response, AND stitch
       // the request_id into JSON error bodies so SPA error toasts can show
