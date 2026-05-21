@@ -70,6 +70,47 @@ export async function getUserPasskey(userId: number, passkeyId: string): Promise
   return row as unknown as PasskeyAttribute | undefined
 }
 
+/**
+ * Persist the post-verification authenticator counter and refresh the
+ * passkey's last-used timestamp. WebAuthn's anti-cloning guarantee
+ * depends on the relying party rejecting any authentication whose
+ * `newCounter` is **not strictly greater** than the stored value —
+ * authenticators monotonically increment their counter on every use,
+ * so a counter that doesn't advance (or goes backwards) signals a
+ * cloned or replayed credential.
+ *
+ * Returns `true` when the counter was updated successfully; `false`
+ * when the new counter is not greater than the stored one (the
+ * authentication MUST be rejected by the caller in that case).
+ * stacksjs/stacks#1861 A-4.
+ */
+export async function updatePasskeyCounter(
+  userId: number,
+  passkeyId: string,
+  newCounter: number,
+): Promise<boolean> {
+  // Authenticators that don't implement a counter (some platform
+  // authenticators) always send 0 — accept those at face value as
+  // long as the stored value is also 0. The strictly-greater check
+  // applies only when the device claims a non-zero counter.
+  const passkey = await getUserPasskey(userId, passkeyId)
+  if (!passkey) return false
+
+  const stored = Number(passkey.counter ?? 0)
+  if (newCounter !== 0 && newCounter <= stored) {
+    return false
+  }
+
+  await db
+    .updateTable('passkeys')
+    .set({ counter: newCounter, last_used_at: formatDateTime() } as never)
+    .where('id', '=', passkeyId)
+    .where('user_id', '=', userId)
+    .execute()
+
+  return true
+}
+
 export async function setCurrentRegistrationOptions(
   user: UserModel,
   verified: VerifiedRegistrationResponse,

@@ -1,6 +1,6 @@
 import type { AuthenticationCredential } from '@stacksjs/auth'
 import { Action } from '@stacksjs/actions'
-import { getUserPasskey, verifyAuthenticationResponse } from '@stacksjs/auth'
+import { getUserPasskey, updatePasskeyCounter, verifyAuthenticationResponse } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import { User } from '@stacksjs/orm'
@@ -44,6 +44,15 @@ export default new Action({
     const expectedOrigin = appUrl.startsWith('http') ? appUrl : `https://${appUrl}`
     const expectedRPID = new URL(expectedOrigin).hostname
 
+    // SECURITY GAP — stacksjs/stacks#1861 A-4 (challenge replay):
+    // the challenge is currently accepted from the request body, so a
+    // captured authentication response can be replayed by an attacker
+    // who also captures the challenge. A proper fix requires a
+    // server-side challenge store (per-session row with expiry, set
+    // when AuthenticationOptions are generated and consumed on verify).
+    // Tracked separately because it needs a new schema + cookie-bound
+    // session integration. The counter check below at least catches
+    // cloned authenticators that try to reuse old responses.
     try {
       const verification = await verifyAuthenticationResponse(
         credential,
@@ -53,6 +62,23 @@ export default new Action({
         publicKey,
         userPasskey.counter,
       )
+
+      if (!verification.verified)
+        return response.unauthorized('Authentication failed')
+
+      // Anti-cloning: persist the new counter and reject if it didn't
+      // advance. WebAuthn authenticators monotonically increment on
+      // every use; a counter that's not strictly greater than the
+      // stored value indicates a cloned/replayed credential. See
+      // updatePasskeyCounter() and stacksjs/stacks#1861 A-4.
+      const newCounter = verification.authenticationInfo?.newCounter
+      if (typeof newCounter === 'number') {
+        const advanced = await updatePasskeyCounter(user.id as number, credential.id, newCounter)
+        if (!advanced) {
+          console.warn(`[VerifyAuthenticationAction] Refusing passkey login for user ${user.id} (${credential.id}): counter did not advance (stored=${userPasskey.counter}, received=${newCounter}) — possible cloned authenticator`)
+          return response.unauthorized('Authentication failed')
+        }
+      }
 
       return response.json(verification)
     }
