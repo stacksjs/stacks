@@ -679,11 +679,14 @@ describe('Database Class - Real Initialization', () => {
     expect(db.connection.database).toBe('stacks_testing')
   })
 
-  test('Database.close resets initialized state', () => {
+  test('Database.close resets initialized state', async () => {
     const db = createSqliteDatabase(':memory:')
     db.initialize()
     expect(db.isInitialized).toBe(true)
-    db.close()
+    // close() returns a Promise that resolves once the underlying
+    // connections drain (stacksjs/stacks#1862 L-36); awaiting it
+    // ensures the assertion below races against the resolved state.
+    await db.close()
     expect(db.isInitialized).toBe(false)
   })
 })

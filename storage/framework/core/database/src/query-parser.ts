@@ -45,56 +45,77 @@ export function parseQuery(sql: string): { normalized: string, type: string, tab
 }
 
 /**
- * Extract table names from a SQL query
+ * Build a regex that matches `<keyword> <identifier>` where the
+ * identifier can be: bare (unquoted word/digits/underscores/dots), or
+ * quoted by `"..."` (Postgres), `\`...\`` (MySQL), or `[...]`
+ * (SQLite/SQL Server). Captures the identifier into the appropriate
+ * group; the helper below picks whichever matched.
+ *
+ * Previously the parser only handled the bare form, so logging
+ * mis-attributed any query whose tables used spaces or special chars
+ * (e.g. `SELECT * FROM "user data"`) and dropped them silently from
+ * the request's table list. stacksjs/stacks#1862 L-37.
+ */
+function buildIdentifierRegex(keyword: string, flags = 'i'): RegExp {
+  return new RegExp(`${keyword}\\s+(?:"([^"]+)"|\`([^\`]+)\`|\\[([^\\]]+)\\]|([\\w.]+))`, flags)
+}
+
+function pickMatchedIdentifier(match: RegExpMatchArray | null): string | null {
+  if (!match) return null
+  // Groups 1-4 correspond to: "...", `...`, [...], bare
+  const ident = match[1] ?? match[2] ?? match[3] ?? match[4]
+  if (!ident) return null
+  // Strip schema/db prefix (`schema.table` → `table`).
+  return ident.split('.').pop() ?? null
+}
+
+/**
+ * Extract table names from a SQL query.
  */
 function extractTables(sql: string, type: string): string[] {
   const tables: string[] = []
-  const lowerSql = sql.toLowerCase()
 
   try {
-    let fromMatch: RegExpMatchArray | null = null
-    let joinMatch: RegExpMatchArray | null = null
-    let intoMatch: RegExpMatchArray | null = null
-    let updateMatch: RegExpMatchArray | null = null
-    let deleteFromMatch: RegExpMatchArray | null = null
-    const joinRegex = /join\s+([\w.]+)/gi
-
+    // Lowercasing the SQL would break the case-sensitive contents of a
+    // quoted identifier (`"User Data"` becomes `"user data"`). Match
+    // against the original SQL with the `i` regex flag instead, so the
+    // keyword match is case-insensitive but the captured identifier
+    // preserves its original casing.
     switch (type) {
-      case 'SELECT':
-        // Look for FROM and JOIN clauses
-        fromMatch = lowerSql.match(/from\s+([\w.]+)/i)
-        if (fromMatch && fromMatch[1])
-          tables.push(fromMatch[1].replace(/`/g, '').split('.').pop()!)
+      case 'SELECT': {
+        // FROM clause + every JOIN clause.
+        const fromMatch = sql.match(buildIdentifierRegex('from'))
+        const fromTable = pickMatchedIdentifier(fromMatch)
+        if (fromTable) tables.push(fromTable)
 
-        // Find all JOIN statements
-        joinMatch = joinRegex.exec(lowerSql)
-        while (joinMatch !== null) {
-          if (joinMatch[1])
-            tables.push(joinMatch[1].replace(/`/g, '').split('.').pop()!)
-          joinMatch = joinRegex.exec(lowerSql)
+        const joinRegex = buildIdentifierRegex('join', 'gi')
+        for (const m of sql.matchAll(joinRegex)) {
+          const joinTable = pickMatchedIdentifier(m as unknown as RegExpMatchArray)
+          if (joinTable) tables.push(joinTable)
         }
         break
+      }
 
-      case 'INSERT':
-        // Look for INTO clause
-        intoMatch = lowerSql.match(/into\s+([\w.]+)/i)
-        if (intoMatch && intoMatch[1])
-          tables.push(intoMatch[1].replace(/`/g, '').split('.').pop()!)
+      case 'INSERT': {
+        const intoMatch = sql.match(buildIdentifierRegex('into'))
+        const intoTable = pickMatchedIdentifier(intoMatch)
+        if (intoTable) tables.push(intoTable)
         break
+      }
 
-      case 'UPDATE':
-        // Usually the table name follows UPDATE
-        updateMatch = lowerSql.match(/update\s+([\w.]+)/i)
-        if (updateMatch && updateMatch[1])
-          tables.push(updateMatch[1].replace(/`/g, '').split('.').pop()!)
+      case 'UPDATE': {
+        const updateMatch = sql.match(buildIdentifierRegex('update'))
+        const updateTable = pickMatchedIdentifier(updateMatch)
+        if (updateTable) tables.push(updateTable)
         break
+      }
 
-      case 'DELETE':
-        // Look for FROM clause after DELETE
-        deleteFromMatch = lowerSql.match(/from\s+([\w.]+)/i)
-        if (deleteFromMatch && deleteFromMatch[1])
-          tables.push(deleteFromMatch[1].replace(/`/g, '').split('.').pop()!)
+      case 'DELETE': {
+        const deleteFromMatch = sql.match(buildIdentifierRegex('from'))
+        const deleteTable = pickMatchedIdentifier(deleteFromMatch)
+        if (deleteTable) tables.push(deleteTable)
         break
+      }
     }
   }
   catch {
