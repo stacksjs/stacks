@@ -84,6 +84,49 @@ export class Auth {
     return client.secret
   }
 
+  /**
+   * Encrypt the bearer token's embedded numeric DB id.
+   *
+   * Uses the framework-wide `config.app.key` as the passphrase rather
+   * than the OAuth client's secret (the old behaviour). Two reasons:
+   *
+   *   1. Decouples token encryption from the secret, so the secret
+   *      can be hashed at rest (stacksjs/stacks#1861 M-1).
+   *   2. Removes the static `Auth.clientSecret` cache from the hot
+   *      path of every token mint/verify.
+   *
+   * Tokens minted before the change decrypt via {@link decryptTokenId}'s
+   * fallback path.
+   */
+  private static async encryptTokenId(id: string | number): Promise<string> {
+    return await encrypt(String(id))
+  }
+
+  /**
+   * Decrypt a bearer-token-embedded id with backward-compat for tokens
+   * minted before the key swap. Returns the plaintext id string on
+   * success or `null` on failure; never throws.
+   */
+  private static async decryptTokenId(encryptedId: string): Promise<string | null> {
+    try {
+      return await decrypt(encryptedId)
+    }
+    catch {
+      // Backward-compat: tokens minted before stacksjs/stacks#1861 M-1
+      // were encrypted with the OAuth client's plaintext secret as the
+      // passphrase. Try that once so existing sessions survive the
+      // upgrade. After every active session naturally rotates onto
+      // the new key, this branch can be deleted.
+      try {
+        const clientSecret = await this.getClientSecret()
+        return await decrypt(encryptedId, clientSecret)
+      }
+      catch {
+        return null
+      }
+    }
+  }
+
   private static async getPersonalAccessClient(): Promise<OAuthClientRow> {
     try {
       const client = await db.selectFrom('oauth_clients')
@@ -275,8 +318,7 @@ export class Auth {
     if (bearerToken) {
       const parsed = this.parseToken(bearerToken)
       if (parsed) {
-        const clientSecret = await this.getClientSecret()
-        const decryptedId = await decrypt(parsed.encryptedId, clientSecret).catch(() => null)
+        const decryptedId = await this.decryptTokenId(parsed.encryptedId)
         if (decryptedId) {
           // Revoke any refresh tokens linked to this access token before
           // we revoke the access row itself.
@@ -371,7 +413,6 @@ export class Auth {
     options?: TokenCreateOptions,
   ): Promise<NewAccessToken> {
     const client = await this.getPersonalAccessClient()
-    const clientSecret = await this.getClientSecret()
 
     const name = options?.name ?? config.auth.defaultTokenName ?? 'auth-token'
     const abilities = options?.abilities ?? options?.scopes ?? config.auth.defaultAbilities ?? ['*']
@@ -417,8 +458,10 @@ export class Auth {
     if (!insertId)
       throw new HttpError(500, 'Failed to create token')
 
-    // Encrypt the token ID using client secret
-    const encryptedId = await encrypt(insertId.toString(), clientSecret)
+    // Encrypt the token ID with the framework-wide app key — see
+    // encryptTokenId() docstring for why this no longer uses the
+    // OAuth client secret.
+    const encryptedId = await this.encryptTokenId(insertId)
 
     // Combine into final token format: token:encryptedId
     const plainTextToken = `${token}:${encryptedId}` as AuthToken
@@ -507,8 +550,7 @@ export class Auth {
       return false
 
     const { plainToken, encryptedId } = parsed
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = await decrypt(encryptedId, clientSecret)
+    const decryptedId = await this.decryptTokenId(encryptedId)
     if (!decryptedId)
       return false
 
@@ -575,8 +617,7 @@ export class Auth {
       return undefined
 
     const { plainToken, encryptedId } = parsed
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = await decrypt(encryptedId, clientSecret)
+    const decryptedId = await this.decryptTokenId(encryptedId)
     if (!decryptedId)
       return undefined
 
@@ -628,8 +669,7 @@ export class Auth {
     if (!parsed)
       return undefined
 
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = await decrypt(parsed.encryptedId, clientSecret)
+    const decryptedId = await this.decryptTokenId(parsed.encryptedId)
     if (!decryptedId)
       return undefined
 
@@ -739,8 +779,7 @@ export class Auth {
     if (!parsed)
       return
 
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = await decrypt(parsed.encryptedId, clientSecret)
+    const decryptedId = await this.decryptTokenId(parsed.encryptedId)
     if (!decryptedId)
       return
 
@@ -825,8 +864,7 @@ export class Auth {
       return null
 
     const { plainToken, encryptedId } = parsed
-    const clientSecret = await this.getClientSecret()
-    const decryptedId = await decrypt(encryptedId, clientSecret)
+    const decryptedId = await this.decryptTokenId(encryptedId)
     if (!decryptedId)
       return null
 
@@ -870,8 +908,9 @@ export class Auth {
       .where('id', '=', accessToken.id)
       .execute()
 
-    // Return new token with encrypted ID
-    const newEncryptedId = await encrypt(accessToken.id.toString(), clientSecret)
+    // Return new token with encrypted ID — uses the framework app key
+    // (see encryptTokenId() docstring) rather than the client secret.
+    const newEncryptedId = await this.encryptTokenId(accessToken.id)
     return `${newToken}:${newEncryptedId}` as AuthToken
   }
 
