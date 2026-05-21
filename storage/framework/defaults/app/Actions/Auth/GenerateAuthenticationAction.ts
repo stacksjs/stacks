@@ -3,6 +3,7 @@ import { Action } from '@stacksjs/actions'
 import {
   generateAuthenticationOptions,
   getUserPasskeys,
+  storeWebAuthnChallenge,
 } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { User } from '@stacksjs/orm'
@@ -37,6 +38,13 @@ export default new Action({
         transports: ['internal'],
       })),
     })
+
+    // Persist the challenge server-side so `VerifyAuthenticationAction`
+    // can consume it from the DB instead of trusting `body.challenge`.
+    // The previous round-trip-through-the-client pattern let an
+    // attacker who captured an assertion replay it as long as they
+    // also captured the challenge. See stacksjs/stacks#1866.
+    await storeWebAuthnChallenge(user.id as number, options.challenge, 'authentication')
 
     return options
   },

@@ -1,6 +1,11 @@
 import type { AuthenticationCredential } from '@stacksjs/auth'
 import { Action } from '@stacksjs/actions'
-import { getUserPasskey, updatePasskeyCounter, verifyAuthenticationResponse } from '@stacksjs/auth'
+import {
+  consumeWebAuthnChallenge,
+  getUserPasskey,
+  updatePasskeyCounter,
+  verifyAuthenticationResponse,
+} from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { response } from '@stacksjs/router'
 import { User } from '@stacksjs/orm'
@@ -12,7 +17,6 @@ export default new Action({
   async handle(request: RequestInstance) {
     const body = request.all()
     const credential = body.res as AuthenticationCredential
-    const challenge = body.challenge as string
 
     const email = request.get('email') ?? ''
 
@@ -26,6 +30,14 @@ export default new Action({
     if (!userPasskey)
       return response.notFound('Passkey not found')
 
+    // Read + delete the server-stored challenge for this user. The
+    // previous flow trusted `body.challenge` from the client, which
+    // let an attacker replay a captured assertion as long as they
+    // had the original challenge. Closing this gap was stacksjs/stacks#1866.
+    const expectedChallenge = await consumeWebAuthnChallenge(user.id as number, 'authentication')
+    if (!expectedChallenge)
+      return response.unauthorized('Authentication challenge missing or expired — please retry from the start.')
+
     const pubkeyString = userPasskey.cred_public_key
     let jsonParse: Record<string, number>
     try {
@@ -36,23 +48,15 @@ export default new Action({
     }
     const publicKey = new Uint8Array(Object.values(jsonParse)).buffer
 
-    // Convert challenge string to Uint8Array
-    const challengeBytes = Uint8Array.from(atob(challenge), c => c.charCodeAt(0))
+    // Convert challenge string to Uint8Array. The challenge is stored
+    // as base64url (the same form generateAuthenticationOptions emits).
+    const challengeBytes = Uint8Array.from(atob(expectedChallenge), c => c.charCodeAt(0))
 
     // Derive origin and rpID from app config instead of hardcoding localhost
     const appUrl = config.app?.url || 'http://localhost:3333'
     const expectedOrigin = appUrl.startsWith('http') ? appUrl : `https://${appUrl}`
     const expectedRPID = new URL(expectedOrigin).hostname
 
-    // SECURITY GAP — stacksjs/stacks#1861 A-4 (challenge replay):
-    // the challenge is currently accepted from the request body, so a
-    // captured authentication response can be replayed by an attacker
-    // who also captures the challenge. A proper fix requires a
-    // server-side challenge store (per-session row with expiry, set
-    // when AuthenticationOptions are generated and consumed on verify).
-    // Tracked separately because it needs a new schema + cookie-bound
-    // session integration. The counter check below at least catches
-    // cloned authenticators that try to reuse old responses.
     try {
       const verification = await verifyAuthenticationResponse(
         credential,

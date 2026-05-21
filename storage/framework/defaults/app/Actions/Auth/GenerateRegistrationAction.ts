@@ -1,5 +1,5 @@
 import { Action } from '@stacksjs/actions'
-import { generateRegistrationOptions, getUserPasskeys } from '@stacksjs/auth'
+import { generateRegistrationOptions, getUserPasskeys, storeWebAuthnChallenge } from '@stacksjs/auth'
 import { config } from '@stacksjs/config'
 import { User } from '@stacksjs/orm'
 
@@ -38,6 +38,11 @@ export default new Action({
         authenticatorAttachment: 'platform',
       },
     })
+
+    // Persist the challenge server-side so VerifyRegistrationAction
+    // can consume it instead of trusting `body.challenge`. See
+    // stacksjs/stacks#1866.
+    await storeWebAuthnChallenge(user.id as number, options.challenge, 'registration')
 
     return options
   },

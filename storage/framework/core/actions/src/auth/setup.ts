@@ -292,6 +292,70 @@ catch (error) {
   process.exit(1)
 }
 
+// Step 1d: Create webauthn_challenges table.
+//
+// Stores server-issued WebAuthn challenges between
+// `Generate{Authentication,Registration}Action` and
+// `Verify{Authentication,Registration}Action`. Without this table the
+// challenge was round-tripped through the client (`body.challenge`),
+// so an attacker who captured an authentication response could replay
+// it as long as they also had the challenge. The unique constraint
+// on (user_id, purpose) enforces single-outstanding-challenge per
+// user per purpose — issuing a new challenge invalidates any prior
+// one. See stacksjs/stacks#1866 (formerly #1861 A-4 challenge half).
+log.info('Ensuring webauthn_challenges table exists...')
+
+try {
+  if (isPostgres) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS webauthn_challenges (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        challenge TEXT NOT NULL,
+        purpose VARCHAR(32) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  } else if (isMysql) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS webauthn_challenges (
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        challenge TEXT NOT NULL,
+        purpose VARCHAR(32) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  } else {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS webauthn_challenges (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        challenge TEXT NOT NULL,
+        purpose VARCHAR(32) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  }
+
+  // Unique index on (user_id, purpose) — application layer deletes
+  // any prior row for the same user+purpose before inserting a fresh
+  // challenge, so this constraint is belt-and-braces against
+  // concurrent generate calls double-inserting.
+  await db.unsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_webauthn_challenges_user_purpose ON webauthn_challenges(user_id, purpose)
+  `)
+
+  log.success('WebAuthn challenges table ready')
+}
+catch (error) {
+  log.error('Failed to create webauthn_challenges table', error)
+  process.exit(1)
+}
+
 // Step 2: Create personal access client
 log.info('Creating personal access client...')
 
