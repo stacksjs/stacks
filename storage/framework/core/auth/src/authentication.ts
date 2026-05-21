@@ -664,21 +664,20 @@ export class Auth {
     if (accessToken.revoked)
       return false
 
-    // Rotate token if it's been used for more than configured hours
-    const rotationHours = config.auth.tokenRotation ?? 24
-    const lastUsed = accessToken.updated_at ? new Date(String(accessToken.updated_at)) : new Date()
-    const now = new Date()
-    const hoursSinceLastUse = (now.getTime() - lastUsed.getTime()) / (1000 * 60 * 60)
-
-    if (hoursSinceLastUse >= rotationHours) {
-      await this.rotateToken(token)
-    }
-    else {
-      await db.updateTable('oauth_access_tokens')
-        .set({ updated_at: formatDate(now) })
-        .where('id', '=', accessToken.id)
-        .execute()
-    }
+    // Mark the token as freshly-used. Used to be a rotation path here
+    // (`if (hoursSinceLastUse >= 24h) await this.rotateToken(token)`)
+    // but the rotated bearer was **discarded** by the caller —
+    // `validateToken` only returns a boolean — so the DB hash got
+    // replaced with the new token's hash while the user's bearer was
+    // still the old one. Every subsequent request then failed auth.
+    // Rotation is now an explicit `Auth.rotateToken(oldToken)` call
+    // available to userland: callers (e.g., an `/auth/refresh`
+    // endpoint) take the new bearer and return it to the client in
+    // the response. See stacksjs/stacks#1860 A-3.
+    await db.updateTable('oauth_access_tokens')
+      .set({ updated_at: formatDate(new Date()) })
+      .where('id', '=', accessToken.id)
+      .execute()
 
     return true
   }
