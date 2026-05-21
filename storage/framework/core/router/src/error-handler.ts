@@ -43,6 +43,26 @@ function buildErrorJson(opts: {
   return JSON.stringify(body)
 }
 
+/**
+ * Single source of truth for "is this deployment allowed to surface
+ * debug info (stack traces, recent queries, error names) to API
+ * clients?" Default-deny: only an explicit `APP_ENV='development'`
+ * (or `NODE_ENV='development'` when APP_ENV is unset) opts in.
+ *
+ * The previous predicates were asymmetric: `isDevelopment` checked
+ * `APP_ENV !== 'production' && NODE_ENV !== 'production'`, which
+ * treated `APP_ENV='staging'` as "development" and leaked stack
+ * traces + recent-query shapes to staging API clients. Staging
+ * deployments often touch real data and real third-party tokens, so
+ * those leaks are exploitable. See stacksjs/stacks#1859 H-10.
+ */
+function isDebugAllowed(): boolean {
+  const appEnv = (process.env.APP_ENV ?? '').toLowerCase()
+  if (appEnv === 'development') return true
+  if (!appEnv && process.env.NODE_ENV === 'development') return true
+  return false
+}
+
 function getJsonHeaders(): Record<string, string> {
   // CORS headers used to be emitted here directly using `APP_URL` env,
   // independent of the configured CORS policy. That meant error
@@ -145,7 +165,7 @@ export function trackQuery(query: string, time?: number, connection?: string): v
   // N+1 heuristic — only active in dev. The check is deliberately cheap
   // (one normalize + map increment per query) so we can leave it on by
   // default without measurably increasing query latency.
-  if (process.env.APP_ENV === 'production' || process.env.NODE_ENV === 'production') return
+  if (!isDebugAllowed()) return
   const shape = normalizeQueryShape(query)
   // Skip framework's own bookkeeping queries (query_logs INSERT, EXPLAIN).
   if (shape.startsWith('INSERT INTO QUERY_LOGS') || shape.startsWith('EXPLAIN')) return
@@ -351,10 +371,11 @@ export async function createErrorResponse(
 ): Promise<Response> {
   const status = options?.status || 500
   log.debug(`[error] ${status} ${error.message}`)
-  const isDevelopment = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
+  const debugAllowed = isDebugAllowed()
 
-  if (!isDevelopment) {
-    // Production: JSON-first. Only render the HTML production error page
+  if (!debugAllowed) {
+    // Production OR staging: JSON-first. Only render the HTML production
+    // error page
     // when the client explicitly opted into HTML (top-level browser nav).
     // The old check required `Accept: application/json` literally, which
     // missed `Accept: */*` (curl + fetch default) and silently leaked an
@@ -425,15 +446,15 @@ export async function createErrorResponse(
     // The Ignition-style HTML page only renders for explicit top-level
     // browser navigations; everything else — fetch, curl, API clients —
     // gets JSON.
-    const isProduction = process.env.NODE_ENV === 'production' || process.env.APP_ENV === 'production'
     if (isApiRequest(request)) {
-      // Return JSON error for API requests. In production, strip the
-      // stack trace and recent-queries log — those leak file paths,
+      // Return JSON error for API requests. Outside development, strip
+      // the stack trace and recent-queries log — those leak file paths,
       // function names, query shapes, and (potentially) parameter
       // values that an attacker can use to fingerprint the deployment.
-      // The dev/staging response keeps them for fast debugging.
+      // Staging used to receive the dev payload here, which leaked
+      // details on shared infra (stacksjs/stacks#1859 H-10).
       const details: Record<string, unknown> = { handler: options?.handlerPath }
-      if (!isProduction) {
+      if (isDebugAllowed()) {
         details.stack = error.stack?.split('\n').slice(0, 10)
         details.queries = getRecentQueries().slice(-10)
       }
@@ -454,7 +475,7 @@ export async function createErrorResponse(
     // see consistent behavior with successful responses.
     const corsOrigin = process.env.APP_URL
       ? (process.env.APP_URL.startsWith('http') ? process.env.APP_URL : `https://${process.env.APP_URL}`)
-      : (isProduction ? request.headers.get('origin') ?? 'null' : '*')
+      : (isDebugAllowed() ? '*' : request.headers.get('origin') ?? 'null')
     const html = handler.render(error, status)
     return new Response(html, {
       status,
@@ -500,7 +521,7 @@ export async function createMiddlewareErrorResponse(
   request: Request | EnhancedRequest,
 ): Promise<Response> {
   const status = error.statusCode ?? error.status ?? 500
-  const isDevelopment = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
+  const isDevelopment = isDebugAllowed()
 
   // For 4xx errors, return JSON in both dev and prod
   if (status >= 400 && status < 500) {
@@ -555,7 +576,7 @@ export async function createNotFoundResponse(
   path: string,
   request: Request | EnhancedRequest,
 ): Promise<Response> {
-  const isDevelopment = process.env.APP_ENV !== 'production' && process.env.NODE_ENV !== 'production'
+  const isDevelopment = isDebugAllowed()
 
   if (isDevelopment) {
     const error = new Error(`Route not found: ${path}`)
