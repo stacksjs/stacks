@@ -8,6 +8,7 @@ import { resolve } from '@stacksjs/path'
 import { isFolder } from '@stacksjs/storage'
 import { ExitCode } from '@stacksjs/types'
 import { useOnline } from '@stacksjs/utils'
+import { uninstallAllFeatures } from './features'
 import { ensurePantryDependencies, ensurePantryInstalled } from './setup'
 
 export function create(buddy: CLI): void {
@@ -26,6 +27,7 @@ export function create(buddy: CLI): void {
     cache: 'Do you need caching?',
     email: 'Do you need email?',
     project: 'Target a specific project',
+    minimal: 'Skip optional feature bundles (cms, commerce, dashboard, marketing, monitoring, realtime, queue) — bare-bones API/SPA starter that can re-add them later via `./buddy <feature>:install`.',
     verbose: 'Enable verbose output',
   }
 
@@ -44,6 +46,7 @@ export function create(buddy: CLI): void {
     .option('-ca, --cache', descriptions.cache, { default: false })
     .option('-e, --email', descriptions.email, { default: false })
     .option('-p, --project [project]', descriptions.project, { default: false })
+    .option('-m, --minimal', descriptions.minimal, { default: false })
     .option('--verbose', descriptions.verbose, { default: false })
     // .option('--auth', 'Scaffold an authentication?', { default: true })
     .action(async (name, options: CreateOptions) => {
@@ -67,6 +70,9 @@ export function create(buddy: CLI): void {
   await ensureEnv(path, options)
   ensureExecutableScripts(path)
   await install(path, options)
+
+  if (options.minimal)
+    await stripFeatures(path)
 
       if (startTime) {
         const time = performance.now() - startTime
@@ -164,4 +170,31 @@ async function install(path: string, options: CreateOptions) {
   }
 
   log.success('Installed & set-up 🚀')
+}
+
+/**
+ * Implements `./buddy new --minimal` (stacksjs/stacks#1854): the
+ * `@stacksjs/gitit` template clones the kitchen-sink layout (every
+ * feature's actions, models, views, config), so the minimal pass
+ * disables each feature flag and removes its stamped scaffolding right
+ * after install. Users can re-add features later via
+ * `./buddy <feature>:install`.
+ */
+async function stripFeatures(path: string) {
+  log.info('Stripping optional feature bundles (--minimal)...')
+  const results = await uninstallAllFeatures({ root: path })
+
+  let strippedAny = false
+  for (const { feature, configOutcome, filesRemoved } of results) {
+    if (configOutcome === 'flipped' || filesRemoved.length > 0) {
+      strippedAny = true
+      const fileSummary = filesRemoved.length > 0 ? ` (${filesRemoved.length} path${filesRemoved.length === 1 ? '' : 's'})` : ''
+      log.info(`  - ${feature}${fileSummary}`)
+    }
+  }
+
+  if (!strippedAny)
+    log.info('  → no feature scaffolding present; nothing to strip.')
+  else
+    log.success('Minimal skeleton ready — run `./buddy <feature>:install` to add features back.')
 }

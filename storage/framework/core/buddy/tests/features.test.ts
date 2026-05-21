@@ -12,6 +12,7 @@ import {
   featurePathsPresent,
   migrationFeature,
   migrationTable,
+  uninstallAllFeatures,
 } from '../src/commands/features'
 
 let root: string
@@ -292,6 +293,117 @@ describe('migrationTable() — filename → table parser', () => {
     expect(migrationTable('0000000098-revoke-legacy-long-lived-tokens.sql')).toBeNull()
     expect(migrationTable('random.sql')).toBeNull()
     expect(migrationTable('not-a-migration.txt')).toBeNull()
+  })
+})
+
+describe('uninstallAllFeatures() — `./buddy new --minimal` (stacksjs/stacks#1854)', () => {
+  async function stampConfig(feature: string, enabled: boolean): Promise<void> {
+    const path = join(root, `config/${feature}.ts`)
+    await mkdir(join(path, '..'), { recursive: true })
+    await writeFile(
+      path,
+      `export default {\n  enabled: ${enabled},\n}\n`,
+    )
+  }
+
+  it('flips every feature\'s enabled flag to false and removes stamped paths', async () => {
+    // Stand in for the gitit clone: every feature config exists with enabled:true.
+    for (const name of FEATURE_NAMES) await stampConfig(name, true)
+    // Stamp at least one manifest entry per feature so we can observe removal.
+    await touch('app/Models/Tag.ts') // cms
+    await touch('app/Models/Comment.ts') // cms
+    await mkdirp('app/Actions/Commerce') // commerce
+    await mkdirp('app/Actions/Dashboard') // dashboard
+    await touch('app/Models/Campaign.ts') // marketing
+    await touch('app/Models/Error.ts') // monitoring
+    await mkdirp('app/Broadcasts') // realtime
+    await touch('app/Models/Job.ts') // queue
+
+    const results = await uninstallAllFeatures({ root })
+
+    // Every feature must be represented in the result, in declaration order.
+    expect(results.map(r => r.feature)).toEqual([...FEATURE_NAMES])
+
+    for (const { feature, configOutcome } of results)
+      expect(configOutcome).toBe('flipped')
+
+    // Config files are now disabled.
+    for (const name of FEATURE_NAMES) {
+      const body = readFileSync(join(root, `config/${name}.ts`), 'utf8')
+      expect(body).toContain('enabled: false')
+    }
+
+    // The stamped paths got removed.
+    expect(existsSync(join(root, 'app/Models/Tag.ts'))).toBe(false)
+    expect(existsSync(join(root, 'app/Models/Comment.ts'))).toBe(false)
+    expect(existsSync(join(root, 'app/Actions/Commerce'))).toBe(false)
+    expect(existsSync(join(root, 'app/Actions/Dashboard'))).toBe(false)
+    expect(existsSync(join(root, 'app/Models/Campaign.ts'))).toBe(false)
+    expect(existsSync(join(root, 'app/Models/Error.ts'))).toBe(false)
+    expect(existsSync(join(root, 'app/Broadcasts'))).toBe(false)
+    expect(existsSync(join(root, 'app/Models/Job.ts'))).toBe(false)
+  })
+
+  it('reports `missing` for features whose config file is absent', async () => {
+    // No config files at all — every outcome should be 'missing'.
+    const results = await uninstallAllFeatures({ root })
+    for (const { configOutcome } of results)
+      expect(configOutcome).toBe('missing')
+  })
+
+  it('still removes stamped files when the config flag is absent', async () => {
+    // Mixed: no config files anywhere, but some stamped scaffolding exists.
+    await touch('app/Models/Tag.ts')
+    await mkdirp('app/Actions/Cms')
+
+    const results = await uninstallAllFeatures({ root })
+
+    const cms = results.find(r => r.feature === 'cms')!
+    expect(cms.configOutcome).toBe('missing')
+    expect(cms.filesRemoved).toContain('app/Models/Tag.ts')
+    expect(cms.filesRemoved).toContain('app/Actions/Cms/')
+    expect(existsSync(join(root, 'app/Models/Tag.ts'))).toBe(false)
+    expect(existsSync(join(root, 'app/Actions/Cms'))).toBe(false)
+  })
+
+  it('reports `unchanged` for features whose flag was already false', async () => {
+    await stampConfig('queue', false)
+
+    const results = await uninstallAllFeatures({ root })
+
+    const queue = results.find(r => r.feature === 'queue')!
+    expect(queue.configOutcome).toBe('unchanged')
+    // File is still on disk with the same content (no rewrite needed).
+    const body = readFileSync(join(root, 'config/queue.ts'), 'utf8')
+    expect(body).toContain('enabled: false')
+  })
+
+  it('is idempotent — re-running on a stripped project is a no-op', async () => {
+    for (const name of FEATURE_NAMES) await stampConfig(name, true)
+    await touch('app/Models/Tag.ts')
+
+    const first = await uninstallAllFeatures({ root })
+    const second = await uninstallAllFeatures({ root })
+
+    // First pass actually flipped things.
+    expect(first.find(r => r.feature === 'cms')!.filesRemoved).toContain('app/Models/Tag.ts')
+    // Second pass found nothing to do.
+    for (const { configOutcome, filesRemoved } of second) {
+      expect(configOutcome === 'unchanged' || configOutcome === 'missing').toBe(true)
+      expect(filesRemoved).toEqual([])
+    }
+  })
+
+  it('does not touch unrelated user files in the project', async () => {
+    for (const name of FEATURE_NAMES) await stampConfig(name, true)
+    await touch('app/Actions/MyCustomAction.ts') // user file — must survive
+    await touch('config/app.ts') // user config — must survive
+    await writeFile(join(root, 'config/app.ts'), 'export default { name: "MyApp" }')
+
+    await uninstallAllFeatures({ root })
+
+    expect(existsSync(join(root, 'app/Actions/MyCustomAction.ts'))).toBe(true)
+    expect(readFileSync(join(root, 'config/app.ts'), 'utf8')).toContain('MyApp')
   })
 })
 

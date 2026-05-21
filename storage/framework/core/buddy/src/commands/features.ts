@@ -448,7 +448,7 @@ export default {
 `,
 }
 
-type Outcome = 'created' | 'flipped' | 'unchanged' | 'missing'
+export type SetFeatureEnabledOutcome = 'created' | 'flipped' | 'unchanged' | 'missing'
 
 /**
  * Flip the top-level `enabled` field in `config/<feature>.ts` to the
@@ -459,13 +459,20 @@ type Outcome = 'created' | 'flipped' | 'unchanged' | 'missing'
  *   - 'unchanged' — file existed; `enabled` already matched
  *   - 'missing'   — file did not exist and `createIfMissing` was false
  *                   (uninstall path: nothing to do, feature is already off)
+ *
+ * Pass `options.root` to target a project directory other than the
+ * caller's working tree — `./buddy new --minimal` uses this to disable
+ * features in the freshly-cloned project path before the user has cd'd
+ * into it.
  */
-async function setFeatureEnabled(
+export async function setFeatureEnabled(
   feature: FeatureName,
   enabled: boolean,
-  options: { createIfMissing: boolean },
-): Promise<Outcome> {
-  const path = projectPath(`config/${feature}.ts`)
+  options: { createIfMissing: boolean, root?: string },
+): Promise<SetFeatureEnabledOutcome> {
+  const path = options.root
+    ? join(options.root, `config/${feature}.ts`)
+    : projectPath(`config/${feature}.ts`)
   const file = Bun.file(path)
 
   if (!(await file.exists())) {
@@ -504,6 +511,40 @@ async function setFeatureEnabled(
   const next = src.replace(insertRegex, `$1\n  enabled: ${enabled},`)
   await Bun.write(path, next)
   return 'flipped'
+}
+
+export interface UninstallAllFeaturesResult {
+  feature: FeatureName
+  configOutcome: SetFeatureEnabledOutcome
+  filesRemoved: string[]
+}
+
+/**
+ * Disable every feature in `FEATURE_NAMES` at once — flips
+ * `config/<feature>.ts` enabled flags to `false` and removes the
+ * stamped scaffolding under the project root.
+ *
+ * Used by `./buddy new --minimal` to turn the kitchen-sink template
+ * `@stacksjs/gitit` clones into a bare-bones starter. Individual
+ * `<feature>:install` commands re-enable + re-stamp on demand.
+ *
+ * Pass `root` to target a project directory other than `projectPath()`;
+ * the create command uses this because `./buddy new` runs from the
+ * user's cwd while the freshly-cloned project lives at `<cwd>/<name>`.
+ *
+ * Safe to re-run — both halves of each per-feature step are idempotent.
+ */
+export async function uninstallAllFeatures(
+  options: { root?: string } = {},
+): Promise<UninstallAllFeaturesResult[]> {
+  const root = options.root ?? projectPath()
+  const results: UninstallAllFeaturesResult[] = []
+  for (const feature of FEATURE_NAMES) {
+    const configOutcome = await setFeatureEnabled(feature, false, { createIfMissing: false, root })
+    const filesRemoved = await deleteFeatureFiles(feature, root)
+    results.push({ feature, configOutcome, filesRemoved })
+  }
+  return results
 }
 
 function registerInstallPair(buddy: CLI, feature: FeatureName): void {

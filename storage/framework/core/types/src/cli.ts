@@ -238,6 +238,7 @@ export type CreateBooleanOption =
   | 'functions'
   | 'api'
   | 'database'
+  | 'minimal'
 export type CreateOptions = {
   [key in CreateBooleanOption]: boolean
 } & {
