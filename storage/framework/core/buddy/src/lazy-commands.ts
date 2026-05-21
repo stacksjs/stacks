@@ -62,6 +62,7 @@ const commandRegistry: Record<string, CommandLoader> = {
   'status': { path: './commands/maintenance.ts', exportName: 'maintenance' },
   'make': { path: './commands/make.ts', exportName: 'make' },
   'migrate': { path: './commands/migrate.ts', exportName: 'migrate' },
+  'migrate:project': { path: './commands/migrate-project.ts', exportName: 'migrateProject' },
   'outdated': { path: './commands/outdated.ts', exportName: 'outdated' },
   'package': { path: './commands/package.ts', exportName: 'packageCommands' },
   'phone': { path: './commands/phone.ts', exportName: 'phone' },
