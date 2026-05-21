@@ -5,9 +5,7 @@ import { log } from '@stacksjs/logging'
 import { User } from '@stacksjs/orm'
 import { verifyHash } from '@stacksjs/security'
 import { db } from '@stacksjs/database'
-
-// Dummy hash for timing-safe comparison when user doesn't exist
-const DUMMY_BCRYPT_HASH = '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
+import { DUMMY_BCRYPT_HASH } from './internal-constants'
 
 function generateSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32))

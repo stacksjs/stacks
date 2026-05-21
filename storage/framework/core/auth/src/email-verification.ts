@@ -24,14 +24,32 @@ export interface EmailVerificationResult {
 }
 
 /**
+ * Resolve the HMAC signing key from `config.app.key`. The previous
+ * implementation silently fell back to the literal `'stacks-default-key'`
+ * if `APP_KEY` was unset — anyone reading the source could forge
+ * verification tokens against any install that hadn't generated its
+ * own key yet. This throws instead so the boot fails loud and the
+ * deployer knows to run `./buddy key:generate` (stacksjs/stacks#1861 A-1).
+ */
+function getVerificationKey(): string {
+  const appKey = config.app.key
+  if (typeof appKey !== 'string' || appKey.length === 0) {
+    throw new Error(
+      '[auth] config.app.key is not set — email-verification HMAC requires a real APP_KEY. '
+      + 'Run `./buddy key:generate` to provision one, or set the APP_KEY env var before booting the app.',
+    )
+  }
+  return appKey
+}
+
+/**
  * Generate an HMAC-based verification token.
  * Uses the user ID and a random nonce so that each token is unique.
  */
 function generateVerificationToken(userId: number): { token: string, hash: string } {
   const nonce = randomBytes(32).toString('hex')
-  const appKey = config.app.key || 'stacks-default-key'
   const payload = `${userId}:${nonce}`
-  const hash = createHmac('sha256', appKey).update(payload).digest('hex')
+  const hash = createHmac('sha256', getVerificationKey()).update(payload).digest('hex')
   return { token: nonce, hash }
 }
 
@@ -39,9 +57,8 @@ function generateVerificationToken(userId: number): { token: string, hash: strin
  * Verify a token matches the stored hash
  */
 function verifyToken(userId: number, token: string, storedHash: string): boolean {
-  const appKey = config.app.key || 'stacks-default-key'
   const payload = `${userId}:${token}`
-  const hash = createHmac('sha256', appKey).update(payload).digest('hex')
+  const hash = createHmac('sha256', getVerificationKey()).update(payload).digest('hex')
   const a = Buffer.from(hash)
   const b = Buffer.from(storedHash)
   if (a.length !== b.length)

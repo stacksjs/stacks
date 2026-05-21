@@ -266,18 +266,33 @@ export async function argon2Encode(
 }
 
 /**
- * Verify a password against an Argon2 hash
+ * Verify a password against an Argon2 hash.
+ *
+ * Refuses to verify hashes that aren't actually Argon2 — `Bun.password.verify`
+ * auto-detects the algorithm from the hash prefix, which means a stray
+ * call `argon2Verify(password, bcryptHash)` would return `true` if the
+ * password matched. The algorithm guard restores the function-name
+ * contract (stacksjs/stacks#1861 H-8).
+ *
  * @deprecated Use check() instead which auto-detects the algorithm
  */
 export async function argon2Verify(password: string, hash: string): Promise<boolean> {
+  const algorithm = detectAlgorithm(hash)
+  if (algorithm !== 'argon2' && algorithm !== 'argon2i' && algorithm !== 'argon2id' && algorithm !== 'argon2d')
+    return false
   return await verifyPassword(password, hash)
 }
 
 /**
- * Verify a password against a bcrypt hash
+ * Verify a password against a bcrypt hash.
+ *
+ * Refuses to verify hashes that aren't actually bcrypt — see the note
+ * on {@link argon2Verify} (stacksjs/stacks#1861 H-8).
+ *
  * @deprecated Use check() instead which auto-detects the algorithm
  */
 export async function bcryptVerify(password: string, hash: string): Promise<boolean> {
+  if (detectAlgorithm(hash) !== 'bcrypt') return false
   return await verifyPassword(password, hash)
 }
 

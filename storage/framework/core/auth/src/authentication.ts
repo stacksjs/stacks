@@ -17,6 +17,7 @@ import { Buffer } from 'node:buffer'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { log } from '@stacksjs/logging'
+import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
 
@@ -110,14 +111,26 @@ export class Auth {
       .selectAll()
       .executeTakeFirst()
 
-    if (!client?.secret)
+    // Always run a `timingSafeEqual` against a fixed buffer so the
+    // missing-client and wrong-secret branches spend the same CPU.
+    // Without the dummy compare, an attacker could probe valid client
+    // IDs by observing response-time differences between "client
+    // missing" (fast) and "client found, secret wrong" (slow). See
+    // stacksjs/stacks#1861 L-2.
+    const provided = Buffer.from(clientSecret)
+    if (!client?.secret) {
+      const dummy = Buffer.alloc(Math.max(provided.length, 1))
+      const padded = provided.length > 0 ? provided : Buffer.alloc(1)
+      timingSafeEqual(dummy, padded)
       return false
+    }
 
-    const a = Buffer.from(String(client.secret))
-    const b = Buffer.from(clientSecret)
-    if (a.length !== b.length)
+    const stored = Buffer.from(String(client.secret))
+    if (stored.length !== provided.length) {
+      timingSafeEqual(stored, stored)
       return false
-    return timingSafeEqual(a, b)
+    }
+    return timingSafeEqual(stored, provided)
   }
 
   private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {
@@ -177,7 +190,7 @@ export class Auth {
 
     // Always run hash verification to prevent timing-based user enumeration
     // If user doesn't exist, verify against a dummy hash
-    const hashToVerify = user?.password || '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
+    const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     if (hashCheck && user) {
@@ -206,7 +219,7 @@ export class Auth {
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
-    const hashToVerify = user?.password || '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
+    const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     return hashCheck && !!user
@@ -889,7 +902,7 @@ export class Auth {
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
-    const hashToVerify = user?.password || '$2b$12$000000000000000000000uGByljkdFkOJRCRiYZGFOAstyLlSgTSW'
+    const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     if (hashCheck && user) {
