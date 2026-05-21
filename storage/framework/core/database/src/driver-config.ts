@@ -6,7 +6,7 @@
  * SQLite, MySQL, and PostgreSQL.
  */
 
-import type { SupportedDialect } from 'bun-query-builder'
+import type { SupportedDialect } from '@stacksjs/query-builder'
 import { env } from '@stacksjs/env'
 
 /**

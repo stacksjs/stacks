@@ -6,8 +6,8 @@
  * driver switching between SQLite, MySQL, and PostgreSQL.
  */
 
-import type { QueryBuilder, QueryBuilderConfig, SupportedDialect } from 'bun-query-builder'
-import { createQueryBuilder, setConfig } from 'bun-query-builder'
+import type { QueryBuilder, QueryBuilderConfig, SupportedDialect } from '@stacksjs/query-builder'
+import { createQueryBuilder, setConfig } from '@stacksjs/query-builder'
 import { env as stacksEnv } from '@stacksjs/env'
 
 export interface DatabaseConnectionConfig {

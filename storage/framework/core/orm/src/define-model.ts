@@ -1,5 +1,5 @@
-import { createModel, type ModelDefinition as BQBModelDefinition, registerModel } from 'bun-query-builder'
-import type { InferRelationNames } from 'bun-query-builder'
+import { createModel, type ModelDefinition as BQBModelDefinition, registerModel } from '@stacksjs/query-builder'
+import type { InferRelationNames } from '@stacksjs/query-builder'
 import { log } from '@stacksjs/logging'
 import { snakeCase } from '@stacksjs/strings'
 import { AsyncLocalStorage } from 'node:async_hooks'
@@ -1496,4 +1496,4 @@ export function toAttrs<T = any>(value: any): T {
 }
 
 // Re-export types from bun-query-builder for convenience
-export type { ModelDefinition, InferRelationNames, ModelAttributes, InferModelAttributes, SystemFields, ColumnName, AttributeKeys, FillableKeys, HiddenKeys, ModelInstance, ModelQueryBuilder } from 'bun-query-builder'
+export type { ModelDefinition, InferRelationNames, ModelAttributes, InferModelAttributes, SystemFields, ColumnName, AttributeKeys, FillableKeys, HiddenKeys, ModelInstance, ModelQueryBuilder } from '@stacksjs/query-builder'

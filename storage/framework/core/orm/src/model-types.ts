@@ -20,7 +20,7 @@ import type {
   InferModelAttributes,
   ModelAttributes,
   ModelDefinition,
-} from 'bun-query-builder'
+} from '@stacksjs/query-builder'
 
 /**
  * Extract the raw ModelDefinition from a defineModel() return value.

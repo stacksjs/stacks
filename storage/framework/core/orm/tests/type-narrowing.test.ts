@@ -439,8 +439,8 @@ describe('model-types.ts has no leaky abstractions', () => {
     expect(content).not.toContain('UsersTable')
   })
 
-  test('uses only bun-query-builder type utilities', () => {
-    expect(content).toContain("from 'bun-query-builder'")
+  test('uses only @stacksjs/query-builder type utilities', () => {
+    expect(content).toContain("from '@stacksjs/query-builder'")
     expect(content).toContain('ModelAttributes')
     expect(content).toContain('InferModelAttributes')
     expect(content).toContain('ModelDefinition')

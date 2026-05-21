@@ -79,13 +79,71 @@ interface ChainableRoute {
 const csrfSkipRegistry = new Set<string>()
 
 /**
+ * FIFO-bounded Map. Wraps `Map` with a hard size cap; on overflow,
+ * the oldest entry (Map insertion order) is evicted. Used for the
+ * router's small framework-internal caches whose size is normally
+ * bounded by action count, but which had no upper limit before —
+ * tests that instantiate many short-lived routers would leak entries
+ * across `createStacksRouter()` calls (stacksjs/stacks#1863 T-8).
+ *
+ * Insertion-order LRU is appropriate here because the access pattern
+ * is "set once at action-load time, then many reads" — refreshing on
+ * get would buy nothing since reads dominate.
+ */
+class BoundedMap<K, V> {
+  private map = new Map<K, V>()
+
+  constructor(private readonly max: number) {}
+
+  get(key: K): V | undefined {
+    return this.map.get(key)
+  }
+
+  has(key: K): boolean {
+    return this.map.has(key)
+  }
+
+  set(key: K, value: V): this {
+    // If we already have the key, refreshing its insertion order by
+    // delete+set means newer writes survive eviction longer.
+    if (this.map.has(key)) this.map.delete(key)
+    this.map.set(key, value)
+    if (this.map.size > this.max) {
+      const oldest = this.map.keys().next().value
+      if (oldest !== undefined) this.map.delete(oldest)
+    }
+    return this
+  }
+
+  delete(key: K): boolean {
+    return this.map.delete(key)
+  }
+
+  clear(): void {
+    this.map.clear()
+  }
+
+  get size(): number {
+    return this.map.size
+  }
+}
+
+/**
+ * Soft cap large enough to cover any realistic app's action count
+ * (Stacks framework defaults today register ~120 actions); higher
+ * gives us comfortable headroom for plugin authors without enabling
+ * unbounded growth in long-lived test processes.
+ */
+const ACTION_CACHE_MAX = 5000
+
+/**
  * Action-level CSRF opt-out cache, keyed by the resolved handler
  * import path. Populated lazily when an action with a string handler
  * is loaded — we read `action.skipCsrf` / `action.csrf` once at
  * load time and keep the answer here so the CSRF gate doesn't have to
  * re-import the module on every request.
  */
-const actionSkipsCsrfCache = new Map<string, boolean>()
+const actionSkipsCsrfCache = new BoundedMap<string, boolean>(ACTION_CACHE_MAX)
 
 /**
  * Map of routeKey → handler-identifier so the CSRF gate can look up
@@ -93,7 +151,7 @@ const actionSkipsCsrfCache = new Map<string, boolean>()
  * every request. Identifier is the original string handler path
  * (`'Actions/Foo'`); for function handlers the entry stays unset.
  */
-const routeHandlerKeyRegistry = new Map<string, string>()
+const routeHandlerKeyRegistry = new BoundedMap<string, string>(ACTION_CACHE_MAX)
 
 /** HTTP methods that mutate state and therefore need CSRF protection. */
 const CSRF_PROTECTED_METHODS = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
@@ -401,6 +459,13 @@ async function loadMiddleware(name: string): Promise<MiddlewareHandler | null> {
 export function clearMiddlewareCache(): void {
   middlewareCache.clear()
   middlewareAliasesPromise = null
+  // Action-level CSRF skip cache + route-handler key registry are
+  // populated lazily when actions load; they should be flushed in
+  // lockstep with the middleware cache so a hot-reloaded action that
+  // toggled its `skipCsrf` flag is re-read on the next request rather
+  // than serving from a stale answer (stacksjs/stacks#1863 T-8).
+  actionSkipsCsrfCache.clear()
+  routeHandlerKeyRegistry.clear()
 }
 
 /**

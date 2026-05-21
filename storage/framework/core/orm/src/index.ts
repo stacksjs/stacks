@@ -32,7 +32,7 @@ export * from './define-model'
 
 // Auto-configure the ORM database connection from project config.
 // This ensures model queries work without manual configureOrm() calls.
-import { configureOrm } from 'bun-query-builder'
+import { configureOrm } from '@stacksjs/query-builder'
 
 function autoConfigureOrm(): void {
   try {
@@ -455,7 +455,7 @@ export type {
   InferRelationNames,
   InferTableName,
   ModelDefinition,
-} from 'bun-query-builder'
+} from '@stacksjs/query-builder'
 
 // The following type utilities are referenced by the framework but are not
 // yet exported by the installed `bun-query-builder` version. Until upstream

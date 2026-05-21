@@ -30,7 +30,7 @@ import {
   resetConnection,
   resetDatabase as qbResetDatabase,
   setConfig,
-} from 'bun-query-builder'
+} from '@stacksjs/query-builder'
 import { db } from './utils'
 
 // Use environment variables via @stacksjs/env for proper type coercion

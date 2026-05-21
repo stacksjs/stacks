@@ -87,9 +87,9 @@ describe('model-types.ts defines correct type utilities', () => {
     expect(content).toContain('Partial<')
   })
 
-  test('imports from bun-query-builder (not generated types)', () => {
+  test('imports from @stacksjs/query-builder (not generated types)', () => {
     const content = readFileSync(modelTypesFile, 'utf-8')
-    expect(content).toContain("from 'bun-query-builder'")
+    expect(content).toContain("from '@stacksjs/query-builder'")
     expect(content).toContain('InferModelAttributes')
     expect(content).toContain('ModelAttributes')
     expect(content).toContain('ModelDefinition')
@@ -190,9 +190,9 @@ describe('define-model.ts exports defineModel and type re-exports', () => {
     expect(content).toContain('getDefinition: () => definition')
   })
 
-  test('re-exports type utilities from bun-query-builder', () => {
+  test('re-exports type utilities from @stacksjs/query-builder', () => {
     const content = readFileSync(defineModelFile, 'utf-8')
-    expect(content).toContain("from 'bun-query-builder'")
+    expect(content).toContain("from '@stacksjs/query-builder'")
     expect(content).toContain('ModelDefinition')
     expect(content).toContain('InferRelationNames')
     expect(content).toContain('ModelAttributes')
@@ -203,10 +203,10 @@ describe('define-model.ts exports defineModel and type re-exports', () => {
     expect(content).toContain('HiddenKeys')
   })
 
-  test('imports createModel from bun-query-builder', () => {
+  test('imports createModel from @stacksjs/query-builder', () => {
     const content = readFileSync(defineModelFile, 'utf-8')
     expect(content).toContain("import { createModel")
-    expect(content).toContain("from 'bun-query-builder'")
+    expect(content).toContain("from '@stacksjs/query-builder'")
   })
 
   test('does NOT reference generated files or BaseOrm', () => {
@@ -238,9 +238,9 @@ describe('core ORM index.ts exports all necessary modules', () => {
     expect(content).toContain("from './define-model'")
   })
 
-  test('re-exports type utilities from bun-query-builder', () => {
+  test('re-exports type utilities from @stacksjs/query-builder', () => {
     const content = readFileSync(indexFile, 'utf-8')
-    expect(content).toContain("from 'bun-query-builder'")
+    expect(content).toContain("from '@stacksjs/query-builder'")
   })
 })
 

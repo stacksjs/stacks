@@ -100,14 +100,14 @@ export * from './defaults'
 export {
   createQueryBuilder,
   setConfig,
-} from 'bun-query-builder'
+} from '@stacksjs/query-builder'
 
 export type {
   QueryBuilder,
   QueryBuilderConfig,
   Seeder as QueryBuilderSeeder,
   SupportedDialect,
-} from 'bun-query-builder'
+} from '@stacksjs/query-builder'
 
 // DynamoDB entity-centric API
 export {
