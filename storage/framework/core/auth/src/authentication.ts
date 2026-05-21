@@ -11,8 +11,9 @@ import type {
 import { config } from '@stacksjs/config'
 import { db } from '@stacksjs/database'
 import { HttpError } from '@stacksjs/error-handling'
+import type { EnhancedRequest } from '@stacksjs/bun-router'
 import { formatDate, User } from '@stacksjs/orm'
-import { request } from '@stacksjs/router'
+import { getCurrentRequest, request } from '@stacksjs/router'
 import { Buffer } from 'node:buffer'
 import { createHash, randomBytes, timingSafeEqual } from 'node:crypto'
 import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
@@ -20,6 +21,38 @@ import { log } from '@stacksjs/logging'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
 import { TokenManager } from './token'
+
+/**
+ * Per-request auth state, scoped to the active `EnhancedRequest` via
+ * a Symbol-keyed slot on the request object. Replaces the three
+ * `private static` fields on `Auth` (`authUser`, `currentToken`,
+ * `clientSecret`) that were shared across every concurrent request
+ * in the process — a textbook cross-tenant state-leak vector.
+ *
+ * The container is lazily allocated on first read inside a request
+ * scope. Outside a request scope (CLI scripts, queued jobs, tests
+ * that don't call `runWithRequest`) `authStateOrNull()` returns
+ * `null`, which the `Auth` methods interpret as "no caching" — every
+ * lookup hits the DB. See stacksjs/stacks#1860 A-2.
+ */
+interface RequestAuthState {
+  authUser?: UserModel
+  currentToken?: PersonalAccessToken
+  clientSecret?: string
+}
+
+const REQUEST_AUTH_STATE_KEY = Symbol.for('stacks.requestAuthState')
+
+function authStateOrNull(): RequestAuthState | null {
+  const req = getCurrentRequest() as (EnhancedRequest & { [k: symbol]: unknown }) | undefined
+  if (!req) return null
+  let state = req[REQUEST_AUTH_STATE_KEY] as RequestAuthState | undefined
+  if (!state) {
+    state = {}
+    ;(req as Record<symbol, unknown>)[REQUEST_AUTH_STATE_KEY] = state
+  }
+  return state
+}
 
 /**
  * Hash a token using SHA-256 before storing in the database.
@@ -31,9 +64,12 @@ function hashToken(token: string): string {
 import { parseScopes } from './tokens'
 
 export class Auth {
-  private static authUser: UserModel | undefined = undefined
-  private static clientSecret: string | undefined = undefined
-  private static currentToken: PersonalAccessToken | undefined = undefined
+  // Per-request state lives on the request object via `authStateOrNull()`
+  // (stacksjs/stacks#1860 A-2). The previous `private static` fields
+  // (`authUser`, `currentToken`, `clientSecret`) were shared across
+  // every concurrent request in the process — a cross-request leak
+  // where one request's user could surface in another's `Auth.user()`
+  // call if the second request raced the first's middleware.
 
   // ============================================================================
   // INTERNAL HELPERS
@@ -76,11 +112,12 @@ export class Auth {
   }
 
   private static async getClientSecret(): Promise<string> {
-    if (this.clientSecret)
-      return this.clientSecret
+    const state = authStateOrNull()
+    if (state?.clientSecret)
+      return state.clientSecret
 
     const client = await this.getPersonalAccessClient()
-    this.clientSecret = client.secret
+    if (state) state.clientSecret = client.secret
     return client.secret
   }
 
@@ -251,7 +288,8 @@ export class Auth {
 
     if (hashCheck && user) {
       RateLimiter.resetAttempts(email)
-      this.authUser = user
+      const state = authStateOrNull()
+      if (state) state.authUser = user
       return true
     }
 
@@ -294,11 +332,12 @@ export class Auth {
     { user: UserModel, token: AuthToken, refreshToken?: string, expiresIn?: number } | null
   > {
     const isValid = await this.attempt(credentials)
-    if (!isValid || !this.authUser)
+    const authedUser = authStateOrNull()?.authUser
+    if (!isValid || !authedUser)
       return null
 
-    const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(this.authUser, options)
-    return { user: this.authUser, token: plainTextToken, refreshToken, expiresIn }
+    const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(authedUser, options)
+    return { user: authedUser, token: plainTextToken, refreshToken, expiresIn }
   }
 
   /**
@@ -312,7 +351,8 @@ export class Auth {
     if (!user)
       return null
 
-    this.authUser = user
+    const state = authStateOrNull()
+    if (state) state.authUser = user
     const { plainTextToken, refreshToken, expiresIn } = await this.createTokenForUser(user, options)
     return { user, token: plainTextToken, refreshToken, expiresIn }
   }
@@ -344,8 +384,11 @@ export class Auth {
       await this.revokeToken(bearerToken)
     }
 
-    this.authUser = undefined
-    this.currentToken = undefined
+    const state = authStateOrNull()
+    if (state) {
+      state.authUser = undefined
+      state.currentToken = undefined
+    }
   }
 
   // ============================================================================
@@ -357,16 +400,17 @@ export class Auth {
    * Similar to Laravel's Auth::user()
    */
   public static async user(): Promise<UserModel | undefined> {
-    if (this.authUser)
-      return this.authUser
+    const state = authStateOrNull()
+    if (state?.authUser)
+      return state.authUser
 
     const bearerToken = this.getBearerToken()
     if (!bearerToken)
       return undefined
 
     const user = await this.getUserFromToken(bearerToken)
-    if (user)
-      this.authUser = user
+    if (user && state)
+      state.authUser = user
 
     return user
   }
@@ -402,7 +446,8 @@ export class Auth {
    * Similar to Laravel's Auth::setUser()
    */
   public static setUser(user: UserModel): void {
-    this.authUser = user
+    const state = authStateOrNull()
+    if (state) state.authUser = user
   }
 
   // ============================================================================
@@ -544,10 +589,11 @@ export class Auth {
       throw new HttpError(401, 'Invalid client credentials')
 
     const isValid = await this.attempt(credentials)
-    if (!isValid || !this.authUser)
+    const authedUser = authStateOrNull()?.authUser
+    if (!isValid || !authedUser)
       return null
 
-    return { token: await this.createToken(this.authUser, 'user-auth-token') }
+    return { token: await this.createToken(authedUser, 'user-auth-token') }
   }
 
   // ============================================================================
@@ -652,8 +698,10 @@ export class Auth {
     if (accessToken.revoked)
       return undefined
 
-    // Cache the current token for ability checks
-    this.currentToken = await this.getTokenFromId(accessToken.id as number) ?? undefined
+    // Cache the current token for ability checks (per-request).
+    const stateForToken = authStateOrNull()
+    if (stateForToken)
+      stateForToken.currentToken = await this.getTokenFromId(accessToken.id as number) ?? undefined
 
     await db.updateTable('oauth_access_tokens')
       .set({ updated_at: formatDate(new Date()) })
@@ -671,8 +719,9 @@ export class Auth {
    * Similar to Laravel's $request->user()->currentAccessToken()
    */
   public static async currentAccessToken(): Promise<PersonalAccessToken | undefined> {
-    if (this.currentToken)
-      return this.currentToken
+    const state = authStateOrNull()
+    if (state?.currentToken)
+      return state.currentToken
 
     const bearerToken = this.getBearerToken()
     if (!bearerToken)
@@ -687,8 +736,8 @@ export class Auth {
       return undefined
 
     const token = await this.getTokenFromId(Number(decryptedId))
-    if (token)
-      this.currentToken = token
+    if (token && state)
+      state.currentToken = token
 
     return token ?? undefined
   }
@@ -958,7 +1007,8 @@ export class Auth {
     const hashCheck = await verifyHash(authPass, hashToVerify)
 
     if (hashCheck && user) {
-      this.authUser = user
+      const state = authStateOrNull()
+      if (state) state.authUser = user
       return true
     }
 
@@ -981,11 +1031,16 @@ export class Auth {
   }
 
   /**
-   * Clear the auth state (useful for testing)
+   * Clear the auth state on the active request (useful for testing).
+   * No-op outside a request scope — there's no shared state to clear
+   * after stacksjs/stacks#1860 A-2 moved the fields onto the request.
    */
   public static clearState(): void {
-    this.authUser = undefined
-    this.currentToken = undefined
-    this.clientSecret = undefined
+    const state = authStateOrNull()
+    if (state) {
+      state.authUser = undefined
+      state.currentToken = undefined
+      state.clientSecret = undefined
+    }
   }
 }
