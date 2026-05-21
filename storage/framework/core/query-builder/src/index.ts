@@ -13,11 +13,36 @@
  * exported below give Stacks code a single chokepoint to validate at.
  */
 
+import * as bunQueryBuilder from 'bun-query-builder'
+
 // Re-export everything from bun-query-builder
 export * from 'bun-query-builder'
 
 // For backwards compatibility, export QueryBuilder as an alias
 export { createQueryBuilder as QueryBuilder } from 'bun-query-builder'
+
+const stacksModelRegistry = new Map<string, unknown>()
+
+/**
+ * Register a model with bun-query-builder when the installed version
+ * exposes that hook, or fall back to `defineModel()` for older releases.
+ */
+export function registerModel(name: string, model: unknown): unknown {
+  const upstreamRegisterModel = (bunQueryBuilder as { registerModel?: (name: string, model: unknown) => unknown }).registerModel
+  if (typeof upstreamRegisterModel === 'function')
+    return upstreamRegisterModel(name, model)
+
+  stacksModelRegistry.set(name, model)
+
+  const definition = typeof (model as { getDefinition?: () => unknown })?.getDefinition === 'function'
+    ? (model as { getDefinition: () => unknown }).getDefinition()
+    : (model as { definition?: unknown })?.definition
+
+  if (definition && typeof definition === 'object')
+    bunQueryBuilder.defineModel(definition as Parameters<typeof bunQueryBuilder.defineModel>[0])
+
+  return model
+}
 
 /**
  * Strict identifier pattern: SQL-safe identifiers start with a letter
