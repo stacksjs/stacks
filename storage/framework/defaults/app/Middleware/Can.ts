@@ -24,7 +24,7 @@ export default new Middleware({
   async handle(request) {
     // Get the ability and optional model parameter from middleware params
     // Format: 'can:ability' or 'can:ability,modelParam'
-    const params = (request as any)._middlewareParams?.can?.split(',') || []
+    const params = request._middlewareParams?.can?.split(',') || []
 
     if (params.length === 0) {
       // No ability specified, pass through (should this be an error?)
@@ -39,14 +39,14 @@ export default new Middleware({
     }
 
     // Get the authenticated user
-    const user = (request as any).user || (request as any)._user || null
+    const user = request.user || request._user || null
 
     // Prepare arguments for the gate check
     const args: any[] = []
 
     // If a model parameter is specified, get it from route params
     if (modelParam) {
-      const routeParams = (request as any).params || {}
+      const routeParams = request.params || {}
       const model = routeParams[modelParam]
 
       if (model) {

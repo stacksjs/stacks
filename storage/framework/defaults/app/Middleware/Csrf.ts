@@ -144,14 +144,14 @@ export default new Middleware({
     // (webhooks, third-party callbacks). The router stamps a hint on
     // the request when it resolves such an action; if that hint is
     // present, skip enforcement.
-    if ((request as any)._skipCsrf === true) return
+    if (request._skipCsrf === true) return
 
     // Look up the submitted token. Header is the SPA path; body field
     // is the traditional form-post path. We accept either.
     const headerToken = request.headers.get(CSRF_HEADER_NAME)
       || request.headers.get('X-CSRF-Token')
       || request.headers.get('X-Csrf-Token')
-    const body = (request as any).jsonBody || (request as any).formBody || {}
+    const body = request.jsonBody || request.formBody || {}
     const bodyToken: string | undefined = body?._token ?? body?.csrf_token
 
     const submitted = (typeof headerToken === 'string' && headerToken)

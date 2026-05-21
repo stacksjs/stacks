@@ -7,8 +7,19 @@
  * All routing functionality comes directly from bun-router.
  */
 
+// Side-import the EnhancedRequest module augmentation so every consumer
+// of @stacksjs/router gets the typed Stacks markers (_corsConfig,
+// _requestId, _authenticatedUser, …) and Laravel-style macros (input,
+// all, has, file, user, …) without `as any` casts. See
+// `./request-augmentation.ts` and stacksjs/stacks#1863 T-3.
+import './request-augmentation'
+
 // Re-export everything from bun-router (includes response factory)
 export * from '@stacksjs/bun-router'
+
+// Re-export the augmentation types so userland can refer to the marker
+// surface explicitly when needed.
+export type { StacksRequestExtensions, StacksRequestMacros, StacksRequestMarkers } from './request-augmentation'
 
 // Export Stacks-specific action resolver and URL helper
 export { clearMiddlewareCache, createStacksRouter, installMiddlewareHotReload, route, serve, serverResponse, url } from './stacks-router'

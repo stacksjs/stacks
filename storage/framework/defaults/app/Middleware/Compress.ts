@@ -208,6 +208,6 @@ export default new Middleware({
   async handle(request) {
     // Stamp the request so the post-response wrapper knows to compress.
     // This is read by the router's response-finalization step.
-    ;(request as any)._compress = true
+    ;request._compress = true
   },
 })

@@ -41,7 +41,7 @@ export default new Middleware({
 
   async handle(request) {
     // Get throttle params from middleware params (e.g., '60,1' from 'throttle:60,1')
-    const params = (request as any)._middlewareParams?.throttle || '60,1'
+    const params = request._middlewareParams?.throttle || '60,1'
 
     // Get or create rate limiter for this pattern
     let limiter = limiterCache.get(params)

@@ -20,11 +20,11 @@ export default new Middleware({
   priority: 3,
 
   async handle(request) {
-    const requiredRoles = (request as any)._middlewareParams?.role?.split(',').map((r: string) => r.trim()) || []
+    const requiredRoles = request._middlewareParams?.role?.split(',').map((r: string) => r.trim()) || []
 
     if (requiredRoles.length === 0) return
 
-    const user = (request as any).user || (request as any)._user || null
+    const user = request.user || request._user || null
 
     if (!user) {
       throw new HttpError(401, 'Unauthenticated.')

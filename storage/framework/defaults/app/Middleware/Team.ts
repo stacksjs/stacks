@@ -16,7 +16,7 @@ export default new Middleware({
   priority: 3,
 
   async handle(request) {
-    const user = (request as any).user || (request as any)._user || (request as any)._authenticatedUser
+    const user = request.user || request._user || request._authenticatedUser
 
     if (!user) {
       throw new HttpError(401, 'Unauthenticated.')
@@ -28,7 +28,7 @@ export default new Middleware({
     }
 
     // If a specific role is required (e.g., 'team:owner')
-    const requiredRole = (request as any)._middlewareParams?.team
+    const requiredRole = request._middlewareParams?.team
     if (requiredRole && user.team_role !== requiredRole) {
       throw new HttpError(403, `This action requires the '${requiredRole}' team role.`)
     }

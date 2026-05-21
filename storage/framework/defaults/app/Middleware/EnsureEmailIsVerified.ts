@@ -15,7 +15,7 @@ export default new Middleware({
   priority: 4,
 
   async handle(request) {
-    const user = (request as any).user || (request as any)._user || null
+    const user = request.user || request._user || null
 
     if (!user) {
       throw new HttpError(401, 'Unauthenticated.')

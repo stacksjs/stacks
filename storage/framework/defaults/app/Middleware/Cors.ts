@@ -328,6 +328,6 @@ export default new Middleware({
     // up the CORS config. We stash the resolved config to avoid resolving
     // it twice per request.
     // eslint-disable-next-line ts/no-explicit-any
-    ;(request as any)._corsConfig = cfg
+    ;request._corsConfig = cfg
   },
 })

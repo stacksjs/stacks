@@ -22,7 +22,7 @@ export default new Middleware({
   async handle(request) {
     // Get the required abilities from middleware parameters
     // This would be passed like 'abilities:read,write'
-    const requiredAbilities = (request as any)._middlewareParams?.abilities?.split(',') || []
+    const requiredAbilities = request._middlewareParams?.abilities?.split(',') || []
 
     if (requiredAbilities.length === 0) {
       // No abilities required, pass through
@@ -30,7 +30,7 @@ export default new Middleware({
     }
 
     // Get the current access token
-    const token = (request as any)._currentAccessToken
+    const token = request._currentAccessToken
 
     if (!token) {
       throw new HttpError(401, 'Unauthenticated.')

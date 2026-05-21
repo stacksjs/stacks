@@ -45,8 +45,8 @@ export default new Middleware({
     const user = await Auth.getUserFromToken(bearerToken)
     if (user) {
       Auth.setUser(user)
-      ;(request as any)._authenticatedUser = user
-      ;(request as any).user = user
+      ;request._authenticatedUser = user
+      ;request.user = user
     }
   },
 })

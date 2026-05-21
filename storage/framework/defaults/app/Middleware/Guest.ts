@@ -16,7 +16,7 @@ export default new Middleware({
   priority: 1,
 
   async handle(request) {
-    const token = (request as any)._currentAccessToken || (request as any)._authenticatedUser
+    const token = request._currentAccessToken || request._authenticatedUser
 
     if (token) {
       throw new HttpError(403, 'You are already authenticated.')
