@@ -157,27 +157,43 @@ async function pivotSync(
   targetIds: number[],
 ): Promise<void> {
   // Replace-all semantics: drop existing rows for the owner, then bulk
-  // insert the new set. A transaction would be ideal here but the surface
-  // is cross-dialect and individual statements are idempotent enough — a
-  // failure mid-way leaves the table in a "no roles assigned" state, which
-  // `getUserRoles` will reflect on next call and the caller can retry.
-  await pivotDetachAll(table, ownerColumn, ownerId)
-  if (targetIds.length === 0)
-    return
-
-  // Dedupe so the same id passed twice in `syncUserRoles` doesn't trip the
-  // composite PK on the second row in a multi-row INSERT.
+  // insert the new set. Wrapped in a transaction so a crash between
+  // the DELETE and the INSERT (process killed mid-call, DB connection
+  // dropped, etc.) doesn't leave the user with zero roles/permissions
+  // — that's a privilege wipe (admin silently demoted to anonymous)
+  // not a sync-in-progress state. See stacksjs/stacks#1860 H-7.
+  //
+  // Dedupe so the same id passed twice in `syncUserRoles` doesn't trip
+  // the composite PK on the second row in a multi-row INSERT.
   const unique = Array.from(new Set(targetIds))
-  const rows = unique.map(id => ({ [ownerColumn]: ownerId, [targetColumn]: id }))
-  try {
-    await (db.insertInto(table) as any).values(rows).execute()
-  }
-  catch (err) {
-    // Concurrent sync race; fall back to one-by-one with idempotent attach.
-    swallowDuplicate(err)
-    for (const id of unique)
-      await pivotAttach(table, { [ownerColumn]: ownerId, [targetColumn]: id })
-  }
+
+  await db.transaction(async (rawTrx) => {
+    // bun-query-builder's transaction callback yields a `QueryBuilder<DB>`
+    // whose chained methods are typed optional. Mirror the shape of the
+    // top-level `db` proxy so the chains type-check identically.
+    const trx = rawTrx as unknown as typeof db
+    await (trx.deleteFrom(table) as any).where(ownerColumn, '=', ownerId).execute()
+    if (unique.length === 0) return
+
+    const rows = unique.map(id => ({ [ownerColumn]: ownerId, [targetColumn]: id }))
+    try {
+      await (trx.insertInto(table) as any).values(rows).execute()
+    }
+    catch (err) {
+      // Concurrent sync race; fall back to one-by-one with idempotent attach
+      // inside the same transaction so a partial-success still rolls back
+      // cleanly if a later iteration throws.
+      swallowDuplicate(err)
+      for (const id of unique) {
+        try {
+          await (trx.insertInto(table) as any).values({ [ownerColumn]: ownerId, [targetColumn]: id }).execute()
+        }
+        catch (innerErr) {
+          swallowDuplicate(innerErr)
+        }
+      }
+    }
+  })
 }
 
 export function createBqbRbacStore(): RbacStore {
