@@ -46,7 +46,14 @@ export default new Middleware({
     if (user) {
       Auth.setUser(user)
       ;request._authenticatedUser = user
-      ;request.user = user
+      // Do NOT overwrite `request.user` — `enhanceRequest` declared
+      // it as an async function (`user(): Promise<UserModel | undefined>`)
+      // and downstream action code reaches for `await request.user()`.
+      // Replacing the function with a User object made every caller
+      // throw "user is not a function" post-auth. Read from
+      // `_authenticatedUser` via `request.user()` instead — the helper
+      // prefers the stamped value before falling back to a token
+      // lookup. See stacksjs/stacks#1860 M-9.
     }
   },
 })
