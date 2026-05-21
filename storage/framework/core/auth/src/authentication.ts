@@ -168,12 +168,25 @@ export class Auth {
       return false
     }
 
-    const stored = Buffer.from(String(client.secret))
-    if (stored.length !== provided.length) {
-      timingSafeEqual(stored, stored)
+    const stored = String(client.secret)
+
+    // bcrypt hashes always start with `$2`. Rows inserted before
+    // stacksjs/stacks#1861 M-1 hold the plaintext secret and don't
+    // match that prefix; rows inserted after hold the bcrypt hash.
+    // verifyHash handles the secure compare for the hashed path;
+    // legacy plaintext rows fall through to the existing
+    // timing-safe byte comparison so they keep working until the
+    // operator re-issues the client secret.
+    if (stored.startsWith('$2')) {
+      return await verifyHash(clientSecret, stored)
+    }
+
+    const storedBuf = Buffer.from(stored)
+    if (storedBuf.length !== provided.length) {
+      timingSafeEqual(storedBuf, storedBuf)
       return false
     }
-    return timingSafeEqual(stored, provided)
+    return timingSafeEqual(storedBuf, provided)
   }
 
   private static async getTokenFromId(tokenId: number): Promise<PersonalAccessToken | null> {

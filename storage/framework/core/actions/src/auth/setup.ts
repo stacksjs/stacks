@@ -2,6 +2,7 @@ import process from 'node:process'
 import { randomBytes } from 'node:crypto'
 import { db } from '@stacksjs/database'
 import { log } from '@stacksjs/logging'
+import { makeHash } from '@stacksjs/security'
 
 // Detect database driver from environment
 import { env } from '@stacksjs/env'
@@ -304,19 +305,24 @@ try {
     console.log('\n✓ Personal access client already exists')
   }
   else {
+    // The DB row stores a bcrypt hash; only the in-memory plaintext
+    // is ever surfaced (and only at this single point of creation).
+    // Mirror Laravel Passport's newer-versions behaviour — see
+    // stacksjs/stacks#1861 M-1.
     const secret = randomBytes(40).toString('hex')
+    const hashedSecret = await makeHash(secret, { algorithm: 'bcrypt' })
 
     if (isPostgres) {
       await db.unsafe(`
         INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
         VALUES ($1, $2, $3, $4, $5, $6, $7, NOW())
-      `, ['Personal Access Client', secret, 'local', 'http://localhost', true, false, false])
+      `, ['Personal Access Client', hashedSecret, 'local', 'http://localhost', true, false, false])
     } else {
       // MySQL and SQLite both use ? placeholders and numeric booleans
       await db.unsafe(`
         INSERT INTO oauth_clients (name, secret, provider, redirect, personal_access_client, password_client, revoked, created_at)
         VALUES (?, ?, ?, ?, ?, ?, ?, ${now})
-      `, ['Personal Access Client', secret, 'local', 'http://localhost', 1, 0, 0])
+      `, ['Personal Access Client', hashedSecret, 'local', 'http://localhost', 1, 0, 0])
     }
 
     console.log('\n✓ Personal access client created successfully')
