@@ -9,7 +9,8 @@ import process from 'node:process'
 import { parseOptions } from '@stacksjs/cli'
 import { config, overridesReady } from '@stacksjs/config'
 import { path } from '@stacksjs/path'
-import { cors, route } from '@stacksjs/router'
+import type { Middleware } from '@stacksjs/router'
+import { route } from '@stacksjs/router'
 import { generateAutoImportFiles, injectGlobalAutoImports } from '@stacksjs/server'
 
 const _options = parseOptions()
@@ -56,13 +57,21 @@ catch (err) {
   log.warn(`[api:dev] failed to bootstrap event listeners — dispatched events will be ignored: ${(err as Error).message}`)
 }
 
-// Enable CORS middleware. We hold ONE Cors instance so `handle.bind(...)`
-// targets the same object the method was read from — the previous
-// `cors().handle.bind(cors())` form constructed two separate instances
-// and bound across them, which silently broke if `Cors` ever held
-// per-instance state (stacksjs/stacks#1863 T-11).
-const corsMiddleware = cors()
-route.use(corsMiddleware.handle.bind(corsMiddleware))
+// Enable CORS middleware.
+//
+// Uses the **Stacks** Cors middleware (defaults/app/Middleware/Cors.ts)
+// rather than `bun-router`'s `cors()` default. The bun-router default
+// shipped with `Access-Control-Allow-Origin: *` AND
+// `Access-Control-Allow-Credentials: true` hardcoded together —
+// the canonical "credentials + wildcard" anti-pattern that browsers
+// block, and worse, leaked rate-limit / error bodies cross-origin
+// regardless of the configured CORS policy. The Stacks middleware
+// reads `config.cors` (when defined) or falls back to safe defaults:
+// no credentials, no wildcard-with-credentials. See
+// stacksjs/stacks#1859 R-1.
+const corsMod = await import(path.frameworkPath('defaults/app/Middleware/Cors.ts'))
+const corsMiddleware: Middleware = corsMod.default
+route.use(corsMiddleware.toRouterHandler())
 
 // Stamp X-Request-ID + start time on the request, then enrich the
 // outbound response with the id, Server-Timing, and (for generic 404s) the
