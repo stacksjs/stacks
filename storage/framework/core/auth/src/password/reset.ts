@@ -21,6 +21,27 @@ function getTokenExpireMinutes(): number {
 }
 
 /**
+ * True when the given password_resets row is still valid. Prefers
+ * the explicit `expires_at` column (set at insert time by
+ * `createResetToken`) and falls back to clock-arithmetic against
+ * `created_at` so rows inserted before the column existed continue
+ * to verify correctly (stacksjs/stacks#1861 A-5 + M-2).
+ */
+function isWithinExpiry(row: Record<string, unknown>): boolean {
+  const explicit = row.expires_at
+  if (typeof explicit === 'string' || explicit instanceof Date) {
+    return new Date(explicit).getTime() > Date.now()
+  }
+  const created = row.created_at
+  if (typeof created === 'string' || created instanceof Date) {
+    const expireMinutes = getTokenExpireMinutes()
+    return new Date(created).getTime() + expireMinutes * 60_000 > Date.now()
+  }
+  // No timestamp at all — refuse to verify rather than leak forever.
+  return false
+}
+
+/**
  * Send a notification email when password has been changed
  * This is a security feature to alert users of password changes
  */
@@ -62,13 +83,27 @@ export function passwordResets(email: string): PasswordResetActions {
   async function createResetToken(): Promise<string> {
     const token = generateResetToken()
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
+    const expireMinutes = getTokenExpireMinutes()
+    const expiresAt = new Date(Date.now() + expireMinutes * 60_000).toISOString()
+
+    // Delete any existing reset row for this email before inserting
+    // the new one so a second reset request invalidates any prior
+    // outstanding token. The schema's unique index on `email` enforces
+    // single-outstanding-token-per-email at the DB layer; this delete
+    // makes the rotation work even when the unique constraint hasn't
+    // been applied yet (older installs). See stacksjs/stacks#1861 A-5.
+    await db
+      .deleteFrom('password_resets')
+      .where('email', '=', email)
+      .execute()
 
     await db
       .insertInto('password_resets')
       .values({
         email,
         token: hashedToken,
-      })
+        expires_at: expiresAt,
+      } as never)
       .executeTakeFirst()
 
     return token // Return unhashed token for email
@@ -108,19 +143,15 @@ export function passwordResets(email: string): PasswordResetActions {
     if (!result)
       return false
 
-    // Check if token is expired (configurable, default 60 minutes)
-    const expireMinutes = getTokenExpireMinutes()
-    const createdAt = new Date(result.created_at as string)
-    const now = new Date()
-    const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
-
-    if (diffInMinutes > expireMinutes) {
-      // Delete expired token
+    // Prefer the explicit `expires_at` column when present (it's set
+    // at insert time). Fall back to clock-arithmetic against
+    // `created_at` for rows inserted before the column existed
+    // (stacksjs/stacks#1861 A-5 + M-2).
+    if (!isWithinExpiry(result)) {
       await db
         .deleteFrom('password_resets')
         .where('email', '=', email)
         .execute()
-
       return false
     }
 
@@ -147,14 +178,9 @@ export function passwordResets(email: string): PasswordResetActions {
         return { success: false as const, message: 'Invalid or expired reset token' }
       }
 
-      // Check token expiration first (before verifying hash to save compute)
-      const expireMinutes = getTokenExpireMinutes()
-      const createdAt = new Date(resetRecord.created_at as string)
-      const now = new Date()
-      const diffInMinutes = (now.getTime() - createdAt.getTime()) / (1000 * 60)
-
-      if (diffInMinutes > expireMinutes) {
-        // Delete expired token
+      // Check token expiration first (before verifying hash to save compute).
+      // Same expires_at-or-created_at logic as `verifyToken` above.
+      if (!isWithinExpiry(resetRecord)) {
         await trx
           .deleteFrom('password_resets')
           .where('email', '=', email)

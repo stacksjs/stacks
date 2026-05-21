@@ -171,7 +171,14 @@ catch (error) {
   process.exit(1)
 }
 
-// Step 1b: Create password_resets table for password reset flow
+// Step 1b: Create password_resets table for password reset flow.
+//
+// Each row carries an explicit `expires_at` timestamp so verification
+// doesn't depend on the application code's clock-arithmetic against
+// `created_at`. A unique constraint on `email` enforces "one
+// outstanding token per email" — the application layer deletes the
+// prior row before inserting a new one, so requesting a second reset
+// always invalidates the first (stacksjs/stacks#1861 A-5 + M-2).
 log.info('Ensuring password_resets table exists...')
 
 try {
@@ -181,6 +188,7 @@ try {
         id SERIAL PRIMARY KEY,
         email VARCHAR(255) NOT NULL,
         token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
@@ -190,6 +198,7 @@ try {
         id INTEGER AUTO_INCREMENT PRIMARY KEY,
         email VARCHAR(255) NOT NULL,
         token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
@@ -199,14 +208,26 @@ try {
         id INTEGER PRIMARY KEY AUTOINCREMENT,
         email VARCHAR(255) NOT NULL,
         token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
         created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
       )
     `)
   }
 
-  // Create index on email for fast lookups
+  // Defensive ALTER for installs that ran an earlier `auth:setup`
+  // before the `expires_at` column existed. The column has a
+  // CURRENT_TIMESTAMP default so existing rows aren't orphaned, but
+  // application-issued tokens always set an explicit value.
+  try {
+    await db.unsafe(`ALTER TABLE password_resets ADD COLUMN expires_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP`)
+  }
+  catch { /* column already exists — safe to ignore */ }
+
+  // Unique index on email — enforces single-outstanding-token-per-email.
+  // The application's createResetToken() deletes the prior row before
+  // insert so a second reset request always supersedes the first.
   await db.unsafe(`
-    CREATE INDEX IF NOT EXISTS idx_password_resets_email ON password_resets(email)
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_password_resets_email_unique ON password_resets(email)
   `)
 
   log.success('Password resets table ready')
