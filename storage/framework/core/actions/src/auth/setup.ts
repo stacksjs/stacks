@@ -237,6 +237,60 @@ catch (error) {
   process.exit(1)
 }
 
+// Step 1c: Create email_verifications table.
+//
+// Previously read+written by `@stacksjs/auth`'s `email-verification.ts`
+// but never created — the first call to `sendVerificationEmail` on a
+// fresh install would fail at the DB layer. See stacksjs/stacks#1861 M-3.
+log.info('Ensuring email_verifications table exists...')
+
+try {
+  if (isPostgres) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS email_verifications (
+        id SERIAL PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  } else if (isMysql) {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS email_verifications (
+        id INTEGER AUTO_INCREMENT PRIMARY KEY,
+        user_id INTEGER NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  } else {
+    await db.unsafe(`
+      CREATE TABLE IF NOT EXISTS email_verifications (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        user_id INTEGER NOT NULL,
+        token VARCHAR(255) NOT NULL,
+        expires_at TIMESTAMP NOT NULL,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+      )
+    `)
+  }
+
+  // Unique index on user_id — application layer deletes the prior row
+  // before inserting a new one, so each user has at most one
+  // outstanding verification token at a time.
+  await db.unsafe(`
+    CREATE UNIQUE INDEX IF NOT EXISTS idx_email_verifications_user_id_unique ON email_verifications(user_id)
+  `)
+
+  log.success('Email verifications table ready')
+}
+catch (error) {
+  log.error('Failed to create email_verifications table', error)
+  process.exit(1)
+}
+
 // Step 2: Create personal access client
 log.info('Creating personal access client...')
 
