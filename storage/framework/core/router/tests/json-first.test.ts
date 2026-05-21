@@ -159,16 +159,19 @@ describe('parseRequestBody — JSON variant widening', () => {
     expect(seen).toEqual({})
   })
 
-  test('malformed JSON body → jsonBody = {} (not undefined)', async () => {
+  test('malformed JSON body → 400 with "Invalid JSON body" message (stacksjs/stacks#1859 H-5)', async () => {
     const router = createStacksRouter()
-    let seen: unknown = 'unset'
-    router.post('/x', ((req: any) => {
-      seen = req.jsonBody
+    let actionRan = false
+    router.post('/x', ((_req: any) => {
+      actionRan = true
       return { ok: true }
     }) as any).skipCsrf()
 
-    await router.handleRequest(jsonReq('/x', '{not valid json'))
-    expect(seen).toEqual({})
+    const res = await router.handleRequest(jsonReq('/x', '{not valid json'))
+    expect(res.status).toBe(400)
+    expect(actionRan).toBe(false) // action must NOT run on malformed body
+    const body = await res.json() as { message?: string }
+    expect(body.message).toMatch(/Invalid JSON body/i)
   })
 })
 

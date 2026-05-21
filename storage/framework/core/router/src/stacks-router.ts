@@ -637,8 +637,20 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
   }
 
   return async (req: EnhancedRequest) => {
-    // Parse body and enhance request first
-    await parseRequestBody(req)
+    // Parse body and enhance request first. parseRequestBody can throw
+    // an HttpError(400) on malformed JSON (stacksjs/stacks#1859 H-5) —
+    // route that to the standard error response path instead of letting
+    // it bubble out of the handler as an unhandled rejection.
+    try {
+      await parseRequestBody(req)
+    }
+    catch (err) {
+      const error = err instanceof Error ? err : new Error(String(err))
+      return createMiddlewareErrorResponse(
+        error as Error & { statusCode?: number, status?: number },
+        req,
+      )
+    }
     const enhancedReq = enhanceRequest(req)
     if (actionPrefetch) await actionPrefetch
 
@@ -1695,10 +1707,29 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
       // Empty body on a JSON-typed POST is common (clients sending only
       // query/path params). Land as `{}` so `request.get('x')` returns
       // undefined instead of throwing, and validation reports the missing
-      // field cleanly. Malformed JSON also collapses to `{}` for the same
-      // reason — the validator owns the "you sent garbage" diagnostic.
-      const body = await req.clone().json().catch(() => ({}))
-      ;req.jsonBody = body && typeof body === 'object' ? body : {}
+      // field cleanly. **Malformed** JSON used to collapse to `{}` too,
+      // which let bad-shape bodies bypass action validation when the
+      // action didn't declare schemas for every field (e.g. truncated
+      // JSON sent by an attacker). Now: a parse error throws a 400 so
+      // the middleware chain returns a proper "Invalid JSON body"
+      // response. Empty body is still allowed (Content-Length: 0 →
+      // empty string → no parse attempt). See stacksjs/stacks#1859 H-5.
+      const cloned = req.clone()
+      const raw = await cloned.text()
+      if (raw.length === 0) {
+        ;req.jsonBody = {}
+      }
+      else {
+        try {
+          const body = JSON.parse(raw)
+          ;req.jsonBody = body && typeof body === 'object' ? body : {}
+        }
+        catch (parseErr) {
+          const message = parseErr instanceof Error ? parseErr.message : 'Invalid JSON'
+          const { HttpError } = await import('@stacksjs/error-handling')
+          throw new HttpError(400, `Invalid JSON body: ${message}`)
+        }
+      }
     }
     else if (contentType.includes('application/x-www-form-urlencoded')) {
       const text = await req.clone().text()
@@ -1738,6 +1769,15 @@ async function parseRequestBody(req: EnhancedRequest): Promise<void> {
     }
   }
   catch (e) {
+    // HttpError thrown by the malformed-JSON path is an intentional
+    // signal — let it propagate so the handler wrapper can turn it
+    // into a 400 response. Everything else is best-effort body
+    // parsing (e.g. multipart with weird shape) where falling
+    // through to a `{}` body keeps the request alive for the
+    // action / validator to surface a clearer error.
+    const status = (e as { status?: number, statusCode?: number })?.status
+      ?? (e as { status?: number, statusCode?: number })?.statusCode
+    if (typeof status === 'number') throw e
     log.debug('[stacks-router] Body parsing failed:', e)
   }
 }
