@@ -457,30 +457,77 @@ export type {
   ModelDefinition,
 } from '@stacksjs/query-builder'
 
-// The following type utilities are referenced by the framework but are not
-// yet exported by the installed `bun-query-builder` version. Until upstream
-// catches up we ship structural stubs so consumer code still type-checks.
-// These intentionally fall back to `any` to avoid spurious narrowing errors;
-// once `bun-query-builder` exports the real shapes, remove these stubs.
-export type InferFillableAttributes<_M> = any
-export type InferNumericColumns<_M> = string
-export type InferColumnNames<_M> = string
-export type ModelRow<_M> = any
-export type ModelRowLoose<_M> = any
-export type ModelCreateData<_M> = any
-export type ModelCreateDataLoose<_M> = any
+// `InferFillableAttributes`, `InferNumericColumns`, `InferColumnNames`,
+// `ModelRow`, `ModelRowLoose`, `ModelCreateData`, `ModelCreateDataLoose`,
+// `NewModelData`, and `UpdateModelData` are exported via
+// `export * from './model-types'` above. They're real conditional types
+// over `Def<T>` (the model-definition extracted from a `defineModel()`
+// return value) — see `model-types.ts` for the implementations.
+// Previously this file re-declared them as `any` stubs which shadowed
+// the typed versions; stacksjs/stacks#1863 (T-1) restored the real types.
 
 // ---------------------------------------------------------------------------
-// Model row types — inferred from model definitions via bun-query-builder.
-// These replace hand-written interfaces and stay in sync automatically.
-// Consumers: import type { UserModel, NewUser } from '@stacksjs/orm'
+// Blessed framework-default model row types.
+//
+// Most consumer code reaches for `ModelRow<typeof User>` /
+// `NewModelData<typeof User>` directly — those are the preferred,
+// project-aware patterns and they automatically reflect any
+// customisation made to `app/Models/User.ts`.
+//
+// `UserModel` / `NewUser` are exported as "blessed" aliases for the
+// framework's default User model so legacy framework code (~220 call
+// sites across the cms / commerce / payments / dashboard packages)
+// keeps typechecking against a real shape rather than `any`. Project
+// code that ships its own User model with extra columns should
+// augment via TypeScript module augmentation:
+//
+// @example
+// // anywhere in your project (e.g. app/types.d.ts)
+// declare module '@stacksjs/orm' {
+//   interface UserModel extends ModelRow<typeof MyUser> {}
+//   interface NewUser extends NewModelData<typeof MyUser> {}
+// }
+//
+// Each is declared as an `interface` (not a `type`) so module
+// augmentation can extend it from project code.
 // ---------------------------------------------------------------------------
 
-/** User model row type — inferred from the User model definition. */
-export type UserModel = ModelRowLoose<unknown>
+/**
+ * Framework-default User row shape. Matches the attributes declared on
+ * `storage/framework/defaults/app/Models/User.ts` plus the system
+ * fields contributed by `useUuid` / `useTimestamps` / `useAuth` traits.
+ *
+ * For project-specific narrowing, prefer `ModelRow<typeof User>` so
+ * any added attributes flow through automatically.
+ */
+export interface UserModel {
+  id: number
+  uuid: string
+  name: string
+  email: string
+  password: string
+  avatar?: string | null
+  email_verified_at?: string | null
+  two_factor_secret?: string | null
+  public_key?: string | null
+  created_at: string
+  updated_at: string | null
+  [key: string]: unknown
+}
 
-/** Data required to create a new User — inferred fillable attributes. */
-export type NewUser = ModelCreateDataLoose<unknown>
+/**
+ * Framework-default insertable User shape — fillable attributes from
+ * the default User model, all optional (DB-side defaults can fill in
+ * the rest). For project-specific narrowing, prefer
+ * `NewModelData<typeof User>`.
+ */
+export interface NewUser {
+  name?: string
+  email?: string
+  password?: string
+  avatar?: string | null
+  [key: string]: unknown
+}
 
 // ---------------------------------------------------------------------------
 // Polymorphic trait table types — used by @stacksjs/cms and database drivers.
