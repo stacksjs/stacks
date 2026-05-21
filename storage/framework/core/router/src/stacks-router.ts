@@ -1206,9 +1206,13 @@ interface ActionValidations {
 }
 
 /**
- * Validate action input against defined validations
+ * Run an action's declarative `validations:` against the request.
+ *
+ * @internal Exported for regression coverage of path-param coercion
+ * (stacksjs/stacks#1865). Production callers should rely on the
+ * router's action-resolution path, which invokes this for you.
  */
-async function validateActionInput(req: EnhancedRequest, validations: ActionValidations): Promise<ValidationResult> {
+export async function validateActionInput(req: EnhancedRequest, validations: ActionValidations): Promise<ValidationResult> {
   const errors: Record<string, string[]> = {}
 
   // Pass `validations` so wire-stringified path/query values get coerced

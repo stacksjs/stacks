@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'bun:test'
-import { createStacksRouter, url } from '../src/stacks-router'
+import { createStacksRouter, url, validateActionInput } from '../src/stacks-router'
 
 // ---------------------------------------------------------------------------
 // createStacksRouter - basic instantiation
@@ -210,5 +210,113 @@ describe('handleRequest', () => {
     expect(res.status).toBe(200)
     const text = await res.text()
     expect(text).toBe('pong')
+  })
+})
+
+// ---------------------------------------------------------------------------
+// Path/query param type coercion for declarative validations
+//
+// Regression coverage for stacksjs/stacks#1865 — `validations:
+// { id: { rule: schema.number().positive() } }` on a path-param
+// previously 422'd every request because path values arrive as
+// strings (`'1'`) and `NumberValidator` is a strict `typeof === 'number'`
+// check. `getRequestInput` now coerces string path/query values
+// when the corresponding rule expects a non-string primitive
+// (`number` or `boolean`). Body fields are untouched (already typed
+// by the JSON parser).
+//
+// We test `validateActionInput` directly rather than registering a
+// full Action+route fixture because the router's action-resolution
+// path imports from disk (`cachedImport(fullPath)`), and disk-resident
+// fixtures would either pollute the project's action search paths or
+// require a per-test cleanup harness. The coercion logic lives inside
+// `getRequestInput`, which `validateActionInput` calls — testing the
+// caller covers both.
+// ---------------------------------------------------------------------------
+describe('path-param coercion (stacksjs/stacks#1865)', () => {
+  // Minimal stand-in for ts-validation's number/boolean shapes —
+  // the framework's `validateActionInput` only looks at `rule.name`
+  // and `rule.validate`, so we replicate just that contract here
+  // to avoid pulling the full @stacksjs/validation surface into
+  // this test file.
+  function numberRule(predicate: (n: number) => boolean = () => true) {
+    return {
+      name: 'number',
+      validate: (value: unknown) => ({
+        valid: typeof value === 'number' && !Number.isNaN(value) && predicate(value),
+        errors: typeof value !== 'number' || Number.isNaN(value)
+          ? [{ message: 'Must be a number' }]
+          : !predicate(value) ? [{ message: 'Predicate failed' }] : [],
+      }),
+    }
+  }
+
+  function booleanRule() {
+    return {
+      name: 'boolean',
+      validate: (value: unknown) => ({
+        valid: typeof value === 'boolean',
+        errors: typeof value === 'boolean' ? [] : [{ message: 'Must be a boolean' }],
+      }),
+    }
+  }
+
+  // Build a synthetic EnhancedRequest the same way bun-router does
+  // after a match: `req.params` is set on the original Request object
+  // (it's a regular property assignment, not part of the WHATWG type).
+  function makeRequest(url: string, params?: Record<string, string>, init?: RequestInit) {
+    const req = new Request(url, init) as Request & { params?: Record<string, string> }
+    if (params) req.params = params
+    return req as any
+  }
+
+  test('numeric path param "1" coerces to 1 and passes schema.number().positive()', async () => {
+    const req = makeRequest('http://localhost/judges/1/follow', { id: '1' }, { method: 'POST' })
+    const result = await validateActionInput(req, {
+      id: { rule: numberRule(n => n > 0), message: 'Invalid judge id.' },
+    })
+    expect(result.valid).toBe(true)
+    expect(result.errors).toEqual({})
+  })
+
+  test('non-numeric path param "abc" stays a string so validator emits an error', async () => {
+    const req = makeRequest('http://localhost/judges/abc/follow', { id: 'abc' }, { method: 'POST' })
+    const result = await validateActionInput(req, {
+      id: { rule: numberRule(n => n > 0), message: 'Invalid judge id.' },
+    })
+    expect(result.valid).toBe(false)
+    expect(result.errors.id?.[0]).toBe('Invalid judge id.')
+  })
+
+  test('boolean query "?active=true" coerces to true under schema.boolean()', async () => {
+    const req = makeRequest('http://localhost/search?active=true')
+    const result = await validateActionInput(req, {
+      active: { rule: booleanRule(), message: 'Invalid active flag.' },
+    })
+    expect(result.valid).toBe(true)
+  })
+
+  test('boolean query "?active=false" coerces to false under schema.boolean()', async () => {
+    const req = makeRequest('http://localhost/search?active=false')
+    const result = await validateActionInput(req, {
+      active: { rule: booleanRule(), message: 'Invalid active flag.' },
+    })
+    expect(result.valid).toBe(true)
+  })
+
+  test('garbage numeric path "12abc" fails — Number("12abc") is NaN, value stays a string', async () => {
+    const req = makeRequest('http://localhost/judges/12abc/follow', { id: '12abc' }, { method: 'POST' })
+    const result = await validateActionInput(req, {
+      id: { rule: numberRule(n => n > 0), message: 'Invalid judge id.' },
+    })
+    expect(result.valid).toBe(false)
+  })
+
+  test('non-canonical boolean "?active=yes" stays a string and fails', async () => {
+    const req = makeRequest('http://localhost/search?active=yes')
+    const result = await validateActionInput(req, {
+      active: { rule: booleanRule(), message: 'Invalid active flag.' },
+    })
+    expect(result.valid).toBe(false)
   })
 })
