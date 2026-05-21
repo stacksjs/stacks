@@ -168,6 +168,7 @@ export class Auth {
     try {
       const client = await db.selectFrom('oauth_clients')
         .where('personal_access_client', '=', true)
+        .where('revoked', '=', false)
         .selectAll()
         .executeTakeFirst()
 
@@ -186,8 +187,14 @@ export class Auth {
   }
 
   private static async validateClient(clientId: number, clientSecret: string): Promise<boolean> {
+    // Filter by `revoked = false` at the DB layer so a revoked client
+    // can't validate even with a correct secret. The previous code
+    // only checked secret equality, so `revokeClient()` flips
+    // `oauth_clients.revoked = true` but `requestToken` continued to
+    // mint tokens for the revoked client. See stacksjs/stacks#1860 H-4.
     const client = await db.selectFrom('oauth_clients')
       .where('id', '=', clientId)
+      .where('revoked', '=', false)
       .selectAll()
       .executeTakeFirst()
 
@@ -275,16 +282,25 @@ export class Auth {
     // The per-IP throttle middleware on /api/auth/login is the first
     // line; this is the second (in case the attacker rotates IPs but
     // keeps targeting one inbox).
-    if (RateLimiter.isRateLimited(email))
-      return false
+    const isRateLimited = RateLimiter.isRateLimited(email)
 
     const user = await User.where('email', '=', email).first()
     const authPass = credentials[password] || ''
 
     // Always run hash verification to prevent timing-based user enumeration
-    // If user doesn't exist, verify against a dummy hash
+    // AND to close the lockout-timing oracle (stacksjs/stacks#1860 H-9):
+    // the previous early-return on rate-limit skipped the hash entirely,
+    // so an attacker could distinguish "locked out" (fast response) from
+    // "wrong password" (slow bcrypt) and confirm which accounts they'd
+    // already triggered the lockout on. Running the hash unconditionally
+    // makes both paths spend the same CPU.
     const hashToVerify = user?.password || DUMMY_BCRYPT_HASH
     const hashCheck = await verifyHash(authPass, hashToVerify)
+
+    // If the account is currently locked out, refuse — AFTER the dummy
+    // hash above so the response timing matches the wrong-password branch.
+    if (isRateLimited)
+      return false
 
     if (hashCheck && user) {
       RateLimiter.resetAttempts(email)
@@ -779,25 +795,29 @@ export class Auth {
   }
 
   /**
-   * Check if current token has ALL specified abilities
+   * Check if current token has ALL specified abilities.
+   *
+   * Fetches the token once and checks abilities locally. The previous
+   * implementation re-called `tokenCan(ability)` per iteration, which
+   * re-fetched the token from the DB on every cache miss
+   * (stacksjs/stacks#1860 M-4).
    */
   public static async tokenCanAll(abilities: string[]): Promise<boolean> {
-    for (const ability of abilities) {
-      if (!(await this.tokenCan(ability)))
-        return false
-    }
-    return true
+    const token = await this.currentAccessToken()
+    if (!token) return false
+    if (token.abilities.includes('*')) return true
+    return abilities.every(a => token.abilities.includes(a))
   }
 
   /**
-   * Check if current token has ANY of the specified abilities
+   * Check if current token has ANY of the specified abilities. Same
+   * single-fetch optimization as `tokenCanAll` (stacksjs/stacks#1860 M-4).
    */
   public static async tokenCanAny(abilities: string[]): Promise<boolean> {
-    for (const ability of abilities) {
-      if (await this.tokenCan(ability))
-        return true
-    }
-    return false
+    const token = await this.currentAccessToken()
+    if (!token) return false
+    if (token.abilities.includes('*')) return true
+    return abilities.some(a => token.abilities.includes(a))
   }
 
   // ============================================================================

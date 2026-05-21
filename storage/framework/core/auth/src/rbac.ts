@@ -53,13 +53,62 @@ export interface UserPermissionPivot {
 }
 
 /**
+ * FIFO-bounded Map. Wraps Map with a hard size cap; on overflow, the
+ * oldest entry (Map insertion order) is evicted. Used for the RBAC
+ * per-user caches because the previous unbounded `Map<number, ...>`
+ * grew without limit across the process lifetime — a long-running
+ * server serving many distinct users would OOM eventually
+ * (stacksjs/stacks#1860 M-5). Same shape as `BoundedMap` in
+ * `@stacksjs/router/stacks-router.ts`.
+ */
+class BoundedMap<K, V> {
+  private map = new Map<K, V>()
+
+  constructor(private readonly max: number) {}
+
+  get(key: K): V | undefined {
+    return this.map.get(key)
+  }
+
+  has(key: K): boolean {
+    return this.map.has(key)
+  }
+
+  set(key: K, value: V): this {
+    if (this.map.has(key)) this.map.delete(key)
+    this.map.set(key, value)
+    if (this.map.size > this.max) {
+      const oldest = this.map.keys().next().value
+      if (oldest !== undefined) this.map.delete(oldest)
+    }
+    return this
+  }
+
+  delete(key: K): boolean {
+    return this.map.delete(key)
+  }
+
+  clear(): void {
+    this.map.clear()
+  }
+}
+
+/**
+ * Soft cap on per-user role/permission caches. 10k active users with
+ * cached lookups covers any realistic small-to-mid app; larger
+ * deployments should rely on the underlying store's own
+ * indexing/caching anyway.
+ */
+const RBAC_USER_CACHE_MAX = 10_000
+
+/**
  * In-memory role/permission cache for performance.
  * Call `flushRbacCache()` after modifying roles/permissions.
  */
 const cache = {
-  userRoles: new Map<number, RoleRecord[]>(),
-  userPermissions: new Map<number, PermissionRecord[]>(),
-  rolePermissions: new Map<number, PermissionRecord[]>(),
+  userRoles: new BoundedMap<number, RoleRecord[]>(RBAC_USER_CACHE_MAX),
+  userPermissions: new BoundedMap<number, PermissionRecord[]>(RBAC_USER_CACHE_MAX),
+  rolePermissions: new BoundedMap<number, PermissionRecord[]>(RBAC_USER_CACHE_MAX),
   roles: new Map<string, RoleRecord>(),
   permissions: new Map<string, PermissionRecord>(),
 }
@@ -138,8 +187,20 @@ export function flushRbacCache(): void {
 // ─── Helper to get user ID ─────────────────────────────────────
 
 function getUserId(user: UserModel | { id: number } | number): number {
-  if (typeof user === 'number') return user
-  return (user as any).id
+  if (typeof user === 'number') {
+    if (!Number.isFinite(user) || user <= 0)
+      throw new TypeError('RBAC user id must be a positive number')
+    return user
+  }
+  const id = (user as { id?: unknown }).id
+  if (typeof id !== 'number' || !Number.isFinite(id) || id <= 0) {
+    // Validate at the boundary so `user.id === undefined` doesn't
+    // collapse into a shared `undefined` cache slot (every such user
+    // would share the same cached roles/permissions). See
+    // stacksjs/stacks#1860 M-6.
+    throw new TypeError(`RBAC user id must be a positive number, got ${typeof id} (${String(id)})`)
+  }
+  return id
 }
 
 // ─── Role Management ────────────────────────────────────────────
