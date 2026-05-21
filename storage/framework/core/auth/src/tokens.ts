@@ -60,6 +60,32 @@ function hashToken(token: string): string {
 }
 
 /**
+ * Compute the at-rest hash for a bearer that might be in either of the
+ * framework's two historical shapes (stacksjs/stacks#1867):
+ *
+ *   - **Raw** (this module's native shape, `tokens.ts:createToken`):
+ *     `randomBytes(40).hex()` — bearer is the value, stored as
+ *     `sha256(bearer)`.
+ *   - **Legacy `Auth.*`** (`authentication.ts:createTokenForUser`):
+ *     `${jwt}:${encryptedId}` — bearer is the concat, stored as
+ *     `sha256(jwt)`. The encryptedId is only used for fast id lookup,
+ *     never persisted.
+ *
+ * Without this helper, `findToken("jwt:encryptedId")` did
+ * `sha256("jwt:encryptedId")` which never matched the stored
+ * `sha256("jwt")` — and `revokeOtherTokens` then degraded into
+ * `revokeAllTokens` for any Auth-minted session.
+ *
+ * Bearers with a colon are treated as the legacy shape; everything
+ * else as the native shape.
+ */
+function bearerLookupHash(bearer: string): string {
+  const colonIdx = bearer.indexOf(':')
+  const lookup = colonIdx === -1 ? bearer : bearer.substring(0, colonIdx)
+  return hashToken(lookup)
+}
+
+/**
  * Generate a secure random token
  */
 function generateSecureToken(bytes: number = 40): string {
@@ -109,7 +135,7 @@ export async function tokens(userId: number): Promise<AccessToken[]> {
  * const token = await findToken('abc123...')
  */
 export async function findToken(plainTextToken: string): Promise<AccessToken | null> {
-  const hashedToken = hashToken(plainTextToken)
+  const hashedToken = bearerLookupHash(plainTextToken)
 
   const rows = await db.unsafe(`
     SELECT * FROM oauth_access_tokens
@@ -615,7 +641,10 @@ export async function deleteRevokedRefreshTokens(daysOld: number = 7): Promise<n
  * await revokeToken('abc123...')
  */
 export async function revokeToken(plainTextToken: string): Promise<void> {
-  const hashedToken = hashToken(plainTextToken)
+  // Use the dual-shape lookup so bearers minted by `Auth.createTokenForUser`
+  // (legacy `${jwt}:${encryptedId}` form) revoke the right row instead
+  // of silently missing. See stacksjs/stacks#1867.
+  const hashedToken = bearerLookupHash(plainTextToken)
 
   // Also revoke associated refresh tokens
   await db.unsafe(`
