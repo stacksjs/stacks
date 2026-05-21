@@ -12,6 +12,8 @@ import type { ActionHandler, EnhancedRequest, Route, ServerOptions } from '@stac
 // (stacksjs/stacks#1863 T-3).
 import './request-augmentation'
 import process from 'node:process'
+import { Buffer } from 'node:buffer'
+import { timingSafeEqual } from 'node:crypto'
 import { log } from '@stacksjs/logging'
 import { path as p } from '@stacksjs/path'
 import { UploadedFile } from '@stacksjs/storage'
@@ -129,6 +131,50 @@ class BoundedMap<K, V> {
 
   get size(): number {
     return this.map.size
+  }
+}
+
+/**
+ * Decide whether a request is authorized to read `/__routes` and
+ * `/__openapi.json`.
+ *
+ * - When `STACKS_EXPOSE_ROUTES` is unset, the endpoint is allowed only
+ *   outside production (`APP_ENV`/`NODE_ENV` !== `'production'`).
+ * - When set to `'1'`, behaves as above (legacy "just turn it on" flag
+ *   for dev convenience).
+ * - When set to any other string, that value is treated as a shared
+ *   secret. The request must echo it as `X-Stacks-Routes-Token`
+ *   (header) or `?token=` (query string), compared in constant time.
+ *   This branch works in any environment, prod included — without it,
+ *   the previous behaviour silently published the entire route table
+ *   to anyone who hit the URL in a `STACKS_EXPOSE_ROUTES=1`
+ *   production deployment (stacksjs/stacks#1859 R-4).
+ */
+function isExposeRoutesAuthorized(req: Request): boolean {
+  const flag = process.env.STACKS_EXPOSE_ROUTES ?? ''
+  if (!flag) {
+    const env = (process.env.APP_ENV ?? '').toLowerCase()
+    const isProd = env === 'production' || process.env.NODE_ENV === 'production'
+    return !isProd
+  }
+  if (flag === '1') {
+    const env = (process.env.APP_ENV ?? '').toLowerCase()
+    const isProd = env === 'production' || process.env.NODE_ENV === 'production'
+    return !isProd
+  }
+
+  // Token mode — flag is the required value; request must echo it.
+  const url = new URL(req.url)
+  const submitted = req.headers.get('x-stacks-routes-token')
+    || req.headers.get('X-Stacks-Routes-Token')
+    || url.searchParams.get('token')
+    || ''
+  if (typeof submitted !== 'string' || submitted.length === 0 || submitted.length !== flag.length) return false
+  try {
+    return timingSafeEqual(Buffer.from(submitted), Buffer.from(flag))
+  }
+  catch {
+    return false
   }
 }
 
@@ -1976,15 +2022,21 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       })
       // Internal route-introspection endpoint. Powers `buddy dev` route
       // listing on startup and future `buddy route:list` consumers.
-      // Locked to dev/staging via the `STACKS_EXPOSE_ROUTES` env so
-      // production deployments don't unintentionally publish their
-      // route surface to the outside world.
-      bunRouter.get('/__routes', () => {
-        const env = (process.env.APP_ENV ?? '').toLowerCase()
-        const isProd = env === 'production' || process.env.NODE_ENV === 'production'
-        if (isProd && process.env.STACKS_EXPOSE_ROUTES !== '1') {
-          return Response.json({ error: 'disabled in production' }, 404)
-        }
+      //
+      // Access semantics for `STACKS_EXPOSE_ROUTES` env:
+      //   - unset / empty   → endpoint is 404 outside dev
+      //   - "1"             → endpoint is open in non-prod, 404 in prod
+      //   - any other value → that value is a required token; the request
+      //                       must echo it as `X-Stacks-Routes-Token`
+      //                       (header) OR `?token=` query param. Works in
+      //                       any environment, prod included.
+      //
+      // The token mode closes stacksjs/stacks#1859 R-4: the previous
+      // implementation accepted `STACKS_EXPOSE_ROUTES=1` in prod with
+      // no auth gate, publishing the full route table + action paths
+      // to anyone who learned the URL.
+      bunRouter.get('/__routes', (req: Request) => {
+        if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, 404)
         return Response.json(listRegisteredRoutes())
       })
 
@@ -2053,12 +2105,8 @@ export function createStacksRouter(config: StacksRouterConfig = {}): StacksRoute
       // /__routes because exposing the full schema is implicitly
       // exposing the route table. SwaggerUI/Insomnia/Postman can point
       // straight at this URL in dev for instant docs.
-      bunRouter.get('/__openapi.json', async () => {
-        const env = (process.env.APP_ENV ?? '').toLowerCase()
-        const isProd = env === 'production' || process.env.NODE_ENV === 'production'
-        if (isProd && process.env.STACKS_EXPOSE_ROUTES !== '1') {
-          return Response.json({ error: 'disabled in production' }, 404)
-        }
+      bunRouter.get('/__openapi.json', async (req: Request) => {
+        if (!isExposeRoutesAuthorized(req)) return Response.json({ error: 'disabled' }, 404)
         try {
           const { generateOpenApi } = await import('@stacksjs/api')
           const spec = await (generateOpenApi as () => Promise<unknown>)()
