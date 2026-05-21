@@ -20,7 +20,6 @@ import { decrypt, encrypt, verifyHash } from '@stacksjs/security'
 import { log } from '@stacksjs/logging'
 import { DUMMY_BCRYPT_HASH } from './internal-constants'
 import { RateLimiter } from './rate-limiter'
-import { TokenManager } from './token'
 
 /**
  * Per-request auth state, scoped to the active `EnhancedRequest` via
@@ -61,7 +60,7 @@ function authStateOrNull(): RequestAuthState | null {
 function hashToken(token: string): string {
   return createHash('sha256').update(token).digest('hex')
 }
-import { parseScopes } from './tokens'
+import { createToken as createRawToken, parseScopes } from './tokens'
 
 export class Auth {
   // Per-request state lives on the request object via `authStateOrNull()`
@@ -486,8 +485,6 @@ export class Auth {
     user: UserModel,
     options?: TokenCreateOptions,
   ): Promise<NewAccessToken> {
-    const client = await this.getPersonalAccessClient()
-
     const name = options?.name ?? config.auth.defaultTokenName ?? 'auth-token'
     const abilities = options?.abilities ?? options?.scopes ?? config.auth.defaultAbilities ?? ['*']
 
@@ -496,90 +493,53 @@ export class Auth {
     const accessTtlMs = options?.expiresInMinutes !== undefined
       ? options.expiresInMinutes * 60 * 1000
       : (config.auth.tokenExpiry ?? 60 * 60 * 1000)
-    const expiresAt = options?.expiresAt ?? new Date(Date.now() + accessTtlMs)
+    const explicitExpiresAt = options?.expiresAt
+    const expiresAt = explicitExpiresAt ?? new Date(Date.now() + accessTtlMs)
+    const expiresInMinutes = Math.max(1, Math.floor((expiresAt.getTime() - Date.now()) / (60 * 1000)))
+    const refreshExpiresInDays = options?.refreshExpiresInDays
+      ?? Math.max(1, Math.round((config.auth.refreshTokenExpiry ?? 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)))
 
-    // Generate a JWT-like token with embedded metadata. Use the resolved
-    // expiry so the JWT's `exp` claim matches the DB row instead of
-    // hard-coding 30 days as before.
-    const expiresInSeconds = Math.max(1, Math.floor((expiresAt.getTime() - Date.now()) / 1000))
-    const token = TokenManager.generateJWT(user.id, expiresInSeconds)
-
-    // Hash the token before storing — only the hash is persisted
-    const hashedToken = hashToken(token)
     log.debug(`[auth] Creating token for user#${user.id}: ${name}`)
 
-    // Store the hashed token in the database
-    await db.insertInto('oauth_access_tokens')
-      .values({
-        user_id: user.id,
-        oauth_client_id: client.id,
-        name,
-        token: hashedToken,
-        scopes: JSON.stringify(abilities),
-        revoked: false,
-        expires_at: formatDate(expiresAt),
-      })
-      .execute()
-
-    // Get the inserted token record by the hashed value
-    const insertedToken = await db.selectFrom('oauth_access_tokens')
-      .where('token', '=', hashedToken)
-      .selectAll()
-      .executeTakeFirst()
-
-    const insertId = Number(insertedToken?.id)
-
-    if (!insertId)
-      throw new HttpError(500, 'Failed to create token')
-
-    // Encrypt the token ID with the framework-wide app key — see
-    // encryptTokenId() docstring for why this no longer uses the
-    // OAuth client secret.
-    const encryptedId = await this.encryptTokenId(insertId)
-
-    // Combine into final token format: token:encryptedId
-    const plainTextToken = `${token}:${encryptedId}` as AuthToken
-
-    const accessToken: PersonalAccessToken = {
-      id: insertId,
-      userId: user.id,
-      clientId: client.id,
+    // Delegate to the canonical `tokens.ts:createToken` so the bearer
+    // shape is the raw 40-byte hex used throughout the framework
+    // (`tokens.ts:findToken`, `revokeToken`, `currentAccessToken`,
+    // `tokenCan`, …). Previously this method emitted a separate
+    // `${jwt}:${encryptedId}` shape that the `tokens.ts` helpers
+    // couldn't resolve — `revokeOtherTokens` then degraded into
+    // `revokeAllTokens` for any Auth-minted session. See
+    // stacksjs/stacks#1867.
+    const result = await createRawToken(
+      user.id as number,
       name,
-      scopes: abilities,
       abilities,
-      expiresAt,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      revoked: false,
+      {
+        expiresInMinutes,
+        withRefreshToken: options?.withRefreshToken !== false,
+        refreshExpiresInDays,
+      },
+    )
+
+    const plainTextToken = result.plainTextToken as AuthToken
+    const accessToken: PersonalAccessToken = {
+      id: result.accessToken.id,
+      userId: result.accessToken.userId,
+      clientId: result.accessToken.clientId,
+      name: result.accessToken.name,
+      scopes: result.accessToken.scopes,
+      abilities,
+      expiresAt: result.accessToken.expiresAt ?? expiresAt,
+      createdAt: result.accessToken.createdAt,
+      updatedAt: result.accessToken.updatedAt,
+      revoked: result.accessToken.revoked,
       plainTextToken,
-    }
-
-    // Issue a paired refresh token unless explicitly opted out. Stored
-    // hashed against the access-token id; rotated on every refresh
-    // exchange via /auth/refresh (see RefreshTokenAction + tokens.ts).
-    let refreshTokenPlain: string | undefined
-    if (options?.withRefreshToken !== false) {
-      const refreshTtlDays = options?.refreshExpiresInDays
-        ?? Math.max(1, Math.round((config.auth.refreshTokenExpiry ?? 30 * 24 * 60 * 60 * 1000) / (24 * 60 * 60 * 1000)))
-      refreshTokenPlain = randomBytes(40).toString('hex')
-      const hashedRefresh = hashToken(refreshTokenPlain)
-      const refreshExpiresAt = new Date(Date.now() + refreshTtlDays * 24 * 60 * 60 * 1000)
-
-      await db.insertInto('oauth_refresh_tokens')
-        .values({
-          access_token_id: insertId,
-          token: hashedRefresh,
-          revoked: false,
-          expires_at: formatDate(refreshExpiresAt),
-        })
-        .execute()
     }
 
     return {
       accessToken,
       plainTextToken,
-      refreshToken: refreshTokenPlain,
-      expiresIn: expiresInSeconds,
+      refreshToken: result.refreshToken,
+      expiresIn: result.expiresIn,
     }
   }
 
@@ -937,62 +897,44 @@ export class Auth {
   }
 
   /**
-   * Rotate (refresh) a token
+   * Rotate (refresh) a bearer.
+   *
+   * Revokes the old token and mints a fresh one with the same name +
+   * abilities + remaining-lifetime expiry. Returns the new bearer
+   * (raw shape from `tokens.ts:createToken`) or `null` when the old
+   * bearer didn't match a live row.
+   *
+   * Accepts both bearer shapes: the legacy `${jwt}:${encryptedId}`
+   * form (via `bearerLookupHash` in `tokens.ts`) and the canonical
+   * raw form (stacksjs/stacks#1867).
    */
   public static async rotateToken(oldToken: string): Promise<AuthToken | null> {
-    const parsed = this.parseToken(oldToken)
-    if (!parsed)
-      return null
+    // Look up the existing row through `findToken` so the legacy
+    // jwt:encryptedId shape resolves via `bearerLookupHash`.
+    const { findToken: findRawToken, revokeToken: revokeRawToken } = await import('./tokens')
+    const existing = await findRawToken(oldToken)
+    if (!existing) return null
 
-    const { plainToken, encryptedId } = parsed
-    const decryptedId = await this.decryptTokenId(encryptedId)
-    if (!decryptedId)
-      return null
+    const remainingMs = existing.expiresAt ? existing.expiresAt.getTime() - Date.now() : (config.auth.tokenExpiry ?? 60 * 60 * 1000)
+    const expiresInMinutes = Math.max(1, Math.floor(remainingMs / (60 * 1000)))
 
-    const accessToken = await db.selectFrom('oauth_access_tokens')
-      .where('id', '=', Number(decryptedId))
-      .selectAll()
-      .executeTakeFirst()
+    // Revoke the old row before minting the new one. Sequencing
+    // matters: a crash between the two leaves the user without a
+    // valid token but doesn't leave a stale shadow row.
+    await revokeRawToken(oldToken)
 
-    if (!accessToken)
-      return null
+    // Mint a fresh token via the canonical path so the new bearer
+    // matches the raw shape used by every helper in tokens.ts.
+    const user = await User.find(existing.userId as number)
+    if (!user) return null
+    const result = await this.createTokenForUser(user, {
+      name: existing.name,
+      abilities: existing.scopes ?? ['*'],
+      expiresInMinutes,
+      withRefreshToken: false,
+    })
 
-    // The DB stores the *hashed* token (see createTokenForUser line ~380);
-    // the previous direct `!== plainToken` comparison could never match,
-    // so rotateToken silently returned null on every call. Hash + use a
-    // timing-safe compare to mirror validateToken's contract.
-    const hashedPlainToken = hashToken(plainToken)
-    const storedHash = String(accessToken.token)
-    if (hashedPlainToken.length !== storedHash.length)
-      return null
-    const tokenMatches = timingSafeEqual(
-      Buffer.from(hashedPlainToken, 'utf-8'),
-      Buffer.from(storedHash, 'utf-8'),
-    )
-    if (!tokenMatches)
-      return null
-
-    // Generate new JWT token. Match the expiry to the row's existing
-    // expires_at (rotation extends a token's freshness window without
-    // pushing past its original lifetime).
-    const expiresAtMs = accessToken.expires_at ? new Date(String(accessToken.expires_at)).getTime() : Date.now() + (config.auth.tokenExpiry ?? 60 * 60 * 1000)
-    const expiresInSeconds = Math.max(1, Math.floor((expiresAtMs - Date.now()) / 1000))
-    const newToken = TokenManager.generateJWT(accessToken.user_id as number, expiresInSeconds)
-
-    // Update the token (store the *hash*, never the plaintext JWT — the
-    // raw JWT is only ever returned to the caller, never persisted).
-    await db.updateTable('oauth_access_tokens')
-      .set({
-        token: hashToken(newToken),
-        updated_at: formatDate(new Date()),
-      })
-      .where('id', '=', accessToken.id)
-      .execute()
-
-    // Return new token with encrypted ID — uses the framework app key
-    // (see encryptTokenId() docstring) rather than the client secret.
-    const newEncryptedId = await this.encryptTokenId(accessToken.id)
-    return `${newToken}:${newEncryptedId}` as AuthToken
+    return result.plainTextToken
   }
 
   /**
