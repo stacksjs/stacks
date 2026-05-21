@@ -58,7 +58,7 @@ import { Middleware } from '@stacksjs/router'
  * ```
  */
 
-const CSRF_COOKIE_NAME = 'X-CSRF-Token'
+export const CSRF_COOKIE_NAME = 'X-CSRF-Token'
 const CSRF_HEADER_NAME = 'x-csrf-token'
 const TOKEN_BYTES = 32
 
@@ -73,6 +73,58 @@ const TOKEN_BYTES = 32
  */
 export function generateCsrfToken(): string {
   return randomBytes(TOKEN_BYTES).toString('hex')
+}
+
+/**
+ * Seed the CSRF cookie on the outgoing response if the incoming request
+ * didn't already carry one. Used by the router as a post-response step
+ * on safe-method (GET/HEAD/OPTIONS) responses so SPAs get a usable
+ * cookie value before they ever submit an unsafe request.
+ *
+ * The audit (stacksjs/stacks#1859 INVESTIGATE → confirmed) found that
+ * the CSRF middleware was reading the cookie but nothing was ever
+ * writing it — every browser POST without a Bearer token therefore
+ * failed CSRF by default. This helper closes that gap.
+ *
+ * The cookie is:
+ * - `SameSite=Lax` (sufficient for cross-site CSRF mitigation while
+ *   still allowing top-level navigation to set it)
+ * - **NOT** `HttpOnly` (SPA JS needs to read the value and echo it as
+ *   a header — the whole point of the double-submit pattern)
+ * - `Secure` only over HTTPS (so localhost dev still works)
+ * - 2-hour `Max-Age` — short enough to limit replay if leaked, long
+ *   enough that idle tabs don't constantly re-fetch tokens
+ */
+export function seedCsrfCookieIfMissing(req: Request, response: Response): Response {
+  const cookieHeader = req.headers.get('cookie') || ''
+  if (cookieHeader.includes(`${CSRF_COOKIE_NAME}=`) || cookieHeader.includes('csrf-token=')) {
+    return response
+  }
+
+  const token = generateCsrfToken()
+  const isSecure = req.url.startsWith('https://')
+  const cookie = [
+    `${CSRF_COOKIE_NAME}=${token}`,
+    'Path=/',
+    'SameSite=Lax',
+    'Max-Age=7200',
+    isSecure ? 'Secure' : null,
+  ].filter(Boolean).join('; ')
+
+  // Append (not Set) so multiple Set-Cookie headers can coexist with any
+  // cookies the action handler set itself.
+  try {
+    response.headers.append('Set-Cookie', cookie)
+    return response
+  }
+  catch {
+    // Response headers can be immutable (e.g., when the response was
+    // built from a static asset). Clone with a fresh Headers object
+    // to attach the cookie.
+    const headers = new Headers(response.headers)
+    headers.append('Set-Cookie', cookie)
+    return new Response(response.body, { status: response.status, statusText: response.statusText, headers })
+  }
 }
 
 /**

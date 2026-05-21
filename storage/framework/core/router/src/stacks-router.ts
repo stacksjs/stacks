@@ -743,6 +743,29 @@ function createMiddlewareHandler(routeKey: string, handler: StacksHandler): Rout
       // Clear tracked queries after each request to prevent accumulation
       clearTrackedQueries()
 
+      // CSRF cookie seeding — on safe-method responses (GET/HEAD/OPTIONS),
+      // attach a fresh `X-CSRF-Token` cookie when none is present so SPAs
+      // and forms have a usable token to echo on the next unsafe request.
+      // Without this, the default-on CSRF middleware rejected every
+      // browser POST that lacked a Bearer-token bypass — the cookie was
+      // read but never written. See stacksjs/stacks#1859 (CSRF
+      // seeding INVESTIGATE → confirmed broken-by-default).
+      if (response) {
+        const safeMethod = req.method === 'GET' || req.method === 'HEAD' || req.method === 'OPTIONS'
+        if (safeMethod) {
+          try {
+            const { seedCsrfCookieIfMissing } = await import(p.storagePath('framework/defaults/app/Middleware/Csrf.ts'))
+            response = (seedCsrfCookieIfMissing as (req: Request, res: Response) => Response)(
+              enhancedReq as unknown as Request,
+              response,
+            )
+          }
+          catch (err) {
+            log.warn('[router] CSRF cookie seeding failed', { error: err })
+          }
+        }
+      }
+
       // CORS — applied BEFORE the request_id/Server-Timing rebuild path
       // so a JSON-error rewrite carries the freshly-set CORS headers
       // forward, and BEFORE compression so the resulting `Vary` value
