@@ -8,6 +8,7 @@ import type {
   CloudConfig,
   CmsConfig,
   CommerceConfig,
+  CorsConfig,
   DashboardConfig,
   DatabaseConfig,
   DnsConfig,
@@ -70,6 +71,14 @@ export interface StacksOptions {
    * you have any questions, feel free to reach out via Discord or GitHub Discussions.
    */
   auth: AuthConfig
+
+  /**
+   * **CORS Options**
+   *
+   * Cross-origin resource sharing policy applied to API responses.
+   * Configured via `config/cors.ts`. See {@link CorsConfig}.
+   */
+  cors?: CorsConfig
 
   /**
    * **Realtime Options**

@@ -1,3 +1,4 @@
+import type { CorsConfig, ResolvedCorsConfig } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
 import { Middleware } from '@stacksjs/router'
 
@@ -65,25 +66,12 @@ import { Middleware } from '@stacksjs/router'
  * ```
  */
 
-/** Resolved CORS configuration with all defaults applied. */
-export interface ResolvedCorsConfig {
-  origin: '*' | string[] | ((origin: string) => boolean)
-  methods: string[]
-  allowedHeaders: string[]
-  exposedHeaders: string[]
-  credentials: boolean
-  maxAge: number
-}
-
-/** Raw CORS config shape — every field optional. */
-export interface CorsConfig {
-  origin?: '*' | string[] | ((origin: string) => boolean)
-  methods?: string[]
-  allowedHeaders?: string[]
-  exposedHeaders?: string[]
-  credentials?: boolean
-  maxAge?: number
-}
+// `CorsConfig` + `ResolvedCorsConfig` live in `@stacksjs/types` so
+// `config/cors.ts` files can import them by package name and get
+// IntelliSense. The middleware re-exports them here for backwards
+// compatibility with consumers that previously imported them from this
+// file directly (stacksjs/stacks#1859 H-2).
+export type { CorsConfig, ResolvedCorsConfig }
 
 /** Defaults used when `config.cors` is missing or partial. */
 const DEFAULT_CORS: ResolvedCorsConfig = {
@@ -102,11 +90,10 @@ const DEFAULT_CORS: ResolvedCorsConfig = {
  */
 function resolveCorsConfig(): ResolvedCorsConfig {
   try {
-    // `config` is a proxy — accessing a missing key returns undefined, not throws.
-    // The `as any` lookup is the only place we accept it because the cors key
-    // is not yet in the typed config schema.
-    // eslint-disable-next-line ts/no-explicit-any
-    const userConfig = (config as any).cors as CorsConfig | undefined
+    // `config.cors` is now typed via `StacksOptions.cors?: CorsConfig`
+    // (stacksjs/stacks#1859 H-2). The proxy returns undefined when the
+    // key is missing, which the fall-through below handles.
+    const userConfig: CorsConfig | undefined = config.cors
     if (!userConfig)
       return DEFAULT_CORS
     return {

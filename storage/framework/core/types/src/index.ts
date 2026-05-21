@@ -19,6 +19,7 @@ export * from './cms'
 export * from './commerce'
 export * from './components'
 export * from './configure'
+export * from './cors'
 export * from './cron-jobs'
 export * from './dashboard'
 // Module-augments bun-query-builder's BrowserModelDefinition with the
