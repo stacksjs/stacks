@@ -29,17 +29,26 @@ export interface EmailVerificationResult {
  */
 function generateVerificationToken(userId: number): { token: string, hash: string } {
   const nonce = randomBytes(32).toString('hex')
-  const appKey = config.app.key || 'stacks-default-key'
+  const appKey = getAppKey()
   const payload = `${userId}:${nonce}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
   return { token: nonce, hash }
+}
+
+function getAppKey(): string {
+  const appKey = config.app.key
+  if (typeof appKey !== 'string' || appKey.length === 0) {
+    throw new Error('[auth/email-verification] Missing config.app.key; refusing to sign verification tokens with a fallback key')
+  }
+
+  return appKey
 }
 
 /**
  * Verify a token matches the stored hash
  */
 function verifyToken(userId: number, token: string, storedHash: string): boolean {
-  const appKey = config.app.key || 'stacks-default-key'
+  const appKey = getAppKey()
   const payload = `${userId}:${token}`
   const hash = createHmac('sha256', appKey).update(payload).digest('hex')
   const a = Buffer.from(hash)

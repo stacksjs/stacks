@@ -64,6 +64,11 @@ export function passwordResets(email: string): PasswordResetActions {
     const hashedToken = await makeHash(token, { algorithm: 'bcrypt' })
 
     await db
+      .deleteFrom('password_resets')
+      .where('email', '=', email)
+      .execute()
+
+    await db
       .insertInto('password_resets')
       .values({
         email,
@@ -139,6 +144,7 @@ export function passwordResets(email: string): PasswordResetActions {
       const resetRecord = await trx
         .selectFrom('password_resets')
         .where('email', '=', email)
+        .orderBy('created_at', 'desc')
         .selectAll()
         .executeTakeFirst()
 
