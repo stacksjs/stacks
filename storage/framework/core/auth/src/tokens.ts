@@ -427,12 +427,26 @@ export async function refreshToken(
     throw new HttpError(401, 'Invalid or expired refresh token')
   }
 
-  // Revoke the old refresh token
+  // Revoke the old refresh token AND the access token it was bound
+  // to. The previous code revoked only the refresh row, which left
+  // the prior access token valid until its `expires_at` (up to 1h by
+  // default). If the refresh token leaked, the attacker minted a
+  // fresh access token via this endpoint AND the victim's pre-
+  // refresh access token also stayed live — both pointing at the
+  // same user. The atomic revoke-paired-access-token ensures a leaked
+  // refresh produces only one usable access token at a time
+  // (stacksjs/stacks#1860 H-2).
   await db.unsafe(`
     UPDATE oauth_refresh_tokens
     SET revoked = ${boolTrue}
     WHERE id = ${param(1)}
   `, [refreshRow.id])
+
+  await db.unsafe(`
+    UPDATE oauth_access_tokens
+    SET revoked = ${boolTrue}
+    WHERE id = ${param(1)}
+  `, [refreshRow.access_token_id])
 
   // Create new access token
   const plainTextToken = generateSecureToken(40)
