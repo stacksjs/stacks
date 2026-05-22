@@ -386,7 +386,7 @@ export async function injectGlobalAutoImports(): Promise<void> {
     ['@stacksjs/cli', ['quotes']],
     ['@stacksjs/notifications', ['notify', 'useNotification', 'useEmail', 'useSMS', 'useChat', 'useDatabase']],
     ['@stacksjs/realtime', ['emit', 'emitToUser', 'emitToUsers', 'createChannel', 'dispatchBroadcast']],
-    ['@stacksjs/i18n', ['I18n', 'setLocale', 'getLocale']],
+    ['@stacksjs/i18n', ['I18n', 't', 'tc', 'te', 'setLocale', 'getLocale']],
     // `state`/`derived`/`effect` are stx signal helpers that userland
     // resource files (resources/functions/counter.ts, dark.ts, etc.)
     // call at module top-level. Without these injected globally,
@@ -420,6 +420,15 @@ export async function injectGlobalAutoImports(): Promise<void> {
     catch (err) {
       errors.push(err as Error)
     }
+  }
+
+  // Project `locales/*.yml` — used by STX `{{ t('key') }}` and actions.
+  try {
+    const { ensureLocalesLoaded } = await import('@stacksjs/i18n')
+    await ensureLocalesLoaded()
+  }
+  catch (err) {
+    errors.push(err as Error)
   }
 
   // Now that every framework primitive is fully evaluated and globalThis-ed,
