@@ -343,38 +343,9 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     ...(includeDashboard ? [dashboardPort] : []),
   ]
 
-  // Print Vite-style unified output. Banner first so the user has the URLs
-  // while servers boot — the "ready" line lands later, once each backend
-  // actually accepts a TCP connection on its port.
+  // Minimal header while backends boot — URLs print once everything is ready.
   console.log()
-  console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}`)
-  console.log()
-  console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
-  if (hasCustomDomain) {
-    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
-  }
-  if (nativeMode) {
-    console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
-  }
-  console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
-  if (hasCustomDomain) {
-    console.log(`  ${dim('➜')}  ${dim('Local API')}:   ${dim(`http://localhost:${apiPort}`)}`)
-  }
-  console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
-  if (hasCustomDomain) {
-    console.log(`  ${dim('➜')}  ${dim('Local docs')}:  ${dim(`http://localhost:${docsPort}`)}`)
-  }
-  if (includeDashboard) {
-    console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
-  }
-  if (options.verbose && domain) {
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
-    if (includeDashboard) {
-      console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
-    }
-  }
+  console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}  ${dim('starting…')}`)
   console.log()
 
   // Signal subprocesses that the main dev server manages the reverse proxy,
@@ -391,6 +362,13 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   if (process.env.STACKS_DEV_NO_KILL !== '1') {
     await cleanupStaleDevProcesses(managedPorts)
   }
+
+  // Mint TLS + start the rpx daemon in parallel with backend boot. Awaiting here
+  // would delay every dev server; readiness waits on this promise before writing
+  // registry entries.
+  const rpxTlsPreflight = hasCustomDomain && domain
+    ? prepareRpxTlsForDev({ domain, includeDashboard, options })
+    : Promise.resolve()
 
   // Clean up child processes on exit to prevent orphaned processes.
   //
@@ -455,9 +433,30 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     .then(async (results) => {
       if (readyAnnounced) return
       readyAnnounced = true
+
       const failed = results
         .map((ok, i) => ok ? null : ports[i].name)
         .filter((x): x is string => x !== null)
+
+      printDevReadyBanner({
+        options,
+        nativeMode,
+        hasCustomDomain,
+        frontendUrl,
+        apiUrl,
+        docsUrl,
+        dashboardUrl,
+        frontendPort,
+        apiPort,
+        docsPort,
+        includeDashboard,
+        domain,
+        apiDomain,
+        docsDomain,
+        dashboardPort,
+        dashboardDomain,
+      })
+
       if (startedAt) {
         const elapsedMs = (Bun.nanoseconds() - startedAt) / 1_000_000
         const summary = failed.length
@@ -465,27 +464,32 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
           : `ready in ${(elapsedMs / 1000).toFixed(1)}s`
         console.log(`  ${dim(summary)}\n`)
       }
-      // Print the registered API routes once the API server reports
-      // ready. Hidden by default — the table is long (~250 routes once
-      // the framework defaults register) and dominates the dev banner.
-      // Opt in with `STACKS_PRINT_ROUTES=1` when you actually want to
-      // grep through it from the terminal.
+
+      if (hasCustomDomain && domain) {
+        try {
+          await rpxTlsPreflight
+          await registerRpxProxiesForDomain({
+            domain,
+            frontendPort,
+            apiPort,
+            docsPort,
+            dashboardPort,
+            includeDashboard,
+            options,
+          })
+        }
+        catch (error) {
+          const message = error instanceof Error ? error.message : String(error)
+          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy unavailable')}: ${message}`)
+          if (options.verbose) {
+            console.log(`  ${dim('    ')}${dim('Set SUDO_PASSWORD in .env and restart `./buddy dev`')}`)
+            console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
+          }
+        }
+      }
+
       if (process.env.STACKS_PRINT_ROUTES === '1') {
         await printRegisteredRoutes(apiPort).catch(() => { /* best effort */ })
-      }
-      // Re-register HTTPS routes once backends are listening. Early registration
-      // can be reaped by rpx PID-GC when entries carried a short-lived pid; we
-      // also refresh here so the routing table matches live ports.
-      if (hasCustomDomain && domain) {
-        await registerRpxProxiesForDomain({
-          domain,
-          frontendPort,
-          apiPort,
-          docsPort,
-          dashboardPort,
-          includeDashboard,
-          options,
-        }).catch(() => { /* startReverseProxy already warned */ })
       }
     })
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
@@ -513,16 +517,70 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       if (options.verbose)
         log.warn(`Native window: ${error}`)
     }),
-    hasCustomDomain
-      ? startReverseProxy(options).catch((error) => {
-        const message = error instanceof Error ? error.message : String(error)
-        console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy failed')}: ${message}`)
-        console.log(`  ${dim('    ')}${dim('Use http://localhost:3000 or restart `./buddy dev`')}`)
-        if (options.verbose)
-          log.warn(`Proxy: ${error}`)
-      })
-      : Promise.resolve(),
   ])
+}
+
+function printDevReadyBanner(input: {
+  options: DevOptions
+  nativeMode: boolean
+  hasCustomDomain: boolean
+  frontendUrl: string
+  apiUrl: string
+  docsUrl: string
+  dashboardUrl: string
+  frontendPort: number
+  apiPort: number
+  docsPort: number
+  includeDashboard: boolean
+  domain: string | null
+  apiDomain: string | null
+  docsDomain: string | null
+  dashboardPort: number
+  dashboardDomain: string | null
+}): void {
+  const {
+    options,
+    nativeMode,
+    hasCustomDomain,
+    frontendUrl,
+    apiUrl,
+    docsUrl,
+    dashboardUrl,
+    frontendPort,
+    apiPort,
+    docsPort,
+    includeDashboard,
+    domain,
+    apiDomain,
+    docsDomain,
+    dashboardPort,
+    dashboardDomain,
+  } = input
+  const verbose = options.verbose ?? false
+  const showLocalUrls = verbose || options.withLocalhost === true
+
+  console.log()
+  console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
+  if (showLocalUrls)
+    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
+  if (nativeMode)
+    console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
+  console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
+  if (showLocalUrls)
+    console.log(`  ${dim('➜')}  ${dim('Local API')}:   ${dim(`http://localhost:${apiPort}`)}`)
+  console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
+  if (showLocalUrls)
+    console.log(`  ${dim('➜')}  ${dim('Local docs')}:  ${dim(`http://localhost:${docsPort}`)}`)
+  if (includeDashboard)
+    console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
+  if (showLocalUrls && domain) {
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
+    if (includeDashboard)
+      console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
+  }
+  console.log()
 }
 
 async function launchNativeAppWindow(url: string, options: DevOptions): Promise<(() => void) | undefined> {
@@ -773,17 +831,27 @@ async function printRegisteredRoutes(apiPort: number): Promise<void> {
  *
  * Returns `false` if no HTTP response arrives before `timeoutMs`.
  */
-async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
-  const deadline = Date.now() + timeoutMs
-  while (Date.now() < deadline) {
+async function probeDevServerHttp(port: number): Promise<boolean> {
+  for (const path of ['/__health', '/']) {
     const ok = await new Promise<boolean>((resolve) => {
       const ac = new AbortController()
-      const t = setTimeout(() => ac.abort(), 800)
-      fetch(`http://127.0.0.1:${port}/__health`, { signal: ac.signal, redirect: 'manual' })
+      // First stx request can block on Crosswind compile — allow several seconds.
+      const t = setTimeout(() => ac.abort(), path === '/' ? 8000 : 800)
+      fetch(`http://127.0.0.1:${port}${path}`, { signal: ac.signal, redirect: 'manual' })
         .then(() => { clearTimeout(t); resolve(true) })
         .catch(() => { clearTimeout(t); resolve(false) })
     })
-    if (ok) return true
+    if (ok)
+      return true
+  }
+  return false
+}
+
+async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
+  const deadline = Date.now() + timeoutMs
+  while (Date.now() < deadline) {
+    if (await probeDevServerHttp(port))
+      return true
     await new Promise(r => setTimeout(r, 250))
   }
   return false
@@ -1032,37 +1100,36 @@ async function ensureRpxDevelopmentHttps(
     certRegenerated = true
   }
 
-  let trusted = isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
-  let freshlyTrusted = false
+  const trusted = isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
   if (!trusted) {
-    trusted = trustRpxRootCaForBrowsers(RPX_ROOT_CA_PATH, domain)
-      || await forceTrustCertificate(RPX_ROOT_CA_PATH)
-      || isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
-    freshlyTrusted = trusted
+    void (async () => {
+      const nowTrusted = trustRpxRootCaForBrowsers(RPX_ROOT_CA_PATH, domain)
+        || await forceTrustCertificate(RPX_ROOT_CA_PATH)
+        || isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
+      if (verbose) {
+        if (nowTrusted)
+          console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local certificate trusted for SSL')}`)
+        else
+          console.log(`  ${yellow('⚠')}  ${yellow('HTTPS')}:         ${yellow('Certificate not trusted — browser will warn')}`)
+      }
+    })()
   }
-
-  if (trusted) {
+  else if (verbose) {
     console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local certificate trusted for SSL')}`)
-    if (freshlyTrusted)
-      console.log(`  ${dim('    ')}${dim('Fully quit Chrome/Edge (Cmd+Q), then reopen https://' + domain)}`)
-  }
-  else {
-    console.log(`  ${yellow('⚠')}  ${yellow('HTTPS')}:         ${yellow('Certificate not trusted — browser will warn')}`)
-    console.log(`  ${dim('    ')}${dim(`Run: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
-    console.log(`  ${dim('    ')}${dim('Or set SUDO_PASSWORD in .env and restart `./buddy dev`')}`)
   }
 
   const chainOk = isLiveHttpsChainValid(domain)
 
-  // Stop a running daemon when certs changed so the next ensureDaemonRunning
-  // reloads TLS. registerRpxProxiesForDomain always starts the daemon after this.
-  if ((certRegenerated || !hostnameInCert) && await isDaemonRunning()) {
+  // Stop a running daemon only when TLS material changed — registerRpxProxiesForDomain
+  // starts the daemon afterward. Do not stop merely because chainOk is false while
+  // :443 is still coming up; that race caused ensureDaemonRunning to time out.
+  if ((certRegenerated || !hostnameInCert || !cnMatchesApp) && await isDaemonRunning()) {
     await stopDaemon({ timeoutMs: 8000 }).catch(() => { /* stale pid */ })
     if (verbose)
       log.info('Restarting rpx daemon to load TLS certificates for this app')
   }
-  else if (!chainOk && await isDaemonRunning()) {
-    await stopDaemon({ timeoutMs: 8000 }).catch(() => { /* stale pid */ })
+  else if (!chainOk && verbose) {
+    console.log(`  ${dim('    ')}${dim('HTTPS chain not yet valid on :443 — daemon will (re)start after backends are ready')}`)
   }
 }
 
@@ -1142,6 +1209,65 @@ async function unregisterRpxProxies(ids: string[]): Promise<void> {
 }
 
 /**
+ * Update /etc/hosts and align TLS material while backends boot. The daemon is
+ * started in `registerRpxProxiesForDomain` once HTTP ports are ready.
+ */
+async function prepareRpxTlsForDev(input: {
+  domain: string
+  includeDashboard: boolean
+  options: DevOptions
+}): Promise<void> {
+  const { domain, includeDashboard, options } = input
+  const verbose = options.verbose ?? false
+  const hosts = [
+    domain,
+    `api.${domain}`,
+    `docs.${domain}`,
+    ...(includeDashboard ? [`dashboard.${domain}`] : []),
+  ]
+
+  const { addHosts } = await import('@stacksjs/rpx')
+
+  await addHosts(hosts, verbose).catch((err) => {
+    log.warn(`Could not update /etc/hosts for ${hosts.join(', ')}: ${(err as Error).message}`)
+    log.warn('Add 127.0.0.1 entries manually or set SUDO_PASSWORD in .env')
+  })
+
+  await ensureRpxDevelopmentHttps(domain, options, includeDashboard)
+}
+
+async function startRpxDaemonIfNeeded(input: {
+  spawnCommand: string[]
+  spawnEnv?: Record<string, string>
+  verbose: boolean
+  stopRpx: (opts: { timeoutMs: number }) => Promise<unknown>
+}): Promise<void> {
+  const { ensureDaemonRunning, isDaemonRunning: isRpxUp } = await import('@stacksjs/rpx')
+  if (await isRpxUp())
+    return
+
+  try {
+    await ensureDaemonRunning({
+      spawnCommand: input.spawnCommand,
+      spawnCwd: process.cwd(),
+      startupTimeoutMs: 30000,
+      spawnEnv: input.spawnEnv,
+      verbose: input.verbose,
+    })
+  }
+  catch (firstError) {
+    await input.stopRpx({ timeoutMs: 5000 }).catch(() => { /* stale */ })
+    await ensureDaemonRunning({
+      spawnCommand: input.spawnCommand,
+      spawnCwd: process.cwd(),
+      startupTimeoutMs: 30000,
+      spawnEnv: input.spawnEnv,
+      verbose: input.verbose,
+    }).catch(() => { throw firstError })
+  }
+}
+
+/**
  * Register proxy routes with the rpx daemon. Entries are written **without**
  * a pid so the daemon's PID-GC does not delete them when a short-lived parent
  * exits — we unregister explicitly on `./buddy dev` shutdown instead.
@@ -1158,33 +1284,14 @@ async function registerRpxProxiesForDomain(input: {
   const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard, options } = input
   const verbose = options.verbose ?? false
   const proxies = buildRpxProxySpecs({ domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard })
-  const hosts = [
-    domain,
-    `api.${domain}`,
-    `docs.${domain}`,
-    ...(includeDashboard ? [`dashboard.${domain}`] : []),
-  ]
 
-  const { addHosts, ensureDaemonRunning, writeEntry } = await import('@stacksjs/rpx')
+  const { stopDaemon: stopRpx, writeEntry } = await import('@stacksjs/rpx')
   const spawnCommand = await resolveRpxDaemonSpawnCommand()
   const spawnEnv = process.env.SUDO_PASSWORD
     ? { SUDO_PASSWORD: process.env.SUDO_PASSWORD }
     : undefined
 
-  await addHosts(hosts, verbose).catch((err) => {
-    log.warn(`Could not update /etc/hosts for ${hosts.join(', ')}: ${(err as Error).message}`)
-    log.warn('Add 127.0.0.1 entries manually or set SUDO_PASSWORD in .env')
-  })
-
-  await ensureRpxDevelopmentHttps(domain, options, includeDashboard)
-
-  await ensureDaemonRunning({
-    spawnCommand,
-    spawnCwd: process.cwd(),
-    startupTimeoutMs: 60000,
-    spawnEnv,
-    verbose,
-  })
+  await startRpxDaemonIfNeeded({ spawnCommand, spawnEnv, verbose, stopRpx })
 
   const createdAt = new Date().toISOString()
   for (const proxy of proxies) {
@@ -1198,51 +1305,8 @@ async function registerRpxProxiesForDomain(input: {
     }, undefined, verbose)
     if (!activeRpxRegistryIds.includes(proxy.id))
       activeRpxRegistryIds.push(proxy.id)
-    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`https://${proxy.to} → ${proxy.from}`)}`)
-  }
-}
-
-/**
- * Register this stacks project's frontends with the rpx daemon so each app is
- * reachable at `https://<subdomain>.<APP_URL>` over the daemon's shared :443.
- */
-async function startReverseProxy(options: DevOptions): Promise<void> {
-  const appUrl = process.env.APP_URL
-
-  if (!appUrl || appUrl === 'localhost' || appUrl.includes('localhost:'))
-    return
-
-  const domain = appUrl.replace(/^https?:\/\//, '')
-  const frontendPort = Number(process.env.PORT) || 3000
-  const apiPort = Number(process.env.PORT_API) || 3008
-  const docsPort = Number(process.env.PORT_DOCS) || 3006
-  const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
-  const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
-
-  try {
-    await registerRpxProxiesForDomain({
-      domain,
-      frontendPort,
-      apiPort,
-      docsPort,
-      dashboardPort,
-      includeDashboard,
-      options,
-    })
-  }
-  catch (error) {
-    const message = error instanceof Error ? error.message : String(error)
-    console.log()
-    console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy (rpx) unavailable — use the Local URLs above')}`)
-    console.log(`  ${dim('    ')}${dim(message)}`)
-    console.log(`  ${dim('    ')}${dim('Fix: set SUDO_PASSWORD in .env (for /etc/hosts + :443), then restart `./buddy dev`')}`)
-    console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
-    console.log(`  ${dim('    ')}${dim('Manual daemon: `~/Code/Tools/rpx/packages/rpx/bin/rpx daemon:start`')}`)
-    console.log()
-    if (options.verbose) {
-      log.warn('rpx daemon not available, skipping HTTPS')
-      log.warn(message)
-    }
+    if (verbose)
+      console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`https://${proxy.to} → ${proxy.from}`)}`)
   }
 }
 
