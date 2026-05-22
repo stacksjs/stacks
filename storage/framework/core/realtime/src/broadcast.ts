@@ -3,6 +3,89 @@ import { log } from '@stacksjs/logging'
 import { getServer } from './server-instance'
 
 /**
+ * Backpressure guard config (stacksjs/stacks#1877 R-2). The default
+ * threshold is 1 MiB of buffered-bytes per socket — above this, the
+ * configured `onSlow` callback fires once per offending socket per
+ * broadcast. Apps install via `setBackpressureGuard({...})`; the
+ * default is "no guard" for backwards-compat, so existing callers
+ * see no behavior change until they opt in.
+ *
+ * Why opt-in: the underlying ts-broadcasting `server.broadcast()` is
+ * synchronous and we can't inject between message-serialize and
+ * socket-write. The best we can do at the Stacks layer is detect
+ * slow consumers AROUND the broadcast call and let the app decide
+ * what to do (close socket, drop client from channel, scale up).
+ */
+export interface BackpressureGuardConfig {
+  /**
+   * Per-socket buffered-bytes threshold. Sockets with `backpressure`
+   * (Bun.ServerWebSocket property) above this value trigger `onSlow`.
+   * Default: 1 MiB (1024 * 1024).
+   */
+  maxPerSocketBytes?: number
+  /**
+   * Called once per slow socket per broadcast tick. Default action
+   * is to log a warning; install a custom handler to close the
+   * socket, drop the client from the channel, etc.
+   */
+  onSlow?: (info: { channelName: string, backpressure: number, socket: unknown }) => void
+}
+
+let backpressureConfig: Required<BackpressureGuardConfig> | null = null
+
+/**
+ * Install (or clear) the backpressure guard. Pass `null` to disable.
+ */
+export function setBackpressureGuard(cfg: BackpressureGuardConfig | null): void {
+  if (!cfg) {
+    backpressureConfig = null
+    return
+  }
+  backpressureConfig = {
+    maxPerSocketBytes: cfg.maxPerSocketBytes ?? 1024 * 1024,
+    onSlow: cfg.onSlow ?? ((info) => {
+      log.warn(`[realtime] slow consumer on '${info.channelName}': ${info.backpressure} bytes buffered`)
+    }),
+  }
+}
+
+/**
+ * Read the currently-installed guard config (useful for tests).
+ */
+export function getBackpressureGuard(): Required<BackpressureGuardConfig> | null {
+  return backpressureConfig
+}
+
+/**
+ * Walk the server's per-channel socket set and check `backpressure`
+ * against the configured threshold. Best-effort: ts-broadcasting may
+ * expose the socket set under a few different property names and
+ * sockets without a `.backpressure` field are silently skipped.
+ */
+function checkBackpressure(server: any, channelName: string): void {
+  if (!backpressureConfig) return
+  try {
+    const channels = server.channels ?? server.clients
+    const set = channels && typeof channels.get === 'function' ? channels.get(channelName) : null
+    if (!set || typeof set[Symbol.iterator] !== 'function') return
+
+    const { maxPerSocketBytes, onSlow } = backpressureConfig
+    for (const entry of set) {
+      // ts-broadcasting may store either the bare socket or a
+      // wrapper — probe both shapes.
+      const ws = (entry && typeof entry === 'object' && 'ws' in entry) ? (entry as { ws: unknown }).ws : entry
+      const bp = ws && typeof ws === 'object' && 'backpressure' in ws ? (ws as { backpressure: unknown }).backpressure : null
+      if (typeof bp === 'number' && bp > maxPerSocketBytes) {
+        onSlow({ channelName, backpressure: bp, socket: ws })
+      }
+    }
+  }
+  catch {
+    // Introspection failed — same fallthrough policy as hasSubscribers.
+  }
+}
+
+/**
  * Best-effort check for whether anyone is subscribed to `channelName`.
  *
  * The `BroadcastServer` interface is stable but the subscriber-count
@@ -109,6 +192,13 @@ export class Broadcast {
       log.debug(`[Broadcast] Skipping '${event}' on '${channelName}' — no subscribers`)
       return
     }
+
+    // Backpressure guard (stacksjs/stacks#1877 R-2). Opt-in via
+    // `setBackpressureGuard({...})`. Default is no-op so existing
+    // callers see no behavior change. Runs before the broadcast so
+    // a slow consumer detected on the previous tick fires its
+    // `onSlow` handler before more bytes are queued onto its socket.
+    checkBackpressure(server, channelName)
 
     try {
       server.broadcast(channelName, event, data)

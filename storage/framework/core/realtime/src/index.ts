@@ -20,6 +20,10 @@ export type { EmitOptions } from './emit'
 export { channel as createChannel, Channel as StacksChannel } from './channel'
 export { broadcast as dispatchBroadcast, runBroadcast, Broadcast as LegacyBroadcast } from './broadcast'
 export type { BroadcastInstance } from './broadcast'
+// Backpressure guard for slow consumers (stacksjs/stacks#1877 R-2).
+// Opt-in via setBackpressureGuard; default is no-op.
+export { setBackpressureGuard, getBackpressureGuard } from './broadcast'
+export type { BackpressureGuardConfig } from './broadcast'
 export { setBunSocket, handleWebSocketRequest, storeWebSocketEvent } from './ws'
 // WebSocket authenticator wiring (stacksjs/stacks#1877 R-1). Install
 // once at server boot to require a valid token / cookie at the

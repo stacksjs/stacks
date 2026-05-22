@@ -71,6 +71,14 @@ export type Timezone =
 export interface ScheduledJob {
   stop: () => void
   nextRun: () => Date | null
+  /** Cron pattern or interval description — exposed for CLI listing
+   *  (stacksjs/stacks#1877 S-1). `'every Ns'` for sub-minute intervals,
+   *  raw 5-field cron otherwise. */
+  pattern?: string
+  /** Timezone the schedule resolves against. */
+  timezone?: Timezone
+  /** Job name passed via `.withName(...)`. */
+  name?: string
 }
 
 // Base interface for common methods

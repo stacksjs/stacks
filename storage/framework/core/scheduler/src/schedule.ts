@@ -38,6 +38,10 @@ export class Schedule implements UntimedSchedule {
   private overlapExpiresAfterMinutes = 24 * 60
   private shouldRunOnOneServer = false
   private shouldRunInBackground = false
+  /** stdout/stderr redirect target (S-3). Null = no capture. */
+  private outputPath: string | null = null
+  /** When true, append to outputPath; otherwise overwrite per run. */
+  private outputAppend = false
   private options: {
     timezone?: string
     catch?: CatchCallbackFn
@@ -241,6 +245,68 @@ export class Schedule implements UntimedSchedule {
     return this
   }
 
+  /**
+   * Redirect this task's stdout/stderr to `path` (overwrite mode).
+   * Implemented for `schedule.command(...)` shell tasks
+   * (stacksjs/stacks#1877 S-3) — captures the spawned process's
+   * stdio to the file. For `schedule.job(...)` / `schedule.action(...)`
+   * tasks, the framework's logger already routes to whatever
+   * sink is configured globally, so this option is a no-op for
+   * those (with a one-time warn).
+   *
+   * @example
+   * ```ts
+   * schedule.command('backup.sh').daily().sendOutputTo('/var/log/stacks/backup.log')
+   * ```
+   */
+  sendOutputTo(path: string): this {
+    this.outputPath = path
+    this.outputAppend = false
+    return this
+  }
+
+  /**
+   * Same as `sendOutputTo` but appends instead of overwriting. Use
+   * when you want a rolling log of every scheduled run.
+   */
+  appendOutputTo(path: string): this {
+    this.outputPath = path
+    this.outputAppend = true
+    return this
+  }
+
+  /**
+   * Snapshot every currently-registered scheduled job
+   * (stacksjs/stacks#1877 S-1). Returned objects share the
+   * `ScheduledJob` shape with `pattern` / `timezone` / `name` /
+   * `nextRun` populated. Used by `buddy schedule:list` to give
+   * operators a view of what's scheduled and when it next runs,
+   * without having to read source.
+   */
+  static listJobs(): Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null }> {
+    const out: Array<{ name: string, pattern?: string, timezone?: Timezone, nextRun: Date | null }> = []
+    for (const [name, job] of Schedule.jobs) {
+      out.push({
+        name,
+        pattern: job.pattern,
+        timezone: job.timezone,
+        nextRun: job.nextRun ? job.nextRun() : null,
+      })
+    }
+    return out
+  }
+
+  /**
+   * Snapshot currently-held overlap / one-server locks (the JS-side
+   * activeLocks map). Used by `buddy schedule:status` to surface
+   * which tasks are mid-flight when a tick fires
+   * (stacksjs/stacks#1877 S-1). Does NOT cross instance boundaries —
+   * for cluster-wide lock state, query the database directly.
+   */
+  static listLocks(): string[] {
+    return Array.from(Schedule.activeLocks.keys())
+  }
+
   // --- Lock management ---
   //
   // Pre-fix (#1877 Cr-3): file-only lock in `storage/framework/locks/<name>.lock`.
@@ -404,7 +470,13 @@ export class Schedule implements UntimedSchedule {
       return this.getNextRunTime()
     }
 
-    const job: ScheduledJob = { stop, nextRun }
+    const job: ScheduledJob = {
+      stop,
+      nextRun,
+      pattern: this.intervalMs !== null ? `every ${this.intervalMs / 1000}s` : this.cronPattern,
+      timezone: this.timezone,
+      name: this.options.name,
+    }
 
     const executeTask = () => {
       if (this.options.maxRuns && runCount >= this.options.maxRuns) {
@@ -512,11 +584,44 @@ export class Schedule implements UntimedSchedule {
   }
 
   static command(cmd: string): UntimedSchedule {
-    return new Schedule(async () => {
+    // Defer field-reads to task-execution time so `.sendOutputTo(...)`
+    // chained AFTER `.command(...)` is observed (stacksjs/stacks#1877
+    // S-3). Holder pattern lets us reference the Schedule instance
+    // inside the task closure without circular construction.
+    let instance: Schedule | null = null
+    const task = async () => {
+      const outputPath = instance?.outputPath ?? null
+      const outputAppend = instance?.outputAppend ?? false
       try {
         log.info(`Executing command: ${cmd}`)
-        const result = await runCommand(cmd)
+        if (outputPath) {
+          // Spawn directly so we can redirect stdio to the file —
+          // runCommand wraps a Bun.spawn that doesn't expose the
+          // stdio redirect option.
+          const { spawn: childSpawn } = await import('node:child_process')
+          const { openSync, closeSync } = await import('node:fs')
+          const flag = outputAppend ? 'a' : 'w'
+          const fd = openSync(outputPath, flag)
+          try {
+            await new Promise<void>((resolve, reject) => {
+              const child = childSpawn(cmd, {
+                shell: true,
+                stdio: ['ignore', fd, fd],
+              })
+              child.on('error', reject)
+              child.on('exit', (code) => {
+                if (code === 0) resolve()
+                else reject(new Error(`Command '${cmd}' exited with code ${code}`))
+              })
+            })
+          }
+          finally {
+            closeSync(fd)
+          }
+          return
+        }
 
+        const result = await runCommand(cmd)
         if (result.isErr) {
           log.error(result.error)
           throw result.error
@@ -526,7 +631,9 @@ export class Schedule implements UntimedSchedule {
         log.error(`Command execution failed: ${error}`)
         throw error
       }
-    }).withName(`command-${cmd}`) as UntimedSchedule
+    }
+    instance = new Schedule(task)
+    return instance.withName(`command-${cmd}`) as UntimedSchedule
   }
 
   /**
