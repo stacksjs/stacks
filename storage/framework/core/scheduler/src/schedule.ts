@@ -567,17 +567,27 @@ export class Schedule implements UntimedSchedule {
       return parse(this.cronPattern)
     }
 
-    // Timezone-aware scheduling:
-    // 1. Get "now" in the configured timezone
-    // 2. Parse for next match from that local time
-    // 3. Compute delay and add to real now
-    const now = new Date()
-    const localNow = new Date(now.toLocaleString('en-US', { timeZone: this.timezone }))
-    const nextLocal = parse(this.cronPattern, localNow)
-    if (!nextLocal) return null
-
-    const delayMs = nextLocal.getTime() - localNow.getTime()
-    return new Date(now.getTime() + delayMs)
+    // Timezone-aware scheduling via parseCron's `tz` option
+    // (stacksjs/stacks#1877 Cr-1 — closes the DST drift gap).
+    //
+    // Pre-fix: this method computed `localNow = new Date(now.toLocaleString(tz))`,
+    // parsed the cron against that local time in UTC mode, then added
+    // the resulting delta back to `now.getTime()`. That worked when the
+    // TZ offset was stable but went off by ±1h across DST transitions —
+    // the offset on the "local now" side and the "local match" side
+    // differed by an hour during spring-forward / fall-back windows,
+    // so the wall-clock delta no longer mapped cleanly to UTC.
+    //
+    // Post-fix: parseCron's tz-aware part-extractor uses
+    // `Intl.DateTimeFormat.formatToParts` which auto-handles DST.
+    // The search loop walks UTC milliseconds; field comparisons run
+    // against the local-in-tz view of each candidate instant. Spring-
+    // forward: the cron's target local time is skipped that day
+    // (the task doesn't fire because the wall-clock instant doesn't
+    // exist). Fall-back: the target local time happens twice, and
+    // the scheduler fires twice on the transition day — apps that
+    // care need idempotency keys or exclusive locks on the task body.
+    return parse(this.cronPattern, undefined, { tz: this.timezone })
   }
 
   private start(): ScheduledJob {

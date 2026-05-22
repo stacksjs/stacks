@@ -1,5 +1,6 @@
 import type { BroadcastEvent, ChannelType } from 'ts-broadcasting'
 import { log } from '@stacksjs/logging'
+import { recordBroadcast } from './replay-buffer'
 import { getServer } from './server-instance'
 
 /**
@@ -199,6 +200,14 @@ export class Broadcast {
     // a slow consumer detected on the previous tick fires its
     // `onSlow` handler before more bytes are queued onto its socket.
     checkBackpressure(server, channelName)
+
+    // Record the message in the replay buffer BEFORE the wire-level
+    // broadcast (stacksjs/stacks#1877 R-3). Opt-in via
+    // `setReplayBuffer({...})`; default is no-op so non-buffered
+    // channels see zero overhead. Recording first means a transient
+    // broadcast failure (next try block) doesn't leave a buffered
+    // ghost on a channel where nobody received the event.
+    recordBroadcast(channelName, event, data)
 
     try {
       server.broadcast(channelName, event, data)

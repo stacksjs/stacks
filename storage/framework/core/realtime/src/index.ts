@@ -29,6 +29,12 @@ export type { BackpressureGuardConfig } from './broadcast'
 // (stacksjs/stacks#1877 R-5). Opt-in via setHeartbeatConfig.
 export { getHeartbeatConfig, markPong, runOneTick, setHeartbeatConfig } from './heartbeat'
 export type { HeartbeatConfig } from './heartbeat'
+
+// At-least-once replay buffer for reconnect (stacksjs/stacks#1877 R-3).
+// Opt-in via setReplayBuffer. Apps wire `replaySince(channel, seq)`
+// into their reconnect handler to re-send missed messages.
+export { debugSnapshot, getReplayBuffer, pruneExpired, recordBroadcast, replaySince, setReplayBuffer } from './replay-buffer'
+export type { BufferedMessage, ReplayBufferConfig } from './replay-buffer'
 export { setBunSocket, handleWebSocketRequest, storeWebSocketEvent } from './ws'
 // WebSocket authenticator wiring (stacksjs/stacks#1877 R-1). Install
 // once at server boot to require a valid token / cookie at the
