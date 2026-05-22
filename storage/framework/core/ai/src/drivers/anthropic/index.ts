@@ -6,6 +6,7 @@
  */
 
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
+import { fetchWithRetry } from '../../utils/retry'
 
 export interface AnthropicDriverConfig extends AIDriverConfig {
   apiKey: string
@@ -52,7 +53,10 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
         throw new Error('Anthropic API key not set. Configure your API key in settings.')
       }
 
-      const response = await fetch(`${BASE_URL}/messages`, {
+      // Retry-aware fetch (stacksjs/stacks#1878 A-5). Honors 429
+      // Retry-After + exponential backoff on 5xx (overloaded
+      // capacity is the common Anthropic blocker).
+      const response = await fetchWithRetry(`${BASE_URL}/messages`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

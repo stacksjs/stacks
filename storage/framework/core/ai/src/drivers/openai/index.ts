@@ -6,6 +6,7 @@
  */
 
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
+import { fetchWithRetry } from '../../utils/retry'
 
 export interface OpenAIDriverConfig extends AIDriverConfig {
   apiKey: string
@@ -54,7 +55,10 @@ export function createOpenAIDriver(config: OpenAIDriverConfig): AIDriver {
         throw new Error('OpenAI API key not set. Configure your API key in settings.')
       }
 
-      const response = await fetch(`${baseUrl}/chat/completions`, {
+      // Retry-aware fetch (stacksjs/stacks#1878 A-5). Honors 429
+      // `Retry-After` and backs off on 5xx; throws to the caller
+      // only after retries are exhausted or for non-retryable 4xx.
+      const response = await fetchWithRetry(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
