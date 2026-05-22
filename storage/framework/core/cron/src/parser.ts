@@ -35,6 +35,23 @@ const DAY_NAMES: Record<string, number> = {
   sunday: 0, monday: 1, tuesday: 2, wednesday: 3, thursday: 4, friday: 5, saturday: 6,
 }
 
+/**
+ * Track which 6-field expressions we've already warned about so a
+ * scheduler tick doesn't spam the log every iteration
+ * (stacksjs/stacks#1877 Cr-6, mirroring #1872 Q-12).
+ */
+const sixFieldWarnedFor = new Set<string>()
+
+function warnSecondsIgnored(expression: string, secondsField: string): void {
+  if (sixFieldWarnedFor.has(expression)) return
+  sixFieldWarnedFor.add(expression)
+  // eslint-disable-next-line no-console
+  console.warn(
+    `[cron] 6-field cron expression '${expression}' has seconds='${secondsField}' — the parser is 5-field only. `
+    + `Seconds field IGNORED. For second-precision use the scheduler's '.everySecond()' instead.`,
+  )
+}
+
 function resolveNames(value: string, names: Record<string, number>): string {
   return value.replace(/[a-z]+/gi, match => {
     const num = names[match.toLowerCase()]
@@ -94,9 +111,23 @@ export function parseCron(expression: string, relativeDate?: Date | number): Dat
   const trimmed = expression.trim()
   const normalized = NICKNAMES[trimmed.toLowerCase()] ?? trimmed
 
-  const fields = normalized.split(/\s+/).filter(Boolean)
+  let fields = normalized.split(/\s+/).filter(Boolean)
+
+  // 6-field cron (with leading seconds) is widely used by Quartz /
+  // Spring schedulers. This parser is 5-field, but rather than
+  // throw and break the user's app at boot, drop the seconds field
+  // with a once-per-expression warn (stacksjs/stacks#1877 Cr-6).
+  // If the seconds field is non-zero/non-wildcard, the user is
+  // expressing intent that's silently lost — the warn surfaces that.
+  if (fields.length === 6) {
+    const secondsField = fields[0]!
+    if (secondsField !== '0' && secondsField !== '*')
+      warnSecondsIgnored(expression, secondsField)
+    fields = fields.slice(1)
+  }
+
   if (fields.length !== 5) {
-    throw new Error(`Invalid cron expression: expected 5 fields, got ${fields.length}`)
+    throw new Error(`Invalid cron expression: expected 5 fields (or 6 with leading seconds), got ${fields.length}`)
   }
 
   const [minuteField, hourField, domField, monthField, dowField] = fields as [string, string, string, string, string]

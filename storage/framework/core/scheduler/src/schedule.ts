@@ -7,6 +7,8 @@ import { runAction } from '@stacksjs/actions'
 import { log, runCommand } from '@stacksjs/cli'
 import { parse } from '@stacksjs/cron'
 import { runJob } from '@stacksjs/queue'
+import type { SchedulerLockHandle } from './scheduler-lock'
+import { acquireSchedulerLock } from './scheduler-lock'
 
 /**
  * Schedule class for creating and managing scheduled tasks.
@@ -31,7 +33,7 @@ export class Schedule implements UntimedSchedule {
   private timezone: Timezone = 'America/Los_Angeles'
   private readonly task: () => void
   private static lockDir = join(process.cwd(), 'storage', 'framework', 'locks')
-  private static activeLocks = new Set<string>()
+  private static activeLocks = new Map<string, SchedulerLockHandle>()
   private shouldPreventOverlap = false
   private overlapExpiresAfterMinutes = 24 * 60
   private shouldRunOnOneServer = false
@@ -240,61 +242,65 @@ export class Schedule implements UntimedSchedule {
   }
 
   // --- Lock management ---
+  //
+  // Pre-fix (#1877 Cr-3): file-only lock in `storage/framework/locks/<name>.lock`.
+  // Worked for a single process but completely failed to serialize across
+  // instances — `onOneServer()` and `withoutOverlapping()` both silently
+  // no-op'd in multi-instance deployments because each box had its own
+  // lock directory.
+  //
+  // Post-fix: pair the file lock with a DB-backed advisory lock when a
+  // SQL connection is available. PG advisory locks are session-scoped
+  // (auto-release on disconnect), MySQL named locks the same. SQLite
+  // falls back to file-only since SQLite is single-writer anyway.
 
-  private acquireLock(name: string): boolean {
-    const lockFile = join(Schedule.lockDir, `${name}.lock`)
+  private async acquireLock(name: string): Promise<boolean> {
+    // Already locked by this process? — fast path, no DB round-trip.
+    if (Schedule.activeLocks.has(name)) return false
 
-    if (!existsSync(Schedule.lockDir)) {
-      mkdirSync(Schedule.lockDir, { recursive: true })
-    }
+    const expiryMs = this.overlapExpiresAfterMinutes * 60 * 1000
 
-    if (Schedule.activeLocks.has(name)) {
-      if (existsSync(lockFile)) {
-        try {
-          const stats = statSync(lockFile)
-          const ageMs = Date.now() - stats.mtimeMs
-          const expiryMs = this.overlapExpiresAfterMinutes * 60 * 1000
-          if (ageMs < expiryMs) {
-            return false
-          }
-        }
-        catch {
-          // If we can't stat the file, proceed with acquiring
-        }
-      }
-    }
+    // Resolve the SQL dialect + connection lazily so the scheduler
+    // doesn't import @stacksjs/database at module-load time (tests
+    // and CLI scripts that don't touch the DB shouldn't pay for it).
+    // `onOneServer()` REQUIRES the DB; `withoutOverlapping()` works
+    // with either path.
+    let dialect: 'sqlite' | 'mysql' | 'postgres' | null = null
+    let adminDb: { unsafe: (sql: string) => Promise<unknown> } | null = null
 
-    try {
-      writeFileSync(lockFile, String(Date.now()), { flag: 'wx' })
-    }
-    catch {
+    if (this.shouldRunOnOneServer) {
       try {
-        const stats = statSync(lockFile)
-        const ageMs = Date.now() - stats.mtimeMs
-        const expiryMs = this.overlapExpiresAfterMinutes * 60 * 1000
-        if (ageMs < expiryMs) {
-          return false
+        const { db } = await import('@stacksjs/database')
+        // The Stacks db proxy exposes a Bun.SQL-compatible `unsafe`
+        // method — same shape `migration-lock.ts` uses.
+        adminDb = db as unknown as { unsafe: (sql: string) => Promise<unknown> }
+        // Inspect env to determine dialect (no driver-detect API on
+        // the db proxy itself).
+        const driver = (await import('@stacksjs/env')).env.DB_CONNECTION || 'sqlite'
+        if (driver === 'postgres' || driver === 'mysql' || driver === 'sqlite') {
+          dialect = driver
         }
-        writeFileSync(lockFile, String(Date.now()))
       }
-      catch {
-        return false
+      catch (err) {
+        // No DB connection available — onOneServer() degrades to
+        // file-lock-only with a warning. Better than silently
+        // running on every instance.
+        log.warn(`[scheduler] onOneServer() couldn't reach DB; falling back to file-only lock (which only serializes within this process): ${err instanceof Error ? err.message : String(err)}`)
       }
     }
 
-    Schedule.activeLocks.add(name)
+    const handle = await acquireSchedulerLock(name, expiryMs, dialect, adminDb, Schedule.lockDir)
+    if (!handle) return false
+
+    Schedule.activeLocks.set(name, handle)
     return true
   }
 
-  private releaseLock(name: string): void {
-    const lockFile = join(Schedule.lockDir, `${name}.lock`)
+  private async releaseLock(name: string): Promise<void> {
+    const handle = Schedule.activeLocks.get(name)
+    if (!handle) return
     Schedule.activeLocks.delete(name)
-    try {
-      unlinkSync(lockFile)
-    }
-    catch {
-      // Lock file already removed
-    }
+    await handle.release()
   }
 
   // --- Task wrapping ---
@@ -306,24 +312,30 @@ export class Schedule implements UntimedSchedule {
     if (this.shouldPreventOverlap || this.shouldRunOnOneServer) {
       const self = this
       const innerTask = wrappedTask
+      // Lock acquisition is async now (DB advisory lock can require a
+      // round-trip) but cron ticks are sync. Run the lock acquire in
+      // the background and gate execution behind it — if acquire
+      // fails, log + skip; if it succeeds, run + release in finally.
       wrappedTask = () => {
-        if (!self.acquireLock(taskName)) {
-          log.info(`Skipping overlapping task: ${taskName}`)
-          return
-        }
-        try {
-          const result: any = innerTask()
-          if (result && typeof result === 'object' && typeof (result as any).finally === 'function') {
-            (result as Promise<any>).finally(() => self.releaseLock(taskName))
+        void (async () => {
+          const acquired = await self.acquireLock(taskName)
+          if (!acquired) {
+            log.info(`Skipping overlapping task: ${taskName}`)
+            return
           }
-          else {
-            self.releaseLock(taskName)
+          try {
+            const result: unknown = innerTask()
+            if (result && typeof result === 'object' && typeof (result as { finally?: unknown }).finally === 'function') {
+              await (result as Promise<unknown>)
+            }
           }
-        }
-        catch (error) {
-          self.releaseLock(taskName)
-          throw error
-        }
+          catch (error) {
+            log.error(`[scheduler] task ${taskName} threw: ${error instanceof Error ? error.message : String(error)}`)
+          }
+          finally {
+            await self.releaseLock(taskName)
+          }
+        })()
       }
     }
 
