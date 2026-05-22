@@ -107,6 +107,11 @@ export type SocialProviders = 'google' | 'github' | 'twitter' | 'facebook'
 
 export interface SeedOptions {
   count: number
+  /**
+   * Fixed rows merged over factory output for the first N entries (N = fixtures.length).
+   * Keys use model attribute names (camelCase); stored as snake_case columns.
+   */
+  fixtures?: Array<Record<string, unknown>>
 }
 
 type LogAttribute = string

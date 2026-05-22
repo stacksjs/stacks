@@ -179,6 +179,16 @@ export function topoSortSeeders(
  * iteration producing zero-row seed runs.
  */
 export async function runClassSeeders(options: RunOptions = {}): Promise<{ ran: string[], skipped: string[] }> {
+  // Fast CLI commands skip the preloader auto-import graph; class seeders
+  // still expect models / `schema` on globalThis when authors omit imports.
+  try {
+    const { injectGlobalAutoImports } = await import('@stacksjs/server')
+    await injectGlobalAutoImports()
+  }
+  catch {
+    // Server package optional in minimal installs — explicit imports still work.
+  }
+
   const dir = options.dir ?? path.projectPath('database/seeders')
   const ran: string[] = []
   const skipped: string[] = []

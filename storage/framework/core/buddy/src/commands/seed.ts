@@ -79,6 +79,8 @@ export function seed(buddy: CLI): void {
       // seeders out of database/seeders/ instead. Mirrors Laravel's
       // `php artisan db:seed --class=PostSeeder` ergonomics.
       if (options.class) {
+        const { injectGlobalAutoImports } = await import('@stacksjs/server')
+        await injectGlobalAutoImports()
         const { runClassSeeders } = await import('@stacksjs/database')
         const result = await runClassSeeders({ class: options.class })
         await outro(
@@ -109,6 +111,8 @@ export function seed(buddy: CLI): void {
       // After model auto-seeding, also run class seeders if any exist —
       // they're usually composition layers on top of the auto-seeded data.
       try {
+        const { injectGlobalAutoImports } = await import('@stacksjs/server')
+        await injectGlobalAutoImports()
         const { runClassSeeders } = await import('@stacksjs/database')
         const classResult = await runClassSeeders()
         if (classResult.ran.length > 0) {

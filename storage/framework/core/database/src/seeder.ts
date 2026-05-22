@@ -140,6 +140,7 @@ interface SeederModel {
   name: string
   table: string
   count: number
+  fixtures: Array<Record<string, unknown>>
   attributes: Record<string, Attribute>
   model: Model
   filePath: string
@@ -186,10 +187,13 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
         continue
       }
 
-      // Get seed count
+      // Get seed count + optional fixture rows (merged over factories)
       let count = 10 // default
+      let fixtures: Array<Record<string, unknown>> = []
       if (typeof useSeeder === 'object' && 'count' in useSeeder) {
-        count = (useSeeder as SeedOptions).count
+        const opts = useSeeder as SeedOptions
+        count = opts.count
+        fixtures = opts.fixtures ?? []
       }
 
       // Get model name and table name
@@ -199,7 +203,8 @@ async function loadModelsFromDir(modelsDir: string, recursive: boolean = false):
       models.push({
         name: modelName,
         table: tableName,
-        count,
+        count: Math.max(count, fixtures.length),
+        fixtures,
         attributes: modelDef.attributes || {},
         model: modelDef,
         filePath: fullPath,
@@ -384,13 +389,21 @@ function inferDefaultValue(fieldName: string): unknown {
 /**
  * Generate multiple records for a model
  */
+function fixtureToColumns(fixture: Record<string, unknown>): Record<string, unknown> {
+  const out: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(fixture))
+    out[snakeCase(key)] = value
+  return out
+}
+
 async function generateRecords(model: SeederModel, verbose: boolean = false): Promise<Record<string, unknown>[]> {
   const records: Record<string, unknown>[] = []
 
   for (let i = 0; i < model.count; i++) {
     // Only log factory failures for the first record to avoid spam
     const record = await generateRecord(model.attributes, model.name, verbose && i === 0)
-    records.push(record)
+    const fixture = model.fixtures[i]
+    records.push(fixture ? { ...record, ...fixtureToColumns(fixture) } : record)
   }
 
   return records
