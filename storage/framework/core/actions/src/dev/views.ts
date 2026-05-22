@@ -1,6 +1,6 @@
 import { AsyncLocalStorage } from 'node:async_hooks'
 import { existsSync } from 'node:fs'
-import { config } from '@stacksjs/config'
+import { config, overridesReady } from '@stacksjs/config'
 import { projectPath } from '@stacksjs/path'
 
 /**
@@ -119,6 +119,12 @@ async function proxyToApi(req: Request, apiBase: string): Promise<Response> {
 }
 
 async function startDefaultServer() {
+  await overridesReady
+
+  const { injectGlobalAutoImports } = await import('@stacksjs/server')
+  const { applyRequestLocale } = await import('@stacksjs/i18n')
+  await injectGlobalAutoImports()
+
   let serve: any
   // Prefer the project-vendored pantry copy so framework patches and
   // bug fixes shipped via `cp` (or `pantry/install`) take effect even
@@ -211,6 +217,8 @@ async function startDefaultServer() {
       // request can pull them via globalThis.requestContext. We use
       // enterWith() rather than run() because returning here would
       // exit the async context before stx-serve resumes.
+      await applyRequestLocale(req)
+
       requestStore.enterWith({
         cookies: parseCookies(req),
         url: req.url,
