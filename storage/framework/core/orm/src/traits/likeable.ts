@@ -1,4 +1,4 @@
-import { db as _db, sql } from '@stacksjs/database'
+import { db as _db } from '@stacksjs/database'
 
 
 export function createLikeableMethods(tableName: string, options?: { table?: string, foreignKey?: string }) {
@@ -16,9 +16,18 @@ export function createLikeableMethods(tableName: string, options?: { table?: str
     },
 
     async likeCount(id: number): Promise<number> {
+      // Plain-string select rather than `sql\`count(*) as count\``.
+      // bun-query-builder's `.select()` joins its argument via
+      // `.join(', ')` and a tagged-template SQL fragment object
+      // stringifies to "[object Object]" — SQLite then 500s with
+      // `no such column: object Object`. The literal here carries
+      // no user input so it's safe. (Before bun-query-builder
+      // accepted bare-string select, the fragment form silently
+      // dropped to a SELECT * and this method always returned 0;
+      // the plain-string form works at every layer.)
       const result = await db
         .selectFrom(likeTable as any)
-        .select(sql`count(*) as count`)
+        .select('count(*) as count')
         .where(foreignKey, '=', id)
         .executeTakeFirst()
 
