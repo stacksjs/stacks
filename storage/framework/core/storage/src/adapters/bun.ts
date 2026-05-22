@@ -1,5 +1,6 @@
 import { Buffer } from 'node:buffer'
 import { file, write as bunWrite } from 'bun'
+import { chmod, lstat } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
 import type {
   ChecksumOptions,
@@ -53,7 +54,18 @@ export class BunStorageAdapter implements StorageAdapter {
       await bunWrite(fullPath, contents)
     }
     else {
-      const reader = contents.getReader()
+      // Web-standard ReadableStream only — see s3.ts:contentsToBuffer
+      // (stacksjs/stacks#1873 S-15) for the same guard.
+      const stream = contents as unknown as { getReader?: ReadableStream['getReader'] }
+      if (typeof stream.getReader !== 'function') {
+        throw new TypeError(
+          '[storage/bun] contents must be a web-standard ReadableStream '
+          + '(with .getReader()), not a Node stream.Readable. '
+          + 'Convert via Readable.toWeb(nodeStream) before passing.',
+        )
+      }
+
+      const reader = stream.getReader.call(contents as ReadableStream)
       const chunks: Uint8Array[] = []
       while (true) {
         const { done, value } = await reader.read()
@@ -185,8 +197,30 @@ export class BunStorageAdapter implements StorageAdapter {
     yield* createDirectoryListing(entries)
   }
 
-  async changeVisibility(_path: string, _visibility: Visibility): Promise<void> {}
-  async visibility(_path: string): Promise<Visibility> { return 'private' as Visibility }
+  /**
+   * Same chmod-based visibility as the local adapter
+   * (stacksjs/stacks#1873 S-4). Bun's own file APIs don't expose a
+   * mode setter, so we use node:fs/promises.chmod against the
+   * already-resolved path. Public = 0o644 / 0o755, Private = 0o600 /
+   * 0o700, with the executable bit on directories so traversal still
+   * works for other users.
+   */
+  async changeVisibility(path: string, vis: Visibility): Promise<void> {
+    const fullPath = this.resolvePath(path)
+    const stats = await lstat(fullPath)
+    const isDir = stats.isDirectory()
+    const mode = (vis === ('public' as Visibility))
+      ? (isDir ? 0o755 : 0o644)
+      : (isDir ? 0o700 : 0o600)
+    await chmod(fullPath, mode)
+  }
+
+  async visibility(path: string): Promise<Visibility> {
+    const fullPath = this.resolvePath(path)
+    const stats = await lstat(fullPath)
+    const perms = stats.mode & 0o777
+    return ((perms & 0o004) ? 'public' : 'private') as Visibility
+  }
 
   async fileExists(path: string): Promise<boolean> {
     const fullPath = this.resolvePath(path)

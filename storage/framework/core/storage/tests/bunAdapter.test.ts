@@ -222,17 +222,19 @@ describe('BunStorageAdapter', () => {
   })
 
   describe('visibility', () => {
-    it('should get file visibility', async () => {
+    // Pre-stacksjs/stacks#1873 S-4: changeVisibility was a silent
+    // no-op and visibility() always returned 'private'. These tests
+    // documented that bug; now they verify the chmod-based round-trip.
+    it('changeVisibility(private) then visibility() returns private', async () => {
       await adapter.write('private.txt', 'content')
-      const visibility = await adapter.visibility('private.txt')
-      expect(visibility).toBe('private')
+      await adapter.changeVisibility('private.txt', 'private')
+      expect(await adapter.visibility('private.txt')).toBe('private')
     })
 
-    it('should change file visibility', async () => {
+    it('changeVisibility(public) then visibility() returns public', async () => {
       await adapter.write('toggle.txt', 'content')
       await adapter.changeVisibility('toggle.txt', 'public')
-      // Note: Bun adapter doesn't actually change permissions, just a no-op
-      expect(await adapter.visibility('toggle.txt')).toBe('private')
+      expect(await adapter.visibility('toggle.txt')).toBe('public')
     })
   })
 

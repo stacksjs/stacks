@@ -31,3 +31,14 @@ export { configFromEnv, localDisk, s3Disk } from './types/filesystem'
 export { createSignedStorageToken, verifySignedStorageToken } from './signed-url'
 export type { SignedTokenVerification } from './signed-url'
 export type { SignedUrlOptions } from './types'
+
+// Path-sanitization helpers (used internally by S3 presignedUploadUrl;
+// also re-exported so user code can pre-validate input from request
+// bodies and surface 400s with a clean `PathSanitizeError`.)
+export { PathSanitizeError, sanitizePresignedDir, sanitizePresignedFilename } from './path-sanitize'
+
+// MIME re-verification — server-side check that uploaded bytes match
+// the claimed content type. Run this after a presigned upload
+// completes since `Content-Type` on a presigned PUT is caller-attested.
+export { detectMimeFromMagicBytes, verifyUploadedMime } from './mime-verify'
+export type { MimeVerifyResult } from './mime-verify'

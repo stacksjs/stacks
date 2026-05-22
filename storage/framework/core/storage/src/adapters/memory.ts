@@ -57,8 +57,18 @@ export class InMemoryStorageAdapter implements StorageAdapter {
       return contents
     }
     else {
-      // ReadableStream
-      const reader = contents.getReader()
+      // Web-standard ReadableStream only — see s3.ts:contentsToBuffer
+      // (stacksjs/stacks#1873 S-15) for the same guard.
+      const stream = contents as unknown as { getReader?: ReadableStream['getReader'] }
+      if (typeof stream.getReader !== 'function') {
+        throw new TypeError(
+          '[storage/memory] contents must be a web-standard ReadableStream '
+          + '(with .getReader()), not a Node stream.Readable. '
+          + 'Convert via Readable.toWeb(nodeStream) before passing.',
+        )
+      }
+
+      const reader = stream.getReader.call(contents as ReadableStream)
       const chunks: Uint8Array[] = []
 
       while (true) {

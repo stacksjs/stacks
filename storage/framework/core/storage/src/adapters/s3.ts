@@ -18,6 +18,7 @@ import type {
   Visibility,
 } from '../types'
 import { normalizeExpiryToMilliseconds } from '../types'
+import { sanitizePresignedDir, sanitizePresignedFilename } from '../path-sanitize'
 
 /**
  * AWS S3 storage adapter using ts-cloud S3Client
@@ -63,8 +64,21 @@ export class S3StorageAdapter implements StorageAdapter {
       return Buffer.from(contents)
     }
     else {
-      // ReadableStream - convert to Buffer
-      const reader = contents.getReader()
+      // ReadableStream — narrow to web-standard before consuming so a
+      // Node `stream.Readable` (no `.getReader()`) fails with a clear
+      // message instead of the confusing
+      // `contents.getReader is not a function` late-throw
+      // (stacksjs/stacks#1873 S-15).
+      const stream = contents as unknown as { getReader?: ReadableStream['getReader'] }
+      if (typeof stream.getReader !== 'function') {
+        throw new TypeError(
+          '[storage/s3] contents must be a web-standard ReadableStream '
+          + '(with .getReader()), not a Node stream.Readable. '
+          + 'Convert via Readable.toWeb(nodeStream) before passing.',
+        )
+      }
+
+      const reader = stream.getReader.call(contents as ReadableStream)
       const chunks: Uint8Array[] = []
 
       while (true) {
@@ -222,12 +236,45 @@ export class S3StorageAdapter implements StorageAdapter {
     }
   }
 
-  async changeVisibility(_path: string, _visibility: Visibility): Promise<void> {
-    // Would need to use putObjectAcl to change ACLs
+  /**
+   * Translate the abstract "public / private" visibility into an S3
+   * canned ACL via `putObjectAcl` (stacksjs/stacks#1873 S-4). Maps:
+   *
+   *  - public  → `'public-read'`
+   *  - private → `'private'`
+   *
+   * **Bucket Object Ownership matters.** Modern S3 buckets default to
+   * "Bucket Owner Enforced," which disables per-object ACLs entirely.
+   * In that case, `putObjectAcl` returns `AccessControlListNotSupported`
+   * — that's not our bug, but the error message AWS returns is opaque
+   * (`"The bucket does not allow ACLs"`). Recommend bucket policies
+   * + presigned URLs instead.
+   *
+   * Previously a silent no-op with a TODO comment, so callers thought
+   * "I set the file public, why isn't it served?" was a config issue.
+   */
+  async changeVisibility(path: string, vis: Visibility): Promise<void> {
+    const key = this.prefixPath(path)
+    const acl = (vis === ('public' as Visibility)) ? 'public-read' : 'private'
+    await this.client.putObjectAcl(this.bucket, key, acl)
   }
 
-  async visibility(_path: string): Promise<Visibility> {
-    return 'private' as Visibility
+  /**
+   * Read back the ACL via `getObjectAcl` and detect whether any
+   * `READ` grant is targeted at the `AllUsers` group — that's the
+   * canonical "public" signal in S3. Anything else (private,
+   * authenticated-read, custom user grants) collapses to `'private'`
+   * because the facade only models the binary public/private split.
+   */
+  async visibility(path: string): Promise<Visibility> {
+    const key = this.prefixPath(path)
+    const acl = await this.client.getObjectAcl(this.bucket, key)
+    const grants = (acl as { Grants?: Array<{ Grantee?: { URI?: string }; Permission?: string }> })?.Grants ?? []
+    const isPublic = grants.some(g =>
+      g.Grantee?.URI === 'http://acs.amazonaws.com/groups/global/AllUsers'
+      && (g.Permission === 'READ' || g.Permission === 'FULL_CONTROL'),
+    )
+    return (isPublic ? 'public' : 'private') as Visibility
   }
 
   async fileExists(path: string): Promise<boolean> {
@@ -317,6 +364,15 @@ export class S3StorageAdapter implements StorageAdapter {
    * a Content-Length-Range condition (that's a presigned POST policy
    * thing). For untrusted clients, scan post-upload or fall back to a
    * server-proxied multipart endpoint.
+   *
+   * **Content-Type is caller-attested.** AWS only checks that the
+   * PUT's `Content-Type` header matches what was signed — it never
+   * inspects the bytes. A hostile caller can request `image/jpeg`,
+   * receive a `.jpg`-suffixed key, then PUT executable bytes. Server
+   * code MUST re-verify the actual MIME after the upload completes —
+   * use `verifyUploadedMime(path, contentType)` for binary formats
+   * (PNG/JPEG/GIF/WebP/PDF/MP4/etc.), or parse-validate for text
+   * formats. See stacksjs/stacks#1873 S-3.
    */
   async presignedUploadUrl(options: PresignedUploadUrlOptions): Promise<PresignedUploadUrl> {
     if (!options.contentType)
@@ -329,10 +385,23 @@ export class S3StorageAdapter implements StorageAdapter {
       throw new RangeError(`[storage/s3] presignedUploadUrl expiresIn must be between 60s and 7 days (got ${expiresIn}s)`)
     }
 
-    const filename = options.filename ?? `${crypto.randomUUID().replace(/-/g, '')}${this.extensionForContentType(options.contentType)}`
-    const path = options.dir
-      ? `${options.dir.replace(/\/+$|\/+\.$/, '')}/${filename}`
-      : filename
+    // Sanitize caller-controlled `dir` and `filename` BEFORE concatenation
+    // (stacksjs/stacks#1873 S-1, S-2). Without this:
+    //   - `dir: '../../sensitive'` escapes the configured prefix because
+    //     S3 keys are opaque strings — there's no filesystem `..` to
+    //     resolve against, so the bad segment lands verbatim in the key.
+    //   - `filename: 'foo/bar.exe'` injects a separator that flips the
+    //     "filename" into a sub-path the caller doesn't own, and the
+    //     `.exe` extension overrides whatever extension contentType
+    //     would have produced.
+    // Both throw `PathSanitizeError` (a subclass of `Error`) so callers
+    // can map them to 400s; the storage layer never sees the dangerous
+    // shape.
+    const safeDir = sanitizePresignedDir(options.dir)
+    const safeFilename = options.filename !== undefined
+      ? sanitizePresignedFilename(options.filename)
+      : `${crypto.randomUUID().replace(/-/g, '')}${this.extensionForContentType(options.contentType)}`
+    const path = safeDir ? `${safeDir}/${safeFilename}` : safeFilename
     const key = this.prefixPath(path)
 
     const url = await this.client.getSignedUrl({

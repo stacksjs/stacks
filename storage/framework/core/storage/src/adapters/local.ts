@@ -1,7 +1,7 @@
 import { Buffer } from 'node:buffer'
 import { createHmac } from 'node:crypto'
 import { createReadStream, createWriteStream } from 'node:fs'
-import { access, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
+import { access, chmod, constants, copyFile, lstat, mkdir, readdir, readFile, rename, rm, stat, unlink, writeFile } from 'node:fs/promises'
 import { basename, dirname, join, relative } from 'node:path'
 import { pipeline } from 'node:stream/promises'
 import type {
@@ -194,16 +194,43 @@ export class LocalStorageAdapter implements StorageAdapter {
     return entries
   }
 
-  async changeVisibility(_path: string, _visibility: Visibility): Promise<void> {
-    // Node.js doesn't have a simple visibility concept
-    // Would need to use chmod and translate visibility to permissions
-    // For now, this is a no-op
+  /**
+   * Translate the abstract "public / private" visibility into POSIX
+   * mode bits and apply via chmod (stacksjs/stacks#1873 S-4).
+   *
+   *  - public  → 0o644 (rw-r--r--)  / 0o755 for directories
+   *  - private → 0o600 (rw-------)  / 0o700 for directories
+   *
+   * Directories get the executable bit because POSIX requires it on
+   * the lookup path; without it a `readdir` on a "public" directory
+   * would still fail for other users.
+   *
+   * Previously a silent no-op — callers got "success" without any
+   * mode change, which made bug reports a guessing game ("I called
+   * `changeVisibility('public')` and the file is still 0600 — why?").
+   */
+  async changeVisibility(path: string, vis: Visibility): Promise<void> {
+    const fullPath = this.resolvePath(path)
+    const stats = await lstat(fullPath)
+    const isDir = stats.isDirectory()
+    const mode = (vis === ('public' as Visibility))
+      ? (isDir ? 0o755 : 0o644)
+      : (isDir ? 0o700 : 0o600)
+    await chmod(fullPath, mode)
   }
 
-  async visibility(_path: string): Promise<Visibility> {
-    // Would need to check file permissions and translate to visibility
-    // For now, default to private
-    return 'private' as Visibility
+  /**
+   * Read POSIX mode bits and translate back to abstract visibility.
+   * Any "world-readable" bit (0o004) flips the file to public; the
+   * stricter "group-readable but world-blocked" cases collapse to
+   * private since the storage facade has no group concept.
+   */
+  async visibility(path: string): Promise<Visibility> {
+    const fullPath = this.resolvePath(path)
+    const stats = await lstat(fullPath)
+    // mode is the full st_mode field; mask to the permission bits.
+    const perms = stats.mode & 0o777
+    return ((perms & 0o004) ? 'public' : 'private') as Visibility
   }
 
   async fileExists(path: string): Promise<boolean> {

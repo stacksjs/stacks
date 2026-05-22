@@ -10,24 +10,13 @@
 import type { StorageManager } from './facade'
 
 /**
- * Minimal structural shape for an uploaded file accepted by
- * `Storage.put(file, opts)`.
- *
- * Two callsites land here in practice (stacksjs/stacks#1856):
- *
- *   1. **Direct multipart parse** (the original router shape, before
- *      bun-router wrapped each entry in an `UploadedFile` class).
- *      `{ originalName, mimetype, buffer }` — synchronous.
- *   2. **Router's `UploadedFile` class** (current shape from
- *      `req.file(key)` / `req.files`). Exposes `name`, `mimeType`, and
- *      an async `bytes()` / `arrayBuffer()` accessor instead of a `buffer`
- *      property — Bun's `File` is lazy by design.
- *
- * Both shapes flow through `putUploadedFile()` below; the helper
- * detects which one it got and reads bytes accordingly. Storage doesn't
- * import from the router to avoid a dependency cycle.
+ * Optional metadata fields shared by every uploaded-file shape we
+ * accept. The `name` / `mimeType` aliases are present so the router's
+ * `UploadedFile` class (which uses the class-style names) flows
+ * through alongside the direct-parse shape (which uses the
+ * snake-style `originalName` / `mimetype`).
  */
-export interface UploadedFileLike {
+interface UploadedFileMetadata {
   /** Original filename from the client (used by `filename: 'original'`). */
   originalName?: string
   /** Class-style alias that the router's `UploadedFile` exposes as `name`. */
@@ -36,13 +25,32 @@ export interface UploadedFileLike {
   mimetype?: string
   /** Class-style alias that the router's `UploadedFile` exposes as `mimeType`. */
   mimeType?: string
-  /** Raw bytes — populated by the direct-parse shape. */
-  buffer?: ArrayBuffer | Uint8Array | Buffer
-  /** Async byte accessor — populated by the class shape. */
-  bytes?: () => Promise<Uint8Array>
-  /** Async ArrayBuffer accessor — alternative to `bytes()` on the class shape. */
-  arrayBuffer?: () => Promise<ArrayBuffer>
 }
+
+/**
+ * Minimal structural shape for an uploaded file accepted by
+ * `Storage.put(file, opts)`. Modeled as a discriminated union so the
+ * type-checker rejects `Storage.put({})` and similar empty-object
+ * mistakes (stacksjs/stacks#1873 S-13). At least one of `buffer`,
+ * `bytes()`, or `arrayBuffer()` must be present — that's the runtime
+ * contract `readBytes()` enforces with a throw, and now the
+ * structural contract the type system enforces at compile time.
+ *
+ * Two callsites land here in practice (stacksjs/stacks#1856):
+ *
+ *   1. **Direct multipart parse** (the original router shape, before
+ *      bun-router wrapped each entry in an `UploadedFile` class).
+ *      `{ originalName, mimetype, buffer }` — synchronous.
+ *   2. **Router's `UploadedFile` class** (current shape from
+ *      `req.file(key)` / `req.files`). Exposes `name`, `mimeType`, and
+ *      an async `bytes()` / `arrayBuffer()` accessor instead of a
+ *      `buffer` property — Bun's `File` is lazy by design.
+ */
+export type UploadedFileLike = UploadedFileMetadata & (
+  | { buffer: ArrayBuffer | Uint8Array | Buffer, bytes?: () => Promise<Uint8Array>, arrayBuffer?: () => Promise<ArrayBuffer> }
+  | { bytes: () => Promise<Uint8Array>, buffer?: ArrayBuffer | Uint8Array | Buffer, arrayBuffer?: () => Promise<ArrayBuffer> }
+  | { arrayBuffer: () => Promise<ArrayBuffer>, buffer?: ArrayBuffer | Uint8Array | Buffer, bytes?: () => Promise<Uint8Array> }
+)
 
 /** Built-in filename strategies for `Storage.put(file, { filename })`. */
 export type FilenameStrategy =
