@@ -57,12 +57,32 @@ function getDriver(): string {
   return dbConfig.default || 'sqlite'
 }
 
+/**
+ * Narrow `DB_CONNECTION` to a SQL dialect the migration runner and
+ * bun-query-builder can actually execute against. Previously this
+ * silently fell back to `'sqlite'` for any unrecognized driver —
+ * including `'dynamodb'`, which was advertised in env types and config
+ * validators but has no working SQL path. Result: `DB_CONNECTION=dynamodb`
+ * would silently run SQLite migrations against a non-existent file
+ * (stacksjs/stacks#1876 D-4).
+ *
+ * Now: throw with a clear pointer. Apps that genuinely want DynamoDB
+ * should use the entity-style `dynamo.entity(...)` API directly
+ * instead of the SQL ORM/migration path.
+ */
 function getDialect(): 'sqlite' | 'mysql' | 'postgres' {
   const driver = getDriver()
-  if (driver === 'sqlite') return 'sqlite'
-  if (driver === 'mysql') return 'mysql'
-  if (driver === 'postgres') return 'postgres'
-  return 'sqlite'
+  if (driver === 'sqlite' || driver === 'mysql' || driver === 'postgres') return driver
+  if (driver === 'dynamodb') {
+    throw new Error(
+      '[database] DB_CONNECTION=dynamodb is not compatible with the SQL migration runner. '
+      + 'DynamoDB has no schema-migration concept — use the entity-style `dynamo.entity(...)` '
+      + 'API from @stacksjs/database directly. To run SQL migrations, set DB_CONNECTION to one of: sqlite, mysql, postgres.',
+    )
+  }
+  throw new Error(
+    `[database] Unknown DB_CONNECTION "${driver}". Allowed values: sqlite, mysql, postgres, dynamodb.`,
+  )
 }
 
 /**

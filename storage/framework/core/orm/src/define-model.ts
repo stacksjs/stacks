@@ -1490,22 +1490,55 @@ function applySoftDeletes(
   // ever fired — the audit's #11 specifically called this out, since a
   // listener watching for "user came back" via `restored` was never going
   // to receive the event.
+  //
+  // Cascade is wrapped in a transaction (stacksjs/stacks#1876 O-3) so
+  // a child-cascade failure rolls back the parent's soft-delete /
+  // restore. Without this, the parent committed first and a failing
+  // child left the schema in an inconsistent state with no signal to
+  // the caller. The transaction is opt-out via
+  // `STACKS_ORM_CASCADE_SWALLOW=true` (the cascadeChildren callsite
+  // honors the same env var — same boundary, same opt-out).
+  const transactional = process.env.STACKS_ORM_CASCADE_SWALLOW !== 'true'
+
   const softDeleteFn = async (id: number | string): Promise<boolean> => {
-    const ok = await helpers.softDelete(id)
-    if (ok && options.cascade?.length)
-      await cascadeSoftDelete(parentDef, options, id, 'softDelete')
-    return ok
+    if (!options.cascade?.length || !transactional) {
+      const ok = await helpers.softDelete(id)
+      if (ok && options.cascade?.length)
+        await cascadeSoftDelete(parentDef, options, id, 'softDelete')
+      return ok
+    }
+    const { db } = await import('@stacksjs/database')
+    return await db.transaction(async () => {
+      const ok = await helpers.softDelete(id)
+      if (ok)
+        await cascadeSoftDelete(parentDef, options, id, 'softDelete')
+      return ok
+    })
   }
 
   const restoreFn = async (id: number | string): Promise<boolean> => {
     const proceed = await fireRestoring(id)
     if (!proceed) return false
-    const ok = await helpers.restore(id)
-    if (ok) {
-      if (options.cascade?.length)
-        await cascadeSoftDelete(parentDef, options, id, 'restore')
-      await fireRestored(id)
+    if (!options.cascade?.length || !transactional) {
+      const ok = await helpers.restore(id)
+      if (ok) {
+        if (options.cascade?.length)
+          await cascadeSoftDelete(parentDef, options, id, 'restore')
+        await fireRestored(id)
+      }
+      return ok
     }
+    const { db } = await import('@stacksjs/database')
+    const ok = await db.transaction(async () => {
+      const inner = await helpers.restore(id)
+      if (inner)
+        await cascadeSoftDelete(parentDef, options, id, 'restore')
+      return inner
+    })
+    // Fire `restored` AFTER the transaction commits — listeners that
+    // run side effects (queue jobs, audit log) should observe the
+    // restored state, not the in-flight transaction snapshot.
+    if (ok) await fireRestored(id)
     return ok
   }
 

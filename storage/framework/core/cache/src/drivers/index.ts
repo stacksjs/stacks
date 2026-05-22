@@ -127,10 +127,25 @@ export class StacksCache implements CacheDriver {
     return await this.manager.mget<T>(keys)
   }
 
+  /**
+   * Store `value` at `key`. `ttl` is in **seconds**; `0` means "no
+   * expiration" (use `setForever` for clarity). When `ttl` is omitted,
+   * the underlying driver's default applies — for both the memory and
+   * Redis drivers this is `0` (no expiration) unless `MemoryOptions.stdTTL`
+   * or `RedisOptions.stdTTL` was set at driver creation. Pass an
+   * explicit `ttl` if you want time-bounded entries; the unspecified
+   * default has bitten teams who assumed Laravel-style "60s default"
+   * (stacksjs/stacks#1876 C-3).
+   */
   async set<T>(key: string, value: T, ttl?: number): Promise<boolean> {
     return await this.manager.set(key, value, ttl)
   }
 
+  /**
+   * Bulk variant of `set`. Same TTL semantics as `set` apply
+   * per-entry: omitted = driver default (0 / no expiration unless
+   * `stdTTL` is configured); explicit number = seconds; `0` = forever.
+   */
   async mset<T>(entries: Array<{ key: string, value: T, ttl?: number }>): Promise<boolean> {
     return await this.manager.mset(entries)
   }
@@ -389,40 +404,59 @@ export class TaggedCache {
    * drop the tag indexes themselves.
    *
    * Per-tag flush is serialized via a static lock map: concurrent
-   * flushes against the same tag await each other so writes that
-   * landed between two parallel flushes aren't dropped on the floor
-   * (a flush deletes only the keys it observed at read-time; if a
-   * second flush had already wiped the index, the late-arriving keys
-   * leak forever).
+   * flushes against the same tag chain through each other so writes
+   * that landed between two parallel flushes aren't dropped on the
+   * floor.
+   *
+   * **Previous race (stacksjs/stacks#1876 C-1):** the get/set on the
+   * lock map straddled an `await`, leaving a microtask window where
+   * two concurrent callers both observed `undefined` and started
+   * parallel flushOne Promises — neither serialized against the other.
+   * The "lock" was never enforced. Now: build the chained Promise
+   * synchronously between the lock-map get and set so there's no
+   * yield window where another caller can squeeze in.
    */
   async flush(): Promise<number> {
     let deleted = 0
     for (const tag of this.tags) {
       const tagK = this.tagKey(tag)
-      // Wait for any in-flight flush of the same tag before starting ours.
-      const inflight = TaggedCache.flushLocks.get(tagK)
-      if (inflight) await inflight.catch(() => { /* prior flush errors don't block ours */ })
 
-      const flushOne = (async () => {
-        const keys = (await this.cache.get<string[]>(tagK)) ?? []
-        let n = 0
-        if (keys.length > 0) n = await this.cache.del(keys)
-        await this.cache.del(tagK)
-        return n
-      })()
-      TaggedCache.flushLocks.set(tagK, flushOne)
+      // Atomic check-and-set on the lock map. We MUST NOT await
+      // between `get` and `set` — JS is single-threaded between
+      // awaits, so doing both inside the same synchronous turn is the
+      // primitive that makes the lock real. The chained promise
+      // awaits the existing flush (if any), then runs ours.
+      const existing = TaggedCache.flushLocks.get(tagK)
+      const ourFlush: Promise<number> = existing
+        ? existing.catch(() => 0).then(() => this.doFlushOne(tagK))
+        : this.doFlushOne(tagK)
+      TaggedCache.flushLocks.set(tagK, ourFlush)
+
       try {
-        deleted += await flushOne
+        deleted += await ourFlush
       }
       finally {
         // Only clear if we're still the latest flush — a later caller
         // may have replaced the slot before we resolved.
-        if (TaggedCache.flushLocks.get(tagK) === flushOne) {
+        if (TaggedCache.flushLocks.get(tagK) === ourFlush) {
           TaggedCache.flushLocks.delete(tagK)
         }
       }
     }
     return deleted
+  }
+
+  /**
+   * Internal: actual flush body for a single tag key. Lifted out so
+   * `flush()` can compose it into a chained Promise without splitting
+   * an inline async IIFE across the lock-map get/set boundary.
+   */
+  private async doFlushOne(tagK: string): Promise<number> {
+    const keys = (await this.cache.get<string[]>(tagK)) ?? []
+    let n = 0
+    if (keys.length > 0) n = await this.cache.del(keys)
+    await this.cache.del(tagK)
+    return n
   }
 }
 

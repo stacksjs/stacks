@@ -208,9 +208,16 @@ function relationMatches(className: string, relationName: string, plural: boolea
 
 /**
  * Soft-delete (or hard-delete, if the child has no softDeletes trait) all
- * rows of `childModel` that point at the parent via `foreignKey`. Errors
- * are logged but not re-thrown — a failed cascade should not undo the
- * parent's already-committed write.
+ * rows of `childModel` that point at the parent via `foreignKey`.
+ *
+ * **Error semantics (stacksjs/stacks#1876 O-3):** child failures now
+ * re-throw so the caller (typically `cascadeSoftDelete` inside a
+ * `db.transaction`) can roll the parent back. Previously this swallowed
+ * errors after logging, leaving the parent committed while one or more
+ * children remained in an inconsistent state — a bug callers couldn't
+ * detect from the return value. Legacy fire-and-forget semantics are
+ * available via `STACKS_ORM_CASCADE_SWALLOW=true` for code that
+ * predates the new contract and hasn't been audited yet.
  */
 async function cascadeChildren(
   parentClassName: string,
@@ -291,6 +298,12 @@ async function cascadeChildren(
   }
   catch (err) {
     log.warn(`[orm] soft-delete cascade ${action} on ${parentClassName}#${String(parentId)} failed`, { error: err })
+    // Re-throw so the surrounding db.transaction rolls back the parent.
+    // Opt-out for legacy code: STACKS_ORM_CASCADE_SWALLOW=true preserves
+    // the old fire-and-forget behavior. We log either way so the
+    // failure is visible.
+    if (process.env.STACKS_ORM_CASCADE_SWALLOW !== 'true')
+      throw err
   }
 }
 
