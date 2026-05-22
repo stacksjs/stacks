@@ -276,6 +276,79 @@ export class Schedule implements UntimedSchedule {
   }
 
   /**
+   * Fire the task once for every cron slot that was missed since
+   * `since` (stacksjs/stacks#1877 Cr-4). The default scheduler
+   * search-forward semantics discard missed runs silently — a
+   * server that was down for 5 minutes loses 5 ticks of a
+   * `* * * * *` task. This helper walks the cron expression
+   * forward from `since` and invokes the task for each matching
+   * slot up to `Date.now()`.
+   *
+   * Persistence is the caller's responsibility: store the task's
+   * lastRunAt timestamp somewhere (DB, file, etc.) on every run,
+   * then pass that timestamp as `since` on the next boot.
+   *
+   * `max` (default 100) caps the catch-up so a long outage doesn't
+   * bury the system in stale work. Beyond `max`, the helper logs
+   * a warn and skips ahead to the most recent slot.
+   *
+   * @example
+   * ```ts
+   * // Inside the task: write lastRunAt after each successful run.
+   * await schedule.job('ProcessQueue')
+   *   .everyMinute()
+   *   .runMissed({ since: lastSavedRunAt, max: 60 })
+   * ```
+   */
+  async runMissed(opts: { since: Date | number, max?: number }): Promise<number> {
+    if (!this.cronPattern) {
+      log.warn('[scheduler] runMissed() requires a cron-based schedule; interval-based tasks (everySecond) have no concept of missed slots')
+      return 0
+    }
+    const max = opts.max ?? 100
+    const since = opts.since instanceof Date ? opts.since.getTime() : opts.since
+    const now = Date.now()
+    if (since >= now) return 0
+
+    const slots: Date[] = []
+    // parseCron's internal search starts from `relativeDate`'s next
+    // minute, so passing `since` as-is correctly finds the first
+    // matching slot AFTER `since`. Right-boundary is INCLUSIVE
+    // (`> now`, not `>= now`) so a slot whose minute matches "now"
+    // is treated as missed too — common case after a server boot
+    // where the scheduler's first tick lands a fraction of a second
+    // after a cron slot. We capture +1 over `max` so the cap-warn
+    // below knows whether we overflowed.
+    let cursor = since
+    while (slots.length < max + 1) {
+      const next = parse(this.cronPattern, cursor)
+      if (!next || next.getTime() > now) break
+      slots.push(next)
+      cursor = next.getTime()
+    }
+
+    if (slots.length > max) {
+      log.warn(`[scheduler] runMissed: ${slots.length} missed slots since ${new Date(since).toISOString()}, capping at ${max} — older runs dropped`)
+      slots.splice(0, slots.length - max)
+    }
+
+    let fired = 0
+    for (const slot of slots) {
+      try {
+        const result = this.task() as unknown
+        if (result && typeof (result as Promise<unknown>).then === 'function')
+          await (result as Promise<unknown>)
+        fired++
+      }
+      catch (err) {
+        log.error(`[scheduler] runMissed slot ${slot.toISOString()} failed: ${err instanceof Error ? err.message : String(err)}`)
+        if (this.options.catch) this.options.catch(err as Error)
+      }
+    }
+    return fired
+  }
+
+  /**
    * Snapshot every currently-registered scheduled job
    * (stacksjs/stacks#1877 S-1). Returned objects share the
    * `ScheduledJob` shape with `pattern` / `timezone` / `name` /
