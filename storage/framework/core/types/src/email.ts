@@ -340,6 +340,17 @@ export interface EmailMessage {
   cc?: string | string[] | EmailAddress[]
   /** Blind carbon copy recipient(s) */
   bcc?: string | string[] | EmailAddress[]
+  /**
+   * Reply-To address(es) for the outgoing message.
+   *
+   * Drivers must propagate this to the provider's equivalent field
+   * (`ReplyToAddresses` on SES, `h:Reply-To` on Mailgun, `reply_to` on
+   * SendGrid, a `Reply-To:` header for SMTP). Previously the field
+   * lived as an `as any` stash on the message (stacksjs/stacks#1871 M-4)
+   * — promoting it to a first-class slot means drivers can be
+   * checked at compile time for coverage.
+   */
+  replyTo?: EmailAddress | EmailAddress[] | string | string[]
   /** Email subject line */
   subject: string
   /** Path to email template (Vue component) */

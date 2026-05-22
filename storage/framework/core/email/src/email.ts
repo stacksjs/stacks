@@ -1,5 +1,6 @@
 import type { EmailDriver, EmailMessage, EmailResult } from '@stacksjs/types'
 import { config } from '@stacksjs/config'
+import { log } from '@stacksjs/logging'
 import type { Message } from './types'
 import { LogEmailDriver } from './drivers/log'
 import { MailgunDriver } from './drivers/mailgun'
@@ -171,60 +172,72 @@ class Mail {
 
   /**
    * Queue an email for background sending via the job system.
-   * Falls back to synchronous send if queue driver is 'sync'.
+   * Falls back to synchronous send if the queue system isn't loaded
+   * or the dispatch fails; the failure is logged so a dropped queue
+   * doesn't silently degrade to inline sends without anyone noticing
+   * (stacksjs/stacks#1871 M-11).
    */
   public async queue(message: EmailMessage): Promise<void> {
-    try {
+    await this.dispatchOrFallback(message, async () => {
       const { job } = await import('@stacksjs/queue')
-      await job('SendEmail', {
-        message,
-        driver: this.defaultDriver,
-      })
+      await job('SendEmail', { message, driver: this.defaultDriver })
         .onQueue('emails')
         .dispatch()
-    }
-    catch {
-      // Queue system not available, fall back to sync send
-      await this.send(message)
-    }
+    }, { context: 'queue' })
   }
 
   /**
    * Queue an email for sending after a delay (in seconds).
    */
   public async later(delaySeconds: number, message: EmailMessage): Promise<void> {
-    try {
+    await this.dispatchOrFallback(message, async () => {
       const { job } = await import('@stacksjs/queue')
-      await job('SendEmail', {
-        message,
-        driver: this.defaultDriver,
-      })
+      await job('SendEmail', { message, driver: this.defaultDriver })
         .onQueue('emails')
         .delay(delaySeconds)
         .dispatch()
-    }
-    catch {
-      // Queue system not available, fall back to sync send
-      await this.send(message)
-    }
+    }, { context: 'later', delaySeconds })
   }
 
   /**
    * Queue an email on a specific named queue.
    */
   public async queueOn(queueName: string, message: EmailMessage): Promise<void> {
-    try {
+    await this.dispatchOrFallback(message, async () => {
       const { job } = await import('@stacksjs/queue')
-      await job('SendEmail', {
-        message,
-        driver: this.defaultDriver,
-      })
+      await job('SendEmail', { message, driver: this.defaultDriver })
         .onQueue(queueName)
         .dispatch()
+    }, { context: 'queueOn', queueName })
+  }
+
+  /**
+   * Run the queue-dispatch closure; if it throws (queue package not
+   * loaded, broker connection lost, serializer crash, …) log the
+   * failure and fall back to a synchronous send. Previously the
+   * dispatch error was swallowed and apps had no signal that their
+   * background-send pipeline had silently degraded to inline sends —
+   * worth knowing before a worker's worth of sends starts blocking
+   * the request thread. See stacksjs/stacks#1871 M-11.
+   */
+  private async dispatchOrFallback(
+    message: EmailMessage,
+    dispatch: () => Promise<void>,
+    logExtra: Record<string, unknown>,
+  ): Promise<void> {
+    try {
+      await dispatch()
+      return
     }
-    catch {
-      await this.send(message)
+    catch (error) {
+      const reason = error instanceof Error ? error.message : String(error)
+      log.warn(
+        '[email] Queue dispatch failed; falling back to synchronous send. '
+        + 'Background email pipeline is degraded — check the queue worker / broker.',
+        { ...logExtra, reason },
+      )
     }
+    await this.send(message)
   }
 }
 

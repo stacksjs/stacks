@@ -9,7 +9,13 @@ interface EnumObject {
 export const envEnum: EnumObject = {
   APP_ENV: ['local', 'dev', 'development', 'staging', 'prod', 'production'],
   DB_CONNECTION: ['mysql', 'sqlite', 'postgres', 'dynamodb'],
-  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'postmark', 'sendmail', 'log', 'sendgrid', 'mailtrap'],
+  // MAIL_MAILER lists the drivers `@stacksjs/email` actually ships
+  // (`registerDefaultDrivers()` in src/email.ts). `postmark`,
+  // `nodemailer`, and `sendmail` previously appeared here but had no
+  // driver implementation — selecting them surfaced as a runtime
+  // throw on the first `mail.send()`. Use `smtp` for any SMTP relay
+  // (including Postmark over SMTP). See stacksjs/stacks#1871 M-7.
+  MAIL_MAILER: ['smtp', 'mailgun', 'ses', 'log', 'sendgrid', 'mailtrap'],
   SEARCH_ENGINE_DRIVER: ['opensearch', 'meilisearch', 'algolia', 'typesense'],
   FRONTEND_APP_ENV: ['development', 'staging', 'production'],
 }

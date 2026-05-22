@@ -305,13 +305,11 @@ export abstract class Mailable {
         : {}),
     }
 
-    // Reply-To isn't part of the EmailMessage interface today — drivers
-    // that support it read it off `headers` or extra metadata. Stash it on
-    // the message via a typed cast so callers that *do* care can still pull
-    // it back out without us widening the public type yet.
+    // `replyTo` is now a first-class field on `EmailMessage`
+    // (stacksjs/stacks#1871 M-4) — drivers consume it directly. The
+    // previous `as any` stash is gone.
     if (this._replyTo) {
-      // eslint-disable-next-line ts/no-explicit-any -- intentional: optional driver-extension field, not yet in EmailMessage
-      ;(message as any).replyTo = this._replyTo
+      message.replyTo = this._replyTo
     }
 
     const transport = options.driver ? mail.use(options.driver) : mail

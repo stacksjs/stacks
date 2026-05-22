@@ -4,6 +4,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
 import { template } from '../template'
+import { filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
 
 export class SendGridDriver extends BaseEmailDriver {
@@ -65,7 +66,20 @@ export class SendGridDriver extends BaseEmailDriver {
         throw new Error('Email must have either HTML or text content')
       }
 
-      const sendgridPayload = {
+      // First reply-to address only — SendGrid's `reply_to` slot takes
+      // a single email, not an array. Multi-replyTo callers get the
+      // first entry; the rest are silently dropped, matching SendGrid's
+      // own API behavior. (stacksjs/stacks#1871 M-4.)
+      const replyTo = this.firstSendGridAddress(message.replyTo)
+
+      // Custom headers passthrough (stacksjs/stacks#1871 M-5). SendGrid
+      // accepts arbitrary headers via the `headers` field — used for
+      // List-Unsubscribe / In-Reply-To / Message-ID overrides. The
+      // shared `filterStringHeaders` strips non-string values and any
+      // entry containing CR/LF (header injection).
+      const customHeaders = filterStringHeaders(message.headers)
+
+      const sendgridPayload: Record<string, unknown> = {
         personalizations: [
           {
             to: this.formatSendGridAddresses(message.to),
@@ -78,6 +92,8 @@ export class SendGridDriver extends BaseEmailDriver {
           email: message.from?.address || config.email.from?.address || '',
           name: message.from?.name || config.email.from?.name,
         },
+        ...(replyTo ? { reply_to: replyTo } : {}),
+        ...(customHeaders ? { headers: customHeaders } : {}),
         content,
         ...(message.attachments && {
           attachments: message.attachments.map(attachment => ({
@@ -113,6 +129,27 @@ export class SendGridDriver extends BaseEmailDriver {
       return { email: addr.address, ...(addr.name && { name: addr.name }) }
     })
   }
+
+  /**
+   * Extract the first SendGrid-shape `{ email, name? }` from a single
+   * or array reply-to value. Returns undefined when nothing usable was
+   * passed. (stacksjs/stacks#1871 M-4.)
+   */
+  private firstSendGridAddress(value: EmailMessage['replyTo']): { email: string, name?: string } | undefined {
+    if (!value) return undefined
+    if (typeof value === 'string') return { email: value }
+    if (Array.isArray(value)) {
+      const first = value[0]
+      if (first === undefined) return undefined
+      if (typeof first === 'string') return { email: first }
+      return { email: first.address, ...(first.name && { name: first.name }) }
+    }
+    // Single EmailAddress
+    return { email: value.address, ...(value.name && { name: value.name }) }
+  }
+
+  // `filterStringHeaders` moved to `../validation` and is shared across
+  // every driver that accepts a `message.headers` map.
 
   private arrayBufferToBase64(buffer: Uint8Array): string {
     let binary = ''

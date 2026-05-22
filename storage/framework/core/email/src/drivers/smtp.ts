@@ -6,21 +6,12 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
 import { template } from '../template'
+import { buildMimeMessage } from '../mime'
+import { ENVELOPE_ADDRESS, filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
 
-/**
- * Encode an SMTP header value with RFC 2047 base64 encoding when it
- * contains non-ASCII characters. Without this, subjects like
- * "Encore d'idées" or "你好" produce headers that violate RFC 5322 (which
- * mandates 7-bit ASCII for headers) and get mangled or rejected by
- * downstream relays.
- */
-function encodeRfc2047IfNeeded(value: string): string {
-  // eslint-disable-next-line no-control-regex
-  if (/^[\x00-\x7F]*$/.test(value)) return value
-  const encoded = Buffer.from(value, 'utf-8').toString('base64')
-  return `=?UTF-8?B?${encoded}?=`
-}
+// `encodeRfc2047IfNeeded` moved to `../mime` and is shared with the SES
+// `SendRawEmail` path (stacksjs/stacks#1871 M-2 / M-3).
 
 /**
  * SMTP envelope-address validator.
@@ -36,8 +27,9 @@ function encodeRfc2047IfNeeded(value: string): string {
  * because the broader form (display names, comments, source routes)
  * has no business reaching this transport.
  */
-const ENVELOPE_ADDRESS = /^[^\s<>"\\\r\n\t]+@[^\s<>"\\\r\n\t]+$/
-
+// `ENVELOPE_ADDRESS` regex now lives in `../validation` (single source
+// of truth across the base driver, SMTP, and any future driver that
+// needs an envelope-shape check). See stacksjs/stacks#1871 M-6.
 function assertEnvelopeAddress(addr: string, role: string): void {
   if (typeof addr !== 'string' || !ENVELOPE_ADDRESS.test(addr)) {
     throw new Error(`[smtp] Refusing to send: ${role} envelope address contains forbidden characters or is malformed: ${JSON.stringify(addr)}`)
@@ -113,16 +105,22 @@ export class SMTPDriver extends BaseEmailDriver {
       const fromName = message.from?.name || config.email.from?.name || ''
       const toAddresses = this.formatAddresses(message.to)
 
-      // Build email content
-      const boundary = `----=_Part_${Date.now()}_${Math.random().toString(36).substring(2)}`
-      const emailContent = this.buildEmailContent({
+      // Build email content via the shared MIME helper. Reply-To,
+      // custom headers, and attachments all flow through the same code
+      // path used by the SES `SendRawEmail` branch — see
+      // stacksjs/stacks#1871 M-2 / M-3 / M-4 / M-5.
+      const replyToAddresses = this.formatAddressList(message.replyTo)
+      const emailContent = buildMimeMessage({
         from: fromName ? `${fromName} <${fromAddress}>` : fromAddress,
         to: toAddresses.join(', '),
         cc: message.cc ? this.formatAddresses(message.cc).join(', ') : undefined,
+        replyTo: replyToAddresses.length > 0 ? replyToAddresses.join(', ') : undefined,
+        customHeaders: filterStringHeaders(message.headers),
         subject: message.subject,
         text: message.text,
         html: finalHtml,
-        boundary,
+        attachments: message.attachments,
+        messageIdDomain: config.email.domain,
       })
 
       // Send via SMTP
@@ -135,61 +133,8 @@ export class SMTPDriver extends BaseEmailDriver {
     }
   }
 
-  private buildEmailContent(options: {
-    from: string
-    to: string
-    cc?: string
-    subject: string
-    text?: string
-    html?: string
-    boundary: string
-  }): string {
-    const { from, to, cc, subject, text, html, boundary } = options
-    const lines: string[] = []
-
-    // Headers
-    lines.push(`From: ${from}`)
-    lines.push(`To: ${to}`)
-    if (cc)
-      lines.push(`Cc: ${cc}`)
-    lines.push(`Subject: ${encodeRfc2047IfNeeded(subject)}`)
-    lines.push(`MIME-Version: 1.0`)
-    lines.push(`Date: ${new Date().toUTCString()}`)
-    lines.push(`Message-ID: <${Date.now()}.${Math.random().toString(36).substring(2)}@${config.email.domain || 'localhost'}>`)
-
-    if (html && text) {
-      // Multipart message with both HTML and text
-      lines.push(`Content-Type: multipart/alternative; boundary="${boundary}"`)
-      lines.push('')
-      lines.push(`--${boundary}`)
-      lines.push('Content-Type: text/plain; charset=UTF-8')
-      lines.push('Content-Transfer-Encoding: 7bit')
-      lines.push('')
-      lines.push(text)
-      lines.push('')
-      lines.push(`--${boundary}`)
-      lines.push('Content-Type: text/html; charset=UTF-8')
-      lines.push('Content-Transfer-Encoding: 7bit')
-      lines.push('')
-      lines.push(html)
-      lines.push('')
-      lines.push(`--${boundary}--`)
-    }
-    else if (html) {
-      lines.push('Content-Type: text/html; charset=UTF-8')
-      lines.push('Content-Transfer-Encoding: 7bit')
-      lines.push('')
-      lines.push(html)
-    }
-    else if (text) {
-      lines.push('Content-Type: text/plain; charset=UTF-8')
-      lines.push('Content-Transfer-Encoding: 7bit')
-      lines.push('')
-      lines.push(text)
-    }
-
-    return lines.join('\r\n')
-  }
+  // MIME envelope building lives in `../mime` (shared with the SES
+  // SendRawEmail path) since stacksjs/stacks#1871 M-2 / M-3.
 
   private async sendViaSMTP(
     smtpConfig: { host: string, port: number, username: string, password: string, encryption: 'tls' | 'ssl' | 'starttls' | null },

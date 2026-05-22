@@ -74,6 +74,29 @@ export class MailgunDriver extends BaseEmailDriver {
 
       formData.append('subject', message.subject)
 
+      // Reply-To: Mailgun accepts via the `h:Reply-To` form field
+      // (stacksjs/stacks#1871 M-4). Multiple addresses are
+      // comma-separated per RFC 5322.
+      if (message.replyTo) {
+        const formatted = this.formatMailgunAddresses(
+          Array.isArray(message.replyTo) || typeof message.replyTo === 'string'
+            ? message.replyTo
+            : [message.replyTo],
+        )
+        if (formatted.length > 0) formData.append('h:Reply-To', formatted.join(', '))
+      }
+
+      // Custom header passthrough (stacksjs/stacks#1871 M-5). Mailgun
+      // exposes arbitrary outgoing headers via the `h:<HeaderName>`
+      // form-field convention; the framework's `headers` map keys are
+      // taken verbatim, so callers writing `{ 'List-Unsubscribe': … }`
+      // get the header on the wire as written.
+      if (message.headers) {
+        for (const [k, v] of Object.entries(message.headers)) {
+          if (typeof v === 'string') formData.append(`h:${k}`, v)
+        }
+      }
+
       // Only append html content if it exists
       if (finalHtml) {
         formData.append('html', finalHtml)

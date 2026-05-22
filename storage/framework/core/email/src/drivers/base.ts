@@ -2,6 +2,7 @@ import type { EmailAddress, EmailDriver, EmailDriverConfig, EmailMessage, EmailR
 import type { TemplateOptions } from '../template'
 import { config as appConfig } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
+import { assertEnvelopeAddress, assertHeaderSafeSubject } from '../validation'
 
 export abstract class BaseEmailDriver implements EmailDriver {
   public abstract name: string
@@ -43,14 +44,15 @@ export abstract class BaseEmailDriver implements EmailDriver {
       throw new Error('Email subject is required')
     }
 
-    // Loose RFC 5321 envelope check: no whitespace / control chars / quotes /
-    // angle brackets / backslash; must contain a single @.
-    const ENVELOPE_RE = /^[^\s<>"\\\r\n\t]+@[^\s<>"\\\r\n\t]+$/
+    // Subject CRLF guard (stacksjs/stacks#1871 M-6) — the subject is a
+    // header field on the wire; a CR/LF in the value lets an attacker
+    // inject additional headers. Pulled into a shared helper so every
+    // driver gets the same check.
+    assertHeaderSafeSubject(message.subject)
+
     const checkAddress = (raw: string | undefined, role: string) => {
       if (!raw) return
-      if (!ENVELOPE_RE.test(raw)) {
-        throw new Error(`Email ${role} address is malformed or contains forbidden characters: ${JSON.stringify(raw)}`)
-      }
+      assertEnvelopeAddress(raw, role)
     }
     const flatten = (v: unknown): string[] => {
       if (!v) return []
@@ -94,6 +96,22 @@ export abstract class BaseEmailDriver implements EmailDriver {
         : _addr.name
       return `${safeName} <${_addr.address}>`
     })
+  }
+
+  /**
+   * Same as {@link formatAddresses}, but also accepts a single bare
+   * `EmailAddress` or single string. Used by drivers that need to
+   * pipe `message.replyTo` through the standard formatter — the
+   * replyTo slot accepts a single instance OR an array, while
+   * `formatAddresses` expects array-or-string input.
+   * (stacksjs/stacks#1871 M-4.)
+   */
+  protected formatAddressList(value: string | string[] | EmailAddress | EmailAddress[] | undefined): string[] {
+    if (!value) return []
+    if (Array.isArray(value)) return this.formatAddresses(value as string[] | EmailAddress[])
+    if (typeof value === 'string') return this.formatAddresses(value)
+    // Single EmailAddress
+    return this.formatAddresses([value])
   }
 
   /**

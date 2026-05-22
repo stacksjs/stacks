@@ -4,6 +4,7 @@ import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import type { TemplateOptions } from '../template'
 import { template } from '../template'
+import { filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
 
 export class MailtrapDriver extends BaseEmailDriver {
@@ -46,6 +47,13 @@ export class MailtrapDriver extends BaseEmailDriver {
       // Use template HTML if available, otherwise use direct HTML from message
       const htmlContent = templ?.html || message.html
 
+      // Mailtrap's REST surface accepts a single reply_to object
+      // (stacksjs/stacks#1871 M-4) and arbitrary outgoing headers via
+      // a `headers` map (stacksjs/stacks#1871 M-5). Multi-replyTo
+      // callers get the first entry — Mailtrap doesn't model arrays here.
+      const replyTo = this.firstMailtrapAddress(message.replyTo)
+      const customHeaders = filterStringHeaders(message.headers)
+
       const mailtrapPayload = {
         from: {
           email: message.from?.address || config.email.from?.address || '',
@@ -54,6 +62,8 @@ export class MailtrapDriver extends BaseEmailDriver {
         to: this.formatMailtrapAddresses(message.to),
         ...(message.cc && { cc: this.formatMailtrapAddresses(message.cc) }),
         ...(message.bcc && { bcc: this.formatMailtrapAddresses(message.bcc) }),
+        ...(replyTo ? { reply_to: replyTo } : {}),
+        ...(customHeaders ? { headers: customHeaders } : {}),
         subject: message.subject,
         ...(htmlContent && { html: htmlContent }),
         ...(message.text && { text: message.text }),
@@ -89,6 +99,23 @@ export class MailtrapDriver extends BaseEmailDriver {
         return { email: addr }
       return { email: addr.address, ...(addr.name && { name: addr.name }) }
     })
+  }
+
+  /**
+   * Extract the first Mailtrap-shape `{ email, name? }` from a single
+   * or array reply-to value. Mailtrap's API only accepts one reply_to;
+   * multi-address callers get the first entry. (stacksjs/stacks#1871 M-4.)
+   */
+  private firstMailtrapAddress(value: EmailMessage['replyTo']): { email: string, name?: string } | undefined {
+    if (!value) return undefined
+    if (typeof value === 'string') return { email: value }
+    if (Array.isArray(value)) {
+      const first = value[0]
+      if (first === undefined) return undefined
+      if (typeof first === 'string') return { email: first }
+      return { email: first.address, ...(first.name && { name: first.name }) }
+    }
+    return { email: value.address, ...(value.name && { name: value.name }) }
   }
 
   private arrayBufferToBase64(buffer: Uint8Array): string {

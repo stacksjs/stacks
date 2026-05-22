@@ -3,6 +3,8 @@ import type { TemplateOptions } from '../template'
 import { config } from '@stacksjs/config'
 import { SESClient } from '@stacksjs/ts-cloud'
 import { template } from '../template'
+import { buildMimeMessage } from '../mime'
+import { filterStringHeaders } from '../validation'
 import { BaseEmailDriver } from './base'
 
 export class SESDriver extends BaseEmailDriver {
@@ -58,44 +60,77 @@ export class SESDriver extends BaseEmailDriver {
       // Use template HTML if available, otherwise use direct HTML from message
       const finalHtml = htmlContent || message.html
 
+      if (!finalHtml && !message.text) {
+        throw new Error('Email must have either HTML or text content')
+      }
+
+      const fromAddress = this.formatSourceAddress({
+        address: message.from?.address || config.email.from?.address || '',
+        name: message.from?.name || config.email.from?.name,
+      })
+      const toAddresses = this.formatAddresses(message.to)
+      const ccAddresses = this.formatAddresses(message.cc)
+      const bccAddresses = this.formatAddresses(message.bcc)
+      const replyToAddresses = message.replyTo ? this.formatAddressList(message.replyTo) : []
+      const customHeaders = filterStringHeaders(message.headers)
+      const hasAttachments = !!(message.attachments && message.attachments.length > 0)
+      const hasCustomHeaders = !!customHeaders
+
+      // Attachments + custom headers are unsupported by SES's `Simple`
+      // content shape — we have to fall back to `SendRawEmail` (RFC
+      // 5322 wire bytes). Without this fallback, attachments and
+      // List-Unsubscribe-style headers silently no-op'd on the SES
+      // driver. See stacksjs/stacks#1871 M-2 / M-5.
+      if (hasAttachments || hasCustomHeaders) {
+        const raw = buildMimeMessage({
+          from: fromAddress,
+          to: toAddresses.join(', '),
+          cc: ccAddresses.length > 0 ? ccAddresses.join(', ') : undefined,
+          replyTo: replyToAddresses.length > 0 ? replyToAddresses.join(', ') : undefined,
+          customHeaders,
+          subject: message.subject,
+          text: message.text,
+          html: finalHtml,
+          attachments: message.attachments,
+          messageIdDomain: config.email.domain,
+        })
+        // SES's SendRawEmail takes the entire RFC 5322 envelope. The
+        // BCC list is NOT in the wire bytes — SES handles delivery to
+        // bcc'd recipients via the `Destinations` argument.
+        const result = await this.getClient().sendRawEmail({
+          source: fromAddress,
+          destinations: [...toAddresses, ...ccAddresses, ...bccAddresses],
+          rawMessage: raw,
+        })
+        return this.handleSuccess(message, result.MessageId)
+      }
+
+      // Fast path — attachments-free, no custom headers — use the
+      // simple `SendEmail` shape so SES handles encoding for us.
       const body: {
         Text?: { Data: string, Charset?: string }
         Html?: { Data: string, Charset?: string }
       } = {}
-
-      // Add HTML content if available
       if (finalHtml) {
-        body.Html = {
-          Charset: config.email.charset || 'UTF-8',
-          Data: finalHtml,
-        }
+        body.Html = { Charset: config.email.charset || 'UTF-8', Data: finalHtml }
       }
-
-      // Add text content if available
       if (message.text) {
-        body.Text = {
-          Charset: config.email.charset || 'UTF-8',
-          Data: message.text,
-        }
-      }
-
-      // If no content was added, throw an error
-      if (Object.keys(body).length === 0) {
-        throw new Error('Email must have either HTML or text content')
+        body.Text = { Charset: config.email.charset || 'UTF-8', Data: message.text }
       }
 
       const result = await this.getClient().sendEmail({
-        FromEmailAddress: this.formatSourceAddress({
-          address: message.from?.address || config.email.from?.address || '',
-          name: message.from?.name || config.email.from?.name,
-        }),
-
+        FromEmailAddress: fromAddress,
         Destination: {
-          ToAddresses: this.formatAddresses(message.to),
-          CcAddresses: this.formatAddresses(message.cc),
-          BccAddresses: this.formatAddresses(message.bcc),
+          ToAddresses: toAddresses,
+          CcAddresses: ccAddresses,
+          BccAddresses: bccAddresses,
         },
-
+        // Reply-To addresses (stacksjs/stacks#1871 M-4). SES accepts an
+        // array of formatted addresses at this slot. Omit when the
+        // caller didn't set replyTo to avoid sending an empty array.
+        ...(replyToAddresses.length > 0
+          ? { ReplyToAddresses: replyToAddresses }
+          : {}),
         Content: {
           Simple: {
             Subject: {

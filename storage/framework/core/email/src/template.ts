@@ -9,8 +9,46 @@ export interface TemplateResult {
   text: string
 }
 
+/**
+ * Marker wrapper for variable values that contain pre-rendered HTML and
+ * should NOT be escaped during {@link replaceVariables}. Constructed via
+ * the {@link safe} helper.
+ *
+ * Anything that isn't a `SafeHtml` instance (or `safe`-marked) is treated
+ * as untrusted text and runs through HTML escaping — this is the M-1
+ * fix for stacksjs/stacks#1871 (template XSS via unescaped variable
+ * interpolation).
+ */
+export class SafeHtml {
+  readonly __safeHtml = true as const
+  constructor(public readonly value: string) {}
+}
+
+/**
+ * Mark a string as pre-rendered HTML so {@link replaceVariables} splices
+ * it in verbatim instead of escaping. Use ONLY for content that you
+ * authored (or that came from a trusted renderer like the framework's
+ * own layout-slot resolution) — never for user input.
+ *
+ * @example
+ * ```ts
+ * mail.send({
+ *   template: 'invoice',
+ *   variables: {
+ *     // User-supplied — escaped automatically (good)
+ *     userName: req.input('name'),
+ *     // Pre-rendered HTML you built yourself — opt out of escaping
+ *     invoiceTable: safe(renderInvoiceTable(rows)),
+ *   },
+ * })
+ * ```
+ */
+export function safe(html: string): SafeHtml {
+  return new SafeHtml(html)
+}
+
 /** Allowed types for email template variable values */
-export type TemplateVariableValue = string | number | boolean | undefined | null
+export type TemplateVariableValue = string | number | boolean | undefined | null | SafeHtml
 
 /** Map of variable names to their values for template replacement */
 export type TemplateVariables = Record<string, TemplateVariableValue>
@@ -52,7 +90,38 @@ function darkenColor(hex: string, percent: number): string {
 }
 
 /**
- * Replace template variables in HTML
+ * HTML-escape every char that could break out of a text node into an
+ * attribute / tag context. The five-char set is the OWASP minimum for
+ * "in a text node or quoted attribute"; we don't need the more
+ * paranoid (forward-slash, equals, etc.) set because the template uses
+ * `{{ … }}` only inside the document body, never inside `<script>` /
+ * `<style>` / unquoted attribute slots.
+ *
+ * Constructed once at module load — a `replace` chain is faster than a
+ * single regex for short strings.
+ */
+function escapeHtml(input: string): string {
+  return input
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+/**
+ * Replace template variables in HTML.
+ *
+ * Strings (and number / boolean coercions) are HTML-escaped before
+ * interpolation. To opt OUT of escaping for a specific value — e.g.
+ * pre-rendered HTML produced by the framework's layout-slot
+ * resolution, or a chunk you authored yourself — wrap the value in
+ * {@link safe} or pass a {@link SafeHtml} instance directly.
+ *
+ * Previously every value was spliced in raw via `String(value ?? '')`,
+ * which let any caller-controlled variable contribute arbitrary HTML
+ * (and JavaScript via `<img onerror>` etc.) to the rendered email body.
+ * See stacksjs/stacks#1871 M-1.
  */
 function replaceVariables(html: string, variables: TemplateVariables): string {
   let result = html
@@ -61,10 +130,24 @@ function replaceVariables(html: string, variables: TemplateVariables): string {
     // Replace {{ variable }} syntax (with optional whitespace)
     const escapedKey = key.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
     const regex = new RegExp(`\\{\\{\\s*${escapedKey}\\s*\\}\\}`, 'g')
-    result = result.replace(regex, String(value ?? ''))
+    result = result.replace(regex, renderTemplateValue(value))
   }
 
   return result
+}
+
+/**
+ * Render a single template variable. `SafeHtml` values are spliced in
+ * verbatim; everything else is coerced to string and HTML-escaped.
+ *
+ * Kept separate from `replaceVariables` so the same policy applies
+ * consistently across any future caller (e.g. an STX adapter that
+ * delegates back to us for the unsafe-by-default branch).
+ */
+function renderTemplateValue(value: TemplateVariableValue): string {
+  if (value === null || value === undefined) return ''
+  if (value instanceof SafeHtml) return value.value
+  return escapeHtml(String(value))
 }
 
 /**
@@ -225,8 +308,13 @@ export async function template(
       html = content
     }
     else {
-      // Insert content into layout
-      allVariables.content = content
+      // Insert content into layout. The inner `content` block has already
+      // been through `replaceVariables` (which escaped any caller-controlled
+      // variables), so mark it as SafeHtml here — otherwise the next pass
+      // would escape the rendered tags back into entities and the layout
+      // would render literal `&lt;p&gt;...&lt;/p&gt;` to the user.
+      // See stacksjs/stacks#1871 M-1.
+      allVariables.content = safe(content)
       html = replaceVariables(layoutHtml, allVariables)
     }
   }
