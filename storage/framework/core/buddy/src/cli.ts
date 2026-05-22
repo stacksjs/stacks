@@ -37,7 +37,13 @@ const skipAppKeyCheck = [
   // worse, write a key into an unrelated directory.
   'new',
   'create',
-].some(cmd => requestedCommand.startsWith(cmd)) || isHelpFlag || isHelpMode
+  'migrate',
+  'seed',
+  'generate',
+  'make',
+  'key:generate',
+  'scaffold:crud',
+].some(cmd => requestedCommand === cmd || requestedCommand.startsWith(`${cmd}:`)) || isHelpFlag || isHelpMode
 const needsFullSetup = !isVersionOnly
 
 // Setup global error handlers (skip for minimal commands for performance)

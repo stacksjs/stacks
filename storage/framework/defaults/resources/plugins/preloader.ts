@@ -12,7 +12,29 @@
 // consumes `--watch` so `args` ends up empty in that subprocess, which used to
 // trip the `args.length === 0` short-circuit and silently disable auto-imports.
 const args = process.argv.slice(2)
-const fastCommands = ['dev', 'build', 'test', 'lint', '--version', '-v', 'version', '--help', '-h', 'help']
+const fastCommands = [
+  'dev',
+  'build',
+  'test',
+  'lint',
+  '--version',
+  '-v',
+  'version',
+  '--help',
+  '-h',
+  'help',
+  // Database / codegen — must not pull the full auto-import graph (router,
+  // orm models, …) before bun-query-builder can diff schemas. A broken
+  // `@stacksjs/bun-router` install used to make `generate:migrations` exit 1
+  // with no output because the preloader died while loading `@stacksjs/router`.
+  'migrate',
+  'fresh',
+  'seed',
+  'generate',
+  'make',
+  'key:generate',
+  'scaffold:crud',
+]
 const isRepl = !process.argv[1]
 const skipPreloader = isRepl || (args.length > 0 && fastCommands.some(cmd => args[0] === cmd || args[0].startsWith(`${cmd}:`)))
 
