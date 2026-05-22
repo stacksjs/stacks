@@ -862,35 +862,37 @@ async function pruneBatchesFromRedis(olderThanHours: number): Promise<number> {
  * driver doesn't expose atomic SQL.
  */
 export async function recordBatchJobCompletion(batchId: string): Promise<void> {
-  // Try the atomic path first.
-  try {
-    const { db, sql } = await import('@stacksjs/database')
-    const result: any = await (db as any)
-      .updateTable('job_batches')
-      .set({ pending_jobs: sql`GREATEST(pending_jobs - 1, 0)` })
-      .where('id', '=', batchId)
-      .where('pending_jobs', '>', 0)
-      .execute()
-    void result
-  }
-  catch (err) {
-    log.debug(`[Batch] Atomic decrement unavailable, falling back to read-modify-write: ${(err as Error).message}`)
-  }
+  const { db, sql } = await import('@stacksjs/database')
 
-  const record = await getBatchRecord(batchId)
-  if (!record) return
+  // Step 1: atomic decrement. `GREATEST` clamps at 0 so a stray
+  // double-record can't push the counter negative.
+  await (db as any)
+    .updateTable('job_batches')
+    .set({ pending_jobs: sql`GREATEST(pending_jobs - 1, 0)` })
+    .where('id', '=', batchId)
+    .where('pending_jobs', '>', 0)
+    .execute()
 
-  const newPending = Math.max(0, record.pending_jobs - 1)
-  const updates: Partial<BatchRecord> = { pending_jobs: newPending }
+  // Step 2: conditional "complete this batch" — sets finished_at only
+  // for the FIRST observer that sees pending_jobs hit zero. The
+  // `finished_at IS NULL` guard means exactly one worker wins, so
+  // terminal `then`/`finally` callbacks fire exactly once across the
+  // pool. Previously this branch read-then-wrote in a second step
+  // that re-introduced the race the atomic decrement was added to
+  // fix. (stacksjs/stacks#1872 Q-7.)
+  const finishedAt = new Date().toISOString().slice(0, 19).replace('T', ' ')
+  const completeResult = await (db as any)
+    .updateTable('job_batches')
+    .set({ finished_at: finishedAt })
+    .where('id', '=', batchId)
+    .where('pending_jobs', '=', 0)
+    .where('finished_at', 'is', null)
+    .executeTakeFirst()
+  const completed = Number((completeResult as { numUpdatedRows?: number | bigint })?.numUpdatedRows ?? 0) > 0
 
-  // Check if batch is finished
-  if (newPending === 0) {
-    updates.finished_at = new Date().toISOString().slice(0, 19).replace('T', ' ')
-  }
-
-  await updateBatchRecord(batchId, updates)
-
-  // Fire progress callbacks
+  // Progress callbacks fire on EVERY observed job completion. The
+  // callback map is in-process; each worker fires its own copy
+  // (intentional — "saw a job complete" is per-observer).
   const callbacks = getBatchCallbacks(batchId)
   const dispatched = new DispatchedBatch(batchId)
 
@@ -905,8 +907,8 @@ export async function recordBatchJobCompletion(batchId: string): Promise<void> {
     }
   }
 
-  // If batch is finished, fire then/finally callbacks
-  if (newPending === 0) {
+  // Terminal callbacks fire only for the worker that won step 2.
+  if (completed) {
     try {
       const { emitQueueEvent } = await import('./events')
       await emitQueueEvent('batch:completed', { jobId: batchId })

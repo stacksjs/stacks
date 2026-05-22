@@ -60,6 +60,25 @@ const schedulerState: SchedulerState = {
 }
 
 /**
+ * Once-per-expression warn that a 6-field cron's seconds component is
+ * being dropped — the scheduler ticks at minute granularity, so any
+ * seconds value other than `0` / `*` is silently lost. Tracking each
+ * expression separately means a config that registers many 6-field
+ * crons gets one warn per expression, not one per tick.
+ * (stacksjs/stacks#1872 Q-12.)
+ */
+const _warnedSecondsExprs = new Set<string>()
+function warnSecondsIgnored(expression: string, seconds: string): void {
+  if (_warnedSecondsExprs.has(expression)) return
+  _warnedSecondsExprs.add(expression)
+  log.warn(
+    `[scheduler] Cron expression "${expression}" specifies seconds="${seconds}" but the scheduler `
+    + `ticks at minute granularity — the seconds field is being ignored. Use a 5-field expression `
+    + `to avoid this warning, or wait for sub-minute scheduling support.`,
+  )
+}
+
+/**
  * Parse a cron expression and check if it should run now
  */
 function shouldRunNow(cronExpression: string, lastRun: Date | null): boolean {
@@ -85,12 +104,19 @@ function shouldRunNow(cronExpression: string, lastRun: Date | null): boolean {
     }
   }
 
-  // Parse cron expression (minute hour day month dayOfWeek)
-  // Also supports 6-part format (second minute hour day month dayOfWeek) by stripping seconds
+  // Parse cron expression (minute hour day month dayOfWeek).
+  // Also supports 6-part format (second minute hour day month dayOfWeek)
+  // by stripping seconds — the scheduler's tick interval is 60s so
+  // sub-minute scheduling isn't supported. Warn (once per expression)
+  // when a 6-field caller asks for non-zero seconds, so they don't
+  // silently lose the precision they wrote. See stacksjs/stacks#1872 Q-12.
   let parts = cronExpression.trim().split(/\s+/)
 
   if (parts.length === 6) {
-    // 6-part cron with seconds field — strip seconds, use minute-level granularity
+    const seconds = parts[0]
+    if (seconds && seconds !== '0' && seconds !== '*') {
+      warnSecondsIgnored(cronExpression, seconds)
+    }
     parts = parts.slice(1)
   }
 

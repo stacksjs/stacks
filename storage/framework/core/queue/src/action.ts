@@ -63,8 +63,15 @@ export class Job {
 
   /**
    * Dispatch the job to the configured queue driver.
+   *
+   * The payload is generic so callers get compile-time checking when
+   * the job declares its expected shape — e.g. `JobAction<{ userId: number }>`
+   * rejects `dispatch({ usrId: 1 })` at the type level. Defaults to
+   * `unknown` (not `any`) so dispatchers that DON'T set a generic still
+   * force callers to narrow before reading properties off the
+   * downstream handler. (stacksjs/stacks#1872 Q-9.)
    */
-  async dispatch(payload?: any): Promise<void> {
+  async dispatch<T = unknown>(payload?: T): Promise<void> {
     // Check if queue is faked (testing mode)
     const { isFaked, getFakeQueue } = await import('./testing')
     if (isFaked()) {
@@ -90,14 +97,24 @@ export class Job {
       return this.dispatchToDatabase(payload)
     }
 
-    // Fallback to sync
-    return this.dispatchNow(payload)
+    // Stubbed-but-advertised drivers OR unknown driver — loud-fail
+    // instead of silently degrading to inline sync (stacksjs/stacks#1872 Q-1).
+    if (driver === 'sqs' || driver === 'memory' || driver === 'beanstalkd') {
+      throw new Error(
+        `[queue] Driver "${driver}" is not implemented yet. `
+        + `Set QUEUE_DRIVER to one of: redis, database, sync.`,
+      )
+    }
+    throw new Error(
+      `[queue] Unknown QUEUE_DRIVER "${driver}". `
+      + `Allowed values: redis, database, sync.`,
+    )
   }
 
   /**
    * Dispatch only if the condition is true.
    */
-  async dispatchIf(condition: boolean, payload?: any): Promise<void> {
+  async dispatchIf<T = unknown>(condition: boolean, payload?: T): Promise<void> {
     if (condition) {
       return this.dispatch(payload)
     }
@@ -106,7 +123,7 @@ export class Job {
   /**
    * Dispatch unless the condition is true.
    */
-  async dispatchUnless(condition: boolean, payload?: any): Promise<void> {
+  async dispatchUnless<T = unknown>(condition: boolean, payload?: T): Promise<void> {
     if (!condition) {
       return this.dispatch(payload)
     }
@@ -115,7 +132,7 @@ export class Job {
   /**
    * Dispatch with a delay (in seconds).
    */
-  async dispatchAfter(delaySeconds: number, payload?: any): Promise<void> {
+  async dispatchAfter<T = unknown>(delaySeconds: number, payload?: T): Promise<void> {
     const driver = getQueueDriver()
 
     if (driver === 'redis') {
@@ -134,7 +151,7 @@ export class Job {
   /**
    * Execute the job immediately, bypassing the queue.
    */
-  async dispatchNow(payload?: any): Promise<void> {
+  async dispatchNow<T = unknown>(payload?: T): Promise<void> {
     if (typeof this.handle === 'function') {
       await this.handle(payload)
     }

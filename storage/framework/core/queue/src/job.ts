@@ -111,8 +111,24 @@ class JobBuilder {
     else if (driver === 'sync') {
       await runJob(this.name, { payload: this.payload, context: this.options.context })
     }
+    else if (driver === 'sqs' || driver === 'memory' || driver === 'beanstalkd') {
+      // Listed in config schemas but never implemented (stacksjs/stacks#1872 Q-1).
+      // The previous fallback ran the job inline via `runJob` — same behavior
+      // as `sync` but without telling the caller their background pipeline
+      // had silently degraded to blocking sends. Loud-fail instead.
+      throw new Error(
+        `[queue] Driver "${driver}" is not implemented yet. `
+        + `Set QUEUE_DRIVER to one of: redis, database, sync.`,
+      )
+    }
     else {
-      await runJob(this.name, { payload: this.payload, context: this.options.context })
+      // Genuinely unknown driver — also loud-fail. A typo in QUEUE_DRIVER
+      // used to silently run jobs synchronously, which is the worst kind
+      // of "it works on my machine" surprise.
+      throw new Error(
+        `[queue] Unknown QUEUE_DRIVER "${driver}". `
+        + `Allowed values: redis, database, sync.`,
+      )
     }
   }
 

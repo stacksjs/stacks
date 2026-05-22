@@ -28,6 +28,92 @@ let workerRunning = false
 let workerId = ''
 
 /**
+ * In-flight job promises currently being awaited by the worker loop.
+ * Tracked so `stopProcessor()` can wait for them to settle within the
+ * grace window before the process exits — a hard kill mid-`handle()`
+ * leaves the job stuck in `reserved_at` and (if past max attempts)
+ * loses customer data. See stacksjs/stacks#1872 Q-10.
+ */
+const inFlightJobs = new Set<Promise<unknown>>()
+
+/**
+ * Track a job promise so {@link stopProcessor} can await it. The
+ * promise is removed from the set when it settles (regardless of
+ * outcome) so the set stays bounded.
+ */
+function trackInFlight<T>(promise: Promise<T>): Promise<T> {
+  inFlightJobs.add(promise)
+  promise.finally(() => inFlightJobs.delete(promise))
+  return promise
+}
+
+/**
+ * Reservation TTL — `reserved_at` rows older than this are eligible
+ * for the sweep that requeues them. Default 1h; override via
+ * `STACKS_QUEUE_RESERVATION_TTL_SEC`. Sized so a normal long-running
+ * job (e.g. video transcode) finishes well under the window, but a
+ * crashed worker's orphaned reservation isn't stranded forever.
+ * See stacksjs/stacks#1872 Q-2.
+ */
+function getReservationTtlSec(): number {
+  const raw = process.env.STACKS_QUEUE_RESERVATION_TTL_SEC
+  const n = raw === undefined ? Number.NaN : Number.parseInt(raw, 10)
+  return Number.isFinite(n) && n > 0 ? n : 3600
+}
+
+/**
+ * Sweep frequency — how often the database loop checks for orphaned
+ * reservations. Default 60s; override via
+ * `STACKS_QUEUE_SWEEP_INTERVAL_SEC`. Cheap (one indexed UPDATE), so
+ * running it frequently is fine.
+ */
+function getSweepIntervalMs(): number {
+  const raw = process.env.STACKS_QUEUE_SWEEP_INTERVAL_SEC
+  const n = raw === undefined ? Number.NaN : Number.parseInt(raw, 10)
+  return (Number.isFinite(n) && n > 0 ? n : 60) * 1000
+}
+
+/**
+ * Release any job whose `reserved_at` is older than the reservation
+ * TTL — its worker presumably died mid-handle and the row is stuck.
+ * Resets `reserved_at` to null and bumps `available_at` to now so the
+ * next poll re-fetches it. Attempts counter is left intact (the row
+ * already counted the original try; the next pickup will increment
+ * again per the standard atomic-claim path).
+ *
+ * Returns the number of rows requeued — caller logs the count when
+ * non-zero so the operator notices recurring crash patterns.
+ *
+ * See stacksjs/stacks#1872 Q-2.
+ */
+async function sweepStaleReservations(): Promise<number> {
+  const ttlSec = getReservationTtlSec()
+  const cutoff = Math.floor(Date.now() / 1000) - ttlSec
+  const now = Math.floor(Date.now() / 1000)
+  try {
+    const { db } = await import('@stacksjs/database')
+    const result = await db
+      .updateTable('jobs')
+      .set({ reserved_at: null, available_at: now })
+      .where('reserved_at', '<=', cutoff)
+      .executeTakeFirst()
+    const requeued = Number((result as { numUpdatedRows?: number | bigint })?.numUpdatedRows ?? 0)
+    if (requeued > 0) {
+      log.warn(
+        `[queue] Requeued ${requeued} job(s) whose reservation exceeded the `
+        + `${ttlSec}s TTL — likely victims of a worker crash. Set `
+        + `STACKS_QUEUE_RESERVATION_TTL_SEC to tune.`,
+      )
+    }
+    return requeued
+  }
+  catch (error) {
+    log.error('[queue] Reservation sweep failed', { reason: error instanceof Error ? error.message : String(error) })
+    return 0
+  }
+}
+
+/**
  * Determine whether an error from a job handler should be retried.
  *
  * "Non-retryable" means: re-running the same job with the same payload will
@@ -132,6 +218,13 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
   let queues = initialQueues
   let lastQueueRefresh = Date.now()
   const queueRefreshInterval = 10000 // Refresh queue list every 10 seconds
+  let lastSweep = Date.now()
+  const sweepIntervalMs = getSweepIntervalMs()
+
+  // Run an initial sweep before the polling loop starts. Without this
+  // the first sweep is one full interval away — long enough for a
+  // restarted worker to leave a previous crash's reservations idle.
+  await sweepStaleReservations()
 
   while (workerRunning) {
     try {
@@ -150,6 +243,15 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
         lastQueueRefresh = now
       }
 
+      // Reservation sweep — requeue jobs whose reserved_at exceeds
+      // the TTL (stacksjs/stacks#1872 Q-2). Cheap UPDATE, so we run
+      // it in-line with the poll loop rather than spawning a separate
+      // timer that would need its own lifecycle management.
+      if (now - lastSweep > sweepIntervalMs) {
+        await sweepStaleReservations()
+        lastSweep = now
+      }
+
       for (const queueName of queues) {
         let jobs: any[] = []
         try {
@@ -163,7 +265,7 @@ async function processJobsFromDatabase(initialQueues: string[], concurrency: num
         for (const job of jobs) {
           try {
             log.info(`Processing job ${job.id} from queue "${queueName}"`)
-            await processJob(job)
+            await trackInFlight(processJob(job))
           }
           catch {
             // processJob should never throw, but just in case
@@ -270,10 +372,23 @@ async function processJob(job: any): Promise<void> {
 
   let jobError: Error | null = null
 
-  // Execute the job
+  // Execute the job, enforcing the per-job timeout if declared.
+  // The previous code accepted `timeout` on dispatch (`Job.timeout(s)`),
+  // stored it in the payload, and then never used it — a runaway
+  // handler held the worker forever. (stacksjs/stacks#1872 Q-5.)
   try {
     const payload = JSON.parse(job.payload || '{}')
-    await executeJobPayload(payload)
+    const timeoutSec = readJobTimeoutSec(payload)
+    if (timeoutSec === undefined) {
+      await executeJobPayload(payload)
+    }
+    else {
+      await raceWithTimeout(
+        executeJobPayload(payload),
+        timeoutSec * 1000,
+        `Job ${jobId} exceeded ${timeoutSec}s timeout`,
+      )
+    }
   }
   catch (e) {
     jobError = e instanceof Error ? e : new Error(String(e))
@@ -448,21 +563,107 @@ async function moveToFailedJobs(job: any, error: Error): Promise<void> {
 }
 
 /**
- * Execute the job payload
+ * Pull the per-job timeout (in seconds) out of the queued payload.
+ * Returns undefined when not set — callers branch on that to skip the
+ * timeout race for the common no-timeout case.
+ *
+ * Looks at `payload.options.timeout` (the shape `Job.dispatch()` writes
+ * via `dispatchToDatabase()`); silently tolerates malformed input
+ * because the worker should never crash on a missing field — the next
+ * `executeJobPayload` will surface the real error.
  */
-async function executeJobPayload(payload: any): Promise<void> {
-  // Check if this is a Stacks job (from app/Jobs)
-  if (payload.job && payload.job.startsWith('App\\Jobs\\')) {
-    const jobName = payload.job.replace('App\\Jobs\\', '')
-    const { runJob } = await import('./job')
-    await runJob(jobName, { payload: payload.data })
+function readJobTimeoutSec(payload: unknown): number | undefined {
+  if (!payload || typeof payload !== 'object') return undefined
+  const opts = (payload as { options?: { timeout?: unknown } }).options
+  const t = opts?.timeout
+  if (typeof t !== 'number' || !Number.isFinite(t) || t <= 0) return undefined
+  return t
+}
+
+/**
+ * Race `task` against a setTimeout. If the timer wins, throw an Error
+ * with the supplied message so the standard retry-or-fail-jobs machinery
+ * treats it like any other handler failure. (stacksjs/stacks#1872 Q-5.)
+ *
+ * NOTE: there is no way to cancel an in-flight Promise from outside
+ * JavaScript — the underlying work keeps running in the background
+ * until it settles. The job IS treated as failed (and may be retried
+ * or moved to failed_jobs), but a buggy handler that holds a database
+ * connection forever still holds it. Documented in `Job.timeout()`.
+ */
+async function raceWithTimeout<T>(task: Promise<T>, timeoutMs: number, message: string): Promise<T> {
+  let timer: ReturnType<typeof setTimeout> | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = setTimeout(() => reject(new Error(message)), timeoutMs)
+  })
+  try {
+    return await Promise.race([task, timeout])
   }
-  else if (payload.jobName) {
-    // Handle jobs dispatched via job() helper
-    const { runJob } = await import('./job')
-    await runJob(payload.jobName, { payload: payload.payload })
+  finally {
+    if (timer !== undefined) clearTimeout(timer)
   }
-  // Generic job - nothing to do
+}
+
+/**
+ * Job-dispatch envelope. The shape `Job.dispatch()` / `JobAction.dispatch()`
+ * write to the database (`{ jobName, payload, options }`) and to Redis
+ * (`{ jobName, payload }`), plus the legacy Laravel-import shape
+ * (`{ job: 'App\\Jobs\\Foo', data: … }`).
+ *
+ * Typed at the worker boundary so the previous `payload: any` couldn't
+ * silently leak typos like `payload.payload?.id` reading off undefined
+ * properties without a TS hint. (stacksjs/stacks#1872 Q-9.)
+ */
+interface JobEnvelope {
+  /** Stacks-native dispatch shape (from `Job.dispatch()`). */
+  jobName?: string
+  payload?: unknown
+  /** Legacy Laravel-style shape (`'App\\Jobs\\Foo'`). */
+  job?: string
+  data?: unknown
+  /** Per-job options the dispatcher attached. */
+  options?: { timeout?: number, tries?: number, backoff?: number | number[] }
+}
+
+/**
+ * Narrow `unknown` to {@link JobEnvelope}. Rejects non-objects and
+ * envelopes that have neither a `jobName` nor a `job` field — those
+ * are unrecognisable shapes that the worker has nothing useful to do
+ * with, so failing fast is better than silently dropping the job.
+ */
+function asJobEnvelope(payload: unknown): JobEnvelope {
+  if (!payload || typeof payload !== 'object') {
+    throw new Error(`[queue] Job payload is not an object (got ${typeof payload})`)
+  }
+  const envelope = payload as JobEnvelope
+  if (!envelope.jobName && !envelope.job) {
+    throw new Error('[queue] Job payload has neither `jobName` nor `job` — unrecognised dispatch shape')
+  }
+  return envelope
+}
+
+/**
+ * Execute a queued job payload. Accepts `unknown` and narrows on
+ * entry so a malformed envelope surfaces as a clear error message
+ * instead of `cannot read properties of undefined` deep inside the
+ * handler. (stacksjs/stacks#1872 Q-9.)
+ */
+async function executeJobPayload(payload: unknown): Promise<void> {
+  const envelope = asJobEnvelope(payload)
+
+  // Legacy Laravel-import shape from the migrator (App\Jobs\Foo).
+  if (typeof envelope.job === 'string' && envelope.job.startsWith('App\\Jobs\\')) {
+    const jobName = envelope.job.replace('App\\Jobs\\', '')
+    const { runJob } = await import('./job')
+    await runJob(jobName, { payload: envelope.data })
+    return
+  }
+
+  // Native Stacks dispatch shape from `job(...)` / `Job.dispatch()`.
+  if (typeof envelope.jobName === 'string') {
+    const { runJob } = await import('./job')
+    await runJob(envelope.jobName, { payload: envelope.payload })
+  }
 }
 
 /**
@@ -589,10 +790,39 @@ async function processJobsFromRedis(queueName: string, concurrency: number): Pro
 }
 
 /**
- * Stop the queue processor
+ * Stop the queue processor, draining in-flight jobs within a grace
+ * window before returning. The `signalled to stop` flag stops the
+ * polling loop from claiming new jobs; any handler that's currently
+ * mid-execution gets up to `graceMs` to finish.
+ *
+ * `graceMs` defaults to 10s (matches the buddy CLI's existing
+ * SIGTERM → SIGKILL window). Pass 0 to skip the wait entirely
+ * (test runs, CI).
+ *
+ * When the grace window expires with jobs still active, the function
+ * resolves anyway — the reservation-sweep (Q-2) will requeue them on
+ * the next worker startup. The alternative (hanging the process
+ * forever) is worse than the requeue cost.
+ *
+ * See stacksjs/stacks#1872 Q-10.
  */
-export async function stopProcessor(): Promise<void> {
+export async function stopProcessor(options: { graceMs?: number } = {}): Promise<void> {
+  const graceMs = options.graceMs ?? 10_000
   workerRunning = false
+
+  if (inFlightJobs.size > 0 && graceMs > 0) {
+    log.info(`[queue] Draining ${inFlightJobs.size} in-flight job(s) (grace ${graceMs}ms)`)
+    const drain = Promise.allSettled([...inFlightJobs])
+    const timeout = new Promise<'timeout'>(resolve => setTimeout(() => resolve('timeout'), graceMs))
+    const outcome = await Promise.race([drain.then(() => 'drained' as const), timeout])
+    if (outcome === 'timeout' && inFlightJobs.size > 0) {
+      log.warn(
+        `[queue] Drain timed out with ${inFlightJobs.size} job(s) still active. `
+        + `Their reservations will be reclaimed by the next worker's sweep (Q-2).`,
+      )
+    }
+  }
+
   if (workerId) {
     const { getWorkerTracker } = await import('./events')
     getWorkerTracker().unregister(workerId)
