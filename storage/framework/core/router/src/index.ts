@@ -14,7 +14,9 @@
 // `./request-augmentation.ts` and stacksjs/stacks#1863 T-3.
 import './request-augmentation'
 
-// Re-export everything from bun-router (includes response factory)
+// Re-export bun-router. It is a peer dependency — install at the project root
+// (`bun add @stacksjs/bun-router`). Do not rely on a nested copy under this
+// package; npm 0.0.14 published without `dist/` and broke workspace installs.
 export * from '@stacksjs/bun-router'
 
 // Re-export the augmentation types so userland can refer to the marker
