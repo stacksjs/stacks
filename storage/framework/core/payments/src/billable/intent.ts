@@ -2,6 +2,7 @@
 import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { manageCustomer, stripe } from '..'
+import { freshIdempotencyKey } from '../idempotency'
 
 export interface SetupIntent {
   create: (user: UserModel, params: Stripe.SetupIntentCreateParams) => Promise<Stripe.Response<Stripe.SetupIntent>>
@@ -23,7 +24,12 @@ export const manageSetupIntent: SetupIntent = (() => {
 
     const mergedParams = { ...defaultParams, ...params }
 
-    return await stripe.setupIntents.create(mergedParams)
+    // Fresh key per attempt — setup intents are one-shot but a single
+    // network retry still benefits from in-flight idempotency on
+    // Stripe's side (stacksjs/stacks#1876 X-1).
+    return await stripe.setupIntents.create(mergedParams, {
+      idempotencyKey: freshIdempotencyKey('setup_intent.create', user.id),
+    })
   }
 
   return { create }

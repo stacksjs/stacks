@@ -3,6 +3,7 @@ import type { UserModel } from '@stacksjs/orm'
 import type { StripeCustomerOptions } from '@stacksjs/types'
 import type Stripe from 'stripe'
 import { stripe } from '..'
+import { stacksIdempotencyKey } from '../idempotency'
 
 export interface ManageCustomer {
   stripeId: (user: UserModel) => string
@@ -62,7 +63,14 @@ export const manageCustomer: ManageCustomer = (() => {
       options.email = stripeEmail(user)
     }
 
-    const customer = await stripe.customers.create(options)
+    // Idempotency-key the create so a retry after a successful Stripe
+    // call but a failed local `user.update` doesn't create a duplicate
+    // Stripe customer (stacksjs/stacks#1876 X-1). The key is
+    // deterministic per-user; Stripe caches the response for 24h, so
+    // the retry gets back the original customer object.
+    const customer = await stripe.customers.create(options, {
+      idempotencyKey: stacksIdempotencyKey('customer.create', user.id),
+    })
 
     await user.update({ stripe_id: customer.id })
 
@@ -74,7 +82,13 @@ export const manageCustomer: ManageCustomer = (() => {
       throw new Error('User does not have a Stripe customer ID. Create a customer first.')
     }
 
-    const customer = await stripe.customers.update(user.stripe_id, options)
+    // Update calls don't strictly need idempotency (Stripe accepts the
+    // same update twice without side effects) but adding the key
+    // ensures replay attempts return the same response shape — useful
+    // for downstream consumers that diff against a previous run.
+    const customer = await stripe.customers.update(user.stripe_id, options, {
+      idempotencyKey: stacksIdempotencyKey('customer.update', user.id, user.stripe_id),
+    })
 
     return customer
   }

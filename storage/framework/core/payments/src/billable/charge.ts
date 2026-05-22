@@ -4,6 +4,7 @@ import type Stripe from 'stripe'
 import { config } from '@stacksjs/config'
 import { log } from '@stacksjs/logging'
 import { stripe } from '..'
+import { freshIdempotencyKey } from '../idempotency'
 
 function defaultCurrency(): string {
   // Source order: config.payment.currency → STRIPE_CURRENCY env → 'usd'.
@@ -34,7 +35,16 @@ export const manageCharge: ManageCharge = (() => {
 
     const mergedOptions = { ...defaultOptions, ...options }
 
-    return await stripe.paymentIntents.create(mergedOptions)
+    // Fresh key per createPayment invocation — each call is a new
+    // charge intent, but a single network retry within one call
+    // benefits from Stripe-side in-flight idempotency
+    // (stacksjs/stacks#1876 X-1). Callers that want deterministic
+    // idempotency across retries should pass their own
+    // `metadata.requestId` and call `stripe.paymentIntents.create`
+    // directly with their own key.
+    return await stripe.paymentIntents.create(mergedOptions, {
+      idempotencyKey: freshIdempotencyKey('payment_intent.create', user.id, amount),
+    })
   }
 
   async function findPayment(id: string): Promise<Stripe.PaymentIntent | null> {

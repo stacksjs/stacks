@@ -3,6 +3,7 @@ import type { UserModel } from '@stacksjs/orm'
 import type Stripe from 'stripe'
 import { config } from '@stacksjs/config'
 import { stripe } from '..'
+import { freshIdempotencyKey } from '../idempotency'
 
 export interface Checkout {
   create: (user: UserModel, params: Stripe.Checkout.SessionCreateParams) => Promise<Stripe.Response<Stripe.Checkout.Session>>
@@ -60,7 +61,15 @@ export const manageCheckout: Checkout = (() => {
 
     const mergedParams = { ...defaultParams, ...params }
 
-    return await stripe.checkout.sessions.create(mergedParams)
+    // Checkout sessions are one-shot per attempt — a deterministic key
+    // would cause the second call to return the FIRST session's URL
+    // (potentially expired). We use `freshIdempotencyKey` so each
+    // create attempt produces a new session, but a single network
+    // retry within one attempt still benefits from in-flight
+    // idempotency on Stripe's side (stacksjs/stacks#1876 X-1).
+    return await stripe.checkout.sessions.create(mergedParams, {
+      idempotencyKey: freshIdempotencyKey('checkout.session.create', user.id),
+    })
   }
 
   return { create }

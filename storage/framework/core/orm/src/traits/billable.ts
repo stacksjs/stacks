@@ -164,6 +164,14 @@ export function createBillableMethods(_tableName: string) {
 
       const stripe = await getStripe()
       if (!accountId) {
+        // Idempotency-key the Connect account create (stacksjs/stacks#1876 X-1).
+        // Without this, a retry after a successful Stripe call but
+        // a failed local DB update produces a second Connect account
+        // for the same user — orphaned in Stripe with no link to the
+        // local model. The key is deterministic per-(model, table)
+        // so retries return the original account.
+        const { stacksIdempotencyKey } = await import('@stacksjs/payments')
+        const tableName = options.modelTable || _tableName
         const account = await stripe.accounts.create({
           type: options.type ?? 'express',
           email: options.email ?? attrs.email,
@@ -172,9 +180,10 @@ export function createBillableMethods(_tableName: string) {
             card_payments: { requested: true },
             transfers: { requested: true },
           },
+        }, {
+          idempotencyKey: stacksIdempotencyKey('connect.account.create', tableName, attrs.id),
         })
         accountId = account.id
-        const tableName = options.modelTable || _tableName
         await (db as any).updateTable(tableName)
           .set({ [col]: accountId })
           .where('id', '=', Number(attrs.id))
@@ -262,7 +271,16 @@ export function createBillableMethods(_tableName: string) {
         if (options.platformFeeCents)
           params.application_fee_amount = options.platformFeeCents
       }
-      return await stripe.paymentIntents.create(params)
+      // Fresh key per call — chargeWithSplit is one-shot (each call
+      // is a new charge), but a single network retry within one
+      // invocation benefits from Stripe-side in-flight idempotency
+      // (stacksjs/stacks#1876 X-1). For deterministic retries across
+      // separate invocations, callers should pass their own
+      // `metadata.requestId` and key off it.
+      const { freshIdempotencyKey } = await import('@stacksjs/payments')
+      return await stripe.paymentIntents.create(params, {
+        idempotencyKey: freshIdempotencyKey('payment_intent.create', attrs.id, options.amountCents),
+      })
     },
   }
 }

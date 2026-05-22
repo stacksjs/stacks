@@ -5,6 +5,7 @@ import { db } from '@stacksjs/database'
 type SubscriptionsTable = Record<string, unknown>
 
 import { manageCustomer, managePrice, stripe } from '..'
+import { stacksIdempotencyKey } from '../idempotency'
 
 export interface SubscriptionManager {
   create: (user: UserModel, type: string, lookupKey: string, params: Partial<Stripe.SubscriptionCreateParams>) => Promise<Stripe.Response<Stripe.Subscription>>
@@ -51,7 +52,16 @@ export const manageSubscription: SubscriptionManager = (() => {
 
     const mergedParams = { ...defaultParams, ...params }
 
-    const subscription = await stripe.subscriptions.create(mergedParams)
+    // Idempotency-key the subscription create (stacksjs/stacks#1876 X-1).
+    // The most common failure mode without this: the Stripe call
+    // succeeds, the local `storeSubscription` insert fails, the user
+    // retries the same request — and Stripe creates a SECOND
+    // subscription, double-charging the customer. With a deterministic
+    // key per (user, type, lookupKey), Stripe returns the original
+    // subscription on retry and we re-attempt the local insert.
+    const subscription = await stripe.subscriptions.create(mergedParams, {
+      idempotencyKey: stacksIdempotencyKey('subscription.create', user.id, type, lookupKey),
+    })
 
     await storeSubscription(user, type, lookupKey, subscription)
 
@@ -101,6 +111,10 @@ export const manageSubscription: SubscriptionManager = (() => {
     await stripe.subscriptions.update(subscriptionId, {
       items: [{ id: subscriptionItemId, price: newPrice.id, quantity: 1 }],
       proration_behavior: 'create_prorations',
+    }, {
+      // Idempotency-keyed against (subscription, new price) so a retry
+      // doesn't accidentally apply two prorations for the same swap.
+      idempotencyKey: stacksIdempotencyKey('subscription.update', subscriptionId, newPrice.id),
     })
 
     const updatedSubscription = await stripe.subscriptions.retrieve(subscriptionId)
@@ -124,7 +138,13 @@ export const manageSubscription: SubscriptionManager = (() => {
       throw new Error('Subscription does not exist or does not belong to the user')
     }
 
-    const updatedSubscription = await stripe.subscriptions.cancel(subscriptionId, params)
+    const updatedSubscription = await stripe.subscriptions.cancel(subscriptionId, params, {
+      // Cancel is naturally idempotent on Stripe's side (a second
+      // cancel of an already-canceled sub is a no-op), but the key
+      // still pairs the retry to the original response shape for
+      // downstream consumers that diff against it.
+      idempotencyKey: stacksIdempotencyKey('subscription.cancel', subscriptionId),
+    })
 
     await updateStoredSubscription(subscriptionId)
 
