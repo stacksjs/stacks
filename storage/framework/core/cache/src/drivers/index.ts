@@ -104,8 +104,19 @@ export class StacksCache implements CacheDriver {
    */
   private inflight = new Map<string, Promise<unknown>>()
 
-  constructor(manager: CacheManager) {
+  /**
+   * Hard cap on how long a single `getOrSet` fetcher can hold its
+   * in-flight slot (stacksjs/stacks#1876 C-2). Default 30s — long
+   * enough for a slow cold DB query, short enough that a true hang
+   * doesn't strand every future caller for the same key. Override per
+   * instance via the optional constructor argument; per-call override
+   * isn't exposed yet because no callsite has needed it.
+   */
+  private readonly inflightTimeoutMs: number
+
+  constructor(manager: CacheManager, opts: { inflightTimeoutMs?: number } = {}) {
     this.manager = manager
+    this.inflightTimeoutMs = opts.inflightTimeoutMs ?? 30_000
   }
 
   async get<T>(key: string): Promise<T | undefined> {
@@ -139,7 +150,13 @@ export class StacksCache implements CacheDriver {
     const pending = this.inflight.get(key)
     if (pending) return await (pending as Promise<T>)
 
-    const promise = (async () => {
+    // Hard cap on how long a fetcher can hold an in-flight entry
+    // (stacksjs/stacks#1876 C-2). Without this, a fetcher that hangs
+    // (DB timeout, deadlock, infinite loop) keeps its entry in the
+    // inflight map forever — every future caller for the same key
+    // hangs on the same dead Promise. Race against a timeout so the
+    // entry is reclaimed and the next caller gets to try fresh.
+    const computePromise = (async () => {
       try {
         return await this.manager.fetch(key, fetcher, ttl)
       }
@@ -147,8 +164,27 @@ export class StacksCache implements CacheDriver {
         this.inflight.delete(key)
       }
     })()
-    this.inflight.set(key, promise)
-    return await (promise as Promise<T>)
+
+    const timeoutMs = this.inflightTimeoutMs
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      const timer = setTimeout(() => {
+        // Best effort: drop the stale entry so the next caller doesn't
+        // pile onto the dead Promise. The hung compute itself keeps
+        // running until it naturally settles — JS Promises can't be
+        // cancelled, only ignored.
+        if (this.inflight.get(key) === computePromise)
+          this.inflight.delete(key)
+        reject(new Error(`[cache] getOrSet('${key}') timed out after ${timeoutMs}ms`))
+      }, timeoutMs)
+      // Avoid leaking the timer when computePromise wins the race.
+      computePromise.then(
+        () => clearTimeout(timer),
+        () => clearTimeout(timer),
+      )
+    })
+
+    this.inflight.set(key, computePromise)
+    return await Promise.race([computePromise as Promise<T>, timeoutPromise])
   }
 
   /**

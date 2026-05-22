@@ -32,6 +32,7 @@ import {
   setConfig,
 } from '@stacksjs/query-builder'
 import { db } from './utils'
+import { acquireMigrationLock } from './migration-lock'
 
 // Use environment variables via @stacksjs/env for proper type coercion
 import { env as envVars } from '@stacksjs/env'
@@ -459,6 +460,10 @@ async function restoreHiddenMigrations(hidden: Array<{ original: string, hidden:
 export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   const startedAt = Date.now()
   const hidden = await hideDisabledFeatureMigrations()
+  // Lock handle is acquired AFTER ensureDatabaseExists (PG/MySQL need
+  // the target DB to exist before we can connect to it for the
+  // advisory lock). SQLite is fine to lock immediately.
+  let lockHandle: { release: () => Promise<void> } | null = null
   try {
     // Step-progress logs stay at debug. On a no-op run (the common case
     // when the user re-issues `buddy migrate` against a clean DB) we
@@ -473,8 +478,21 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
 
-    // Preprocess migrations for SQLite compatibility
-    if (getDialect() === 'sqlite') {
+    // Acquire the distributed migration lock (stacksjs/stacks#1876 D-1).
+    // Without this, two concurrent runners (parallel CI jobs, two app
+    // instances on boot) race the migrations table and corrupt state —
+    // both read the same "pending" list, both run the same SQL, both
+    // try to insert the same record. The lock is advisory on PG/MySQL
+    // (auto-released on disconnect) and file-based on SQLite (with a
+    // 60s staleness fallback so a crashed holder doesn't block forever).
+    const dialect = getDialect()
+    const lockDb = dialect === 'sqlite' ? null : createQueryBuilder()
+    lockHandle = await acquireMigrationLock(dialect, lockDb)
+
+    // Preprocess migrations for SQLite compatibility — runs *after*
+    // the lock is held so concurrent processes can't corrupt each
+    // other's disk state (stacksjs/stacks#1876 D-2).
+    if (dialect === 'sqlite') {
       preprocessSqliteMigrations()
     }
 
@@ -498,6 +516,16 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     return err(handleError('Migration failed', error))
   }
   finally {
+    if (lockHandle) {
+      try {
+        await lockHandle.release()
+      }
+      catch {
+        // Best effort; advisory locks auto-release on disconnect and
+        // SQLite file locks have a staleness fallback. Don't shadow
+        // the original failure with a release error.
+      }
+    }
     await restoreHiddenMigrations(hidden)
   }
 }

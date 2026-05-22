@@ -54,6 +54,22 @@ export interface CasterInterface {
   set(value: unknown): unknown
 }
 
+// Track which JSON-cast columns have already logged a parse failure so
+// a corrupted row doesn't spam the log on every read
+// (stacksjs/stacks#1876 O-4). Set is keyed by `${typeof v}:${preview}`
+// so genuinely different corruptions each get logged once.
+const jsonParseFailureSeen = new Set<string>()
+
+function logJsonParseFailure(raw: unknown, err: unknown): void {
+  const preview = typeof raw === 'string' ? raw.slice(0, 80) : String(raw)
+  const key = `${typeof raw}:${preview}`
+  if (jsonParseFailureSeen.has(key)) return
+  jsonParseFailureSeen.add(key)
+  const message = err instanceof Error ? err.message : String(err)
+  // eslint-disable-next-line no-console
+  console.error(`[orm] JSON cast failed to parse value (returning null): ${message} — value preview: ${JSON.stringify(preview)}`)
+}
+
 const builtInCasters: Record<CastType, CasterInterface> = {
   string: {
     get: (v) => v != null ? String(v) : null,
@@ -78,7 +94,22 @@ const builtInCasters: Record<CastType, CasterInterface> = {
   json: {
     get: (v) => {
       if (v == null) return null
-      if (typeof v === 'string') { try { return JSON.parse(v) } catch { return v } }
+      if (typeof v === 'string') {
+        try {
+          return JSON.parse(v)
+        }
+        catch (err) {
+          // Previously the catch returned the unparsed string, so callers
+          // expecting `typeof row.config === 'object'` silently
+          // type-cast wrong and crashed downstream
+          // (stacksjs/stacks#1876 O-4). Now: log the corruption once
+          // per distinct shape so it's visible, and return null (the
+          // typed default) so consumers don't accidentally string-`.length`
+          // a malformed JSON column.
+          logJsonParseFailure(v, err)
+          return null
+        }
+      }
       return v
     },
     set: (v) => {
@@ -1258,21 +1289,38 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
   // INSIDE the dispatcher (rather than at the hook caller) so even
   // explicit `dispatchEvent` calls from elsewhere honour the
   // `withoutEvents` ALS scope without each call site having to remember.
-  const dispatchEvent = (event: string, data: any) => {
-    if (eventsAreSuppressed()) return Promise.resolve()
-    return import('@stacksjs/events')
-      .then(({ dispatch }) => dispatch(event, data))
-      .catch((err) => {
-        // Only silence module resolution errors (events package may not exist in browser/tests)
-        if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND') {
-          return
-        }
-        // Log actual event handler errors instead of swallowing them
-        console.error(`[ORM] Event '${event}' handler error:`, err)
-      })
+  //
+  // Re-throw listener errors by default (stacksjs/stacks#1876 O-2).
+  // Previously this swallowed every exception and only logged to
+  // console.error, which meant a queue dispatch failing inside an
+  // `updated` listener looked like a successful save with a missing
+  // background job — silent data drift. Now: the model save fails
+  // when a listener fails, matching Laravel's semantics. Listeners
+  // that are genuinely best-effort (analytics, observability) should
+  // catch their own errors. Opt out globally via
+  // `STACKS_ORM_EVENT_ERRORS=swallow` for legacy code that hasn't
+  // audited its listeners yet.
+  const dispatchEvent = async (event: string, data: any) => {
+    if (eventsAreSuppressed()) return
+    try {
+      const { dispatch } = await import('@stacksjs/events')
+      await dispatch(event, data)
+    }
+    catch (err) {
+      // MODULE_NOT_FOUND is the expected shape when the events package
+      // isn't installed (browser bundles, some test envs) — silence it.
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND')
+        return
+      console.error(`[ORM] Event '${event}' handler error:`, err)
+      if (process.env.STACKS_ORM_EVENT_ERRORS !== 'swallow') throw err
+    }
   }
 
-  // Dispatches a before-event and returns false if the handler cancels the operation
+  // Dispatches a before-event and returns false if the handler cancels
+  // the operation. Same re-throw policy as `dispatchEvent` — a broken
+  // `before*` listener used to silently allow the operation through
+  // because the catch returned `true` (default-allow). Now: the save
+  // fails on listener error unless STACKS_ORM_EVENT_ERRORS=swallow.
   const dispatchBeforeEvent = async (event: string, data: any): Promise<boolean> => {
     if (eventsAreSuppressed()) return true
     try {
@@ -1283,10 +1331,10 @@ function buildEventHooks(definition: BQBModelDefinition): BQBModelDefinition['ho
       if (Array.isArray(results) && results.some(r => r === false)) return false
     }
     catch (err) {
-      if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND') {
+      if (err && typeof err === 'object' && 'code' in err && err.code === 'MODULE_NOT_FOUND')
         return true
-      }
       console.error(`[ORM] Before-event '${event}' handler error:`, err)
+      if (process.env.STACKS_ORM_EVENT_ERRORS !== 'swallow') throw err
     }
     return true
   }
