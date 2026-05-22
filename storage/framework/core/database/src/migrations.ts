@@ -73,6 +73,16 @@ function configureQueryBuilder(): void {
 
   setConfig({
     dialect,
+    // bun-query-builder defaults to `verbose: true`, which dumps an
+    // unconditional wall of `-- Comparing with stored snapshot`,
+    // `-- Found N script files`, `-- Migrations table ready` etc. to
+    // stdout on every `buddy migrate` (including no-op re-runs). Stacks
+    // surfaces its own progress via the buddy CLI's intro/outro pair,
+    // so silence the library chatter by default. Users can flip this
+    // back via `setConfig({ verbose: true })` from their own config or
+    // by exporting `STACKS_QB_VERBOSE=1` (intentionally not wired yet —
+    // add it if a real debugging need shows up).
+    verbose: false,
     database: {
       database: connectionConfig?.name || connectionConfig?.database || 'stacks',
       host: connectionConfig?.host || 'localhost',
@@ -450,7 +460,12 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
   const startedAt = Date.now()
   const hidden = await hideDisabledFeatureMigrations()
   try {
-    log.info('Migrating database...')
+    // Step-progress logs stay at debug. On a no-op run (the common case
+    // when the user re-issues `buddy migrate` against a clean DB) we
+    // want a clean intro→outro pair from the buddy CLI, not a wall of
+    // "Migrating database... / Database migration completed" lines
+    // that duplicate what the outro already prints with timing.
+    log.debug('Migrating database...')
 
     // Ensure the database exists before running migrations (PostgreSQL/MySQL)
     await ensureDatabaseExists()
@@ -469,7 +484,7 @@ export async function runDatabaseMigration(): Promise<Result<string, Error>> {
     log.debug(`[migration] Running migrations from: ${modelsDir}`)
     await qbExecuteMigration(modelsDir)
 
-    log.success(`Database migration completed in ${Date.now() - startedAt}ms.`)
+    log.debug(`Database migration completed in ${Date.now() - startedAt}ms.`)
     return ok('Database migration completed.')
   }
   catch (error) {
@@ -615,7 +630,11 @@ async function dropFrameworkTables(dialect: 'sqlite' | 'mysql' | 'postgres'): Pr
  */
 export async function generateMigrations(): Promise<Result<string, Error>> {
   try {
-    log.info('Generating migrations...')
+    // Step-progress at debug — buddy's intro/outro carries the user-
+    // visible signal. On a no-op generate we want zero lines between
+    // those two; on a real generate the per-file written count below
+    // is the meaningful breadcrumb.
+    log.debug('Generating migrations...')
 
     // Configure bun-query-builder with stacks database settings
     configureQueryBuilder()
@@ -623,7 +642,7 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
     const dialect = getDialect()
     const { modelsDir, skip } = prepareMigrationModelsDir()
     if (skip) {
-      log.info('No app/Models directory found; using committed framework migrations')
+      log.debug('No app/Models directory found; using committed framework migrations')
       return ok('Migrations generated')
     }
 
@@ -632,13 +651,17 @@ export async function generateMigrations(): Promise<Result<string, Error>> {
 
     if (result.hasChanges) {
       const written = persistGeneratedMigrations(result.sqlStatements ?? [])
+      // Only announce when we actually wrote files. `hasChanges` can be
+      // true while `written === 0` if the qb diff restated statements
+      // already covered by committed migrations — that's a no-op from
+      // the user's perspective, so stay quiet.
       if (written > 0)
-        log.success(`Migrations generated (${written} file${written === 1 ? '' : 's'})`)
+        log.success(`Generated ${written} migration file${written === 1 ? '' : 's'}`)
       else
-        log.success('Migrations generated')
+        log.debug('Migration generation produced no new files (already up to date)')
     }
     else {
-      log.info('No changes detected')
+      log.debug('No changes detected')
     }
 
     return ok('Migrations generated')

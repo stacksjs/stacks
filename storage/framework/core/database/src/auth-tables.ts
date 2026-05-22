@@ -283,7 +283,11 @@ export async function migrateAuthTables(options: { verbose?: boolean } = {}): Pr
       if (options.verbose) log.success('Personal access client created')
     }
 
-    log.success('Auth tables migrated successfully')
+    // Auth-table SQL is exclusively `CREATE TABLE IF NOT EXISTS`, so
+    // this success line was firing on every `buddy migrate` whether
+    // anything changed or not. Keep it as a debug signal — the buddy
+    // command's outro already reports overall outcome to the user.
+    log.debug('Auth tables migrated successfully')
     return { success: true }
   }
   catch (error) {

@@ -146,7 +146,11 @@ export function migrate(buddy: CLI): void {
 
       // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
       if (options.auth !== false) {
-        log.info('Migrating auth tables...')
+        // Step-progress at debug — the auth-tables SQL is all
+        // `CREATE TABLE IF NOT EXISTS`, so re-runs are no-ops and the
+        // user shouldn't see an "ℹ Migrating auth tables..." line
+        // every time. Errors still surface via log.error below.
+        log.debug('Migrating auth tables...')
         try {
           const { migrateAuthTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
@@ -203,7 +207,11 @@ export function migrate(buddy: CLI): void {
 
       // Auth/oauth tables migrate by default. Pass --no-auth to opt out.
       if (options.auth !== false) {
-        log.info('Migrating auth tables...')
+        // Step-progress at debug — the auth-tables SQL is all
+        // `CREATE TABLE IF NOT EXISTS`, so re-runs are no-ops and the
+        // user shouldn't see an "ℹ Migrating auth tables..." line
+        // every time. Errors still surface via log.error below.
+        log.debug('Migrating auth tables...')
         try {
           const { migrateAuthTables } = await import('@stacksjs/database')
           const authResult = await migrateAuthTables({ verbose: options.verbose })
