@@ -60,6 +60,28 @@ export { isApiRequest, JSON_CONTENT_TYPE } from './api-shape'
 // Export action-level rate limiting helpers
 export { rateLimit, rateLimitStatus, clearRateLimit } from './rate-limit'
 
+// Export path-param sanitization helper (stacksjs/stacks#1870 R-12).
+// Defense-in-depth for actions that interpolate route params into
+// filesystem paths; the helper enforces no-traversal / no-absolute /
+// no-null-byte / length ceiling at a single chokepoint.
+export { PathParamError, safePathParam, sanitizePathParam } from './path-sanitize'
+export type { PathParamRejection, SanitizePathParamOptions } from './path-sanitize'
+
+// Export the streaming-response helper for SSE / NDJSON / chunked
+// binary returns (stacksjs/stacks#1870 R-4). Actions can return
+// `stream(asyncGen, { type: 'sse' })` and the router pipes it back
+// with the right Content-Type + no-cache headers.
+export { stream } from './stacks-router'
+export type { StreamOptions } from './stacks-router'
+
+// Signed-URL helpers — HMAC over the URL + optional expiry so single-
+// use links (email verify, password reset, unsubscribe) can be handed
+// out without long-lived bearer tokens. Pair `signedUrl(...)` with the
+// `signed` middleware (or call `verifySignedUrl(req.url)` directly).
+// See stacksjs/stacks#1870 R-7.
+export { signedUrl, signUrl, verifySignedUrl, verifySignedUrlMiddleware } from './signed-url'
+export type { SignedUrlOptions, SignedUrlVerifyResult } from './signed-url'
+
 // DI: register the router's query tracker with the database package on
 // import so the cycle `database → router → database` doesn't manifest
 // statically. Lazy-imported via Promise so the database package stays

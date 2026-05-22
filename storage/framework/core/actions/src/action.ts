@@ -9,12 +9,26 @@ import type { ExtractParams, InferValidations, JobOptions, RequestInstance } fro
  * body-inference benefit (stacksjs/stacks#1851 Phase 2b) declares
  * validations `as const` so {@link InferValidations} can read the
  * concrete rule types.
+ *
+ * Exported so the router can run validations without redeclaring the
+ * type (stacksjs/stacks#1870 R-3 — the previous copy in
+ * `stacks-router.ts` would drift out of sync).
  */
-interface ActionValidations {
+export interface ActionValidations {
   [key: string]: {
     rule: { validate: (value: unknown) => { valid: boolean, errors?: Array<{ message: string }> } }
     message?: string | Record<string, string>
   }
+}
+
+/**
+ * Shape of {@link validateActionInput}'s return value. Lives here next
+ * to {@link ActionValidations} so the router and actions package share
+ * a single declaration (stacksjs/stacks#1870 R-3).
+ */
+export interface ValidationResult {
+  valid: boolean
+  errors: Record<string, string[]>
 }
 
 /**
@@ -73,10 +87,87 @@ interface ActionOptions<
   path?: TPath
   requestFile?: string
   model?: TModel
+  /**
+   * Opt this action out of the global CSRF gate.
+   *
+   * The router reads `action.skipCsrf === true || action.csrf === false`
+   * (stacks-router.ts) when deciding whether to enforce the CSRF check
+   * for a route this action serves. Previously the flag could only be
+   * set via the chainable `route.post('/x', Action).skipCsrf()` form;
+   * declaring it on the action's `ActionOptions` lets the action carry
+   * its own security policy regardless of how it's registered.
+   *
+   * Use `skipCsrf` (intent-explicit) for new code. `csrf: false` is
+   * accepted for symmetry with the group-config shape that
+   * `route.group({ csrf: false }, …)` uses.
+   *
+   * See stacksjs/stacks#1870 R-1.
+   */
+  skipCsrf?: boolean
+  /** @see {@link ActionOptions.skipCsrf} */
+  csrf?: boolean
+  /**
+   * Optional pre-`handle()` authorization check. Runs after middleware
+   * + validation but before {@link ActionOptions.before} and
+   * {@link ActionOptions.handle}. Three legal returns:
+   *
+   *  - `true`     — proceed to `handle()`
+   *  - `false`    — short-circuit with a `403 Forbidden` JSON response
+   *  - `Response` — short-circuit with the caller's exact response
+   *
+   * Throwing an `HttpError` works too — it flows through the router's
+   * normal error path.
+   *
+   * Use for resource-level checks ("can this user edit *this* post?")
+   * that don't naturally fit into middleware (which can't see the
+   * action's typed params). See stacksjs/stacks#1870 R-5.
+   */
+  authorize?: (
+    request: InferRequest<TModel, TValidations, TPath>,
+  ) => boolean | Response | Promise<boolean | Response>
+  /**
+   * Optional pre-`handle()` hook. Runs after `authorize` (if defined)
+   * and before `handle()`. Returning a `Response` short-circuits the
+   * action; returning `void` proceeds.
+   *
+   * Use for shared setup that's awkward in middleware: lazy-loading
+   * a related model, recording analytics that depend on validated
+   * input, etc. See stacksjs/stacks#1870 R-5.
+   */
+  before?: (
+    request: InferRequest<TModel, TValidations, TPath>,
+  ) => void | Response | Promise<void | Response>
   handle: (
     request: InferRequest<TModel, TValidations, TPath>,
-  ) => Promise<any> | any
+  ) => ActionResult | Promise<ActionResult>
 }
+
+/**
+ * Everything an action's `handle()` is allowed to return. The router's
+ * `formatResult()` walks each branch:
+ *
+ *   - `Response`                       → returned as-is (caller built their own)
+ *   - `null` / `undefined`             → `204` for API clients, empty `200` for browser
+ *   - object / array (incl. records)   → `Response.json(...)`
+ *   - `string` / `number` / `boolean`  → JSON-encoded for API clients, `text/plain`
+ *                                        for top-level browser navigations
+ *   - `ReadableStream`                 → streamed back (stacksjs/stacks#1870 R-4)
+ *
+ * Previously typed `Promise<any> | any`, which let non-serializable returns
+ * (class instances with cycles, undefined-bearing tuples, etc.) sneak through
+ * to runtime. Narrowing here surfaces them at the call site instead.
+ * See stacksjs/stacks#1870 R-11.
+ */
+export type ActionResult =
+  | Response
+  | ReadableStream
+  | null
+  | undefined
+  | string
+  | number
+  | boolean
+  | Record<string, unknown>
+  | unknown[]
 
 export class Action<
   TModel = string,
@@ -94,6 +185,14 @@ export class Action<
   method?: ActionOptions['method']
   validations?: ActionOptions['validations']
   requestFile?: string
+  /** @see {@link ActionOptions.skipCsrf} */
+  skipCsrf?: boolean
+  /** @see {@link ActionOptions.skipCsrf} */
+  csrf?: boolean
+  /** @see {@link ActionOptions.authorize} */
+  authorize?: ActionOptions<TModel, TValidations, TPath>['authorize']
+  /** @see {@link ActionOptions.before} */
+  before?: ActionOptions<TModel, TValidations, TPath>['before']
   handle: ActionOptions<TModel, TValidations, TPath>['handle']
   model?: string
 
@@ -111,6 +210,10 @@ export class Action<
     method,
     requestFile,
     model,
+    skipCsrf,
+    csrf,
+    authorize,
+    before,
   }: ActionOptions<TModel, TValidations, TPath>) {
     this.name = name
     this.description = description
@@ -124,6 +227,10 @@ export class Action<
     this.method = method
     this.handle = handle
     this.requestFile = requestFile
+    this.skipCsrf = skipCsrf
+    this.csrf = csrf
+    this.authorize = authorize
+    this.before = before
 
     // Extract model name string for runtime (route generation, etc.)
     if (model && typeof model === 'object' && 'name' in model) {
