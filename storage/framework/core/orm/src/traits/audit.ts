@@ -170,10 +170,19 @@ function diffAttrs(
 }
 
 /**
- * Insert a single audit row. All errors are swallowed and logged — auditing
- * is best-effort, never load-bearing. If we couldn't write the audit (table
- * missing in dev, db down, etc.) we don't want to abort the user's actual
- * write that just succeeded.
+ * Insert a single audit row.
+ *
+ * **Error semantics** (stacksjs/stacks#1876 X-2):
+ *   - Default: errors swallowed + logged. Auditing is best-effort.
+ *     If the table is missing or the DB hiccupped, we don't abort
+ *     the user's actual write that already succeeded.
+ *   - With `traits.useAudit: { transactional: true }`: errors
+ *     re-throw so the surrounding transaction rolls the user's
+ *     write back. Use this for compliance scenarios (SOX, HIPAA)
+ *     where a missing audit entry is itself a failure mode.
+ *
+ * The `transactional` parameter is threaded through from
+ * `applyAudit()` — see that function's docstring for opt-in shape.
  */
 async function writeAuditRow(payload: {
   auditable_type: string
@@ -182,7 +191,7 @@ async function writeAuditRow(payload: {
   old_values: Record<string, unknown> | null
   new_values: Record<string, unknown> | null
   user_id: number | string | null
-}): Promise<void> {
+}, transactional = false): Promise<void> {
   try {
     const { db } = await import('@stacksjs/database')
     await db.insertInto(AUDITS_TABLE).values({
@@ -197,6 +206,7 @@ async function writeAuditRow(payload: {
   }
   catch (err) {
     log.warn(`[orm] audit row write failed for ${payload.auditable_type}#${String(payload.auditable_id)} (${payload.event})`, { error: err })
+    if (transactional) throw err
   }
 }
 
@@ -262,6 +272,19 @@ function safeJsonParse(value: string): unknown {
 }
 
 /**
+ * Resolve the transactional opt-in from a model's `traits.useAudit`
+ * declaration. Accepts both `true` (default, best-effort) and
+ * `{ transactional: true }` (audit failures roll back the user's
+ * write). Centralized so the wrapper functions below have a single
+ * boolean to check.
+ */
+export function resolveAuditOptions(useAudit: unknown): { transactional: boolean } {
+  if (useAudit && typeof useAudit === 'object' && 'transactional' in useAudit)
+    return { transactional: (useAudit as { transactional?: unknown }).transactional === true }
+  return { transactional: false }
+}
+
+/**
  * Wire the audit trait into a model's static surface. Wraps `create`,
  * `update`, and `delete` so each one writes a `model_audits` row after a
  * successful operation. Idempotent against the proxy machinery — relies on
@@ -272,15 +295,25 @@ function safeJsonParse(value: string): unknown {
  * we wrap the final composed function rather than something that gets
  * shadowed later.
  *
+ * **Transactional opt-in (stacksjs/stacks#1876 X-2):** pass
+ * `{ transactional: true }` to wrap each create/update/delete in a
+ * `db.transaction(...)` so audit-row write failures roll back the
+ * underlying user write. Default is best-effort (audit failures are
+ * logged but don't abort the operation) — appropriate for a debug /
+ * change-log use case but NOT for compliance scenarios where a missing
+ * audit entry is itself a failure mode.
+ *
  * @example
  * ```ts
- * // Inside defineModel():
- * if (definition.traits?.useAudit) {
- *   applyAudit(baseModel, definition)
- * }
+ * // Best-effort (default): audit failures don't abort writes.
+ * defineModel({ traits: { useAudit: true } })
+ *
+ * // Transactional (compliance): audit failures roll back the write.
+ * defineModel({ traits: { useAudit: { transactional: true } } })
  * ```
  */
-export function applyAudit(baseModel: Record<string, unknown>, modelName: string, primaryKey: string = 'id'): void {
+export function applyAudit(baseModel: Record<string, unknown>, modelName: string, primaryKey: string = 'id', opts: { transactional?: boolean } = {}): void {
+  const transactional = opts.transactional === true
   const model = baseModel as AuditCapableModel & Record<string, unknown>
 
   // Expose the public `Model.audits(id)` query helper. Assigned only if the
@@ -290,30 +323,44 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
     baseModel.audits = createAuditMethods(modelName).audits
   }
 
+  // Helper: wrap an async op in a db.transaction if transactional mode
+  // is on, otherwise just await it. The transaction ensures the audit
+  // row write is part of the same atomic unit as the underlying op,
+  // so a failed audit insert rolls the user write back
+  // (stacksjs/stacks#1876 X-2).
+  const runWithOptionalTx = async <T>(fn: () => Promise<T>): Promise<T> => {
+    if (!transactional) return await fn()
+    const { db } = await import('@stacksjs/database')
+    return await db.transaction(async () => fn())
+  }
+
   // CREATE: capture the inserted row as new_values.
   const origCreate = baseModel.create
   if (typeof origCreate === 'function') {
     baseModel.create = async function (...args: unknown[]) {
-      const result = await (origCreate as (...a: unknown[]) => unknown).apply(this, args)
-      try {
-        const newAttrs = plainAttrs(result)
-        const id = newAttrs?.[primaryKey] as number | string | undefined
-        if (id != null) {
-          const userId = await resolveAuditUserId()
-          await writeAuditRow({
-            auditable_type: modelName,
-            auditable_id: id,
-            event: 'created',
-            old_values: null,
-            new_values: redactSensitive(newAttrs),
-            user_id: userId,
-          })
+      return await runWithOptionalTx(async () => {
+        const result = await (origCreate as (...a: unknown[]) => unknown).apply(this, args)
+        try {
+          const newAttrs = plainAttrs(result)
+          const id = newAttrs?.[primaryKey] as number | string | undefined
+          if (id != null) {
+            const userId = await resolveAuditUserId()
+            await writeAuditRow({
+              auditable_type: modelName,
+              auditable_id: id,
+              event: 'created',
+              old_values: null,
+              new_values: redactSensitive(newAttrs),
+              user_id: userId,
+            }, transactional)
+          }
         }
-      }
-      catch (err) {
-        log.warn(`[orm] audit(create) failed for ${modelName}`, { error: err })
-      }
-      return result
+        catch (err) {
+          log.warn(`[orm] audit(create) failed for ${modelName}`, { error: err })
+          if (transactional) throw err
+        }
+        return result
+      })
     }
   }
 
@@ -323,31 +370,34 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
   const origUpdate = baseModel.update
   if (typeof origUpdate === 'function') {
     baseModel.update = async function (id: number | string, data: Record<string, unknown>) {
-      const find = model.find as ((_id: number | string) => Promise<unknown>) | undefined
-      const before = typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null
-      const result = await (origUpdate as (i: number | string, d: Record<string, unknown>) => unknown).call(this, id, data)
-      try {
-        const after = plainAttrs(result) ?? (typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null)
-        const { old, next } = diffAttrs(before, after)
-        // Skip the audit row entirely if nothing actually changed — saves
-        // a row per redundant-update call site (idempotent saves are
-        // common in queue retries).
-        if (next && Object.keys(next).length > 0) {
-          const userId = await resolveAuditUserId()
-          await writeAuditRow({
-            auditable_type: modelName,
-            auditable_id: id,
-            event: 'updated',
-            old_values: redactSensitive(old),
-            new_values: redactSensitive(next),
-            user_id: userId,
-          })
+      return await runWithOptionalTx(async () => {
+        const find = model.find as ((_id: number | string) => Promise<unknown>) | undefined
+        const before = typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null
+        const result = await (origUpdate as (i: number | string, d: Record<string, unknown>) => unknown).call(this, id, data)
+        try {
+          const after = plainAttrs(result) ?? (typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null)
+          const { old, next } = diffAttrs(before, after)
+          // Skip the audit row entirely if nothing actually changed — saves
+          // a row per redundant-update call site (idempotent saves are
+          // common in queue retries).
+          if (next && Object.keys(next).length > 0) {
+            const userId = await resolveAuditUserId()
+            await writeAuditRow({
+              auditable_type: modelName,
+              auditable_id: id,
+              event: 'updated',
+              old_values: redactSensitive(old),
+              new_values: redactSensitive(next),
+              user_id: userId,
+            }, transactional)
+          }
         }
-      }
-      catch (err) {
-        log.warn(`[orm] audit(update) failed for ${modelName}#${String(id)}`, { error: err })
-      }
-      return result
+        catch (err) {
+          log.warn(`[orm] audit(update) failed for ${modelName}#${String(id)}`, { error: err })
+          if (transactional) throw err
+        }
+        return result
+      })
     }
   }
 
@@ -358,28 +408,31 @@ export function applyAudit(baseModel: Record<string, unknown>, modelName: string
     const orig = baseModel[key]
     if (typeof orig !== 'function') return
     baseModel[key] = async function (id: number | string) {
-      const find = model.find as ((_id: number | string) => Promise<unknown>) | undefined
-      const before = typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null
-      const result = await (orig as (i: number | string) => unknown).call(this, id)
-      try {
-        // Only audit when the underlying op claims it actually deleted
-        // something — `delete()` returns `false` for missing rows.
-        if (result !== false && before) {
-          const userId = await resolveAuditUserId()
-          await writeAuditRow({
-            auditable_type: modelName,
-            auditable_id: id,
-            event: 'deleted',
-            old_values: redactSensitive(before),
-            new_values: null,
-            user_id: userId,
-          })
+      return await runWithOptionalTx(async () => {
+        const find = model.find as ((_id: number | string) => Promise<unknown>) | undefined
+        const before = typeof find === 'function' ? plainAttrs(await find.call(model, id)) : null
+        const result = await (orig as (i: number | string) => unknown).call(this, id)
+        try {
+          // Only audit when the underlying op claims it actually deleted
+          // something — `delete()` returns `false` for missing rows.
+          if (result !== false && before) {
+            const userId = await resolveAuditUserId()
+            await writeAuditRow({
+              auditable_type: modelName,
+              auditable_id: id,
+              event: 'deleted',
+              old_values: redactSensitive(before),
+              new_values: null,
+              user_id: userId,
+            }, transactional)
+          }
         }
-      }
-      catch (err) {
-        log.warn(`[orm] audit(${key}) failed for ${modelName}#${String(id)}`, { error: err })
-      }
-      return result
+        catch (err) {
+          log.warn(`[orm] audit(${key}) failed for ${modelName}#${String(id)}`, { error: err })
+          if (transactional) throw err
+        }
+        return result
+      })
     }
   }
   wrapDelete('delete')

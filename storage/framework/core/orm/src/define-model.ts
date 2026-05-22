@@ -1113,7 +1113,7 @@ import { createBillableMethods } from './traits/billable'
 import { createLikeableMethods } from './traits/likeable'
 import { createTwoFactorMethods } from './traits/two-factor'
 import { createSoftDeleteMethods, resolveSoftDeleteOptions, cascadeSoftDelete } from './traits/soft-deletes'
-import { applyAudit } from './traits/audit'
+import { applyAudit, resolveAuditOptions } from './traits/audit'
 import { collectEncryptedAttributes, decryptValue, encryptValue, isEncrypted } from './utils/encrypted'
 
 /**
@@ -1226,8 +1226,16 @@ export function defineModel<const TDef extends ModelDefinition>(definition: TDef
   // Audit trait must run AFTER soft-delete wiring so it wraps the final
   // `delete` (which the soft-delete trait may have aliased to softDelete).
   // Wrapping earlier would leave the softDelete shim's writes unaudited.
-  if ((definition as { traits?: { useAudit?: unknown } }).traits?.useAudit) {
-    applyAudit(baseModel, definition.name, definition.primaryKey || 'id')
+  //
+  // `useAudit: true` keeps the legacy best-effort behavior. To opt
+  // into transactional auditing (audit failure rolls back the user
+  // write — required for compliance scenarios), declare
+  // `traits.useAudit: { transactional: true }` instead
+  // (stacksjs/stacks#1876 X-2).
+  const useAuditDecl = (definition as { traits?: { useAudit?: unknown } }).traits?.useAudit
+  if (useAuditDecl) {
+    const auditOpts = resolveAuditOptions(useAuditDecl)
+    applyAudit(baseModel, definition.name, definition.primaryKey || 'id', auditOpts)
   }
 
   // Build trait methods based on model config
