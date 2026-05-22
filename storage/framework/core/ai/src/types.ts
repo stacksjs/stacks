@@ -50,6 +50,36 @@ export interface EmbeddingsResponse {
   }
 }
 
+/**
+ * Tool / function definition that the model can call back into.
+ * Cross-provider shape: OpenAI's `tools[]` and Anthropic's `tools[]`
+ * map to this same structure via the JSON Schema for parameters.
+ */
+export interface AITool {
+  name: string
+  description?: string
+  /** JSON Schema for the tool's input. */
+  parameters?: Record<string, unknown>
+  /** OpenAI-only `tool_choice` semantics: 'auto' (default), 'required', or { name }. */
+}
+
+/**
+ * Structured-output / JSON-mode response format. Modeled after
+ * OpenAI's `response_format` but the Anthropic driver maps it to
+ * the tools-as-json pattern internally (stacksjs/stacks#1878 A-1).
+ */
+export type AIResponseFormat =
+  | { type: 'text' }
+  | { type: 'json_object' }
+  | {
+      type: 'json_schema'
+      json_schema: {
+        name: string
+        schema: Record<string, unknown>
+        strict?: boolean
+      }
+    }
+
 export interface ChatCompletionOptions {
   model?: string
   maxTokens?: number
@@ -57,6 +87,25 @@ export interface ChatCompletionOptions {
   topP?: number
   stop?: string | string[]
   stream?: boolean
+  /**
+   * Tools / functions the model can call (stacksjs/stacks#1878 A-1).
+   * OpenAI threads as `tools` directly; Anthropic threads as
+   * `tools` (Claude 3.5+) — the cross-driver shape is the same.
+   */
+  tools?: AITool[]
+  /**
+   * Force the model to call a specific tool, or any tool, or no
+   * tool. OpenAI semantics. Anthropic supports the same via
+   * `tool_choice` field in Messages API.
+   */
+  toolChoice?: 'auto' | 'required' | 'none' | { name: string }
+  /**
+   * Force structured output (stacksjs/stacks#1878 A-1).
+   * - `{ type: 'text' }` → freeform (the default)
+   * - `{ type: 'json_object' }` → guaranteed JSON, schema not enforced
+   * - `{ type: 'json_schema', json_schema: {...} }` → JSON matching schema
+   */
+  responseFormat?: AIResponseFormat
 }
 
 export interface AIResult {

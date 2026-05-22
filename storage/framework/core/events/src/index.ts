@@ -322,3 +322,9 @@ export {
   useEvents,
   useListen,
 }
+
+// Boot-time listener auto-discovery (stacksjs/stacks#1878 E-3,
+// closing F-3 from #1874). Scans `app/Listeners/**/*.ts` for
+// default-exported `{ listensTo, handle }` modules and registers them.
+export { discoverListeners } from './discover'
+export type { ListenerModule } from './discover'

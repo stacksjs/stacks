@@ -161,7 +161,8 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
 }
 
 /**
- * Chat completion with full options
+ * Chat completion with full options. Supports tools + structured
+ * output via `responseFormat` (stacksjs/stacks#1878 A-1).
  */
 export async function chat(
   messages: AIMessage[],
@@ -175,7 +176,48 @@ export async function chat(
     topP,
     stop,
     system,
+    tools,
+    toolChoice,
+    responseFormat,
   } = options
+
+  // Build the request body. Tools and tool_choice map directly to
+  // Claude's Messages API. responseFormat is mapped to the
+  // tools-as-json pattern (Claude 3.5+ doesn't have a first-class
+  // JSON-mode parameter; the standard idiom is "define a tool whose
+  // input is the JSON shape and force the model to call it").
+  const body: Record<string, unknown> = {
+    model,
+    max_tokens: maxTokens,
+    temperature,
+    top_p: topP,
+    stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
+    system,
+    messages,
+  }
+
+  if (tools && tools.length > 0) {
+    body.tools = tools.map(t => ({
+      name: t.name,
+      description: t.description,
+      input_schema: t.parameters ?? { type: 'object', properties: {} },
+    }))
+    if (toolChoice !== undefined)
+      body.tool_choice = mapAnthropicToolChoice(toolChoice)
+  }
+
+  // responseFormat → tools-as-json shape. If callers provide both
+  // explicit tools AND responseFormat, the structured-output tool
+  // is appended and forced via tool_choice. Caller's explicit
+  // tool_choice wins.
+  if (responseFormat && responseFormat.type !== 'text') {
+    const outputTool = buildAnthropicJsonTool(responseFormat)
+    const existing = Array.isArray(body.tools) ? body.tools as unknown[] : []
+    body.tools = [...existing, outputTool]
+    if (toolChoice === undefined) {
+      body.tool_choice = { type: 'tool', name: outputTool.name }
+    }
+  }
 
   const response = await fetch(`${BASE_URL}/messages`, {
     method: 'POST',
@@ -184,15 +226,7 @@ export async function chat(
       'x-api-key': config.apiKey,
       'anthropic-version': config.anthropicVersion || DEFAULT_VERSION,
     },
-    body: JSON.stringify({
-      model,
-      max_tokens: maxTokens,
-      temperature,
-      top_p: topP,
-      stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
-      system,
-      messages,
-    }),
+    body: JSON.stringify(body),
   })
 
   if (!response.ok) {
@@ -206,8 +240,19 @@ export async function chat(
     throw new Error('Claude API returned empty content')
   }
 
+  // Extract the content. For tool-use-as-json, the response is a
+  // tool_use block whose `input` field holds the structured object;
+  // we JSON.stringify it for the `content` string field so callers
+  // can JSON.parse back out. For freeform, the first text block.
+  const block = data.content.find((b: { type: string }) => b.type === 'tool_use')
+    ?? data.content.find((b: { type: string }) => b.type === 'text')
+    ?? data.content[0]
+  const content = block?.type === 'tool_use'
+    ? JSON.stringify(block.input)
+    : (block?.text ?? '')
+
   return {
-    content: data.content[0].text,
+    content,
     model: data.model,
     usage: {
       promptTokens: data.usage?.input_tokens || 0,
@@ -215,6 +260,37 @@ export async function chat(
       totalTokens: (data.usage?.input_tokens || 0) + (data.usage?.output_tokens || 0),
     },
     finishReason: data.stop_reason,
+  }
+}
+
+/**
+ * Map the cross-driver `toolChoice` shape to Anthropic's
+ * Messages-API representation.
+ */
+function mapAnthropicToolChoice(choice: NonNullable<ChatCompletionOptions['toolChoice']>): Record<string, unknown> {
+  if (choice === 'auto') return { type: 'auto' }
+  if (choice === 'required') return { type: 'any' }
+  if (choice === 'none') return { type: 'auto', disable_parallel_tool_use: true }
+  return { type: 'tool', name: choice.name }
+}
+
+/**
+ * Build a synthetic tool that captures the requested JSON shape,
+ * used to coerce structured output via the tool-use idiom.
+ */
+function buildAnthropicJsonTool(format: NonNullable<ChatCompletionOptions['responseFormat']>): { name: string, description: string, input_schema: Record<string, unknown> } {
+  if (format.type === 'json_schema') {
+    return {
+      name: format.json_schema.name,
+      description: `Returns the result as JSON matching the '${format.json_schema.name}' schema.`,
+      input_schema: format.json_schema.schema,
+    }
+  }
+  // json_object — no schema, just "object with any keys"
+  return {
+    name: 'structured_output',
+    description: 'Returns the result as a JSON object.',
+    input_schema: { type: 'object', additionalProperties: true },
   }
 }
 
