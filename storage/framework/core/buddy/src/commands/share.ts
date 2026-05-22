@@ -1,4 +1,5 @@
 import type { CLI } from '@stacksjs/types'
+import { getErrorMessage } from '@stacksjs/utils'
 import process from 'node:process'
 import {
   runApiDevServer,
@@ -278,9 +279,9 @@ export function share(buddy: CLI): void {
 
         await new Promise(() => {})
       }
-      catch (error: any) {
+      catch (error: unknown) {
         unmuteOutput()
-        s.fail(error.message)
+        s.fail(getErrorMessage(error))
 
         if (error.message?.includes('timeout') || error.message?.includes('ECONNREFUSED')) {
           log.error(`Could not reach tunnel server at ${server}`)

@@ -4,6 +4,7 @@
  */
 import process from 'node:process'
 import { log } from '@stacksjs/cli'
+import { getErrorMessage } from '@stacksjs/utils'
 import type { CloudConfig } from '@ts-cloud/core'
 
 // Load cloud config lazily to avoid import issues
@@ -1977,8 +1978,8 @@ ${(distConfig.CustomErrorResponses?.Items || []).map((e: any) => `      <CustomE
 
     console.log('⚠ Certificate validation timed out. Please check AWS Console.')
   }
-  catch (error: any) {
-    console.log(`✗ DNS/SSL setup failed: ${error.message}`)
+  catch (error: unknown) {
+    console.log(`✗ DNS/SSL setup failed: ${getErrorMessage(error)}`)
     console.log('  You can manually set up DNS and SSL using ./buddy cloud:ssl')
   }
 }
@@ -2205,8 +2206,8 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
           console.log('')
         }
       }
-      catch (error: any) {
-        if (error.message?.includes('No updates are to be performed')) {
+      catch (error: unknown) {
+        if (getErrorMessage(error)?.includes('No updates are to be performed')) {
           console.log('✓ Stack is up to date (no changes)')
         }
         else {
@@ -2356,8 +2357,8 @@ export async function deployStack(options: DeployStackOptions): Promise<void> {
       // Outputs might not be available yet
     }
   }
-  catch (error: any) {
-    console.error(`Stack deployment failed: ${error.message}`)
+  catch (error: unknown) {
+    console.error(`Stack deployment failed: ${getErrorMessage(error)}`)
     throw error
   }
 }
@@ -2399,8 +2400,8 @@ export async function deployFrontend(options: DeployFrontendOptions): Promise<vo
 
     log.success('Frontend deployment completed!')
   }
-  catch (error: any) {
-    log.error(`Frontend deployment failed: ${error.message}`)
+  catch (error: unknown) {
+    log.error(`Frontend deployment failed: ${getErrorMessage(error)}`)
     throw error
   }
 }
@@ -2650,8 +2651,8 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
     console.log('═══════════════════════════════════════════════════════════════════════════════════════')
     console.log('')
   }
-  catch (error: any) {
-    const errorStr = String(error.message || error)
+  catch (error: unknown) {
+    const errorStr = String(getErrorMessage(error) || error)
 
     // Handle stack doesn't exist
     if (errorStr.includes('does not exist')) {
@@ -2707,7 +2708,7 @@ export async function undeployStack(options: UndeployStackOptions): Promise<void
       }
     }
 
-    console.error(`Stack deletion failed: ${error.message}`)
+    console.error(`Stack deletion failed: ${getErrorMessage(error)}`)
     throw error
   }
 }

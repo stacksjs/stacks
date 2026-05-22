@@ -4,6 +4,7 @@ import process from 'node:process'
 import { email as emailConfig } from '@stacksjs/config'
 import { ExitCode } from '@stacksjs/types'
 import { onUnknownSubcommand } from '@stacksjs/cli'
+import { getErrorMessage } from '@stacksjs/utils'
 
 const TIMEOUT_MS = 30000 // 30 second timeout for AWS operations
 
@@ -167,8 +168,8 @@ export function email(buddy: CLI): void {
           console.log('\n⚠️  Domain not found in SES. Run `buddy deploy` to set up email.')
         }
       }
-      catch (error: any) {
-        console.error('\n❌ Error checking verification:', error.message)
+      catch (error: unknown) {
+        console.error('\n❌ Error checking verification:', getErrorMessage(error))
       }
       process.exit(0)
     })
@@ -227,9 +228,9 @@ export function email(buddy: CLI): void {
         console.log('✅ Test email sent successfully!')
         console.log(`   Message ID: ${(result as any).MessageId}`)
       }
-      catch (error: any) {
-        console.error('\n❌ Error sending test email:', error.message)
-        if (error.message.includes('not verified')) {
+      catch (error: unknown) {
+        console.error('\n❌ Error sending test email:', getErrorMessage(error))
+        if (getErrorMessage(error).includes('not verified')) {
           console.log('\n💡 Tip: Make sure your domain is verified in SES.')
           console.log('   Run `buddy email:verify` to check status.')
         }
@@ -318,12 +319,12 @@ export function email(buddy: CLI): void {
           console.log('\n💡 Logs will appear after emails are processed.')
         }
       }
-      catch (error: any) {
-        if (error.message.includes('ResourceNotFoundException') || error.message.includes('timed out')) {
+      catch (error: unknown) {
+        if (getErrorMessage(error).includes('ResourceNotFoundException') || getErrorMessage(error).includes('timed out')) {
           console.log('Log group not found or not accessible. No emails have been processed yet.')
         }
         else {
-          console.error('Error fetching logs:', error.message)
+          console.error('Error fetching logs:', getErrorMessage(error))
         }
       }
       process.exit(0)
@@ -372,8 +373,8 @@ export function email(buddy: CLI): void {
           }
         }
       }
-      catch (error: any) {
-        console.error('Error checking status:', error.message)
+      catch (error: unknown) {
+        console.error('Error checking status:', getErrorMessage(error))
       }
       process.exit(0)
     })
@@ -437,8 +438,8 @@ export function email(buddy: CLI): void {
           } else {
             console.log('Email not found.')
           }
-        } catch (error: any) {
-          console.error('Error fetching email:', error.message)
+        } catch (error: unknown) {
+          console.error('Error fetching email:', getErrorMessage(error))
         }
         process.exit(0)
         return
@@ -557,8 +558,8 @@ export function email(buddy: CLI): void {
         console.log('')
         console.log('   * = unread')
         console.log(`\n   View raw email: buddy email:inbox ${resolvedMailbox} --raw <messageId>`)
-      } catch (error: any) {
-        console.error('Error reading inbox:', error.message)
+      } catch (error: unknown) {
+        console.error('Error reading inbox:', getErrorMessage(error))
       }
       process.exit(0)
     })
@@ -718,8 +719,8 @@ export function email(buddy: CLI): void {
         }
 
         console.log(`\n   Done! Processed ${processed} emails.`)
-      } catch (error: any) {
-        console.error('Error reprocessing:', error.message)
+      } catch (error: unknown) {
+        console.error('Error reprocessing:', getErrorMessage(error))
       }
       process.exit(0)
     })

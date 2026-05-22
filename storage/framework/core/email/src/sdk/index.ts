@@ -9,6 +9,7 @@
  */
 
 import { email as emailConfig } from '@stacksjs/config'
+import { getErrorMessage } from '@stacksjs/utils'
 
 export interface EmailAddress {
   name?: string
@@ -135,10 +136,10 @@ export class EmailSDK {
         messageId: result.MessageId,
       }
     }
-    catch (error: any) {
+    catch (error: unknown) {
       return {
         success: false,
-        error: error.message,
+        error: getErrorMessage(error),
       }
     }
   }
@@ -192,8 +193,8 @@ export class EmailSDK {
 
       return inbox.slice(offset, offset + limit)
     }
-    catch (error: any) {
-      if (error.message.includes('NoSuchKey') || error.message.includes('404')) {
+    catch (error: unknown) {
+      if (getErrorMessage(error).includes('NoSuchKey') || getErrorMessage(error).includes('404')) {
         return []
       }
       throw error
@@ -243,10 +244,10 @@ export class EmailSDK {
         const htmlResult = await s3.getObject(this.bucket, `${basePath}/body.html`)
         html = htmlResult || undefined
       }
-      catch (error: any) {
+      catch (error: unknown) {
         // Expected when email has no HTML version (NoSuchKey)
-        if (!error.message?.includes('NoSuchKey') && !error.message?.includes('404')) {
-          console.debug(`[email-sdk] Failed to fetch HTML body: ${error.message}`)
+        if (!getErrorMessage(error)?.includes('NoSuchKey') && !getErrorMessage(error)?.includes('404')) {
+          console.debug(`[email-sdk] Failed to fetch HTML body: ${getErrorMessage(error)}`)
         }
       }
 
@@ -256,17 +257,17 @@ export class EmailSDK {
         const textResult = await s3.getObject(this.bucket, `${basePath}/body.txt`)
         text = textResult || undefined
       }
-      catch (error: any) {
+      catch (error: unknown) {
         // Expected when email has no text version (NoSuchKey)
-        if (!error.message?.includes('NoSuchKey') && !error.message?.includes('404')) {
-          console.debug(`[email-sdk] Failed to fetch text body: ${error.message}`)
+        if (!getErrorMessage(error)?.includes('NoSuchKey') && !getErrorMessage(error)?.includes('404')) {
+          console.debug(`[email-sdk] Failed to fetch text body: ${getErrorMessage(error)}`)
         }
       }
 
       return { metadata, html, text }
     }
-    catch (error: any) {
-      if (error.message.includes('NoSuchKey') || error.message.includes('404')) {
+    catch (error: unknown) {
+      if (getErrorMessage(error).includes('NoSuchKey') || getErrorMessage(error).includes('404')) {
         return null
       }
       throw error
@@ -345,10 +346,10 @@ export class EmailSDK {
         try {
           await s3.deleteObject(this.bucket, key)
         }
-        catch (error: any) {
+        catch (error: unknown) {
           // Expected for optional files (body.html, body.txt) that may not exist
-          if (!error.message?.includes('NoSuchKey') && !error.message?.includes('404')) {
-            console.debug(`[email-sdk] Failed to delete ${key}: ${error.message}`)
+          if (!getErrorMessage(error)?.includes('NoSuchKey') && !getErrorMessage(error)?.includes('404')) {
+            console.debug(`[email-sdk] Failed to delete ${key}: ${getErrorMessage(error)}`)
           }
         }
       }
@@ -365,8 +366,8 @@ export class EmailSDK {
 
       return true
     }
-    catch (error: any) {
-      console.debug(`[email-sdk] Failed to delete email ${messageId}: ${error.message}`)
+    catch (error: unknown) {
+      console.debug(`[email-sdk] Failed to delete email ${messageId}: ${getErrorMessage(error)}`)
       return false
     }
   }
@@ -410,8 +411,8 @@ export class EmailSDK {
 
       return true
     }
-    catch (error: any) {
-      console.debug(`[email-sdk] Failed to update email status for ${messageId}: ${error.message}`)
+    catch (error: unknown) {
+      console.debug(`[email-sdk] Failed to update email status for ${messageId}: ${getErrorMessage(error)}`)
       return false
     }
   }

@@ -1,4 +1,5 @@
 import type { CLI } from '@stacksjs/types'
+import { getErrorMessage } from '@stacksjs/utils'
 import { readFileSync, existsSync } from 'node:fs'
 
 const TIMEOUT_MS = 30000
@@ -103,8 +104,8 @@ export function phone(buddy: CLI): void {
           console.log('   2. Run `buddy deploy`')
         }
       }
-      catch (error: any) {
-        console.error('Error checking status:', error.message)
+      catch (error: unknown) {
+        console.error('Error checking status:', getErrorMessage(error))
       }
       process.exit(0)
     })
@@ -153,8 +154,8 @@ export function phone(buddy: CLI): void {
           console.log('')
         }
       }
-      catch (error: any) {
-        console.error('Error listing numbers:', error.message)
+      catch (error: unknown) {
+        console.error('Error listing numbers:', getErrorMessage(error))
       }
       process.exit(0)
     })
@@ -207,13 +208,13 @@ export function phone(buddy: CLI): void {
         }
         console.log('\n💡 To claim a number, use `buddy phone:claim <number>`')
       }
-      catch (error: any) {
-        if (error.message.includes('not authorized')) {
+      catch (error: unknown) {
+        if (getErrorMessage(error).includes('not authorized')) {
           console.log('Not authorized to search phone numbers.')
           console.log('Make sure your AWS account has Amazon Connect permissions.')
         }
         else {
-          console.error('Error searching numbers:', error.message)
+          console.error('Error searching numbers:', getErrorMessage(error))
         }
       }
       process.exit(0)

@@ -1,4 +1,5 @@
 import type { CLI } from '@stacksjs/types'
+import { getErrorMessage } from '@stacksjs/utils'
 import { readFileSync, existsSync } from 'node:fs'
 
 const TIMEOUT_MS = 30000
@@ -110,8 +111,8 @@ export function sms(buddy: CLI): void {
           console.log('\n⏳ Note: Phone number verification can take 24-72 hours for toll-free numbers')
         }
       }
-      catch (error: any) {
-        console.error('Error checking status:', error.message)
+      catch (error: unknown) {
+        console.error('Error checking status:', getErrorMessage(error))
 
         // Try basic check with End User Messaging API
         try {
@@ -197,20 +198,20 @@ export function sms(buddy: CLI): void {
           console.log('❌ SMS send failed')
         }
       }
-      catch (error: any) {
-        console.error('Error sending SMS:', error.message)
+      catch (error: unknown) {
+        console.error('Error sending SMS:', getErrorMessage(error))
 
-        if (error.message.includes('not found') || error.message.includes('No phone')) {
+        if (getErrorMessage(error).includes('not found') || getErrorMessage(error).includes('No phone')) {
           console.log('\n💡 No origination phone number available.')
           console.log('   Run `buddy sms:setup` to provision a phone number.')
         }
-        else if (error.message.includes('not authorized')) {
+        else if (getErrorMessage(error).includes('not authorized')) {
           console.log('\n💡 Make sure your AWS account has SMS permissions.')
         }
-        else if (error.message.includes('sandbox')) {
+        else if (getErrorMessage(error).includes('sandbox')) {
           console.log('\n💡 Your account is in SMS sandbox. Run `buddy sms:setup` to request production access.')
         }
-        else if (error.message.includes('PENDING')) {
+        else if (getErrorMessage(error).includes('PENDING')) {
           console.log('\n💡 Phone number is still pending verification (24-72 hours for toll-free).')
           console.log('   Run `buddy sms:status` to check current status.')
         }
@@ -306,9 +307,9 @@ export function sms(buddy: CLI): void {
           }
         }
       }
-      catch (error: any) {
-        console.error('Error setting up SMS:', error.message)
-        if (error.message.includes('timeout')) {
+      catch (error: unknown) {
+        console.error('Error setting up SMS:', getErrorMessage(error))
+        if (getErrorMessage(error).includes('timeout')) {
           console.log('\n💡 Setup timed out. Some operations may have completed.')
           console.log('   Run `buddy sms:status` to check current status.')
         }
@@ -344,9 +345,9 @@ export function sms(buddy: CLI): void {
           console.log('   Message:', result.message)
         }
       }
-      catch (error: any) {
-        console.error('Error adding phone:', error.message)
-        if (error.message.includes('already exists')) {
+      catch (error: unknown) {
+        console.error('Error adding phone:', getErrorMessage(error))
+        if (getErrorMessage(error).includes('already exists')) {
           console.log('\n💡 Phone number may already be in the sandbox.')
           console.log('   Run `buddy sms:status` to check sandbox numbers.')
         }
@@ -379,8 +380,8 @@ export function sms(buddy: CLI): void {
           console.log('   Run `buddy sms:add-phone <phone>` to resend the code.')
         }
       }
-      catch (error: any) {
-        console.error('Error verifying phone:', error.message)
+      catch (error: unknown) {
+        console.error('Error verifying phone:', getErrorMessage(error))
       }
       process.exit(0)
     })
@@ -410,8 +411,8 @@ export function sms(buddy: CLI): void {
           }
         }
       }
-      catch (error: any) {
-        console.error('Error listing sandbox phones:', error.message)
+      catch (error: unknown) {
+        console.error('Error listing sandbox phones:', getErrorMessage(error))
       }
       process.exit(0)
     })

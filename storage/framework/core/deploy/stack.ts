@@ -7,6 +7,7 @@
 
 import type { CloudConfig, EnvironmentType } from '@stacksjs/ts-cloud'
 import { AWSCloudFormationClient as CloudFormationClient, InfrastructureGenerator, Route53Client, SESClient } from '@stacksjs/ts-cloud'
+import { getErrorMessage } from '@stacksjs/utils'
 
 // Import tsCloud config from Stacks config system
 import { tsCloud as config } from '~/config/cloud'
@@ -24,7 +25,7 @@ async function withRetry<T>(
     try {
       return await fn()
     }
-    catch (error: any) {
+    catch (error: unknown) {
       lastError = error
       // Don't retry on non-transient errors. We expanded this list because
       // the previous shape silently retried 3× on errors that physically
@@ -32,7 +33,7 @@ async function withRetry<T>(
       // permissions, malformed parameters, missing prerequisites). That
       // turned a 1s "fix your IAM policy" hint into a 30s wait + the
       // same hint, on every deploy.
-      const message = error.message || ''
+      const message = getErrorMessage(error)
       const code = error.code || error.name || ''
       const NON_TRANSIENT = [
         'ValidationError',
@@ -125,8 +126,8 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
       { label: 'describeStacks' },
     )
     stackExists = stacks.Stacks && stacks.Stacks.length > 0
-  } catch (error: any) {
-    const msg = error.message || ''
+  } catch (error: unknown) {
+    const msg = getErrorMessage(error)
     // Only treat "does not exist" as stack-not-found
     if (msg.includes('does not exist') || msg.includes('Stack with id') || msg.includes('not found')) {
       stackExists = false
@@ -208,8 +209,8 @@ export async function deployStack(options: StackDeployOptions): Promise<void> {
       if (waitForCompletion) {
         await waitForStackComplete(cfn, finalStackName, 'UPDATE_COMPLETE')
       }
-    } catch (error: any) {
-      if (error.message?.includes('No updates are to be performed')) {
+    } catch (error: unknown) {
+      if (getErrorMessage(error)?.includes('No updates are to be performed')) {
         console.log('   ℹ️  No changes detected - stack is up to date')
       } else {
         throw error
@@ -380,8 +381,8 @@ async function waitForStackDelete(
       }
 
       console.log(`   [${stack.StackStatus}] Deleting...`)
-    } catch (error: any) {
-      if (error.message?.includes('does not exist')) {
+    } catch (error: unknown) {
+      if (getErrorMessage(error)?.includes('does not exist')) {
         console.log('   ✅ Stack deleted')
         return
       }
@@ -531,9 +532,9 @@ async function cleanupOrphanedRoute53Records(
             },
           })
         }
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Non-fatal: if we can't clean up, the deploy will fail with the original error
-        console.log(`   ⚠ Could not check/clean record ${record.name}: ${error.message}`)
+        console.log(`   ⚠ Could not check/clean record ${record.name}: ${getErrorMessage(error)}`)
       }
     }
   } catch {

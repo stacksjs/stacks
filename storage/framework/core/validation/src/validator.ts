@@ -3,6 +3,7 @@ import type { Model } from '@stacksjs/types'
 import { HttpError } from '@stacksjs/error-handling'
 import { path } from '@stacksjs/path'
 import { snakeCase } from '@stacksjs/strings'
+import { getErrorMessage } from '@stacksjs/utils'
 import { MessageProvider, setCustomMessages } from '@stacksjs/ts-validation'
 // Import directly from sibling files instead of the package's own `./` (which
 // would self-circular through `index.ts`'s re-exports and leave `schema` as
@@ -111,11 +112,11 @@ export async function validateField(modelFile: string, params: RequestData): Pro
 
     return result
   }
-  catch (error: any) {
+  catch (error: unknown) {
     if (error instanceof HttpError)
       throw error
 
-    throw new HttpError(500, error?.message || 'An unexpected validation error occurred')
+    throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
   }
 }
 
@@ -329,9 +330,9 @@ export async function validate<T = Record<string, unknown>>(
     const validated = (result as { value?: unknown }).value ?? input
     return validated as T
   }
-  catch (error: any) {
+  catch (error: unknown) {
     if (error instanceof HttpError) throw error
-    throw new HttpError(500, error?.message || 'An unexpected validation error occurred')
+    throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
   }
 }
 
@@ -363,10 +364,10 @@ export async function customValidate(attributes: CustomAttributes, params: Reque
 
     return result
   }
-  catch (error: any) {
+  catch (error: unknown) {
     if (error instanceof HttpError)
       throw error
 
-    throw new HttpError(500, error?.message || 'An unexpected validation error occurred')
+    throw new HttpError(500, getErrorMessage(error) || 'An unexpected validation error occurred')
   }
 }

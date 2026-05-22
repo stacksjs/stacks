@@ -11,6 +11,7 @@ import { encryptEnv, env } from '@stacksjs/env'
 import { Action } from '@stacksjs/enums'
 import { path as p } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
+import { getErrorCode, getErrorMessage } from '@stacksjs/utils'
 import { ensureAppKey, ensureEnvIsSet, ensurePantryDependencies, ensurePantryInstalled } from './setup'
 
 // Use console.log for clean output without timestamps
@@ -277,8 +278,8 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
           },
         })
         logger.success(`Added DKIM record: ${token}._domainkey`)
-      } catch (e: any) {
-        logger.warn(`Failed to add DKIM record: ${e.message}`)
+      } catch (e: unknown) {
+        logger.warn(`Failed to add DKIM record: ${getErrorMessage(e)}`)
       }
     }
 
@@ -306,8 +307,8 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
         },
       })
       logger.success(`Added MX record: ${mxTarget}`)
-    } catch (e: any) {
-      logger.warn(`Failed to add MX record: ${e.message}`)
+    } catch (e: unknown) {
+      logger.warn(`Failed to add MX record: ${getErrorMessage(e)}`)
     }
 
     // Add SPF record
@@ -327,8 +328,8 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
         },
       })
       logger.success('Added SPF record')
-    } catch (e: any) {
-      logger.warn(`Failed to add SPF record: ${e.message}`)
+    } catch (e: unknown) {
+      logger.warn(`Failed to add SPF record: ${getErrorMessage(e)}`)
     }
 
     // Add DMARC record
@@ -348,8 +349,8 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
         },
       })
       logger.success('Added DMARC record')
-    } catch (e: any) {
-      logger.warn(`Failed to add DMARC record: ${e.message}`)
+    } catch (e: unknown) {
+      logger.warn(`Failed to add DMARC record: ${getErrorMessage(e)}`)
     }
 
     // Activate the SES receipt rule set
@@ -358,14 +359,14 @@ async function setupEmailDnsRecords(emailDomain: string, region: string, logger:
       const ruleSetName = `${appName}-email-rules`
       await ses.setActiveReceiptRuleSet(ruleSetName)
       logger.success(`Activated email receipt rule set: ${ruleSetName}`)
-    } catch (e: any) {
-      logger.warn(`Failed to activate receipt rule set: ${e.message}`)
+    } catch (e: unknown) {
+      logger.warn(`Failed to activate receipt rule set: ${getErrorMessage(e)}`)
     }
 
     logger.success('Email DNS records configured!')
     logger.info('Note: DKIM verification may take 5-15 minutes to complete')
-  } catch (error: any) {
-    logger.warn(`Failed to set up email DNS records: ${error.message}`)
+  } catch (error: unknown) {
+    logger.warn(`Failed to set up email DNS records: ${getErrorMessage(error)}`)
     logger.info('You can manually set up DNS records using: buddy email:verify')
   }
 }
@@ -404,8 +405,9 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
         logger.success(`Created default mail user: ${defaultEmail}`)
         logger.info(`Password: ${defaultPassword}`)
         logger.info('Save this password - it will not be shown again!')
-      } catch (e: any) {
-        if (e.message?.includes('ConditionalCheckFailedException') || e.message?.includes('already exists')) {
+      } catch (e: unknown) {
+        const msg = getErrorMessage(e)
+        if (msg.includes('ConditionalCheckFailedException') || msg.includes('already exists')) {
           logger.debug('Default mail user already exists')
         } else {
           throw e
@@ -436,17 +438,18 @@ async function createDefaultMailUser(appName: string, emailDomain: string, regio
           if (typeof mailbox !== 'object' || !mb.password) {
             logger.info(`  Password: ${password}`)
           }
-        } catch (e: any) {
-          if (e.message?.includes('ConditionalCheckFailedException')) {
+        } catch (e: unknown) {
+          const msg = getErrorMessage(e)
+          if (msg.includes('ConditionalCheckFailedException')) {
             logger.debug(`Mail user ${email} already exists`)
           } else {
-            logger.warn(`Failed to create mail user ${email}: ${e.message}`)
+            logger.warn(`Failed to create mail user ${email}: ${msg}`)
           }
         }
       }
     }
-  } catch (error: any) {
-    logger.warn(`Failed to create mail users: ${error.message}`)
+  } catch (error: unknown) {
+    logger.warn(`Failed to create mail users: ${getErrorMessage(error)}`)
   }
 }
 
@@ -507,8 +510,8 @@ async function uploadMailServerToS3(bucketName: string, region: string, mode: st
         binaryUploaded = true
       }
     }
-    catch (error: any) {
-      log.debug(`Pantry mail install failed: ${error.message}`)
+    catch (error: unknown) {
+      log.debug(`Pantry mail install failed: ${getErrorMessage(error)}`)
     }
 
     if (!binaryUploaded) {
@@ -984,8 +987,8 @@ async function checkIfAwsIsBootstrapped(options?: DeployOptions) {
         }
       }
     }
-    catch (error: any) {
-      log.debug(`Stack not found: ${error.message}`)
+    catch (error: unknown) {
+      log.debug(`Stack not found: ${getErrorMessage(error)}`)
       // Stack doesn't exist, we'll create it below
     }
 
@@ -2521,9 +2524,9 @@ echo "Mail server setup complete at $(date)"
         return true
       }
     }
-    catch (error: any) {
+    catch (error: unknown) {
       // Handle case where stack already exists (shouldn't happen now with our check)
-      if (error.code === 'AlreadyExistsException') {
+      if (getErrorCode(error) === 'AlreadyExistsException') {
         handlingAlreadyExists = true
         console.log('')
         log.error(`A cloud stack named "${stackName}" already exists`)
@@ -2561,11 +2564,11 @@ echo "Mail server setup complete at $(date)"
       process.exit(ExitCode.FatalError)
     }
   }
-  catch (err: any) {
+  catch (err: unknown) {
     // Don't log error details if we're already handling AlreadyExistsException
     if (!handlingAlreadyExists) {
       log.error('Error checking cloud infrastructure')
-      log.error(`Error: ${err.message || err}`)
+      log.error(`Error: ${getErrorMessage(err)}`)
       if (options?.verbose) {
         console.error(err)
       }

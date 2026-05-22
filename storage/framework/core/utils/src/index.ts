@@ -2,6 +2,7 @@ export * from './clean'
 
 export * from './config'
 export * from './equal'
+export * from './errors'
 export * from './export-size'
 export * from './find'
 export * from './git'
