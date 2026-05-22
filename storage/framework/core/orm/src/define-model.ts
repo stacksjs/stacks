@@ -43,6 +43,27 @@ export function withoutEvents<T>(fn: () => T | Promise<T>): Promise<T> {
 // prevents TypeScript from providing contextual types for callback parameters.
 /**
  * Built-in cast types for model attributes.
+ *
+ * ### Timezone contract (stacksjs/stacks#1876 O-5, D-5)
+ *
+ * `datetime` and `date` casts persist values in **UTC** regardless of
+ * which driver is connected. The `set` direction uses
+ * `Date.toISOString()`, which always emits `Z`-suffixed UTC. The
+ * `get` direction parses the stored string back into a JavaScript
+ * `Date`, which represents an instant on the universal timeline —
+ * timezone presentation is the caller's responsibility (typically via
+ * `Intl.DateTimeFormat` at the render layer, or a Temporal-API
+ * adapter).
+ *
+ * **Why UTC-only:** Per-driver behavior diverges sharply on
+ * timezone-aware columns. PostgreSQL has `timestamptz` (timezone-
+ * aware); MySQL stores `TIMESTAMP` as UTC but presents in the
+ * session timezone; SQLite has no timezone concept at all and stores
+ * ISO strings verbatim. The ORM normalizes them to a single
+ * convention (UTC on the wire) so multi-driver apps behave the same
+ * across environments. Apps that need original-timezone preservation
+ * should store the user's TZ as a separate column and convert at
+ * the render layer.
  */
 export type CastType = 'string' | 'number' | 'boolean' | 'json' | 'datetime' | 'date' | 'array' | 'integer' | 'float'
 
@@ -118,10 +139,19 @@ const builtInCasters: Record<CastType, CasterInterface> = {
     },
   },
   datetime: {
+    // UTC-only by contract (see CastType docstring). The returned
+    // `Date` is timezone-agnostic; convert via `toLocaleString(tz)`
+    // or Intl at render time when local-time display is needed.
     get: (v) => v ? new Date(v as string) : null,
     set: (v) => v instanceof Date ? v.toISOString() : v,
   },
   date: {
+    // Date-only field, persisted as YYYY-MM-DD derived from the UTC
+    // calendar day. A noon-local Date in UTC-5 stored as a `date`
+    // becomes the next day's UTC date — that's the trade-off of the
+    // UTC-only contract. Callers that need local-calendar-day
+    // semantics should convert to UTC at the boundary themselves
+    // (e.g. `new Date(Date.UTC(y, m, d))` from local Y/M/D parts).
     get: (v) => v ? new Date(v as string) : null,
     set: (v) => v instanceof Date ? v.toISOString().split('T')[0] : v,
   },

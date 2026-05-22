@@ -7,14 +7,20 @@ import type { Operator, SubqueryBuilder } from '@stacksjs/orm'
  *
  * @template T - The table type (e.g., PersonalAccessTokensTable)
  * @template M - The model return type (e.g., AccessTokenModel)
- * @template R - The JSON response type
+ * @template R - The JSON response type. Defaults to `unknown` so callers
+ *   are forced to narrow before reading properties off the result —
+ *   previously this defaulted to `any`, which let `.toJson().foo` compile
+ *   even when `foo` didn't exist on the row (stacksjs/stacks#1876 O-6).
  * @template Rel - The string-literal union of relation names this model can eager-load.
  *   Defaults to `string` for backwards compat when generators don't supply
- *   the union; downstream generated wrappers should narrow this to the
+ *   the union; downstream generated wrappers MUST narrow this to the
  *   actual relation names so `.with(['posts'])` autocompletes and typos
- *   become compile errors.
+ *   become compile errors. Generator authors: derive the union from
+ *   `definition.belongsTo | hasMany | hasOne | belongsToMany | hasOneThrough
+ *   | hasManyThrough` joined into a literal-string union, and pass it as
+ *   the fourth type arg when building the per-model wrapper.
  */
-export interface QueryBuilder<T, M, R = any, Rel extends string = string> {
+export interface QueryBuilder<T, M, R = unknown, Rel extends string = string> {
   /**
    * Adds a basic where clause to the query.
    *

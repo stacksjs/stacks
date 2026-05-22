@@ -294,8 +294,13 @@ async function createTableMigration(modelPath: string) {
       migrationContent += `    .addColumn('id', 'serial', (col) => col.primaryKey())\n`
       migrationContent += `    .addColumn('${tableName}_id', 'integer', (col) => col.notNull())\n`
       migrationContent += `    .addColumn('user_id', 'integer', (col) => col.notNull())\n`
-      migrationContent += `    .addColumn('created_at', 'timestamp', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
-      migrationContent += `    .addColumn('updated_at', 'timestamp')\n`
+      // Use timestamptz on PostgreSQL — same convention as the main
+      // model table above (stacksjs/stacks#1876 D-5). Without this,
+      // the upvote table drifted to plain `timestamp` (no TZ) while
+      // its parent table used `timestamptz`, so cross-table joins
+      // returned mismatched values for the same instant.
+      migrationContent += `    .addColumn('created_at', 'timestamptz', col => col.notNull().defaultTo(sql.raw('CURRENT_TIMESTAMP')))\n`
+      migrationContent += `    .addColumn('updated_at', 'timestamptz')\n`
       migrationContent += `    .execute()\n\n`
       migrationContent += `  // Add indexes for upvote table\n`
       migrationContent += `  await (_db as any).schema.createIndex('${upvoteTable}_${tableName}_id_index').on('${upvoteTable}').column('${tableName}_id').execute()\n`
