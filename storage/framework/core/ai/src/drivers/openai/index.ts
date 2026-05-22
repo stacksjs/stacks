@@ -7,6 +7,7 @@
 
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { recordUsage } from '../../utils/usage'
 import { normalizeMessagesForProvider } from '../../utils/vision'
 
 export interface OpenAIDriverConfig extends AIDriverConfig {
@@ -224,6 +225,9 @@ export async function chat(
   // (or use cross-driver helpers) get the right shape.
   const normalizedMessages = normalizeMessagesForProvider(messages, 'openai')
 
+  // Track wall-clock duration for usage reporters (#1878 A-6).
+  const startedAt = Date.now()
+
   const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
@@ -251,7 +255,7 @@ export async function chat(
     throw new Error('OpenAI API returned empty choices')
   }
 
-  return {
+  const result: AIResult = {
     content: data.choices[0].message.content,
     model: data.model,
     usage: {
@@ -261,6 +265,20 @@ export async function chat(
     },
     finishReason: data.choices[0].finish_reason,
   }
+
+  // Fire registered usage reporters (#1878 A-6). Apps install via
+  // `onUsage(reporter)`; default is no-op. Errors are swallowed.
+  recordUsage({
+    provider: 'openai',
+    model: data.model,
+    promptTokens: result.usage!.promptTokens,
+    completionTokens: result.usage!.completionTokens,
+    totalTokens: result.usage!.totalTokens,
+    durationMs: Date.now() - startedAt,
+    timestamp: Date.now(),
+  })
+
+  return result
 }
 
 /**

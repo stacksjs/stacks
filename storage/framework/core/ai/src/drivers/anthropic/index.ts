@@ -7,6 +7,7 @@
 
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { recordUsage } from '../../utils/usage'
 import { normalizeMessagesForProvider } from '../../utils/vision'
 
 export interface AnthropicDriverConfig extends AIDriverConfig {
@@ -195,6 +196,9 @@ export async function chat(
   // helpers) get the right shape on the wire.
   const normalizedMessages = normalizeMessagesForProvider(messages, 'anthropic')
 
+  // Track wall-clock duration for usage reporters (#1878 A-6).
+  const startedAt = Date.now()
+
   const body: Record<string, unknown> = {
     model,
     max_tokens: maxTokens,
@@ -260,7 +264,7 @@ export async function chat(
     ? JSON.stringify(block.input)
     : (block?.text ?? '')
 
-  return {
+  const result: AIResult = {
     content,
     model: data.model,
     usage: {
@@ -270,6 +274,19 @@ export async function chat(
     },
     finishReason: data.stop_reason,
   }
+
+  // Fire registered usage reporters (#1878 A-6).
+  recordUsage({
+    provider: 'anthropic',
+    model: data.model,
+    promptTokens: result.usage!.promptTokens,
+    completionTokens: result.usage!.completionTokens,
+    totalTokens: result.usage!.totalTokens,
+    durationMs: Date.now() - startedAt,
+    timestamp: Date.now(),
+  })
+
+  return result
 }
 
 /**
