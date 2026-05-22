@@ -75,6 +75,12 @@ export {
 } from './translator'
 
 export {
+  ensureLocalesLoaded,
+  resolveRequestLocale,
+  applyRequestLocale,
+} from './bootstrap'
+
+export {
   formatDate,
   formatTime,
   formatDateTime,
