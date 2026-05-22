@@ -24,6 +24,11 @@ export type { BroadcastInstance } from './broadcast'
 // Opt-in via setBackpressureGuard; default is no-op.
 export { setBackpressureGuard, getBackpressureGuard } from './broadcast'
 export type { BackpressureGuardConfig } from './broadcast'
+
+// Heartbeat ping/pong for detecting half-closed sockets
+// (stacksjs/stacks#1877 R-5). Opt-in via setHeartbeatConfig.
+export { getHeartbeatConfig, markPong, runOneTick, setHeartbeatConfig } from './heartbeat'
+export type { HeartbeatConfig } from './heartbeat'
 export { setBunSocket, handleWebSocketRequest, storeWebSocketEvent } from './ws'
 // WebSocket authenticator wiring (stacksjs/stacks#1877 R-1). Install
 // once at server boot to require a valid token / cookie at the

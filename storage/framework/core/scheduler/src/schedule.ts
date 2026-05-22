@@ -407,13 +407,75 @@ export class Schedule implements UntimedSchedule {
 
     if (this.shouldRunInBackground) {
       const innerTask = wrappedTask
+      const outputPath = this.outputPath
+      const outputAppend = this.outputAppend
       wrappedTask = () => {
+        // Capture stdout + stderr to a log file when one's configured
+        // (stacksjs/stacks#1877 S-2 + S-3). Previously `stdio: 'ignore'`
+        // dropped every byte from the child — a crashing background
+        // task produced no signal at all. Now: redirect to the user's
+        // `.sendOutputTo(path)` target when set, otherwise pipe to
+        // the parent process's stderr so at least the launching
+        // operator sees the failure.
+        let stdoutFd: number | 'inherit' = 'inherit'
+        let stderrFd: number | 'inherit' = 'inherit'
+        let closeFd: number | null = null
+        if (outputPath) {
+          try {
+            // Lazy-import to keep the sync prelude small; spawn is
+            // already from node:child_process at module-load time.
+            // eslint-disable-next-line ts/no-require-imports
+            const { openSync } = require('node:fs') as typeof import('node:fs')
+            const fd = openSync(outputPath, outputAppend ? 'a' : 'w')
+            stdoutFd = fd
+            stderrFd = fd
+            closeFd = fd
+          }
+          catch (err) {
+            log.warn(`[scheduler] couldn't open ${outputPath} for background task ${taskName}: ${err instanceof Error ? err.message : String(err)}; falling back to inherit`)
+          }
+        }
+
         const child = spawn(process.execPath, ['-e', `(${innerTask.toString()})()`], {
           detached: true,
-          stdio: 'ignore',
+          stdio: ['ignore', stdoutFd, stderrFd],
         })
         child.on('error', (error) => {
           log.error(`Background task ${taskName} failed to spawn: ${error.message}`)
+          if (closeFd !== null) {
+            try {
+              // eslint-disable-next-line ts/no-require-imports
+              const { closeSync } = require('node:fs') as typeof import('node:fs')
+              closeSync(closeFd)
+            }
+            catch {
+              // Already closed — fine.
+            }
+          }
+        })
+        // Crash visibility (stacksjs/stacks#1877 S-2). Before this
+        // listener, a child that exited with a non-zero code was
+        // silently lost — `.unref()` releases the child to the OS
+        // and the scheduler moves on. Now: log the exit code so
+        // operators see the failure in logs and can match it to
+        // the task name.
+        child.on('exit', (code, signal) => {
+          if (code !== 0 && code !== null) {
+            log.error(`[scheduler] background task ${taskName} (pid: ${child.pid}) exited with code ${code}`)
+          }
+          else if (signal) {
+            log.warn(`[scheduler] background task ${taskName} (pid: ${child.pid}) terminated by signal ${signal}`)
+          }
+          if (closeFd !== null) {
+            try {
+              // eslint-disable-next-line ts/no-require-imports
+              const { closeSync } = require('node:fs') as typeof import('node:fs')
+              closeSync(closeFd)
+            }
+            catch {
+              // Already closed — fine.
+            }
+          }
         })
         child.unref()
         log.info(`Task ${taskName} spawned in background (pid: ${child.pid})`)
@@ -478,6 +540,7 @@ export class Schedule implements UntimedSchedule {
       name: this.options.name,
     }
 
+    const taskName = this.options.name || 'unnamed-task'
     const executeTask = () => {
       if (this.options.maxRuns && runCount >= this.options.maxRuns) {
         stop()
@@ -490,10 +553,25 @@ export class Schedule implements UntimedSchedule {
         // would otherwise become an unhandled rejection (the synchronous
         // try/catch above can't see it). Now those route through the
         // configured `.catch` handler just like sync errors do.
+        //
+        // Limitation (stacksjs/stacks#1877 S-4): this only catches the
+        // returned Promise's own rejection. A callback that detaches
+        // an INNER promise (fire-and-forget fetch, dangling .then
+        // chain) can still throw asynchronously after we've moved on
+        // — there's no general way to capture those from outside the
+        // callback. Apps that rely on the .catch handler firing for
+        // every error MUST `await` every inner promise; we can't fix
+        // that boundary, only document it.
         if (result && typeof (result as Promise<unknown>).then === 'function') {
           (result as Promise<unknown>).catch((error: unknown) => {
             if (this.options.catch) {
               this.options.catch(error as Error)
+            }
+            else {
+              // No user catch installed — log so the rejection is
+              // at least visible. Previously a missing catch + a
+              // rejecting task = silent failure.
+              log.error(`[scheduler] task ${taskName} async error (no .catch handler installed): ${error instanceof Error ? error.message : String(error)}`)
             }
           })
         }
@@ -501,6 +579,9 @@ export class Schedule implements UntimedSchedule {
       catch (error) {
         if (this.options.catch) {
           this.options.catch(error as Error)
+        }
+        else {
+          log.error(`[scheduler] task ${taskName} sync error (no .catch handler installed): ${error instanceof Error ? error.message : String(error)}`)
         }
       }
     }
