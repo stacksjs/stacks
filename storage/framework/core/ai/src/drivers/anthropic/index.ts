@@ -7,6 +7,7 @@
 
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, ClaudeAPIResponse, ClaudeStreamEvent } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { normalizeMessagesForProvider } from '../../utils/vision'
 
 export interface AnthropicDriverConfig extends AIDriverConfig {
   apiKey: string
@@ -186,6 +187,12 @@ export async function chat(
   // tools-as-json pattern (Claude 3.5+ doesn't have a first-class
   // JSON-mode parameter; the standard idiom is "define a tool whose
   // input is the JSON shape and force the model to call it").
+  // Normalize content arrays into Anthropic's wire format
+  // (stacksjs/stacks#1878 A-3). Apps that authored their messages
+  // with OpenAI-style `image_url` blocks (or use cross-driver
+  // helpers) get the right shape on the wire.
+  const normalizedMessages = normalizeMessagesForProvider(messages, 'anthropic')
+
   const body: Record<string, unknown> = {
     model,
     max_tokens: maxTokens,
@@ -193,7 +200,7 @@ export async function chat(
     top_p: topP,
     stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
     system,
-    messages,
+    messages: normalizedMessages,
   }
 
   if (tools && tools.length > 0) {
@@ -326,7 +333,7 @@ export async function* streamChat(
       stop_sequences: stop ? (Array.isArray(stop) ? stop : [stop]) : undefined,
       system,
       stream: true,
-      messages,
+      messages: normalizeMessagesForProvider(messages, 'anthropic'),
     }),
   })
 

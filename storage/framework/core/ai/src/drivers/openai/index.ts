@@ -7,6 +7,7 @@
 
 import type { AIDriver, AIDriverConfig, AIMessage, AIResult, ChatCompletionOptions, EmbeddingsResponse, OpenAIAPIResponse } from '../../types'
 import { fetchWithRetry } from '../../utils/retry'
+import { normalizeMessagesForProvider } from '../../utils/vision'
 
 export interface OpenAIDriverConfig extends AIDriverConfig {
   apiKey: string
@@ -210,7 +211,13 @@ export async function chat(
     stop,
   } = options
 
-  const response = await fetch(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
+  // Normalize content arrays into OpenAI's wire format
+  // (stacksjs/stacks#1878 A-3). Apps that authored messages with
+  // Anthropic-style `{ type: 'image', source: {...} }` blocks
+  // (or use cross-driver helpers) get the right shape.
+  const normalizedMessages = normalizeMessagesForProvider(messages, 'openai')
+
+  const response = await fetchWithRetry(`${config.baseUrl || DEFAULT_BASE_URL}/chat/completions`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
@@ -222,7 +229,7 @@ export async function chat(
       temperature,
       top_p: topP,
       stop,
-      messages,
+      messages: normalizedMessages,
     }),
   })
 
@@ -278,7 +285,7 @@ export async function* streamChat(
       top_p: topP,
       stop,
       stream: true,
-      messages,
+      messages: normalizeMessagesForProvider(messages, 'openai'),
     }),
   })
 
