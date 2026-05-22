@@ -1,11 +1,18 @@
 import type { CLI, DevOptions } from '@stacksjs/types'
+import { execSync } from 'node:child_process'
 import { existsSync } from 'node:fs'
 import process from 'node:process'
-import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts, runCommand } from "@stacksjs/cli"
+import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts, runCommand, yellow } from "@stacksjs/cli"
+import { homedir } from 'node:os'
+import { dirname, join } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { Action } from '@stacksjs/enums'
 import { libsPath, projectPath } from '@stacksjs/path'
 import { ExitCode } from '@stacksjs/types'
 import { version } from '../../package.json'
+
+// rpx registry ids written by this `./buddy dev` session — cleared on shutdown.
+let activeRpxRegistryIds: string[] = []
 
 // Lazy-load @stacksjs/actions to avoid triggering bun-router config warnings at CLI startup
 let _actions: typeof import('@stacksjs/actions') | undefined
@@ -343,11 +350,20 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   console.log(`  ${bold(cyan('stacks'))} ${dim(`v${version}`)}`)
   console.log()
   console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
+  if (hasCustomDomain) {
+    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
+  }
   if (nativeMode) {
     console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
   }
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
+  if (hasCustomDomain) {
+    console.log(`  ${dim('➜')}  ${dim('Local API')}:   ${dim(`http://localhost:${apiPort}`)}`)
+  }
   console.log(`  ${green('➜')}  ${bold('Docs')}:        ${cyan(docsUrl)}`)
+  if (hasCustomDomain) {
+    console.log(`  ${dim('➜')}  ${dim('Local docs')}:  ${dim(`http://localhost:${docsPort}`)}`)
+  }
   if (includeDashboard) {
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
   }
@@ -391,6 +407,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     if (isExiting) return
     isExiting = true
     closeNativeApp?.()
+    void unregisterRpxProxies(activeRpxRegistryIds)
+    activeRpxRegistryIds.length = 0
     try { process.kill(-process.pid, 'SIGTERM') }
     catch {
       // Process group may not exist (e.g., not session leader) — try the
@@ -455,6 +473,20 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
       if (process.env.STACKS_PRINT_ROUTES === '1') {
         await printRegisteredRoutes(apiPort).catch(() => { /* best effort */ })
       }
+      // Re-register HTTPS routes once backends are listening. Early registration
+      // can be reaped by rpx PID-GC when entries carried a short-lived pid; we
+      // also refresh here so the routing table matches live ports.
+      if (hasCustomDomain && domain) {
+        await registerRpxProxiesForDomain({
+          domain,
+          frontendPort,
+          apiPort,
+          docsPort,
+          dashboardPort,
+          includeDashboard,
+          options,
+        }).catch(() => { /* startReverseProxy already warned */ })
+      }
     })
     .catch(() => { /* swallow — verbose-mode error handlers below already log */ })
 
@@ -483,6 +515,9 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
     }),
     hasCustomDomain
       ? startReverseProxy(options).catch((error) => {
+        const message = error instanceof Error ? error.message : String(error)
+        console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy failed')}: ${message}`)
+        console.log(`  ${dim('    ')}${dim('Use http://localhost:3000 or restart `./buddy dev`')}`)
         if (options.verbose)
           log.warn(`Proxy: ${error}`)
       })
@@ -755,70 +790,458 @@ async function waitForPort(port: number, timeoutMs: number): Promise<boolean> {
 }
 
 /**
+ * Resolve how to start the rpx daemon. Buddy is invoked as `bun …/buddy`, so
+ * rpx's default spawn (`process.argv[1] + 'daemon:start'`) would incorrectly
+ * run `buddy daemon:start`. The published `dist/bin/cli.js` also ships a
+ * duplicate shebang that Bun 1.3.x rejects — prefer a compiled `rpx` binary
+ * or our bootstrap script.
+ */
+const RPX_SSL_DIR = join(homedir(), '.stacks', 'ssl')
+const RPX_ROOT_CA_PATH = join(RPX_SSL_DIR, 'rpx-root-ca.crt')
+const RPX_HOST_CERT_PATH = join(RPX_SSL_DIR, 'rpx.localhost.crt')
+const LOGIN_KEYCHAIN = join(homedir(), 'Library/Keychains/login.keychain-db')
+
+function normalizeSha256Fingerprint(raw: string): string {
+  const value = raw.includes('=') ? raw.split('=').pop()! : raw
+  return value.replace(/SHA-256\s+hash:\s*/gi, '').replace(/:/g, '').trim().toUpperCase()
+}
+
+function readCertFingerprint(certPath: string): string | null {
+  try {
+    const out = execSync(`openssl x509 -noout -fingerprint -sha256 -in "${certPath}"`, { encoding: 'utf8' })
+    return normalizeSha256Fingerprint(out)
+  }
+  catch {
+    return null
+  }
+}
+
+/**
+ * True when the on-disk rpx Root CA fingerprint appears in a keychain Chrome/Safari use.
+ */
+function isRpxRootCaInKeychain(caPath: string): boolean {
+  const fp = readCertFingerprint(caPath)
+  if (!fp)
+    return false
+
+  const keychains = [
+    '/Library/Keychains/System.keychain',
+    LOGIN_KEYCHAIN,
+  ]
+
+  for (const keychain of keychains) {
+    try {
+      const listing = execSync(`security find-certificate -a -Z "${keychain}" 2>/dev/null || true`, { encoding: 'utf8' })
+      for (const line of listing.split('\n')) {
+        if (line.toUpperCase().includes('SHA-256') && normalizeSha256Fingerprint(line) === fp)
+          return true
+      }
+    }
+    catch { /* try next keychain */ }
+  }
+
+  return false
+}
+
+function execSudoSh(command: string): void {
+  const sudoPassword = process.env.SUDO_PASSWORD
+  const escaped = command.replace(/'/g, `'\\''`)
+  if (sudoPassword)
+    execSync(`echo '${sudoPassword}' | sudo -S sh -c '${escaped}' 2>/dev/null`, { stdio: ['pipe', 'pipe', 'pipe'] })
+  else
+    execSync(`sudo sh -c '${escaped}'`, { stdio: 'inherit' })
+}
+
+/** Chrome/Edge need SSL + basic trust policies — plain trustRoot often leaves "trust settings: 0". */
+const MACOS_CA_TRUST_FLAGS = '-d -r trustRoot -p ssl -p basic'
+
+function listRpxRootCaHashesInKeychain(keychain: string): string[] {
+  const listing = execSync(
+    `security find-certificate -a -c "rpx.localhost" -Z "${keychain}" 2>/dev/null || true`,
+    { encoding: 'utf8' },
+  )
+  const hashes: string[] = []
+  for (const line of listing.split('\n')) {
+    const match = line.match(/SHA-256 hash:\s*([A-F0-9]+)/i)
+    if (match)
+      hashes.push(match[1]!.toUpperCase())
+  }
+  return hashes
+}
+
+function pruneStaleRpxRootCas(caPath: string): void {
+  if (process.platform !== 'darwin')
+    return
+
+  const keep = readCertFingerprint(caPath)
+  if (!keep)
+    return
+
+  for (const keychain of ['/Library/Keychains/System.keychain', LOGIN_KEYCHAIN]) {
+    for (const hash of listRpxRootCaHashesInKeychain(keychain)) {
+      if (hash === keep)
+        continue
+      try {
+        if (keychain.startsWith('/Library'))
+          execSudoSh(`security delete-certificate -Z ${hash} "${keychain}"`)
+        else
+          execSync(`security delete-certificate -Z ${hash} "${keychain}"`, { stdio: 'ignore' })
+      }
+      catch { /* already removed */ }
+    }
+  }
+}
+
+function isRpxRootCaTrustedForSsl(caPath: string, serverName: string): boolean {
+  if (process.platform !== 'darwin')
+    return isRpxRootCaInKeychain(caPath)
+
+  try {
+    const out = execSync(
+      `security verify-cert -c "${caPath}" -s "${serverName}" -l -L -R ssl 2>&1`,
+      { encoding: 'utf8' },
+    )
+    return out.includes('successful')
+  }
+  catch {
+    return false
+  }
+}
+
+function trustRpxRootCaForBrowsers(caPath: string, serverName: string): boolean {
+  if (process.platform !== 'darwin')
+    return false
+
+  pruneStaleRpxRootCas(caPath)
+
+  try {
+    execSync(
+      `security add-trusted-cert ${MACOS_CA_TRUST_FLAGS} -k "${LOGIN_KEYCHAIN}" "${caPath}"`,
+      { stdio: 'ignore' },
+    )
+  }
+  catch { /* may already exist — re-apply trust below */ }
+
+  try {
+    execSudoSh(`security add-trusted-cert ${MACOS_CA_TRUST_FLAGS} -k /Library/Keychains/System.keychain "${caPath}"`)
+  }
+  catch {
+    return false
+  }
+
+  return isRpxRootCaTrustedForSsl(caPath, serverName)
+    || isRpxRootCaInKeychain(caPath)
+}
+
+/**
+ * True when :443 presents a chain signed by the current ~/.stacks/ssl/rpx-root-ca.crt.
+ */
+function isLiveHttpsChainValid(domain: string): boolean {
+  if (!existsSync(RPX_ROOT_CA_PATH))
+    return false
+
+  try {
+    const out = execSync(
+      `echo | openssl s_client -connect ${domain}:443 -servername ${domain} -CAfile "${RPX_ROOT_CA_PATH}" 2>/dev/null | grep "Verify return code"`,
+      { encoding: 'utf8', timeout: 4000 },
+    )
+    return out.includes(': 0 (ok)')
+  }
+  catch {
+    return false
+  }
+}
+
+function buildDevelopmentTlsHostnames(domain: string, includeDashboard: boolean): string[] {
+  // App domain must be first — it becomes the cert CN. Safari/Chrome surface CN in
+  // “cert is for …” errors even when SANs are present.
+  return [
+    domain,
+    `api.${domain}`,
+    `docs.${domain}`,
+    ...(includeDashboard ? [`dashboard.${domain}`] : []),
+    'rpx.localhost',
+  ]
+}
+
+function readCertCommonName(certPath: string): string | null {
+  try {
+    const subject = execSync(`openssl x509 -in "${certPath}" -noout -subject -nameopt RFC2253`, { encoding: 'utf8' })
+    const match = subject.match(/CN=([^,/]+)/)
+    return match?.[1]?.trim() ?? null
+  }
+  catch {
+    return null
+  }
+}
+
+function buildDevelopmentTlsOptions(domain: string, includeDashboard: boolean, verbose: boolean) {
+  const hostnames = buildDevelopmentTlsHostnames(domain, includeDashboard)
+  return {
+    https: {
+      certPath: RPX_HOST_CERT_PATH,
+      keyPath: join(RPX_SSL_DIR, 'rpx.localhost.key'),
+      caCertPath: join(RPX_SSL_DIR, 'rpx.localhost.ca.crt'),
+      commonName: domain,
+    },
+    verbose,
+    regenerateUntrustedCerts: true,
+    proxies: hostnames.map(to => ({ from: 'localhost:1', to })),
+  } as Parameters<typeof import('@stacksjs/rpx').generateCertificate>[0]
+}
+
+/**
+ * Mint (if needed), trust, and align the rpx daemon TLS material with APP_URL.
+ * Chrome requires each `<app>.localhost` hostname in the cert SAN — `*.localhost`
+ * alone triggers ERR_CERT_COMMON_NAME_INVALID.
+ */
+async function ensureRpxDevelopmentHttps(
+  domain: string,
+  options: DevOptions,
+  includeDashboard: boolean,
+): Promise<void> {
+  const verbose = options.verbose ?? false
+  const {
+    checkExistingCertificates,
+    clearSslConfigCache,
+    forceTrustCertificate,
+    generateCertificate,
+    isDaemonRunning,
+    stopDaemon,
+  } = await import('@stacksjs/rpx')
+
+  const hostnames = buildDevelopmentTlsHostnames(domain, includeDashboard)
+  const tlsOptions = buildDevelopmentTlsOptions(domain, includeDashboard, verbose)
+
+  const hostnameInCert = hostnames.every((host) => {
+    try {
+      const text = execSync(`openssl x509 -in "${RPX_HOST_CERT_PATH}" -noout -text`, { encoding: 'utf8' })
+      return text.includes(`DNS:${host}`)
+    }
+    catch {
+      return false
+    }
+  })
+  const cnMatchesApp = readCertCommonName(RPX_HOST_CERT_PATH) === domain
+
+  let certRegenerated = false
+  const existing = await checkExistingCertificates(tlsOptions)
+  if (!existing || !hostnameInCert || !cnMatchesApp) {
+    clearSslConfigCache()
+    await generateCertificate({ ...tlsOptions, forceRegenerate: true } as Parameters<typeof generateCertificate>[0])
+    certRegenerated = true
+  }
+
+  let trusted = isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
+  let freshlyTrusted = false
+  if (!trusted) {
+    trusted = trustRpxRootCaForBrowsers(RPX_ROOT_CA_PATH, domain)
+      || await forceTrustCertificate(RPX_ROOT_CA_PATH)
+      || isRpxRootCaTrustedForSsl(RPX_ROOT_CA_PATH, domain)
+    freshlyTrusted = trusted
+  }
+
+  if (trusted) {
+    console.log(`  ${green('✓')}  ${dim('HTTPS')}:         ${dim('Local certificate trusted for SSL')}`)
+    if (freshlyTrusted)
+      console.log(`  ${dim('    ')}${dim('Fully quit Chrome/Edge (Cmd+Q), then reopen https://' + domain)}`)
+  }
+  else {
+    console.log(`  ${yellow('⚠')}  ${yellow('HTTPS')}:         ${yellow('Certificate not trusted — browser will warn')}`)
+    console.log(`  ${dim('    ')}${dim(`Run: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
+    console.log(`  ${dim('    ')}${dim('Or set SUDO_PASSWORD in .env and restart `./buddy dev`')}`)
+  }
+
+  const chainOk = isLiveHttpsChainValid(domain)
+
+  // Stop a running daemon when certs changed so the next ensureDaemonRunning
+  // reloads TLS. registerRpxProxiesForDomain always starts the daemon after this.
+  if ((certRegenerated || !hostnameInCert) && await isDaemonRunning()) {
+    await stopDaemon({ timeoutMs: 8000 }).catch(() => { /* stale pid */ })
+    if (verbose)
+      log.info('Restarting rpx daemon to load TLS certificates for this app')
+  }
+  else if (!chainOk && await isDaemonRunning()) {
+    await stopDaemon({ timeoutMs: 8000 }).catch(() => { /* stale pid */ })
+  }
+}
+
+async function resolveRpxDaemonSpawnCommand(): Promise<string[]> {
+  const fromEnv = process.env.RPX_BIN || process.env.STACKS_RPX_BIN
+  if (fromEnv && existsSync(fromEnv))
+    return [fromEnv, 'daemon:start']
+
+  // Prefer the in-repo bootstrap over a global `rpx` binary. The compiled CLI
+  // is often launched from a Stacks app directory and can load that app's Bun
+  // plugins (e.g. preloader.ts), which prevents the daemon from binding :443.
+  const bootstrap = join(dirname(fileURLToPath(import.meta.url)), '../scripts/rpx-daemon-bootstrap.ts')
+  if (existsSync(bootstrap))
+    return [process.execPath, bootstrap]
+
+  const toolsBinary = join(homedir(), 'Code/Tools/rpx/packages/rpx/bin/rpx')
+  if (existsSync(toolsBinary))
+    return [toolsBinary, 'daemon:start']
+
+  const pkgUrl = import.meta.resolve('@stacksjs/rpx/package.json')
+  const cli = join(dirname(fileURLToPath(pkgUrl)), 'dist/bin/cli.js')
+  return [process.execPath, cli, 'daemon:start']
+}
+
+type RpxProxySpec = {
+  id: string
+  from: string
+  to: string
+  pathRewrites?: Array<{ from: string, to: string, stripPrefix?: boolean }>
+}
+
+function buildRpxProxySpecs(input: {
+  domain: string
+  frontendPort: number
+  apiPort: number
+  docsPort: number
+  dashboardPort: number
+  includeDashboard: boolean
+}): RpxProxySpec[] {
+  const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard } = input
+  const apiDomain = `api.${domain}`
+  const docsDomain = `docs.${domain}`
+  const dashboardDomain = `dashboard.${domain}`
+
+  return [
+    // Forward /api/** straight to the API server, preserving the prefix.
+    // Both user routes (registered through `routes/api.ts` — auto-prefixed
+    // with /api by the route-loader, see stacksjs/stacks#1835) and
+    // framework routes (which use explicit `route.group({ prefix: '/api/...' })`)
+    // expect the /api segment to be present at registration time, so
+    // `stripPrefix` must stay `false` or the API would see /cart/add and
+    // 404. The frontend's stx-serve has a fallback proxy for direct
+    // localhost:PORT access.
+    {
+      id: `${domain}-frontend`,
+      from: `localhost:${frontendPort}`,
+      to: domain,
+      pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }],
+    },
+    { id: `${domain}-api`, from: `localhost:${apiPort}`, to: apiDomain },
+    { id: `${domain}-docs`, from: `localhost:${docsPort}`, to: docsDomain },
+    ...(includeDashboard
+      ? [{ id: `${domain}-dashboard`, from: `localhost:${dashboardPort}`, to: dashboardDomain }]
+      : []),
+  ]
+}
+
+async function unregisterRpxProxies(ids: string[]): Promise<void> {
+  if (ids.length === 0)
+    return
+  try {
+    const { removeEntry } = await import('@stacksjs/rpx')
+    for (const id of ids)
+      await removeEntry(id).catch(() => { /* already gone */ })
+  }
+  catch { /* rpx not installed */ }
+}
+
+/**
+ * Register proxy routes with the rpx daemon. Entries are written **without**
+ * a pid so the daemon's PID-GC does not delete them when a short-lived parent
+ * exits — we unregister explicitly on `./buddy dev` shutdown instead.
+ */
+async function registerRpxProxiesForDomain(input: {
+  domain: string
+  frontendPort: number
+  apiPort: number
+  docsPort: number
+  dashboardPort: number
+  includeDashboard: boolean
+  options: DevOptions
+}): Promise<void> {
+  const { domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard, options } = input
+  const verbose = options.verbose ?? false
+  const proxies = buildRpxProxySpecs({ domain, frontendPort, apiPort, docsPort, dashboardPort, includeDashboard })
+  const hosts = [
+    domain,
+    `api.${domain}`,
+    `docs.${domain}`,
+    ...(includeDashboard ? [`dashboard.${domain}`] : []),
+  ]
+
+  const { addHosts, ensureDaemonRunning, writeEntry } = await import('@stacksjs/rpx')
+  const spawnCommand = await resolveRpxDaemonSpawnCommand()
+  const spawnEnv = process.env.SUDO_PASSWORD
+    ? { SUDO_PASSWORD: process.env.SUDO_PASSWORD }
+    : undefined
+
+  await addHosts(hosts, verbose).catch((err) => {
+    log.warn(`Could not update /etc/hosts for ${hosts.join(', ')}: ${(err as Error).message}`)
+    log.warn('Add 127.0.0.1 entries manually or set SUDO_PASSWORD in .env')
+  })
+
+  await ensureRpxDevelopmentHttps(domain, options, includeDashboard)
+
+  await ensureDaemonRunning({
+    spawnCommand,
+    spawnCwd: process.cwd(),
+    startupTimeoutMs: 60000,
+    spawnEnv,
+    verbose,
+  })
+
+  const createdAt = new Date().toISOString()
+  for (const proxy of proxies) {
+    await writeEntry({
+      id: proxy.id,
+      from: proxy.from,
+      to: proxy.to,
+      cwd: process.cwd(),
+      createdAt,
+      pathRewrites: proxy.pathRewrites,
+    }, undefined, verbose)
+    if (!activeRpxRegistryIds.includes(proxy.id))
+      activeRpxRegistryIds.push(proxy.id)
+    console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`https://${proxy.to} → ${proxy.from}`)}`)
+  }
+}
+
+/**
  * Register this stacks project's frontends with the rpx daemon so each app is
  * reachable at `https://<subdomain>.<APP_URL>` over the daemon's shared :443.
- *
- * Why daemon vs. in-process: with the legacy in-process mode, two concurrent
- * `./buddy dev` invocations (e.g. pet-store + training) would fight over :443
- * and the second one would fail to bind. The daemon owns :443 once and
- * routes by Host header. PID-GC reaps our entries automatically when this
- * buddy process exits, so we don't need explicit cleanup on shutdown.
  */
 async function startReverseProxy(options: DevOptions): Promise<void> {
   const appUrl = process.env.APP_URL
 
-  // Skip if no APP_URL is set or if it's localhost
-  if (!appUrl || appUrl === 'localhost' || appUrl.includes('localhost:')) {
+  if (!appUrl || appUrl === 'localhost' || appUrl.includes('localhost:'))
     return
-  }
 
   const domain = appUrl.replace(/^https?:\/\//, '')
-  const apiDomain = `api.${domain}`
-  const docsDomain = `docs.${domain}`
-  const dashboardDomain = `dashboard.${domain}`
   const frontendPort = Number(process.env.PORT) || 3000
   const apiPort = Number(process.env.PORT_API) || 3008
   const docsPort = Number(process.env.PORT_DOCS) || 3006
   const dashboardPort = Number(process.env.PORT_ADMIN) || 3002
-  const verbose = options.verbose ?? false
-
-  // Mirror the dashboard opt-in from startDevelopmentServer — when the
-  // dashboard isn't being launched, don't ask rpx to issue a cert for
-  // its subdomain (the proxy entry would just point at a port nothing
-  // is bound to).
   const includeDashboard = process.env.STACKS_DEV_DASHBOARD === '1'
 
   try {
-    const { runViaDaemon } = await import('@stacksjs/rpx')
-
-    await runViaDaemon({
-      proxies: [
-        // Forward /api/** straight to the API server, preserving the prefix.
-        // Both user routes (registered through `routes/api.ts` — auto-prefixed
-        // with /api by the route-loader, see stacksjs/stacks#1835) and
-        // framework routes (which use explicit `route.group({ prefix: '/api/...' })`)
-        // expect the /api segment to be present at registration time, so
-        // `stripPrefix` must stay `false` or the API would see /cart/add and
-        // 404. The frontend's stx-serve has a fallback proxy for direct
-        // localhost:PORT access.
-        { id: `${domain}-frontend`, from: `localhost:${frontendPort}`, to: domain, pathRewrites: [{ from: '/api', to: `localhost:${apiPort}`, stripPrefix: false }] },
-        { id: `${domain}-api`, from: `localhost:${apiPort}`, to: apiDomain },
-        { id: `${domain}-docs`, from: `localhost:${docsPort}`, to: docsDomain },
-        ...(includeDashboard
-          ? [{ id: `${domain}-dashboard`, from: `localhost:${dashboardPort}`, to: dashboardDomain }]
-          : []),
-      ],
-      // Don't park — buddy needs to keep running its other startup tasks.
-      // The entries carry our PID, so when buddy exits the daemon's PID-GC
-      // reaps them within ~5s.
-      detached: true,
-      verbose,
+    await registerRpxProxiesForDomain({
+      domain,
+      frontendPort,
+      apiPort,
+      docsPort,
+      dashboardPort,
+      includeDashboard,
+      options,
     })
   }
   catch (error) {
+    const message = error instanceof Error ? error.message : String(error)
+    console.log()
+    console.log(`  ${yellow('⚠')}  ${yellow('HTTPS proxy (rpx) unavailable — use the Local URLs above')}`)
+    console.log(`  ${dim('    ')}${dim(message)}`)
+    console.log(`  ${dim('    ')}${dim('Fix: set SUDO_PASSWORD in .env (for /etc/hosts + :443), then restart `./buddy dev`')}`)
+    console.log(`  ${dim('    ')}${dim(`Trust CA: sh ${join(RPX_SSL_DIR, 'trust-rpx-cert.sh')}`)}`)
+    console.log(`  ${dim('    ')}${dim('Manual daemon: `~/Code/Tools/rpx/packages/rpx/bin/rpx daemon:start`')}`)
+    console.log()
     if (options.verbose) {
       log.warn('rpx daemon not available, skipping HTTPS')
-      log.warn(String(error))
+      log.warn(message)
     }
   }
 }
