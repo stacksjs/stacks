@@ -10,6 +10,7 @@ const {
   useChat,
   useEmail,
   useSMS,
+  usePush,
   useDatabase,
   useNotification,
   notify,
@@ -61,6 +62,38 @@ describe('Notifications - useSMS()', () => {
     const driver = useSMS()
     // driver could be undefined if the package doesn't export keyed sub-drivers
     expect(true).toBe(true)
+  })
+})
+
+describe('Notifications - usePush() (stacksjs/stacks#1874 F-1)', () => {
+  test('returns the @stacksjs/push namespace with a send() function', () => {
+    const driver = usePush()
+    expect(driver).toBeDefined()
+    expect(typeof driver.send).toBe('function')
+  })
+})
+
+describe('Notifications - notify() push channel (F-1)', () => {
+  test('throws a clear error when recipient.pushTokens is missing', async () => {
+    const [result] = await notify(
+      { userId: 0 }, // no pushTokens → channel-specific contact missing
+      { body: 'hello' },
+      ['push'],
+      { ignorePreferences: true }, // skip the prefs lookup since userId=0 has no row
+    )
+    expect(result.success).toBe(false)
+    expect(result.error?.message).toContain('recipient.pushTokens')
+  })
+
+  test('throws when pushTokens is an empty array (same failure shape)', async () => {
+    const [result] = await notify(
+      { pushTokens: [] },
+      { body: 'hello' },
+      ['push'],
+      { ignorePreferences: true },
+    )
+    expect(result.success).toBe(false)
+    expect(result.error?.message).toContain('recipient.pushTokens')
   })
 })
 

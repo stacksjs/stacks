@@ -7,10 +7,18 @@
  */
 
 import type { StacksConfig } from '@stacksjs/types'
+import { validateConfig } from './validators'
 
 // PRODUCTION BINARY MODE: Skip runtime config loading
 // When SKIP_CONFIG_LOADING is set, return empty config to avoid parsing external TS files
 const skipConfigLoading = process.env.SKIP_CONFIG_LOADING === 'true'
+
+// Opt-out for the boot-time validation step (stacksjs/stacks#1874 F-6).
+// Set when running migrations against a partially-configured environment
+// or when bringing up a new project before its config is finalized.
+// Default is "validate" so typos are caught at boot rather than in
+// production via `Cannot read property 'foo' of undefined` later.
+const skipConfigValidation = process.env.SKIP_CONFIG_VALIDATION === 'true'
 
 // Anchor `overrides` and the readiness Promise on `globalThis` via well-known
 // symbols. Reason: this file gets loaded twice in some module-resolution
@@ -158,7 +166,32 @@ export const overridesReady: Promise<StacksConfig> = sharedReady ?? (() => {
           console.warn(`[config] Failed to load ${String(key)} config from ${modulePath}: ${msg}`)
         }
       }
-    })).then(() => overrides)
+    })).then(() => {
+      // Boot-time validation (stacksjs/stacks#1874 F-6). The validators
+      // exist in `validators.ts` but were previously never invoked
+      // automatically — a typo like `database: { default: 'mysq' }`
+      // would slip through and surface as a hard-to-diagnose runtime
+      // crash deep inside a query builder. Now: gather all issues,
+      // print a structured report, and throw with a clear summary so
+      // the bug stops at boot instead of trickling downstream.
+      if (!skipConfigValidation) {
+        const issues = validateConfig(overrides)
+        if (issues.length > 0) {
+          // eslint-disable-next-line no-console
+          console.error('[config] Configuration issues detected:')
+          for (const issue of issues) {
+            // eslint-disable-next-line no-console
+            console.error(`  • ${issue.path}: ${issue.message}`)
+          }
+          const summary = issues.map(i => `  • ${i.path}: ${i.message}`).join('\n')
+          throw new Error(
+            `[config] ${issues.length} configuration issue(s) detected at boot:\n${summary}\n`
+            + `Set SKIP_CONFIG_VALIDATION=true to bypass (e.g. when running migrations against partial config).`,
+          )
+        }
+      }
+      return overrides
+    })
   globalScope[READY_KEY] = promise
   return promise
 })()

@@ -1655,7 +1655,7 @@ export function stream(
 // Decorate the incoming request with the helpers the framework's middleware
 // and actions assume are always available. Names follow Laravel's convention
 // because that's the API surface Stacks userland expects.
-function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
+export function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   applyRequestEnhancements(req as unknown as Request, req.params || {})
 
   // Parse query string if not present
@@ -1890,6 +1890,34 @@ function enhanceRequest(req: EnhancedRequest): EnhancedRequest {
   // Check if the current token does NOT have an ability
   ;req.tokenCant = async (ability: string): Promise<boolean> => {
     return !(await req.tokenCan(ability))
+  }
+
+  // Gate / Policy macros (stacksjs/stacks#1874 F-9). Lazy-import
+  // `@stacksjs/auth` to dodge the router←auth cycle declared in
+  // `auth/package.json`. Resolve the user from `_authenticatedUser`
+  // (stamped by the Auth middleware) — passing `null` when missing so
+  // gates that explicitly handle the unauthenticated case still get a
+  // chance to allow (e.g. public-read policies).
+  ;req.can = async (ability: string, ...args: unknown[]): Promise<boolean> => {
+    if (typeof ability !== 'string' || ability.length === 0) return false
+    const { Gate } = await import('@stacksjs/auth')
+    const user = (req._authenticatedUser as Parameters<typeof Gate.allows>[1]) ?? null
+    return Gate.allows(ability, user, ...args)
+  }
+
+  ;req.cannot = async (ability: string, ...args: unknown[]): Promise<boolean> => {
+    return !(await req.can(ability, ...args))
+  }
+
+  // Throw-on-deny variant (Laravel's `$this->authorize(...)`). Reuses
+  // the same Gate path so policy `before()` / `after()` hooks fire
+  // consistently regardless of which macro the caller picks. Throws
+  // `AuthorizationException` (status 403) on deny — handlers can let
+  // it bubble to the global error handler or catch and reshape.
+  ;req.authorize = async (ability: string, ...args: unknown[]): Promise<void> => {
+    const { Gate } = await import('@stacksjs/auth')
+    const user = (req._authenticatedUser as Parameters<typeof Gate.authorize>[1]) ?? null
+    await Gate.authorize(ability, user, ...args)
   }
 
   return req

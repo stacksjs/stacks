@@ -28,11 +28,23 @@ function isPlainObject(v: unknown): v is Record<string, unknown> {
 function checkInteger(min: number, max: number): Check {
   return (value, path) => {
     if (value == null) return []
-    if (typeof value !== 'number' || !Number.isInteger(value)) {
+    // Env-var-sourced values arrive as strings ("3000") because process.env
+    // is typed as Record<string, string>. Be lenient: a string that parses
+    // to an integer counts as an integer for the purpose of this check.
+    // The actual coercion happens at the consumer site (Bun.serve etc.
+    // both accept string and number).
+    let num: number | null = null
+    if (typeof value === 'number' && Number.isInteger(value)) {
+      num = value
+    }
+    else if (typeof value === 'string' && /^-?\d+$/.test(value)) {
+      num = Number.parseInt(value, 10)
+    }
+    if (num === null) {
       return [{ path, message: `expected integer, got ${typeof value} (${JSON.stringify(value)})` }]
     }
-    if (value < min || value > max) {
-      return [{ path, message: `expected integer in [${min}, ${max}], got ${value}` }]
+    if (num < min || num > max) {
+      return [{ path, message: `expected integer in [${min}, ${max}], got ${num}` }]
     }
     return []
   }

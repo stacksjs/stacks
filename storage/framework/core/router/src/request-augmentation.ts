@@ -170,6 +170,34 @@ export interface StacksRequestMacros {
   tokenCan?: (ability: string) => Promise<boolean>
   /** Inverse of `tokenCan`. */
   tokenCant?: (ability: string) => Promise<boolean>
+
+  /**
+   * Gate / Policy macros (stacksjs/stacks#1874 F-9). Resolve the
+   * authenticated user from the request, then delegate to
+   * `@stacksjs/auth`'s Gate / Policy resolver. Mirrors Laravel's
+   * `$request->user()->can(...)` / `$this->authorize(...)` shape but
+   * skips the extra `user()` hop.
+   *
+   * @example
+   * ```ts
+   * // Boolean check — handler stays in control of the response.
+   * if (await req.cannot('update', post)) {
+   *   return Response.json({ error: 'forbidden' }, { status: 403 })
+   * }
+   *
+   * // Throw-on-deny — bubbles a 403 via AuthorizationException.
+   * await req.authorize('update', post)
+   * post.title = body.title
+   * ```
+   */
+  can?: (ability: string, ...args: unknown[]) => Promise<boolean>
+  /** Inverse of `can`. */
+  cannot?: (ability: string, ...args: unknown[]) => Promise<boolean>
+  /**
+   * Throws `AuthorizationException` (status 403) if the user cannot
+   * perform the ability. Equivalent to Laravel's `$this->authorize(...)`.
+   */
+  authorize?: (ability: string, ...args: unknown[]) => Promise<void>
 }
 
 /**
