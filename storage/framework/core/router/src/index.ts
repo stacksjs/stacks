@@ -82,6 +82,13 @@ export type { StreamOptions } from './stacks-router'
 export { signedUrl, signUrl, verifySignedUrl, verifySignedUrlMiddleware } from './signed-url'
 export type { SignedUrlOptions, SignedUrlVerifyResult } from './signed-url'
 
+// Encryption-at-rest wrapper for any bun-router SessionStore
+// (stacksjs/stacks#1878 Se-4). Opt-in: wrap your existing store
+// instance so session payloads are AES-GCM encrypted via APP_KEY
+// before being persisted.
+export { EncryptedSessionStore } from './encrypted-session-store'
+export type { EncryptedSessionStoreOptions } from './encrypted-session-store'
+
 // DI: register the router's query tracker with the database package on
 // import so the cycle `database → router → database` doesn't manifest
 // statically. Lazy-imported via Promise so the database package stays

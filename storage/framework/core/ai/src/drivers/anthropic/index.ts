@@ -116,6 +116,30 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
       const decoder = new TextDecoder()
       let buffer = ''
 
+      // Mid-stream error visibility (stacksjs/stacks#1878 A-2).
+      // Anthropic surfaces stream errors as `event: error` /
+      // `data: { type: 'error', error: { type, message } }`.
+      // The pre-fix code dropped these silently — the consumer
+      // saw a truncated response and assumed success. Now: throw
+      // so the caller knows the stream was cut short.
+      const handlePayload = function* (data: string) {
+        if (data === '[DONE]') return
+        let event: ClaudeStreamEvent & { type: string, error?: { type?: string, message?: string } }
+        try {
+          event = JSON.parse(data) as any
+        }
+        catch {
+          return
+        }
+        if (event.type === 'error') {
+          const msg = event.error?.message ?? JSON.stringify(event.error ?? event)
+          throw new Error(`[anthropic/stream] mid-stream error: ${msg}`)
+        }
+        if (event.type === 'content_block_delta' && event.delta?.text) {
+          yield event.delta.text
+        }
+      }
+
       while (true) {
         const { done, value } = await reader.read()
         if (done) break
@@ -126,36 +150,14 @@ export function createAnthropicDriver(config: AnthropicDriverConfig): AIDriver {
 
         for (const line of lines) {
           if (line.startsWith('data: ')) {
-            const data = line.slice(6)
-            if (data === '[DONE]') continue
-
-            try {
-              const event = JSON.parse(data) as ClaudeStreamEvent
-              if (event.type === 'content_block_delta' && event.delta?.text) {
-                yield event.delta.text
-              }
-            }
-            catch {
-              // Skip invalid JSON
-            }
+            yield * handlePayload(line.slice(6))
           }
         }
       }
 
       // Process any remaining data in the buffer
       if (buffer.startsWith('data: ')) {
-        const data = buffer.slice(6)
-        if (data !== '[DONE]') {
-          try {
-            const event = JSON.parse(data) as ClaudeStreamEvent
-            if (event.type === 'content_block_delta' && event.delta?.text) {
-              yield event.delta.text
-            }
-          }
-          catch {
-            // Skip invalid JSON
-          }
-        }
+        yield * handlePayload(buffer.slice(6))
       }
     },
   }

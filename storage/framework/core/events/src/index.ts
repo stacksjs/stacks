@@ -364,6 +364,71 @@ export const mitt = createEmitter
 export default createEmitter
 
 /**
+ * Build a scoped wrapper around an emitter (stacksjs/stacks#1878 E-5).
+ * Every dispatch and listen call is prefixed with `${prefix}:` so
+ * different tenants / plugins / subsystems can share the same
+ * underlying bus without colliding on event names.
+ *
+ * Listeners registered through the scoped wrapper only receive events
+ * dispatched through the SAME wrapper — they don't see unprefixed
+ * events on the underlying bus. Apps that need to subscribe across
+ * scopes use the underlying emitter directly with a glob pattern.
+ *
+ * @example
+ * ```ts
+ * import { events, scope } from '@stacksjs/events'
+ *
+ * const tenantA = scope(events, 'tenant:42')
+ * tenantA.on('user:created', user => sendWelcome(user))
+ * tenantA.emit('user:created', { id: 1 })
+ * // ↑ fires the listener; on the underlying bus the event is
+ * // emitted as 'tenant:42:user:created'.
+ *
+ * // Listener on the raw bus DOES see the prefixed form:
+ * events.on('tenant:42:user:created', auditTrail)
+ * // Listener on the raw bus DOES NOT see the bare 'user:created' —
+ * // the prefix is mandatory.
+ * ```
+ */
+export function scope<Events extends Record<EventType, unknown>>(
+  underlying: Emitter<Events>,
+  prefix: string,
+): {
+  on: (type: string, handler: Handler<unknown>, options?: { priority?: number }) => void
+  once: (type: string, handler: Handler<unknown>) => void
+  off: (type: string, handler?: Handler<unknown>) => void
+  emit: (type: string, event: unknown) => void
+  emitAsync: (type: string, event: unknown) => Promise<unknown[]>
+  emitAndCollect: (type: string, event: unknown) => Promise<Array<{ ok: true, value: unknown } | { ok: false, error: Error }>>
+  listenerCount: (type: string) => number
+} {
+  const scopedType = (type: string): string => `${prefix}:${type}`
+  return {
+    on(type, handler, options) {
+      ;(underlying.on as (t: string, h: any, o?: any) => void)(scopedType(type), handler, options)
+    },
+    once(type, handler) {
+      ;(underlying.once as (t: string, h: any) => void)(scopedType(type), handler)
+    },
+    off(type, handler) {
+      ;(underlying.off as (t: string, h?: any) => void)(scopedType(type), handler)
+    },
+    emit(type, event) {
+      ;(underlying.emit as (t: string, e?: any) => void)(scopedType(type), event)
+    },
+    emitAsync(type, event) {
+      return (underlying.emitAsync as (t: string, e?: any) => Promise<unknown[]>)(scopedType(type), event)
+    },
+    emitAndCollect(type, event) {
+      return (underlying.emitAndCollect as (t: string, e?: any) => Promise<any>)(scopedType(type), event)
+    },
+    listenerCount(type) {
+      return (underlying.listenerCount as (t: string) => number)(scopedType(type))
+    },
+  }
+}
+
+/**
  * Concrete payload shape for the auth-related events. Keeping these
  * narrow (instead of `Record<string, any>`) means listeners don't need to
  * cast or guess what fields are present — the handler signature reflects
@@ -447,3 +512,9 @@ export {
 // default-exported `{ listensTo, handle }` modules and registers them.
 export { discoverListeners } from './discover'
 export type { ListenerModule } from './discover'
+
+// Singleton-friendly scope alias (#1878 E-5). Use to create a
+// per-tenant / per-plugin wrapper that auto-prefixes event names.
+export function scopedEvents(prefix: string) {
+  return scope(events, prefix)
+}
