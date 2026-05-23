@@ -68,7 +68,6 @@
     "sqlite": "^3.47.2"
   },
   "dependencies": {
-    "@stacksjs/bun-router": "0.0.15",
     "@stacksjs/ts-cloud": "^0.2.15",
     "craft-native": "^0.0.37",
     "@types/d3": "^7.4.3",

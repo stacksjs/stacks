@@ -5,7 +5,6 @@
     "": {
       "name": "stacks",
       "dependencies": {
-        "@stacksjs/bun-router": "0.0.15",
         "@stacksjs/ts-cloud": "^0.2.15",
         "@types/d3": "^7.4.3",
         "bun-query-builder": "^0.1.21",
@@ -759,6 +758,9 @@
     "storage/framework/core/router": {
       "name": "@stacksjs/router",
       "version": "0.70.45",
+      "dependencies": {
+        "@stacksjs/bun-router": "0.0.15",
+      },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
         "@stacksjs/config": "workspace:*",
@@ -770,9 +772,6 @@
         "@stacksjs/types": "workspace:*",
         "@stacksjs/validation": "workspace:*",
         "better-dx": "^0.2.12",
-      },
-      "peerDependencies": {
-        "@stacksjs/bun-router": ">=0.0.13",
       },
     },
     "storage/framework/core/scheduler": {

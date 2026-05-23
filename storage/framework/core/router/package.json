@@ -48,8 +48,8 @@
     "typecheck": "bun tsc --noEmit",
     "prepublishOnly": "bun run build"
   },
-  "peerDependencies": {
-    "@stacksjs/bun-router": ">=0.0.13"
+  "dependencies": {
+    "@stacksjs/bun-router": "0.0.15"
   },
   "devDependencies": {
     "@stacksjs/actions": "workspace:*",

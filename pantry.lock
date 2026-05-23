@@ -775,7 +775,7 @@
       "name": "@stacksjs/router",
       "version": "0.70.23",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.0.13"
+        "@stacksjs/bun-router": "0.0.15"
       },
       "devDependencies": {
         "@stacksjs/actions": "workspace:*",
@@ -1154,9 +1154,9 @@
       "version": "^0.1.0",
       "source": "npm"
     },
-    "@stacksjs/bun-router@^0.0.13": {
+    "@stacksjs/bun-router@0.0.15": {
       "name": "@stacksjs/bun-router",
-      "version": "^0.0.13",
+      "version": "0.0.15",
       "source": "npm",
       "dependencies": {
         "@stacksjs/clapp": "^0.2.0",
@@ -1377,7 +1377,7 @@
       "version": "^0.70.23",
       "source": "npm",
       "dependencies": {
-        "@stacksjs/bun-router": "^0.0.13"
+        "@stacksjs/bun-router": "0.0.15"
       }
     },
     "@stacksjs/rpx@^0.11.2": {
