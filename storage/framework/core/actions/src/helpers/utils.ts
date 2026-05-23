@@ -218,6 +218,12 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
         const layoutsDir = firstExisting(['resources/views/layouts', 'resources/layouts'])
         const partialsDir = firstExisting(['resources/views/components', 'resources/components'])
 
+        const { overridesReady } = await import('@stacksjs/config')
+        await overridesReady
+        const { injectGlobalAutoImports } = await import('@stacksjs/server')
+        const { applyRequestLocale } = await import('@stacksjs/i18n')
+        await injectGlobalAutoImports()
+
         await serve({
           patterns: ['resources/views', 'storage/framework/defaults/resources/views'],
           port,
@@ -243,8 +249,12 @@ export async function runAction(action: Action, options?: ActionOptions): Promis
           // globalThis.requestContext.
           onRequest: async (req: Request) => {
             const url = new URL(req.url)
-            if (url.pathname.startsWith('/api/'))
+            const apiMethods = new Set(['POST', 'PUT', 'PATCH', 'DELETE'])
+            if (url.pathname.startsWith('/api/') || apiMethods.has(req.method))
               return proxyToApi(req)
+
+            await applyRequestLocale(req)
+
             requestStore.enterWith({
               cookies: parseCookies(req),
               url: req.url,
