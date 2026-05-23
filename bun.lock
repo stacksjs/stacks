@@ -216,7 +216,7 @@
         "@stacksjs/payments": "^0.70.23",
         "@stacksjs/realtime": "^0.70.23",
         "@stacksjs/router": "^0.70.23",
-        "@stacksjs/rpx": "^0.11.8",
+        "@stacksjs/rpx": "^0.11.11",
         "@stacksjs/search-engine": "^0.70.23",
         "@stacksjs/security": "^0.70.23",
         "@stacksjs/server": "^0.70.23",
@@ -1180,7 +1180,7 @@
 
     "@stacksjs/router": ["@stacksjs/router@workspace:storage/framework/core/router"],
 
-    "@stacksjs/rpx": ["@stacksjs/rpx@0.11.8", "", { "dependencies": { "@stacksjs/clapp": "^0.2.10", "@stacksjs/tlsx": "^0.13.6" }, "bin": { "rpx": "./dist/bin/cli.js", "reverse-proxy": "./dist/bin/cli.js" } }, "sha512-aT5aL3OQ3b54JnoOJPbyyEAkYLUPIjj1kDU2N73OxOSgrQWVcutyxIvgbAM8+/79HY8OZWSzYwhxbiyegltp3Q=="],
+    "@stacksjs/rpx": ["@stacksjs/rpx@0.11.11", "", { "dependencies": { "@stacksjs/clapp": "^0.2.10", "@stacksjs/tlsx": "^0.13.6" }, "bin": { "rpx": "./dist/bin/cli.js", "reverse-proxy": "./dist/bin/cli.js" } }, "sha512-6UxxgbXBLnKLxnk75g9JMziuB7XTQiyY4x83lFBuI/AhmY8oSql7TJY0dWabF61dCHskaeiJz0qFRLAkg6C54w=="],
 
     "@stacksjs/sanitizer": ["@stacksjs/sanitizer@0.2.35", "", {}, "sha512-DpZPnfEazZ9LcdtOExDs1EScqYm8gRZMI3GrYwLsKqjap4EKNKuk8JVF80Go/WWoslcyGEHWjiTnYAx3nxwEkA=="],
 
