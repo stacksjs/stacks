@@ -1,6 +1,6 @@
 ---
 name: stacks-ui
-description: Use when working with UI in a Stacks application — components, composables, reactivity (refs/watch/computed), Craft native components, Headwind CSS, Crosswind utility framework, accessibility, or the STX templating engine. Covers @stacksjs/ui, @stacksjs/stx, and related UI tooling.
+description: Use when working with UI in a Stacks application — components, composables, reactivity (refs/watch/computed), Craft native components, Crosswind CSS, Crosswind utility framework, accessibility, or the STX templating engine. Covers @stacksjs/ui, @stacksjs/stx, and related UI tooling.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -11,7 +11,7 @@ allowed-tools: Read Edit Write Bash Grep Glob
 ## Key Paths
 - Core package: `storage/framework/core/ui/src/`
 - Components: `storage/framework/core/ui/src/components/`
-- UI config: `config/ui.ts` (Headwind)
+- UI config: `config/ui.ts` (Crosswind)
 - STX config: `config/stx.ts`
 - STX engine: `node_modules/@stacksjs/stx/`
 - Crosswind: `node_modules/@cwcss/crosswind/`
@@ -153,7 +153,7 @@ const isOnline = useOnline()
 const cleanup = useClickOutside(elementRef, handler)
 ```
 
-## Headwind Configuration (config/ui.ts)
+## Crosswind Configuration (config/ui.ts)
 
 ```typescript
 export default {
@@ -164,7 +164,7 @@ export default {
   ],
   output: './storage/framework/assets/headwind.css',
   minify: false,
-} satisfies HeadwindOptions
+} satisfies CrosswindOptions
 ```
 
 ## STX Configuration (config/stx.ts)
@@ -231,8 +231,8 @@ Features: theme config, 40+ variant modifiers, custom rules, shortcuts, attribut
 - **Craft components use native fallbacks** — `preferNative: true` renders plain HTML
 - **Refs are not Vue refs** — similar API but custom reactive implementation
 - **Lifecycle hooks require component context** — must be called within `setupComponent()`
-- **Headwind is not Tailwind** — Stacks' own CSS utility implementation
+- **Crosswind is not Tailwind** — Stacks' own CSS utility implementation
 - **Crosswind is the utility engine** — handles class extraction, CSS generation, purging
 - **STX is the templating engine** — handles `.stx` files, SSR, streaming, hydration
-- **Two CSS systems coexist** — Headwind (config) and Crosswind (engine)
+- **Two CSS systems coexist** — Crosswind (config) and Crosswind (engine)
 - **150+ globally registered Vue components** — no imports needed

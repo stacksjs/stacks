@@ -1,6 +1,6 @@
 ---
 name: stacks-crosswind
-description: Use when styling components in a Stacks application — utility-first CSS classes, theming, responsive design, variants, custom rules, or CSS generation. Crosswind is the CSS utility engine powering Stacks' Headwind config.
+description: Use when styling components in a Stacks application — utility-first CSS classes, theming, responsive design, variants, custom rules, or CSS generation. Crosswind is the CSS utility engine powering Stacks' Crosswind config.
 license: MIT
 compatibility: Bun >= 1.3.0, TypeScript
 allowed-tools: Read Edit Write Bash Grep Glob
@@ -12,9 +12,9 @@ Crosswind (`@cwcss/crosswind`) is the utility-first CSS engine for Stacks — si
 
 ## Key Paths
 - Package: `node_modules/@cwcss/crosswind/`
-- UI config: `config/ui.ts` (Headwind options referencing Crosswind)
+- UI config: `config/ui.ts` (Crosswind options referencing Crosswind)
 - Default styles: `storage/framework/defaults/styles/`
-- Output: `storage/framework/assets/headwind.css`
+- Output: `storage/framework/assets/crosswind.css`
 
 ## Core API
 
@@ -177,8 +177,8 @@ interface ParsedClass {
 
 ## Gotchas
 - **Not Tailwind** — Crosswind is a separate implementation with Tailwind-compatible syntax
-- **Stacks uses Headwind config** — `config/ui.ts` defines Headwind options which feed Crosswind
-- **Output goes to `storage/framework/assets/headwind.css`** — not a typical `dist/` directory
+- **Stacks uses Crosswind config** — `config/ui.ts` defines Crosswind options which feed Crosswind
+- **Output goes to `storage/framework/assets/crosswind.css`** — not a typical `dist/` directory
 - **Bun plugin available** — can be used as a Bun build plugin for automatic CSS generation
 - **Attributify mode** — optional mode where utilities can be written as HTML attributes instead of classes
 - **Bracket syntax** — `text-[#custom]` for arbitrary values, same as Tailwind JIT

@@ -1,6 +1,6 @@
 import type { CLI, DevOptions } from '@stacksjs/types'
 import { execSync } from 'node:child_process'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import process from 'node:process'
 import { bold, cyan, dim, green, intro, log, onUnknownSubcommand, outro, prompts, runCommand, yellow } from "@stacksjs/cli"
 import { homedir } from 'node:os'
@@ -362,6 +362,8 @@ export async function startDevelopmentServer(_options: DevOptions, _startTime?: 
   // Signal subprocesses that the main dev server manages the reverse proxy,
   // so they don't start their own (which would conflict on port 443)
   process.env.STACKS_PROXY_MANAGED = '1'
+  // Suppress early Crosswind/STX console noise — `printDevEngineNotes()` prints after URLs.
+  process.env.STACKS_DEV_QUIET = '1'
 
   // Pre-flight: clean up orphaned bun processes from prior dev runs that
   // didn't shut down cleanly (`pkill -9` from a foreground terminal exits
@@ -567,12 +569,12 @@ function printDevReadyBanner(input: {
     dashboardDomain,
   } = input
   const verbose = options.verbose ?? false
-  const showLocalUrls = verbose || options.withLocalhost === true || hasCustomDomain
+  const showLocalUrls = verbose || options.withLocalhost === true
 
   console.log()
   console.log(`  ${green('➜')}  ${bold('Frontend')}:    ${cyan(frontendUrl)}`)
   if (showLocalUrls)
-    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)} ${dim('(always works)')}`)
+    console.log(`  ${dim('➜')}  ${dim('Local')}:       ${dim(`http://localhost:${frontendPort}`)}`)
   if (nativeMode)
     console.log(`  ${green('➜')}  ${bold('Native')}:      ${cyan(`Craft → http://localhost:${frontendPort}`)}`)
   console.log(`  ${green('➜')}  ${bold('API')}:         ${cyan(apiUrl)}`)
@@ -583,14 +585,38 @@ function printDevReadyBanner(input: {
     console.log(`  ${dim('➜')}  ${dim('Local docs')}:  ${dim(`http://localhost:${docsPort}`)}`)
   if (includeDashboard)
     console.log(`  ${green('➜')}  ${bold('Dashboard')}:   ${cyan(dashboardUrl)}`)
-  if (showLocalUrls && domain) {
+  if (verbose && domain) {
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${frontendPort} → ${domain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${apiPort} → ${apiDomain}`)}`)
     console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${docsPort} → ${docsDomain}`)}`)
     if (includeDashboard)
       console.log(`  ${dim('➜')}  ${dim('Proxy')}:       ${dim(`localhost:${dashboardPort} → ${dashboardDomain}`)}`)
   }
+  printDevEngineNotes()
   console.log()
+}
+
+/** Post-ready notes from frontend tooling (Crosswind, STX routes) in a consistent style. */
+function printDevEngineNotes(): void {
+  const routesFile = join(projectPath(), '.stx/routes.ts')
+  const crosswindConfig = join(projectPath(), 'config/crosswind.ts')
+  const hasCrosswind = existsSync(crosswindConfig)
+    || existsSync(join(projectPath(), 'crosswind.config.ts'))
+
+  if (hasCrosswind)
+    console.log(`  ${green('[Crosswind]')} ${dim('CSS engine loaded')}`)
+
+  if (existsSync(routesFile)) {
+    try {
+      const source = readFileSync(routesFile, 'utf8')
+      const routeCount = (source.match(/pattern:/g) ?? []).length
+      if (routeCount > 0)
+        console.log(`  ${green('[stx]')} ${dim(`Generated ${routeCount} routes → .stx/routes.ts`)}`)
+    }
+    catch {
+      console.log(`  ${green('[stx]')} ${dim('Routes manifest → .stx/routes.ts')}`)
+    }
+  }
 }
 
 async function launchNativeAppWindow(url: string, options: DevOptions): Promise<(() => void) | undefined> {
